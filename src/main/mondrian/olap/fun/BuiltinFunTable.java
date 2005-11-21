@@ -1331,7 +1331,8 @@ public class BuiltinFunTable extends FunTableImpl {
                 "pxm") {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Member member = getMemberArg(evaluator, args, 0, true);
-                Member[] children = evaluator.getSchemaReader().getMemberChildren(member);
+                //Member[] children = evaluator.getSchemaReader().getMemberChildren(member);
+                Member[] children = getNonEmptyMemberChildren(evaluator, member);
                 return Arrays.asList(children);
             }
         });
@@ -1541,6 +1542,11 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the set resulting from filtering a set based on a search condition.",
                 "fxxb") {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
+                SchemaReader schemaReader = evaluator.getSchemaReader();
+                NativeEvaluator nativeEvaluator = schemaReader.getNativeSetEvaluator(this, evaluator, args);
+                if (nativeEvaluator != null)
+                    return nativeEvaluator.execute();
+
                 List members = (List) getArg(evaluator, args, 0);
                 Exp exp = args[1];
                 List result = new ArrayList();
@@ -1744,7 +1750,8 @@ public class BuiltinFunTable extends FunTableImpl {
                 "pxl") {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Level level = (Level) getArg(evaluator, args, 0);
-                Member[] members = evaluator.getSchemaReader().getLevelMembers(level);
+                //Member[] members = evaluator.getSchemaReader().getLevelMembers(level);
+                Member[] members = getNonEmptyLevelMembers(evaluator, level);
                 ArrayList memberList = new ArrayList(Arrays.asList(members));
                 if (memberList != null) {
                     removeCalculatedMembers(memberList);
@@ -2091,6 +2098,11 @@ public class BuiltinFunTable extends FunTableImpl {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
+                        SchemaReader schemaReader = evaluator.getSchemaReader();
+                        NativeEvaluator nativeEvaluator = schemaReader.getNativeSetEvaluator(this, evaluator, args);
+                        if (nativeEvaluator != null)
+                            return nativeEvaluator.execute();
+                        
                         List list = (List) getArg(evaluator, args, 0);
                         int n = getIntArg(evaluator, args, 1);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 2, null);
@@ -3311,6 +3323,21 @@ public class BuiltinFunTable extends FunTableImpl {
         return instance;
     }
 
+    protected Member[] getNonEmptyMemberChildren(Evaluator evaluator, Member member) {
+        SchemaReader sr = evaluator.getSchemaReader();
+        if (evaluator.isNonEmpty()) {
+            return sr.getMemberChildren(member, evaluator);
+        }
+        return sr.getMemberChildren(member);
+    }
+    
+    protected Member[] getNonEmptyLevelMembers(Evaluator evaluator, Level level) {
+        SchemaReader sr = evaluator.getSchemaReader();
+        if (evaluator.isNonEmpty()) {
+            return sr.getLevelMembers(level, evaluator);
+        }
+        return sr.getLevelMembers(level);
+    }
 }
 
 // End BuiltinFunTable.java

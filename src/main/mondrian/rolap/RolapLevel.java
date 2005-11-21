@@ -55,6 +55,7 @@ public class RolapLevel extends LevelBase {
      * unique (as opposed to unique only within the context of the parent
      * member). **/
     private final boolean unique;
+    private final boolean numeric;
     private final int flags;
     private final RolapProperty[] properties;
     private final RolapProperty[] inheritedProperties;
@@ -115,6 +116,7 @@ public class RolapLevel extends LevelBase {
         this.flags = flags;
         final boolean isAll = (flags & ALL) == ALL;
         this.unique = (flags & UNIQUE) == UNIQUE;
+        this.numeric = (flags & NUMERIC) == NUMERIC;
         this.keyExp = keyExp;
         if (nameExp != null) {
             if (nameExp instanceof MondrianDef.Column) {
@@ -228,6 +230,9 @@ public class RolapLevel extends LevelBase {
     }
     boolean isUnique() {
         return unique;
+    }
+    boolean isNumeric() {
+        return numeric;
     }
     RolapProperty[] getRolapProperties() {
         return properties;

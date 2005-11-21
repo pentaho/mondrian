@@ -341,9 +341,14 @@ public class SqlQuery
         if (dialect.isAS400()) {
             addSelect(expression, null);
         } else {
-            addSelect(expression, "c" + select.size());
+            addSelect(expression, nextColumnAlias());
         }
     }
+    
+    public String nextColumnAlias() {
+        return "c" + select.size();
+    }
+    
     /** Adds an expression to the select clause, with a specified column
      * alias. **/
     public void addSelect(final String expression, final String alias) {
@@ -386,6 +391,9 @@ public class SqlQuery
         having.add(expression);
     }
 
+    /**
+     * @deprecated - does not work for derby and cloudscape, use {@link #addOrderBy(String, boolean)} instead
+     */
     public void addOrderBy(final String expression)
     {
     	if (dialect.isDerby() || dialect.isCloudscape()) {
@@ -395,6 +403,14 @@ public class SqlQuery
     	}
     }
 
+    public void addOrderBy(String alias, boolean ascending) {
+        alias = dialect.quoteIdentifier(alias);
+        if (ascending)
+            orderBy.add(alias + " ASC");
+        else
+            orderBy.add(alias + " DESC");
+    }
+    
     public String toString()
     {
         if (generateFormattedSql) {
@@ -867,6 +883,23 @@ public class SqlQuery
             return generic;
         }
 
+    }
+    
+    /**
+     * quotes a value so it may be used in SQL
+     * @throws NumberFormatException if numeric == true and value can not 
+     * be parsed as a number
+     */
+    public String quote(boolean numeric, Object value) throws NumberFormatException {
+        String string = String.valueOf(value);
+        if (numeric) {
+            if (value instanceof Number)
+                return string;
+            // make sure it can be parsed as a Number
+            Double.valueOf(string);
+            return string;
+        }
+        return Util.singleQuoteString(string);
     }
 }
 

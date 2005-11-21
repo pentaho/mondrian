@@ -115,7 +115,7 @@ public abstract class MemberBase
     }
 
     public OlapElement lookupChild(SchemaReader schemaReader, String s) {
-        return Util.lookupMemberChildByName(schemaReader, this, s);
+        return schemaReader.lookupMemberChildByName(this, s);
     }
 
     // implement Member

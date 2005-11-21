@@ -1,0 +1,38 @@
+package mondrian.rolap;
+
+import java.util.Arrays;
+
+import mondrian.rolap.sql.SqlQuery;
+
+/**
+ * optimize the search for a child by name. This is used whenever the
+ * string representation of a member is parsed, e.g.
+ * [Customers].[All Customers].[USA].[CA]. Restricts the result to
+ * the member we are searching for.
+ */
+class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
+    String childName;
+    Object cacheKey;
+
+    public ChildByNameConstraint(String childName) {
+        this.childName = childName;
+        this.cacheKey = Arrays.asList(new Object[] { super.getCacheKey(),
+                ChildByNameConstraint.class, childName});
+    }
+
+    public void addLevelConstraint(SqlQuery query, RolapLevel level) {
+        super.addLevelConstraint(query, level);
+        String column = level.getKeyExp().getExpression(query);
+        String value = query.quote(level.isNumeric(), childName);
+        query.addWhere(column, "=", value);
+    }
+
+    public String toString() {
+        return "ChildByNameConstraint(" + childName + ")";
+    }
+
+    public Object getCacheKey() {
+        return cacheKey;
+    }
+
+}

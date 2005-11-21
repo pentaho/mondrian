@@ -14,6 +14,9 @@ package mondrian.rolap;
 
 import java.util.List;
 
+import mondrian.rolap.sql.TupleConstraint;
+import mondrian.rolap.sql.MemberChildrenConstraint;
+
 /**
  * A <code>MemberCache</code> can retrieve members based upon their parent and
  * name.
@@ -23,38 +26,52 @@ import java.util.List;
  * @version $Id$
  **/
 interface MemberCache {
-    /** 
+    /**
      * Creates a key with which to {@link #get} or {@link #put} the {@link
-     * RolapMember} with a given parent and key. 
+     * RolapMember} with a given parent and key.
      **/
     Object makeKey(RolapMember parent, Object key);
-    /** 
+
+    /**
      * Retrieves the {@link RolapMember} with a given key (created by {@link
-     * #makeKey}). 
+     * #makeKey}).
      **/
     RolapMember getMember(Object key);
-    /** 
+
+    /**
      * Replaces the {@link RolapMember} with a given key (created by {@link
-     * #makeKey}). Returns the previous member with that key, or null. 
+     * #makeKey}). Returns the previous member with that key, or null.
      **/
     Object putMember(Object key, RolapMember value);
-    /** 
-     * Returns whether this cache currently knows the children of
-     * <code>member</code>. 
+
+    /**
+     * returns the children of <code>member</code> if they are currently in the cache.
+     * Otherwise returns null. The children may be garbage collected as soon as the
+     * returned list may be garbage collected.
+     * @param parent the parent member
+     * @param constraint the condition that was used when the members were fetched. May
+     * be null for all members (no constraint)
      */
-    boolean hasChildren(RolapMember member);
-    
-    /** 
-     * Returns whether this cache currently knows the members of
-     * <code>level</code>. 
+    List getChildrenFromCache(RolapMember parent, MemberChildrenConstraint constraint);
+
+    /**
+     * returns the members of <code>level</code> if they are currently in the cache.
+     * Otherwise returns null. The members may be garbage collected as soon as the
+     * returned list may be garbage collected.
+     * @param level the level whose members should be fetched
+     * @param constraint the condition that was used when the members were fetched. May
+     * be null for all members (no constraint)
      */
-    boolean hasLevelMembers(RolapLevel level);
-    
-    /** 
+    List getLevelMembersFromCache(RolapLevel level, TupleConstraint constraint);
+
+    /**
      * Registers that the children of <code>member</code> are
-     * <code>children</code> (a list of {@link RolapMember}s). 
+     * <code>children</code> (a list of {@link RolapMember}s).
+     * @param member the parent member
+     * @param constraint the condition that was used when the members were fetched. May
+     * be null for all members (no constraint)
      */
-    void putChildren(RolapMember member, List children);
+    void putChildren(RolapMember member, MemberChildrenConstraint constraint, List children);
 }
 
 

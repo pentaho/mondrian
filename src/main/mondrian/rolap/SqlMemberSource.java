@@ -12,18 +12,15 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.sql.*;
+
+import org.eigenbase.util.property.IntegerProperty;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
 
 /**
  * A <code>SqlMemberSource</code> reads members from a SQL database.
@@ -34,7 +31,8 @@ import java.util.List;
  * @since 21 December, 2001
  * @version $Id$
  */
-class SqlMemberSource implements MemberReader {
+class SqlMemberSource implements MemberReader, SqlTupleReader.MemberBuilder {
+    private final SqlConstraintFactory sqlConstraintFactory = SqlConstraintFactory.instance();
     private final RolapHierarchy hierarchy;
     private final DataSource dataSource;
     private MemberCache cache;
@@ -170,9 +168,10 @@ class SqlMemberSource implements MemberReader {
      *
      * </blockquote> counts the leaf "name" level of the "customer" hierarchy.
      **/
-    private String makeLevelMemberCountSql(RolapLevel level,
-                                           Connection jdbcConnection,
-                                           boolean[] mustCount) {
+    private String makeLevelMemberCountSql(
+            RolapLevel level,
+            Connection jdbcConnection,
+            boolean[] mustCount) {
         mustCount[0] = false;
         SqlQuery sqlQuery = newQuery(jdbcConnection,
                 "while generating query to count members in level " + level);
@@ -434,67 +433,20 @@ RME is this right
         return sqlQuery.toString();
     }
 
-    /**
-     * Generates the SQL statement to access members of <code>level</code>. For
-     * example, <blockquote>
-     * <pre>SELECT "country", "state_province", "city"
-     * FROM "customer"
-     * GROUP BY "country", "state_province", "city", "init", "bar"</pre>
-     * </blockquote> accesses the "City" level of the "Customers"
-     * hierarchy. Note that:<ul>
-     *
-     * <li><code>"country", "state_province"</code> are the parent keys;</li>
-     *
-     * <li><code>"city"</code> is the level key;</li>
-     *
-     * <li><code>"init", "bar"</code> are member properties.</li>
-     * </ul>
-     *
-     * @pre !level.isAll()
-     **/
-    String makeLevelSql(RolapLevel level, Connection jdbcConnection) {
-        Util.assertPrecondition(!level.isAll());
-        SqlQuery sqlQuery = newQuery(jdbcConnection,
-                "while generating query to retrieve members of level " + level);
-        RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
-        int levelDepth = level.getDepth();
-        for (int i = 0; i <= levelDepth; i++) {
-            RolapLevel level2 = levels[i];
-            if (level2.isAll()) {
-                continue;
-            }
-            hierarchy.addToFrom(sqlQuery, level2.getKeyExp());
-            String keySql = level2.getKeyExp().getExpression(sqlQuery);
-            sqlQuery.addSelect(keySql);
-            sqlQuery.addGroupBy(keySql);
-            hierarchy.addToFrom(sqlQuery, level2.getOrdinalExp());
-
-            if (level2.hasCaptionColumn()) {
-                MondrianDef.Expression captionExp = level2.getCaptionExp();
-                hierarchy.addToFrom(sqlQuery, captionExp);
-                String captionSql = captionExp.getExpression(sqlQuery);
-                sqlQuery.addSelect(captionSql);
-                sqlQuery.addGroupBy(captionSql);
-            }
-
-            String ordinalSql = level2.getOrdinalExp().getExpression(sqlQuery);
-            sqlQuery.addGroupBy(ordinalSql);
-            sqlQuery.addOrderBy(ordinalSql);
-            RolapProperty[] properties = level2.getRolapProperties();
-            for (int j = 0; j < properties.length; j++) {
-                RolapProperty property = properties[j];
-                String propSql = property.getExp().getExpression(sqlQuery);
-                sqlQuery.addSelect(propSql);
-                sqlQuery.addGroupBy(propSql);
-            }
-        }
-        return sqlQuery.toString();
+    // implement MemberReader
+    public List getMembersInLevel(
+            RolapLevel level,
+            int startOrdinal,
+            int endOrdinal) {
+        TupleConstraint constraint =
+                sqlConstraintFactory.getLevelMembersConstraint(null);
+        return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
     }
 
-    // implement MemberReader
     public List getMembersInLevel(RolapLevel level,
-                                  int startOrdinal,
-                                  int endOrdinal) {
+            int startOrdinal,
+            int endOrdinal,
+            TupleConstraint constraint) {
         if (level.isAll()) {
             final String allMemberName = hierarchy.getAllMemberName();
             Object key = cache.makeKey(null, allMemberName);
@@ -515,7 +467,6 @@ RME is this right
             list.add(root);
             return list;
         }
-        final RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
         Connection jdbcConnection;
         try {
             jdbcConnection = dataSource.getConnection();
@@ -524,7 +475,7 @@ RME is this right
                 e, "Error while creating connection from data source");
         }
         try {
-            return getMembersInLevel(level, jdbcConnection, levels);
+            return getMembersInLevel(level, jdbcConnection, constraint);
         } finally {
             try {
                 jdbcConnection.close();
@@ -536,118 +487,24 @@ RME is this right
 
     private List getMembersInLevel(RolapLevel level,
                                    Connection jdbcConnection,
-                                   final RolapLevel[] levels) {
-        String sql = makeLevelSql(level, jdbcConnection);
-        ResultSet resultSet = null;
-        try {
-            resultSet = RolapUtil.executeQuery(jdbcConnection,
-                                          sql,
-                                          "SqlMemberSource.getMembersInLevel");
-            List list = new ArrayList();
-            final int levelDepth = level.getDepth();
-            RolapMember allMember = null;
-            if (hierarchy.hasAll()) {
-                final List rootMembers = getRootMembers();
-                Util.assertTrue(rootMembers.size() == 1);
-                allMember = (RolapMember) rootMembers.get(0);
-            }
-            boolean parentChild = level.getParentExp() != null;
+                                   TupleConstraint constraint) {
+        TupleReader tupleReader = new SqlTupleReader(constraint);
+        tupleReader.addLevelMembers(level, this);
+        return tupleReader.readTuples(jdbcConnection);
+    }
 
-            // members[i] is the current member of level#i, and siblings[i]
-            // is the current member of level#i plus its siblings
-            RolapMember[] members = new RolapMember[levels.length];
-            List[] siblings = new ArrayList[levels.length + 1];
-
-            int limit = MondrianProperties.instance().ResultLimit.get();
-            int nFetch = 0;
-
-            while (resultSet.next()) {
-
-                if (limit > 0 && limit < ++nFetch) {
-                    // result limit exceeded, throw an exception
-                    throw MondrianResource.instance().
-                               MemberFetchLimitExceeded.ex(new Long(limit));
-                }
-
-                int column = 0;
-                RolapMember member = null;
-                for (int i = 0; i <= levelDepth; i++) {
-                    RolapLevel childLevel = levels[i];
-                    if (childLevel.isAll()) {
-                        member = allMember;
-                        continue;
-                    }
-                    Object value = resultSet.getObject(++column);
-                    if (value == null) {
-                        value = RolapUtil.sqlNullValue;
-                    }
-                    Object captionValue;
-                    if (childLevel.hasCaptionColumn()) {
-                        captionValue = resultSet.getObject(++column);
-                    } else {
-                        captionValue = null;
-                    }
-                    RolapMember parentMember = member;
-                    Object key = cache.makeKey(parentMember, value);
-                    member = cache.getMember(key);
-                    if (member == null) {
-                        member = makeMember(
-                                parentMember, childLevel, value, captionValue,
-                                parentChild, resultSet, key, column);
-                    }
-                    column += childLevel.getProperties().length;
-                    if (member != members[i]) {
-                        // Flush list we've been building.
-                        List children = siblings[i + 1];
-                        if (children != null) {
-                            cache.putChildren(members[i], children);
-                        }
-                        // Start a new list, if the cache needs one. (We don't
-                        // synchronize, so it's possible that the cache will
-                        // have one by the time we complete it.)
-                        if (i < levelDepth &&
-                                !cache.hasChildren(member)) {
-                            siblings[i + 1] = new ArrayList();
-                        } else {
-                            siblings[i + 1] = null; // don't bother building up a list
-                        }
-                        // Record new current member of this level.
-                        members[i] = member;
-                        // If we're building a list of siblings at this level,
-                        // we haven't seen this one before, so add it.
-                        if (siblings[i] != null) {
-                            if (value == RolapUtil.sqlNullValue) {
-                                addAsOldestSibling(siblings[i], member);
-                            } else {
-                                siblings[i].add(member);
-                            }
-                        }
-                    }
-                }
-                list.add(member);
-            }
-            for (int i = 0; i < members.length; i++) {
-                RolapMember member = members[i];
-                final List children = siblings[i + 1];
-                if (member != null && children != null) {
-                    cache.putChildren(member, children);
-                }
-            }
-            return list;
-        } catch (Throwable e) {
-            throw Util.newInternal(e,
-                    "while populating member cache with members for level '" +
-                    level.getUniqueName() + "'; sql=[" + sql + "]");
-        } finally {
-            try {
-                if (resultSet != null) {
-                    resultSet.getStatement().close();
-                    resultSet.close();
-                }
-            } catch (SQLException e) {
-                // ignore
-            }
+    public RolapMember getAllMember() {
+        RolapMember allMember = null;
+        if (hierarchy.hasAll()) {
+            final List rootMembers = getRootMembers();
+            Util.assertTrue(rootMembers.size() == 1);
+            allMember = (RolapMember) rootMembers.get(0);
         }
+        return allMember;
+    }
+
+    public MemberCache getMemberCache() {
+        return cache;
     }
 
     // implement MemberSource
@@ -668,25 +525,21 @@ RME is this right
      * AND "state_province" = 'BC'
      * GROUP BY "city"</pre>
      * </blockquote> retrieves the children of the member
-     * <code>[Canada].[BC]</code>. See also {@link #makeLevelSql}.
-     **/
-    String makeChildMemberSql(RolapMember member, Connection jdbcConnection) {
+     * <code>[Canada].[BC]</code>.
+     *
+     * <p>See also {@link SqlTupleReader#makeLevelMembersSql}.
+     */
+    String makeChildMemberSql(
+            RolapMember member,
+            Connection jdbcConnection,
+            MemberChildrenConstraint constraint) {
         SqlQuery sqlQuery = newQuery(jdbcConnection,
                 "while generating query to retrieve children of member "
                 + member);
-        for (RolapMember m = member; m != null; m = (RolapMember)
-                 m.getParentMember()) {
-            RolapLevel level = (RolapLevel) m.getLevel();
-            if (level.isAll()) {
-                continue;
-            }
-            hierarchy.addToFrom(sqlQuery, level.getKeyExp());
-            String q = level.getKeyExp().getExpression(sqlQuery);
-            sqlQuery.addWhere(q, " = ", m.quoteKeyForSql());
-            if (level.isUnique()) {
-                break; // no further qualification needed
-            }
-        }
+
+        // create the condition, which is either the parent member or
+        // the full context (non empty).
+        constraint.addMemberConstraint(sqlQuery, member);
 
         RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
         RolapLevel level = levels[member.getLevel().getDepth() + 1];
@@ -694,6 +547,9 @@ RME is this right
         String q = level.getKeyExp().getExpression(sqlQuery);
         sqlQuery.addSelect(q);
         sqlQuery.addGroupBy(q);
+
+        // in non empty mode the level table must be joined to the fact table
+        constraint.addLevelConstraint(sqlQuery, level);
 
         if (level.hasCaptionColumn()){
             MondrianDef.Expression captionExp = level.getCaptionExp();
@@ -723,12 +579,34 @@ RME is this right
     }
 
     public void getMemberChildren(List parentMembers, List children) {
+        MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+        getMemberChildren(parentMembers, children, constraint);
+    }
+
+    public void getMemberChildren(List parentMembers, List children, MemberChildrenConstraint mcc) {
+        // try to fetch all children at once
+        RolapLevel childLevel = getCommonChildLevelForDescendants(parentMembers);
+        if (childLevel != null) {
+            TupleConstraint lmc = sqlConstraintFactory.getDescendantsConstraint(parentMembers, mcc);
+            List list = getMembersInLevel(childLevel, 0, Integer.MAX_VALUE, lmc);
+            children.addAll(list);
+            return;
+        }
+
+        // fetch them one by one
         for (int i = 0; i < parentMembers.size(); i++) {
-            getMemberChildren((RolapMember) parentMembers.get(i), children);
+            getMemberChildren((RolapMember) parentMembers.get(i), children, mcc);
         }
     }
 
     public void getMemberChildren(RolapMember parentMember, List children) {
+        MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+        getMemberChildren(parentMember, children, constraint);
+    }
+
+    public void getMemberChildren(RolapMember parentMember, List children, MemberChildrenConstraint constraint) {
+//        if (!parentMember.isAll() && parentMember.isCalculated())
+//            return;
         Connection jdbcConnection;
         try {
             jdbcConnection = dataSource.getConnection();
@@ -737,7 +615,7 @@ RME is this right
                 e, "Error while creating connection from data source");
         }
         try {
-            getMemberChildren(parentMember, children, jdbcConnection);
+            getMemberChildren(parentMember, children, jdbcConnection, constraint);
         } finally {
             try {
                 jdbcConnection.close();
@@ -747,9 +625,61 @@ RME is this right
         }
     }
 
+    /**
+     * If all parents belong to the same level and no parent/child is involved,
+     * returns that level; this indicates that all member children can be
+     * fetched at once. Otherwise returns null.
+     */
+    private RolapLevel getCommonChildLevelForDescendants(List parents) {
+        // at least two members required
+        if (parents.size() < 2) {
+            return null;
+        }
+        RolapLevel parentLevel = null;
+        RolapLevel childLevel = null;
+        for (Iterator it = parents.iterator(); it.hasNext();) {
+            RolapMember member = (RolapMember) it.next();
+            // we can not fetch children of calc members
+            if (member.isCalculated()) {
+                return null;
+            }
+            // first round?
+            if (parentLevel == null) {
+                parentLevel = (RolapLevel) member.getLevel();
+                // check for parent/child
+                if (parentLevel.getParentExp() != null)
+                    return null;
+                childLevel = getChildLevel(parentLevel);
+                if (childLevel == null) {
+                    return null;
+                }
+                if (childLevel.getParentExp() != null) {
+                    return null;
+                }
+            } else if (parentLevel != member.getLevel()) {
+                return null;
+            }
+        }
+        return childLevel;
+    }
+
+    /**
+     * @deprecated use LevelBase#getChildLevel instead
+     */
+    private RolapLevel getChildLevel(RolapLevel parentLevel) {
+        RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
+        int childDepth = parentLevel.getDepth() + 1;
+        if (childDepth >= levels.length) {
+            // member is at last level, so can have no children
+            return null;
+        }
+        return levels[childDepth];
+    }
+
     private void getMemberChildren(RolapMember parentMember,
                                    List children,
-                                   Connection jdbcConnection) {
+                                   Connection jdbcConnection,
+                                   MemberChildrenConstraint constraint) {
         String sql;
         boolean parentChild;
         final RolapLevel parentLevel = (RolapLevel) parentMember.getLevel();
@@ -759,18 +689,23 @@ RME is this right
             parentChild = true;
             childLevel = parentLevel;
         } else {
-            RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
-            int childDepth = parentLevel.getDepth() + 1;
-            if (childDepth >= levels.length) {
+//            RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
+//            int childDepth = parentLevel.getDepth() + 1;
+//            if (childDepth >= levels.length) {
+//                // member is at last level, so can have no children
+//                return;
+//            }
+//            childLevel = levels[childDepth];
+            childLevel = getChildLevel(parentLevel);
+            if (childLevel == null) {
                 // member is at last level, so can have no children
                 return;
             }
-            childLevel = levels[childDepth];
             if (childLevel.getParentExp() != null) {
                 sql = makeChildMemberSql_PCRoot(parentMember, jdbcConnection);
                 parentChild = true;
             } else {
-                sql = makeChildMemberSql(parentMember, jdbcConnection);
+                sql = makeChildMemberSql(parentMember, jdbcConnection, constraint);
                 parentChild = false;
             }
         }
@@ -779,7 +714,8 @@ RME is this right
             resultSet = RolapUtil.executeQuery(
                 jdbcConnection, sql, "SqlMemberSource.getMemberChildren");
 
-            int limit = MondrianProperties.instance().ResultLimit.get();
+            IntegerProperty ip = MondrianProperties.instance().ResultLimit;
+            int limit = ip.get();
             int nFetch = 0;
 
             while (resultSet.next()) {
@@ -828,7 +764,7 @@ RME is this right
         }
     }
 
-    private RolapMember makeMember(
+    public RolapMember makeMember(
             RolapMember parentMember,
             RolapLevel childLevel,
             Object value,
@@ -949,10 +885,13 @@ RME is this right
      * FROM "employee"
      * WHERE "supervisor_id" = 5</pre>
      * </blockquote> retrieves the children of the member
-     * <code>[Employee].[5]</code>. See also {@link #makeLevelSql}.
-     **/
-    private String makeChildMemberSqlPC(RolapMember member,
-                                        Connection jdbcConnection) {
+     * <code>[Employee].[5]</code>.
+     *
+     * <p>See also {@link SqlTupleReader#makeLevelMembersSql}.
+     */
+    private String makeChildMemberSqlPC(
+            RolapMember member,
+            Connection jdbcConnection) {
         SqlQuery sqlQuery = newQuery(jdbcConnection,
             "while generating query to retrieve children of parent/child hierarchy member " + member);
         RolapLevel level = (RolapLevel) member.getLevel();
@@ -1013,7 +952,8 @@ RME is this right
             boolean before,
             boolean self,
             boolean after,
-            boolean leaves) {
+            boolean leaves,
+            Evaluator context) {
         throw new UnsupportedOperationException();
     }
 
@@ -1088,6 +1028,10 @@ RME is this right
             final RolapHierarchy hierarchy = (RolapHierarchy) getHierarchy();
             return hierarchy.getAggregateChildrenExpression();
         }
+    }
+
+    public TupleReader.MemberBuilder getMemberBuilder() {
+        return this;
     }
 }
 

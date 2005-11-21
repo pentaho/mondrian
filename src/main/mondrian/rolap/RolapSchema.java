@@ -1340,6 +1340,11 @@ public class RolapSchema implements Schema {
         }
     }
 
+    final RolapNativeRegistry nativeRegistry = new RolapNativeRegistry();
+    RolapNativeRegistry getNativeRegistry() {
+        return nativeRegistry;
+    }
+    
 }
 
 // End RolapSchema.java

@@ -436,7 +436,7 @@ public class RolapConnection extends ConnectionBase {
      */
     class NonEmptyResult extends ResultBase {
 
-        private final Result underlying;
+        final Result underlying;
         private final int axis;
         private final Map map;
         /** workspace. Synchronized access only. **/

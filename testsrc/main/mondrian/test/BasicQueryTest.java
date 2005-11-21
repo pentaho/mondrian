@@ -4185,8 +4185,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * This resulted in OutOfMemoryException when the BatchingCellReader did not
-     * know the values for the tupels that were used in filters.
+     * This resulted in {@link OutOfMemoryException} when the
+     * BatchingCellReader did not know the values for the tuples that
+     * were used in filters.
      */
     public void testFilteredCrossJoin() {
         CachePool.instance().flush();

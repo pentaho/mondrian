@@ -66,14 +66,27 @@ class CrossJoinFunDef extends FunDefBase {
     }
 
     public Object evaluate(Evaluator evaluator, Exp[] args) {
+        
+        SchemaReader schemaReader = evaluator.getSchemaReader();
+        NativeEvaluator nativeEvaluator = schemaReader.getNativeSetEvaluator(this, evaluator, args);
+        if (nativeEvaluator != null)
+            return nativeEvaluator.execute();
+        
+        int resultLimit = MondrianProperties.instance().ResultLimit.get();
+        
         List set0 = getArgAsList(evaluator, args, 0);
-        List set1 = getArgAsList(evaluator, args, 1);
+        if (set0.isEmpty())
+            return Collections.EMPTY_LIST;
 
-        // optimize nonempty(crossjoin(a,b)) ==
-        //  nonempty(crossjoin(nonempty(a),nonempty(b))
+        List set1 = getNonEmptyArgAsList(set0, evaluator, args, 1);
+        if (set1.isEmpty())
+            return Collections.EMPTY_LIST;
 
         long size = (long)set0.size() * (long)set1.size();
-        if (size > 1000 && evaluator.isNonEmpty()) {
+        if (resultLimit > 0 && size > resultLimit && evaluator.isNonEmpty()) {
+            // instead of overflow exception try to further
+            // optimize nonempty(crossjoin(a,b)) ==
+            // nonempty(crossjoin(nonempty(a),nonempty(b))
             set0 = nonEmptyList(evaluator, set0);
             set1 = nonEmptyList(evaluator, set1);
             size = (long)set0.size() * (long)set1.size();
@@ -84,11 +97,10 @@ class CrossJoinFunDef extends FunDefBase {
         }
 
         // throw an exeption, if the crossjoin gets too large
-        int limit = MondrianProperties.instance().ResultLimit.get();
-        if (limit > 0 && limit < size) {
+        if (resultLimit > 0 && resultLimit < size) {
             // result limit exceeded, throw an exception
             throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
-                            new Long(size), new Long(limit));
+                            new Long(size), new Long(resultLimit));
         }
 
         boolean neitherSideIsTuple = true;
@@ -145,6 +157,20 @@ class CrossJoinFunDef extends FunDefBase {
             }
         }
         return result;
+    }
+
+    /**
+     * if the first argument of crossjoin is a single member and we are in NON EMPTY mode,
+     * then we push the single member into the evaluator context. So the second argument
+     * is evaluated in the new context and possibly will return less members.
+     */
+    private List getNonEmptyArgAsList(List left, Evaluator evaluator, Exp[] args, int index) {
+        if (left.size() == 1 && evaluator.isNonEmpty()) {
+            Object obj = left.get(0);
+            if (obj instanceof Member)  // could be Member[]
+                evaluator = evaluator.push((Member)obj);
+        }
+        return getArgAsList(evaluator, args, index);
     }
 
     private static List getArgAsList(Evaluator evaluator, Exp[] args,

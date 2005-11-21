@@ -13,6 +13,11 @@ package mondrian.rolap;
 
 import java.util.List;
 
+import mondrian.rolap.TupleReader.MemberBuilder;
+import mondrian.rolap.sql.TupleConstraint;
+import mondrian.rolap.sql.MemberChildrenConstraint;
+import mondrian.olap.Evaluator;
+
 /**
  * A <code>DelegatingMemberReader</code> is a {@link MemberReader} which
  * redirects all method calls to an underlying {@link MemberReader}.
@@ -56,9 +61,10 @@ class DelegatingMemberReader implements MemberReader {
             boolean before,
             boolean self,
             boolean after,
-            boolean leaves) {
+            boolean leaves,
+            Evaluator context) {
         memberReader.getMemberDescendants(
-                member, result, level, before, self, after, leaves);
+                member, result, level, before, self, after, leaves, context);
     }
 
     public RolapHierarchy getHierarchy() {
@@ -92,6 +98,22 @@ class DelegatingMemberReader implements MemberReader {
     public RolapMember lookupMember(String[] uniqueNameParts,
                                     boolean failIfNotFound) {
         return memberReader.lookupMember(uniqueNameParts, failIfNotFound);
+    }
+
+    public void getMemberChildren(RolapMember member, List children, MemberChildrenConstraint constraint) {
+        memberReader.getMemberChildren(member, children, constraint);
+    }
+
+    public void getMemberChildren(List parentMembers, List children, MemberChildrenConstraint constraint) {
+        memberReader.getMemberChildren(parentMembers, children, constraint);
+    }
+
+    public List getMembersInLevel(RolapLevel level, int startOrdinal, int endOrdinal, TupleConstraint constraint) {
+        return memberReader.getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
+    }
+
+    public MemberBuilder getMemberBuilder() {
+        return memberReader.getMemberBuilder();
     }
 }
 

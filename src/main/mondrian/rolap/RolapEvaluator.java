@@ -61,7 +61,14 @@ class RolapEvaluator implements Evaluator {
             Member[] currentMembers) {
         this.root = root;
         this.parent = parent;
-        this.depth = parent == null ? 0 : parent.depth + 1;
+        if (parent == null) {
+            this.depth = 0;
+            this.nonEmpty = false;
+        } else {
+          this.depth = parent.depth + 1;
+          this.nonEmpty = parent.nonEmpty;
+        }
+        
         this.cellReader = cellReader;
         if (currentMembers == null) {
             this.currentMembers = new Member[root.cube.getDimensions().length];

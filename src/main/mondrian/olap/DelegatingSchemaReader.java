@@ -4,6 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // (C) Copyright 2003-2005 Julian Hyde
+// (C) Copyright 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -24,7 +25,7 @@ import java.util.List;
  * @since Feb 26, 2003
  * @version $Id$
  **/
-public class DelegatingSchemaReader implements SchemaReader {
+public abstract class DelegatingSchemaReader implements SchemaReader {
     protected final SchemaReader schemaReader;
 
     DelegatingSchemaReader(SchemaReader schemaReader) {
@@ -52,10 +53,16 @@ public class DelegatingSchemaReader implements SchemaReader {
     }
 
     public void getMemberDescendants(
-            Member member, List result, Level level,
-            boolean before, boolean self, boolean after, boolean leaves) {
+            Member member,
+            List result,
+            Level level,
+            boolean before,
+            boolean self,
+            boolean after,
+            boolean leaves,
+            Evaluator context) {
         schemaReader.getMemberDescendants(
-                member, result, level, before, self, after, leaves);
+                member, result, level, before, self, after, leaves, context);
     }
 
     public int getMemberDepth(Member member) {
@@ -147,6 +154,28 @@ public class DelegatingSchemaReader implements SchemaReader {
     public int getLevelCardinalityFromCache(Level level) {
         return schemaReader.getLevelCardinalityFromCache(level);
     }
+
+    public Member[] getLevelMembers(Level level, Evaluator context) {
+      return schemaReader.getLevelMembers(level, context);
+    }
+
+    public Member[] getMemberChildren(Member member, Evaluator context) {
+      return schemaReader.getMemberChildren(member, context);
+    }
+
+    public Member[] getMemberChildren(Member[] members, Evaluator context) {
+      return schemaReader.getMemberChildren(members, context);
+    }
+
+    public Member lookupMemberChildByName(Member member, String memberName) {
+        return schemaReader.lookupMemberChildByName(member, memberName);
+    }
+
+    public NativeEvaluator getNativeSetEvaluator(FunDef fun, Evaluator evaluator, Exp[] args) {
+        return schemaReader.getNativeSetEvaluator(fun, evaluator, args);
+    }
+
+
 }
 
 // End DelegatingSchemaReader.java

@@ -61,11 +61,27 @@ public interface SchemaReader {
     Member[] getMemberChildren(Member member);
 
     /**
+     * Returns direct children of <code>member</code>, optimized
+     * for NON EMPTY.
+     * <p>
+     * If <code>context == null</code> then
+     * there is no context and all members are returned - then
+     * its identical to {@link #getMemberChildren(Member)}.
+     * If <code>context</code> is not null, the resulting members
+     * <em>may</em> be restricted to those members that have a
+     * non empty row in the fact table for <code>context</code>.
+     * Wether or not optimization is possible depends
+     * on the SchemaReader implementation.
+     */
+    Member[] getMemberChildren(Member member, Evaluator context);
+
+    /**
      * Returns direct children of each element of <code>members</code>.
      * @pre members != null
      * @post return != null
      **/
     Member[] getMemberChildren(Member[] members);
+    Member[] getMemberChildren(Member[] members, Evaluator context);
 
     /**
      * Returns the parent of <code>member</code>.
@@ -86,10 +102,18 @@ public interface SchemaReader {
      * @param self Whether to output members at <code>level</code>
      * @param after Whether to output members below <code>level</code>
      * @param leaves Whether to output members which are leaves
+     * @param context Evaluation context; determines criteria by which the
+     *    result set should be filtered
      */
     void getMemberDescendants(
-            Member member, List result, Level level,
-            boolean before, boolean self, boolean after, boolean leaves);
+            Member member,
+            List result,
+            Level level,
+            boolean before,
+            boolean self,
+            boolean after,
+            boolean leaves,
+            Evaluator context);
 
     /**
      * Returns the depth of a member.
@@ -198,6 +222,7 @@ public interface SchemaReader {
      * Returns the members of <code>level</code>.
      */
     Member[] getLevelMembers(Level level);
+    Member[] getLevelMembers(Level level, Evaluator context);
 
     /**
      * Returns the accessible levels of a hierarchy.
@@ -242,6 +267,20 @@ public interface SchemaReader {
      * Returns the list of calculated members.
      */
     List getCalculatedMembers();
+
+    /**
+     * Finds a child of a member with a given name.
+     */
+    Member lookupMemberChildByName(Member parent, String childName);
+
+    /**
+     * returns the instance that can perform native crossjoin
+     * @param args
+     * @param evaluator
+     * @param fun
+     */
+    NativeEvaluator getNativeSetEvaluator(FunDef fun, Evaluator evaluator, Exp[] args);
+
 }
 
 // End SchemaReader.java

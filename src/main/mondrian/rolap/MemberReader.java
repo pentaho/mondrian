@@ -11,9 +11,13 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.Hierarchy;
-
 import java.util.List;
+
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Evaluator;
+import mondrian.rolap.TupleReader.MemberBuilder;
+import mondrian.rolap.sql.TupleConstraint;
+import mondrian.rolap.sql.MemberChildrenConstraint;
 
 /**
  * A <code>MemberReader</code> implements common operations to retrieve members
@@ -34,8 +38,9 @@ interface MemberReader extends MemberSource {
      * level (or before, if <code>n</code> is negative).
      * Returns {@link Hierarchy#getNullMember} if we run off the beginning or
      * end of the level.
-     **/
+     */
     RolapMember getLeadMember(RolapMember member, int n);
+
     /**
      * Returns all of the members in <code>level</code> whose ordinal lies
      * between <code>startOrdinal</code> and <code>endOrdinal</code>.
@@ -45,14 +50,19 @@ interface MemberReader extends MemberSource {
      * writes these members to the cache.
      *
      * @return {@link List} of {@link RolapMember}
-     **/
+     */
     List getMembersInLevel(RolapLevel level, int startOrdinal, int endOrdinal);
+
     /**
      * Writes all members between <code>startMember</code> and
      * <code>endMember</code> into <code>list</code>.
-     **/
-    void getMemberRange(RolapLevel level, RolapMember startMember,
-                        RolapMember endMember, List list);
+     */
+    void getMemberRange(
+            RolapLevel level,
+            RolapMember startMember,
+            RolapMember endMember,
+            List list);
+
     /**
      * Compares two members according to their order in a prefix ordered
      * traversal. If <code>siblingsAreEqual</code>, then two members with the
@@ -76,6 +86,8 @@ interface MemberReader extends MemberSource {
      * @param self Whether to output members at <code>level</code>
      * @param after Whether to output members below <code>level</code>
      * @param leaves Whether to output members which are leaves
+     * @param context Evaluation context; determines criteria by which the
+     *    result set should be filtered
      */
     void getMemberDescendants(
             RolapMember member,
@@ -84,7 +96,26 @@ interface MemberReader extends MemberSource {
             boolean before,
             boolean self,
             boolean after,
-            boolean leaves);
+            boolean leaves,
+            Evaluator context);
+
+    void getMemberChildren(
+            RolapMember member,
+            List children,
+            MemberChildrenConstraint constraint);
+
+    void getMemberChildren(
+            List parentMembers,
+            List children,
+            MemberChildrenConstraint constraint);
+
+    List getMembersInLevel(
+            RolapLevel level,
+            int startOrdinal,
+            int endOrdinal,
+            TupleConstraint constraint);
+
+    MemberBuilder getMemberBuilder();
 }
 
 // End MemberReader.java

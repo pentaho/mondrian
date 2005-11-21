@@ -11,18 +11,27 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
-import mondrian.resource.MondrianResource;
-
-import org.apache.log4j.Logger;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FilterWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
+
+import org.apache.log4j.Logger;
 
 /**
  * Utility methods for classes in the <code>mondrian.rolap</code> package.
@@ -184,6 +193,15 @@ public class RolapUtil {
             String sql,
             String component)
             throws SQLException {
+        return executeQuery(jdbcConnection, sql, -1, component);
+    }
+
+    public static ResultSet executeQuery(
+            Connection jdbcConnection,
+            String sql,
+            int maxRows,
+            String component)
+            throws SQLException {
         checkTracing();
         getQuerySemaphore().enter();
         Statement statement = null;
@@ -197,6 +215,9 @@ public class RolapUtil {
         try {
             final long start = System.currentTimeMillis();
             statement = jdbcConnection.createStatement();
+            if (maxRows > 0) {
+                statement.setMaxRows(maxRows);
+            }
             resultSet = statement.executeQuery(sql);
             final long end = System.currentTimeMillis();
             final long elapsed = end - start;
@@ -350,6 +371,8 @@ public class RolapUtil {
      * @param self Whether to output members at <code>level</code>
      * @param after Whether to output members below <code>level</code>
      * @param leaves Whether to output members which are leaves
+     * @param context Evaluation context; determines criteria by which the
+     *    result set should be filtered
      */
     static void getMemberDescendants(
             MemberReader memberReader,
@@ -359,7 +382,8 @@ public class RolapUtil {
             boolean before,
             boolean self,
             boolean after,
-            boolean leaves) {
+            boolean leaves,
+            Evaluator context) {
         // We find the descendants of a member by making breadth-first passes
         // down the hierarchy. Initially the list just contains the ancestor.
         // Then we find its children. We add those children to the result if

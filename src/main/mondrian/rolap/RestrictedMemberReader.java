@@ -11,14 +11,13 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.Access;
-import mondrian.olap.Role;
-import mondrian.olap.Util;
-
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+
+import mondrian.olap.*;
+import mondrian.rolap.sql.TupleConstraint;
+import mondrian.rolap.sql.MemberChildrenConstraint;
 
 /**
  * A <code>RestrictedMemberReader</code> reads only the members of a hierarchy
@@ -32,6 +31,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
 
     private final Role.HierarchyAccess hierarchyAccess;
     private final boolean ragged;
+    private final SqlConstraintFactory sqlConstraintFactory = SqlConstraintFactory.instance();
 
     /**
      * Creates a <code>RestrictedMemberReader</code>.
@@ -81,10 +81,20 @@ class RestrictedMemberReader extends DelegatingMemberReader {
     }
 
     public void getMemberChildren(RolapMember parentMember, List children) {
-        // todo: optimize if parentMember is beyond last level
+        MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+        getMemberChildren(parentMember, children, constraint);
+    }
+
+    public void getMemberChildren(RolapMember parentMember, List children,
+            MemberChildrenConstraint constraint) {
         List fullChildren = new ArrayList();
+        memberReader.getMemberChildren(parentMember, fullChildren, constraint);
+        processMemberChildren(fullChildren, children, constraint);
+    }
+
+    private void processMemberChildren(List fullChildren, List children, MemberChildrenConstraint constraint) {
+        // todo: optimize if parentMember is beyond last level
         List grandChildren = null;
-        memberReader.getMemberChildren(parentMember, fullChildren);
         for (int i = 0; i < fullChildren.size(); i++) {
             RolapMember member = (RolapMember) fullChildren.get(i);
             // If a child is hidden (due to raggedness) include its children.
@@ -101,7 +111,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
                     } else {
                         grandChildren.clear();
                     }
-                    memberReader.getMemberChildren(member, grandChildren);
+                    memberReader.getMemberChildren(member, grandChildren, constraint);
                     fullChildren.addAll(i, grandChildren);
                     // Step back to before the first child we just inserted,
                     // and go through the loop again.
@@ -147,15 +157,31 @@ class RestrictedMemberReader extends DelegatingMemberReader {
     }
 
     public void getMemberChildren(List parentMembers, List children) {
-        for (Iterator i = parentMembers.iterator(); i.hasNext();) {
-            RolapMember parentMember = (RolapMember) i.next();
-            getMemberChildren(parentMember, children);
-        }
+        MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+        getMemberChildren(parentMembers, children, constraint);
+    }
+
+    public synchronized void getMemberChildren(List parentMembers, List children, MemberChildrenConstraint constraint) {
+//        for (Iterator i = parentMembers.iterator(); i.hasNext();) {
+//            RolapMember parentMember = (RolapMember) i.next();
+//            getMemberChildren(parentMember, children, constraint);
+//        }
+        List fullChildren = new ArrayList();
+        super.getMemberChildren(parentMembers, fullChildren, constraint);
+        processMemberChildren(fullChildren, children, constraint);
     }
 
     public List getMembersInLevel(RolapLevel level,
                                   int startOrdinal,
                                   int endOrdinal) {
+        TupleConstraint constraint = sqlConstraintFactory.getLevelMembersConstraint(null);
+        return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
+    }
+
+    public List getMembersInLevel(RolapLevel level,
+                                int startOrdinal,
+                                int endOrdinal,
+                                TupleConstraint constraint) {
         if (hierarchyAccess != null) {
             final int depth = level.getDepth();
             if (hierarchyAccess.getTopLevel() != null &&
@@ -168,7 +194,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
             }
         }
         final List membersInLevel = super.getMembersInLevel(level,
-                startOrdinal, endOrdinal);
+                startOrdinal, endOrdinal, constraint);
         List filteredMembers = new ArrayList();
         filterMembers(membersInLevel, filteredMembers);
         return filteredMembers;
@@ -181,11 +207,13 @@ class RestrictedMemberReader extends DelegatingMemberReader {
             boolean before,
             boolean self,
             boolean after,
-            boolean leaves) {
+            boolean leaves,
+            Evaluator context) {
         // Utility method -- it calls our getMemberChildren(List,List), so
-        // we get restriction.
+        // access-control happens automatically.
         RolapUtil.getMemberDescendants(
-                this, member, level, result, before, self, after, leaves);
+                this, member, level, result, before, self, after, leaves,
+                context);
     }
 }
 

@@ -593,7 +593,7 @@ public class Util extends XOMUtil {
         // example, they could say '[USA]' instead of '[(All
         // Customers)].[USA]'.
         return (rootMembers.length == 1 && rootMembers[0].isAll())
-            ? lookupMemberChildByName(reader, rootMembers[0], memberName)
+            ? reader.lookupMemberChildByName(rootMembers[0], memberName)
             : null;
     }
 
@@ -612,21 +612,6 @@ public class Util extends XOMUtil {
     }
 
 
-    /**
-     * Finds a child of a member with a given name.
-     */
-    public static Member lookupMemberChildByName(
-            SchemaReader reader, Member member, String memberName) {
-        Member[] children = reader.getMemberChildren(member);
-        // TODO: Linear search may be a performance problem.
-        for (int i = 0; i < children.length; i++){
-            final Member child = children[i];
-            if (Util.equals(child.getName(), memberName)) {
-                return child;
-            }
-        }
-        return null;
-    }
 
     /**
      * Finds the zero based ordinal of a Member among its siblings.

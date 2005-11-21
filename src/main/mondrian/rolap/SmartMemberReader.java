@@ -4,6 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // (C) Copyright 2001-2005 Kana Software, Inc. and others.
+// Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,7 +12,6 @@
 */
 
 package mondrian.rolap;
-import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,14 +19,24 @@ import java.util.List;
 import java.util.Map;
 
 import mondrian.olap.Util;
+import mondrian.olap.Evaluator;
+import mondrian.rolap.TupleReader.MemberBuilder;
+import mondrian.rolap.cache.SmartCache;
+import mondrian.rolap.cache.SoftSmartCache;
+import mondrian.rolap.sql.TupleConstraint;
+import mondrian.rolap.sql.MemberChildrenConstraint;
 
 /**
  * <code>SmartMemberReader</code> implements {@link MemberReader} by keeping a
  * cache of members and their children. If a member is 'in cache', there is a
- * list of its children. Its children are not necessarily 'in cache'.
+ * list of its children. It also caches the members of levels.
  *
- * <p>Cache retention. We have not implemented a cache flushing policy. Members
- * are never removed from the cache.</p>
+ * <p>Synchronization: the MemberReader <code>source</code> must be called
+ * from synchronized(this) context - it does not synchronize itself (probably it should).</p>
+ *
+ * <p>Constraints: Member.Children and Level.Members may be constrained by a SqlConstraint
+ * object. In this case a subset of all members is returned. These subsets are cached too
+ * and the SqlConstraint is part of the cache key. This is used in NON EMPTY context.</p>
  *
  * <p>Uniqueness. We need to ensure that there is never more than one {@link
  * RolapMember} object representing the same member.</p>
@@ -36,19 +46,21 @@ import mondrian.olap.Util;
  * @version $Id$
  **/
 public class SmartMemberReader implements MemberReader, MemberCache {
+    private final SqlConstraintFactory sqlConstraintFactory = SqlConstraintFactory.instance();
+
+    /** access to <code>source</code> must be synchronized(this) */
     private final MemberReader source;
-    /** Maps {@link RolapMember} to a {@link ChildrenList} of its children, and
-     * records usages.
-     * Locking strategy is to lock the parent SmartMemberReader. **/
-    private final Map mapMemberToChildren;
-    /** Maps a {@link MemberKey} to a {@link SoftReference} to a
-     * {@link RolapMember}, and is used to ensure that there is at most one
-     * object representing a given member.
-     * The soft reference allows members to be forgotten.
-     * Locking strategy is to lock the parent SmartMemberReader. **/
-    private final Map mapKeyToMember;
+
+    /** maps a parent member to a list of its children */
+    final SmartMemberListCache mapMemberToChildren;
+
+    /** a cache for alle members to ensure uniqueness */
+    final SmartCache mapKeyToMember;
+
+    /** maps a level to its members */
+    final SmartMemberListCache mapLevelToMembers;
+
     private List rootMembers;
-    private final Map mapLevelToMembers;
 
     SmartMemberReader(MemberReader source) {
         this.source = source;
@@ -57,9 +69,9 @@ public class SmartMemberReader implements MemberReader, MemberCache {
                     "MemberSource (" + source + ", " + source.getClass() +
                     ") does not support cache-writeback");
         }
-        this.mapLevelToMembers = new HashMap();
-        this.mapKeyToMember = new HashMap();
-        this.mapMemberToChildren = new HashMap();
+        this.mapLevelToMembers = new SmartMemberListCache();
+        this.mapKeyToMember = new SoftSmartCache();
+        this.mapMemberToChildren = new SmartMemberListCache();
     }
 
     // implement MemberReader
@@ -82,23 +94,13 @@ public class SmartMemberReader implements MemberReader, MemberCache {
     // implement MemberCache
     // synchronization: Must synchronize, because uses mapKeyToMember
     public synchronized RolapMember getMember(Object key) {
-        SoftReference ref = (SoftReference) mapKeyToMember.get(key);
-        if (ref == null) {
-            return null;
-        }
-        final RolapMember rolapMember = (RolapMember) ref.get();
-        if (rolapMember == null) {
-            // Referenced member has been garbage collected; remove the hash
-            // table entry too.
-            mapKeyToMember.put(key,null);
-        }
-        return rolapMember;
+        return (RolapMember) mapKeyToMember.get(key);
     }
 
     // implement MemberCache
     // synchronization: Must synchronize, because modifies mapKeyToMember
     public synchronized Object putMember(Object key, RolapMember value) {
-        return mapKeyToMember.put(key, new SoftReference(value));
+        return mapKeyToMember.put(key, value);
     }
 
     // implement MemberReader
@@ -107,7 +109,8 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         RolapLevel[] levels = (RolapLevel[]) getHierarchy().getLevels();
         // todo: optimize by walking to children for members we know about
         for (int i = 0; i < levels.length; i++) {
-            getMembersInLevel(v, levels[i], 0, Integer.MAX_VALUE);
+            List membersInLevel = getMembersInLevel(levels[i], 0, Integer.MAX_VALUE);
+            v.addAll(membersInLevel);
         }
         return RolapUtil.toArray(v);
     }
@@ -126,17 +129,19 @@ public class SmartMemberReader implements MemberReader, MemberCache {
     public synchronized List getMembersInLevel(RolapLevel level,
                                                int startOrdinal,
                                                int endOrdinal) {
-        SoftReference ref = (SoftReference) mapLevelToMembers.get(level);
-        if (ref != null) {
-            List members = (List) ref.get();
-            if (members != null) {
-                return members;
-            }
-            mapLevelToMembers.remove(level);
-        }
-        List members = source.getMembersInLevel(level, startOrdinal, endOrdinal);
-        ref = new SoftReference(members);
-        mapLevelToMembers.put(level, ref);
+        TupleConstraint constraint = sqlConstraintFactory.getLevelMembersConstraint(null);
+        return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
+    }
+
+    public synchronized List getMembersInLevel(RolapLevel level,
+                                                int startOrdinal,
+                                                int endOrdinal,
+                                                TupleConstraint constraint) {
+        List members = (List) mapLevelToMembers.get(level, constraint);
+        if (members != null)
+            return members;
+        members = source.getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
+        mapLevelToMembers.put(level, constraint, members);
         return members;
     }
 
@@ -150,32 +155,34 @@ public class SmartMemberReader implements MemberReader, MemberCache {
     }
 
     public void getMemberChildren(RolapMember parentMember, List children) {
-        List parentMembers = new ArrayList();
-        parentMembers.add(parentMember);
-        getMemberChildren(parentMembers, children);
+        MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+        getMemberChildren(parentMember, children, constraint);
     }
 
-    public synchronized void getMemberChildren(List parentMembers,
-                                               List children) {
+    public void getMemberChildren(RolapMember parentMember, List children, MemberChildrenConstraint constraint) {
+        List parentMembers = new ArrayList();
+        parentMembers.add(parentMember);
+        getMemberChildren(parentMembers, children, constraint);
+    }
+
+    public synchronized void getMemberChildren(List parentMembers, List children) {
+        MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+        getMemberChildren(parentMembers, children, constraint);
+    }
+
+    public synchronized void getMemberChildren(List parentMembers, List children, MemberChildrenConstraint constraint) {
         List missed = new ArrayList();
         for (Iterator it = parentMembers.iterator(); it.hasNext();) {
             RolapMember parent = (RolapMember) it.next();
-            SoftReference ref = (SoftReference)
-                    mapMemberToChildren.get(parent);
-            if (ref == null) {
+            List list = (List) mapMemberToChildren.get(parent, constraint);
+            if (list == null) {
                 missed.add(parent);
             } else {
-                ChildrenList v = (ChildrenList) ref.get();
-                if (v == null) {
-                    mapMemberToChildren.remove(parent);
-                    missed.add(parent);
-                } else {
-                    children.addAll(v.list);
-                }
+                children.addAll(list);
             }
         }
         if (missed.size() > 0) {
-            readMemberChildren(missed, children);
+            readMemberChildren(missed, children, constraint);
         }
     }
 
@@ -214,8 +221,9 @@ public class SmartMemberReader implements MemberReader, MemberCache {
      *
      * @param result Children are written here, in order
      * @param members Members whose children to read
+     * @param constraint restricts the returned members if possible (optional optimization)
      **/
-    private void readMemberChildren(List members, List result) {
+    private void readMemberChildren(List members, List result, MemberChildrenConstraint constraint) {
         if (false) {
             // Pre-condition disabled. It makes sense to have the pre-
             // condition, because lists of parent members are typically
@@ -227,7 +235,7 @@ public class SmartMemberReader implements MemberReader, MemberCache {
             Util.assertPrecondition(isSorted(members), "isSorted(members)");
         }
         List children = new ArrayList();
-        source.getMemberChildren(members, children);
+        source.getMemberChildren(members, children, constraint);
         // Put them in a temporary hash table first. Register them later, when
         // we know their size (hence their 'cost' to the cache pool).
         Map tempMap = new HashMap();
@@ -250,8 +258,8 @@ public class SmartMemberReader implements MemberReader, MemberCache {
             for (Iterator keys = tempMap.keySet().iterator(); keys.hasNext();) {
                 RolapMember member = (RolapMember) keys.next();
                 List list = (ArrayList) tempMap.get(member);
-                if (!hasChildren(member)) {
-                    putChildren(member, list);
+                if (getChildrenFromCache(member, constraint) == null) {
+                    putChildren(member, constraint, list);
                 }
             }
         }
@@ -281,18 +289,22 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         return true;
     }
 
-    public synchronized boolean hasChildren(RolapMember member) {
-        return mapMemberToChildren.get(member) != null;
+    public synchronized List getChildrenFromCache(RolapMember member, MemberChildrenConstraint constraint) {
+        if (constraint == null)
+            constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+        return (List) mapMemberToChildren.get(member, constraint);
     }
 
-    public synchronized boolean hasLevelMembers(RolapLevel level) {
-        return mapLevelToMembers.get(level) != null;
+    public synchronized List getLevelMembersFromCache(RolapLevel level, TupleConstraint constraint) {
+        if (constraint == null)
+            constraint = sqlConstraintFactory.getLevelMembersConstraint(null);
+        return (List) mapLevelToMembers.get(level, constraint);
     }
 
-    public synchronized void putChildren(RolapMember member, List children) {
-        ChildrenList childrenList = new ChildrenList(member, children);
-        SoftReference ref = new SoftReference(childrenList);
-        mapMemberToChildren.put(member, ref);
+    public synchronized void putChildren(RolapMember member, MemberChildrenConstraint constraint, List children) {
+        if (constraint == null)
+            constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+        mapMemberToChildren.put(member, constraint, children);
     }
 
     // synchronization: Must synchronize, because uses mapMemberToChildren
@@ -354,80 +366,6 @@ public class SmartMemberReader implements MemberReader, MemberCache {
                 + endMember);
     }
 
-    /*
-    public void _getMemberRange(
-            RolapLevel level, RolapMember startMember, RolapMember endMember, List list) {
-        // todo: Use a more efficient algorithm, which makes less use of
-        // bounds.
-        Util.assertTrue(level == startMember.getLevel());
-        Util.assertTrue(level == endMember.getLevel());
-        // "m" is the lowest member which is an ancestor of both "startMember"
-        // and "endMember". If "startMember" == "endMember", then "m" is
-        // "startMember".
-        RolapMember m = endMember;
-        while (m != null) {
-            if (compare(m, startMember, false) <= 0) {
-                break;
-            }
-            m = (RolapMember) m.getParentMember();
-        }
-        _getDescendants(m, startMember.getLevel(), startMember, endMember, list);
-    }
-    */
-
-    /**
-     * Returns the descendants of <code>member</code> at <code>level</code>
-     * whose ordinal is between <code>startOrdinal</code> and
-     * <code>endOrdinal</code>.
-     **/
-    /*
-    private void _getDescendants(
-            RolapMember member, Level level, RolapMember startMember,
-            RolapMember endMember, List result) {
-        // todo: Make algortihm more efficient: Use binary search.
-        List members = new ArrayList();
-        members.add(member);
-        while (true) {
-            ArrayList children = new ArrayList();
-            getMemberChildren(members, children);
-            int count = children.size(),
-                    start,
-                    end;
-            if (startMember == null) {
-                start = 0;
-            } else {
-                start = count;
-                for (int i = 0; i < count; i++) {
-                    final RolapMember m = (RolapMember) children.get(i);
-                    if (compare(m, startMember, false) >= 0) {
-                        start = i;
-                        break;
-                    }
-                }
-            }
-            if (endMember == null) {
-                end = count;
-            } else {
-                end = count;
-                for (int i = start; i < count; i++) {
-                    final RolapMember m = (RolapMember) children.get(i);
-                    if (compare(m, endMember, false) >= 0) {
-                        end = i;
-                        break;
-                    }
-                }
-            }
-            List trimmedChildren = children.subList(start, end);
-            if (trimmedChildren.isEmpty() ||
-                    ((RolapMember) children.get(0)).getLevel() == level) {
-                result.addAll(trimmedChildren);
-                return;
-            }
-            members = trimmedChildren;
-        }
-    }
-    */
-
     public int getMemberCount() {
         return source.getMemberCount();
     }
@@ -487,9 +425,11 @@ public class SmartMemberReader implements MemberReader, MemberCache {
             boolean before,
             boolean self,
             boolean after,
-            boolean leaves) {
+            boolean leaves,
+            Evaluator context) {
         RolapUtil.getMemberDescendants(
-                this, member, level, result, before, self, after, leaves);
+                this, member, level, result, before, self, after, leaves,
+                context);
     }
 
     /**
@@ -571,6 +511,10 @@ public class SmartMemberReader implements MemberReader, MemberCache {
             }
             return this.siblings[this.position];
         }
+    }
+
+    public MemberBuilder getMemberBuilder() {
+        return source.getMemberBuilder();
     }
 }
 

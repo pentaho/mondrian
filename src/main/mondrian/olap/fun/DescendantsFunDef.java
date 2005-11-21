@@ -9,11 +9,11 @@
 */
 package mondrian.olap.fun;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import mondrian.olap.*;
 import mondrian.olap.type.NumericType;
-
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Definition of the <code>DESCENDANTS</code> MDX function.
@@ -42,6 +42,7 @@ class DescendantsFunDef extends FunDefBase {
         Member member = getMemberArg(evaluator, args, 0, true);
         List result = new ArrayList();
         final SchemaReader schemaReader = evaluator.getSchemaReader();
+        final Evaluator context = evaluator.isNonEmpty() ? evaluator : null;
         if (depthSpecified) {
             int depthLimit = getIntArg(evaluator, args, 1);
             if (leaves) {
@@ -53,14 +54,14 @@ class DescendantsFunDef extends FunDefBase {
             } else {
                 descendantsByDepth(
                         member, result, schemaReader,
-                        depthLimit, before, self, after);
+                        depthLimit, before, self, after, context);
             }
         } else {
             final Level level = args.length > 1
                 ?  getLevelArg(evaluator, args, 1, true)
                 : member.getLevel();
             schemaReader.getMemberDescendants(
-                    member, result, level, before, self, after, leaves);
+                    member, result, level, before, self, after, leaves, context);
         }
 
         hierarchize(result, false);
@@ -75,7 +76,8 @@ class DescendantsFunDef extends FunDefBase {
             final int depthLimitFinal,
             final boolean before,
             final boolean self,
-            final boolean after) {
+            final boolean after,
+            final Evaluator context) {
         Member[] children = {member};
         for (int depth = 0;; ++depth) {
             if (depth == depthLimitFinal) {
@@ -97,7 +99,7 @@ class DescendantsFunDef extends FunDefBase {
                 }
             }
 
-            children = schemaReader.getMemberChildren(children);
+            children = schemaReader.getMemberChildren(children, context);
             if (children.length == 0) {
                 break;
             }
@@ -136,6 +138,82 @@ class DescendantsFunDef extends FunDefBase {
             children = (Member[])
                     nextChildren.toArray(new Member[nextChildren.size()]);
         }
+    }
+
+    // Code from RolapUtil, comment from MemberReader moved here
+
+    /**
+     * Returns the direct and indirect children of a member.
+     *
+     * @param ancestor Member whose children to find
+     * @param result List to which to append results
+     * @param level Level relative to which to write results; must belong to
+     *   the same hierarchy as <code>member</code>
+     * @param before Whether to output members above <code>level</code>
+     * @param self Whether to output members at <code>level</code>
+     * @param after Whether to output members below <code>level</code>
+     */
+    private static void descendantsByLevel(
+            Member ancestor,
+                                     List result,
+                                     final SchemaReader schemaReader,
+                                     final Level level,
+                                     final boolean before,
+                                     final boolean self,
+                                     final boolean after,
+                                     final Evaluator context) {
+        // We find the descendants of a member by making breadth-first passes
+        // down the hierarchy. Initially the list just contains the ancestor.
+        // Then we find its children. We add those children to the result if
+        // they fulfill the before/self/after conditions relative to the level.
+        //
+        // We add a child to the "fertileMembers" list if some of its children
+        // might be in the result. Again, this depends upon the
+        // before/self/after conditions.
+        //
+        // Note that for some member readers -- notably the
+        // RestrictedMemberReader, when it is reading a ragged hierarchy -- the
+        // children of a member do not always belong to the same level. For
+        // example, the children of USA include WA (a state) and Washington
+        // (a city). This is why we repeat the before/self/after logic for
+        // each member.
+        final int levelDepth = level.getDepth();
+        Member[] members = {ancestor};
+        // Each pass, "fertileMembers" has the same contents as "members",
+        // except that we omit members whose children we are not interested
+        // in. We allocate it once, and clear it each pass, to save a little
+        // memory allocation.
+        List fertileMembers = new ArrayList();
+        do {
+            fertileMembers.clear();
+            for (int i = 0; i < members.length; i++) {
+                Member member = (Member) members[i];
+                final int currentDepth = member.getLevel().getDepth();
+                if (currentDepth == levelDepth) {
+                    if (self) {
+                        result.add(member);
+                    }
+                    if (after) {
+                        // we are interested in member's children
+                        fertileMembers.add(member);
+                    }
+                } else if (currentDepth < levelDepth) {
+                    if (before) {
+                        result.add(member);
+                    }
+                    fertileMembers.add(member);
+                } else {
+                    if (after) {
+                        result.add(member);
+                        fertileMembers.add(member);
+                    }
+                }
+            }
+            members = new Member[fertileMembers.size()];
+            members = (Member[])fertileMembers.toArray(members);
+            members = schemaReader.getMemberChildren(members, context);
+        }
+        while (members.length > 0);
     }
 
     /**

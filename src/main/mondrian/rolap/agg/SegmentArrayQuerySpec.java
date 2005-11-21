@@ -54,6 +54,10 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         return segments[0].aggregation.getColumns();
     }
 
+    /** 
+     * SqlQuery relies on "c" and index. All this should go into SqlQuery!
+     * @see mondrian.rolap.sql.SqlQuery#addOrderBy(String) 
+     */
     public String getColumnAlias(final int i) {
         return "c" + Integer.toString(i);
     }
