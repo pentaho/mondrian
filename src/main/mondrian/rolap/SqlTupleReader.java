@@ -21,9 +21,9 @@ import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.sql.TupleConstraint;
 
 /**
  * reads the members of a single level (level.members) or of multiple levels (crossjoin).
@@ -359,11 +359,8 @@ public class SqlTupleReader implements TupleReader {
      *
      * <li><code>"init", "bar"</code> are member properties.</li>
      * </ul>
-     *
-     * @pre !level.isAll()
      */
     void addLevelMemberSql(SqlQuery sqlQuery, RolapLevel level) {
-        Util.assertPrecondition(!level.isAll());
         RolapHierarchy hierarchy = (RolapHierarchy) level.getHierarchy();
 
         RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();

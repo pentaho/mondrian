@@ -46,6 +46,29 @@ public class NonEmptyTest extends FoodMartTestCase {
     private static Logger logger = Logger.getLogger(NonEmptyTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
 
+    /**
+     * getMembersInLevel where Level = (All)
+     */
+    public void testAllLevelMembers() {
+       checkNative(14, 14, "select {[Measures].[Store Sales]} ON COLUMNS, "
+        + "NON EMPTY Crossjoin([Product].[(All)].Members, [Promotion Media].[All Media].Children) ON ROWS "
+        + "from [Sales]");
+        
+    }
+
+    /** 
+     * enum sets {} containing ALL 
+     */
+    public void testCjDescendantsEnumAllOnly() {
+        checkNative(9, 9, 
+                  "select {[Measures].[Unit Sales]} ON COLUMNS, " 
+                + "NON EMPTY Crossjoin("
+                + "  Descendants([Customers].[All Customers].[USA], [Customers].[City]), "
+                + "  {[Product].[All Products]}) ON ROWS " 
+                + "from [Sales] "
+                + "where ([Promotions].[All Promotions].[Bag Stuffers])");
+    }
+    
     /** 
      * checks that crossjoin returns a modifiable copy from cache 
      * because its modified during sort
@@ -156,16 +179,9 @@ public class NonEmptyTest extends FoodMartTestCase {
                         + "from [Sales] ");
     }
 
-    /** Enumerated sets containing ALL will not be computed natively */
-    public void testCjDescendantsEnumAllOnly() {
-        checkNotNative(9, "select {[Measures].[Unit Sales]} ON COLUMNS, " + "NON EMPTY Crossjoin("
-                + "  Descendants([Customers].[All Customers].[USA], [Customers].[City]), "
-                + "  {[Product].[All Products]}) ON ROWS " + "from [Sales] "
-                + "where ([Promotions].[All Promotions].[Bag Stuffers])");
-    }
-
     /** 
-     * Enumerated sets containing ALL will not be computed natively 
+     * enum sets {} containing members from different levels can not be computed
+     * natively currently. 
      */
     public void testCjDescendantsEnumAll() {
         checkNotNative(
@@ -174,7 +190,8 @@ public class NonEmptyTest extends FoodMartTestCase {
                         + "NON EMPTY Crossjoin("
                         + "  Descendants([Customers].[All Customers].[USA], [Customers].[City]), "
                         + "  {[Product].[All Products], [Product].[All Products].[Drink].[Dairy]}) ON ROWS "
-                        + "from [Sales] " + "where ([Promotions].[All Promotions].[Bag Stuffers])");
+                        + "from [Sales] " 
+                        + "where ([Promotions].[All Promotions].[Bag Stuffers])");
     }
 
     public void testCjDescendantsEnum() {

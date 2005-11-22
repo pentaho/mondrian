@@ -275,8 +275,6 @@ public abstract class RolapNativeSet extends RolapNative {
             }
             if (!isSimpleLevel(level))
                 return null;
-            if (level.isAll())
-                return null;
             RolapMember[] members = new RolapMember[args.length];
             System.arraycopy(args, 0, members, 0, args.length);
             return new EnumCrossJoinArg(level, members, strict);
