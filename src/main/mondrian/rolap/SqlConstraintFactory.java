@@ -11,8 +11,9 @@ package mondrian.rolap;
 import java.util.List;
 
 import mondrian.olap.Evaluator;
-import mondrian.rolap.sql.TupleConstraint;
+import mondrian.olap.MondrianProperties;
 import mondrian.rolap.sql.MemberChildrenConstraint;
+import mondrian.rolap.sql.TupleConstraint;
 
 /**
  * creates the right constraint for common tasks.
@@ -22,6 +23,8 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
  */
 public class SqlConstraintFactory {
 
+    boolean enabled = MondrianProperties.instance().EnableNativeNonEmpty.get();
+    
     private static final SqlConstraintFactory instance = new SqlConstraintFactory();
 
     /** singleton */
@@ -33,13 +36,13 @@ public class SqlConstraintFactory {
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(Evaluator context) {
-        if (context == null)
+        if (!enabled || context == null)
             return DefaultMemberChildrenConstraint.instance();
         return new SqlContextConstraint((RolapEvaluator) context, false);
     }
 
     public TupleConstraint getLevelMembersConstraint(Evaluator context) {
-        if (context == null)
+        if (!enabled || context == null)
             return DefaultTupleConstraint.instance();
         return new SqlContextConstraint((RolapEvaluator) context, false);
     }
@@ -47,7 +50,7 @@ public class SqlConstraintFactory {
     public MemberChildrenConstraint getChildByNameConstraint(RolapMember parent,
             String childName) {
         // ragged hierarchies span multiple levels, so SQL WHERE does not work there
-        if (parent.getRolapHierarchy().isRagged())
+        if (!enabled || parent.getRolapHierarchy().isRagged())
             return DefaultMemberChildrenConstraint.instance();
         return new ChildByNameConstraint(childName);
     }

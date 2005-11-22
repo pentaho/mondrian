@@ -46,6 +46,19 @@ public class NonEmptyTest extends FoodMartTestCase {
     private static Logger logger = Logger.getLogger(NonEmptyTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
 
+    /** check that top count is executed native unless disabled */
+    public void testNativeTopCount() {
+        if (!MondrianProperties.instance().EnableNativeTopCount.get())
+            return;
+        checkNative(3, 3, "select {[Measures].[Store Sales]} on columns,"
+                + "  NON EMPTY TopCount(" 
+                + "        CrossJoin([Customers].[All Customers].[USA].children, [Promotions].[Promotion Name].Members), "
+                + "        10, [Measures].[Store Sales]) ON ROWS"
+                + " from [Sales] where ("
+                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+                + "  [Time].[1997].[Q1].[1])");
+    }
+
     public void testMeasureAndAggregateInSlicer() {
         String result = "Axis #0:"
                 + nl
@@ -119,7 +132,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                 + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
                 + "  [Time].[1997].[Q1].[1])");
     }
-
+    
     /** SQL does not make sense because alle members are known */
     public void testCjEnumEnum() {
         checkNotNative(
@@ -600,48 +613,6 @@ public class NonEmptyTest extends FoodMartTestCase {
         return schemaReader.getSchema().getNativeRegistry();
     }
 
-    class TestListener implements Listener {
-        boolean foundEvaluator;
-        boolean foundInCache;
-        boolean excecuteSql;
-
-        boolean isExcecuteSql() {
-            return excecuteSql;
-        }
-
-        void setExcecuteSql(boolean excecuteSql) {
-            this.excecuteSql = excecuteSql;
-        }
-
-        boolean isFoundEvaluator() {
-            return foundEvaluator;
-        }
-
-        void setFoundEvaluator(boolean foundEvaluator) {
-            this.foundEvaluator = foundEvaluator;
-        }
-
-        boolean isFoundInCache() {
-            return foundInCache;
-        }
-
-        void setFoundInCache(boolean foundInCache) {
-            this.foundInCache = foundInCache;
-        }
-
-        public void foundEvaluator(NativeEvent e) {
-            this.foundEvaluator = true;
-        }
-
-        public void foundInCache(TupleEvent e) {
-            this.foundInCache = true;
-        }
-
-        public void excutingSql(TupleEvent e) {
-            this.excecuteSql = true;
-        }
-
-    }
 
     /**
      * runs a query twice, with native crossjoin optimization enabled and
@@ -682,6 +653,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             reg = getRegistry(con);
             listener.setFoundEvaluator(false);
             reg.setListener(listener);
+            // disable RolapNativeSet
             reg.setEnabled(false);
             Result r2 = executeQuery(mdx, con);
             String s2 = toString(r2);
@@ -739,5 +711,58 @@ public class NonEmptyTest extends FoodMartTestCase {
         while (res instanceof NonEmptyResult)
             res = ((NonEmptyResult) res).underlying;
         return (RolapEvaluator) ((RolapResult) res).getEvaluator(pos);
+    }
+    
+    /**
+     * gets notified
+     * <ul>
+     *   <li>when a matching native evaluator was found
+     *   <li>when SQL is executed 
+     *   <li>when result is found in the cache
+     * </ul>
+     * @author av
+     * @since Nov 22, 2005
+     */
+    class TestListener implements Listener {
+        boolean foundEvaluator;
+        boolean foundInCache;
+        boolean excecuteSql;
+
+        boolean isExcecuteSql() {
+            return excecuteSql;
+        }
+
+        void setExcecuteSql(boolean excecuteSql) {
+            this.excecuteSql = excecuteSql;
+        }
+
+        boolean isFoundEvaluator() {
+            return foundEvaluator;
+        }
+
+        void setFoundEvaluator(boolean foundEvaluator) {
+            this.foundEvaluator = foundEvaluator;
+        }
+
+        boolean isFoundInCache() {
+            return foundInCache;
+        }
+
+        void setFoundInCache(boolean foundInCache) {
+            this.foundInCache = foundInCache;
+        }
+
+        public void foundEvaluator(NativeEvent e) {
+            this.foundEvaluator = true;
+        }
+
+        public void foundInCache(TupleEvent e) {
+            this.foundInCache = true;
+        }
+
+        public void excutingSql(TupleEvent e) {
+            this.excecuteSql = true;
+        }
+
     }
 }

@@ -25,6 +25,7 @@ public class RolapNativeRegistry extends RolapNative {
     private List natives = new ArrayList();
 
     public RolapNativeRegistry() {
+        super.setEnabled(true);
         register(new RolapNativeCrossJoin());
         register(new RolapNativeTopCount());
     }

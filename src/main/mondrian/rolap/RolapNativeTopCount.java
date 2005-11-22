@@ -38,11 +38,11 @@ public class RolapNativeTopCount extends RolapNativeSet {
     }
 
     class TopCountConstraint extends SetConstraint {
-        String selectExpr;
+        String orderByExpr;
 
-        public TopCountConstraint(CrossJoinArg[] args, RolapEvaluator evaluator, String selectExpr) {
+        public TopCountConstraint(CrossJoinArg[] args, RolapEvaluator evaluator, String orderByExpr) {
             super(args, evaluator, true);
-            this.selectExpr = selectExpr;
+            this.orderByExpr = orderByExpr;
         }
 
         /**
@@ -54,16 +54,18 @@ public class RolapNativeTopCount extends RolapNativeSet {
         }
 
         public void addConstraint(SqlQuery sqlQuery) {
+            if (orderByExpr != null) {
+                String alias = sqlQuery.nextColumnAlias();
+                sqlQuery.addSelect(orderByExpr, alias);
+                sqlQuery.addOrderBy(alias, ascending, true);
+            }
             super.addConstraint(sqlQuery);
-            String alias = sqlQuery.nextColumnAlias();
-            sqlQuery.addSelect(selectExpr, alias);
-            sqlQuery.addOrderBy(alias, ascending);
         }
 
         public Object getCacheKey() {
             List key = new ArrayList();
             key.add(super.getCacheKey());
-            key.add(selectExpr);
+            key.add(orderByExpr);
             return key;
         }
     }
@@ -103,16 +105,19 @@ public class RolapNativeTopCount extends RolapNativeSet {
         RolapSchemaReader schemaReader = (RolapSchemaReader) evaluator.getSchemaReader();
         DataSource ds = schemaReader.getDataSource();
         try {
+
+            // generate the ORDER BY Clause
             RolapNativeSql sql = new RolapNativeSql(SqlTupleReader.newQuery(ds.getConnection(),
                     "NativeTopCount"));
-            Exp exp;
-            if (args.length == 3)
-                exp = args[2];
-            else
-                exp = evaluator.getMembers()[0];
-            String orderByExpr = sql.generateTopCountOrderBy(exp);
+            String orderByExpr = null;
+            if (args.length == 3) {
+                orderByExpr = sql.generateTopCountOrderBy(args[2]);
+                if (orderByExpr == null)
+                    return null;
+            }
 
             LOGGER.info("using native topcount");
+            System.out.println("** NATIVE TOPCOUNT **");
 
             TupleConstraint constraint = new TopCountConstraint(cargs, evaluator, orderByExpr);
             SetEvaluator sev = new SetEvaluator(cargs, schemaReader, constraint);

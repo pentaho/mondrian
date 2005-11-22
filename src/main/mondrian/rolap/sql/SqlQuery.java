@@ -403,12 +403,22 @@ public class SqlQuery
     	}
     }
 
-    public void addOrderBy(String alias, boolean ascending) {
+    /**
+     * creates an ORDER BY
+     * @param alias the alias name to order by. This must appear somewhere on the select list
+     * @param ascending sort direction
+     * @param prepend true = prepend to the current list of order by elements.
+     */
+    public void addOrderBy(String alias, boolean ascending, boolean prepend) {
         alias = dialect.quoteIdentifier(alias);
         if (ascending)
-            orderBy.add(alias + " ASC");
+            alias = alias + " ASC";
         else
-            orderBy.add(alias + " DESC");
+            alias = alias + " DESC";
+        if (prepend)
+            orderBy.add(0, alias);
+        else
+            orderBy.add(alias);
     }
     
     public String toString()

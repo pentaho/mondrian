@@ -41,6 +41,8 @@ public class RolapNativeSql {
         RolapStoredMeasure measure = checkMeasure(exp);
         if (measure == null)
             return null;
+        if (measure.isCalculated())
+            return null;
         String exprInner = measure.getMondrianDefExpression().getExpression(sqlQuery);
         return measure.getAggregator().getExpression(exprInner);
     }

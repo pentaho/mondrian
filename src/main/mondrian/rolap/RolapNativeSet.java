@@ -10,6 +10,7 @@ package mondrian.rolap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import mondrian.olap.Exp;
@@ -137,9 +138,11 @@ public abstract class RolapNativeSet extends RolapNative {
                 listener.excutingSql(e);
             }
             result = tr.readTuples(schemaReader.getDataSource());
+            result = Collections.unmodifiableList(result);
             cache.put(key, result);
             return result;
         }
+
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {
             RolapLevel level = arg.getLevel();
@@ -471,15 +474,7 @@ public abstract class RolapNativeSet extends RolapNative {
         return true;
     }
 
-    protected SmartCache getCache() {
-        return cache;
-    }
-
-    /** for testing */
-    void setCache(SmartCache cache) {
-        this.cache = cache;
-    }
-
+    /** disable garbage collection for test */
     void useHardCache(boolean hard) {
         if (hard)
             cache = new HardSmartCache();
