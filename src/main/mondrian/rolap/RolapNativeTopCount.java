@@ -8,6 +8,7 @@
  */
 package mondrian.rolap;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +67,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
             List key = new ArrayList();
             key.add(super.getCacheKey());
             key.add(orderByExpr);
+            key.add(Boolean.valueOf(ascending));
             return key;
         }
     }
@@ -104,11 +106,13 @@ public class RolapNativeTopCount extends RolapNativeSet {
         // extract "order by" expression
         RolapSchemaReader schemaReader = (RolapSchemaReader) evaluator.getSchemaReader();
         DataSource ds = schemaReader.getDataSource();
+        Connection con = null;
         try {
+            con = ds.getConnection();
 
             // generate the ORDER BY Clause
-            RolapNativeSql sql = new RolapNativeSql(SqlTupleReader.newQuery(ds.getConnection(),
-                    "NativeTopCount"));
+            SqlQuery sqlQuery = SqlTupleReader.newQuery(con, "NativeTopCount");
+            RolapNativeSql sql = new RolapNativeSql(sqlQuery);
             String orderByExpr = null;
             if (args.length == 3) {
                 orderByExpr = sql.generateTopCountOrderBy(args[2]);
@@ -117,7 +121,6 @@ public class RolapNativeTopCount extends RolapNativeSet {
             }
 
             LOGGER.info("using native topcount");
-            System.out.println("** NATIVE TOPCOUNT **");
 
             TupleConstraint constraint = new TopCountConstraint(cargs, evaluator, orderByExpr);
             SetEvaluator sev = new SetEvaluator(cargs, schemaReader, constraint);
@@ -125,6 +128,14 @@ public class RolapNativeTopCount extends RolapNativeSet {
             return sev;
         } catch (SQLException e) {
             throw Util.newInternal(e, "RolapNativeTopCount");
+        } finally {
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException e) {
+                    LOGGER.error(null, e);
+                }
+            }
         }
     }
 
