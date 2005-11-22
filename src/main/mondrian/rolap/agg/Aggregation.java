@@ -68,7 +68,10 @@ import java.util.*;
  * @version $Id$
  **/
 public class Aggregation {
-    private static final int MAXLEN_ORACLE = 1000;
+    private static final int MAX_CONSTRAINTS_ORACLE = 1000;
+    private static final int MAX_CONSTRAINTS_MSSQL = 10000;
+    private static final int MAX_CONSTRAINTS_DEFAULT = 10000;
+    private int maxConstraints;
 
     private final RolapStar star;
 
@@ -79,7 +82,6 @@ public class Aggregation {
      * Access must be inside of synchronized methods.
      **/
     private final List segmentRefs;
-    private final boolean oracle;
 
     /**
      * This is set in the load method and is used during
@@ -96,7 +98,13 @@ public class Aggregation {
         this.bitKey = bitKey;
         this.segmentRefs = new ArrayList();
 
-        this.oracle = star.getSqlQueryDialect().isOracle();
+        SqlQuery.Dialect dialect = star.getSqlQueryDialect();
+        if (dialect.isOracle())
+            maxConstraints = MAX_CONSTRAINTS_ORACLE;
+        else if (dialect.isMSSQL())
+            maxConstraints = MAX_CONSTRAINTS_MSSQL;
+        else
+            maxConstraints = MAX_CONSTRAINTS_DEFAULT;
     }
 
     /**
@@ -178,85 +186,84 @@ public class Aggregation {
             // a set of constraints with only one entry will not be optimized away
             if (newConstraintses[i] == null || newConstraintses[i].length < 2) {
                 bloats[i] = 0.0;
-            } else {
-                // Oracle can only handle up to 1000 elements inside an IN(..) clause
-                if (oracle && newConstraintses[i].length > MAXLEN_ORACLE) {
-                    bloats[i] = 1.0; // will be optimized away
-                    continue;
-                }
-                // more than one - check for children of same parent
-                Member parent = null;
-                Level level = null;
-                for (int j = 0; j < newConstraintses[i].length; j++) {
-                    if (!(newConstraintses[i][j].isMember())) {
-                        // should not occur - but
-                        //  we compute bloat by #constraints / column cardinality
-                        parent = null;
-                        level = null;
-                        bloats[i] =  constraintLength / columns[i].getCardinality();
-                        break;
+            } else if (newConstraintses[i].length > maxConstraints) {
+                // DBs can handle only a limited number of elements in WHERE IN (...)
+                // so hopefully there are other constraints that will limit the result
+                bloats[i] = 1.0; // will be optimized away
+                continue;
+            }
+            // more than one - check for children of same parent
+            Member parent = null;
+            Level level = null;
+            for (int j = 0; j < newConstraintses[i].length; j++) {
+                if (!(newConstraintses[i][j].isMember())) {
+                    // should not occur - but
+                    //  we compute bloat by #constraints / column cardinality
+                    parent = null;
+                    level = null;
+                    bloats[i] =  constraintLength / columns[i].getCardinality();
+                    break;
+                } else {
+                    Member m = newConstraintses[i][j].getMember();
+                    if (j == 0) {
+                        parent = m.getParentMember();
+                        level = m.getLevel();
                     } else {
-                        Member m = newConstraintses[i][j].getMember();
-                        if (j == 0) {
-                            parent = m.getParentMember();
-                            level = m.getLevel();
-                        } else {
-                            if (parent != null
-                                    && !parent.equals(m.getParentMember())) {
-                                parent = null; // no common parent
-                            }
-                            if (level != null
-                                    && !level.equals(m.getLevel())) {
-                                // should never occur, constraintses are of same level
-                                level = null;
-                            }
+                        if (parent != null
+                                && !parent.equals(m.getParentMember())) {
+                            parent = null; // no common parent
+                        }
+                        if (level != null
+                                && !level.equals(m.getLevel())) {
+                            // should never occur, constraintses are of same level
+                            level = null;
                         }
                     }
                 }
-                boolean done = false;
-                if (parent != null) {
-                    // common parent exists
-                    if (parent.isAll() || potentialParents.contains(parent) ) {
-                        // common parent is there as constraint
-                        //  if the children are complete, this constraint set is
-                        //  unneccessary try to get the children directly from
-                        //  cache for the drilldown case, the children will be
-                        //  in the cache
-                        // - if not, forget this optimization.
-                        int nChildren = -1;
-                        SchemaReader scr = star.getSchema().getSchemaReader();
-                        nChildren = scr.getChildrenCountFromCache(parent);
+            }
+            boolean done = false;
+            if (parent != null) {
+                // common parent exists
+                if (parent.isAll() || potentialParents.contains(parent) ) {
+                    // common parent is there as constraint
+                    //  if the children are complete, this constraint set is
+                    //  unneccessary try to get the children directly from
+                    //  cache for the drilldown case, the children will be
+                    //  in the cache
+                    // - if not, forget this optimization.
+                    int nChildren = -1;
+                    SchemaReader scr = star.getSchema().getSchemaReader();
+                    nChildren = scr.getChildrenCountFromCache(parent);
 
-                        if (nChildren == -1) {
-                            // nothing gotten from cache
-                            if (!parent.isAll()) {
-                                // parent is in constraints
-                                // no information about children cardinality
-                                //  constraints must not be optimized away
-                                bloats[i] = 0.0;
-                                done = true;
-                            }
-                        } else {
-                            bloats[i] = constraintLength / nChildren;
+                    if (nChildren == -1) {
+                        // nothing gotten from cache
+                        if (!parent.isAll()) {
+                            // parent is in constraints
+                            // no information about children cardinality
+                            //  constraints must not be optimized away
+                            bloats[i] = 0.0;
                             done = true;
                         }
-                    }
-                }
-
-                if (!done && level != null) {
-                    // if the level members are cached, we do not need "count *"
-                    int nMembers = -1;
-                    SchemaReader scr = star.getSchema().getSchemaReader();
-                    nMembers = scr.getLevelCardinalityFromCache(level);
-                    if ( nMembers > 0 ) {
-                        bloats[i] = constraintLength / nMembers;
+                    } else {
+                        bloats[i] = constraintLength / nChildren;
                         done = true;
                     }
                 }
+            }
 
-                if (!done) {
-                    bloats[i] = constraintLength / columns[i].getCardinality();
+            if (!done && level != null) {
+                // if the level members are cached, we do not need "count *"
+                int nMembers = -1;
+                SchemaReader scr = star.getSchema().getSchemaReader();
+                nMembers = scr.getLevelCardinalityFromCache(level);
+                if ( nMembers > 0 ) {
+                    bloats[i] = constraintLength / nMembers;
+                    done = true;
                 }
+            }
+
+            if (!done) {
+                bloats[i] = constraintLength / columns[i].getCardinality();
             }
         } // for  i < newConstraintses.length
 
@@ -344,11 +351,12 @@ public class Aggregation {
                     return o;
                 }
             } else {
-                if (segment.wouldContain(keys)) {
-                    if (pinSet != null) {
-                        pinSet.add(segment);
-                    }
-                    return null;
+                // avoid to call wouldContain - its slow
+                if (pinSet != null 
+                        && !pinSet.contains(segment) 
+                        && segment.wouldContain(keys)) 
+                {
+                    pinSet.add(segment);
                 }
             }
         }
@@ -376,7 +384,6 @@ public class Aggregation {
     // -- classes -------------------------------------------------------------
 
     static class Axis {
-        private final RolapStar.Column column;
 
         // null if no constraint
         private final ColumnConstraint[] constraints;
@@ -386,12 +393,18 @@ public class Aggregation {
 
         // actual keys retrieved
         private Object[] keys;
+        
+        private Set valueSet;
 
         Axis(RolapStar.Column column,
             ColumnConstraint[] constraints) {
-            this.column = column;
             this.constraints = constraints;
             this.mapKeyToOffset = new HashMap();
+            if (constraints != null) {
+                valueSet = new HashSet();
+                for (int i = 0; i < constraints.length; i++)
+                    valueSet.add(constraints[i].getValue());
+            }
         }
 
         ColumnConstraint[] getConstraints() {
@@ -430,12 +443,7 @@ public class Aggregation {
             if (constraints == null) {
                 return true;
             }
-            for (int i = 0; i < constraints.length; i++) {
-                if (constraints[i].getValue().equals(key)) {
-                    return true;
-                }
-            }
-            return false;
+            return valueSet.contains(key);
         }
 
         double getBytes() {
