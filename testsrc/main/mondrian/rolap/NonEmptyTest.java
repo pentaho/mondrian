@@ -46,6 +46,20 @@ public class NonEmptyTest extends FoodMartTestCase {
     private static Logger logger = Logger.getLogger(NonEmptyTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
 
+    /** 
+     * checks that crossjoin returns a modifiable copy from cache 
+     * because its modified during sort
+     */
+    public void testResultIsModifyableCopy() {
+        checkNative(3, 3, "select {[Measures].[Store Sales]} on columns,"
+                + "  NON EMPTY Order(" 
+                + "        CrossJoin([Customers].[All Customers].[USA].children, [Promotions].[Promotion Name].Members), "
+                + "        [Measures].[Store Sales]) ON ROWS"
+                + " from [Sales] where ("
+                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+                + "  [Time].[1997].[Q1].[1])");
+    }
+    
     /** check that top count is executed native unless disabled */
     public void testNativeTopCount() {
         if (!MondrianProperties.instance().EnableNativeTopCount.get())
@@ -53,7 +67,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         checkNative(3, 3, "select {[Measures].[Store Sales]} on columns,"
                 + "  NON EMPTY TopCount(" 
                 + "        CrossJoin([Customers].[All Customers].[USA].children, [Promotions].[Promotion Name].Members), "
-                + "        10, [Measures].[Store Sales]) ON ROWS"
+                + "        3, [Measures].[Store Sales]) ON ROWS"
                 + " from [Sales] where ("
                 + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
                 + "  [Time].[1997].[Q1].[1])");

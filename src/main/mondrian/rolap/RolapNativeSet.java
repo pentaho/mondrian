@@ -10,7 +10,6 @@ package mondrian.rolap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import mondrian.olap.Exp;
@@ -129,7 +128,7 @@ public abstract class RolapNativeSet extends RolapNative {
                     TupleEvent e = new TupleEvent(this, tr);
                     listener.foundInCache(e);
                 }
-                return result;
+                return copy(result);
             }
 
             // execute sql and store the result
@@ -138,11 +137,19 @@ public abstract class RolapNativeSet extends RolapNative {
                 listener.excutingSql(e);
             }
             result = tr.readTuples(schemaReader.getDataSource());
-            result = Collections.unmodifiableList(result);
             cache.put(key, result);
-            return result;
+            return copy(result);
         }
 
+
+        /**
+         * returns a copy of the result because its modified
+         */
+        private List copy(List list) {
+            List copy = new ArrayList();
+            copy.addAll(list);
+            return copy;
+        }
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {
             RolapLevel level = arg.getLevel();
