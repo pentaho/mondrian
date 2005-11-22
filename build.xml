@@ -727,7 +727,7 @@ You should set scp.user, scp.password and scp.path in build.properties">
        </copy>
     </target>
 
-  <target name="war" depends="copy-jars,jar" description="
+  <target name="war" depends="copy-jars,jar,compile.tests" description="
 Creates mondrian.war based upon jpivot.war.
 Assumes that mondrian.jar exists (use 'jar' target)">
     <filter filtersfile="mondrian.properties"/>
@@ -751,6 +751,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <lib dir="${lib.dir}" includes="${name}.jar"/>
       <lib dir="${lib.dir}" includes="eigenbase-*.jar"/>
       <lib dir="${lib.dir}" includes="log4j-1.2.9.jar"/>
+      <classes dir="${testclasses.dir}" includes="mondrian/xmla/XmlaUtil*.*"/>
     </war>
   </target>
 
