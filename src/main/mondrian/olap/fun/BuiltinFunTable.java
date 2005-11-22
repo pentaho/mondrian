@@ -1274,6 +1274,10 @@ public class BuiltinFunTable extends FunTableImpl {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
+                        SchemaReader schemaReader = evaluator.getSchemaReader();
+                        NativeEvaluator nativeEvaluator = schemaReader.getNativeSetEvaluator(this, evaluator, args);
+                        if (nativeEvaluator != null)
+                            return nativeEvaluator.execute();
                         List list = (List) getArg(evaluator, args, 0);
                         int n = getIntArg(evaluator, args, 1);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 2, null);
