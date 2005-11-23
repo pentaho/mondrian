@@ -51,7 +51,7 @@ public class XmlaTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         // Deal with embedded & that can be in the JDBC URL
-        String connectString = MondrianProperties.instance().TestConnectString.get();
+        String connectString = TestContext.getConnectString();
         dataSource = "MondrianFoodMart";
         catalogName = DriverManager.getConnection(connectString, null, false).getSchema().getName();
 

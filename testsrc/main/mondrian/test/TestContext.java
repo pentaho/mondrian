@@ -97,7 +97,7 @@ public class TestContext {
      *     <code>demo/FoodMart.xml</code></li>.
      * </ul>
      */
-    private static String getConnectString() {
+    public static String getConnectString() {
         String connectString = MondrianProperties.instance().TestConnectString.get();
         final Util.PropertyList connectProperties;
         if (connectString == null || connectString.equals("")) {
@@ -110,6 +110,15 @@ public class TestContext {
         if (jdbcURL != null) {
             connectProperties.put("Jdbc", jdbcURL);
         }
+        String jdbcUser = MondrianProperties.instance().TestJdbcUser.get();
+        if (jdbcUser != null) {
+            connectProperties.put("JdbcUser", jdbcUser);
+        }
+        String jdbcPassword = MondrianProperties.instance().TestJdbcPassword.get();
+        if (jdbcPassword != null) {
+            connectProperties.put("JdbcPassword", jdbcPassword);
+        }
+
         // Find the catalog. Use the URL specified in the connect string, if
         // it is specified and is valid. Otherwise, reference FoodMart.xml
         // assuming we are at the root of the source tree.
