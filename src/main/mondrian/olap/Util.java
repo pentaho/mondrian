@@ -1020,7 +1020,21 @@ public class Util extends XOMUtil {
                 }
                 sb.append(pair[0]);
                 sb.append('=');
+
+                /*
+                 * Quote a property value if is has a semi colon in it
+                 * 'xxx;yyy';
+                 */
+                if (pair[1].indexOf(';') >= 0 && pair[1].charAt(0) != '\'') {
+                	sb.append("'");
+                }
+
                 sb.append(pair[1]);
+
+                if (pair[1].indexOf(';') >= 0 && pair[1].charAt(pair[1].length() - 1) != '\'') {
+                	sb.append("'");
+                }
+
             }
             return sb.toString();
         }
