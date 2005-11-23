@@ -119,6 +119,8 @@ public class MondrianFoodMartLoader {
     private SqlQuery sqlQuery;
     private String booleanColumnType;
     private String bigIntColumnType;
+    private String dateColumnType;
+    private String timestampColumnType;
     private final Map tableMetadataToLoad = new HashMap();
     private final Map aggregateTableMetadataToLoad = new HashMap();
 
@@ -258,12 +260,24 @@ public class MondrianFoodMartLoader {
             booleanColumnType = "BOOLEAN";
         } else if (sqlQuery.getDialect().isMySQL()) {
             booleanColumnType = "TINYINT(1)";
+        } else if (sqlQuery.getDialect().isMSSQL()) {
+        	booleanColumnType = "BIT";
         }
 
         bigIntColumnType = "BIGINT";
         if (sqlQuery.getDialect().isOracle() ||
                 sqlQuery.getDialect().isFirebird()) {
             bigIntColumnType = "DECIMAL(15,0)";
+        }
+        
+        dateColumnType = "DATE";
+        if (sqlQuery.getDialect().isMSSQL()) {
+        	dateColumnType = "DATETIME";
+        }
+        
+        timestampColumnType = "TIMESTAMP";
+        if (sqlQuery.getDialect().isMSSQL()) {
+        	timestampColumnType = "DATETIME";
         }
 
         try {
@@ -1104,7 +1118,7 @@ public class MondrianFoodMartLoader {
 
         createTable("currency", new Column[] {
           new Column("currency_id", "INTEGER", "NOT NULL"),
-          new Column("date", "DATE", "NOT NULL"),
+          new Column("date", dateColumnType, "NOT NULL"),
           new Column("currency", "VARCHAR(30)", "NOT NULL"),
           new Column("conversion_ratio", "DECIMAL(10,4)", "NOT NULL"),
         });
@@ -1139,14 +1153,14 @@ public class MondrianFoodMartLoader {
           new Column("customer_region_id", "INTEGER", "NOT NULL"),
           new Column("phone1", "VARCHAR(30)", "NOT NULL"),
           new Column("phone2", "VARCHAR(30)", "NOT NULL"),
-          new Column("birthdate", "DATE", "NOT NULL"),
+          new Column("birthdate", dateColumnType, "NOT NULL"),
           new Column("marital_status", "VARCHAR(30)", "NOT NULL"),
           new Column("yearly_income", "VARCHAR(30)", "NOT NULL"),
           new Column("gender", "VARCHAR(30)", "NOT NULL"),
           new Column("total_children", "SMALLINT", "NOT NULL"),
           new Column("num_children_at_home", "SMALLINT", "NOT NULL"),
           new Column("education", "VARCHAR(30)", "NOT NULL"),
-          new Column("date_accnt_opened", "DATE", "NOT NULL"),
+          new Column("date_accnt_opened", dateColumnType, "NOT NULL"),
           new Column("member_card", "VARCHAR(30)", ""),
           new Column("occupation", "VARCHAR(30)", ""),
           new Column("houseowner", "VARCHAR(30)", ""),
@@ -1170,9 +1184,9 @@ public class MondrianFoodMartLoader {
           new Column("position_title", "VARCHAR(30)", ""),
           new Column("store_id", "INTEGER", "NOT NULL"),
           new Column("department_id", "INTEGER", "NOT NULL"),
-          new Column("birth_date", "DATE", "NOT NULL"),
-          new Column("hire_date", "TIMESTAMP", ""),
-          new Column("end_date", "TIMESTAMP", ""),
+          new Column("birth_date", dateColumnType, "NOT NULL"),
+          new Column("hire_date", timestampColumnType, ""),
+          new Column("end_date", timestampColumnType, ""),
           new Column("salary", "DECIMAL(10,4)", "NOT NULL"),
           new Column("supervisor_id", "INTEGER", ""),
           new Column("education_level", "VARCHAR(30)", "NOT NULL"),
@@ -1188,7 +1202,7 @@ public class MondrianFoodMartLoader {
         createTable("expense_fact", new Column[] {
           new Column("store_id", "INTEGER", "NOT NULL"),
           new Column("account_id", "INTEGER", "NOT NULL"),
-          new Column("exp_date", "TIMESTAMP", "NOT NULL"),
+          new Column("exp_date", timestampColumnType, "NOT NULL"),
           new Column("time_id", "INTEGER", "NOT NULL"),
           new Column("category_id", "VARCHAR(30)", "NOT NULL"),
           new Column("currency_id", "INTEGER", "NOT NULL"),
@@ -1232,8 +1246,8 @@ public class MondrianFoodMartLoader {
           new Column("promotion_name", "VARCHAR(30)", ""),
           new Column("media_type", "VARCHAR(30)", ""),
           new Column("cost", "DECIMAL(10,4)", ""),
-          new Column("start_date", "TIMESTAMP", ""),
-          new Column("end_date", "TIMESTAMP", ""),
+          new Column("start_date", timestampColumnType, ""),
+          new Column("end_date", timestampColumnType, ""),
         });
         createTable("region", new Column[] {
           new Column("region_id", "INTEGER", "NOT NULL"),
@@ -1253,9 +1267,9 @@ public class MondrianFoodMartLoader {
           new Column("position_title", "VARCHAR(30)", ""),
           new Column("store_id", "INTEGER", "NOT NULL"),
           new Column("department_id", "INTEGER", "NOT NULL"),
-          new Column("birth_date", "TIMESTAMP", "NOT NULL"),
-          new Column("hire_date", "TIMESTAMP", ""),
-          new Column("end_date", "TIMESTAMP", ""),
+          new Column("birth_date", timestampColumnType, "NOT NULL"),
+          new Column("hire_date", timestampColumnType, ""),
+          new Column("end_date", timestampColumnType, ""),
           new Column("salary", "DECIMAL(10,4)", "NOT NULL"),
           new Column("supervisor_id", "INTEGER", ""),
           new Column("education_level", "VARCHAR(30)", "NOT NULL"),
@@ -1263,7 +1277,7 @@ public class MondrianFoodMartLoader {
           new Column("gender", "VARCHAR(30)", "NOT NULL"),
         });
         createTable("salary", new Column[] {
-          new Column("pay_date", "TIMESTAMP", "NOT NULL"),
+          new Column("pay_date", timestampColumnType, "NOT NULL"),
           new Column("employee_id", "INTEGER", "NOT NULL"),
           new Column("department_id", "INTEGER", "NOT NULL"),
           new Column("currency_id", "INTEGER", "NOT NULL"),
@@ -1286,8 +1300,8 @@ public class MondrianFoodMartLoader {
           new Column("store_manager", "VARCHAR(30)", ""),
           new Column("store_phone", "VARCHAR(30)", ""),
           new Column("store_fax", "VARCHAR(30)", ""),
-          new Column("first_opened_date", "TIMESTAMP", ""),
-          new Column("last_remodel_date", "TIMESTAMP", ""),
+          new Column("first_opened_date", timestampColumnType, ""),
+          new Column("last_remodel_date", timestampColumnType, ""),
           new Column("store_sqft", "INTEGER", ""),
           new Column("grocery_sqft", "INTEGER", ""),
           new Column("frozen_sqft", "INTEGER", ""),
@@ -1312,8 +1326,8 @@ public class MondrianFoodMartLoader {
           new Column("store_manager", "VARCHAR(30)", ""),
           new Column("store_phone", "VARCHAR(30)", ""),
           new Column("store_fax", "VARCHAR(30)", ""),
-          new Column("first_opened_date", "TIMESTAMP", ""),
-          new Column("last_remodel_date", "TIMESTAMP", ""),
+          new Column("first_opened_date", timestampColumnType, ""),
+          new Column("last_remodel_date", timestampColumnType, ""),
           new Column("store_sqft", "INTEGER", ""),
           new Column("grocery_sqft", "INTEGER", ""),
           new Column("frozen_sqft", "INTEGER", ""),
@@ -1326,7 +1340,7 @@ public class MondrianFoodMartLoader {
         });
         createTable("time_by_day", new Column[] {
           new Column("time_id", "INTEGER", "NOT NULL"),
-          new Column("the_date", "TIMESTAMP", ""),
+          new Column("the_date", timestampColumnType, ""),
           new Column("the_day", "VARCHAR(30)", ""),
           new Column("the_month", "VARCHAR(30)", ""),
           new Column("the_year", "SMALLINT", ""),
@@ -1684,7 +1698,8 @@ public class MondrianFoodMartLoader {
             if (!sqlQuery.getDialect().isMySQL() &&
                     !sqlQuery.getDialect().isOracle() &&
                     !sqlQuery.getDialect().isDB2() &&
-                    !sqlQuery.getDialect().isFirebird()) {
+                    !sqlQuery.getDialect().isFirebird() &&
+                    !sqlQuery.getDialect().isMSSQL()) {
                 if (trimmedValue.equals("1")) {
                     return "true";
                 } else if (trimmedValue.equals("0")) {
