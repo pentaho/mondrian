@@ -46,54 +46,134 @@ public class NonEmptyTest extends FoodMartTestCase {
     private static Logger logger = Logger.getLogger(NonEmptyTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
 
+    public void testNativeFilter() {
+        checkNative(
+                32,
+                18,
+                "select {[Measures].[Store Sales]} ON COLUMNS, "
+                        + "Order(Filter(Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name]), ([Measures].[Store Sales] > 200.0)), [Measures].[Store Sales], DESC) ON ROWS "
+                        + "from [Sales] " + "where ([Time].[1997])");
+    }
+
+    /**
+     * executes a Filter() whose condition contains a calculated member
+     */
+    public void testCmNativeFilter() {
+        // generates this beautiful SQL:
+        //      select 
+        //        "product_class"."product_family" as "c0", 
+        //        "product_class"."product_department" as "c1", 
+        //        "product_class"."product_category" as "c2", 
+        //        "product_class"."product_subcategory" as "c3", 
+        //        "product"."brand_name" as "c4", 
+        //        "product"."product_name" as "c5" 
+        //      from 
+        //        "product" as "product", 
+        //        "product_class" as "product_class", 
+        //        "sales_fact_1997" as "sales_fact_1997", 
+        //        "store" as "store", 
+        //        "time_by_day" as "time_by_day" 
+        //      where "product"."product_class_id" = "product_class"."product_class_id" 
+        //        and "sales_fact_1997"."product_id" = "product"."product_id" 
+        //        and "sales_fact_1997"."store_id" = "store"."store_id" 
+        //        and "store"."store_state" = 'CA' 
+        //        and "store"."store_country" = 'USA' 
+        //        and "sales_fact_1997"."time_id" = "time_by_day"."time_id" 
+        //        and "time_by_day"."the_year" = 1997 
+        //      group by 
+        //        "product_class"."product_family", 
+        //        "product_class"."product_department", 
+        //        "product_class"."product_category", 
+        //        "product_class"."product_subcategory", 
+        //        "product"."brand_name", 
+        //        "product"."product_name" 
+        //      having ((CASE WHEN ((sum("sales_fact_1997"."store_cost") = 0.0))  THEN 1.0 ELSE ((((sum("sales_fact_1997"."store_sales") - sum("sales_fact_1997"."store_cost")))  / sum("sales_fact_1997"."store_cost")))  END > 1.8))  
+        //      order by 
+        //        "product_class"."product_family", 
+        //        "product_class"."product_department", 
+        //        "product_class"."product_category", 
+        //        "product_class"."product_subcategory", 
+        //        "product"."brand_name", 
+        //        "product"."product_name"
+
+        checkNative(
+                32,
+                8,
+                "with member [Measures].[Rendite] as 'IIf(([Measures].[Store Cost] = 0.0), 1.0, (([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]))' "
+                        + "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales], [Measures].[Rendite]} ON COLUMNS, "
+                        + "NON EMPTY Order(Filter([Product].[Product Name].Members, ([Measures].[Rendite] > 1.8)), [Measures].[Rendite], BDESC) ON ROWS "
+                        + "from [Sales] "
+                        + "where ([Store].[All Stores].[USA].[CA], [Time].[1997])");
+    }
+
     /**
      * getMembersInLevel where Level = (All)
      */
     public void testAllLevelMembers() {
-       checkNative(14, 14, "select {[Measures].[Store Sales]} ON COLUMNS, "
-        + "NON EMPTY Crossjoin([Product].[(All)].Members, [Promotion Media].[All Media].Children) ON ROWS "
-        + "from [Sales]");
-        
+        checkNative(
+                14,
+                14,
+                "select {[Measures].[Store Sales]} ON COLUMNS, "
+                        + "NON EMPTY Crossjoin([Product].[(All)].Members, [Promotion Media].[All Media].Children) ON ROWS "
+                        + "from [Sales]");
+
     }
 
     /** 
      * enum sets {} containing ALL 
      */
     public void testCjDescendantsEnumAllOnly() {
-        checkNative(9, 9, 
-                  "select {[Measures].[Unit Sales]} ON COLUMNS, " 
-                + "NON EMPTY Crossjoin("
+        checkNative(9, 9, "select {[Measures].[Unit Sales]} ON COLUMNS, " + "NON EMPTY Crossjoin("
                 + "  Descendants([Customers].[All Customers].[USA], [Customers].[City]), "
-                + "  {[Product].[All Products]}) ON ROWS " 
-                + "from [Sales] "
+                + "  {[Product].[All Products]}) ON ROWS " + "from [Sales] "
                 + "where ([Promotions].[All Promotions].[Bag Stuffers])");
     }
-    
+
     /** 
      * checks that crossjoin returns a modifiable copy from cache 
      * because its modified during sort
      */
     public void testResultIsModifyableCopy() {
-        checkNative(3, 3, "select {[Measures].[Store Sales]} on columns,"
-                + "  NON EMPTY Order(" 
-                + "        CrossJoin([Customers].[All Customers].[USA].children, [Promotions].[Promotion Name].Members), "
-                + "        [Measures].[Store Sales]) ON ROWS"
-                + " from [Sales] where ("
-                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                + "  [Time].[1997].[Q1].[1])");
+        checkNative(
+                3,
+                3,
+                "select {[Measures].[Store Sales]} on columns,"
+                        + "  NON EMPTY Order("
+                        + "        CrossJoin([Customers].[All Customers].[USA].children, [Promotions].[Promotion Name].Members), "
+                        + "        [Measures].[Store Sales]) ON ROWS" + " from [Sales] where ("
+                        + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+                        + "  [Time].[1997].[Q1].[1])");
     }
-    
+
     /** check that top count is executed native unless disabled */
     public void testNativeTopCount() {
         if (!MondrianProperties.instance().EnableNativeTopCount.get())
             return;
-        checkNative(3, 3, "select {[Measures].[Store Sales]} on columns,"
-                + "  NON EMPTY TopCount(" 
-                + "        CrossJoin([Customers].[All Customers].[USA].children, [Promotions].[Promotion Name].Members), "
-                + "        3, [Measures].[Store Sales]) ON ROWS"
-                + " from [Sales] where ("
-                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                + "  [Time].[1997].[Q1].[1])");
+        checkNative(
+                3,
+                3,
+                "select {[Measures].[Store Sales]} on columns,"
+                        + "  NON EMPTY TopCount("
+                        + "        CrossJoin([Customers].[All Customers].[USA].children, [Promotions].[Promotion Name].Members), "
+                        + "        3, (3 * [Measures].[Store Sales]) - 100) ON ROWS"
+                        + " from [Sales] where ("
+                        + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+                        + "  [Time].[1997].[Q1].[1])");
+    }
+
+    /** check that top count is executed native with calculated member */
+    public void testCmNativeTopCount() {
+        if (!MondrianProperties.instance().EnableNativeTopCount.get())
+            return;
+        checkNative(
+                3,
+                3,
+                "with member [Measures].[Store Profit Rate] as '([Measures].[Store Sales]-[Measures].[Store Cost])/[Measures].[Store Cost]', format = '#.00%' "
+                        + "select {[Measures].[Store Sales]} on columns,"
+                        + "  NON EMPTY TopCount("
+                        + "        [Customers].[All Customers].[USA].children, "
+                        + "        3, [Measures].[Store Profit Rate] / 2) ON ROWS"
+                        + " from [Sales]");
     }
 
     public void testMeasureAndAggregateInSlicer() {
@@ -169,7 +249,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                 + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
                 + "  [Time].[1997].[Q1].[1])");
     }
-    
+
     /** SQL does not make sense because alle members are known */
     public void testCjEnumEnum() {
         checkNotNative(
@@ -190,8 +270,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                         + "NON EMPTY Crossjoin("
                         + "  Descendants([Customers].[All Customers].[USA], [Customers].[City]), "
                         + "  {[Product].[All Products], [Product].[All Products].[Drink].[Dairy]}) ON ROWS "
-                        + "from [Sales] " 
-                        + "where ([Promotions].[All Promotions].[Bag Stuffers])");
+                        + "from [Sales] " + "where ([Promotions].[All Promotions].[Bag Stuffers])");
     }
 
     public void testCjDescendantsEnum() {
@@ -635,7 +714,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             }
         });
         TestCase c = new TestCase(con, 0, rowCount, mdx);
-        Result r = c.run();
+        c.run();
     }
 
     RolapNativeRegistry getRegistry(Connection connection) {
@@ -644,7 +723,6 @@ public class NonEmptyTest extends FoodMartTestCase {
         return schemaReader.getSchema().getNativeRegistry();
     }
 
-
     /**
      * runs a query twice, with native crossjoin optimization enabled and
      * disabled. If both results are equal, its considered correct.
@@ -652,9 +730,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     private Result checkNative(int resultLimit, int rowCount, String mdx) {
         CachePool.instance().flush();
         try {
-            logger.info("****************************************************************");
-            logger.info("checkNative: " + mdx);
-            logger.info("*** Native:");
+            logger.info("*** Native: " + mdx);
             Connection con = getConnection(true);
             RolapNativeRegistry reg = getRegistry(con);
             reg.useHardCache(true);
@@ -678,7 +754,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             }
             con.close();
 
-            logger.info("*** Interpreter:");
+            logger.info("*** Interpreter: " + mdx);
             CachePool.instance().flush();
             con = getConnection(true);
             reg = getRegistry(con);
@@ -743,7 +819,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             res = ((NonEmptyResult) res).underlying;
         return (RolapEvaluator) ((RolapResult) res).getEvaluator(pos);
     }
-    
+
     /**
      * gets notified
      * <ul>

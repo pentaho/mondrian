@@ -28,6 +28,7 @@ public class RolapNativeRegistry extends RolapNative {
         super.setEnabled(true);
         register(new RolapNativeCrossJoin());
         register(new RolapNativeTopCount());
+        register(new RolapNativeFilter());
     }
 
     /**

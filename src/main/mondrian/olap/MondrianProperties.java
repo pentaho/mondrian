@@ -540,6 +540,12 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public final BooleanProperty EnableNativeTopCount = new BooleanProperty(
         this, "mondrian.native.topcount.enable", false);
+
+    /**
+     * if enabled some Filter() will be computed in SQL
+     */
+    public final BooleanProperty EnableNativeFilter = new BooleanProperty(
+        this, "mondrian.native.filter.enable", false);
     
     /**
      * some NON EMPTY set operations like member.children, level.members and
