@@ -2667,6 +2667,30 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "WHERE product.product_class_id = product_class.product_class_id" + nl +
                 "]]>" + nl +
                 "           </SQL>" + nl +
+                "           <SQL dialect=\"mssql\"><![CDATA[" + nl +
+                "SELECT \"product\".\"product_id\"," + nl +
+                "\"product\".\"brand_name\"," + nl +
+                "\"product\".\"product_name\"," + nl +
+                "\"product\".\"SKU\"," + nl +
+                "\"product\".\"SRP\"," + nl +
+                "\"product\".\"gross_weight\"," + nl +
+                "\"product\".\"net_weight\"," + nl +
+                "\"product\".\"recyclable_package\"," + nl +
+                "\"product\".\"low_fat\"," + nl +
+                "\"product\".\"units_per_case\"," + nl +
+                "\"product\".\"cases_per_pallet\"," + nl +
+                "\"product\".\"shelf_width\"," + nl +
+                "\"product\".\"shelf_height\"," + nl +
+                "\"product\".\"shelf_depth\"," + nl +
+                "\"product_class\".\"product_class_id\"," + nl +
+                "\"product_class\".\"product_subcategory\"," + nl +
+                "\"product_class\".\"product_category\"," + nl +
+                "\"product_class\".\"product_department\"," + nl +
+                "\"product_class\".\"product_family\"" + nl +
+                "FROM \"product\" inner join \"product_class\"" + nl +
+                "ON \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\"" + nl +
+                "]]>" + nl +
+                "           </SQL>" + nl +
                 "           <SQL dialect=\"generic\"><![CDATA[" + nl +
                 "SELECT *" + nl +
                 "FROM \"product\", \"product_class\"" + nl +
