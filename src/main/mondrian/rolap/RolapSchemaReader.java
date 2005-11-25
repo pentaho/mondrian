@@ -239,7 +239,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
             Member[] children = internalGetMemberChildren(parent, constraint);
             for (int i = 0; i < children.length; i++){
                 final Member child = children[i];
-                if (Util.equals(child.getName(), childName)) {
+                if (Util.equalName(child.getName(), childName)) {
                     return child;
                 }
             }

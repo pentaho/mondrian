@@ -221,6 +221,13 @@ Revision is $Id$
         </Attribute>
         <Array name="dimensions" type="VirtualCubeDimension"><Doc></Doc></Array>
         <Array name="measures" type="VirtualCubeMeasure"><Doc></Doc></Array>
+        <Array name="calculatedMembers" type="CalculatedMember">
+            <Doc>
+                Calculated members that belong to this virtual cube.
+                (Calculated members inherited from other cubes should not be
+                in this list.)
+            </Doc>
+        </Array>
         <Code><![CDATA[
             public boolean isEnabled() {
                 return enabled.booleanValue();

@@ -62,7 +62,7 @@ public class MemberProperty extends QueryPart {
     static Exp get(MemberProperty[] a, String name) {
         // TODO: Linear search may be a performance problem.
         for (int i = 0; i < a.length; i++) {
-            if (Util.equals(a[i].name, name)) {
+            if (Util.equalName(a[i].name, name)) {
                 return a[i].exp;
             }
         }

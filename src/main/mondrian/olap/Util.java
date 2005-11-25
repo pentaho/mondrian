@@ -57,7 +57,7 @@ public class Util extends XOMUtil {
      * Store of format-locales culled from various locales' instances of
      * {@link mondrian.resource.MondrianResource}.
      *
-     * <p>Initializing it here should ensure that the callback is set before 
+     * <p>Initializing it here should ensure that the callback is set before
      * {@link mondrian.util.Format} is first used for the first time.
      */
     private static final Format.LocaleFormatFactory localeFormatFactory =
@@ -219,14 +219,36 @@ public class Util extends XOMUtil {
 
     /**
      * Returns true if two strings are equal, or are both null.
-     * Takes into account the {@link MondrianProperties#CaseSensitive case
-     * sensitive option}.
+     *
+     * <p>The result is not affected by
+     * {@link MondrianProperties#CaseSensitive the case sensitive option}; if
+     * you wish to compare names, use {@link #equalName(String, String)}.
      */
     public static boolean equals(String s, String t) {
+        return equals((Object) s, (Object) t);
+    }
+
+    /**
+     * Returns whether two names are equal.
+     * Takes into account the {@link MondrianProperties#CaseSensitive case
+     * sensitive option}.
+     * Names must not be null.
+     */
+    public static boolean equalName(String s, String t) {
         boolean caseSensitive = MondrianProperties.instance().CaseSensitive.get();
-        return (s == null) ?
-                (t == null) :
-                (caseSensitive ? s.equals(t) : s.equalsIgnoreCase(t));
+        return caseSensitive ? s.equals(t) : s.equalsIgnoreCase(t);
+    }
+
+    /**
+     * Generates a normalized form of a name, for use as a key into a map.
+     * Returns the upper case name if
+     * {@link MondrianProperties#CaseSensitive} is true, the name unchanged
+     * otherwise.
+     */
+    public static String normalizeName(String s) {
+        return MondrianProperties.instance().CaseSensitive.get() ?
+                s :
+                s.toUpperCase();
     }
 
     /**
@@ -740,28 +762,6 @@ public class Util extends XOMUtil {
             return property;
         }
         return null;
-    }
-
-    /**
-     * Returns whether two string arrays are equal.
-     * Either argument may be null.
-     *
-     * @param a1 First string array
-     * @param a2 Second string array
-     * @return Whether arrays are equal
-     */
-    public static boolean equals(String[] a1, String[] a2) {
-        if (a1 == null ||
-                a2 == null ||
-                a1.length != a2.length) {
-            return false;
-        }
-        for (int i = 0; i < a1.length; i++) {
-            if (!equals(a1[i], a2[i])) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**

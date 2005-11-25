@@ -564,7 +564,7 @@ public class Query extends QueryPart {
         Iterator definedMembers = getDefinedMembers().iterator();
         while (definedMembers.hasNext()) {
             Member mdxMember = (Member) definedMembers.next();
-            if (Util.equals(mdxMember.getUniqueName(), s)) {
+            if (Util.equalName(mdxMember.getUniqueName(), s)) {
                 return mdxMember;
             }
         }
@@ -1073,7 +1073,7 @@ public class Query extends QueryPart {
         public List getCalculatedMembers() {
             return getDefinedMembers();
         }
-        
+
         public OlapElement getElementChild(OlapElement parent, String s) {
             // first look in cube
             OlapElement mdxElement = schemaReader.getElementChild(parent, s);
@@ -1088,7 +1088,7 @@ public class Query extends QueryPart {
                 if (formula.isMember()) {
                     continue;       // have already done these
                 }
-                if (Util.equals(formula.getNames()[0], s)) {
+                if (Util.equalName(formula.getNames()[0], s)) {
                     return formula.getNamedSet();
                 }
             }

@@ -933,10 +933,35 @@ public class RolapSchema implements Schema {
      * cube exists.
      */
     protected Cube lookupCube(final String cubeName) {
-        return (Cube) mapNameToCube.get(
-                MondrianProperties.instance().CaseSensitive.get() ?
-                cubeName :
-                cubeName.toUpperCase());
+        return (Cube) mapNameToCube.get(Util.normalizeName(cubeName));
+    }
+
+    /**
+     * Returns an xmlCalculatedMember called 'calcMemberName' in the
+     * cube called 'cubeName' or return null if no calculatedMember or
+     * xmlCube by those name exists.
+     */
+    protected MondrianDef.CalculatedMember lookupXmlCalculatedMember(
+            final String calcMemberName,
+            final String cubeName) {
+        String nameParts[] = Util.explode(calcMemberName);
+        for (int c = 0; c < xmlSchema.cubes.length; c++) {
+            final MondrianDef.Cube cube = xmlSchema.cubes[c];
+            if (Util.equalName(cube.name, cubeName)) {
+                for (int m = 0; m < cube.calculatedMembers.length; m++) {
+                    final MondrianDef.CalculatedMember calculatedMember =
+                            cube.calculatedMembers[m];
+                    if (Util.equalName(
+                            calculatedMember.dimension, nameParts[0]) &&
+                            Util.equalName(
+                                    calculatedMember.name,
+                                    nameParts[nameParts.length - 1])) {
+                        return calculatedMember;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public List getCubesWithStar(RolapStar star) {

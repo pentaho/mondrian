@@ -306,10 +306,10 @@ public class HierarchyUsage {
             HierarchyUsage other = (HierarchyUsage) o;
             return (this.kind == other.kind) &&
                 Util.equals(this.fact, other.fact) &&
-                Util.equals(this.hierarchyName, other.hierarchyName) &&
-                Util.equals(this.name, other.name) &&
-                Util.equals(this.source, other.source) &&
-                Util.equals(this.foreignKey, other.foreignKey);
+                Util.equalName(this.hierarchyName, other.hierarchyName) &&
+                Util.equalName(this.name, other.name) &&
+                Util.equalName(this.source, other.source) &&
+                Util.equalName(this.foreignKey, other.foreignKey);
         } else {
             return false;
         }

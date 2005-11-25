@@ -1307,7 +1307,7 @@ public class RolapStar {
                 Table child = (Table) it.next();
                 if (child.relation.equals(relation)) {
                     Condition condition = joinCondition;
-                    if (!Util.equals(relation.getAlias(), child.alias)) {
+                    if (!Util.equalName(relation.getAlias(), child.alias)) {
                         // Make the two conditions comparable, by replacing
                         // occurrence of this table's alias with occurrences
                         // of the child's alias.
