@@ -1005,9 +1005,9 @@ assert is not true.
                     relation = reorder(relation, levels);
 
                     if (relation == null && getLogger().isDebugEnabled()) {
-                    	getLogger().debug("RolapCube.registerDimension: after reorder relation==null");
-                    	getLogger().debug("RolapCube.registerDimension: reorder relationTmp1="
-                    						+format(relationTmp1));
+                        getLogger().debug("RolapCube.registerDimension: after reorder relation==null");
+                        getLogger().debug("RolapCube.registerDimension: reorder relationTmp1="
+                                            +format(relationTmp1));
                     }
                 }
 
@@ -1946,14 +1946,14 @@ assert is not true.
 
         public Member getMemberByUniqueName(
                 String[] uniqueNameParts, boolean failIfNotFound) {
-        	Member member = (Member) lookupCompound(
-					                    RolapCube.this, uniqueNameParts,
-					                    failIfNotFound, Category.Member);
-        	if (getRole().canAccess(member)) {
-        		return member;
-        	} else {
-        		return null;
-        	}
+            Member member = (Member) lookupCompound(
+                                        RolapCube.this, uniqueNameParts,
+                                        failIfNotFound, Category.Member);
+            if (getRole().canAccess(member)) {
+                return member;
+            } else {
+                return null;
+            }
         }
 
         public Cube getCube() {

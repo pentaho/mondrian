@@ -21,15 +21,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
 
-/** 
- * Testing the default aggregate table recognizer. 
- * 
+/**
+ * Testing the default aggregate table recognizer.
+ *
  * @author <a>Richard M. Emberson</a>
- * @version 
+ * @version
  */
 public class DefaultRuleTest extends TestCase {
     private static final Logger LOGGER = Logger.getLogger(DefaultRuleTest.class);
-    private static final String DIRECTORY = 
+    private static final String DIRECTORY =
                 "testsrc/main/mondrian/rolap/aggmatcher";
     private static final String TEST_RULE_XML = "TestRule.xml";
 
@@ -55,7 +55,7 @@ public class DefaultRuleTest extends TestCase {
        ListRecorder msgRecorder = new ListRecorder();
        rules.validate(msgRecorder);
        if (msgRecorder.hasErrors()) {
-    	   LOGGER.error("HAS ERRORS");
+           LOGGER.error("HAS ERRORS");
             for (Iterator it = msgRecorder.getErrorEntries(); it.hasNext(); ) {
                 ListRecorder.Entry e = (ListRecorder.Entry) it.next();
                 LOGGER.error("context=" +e.getContext());
@@ -69,11 +69,11 @@ public class DefaultRuleTest extends TestCase {
     private Recognizer.Matcher getTableMatcher(String tag, String tableName) {
         DefaultDef.AggRule rule = getAggRule(tag);
         if (rule == null) {
-        	LOGGER.info("rule == null for tag=" +tag);
+            LOGGER.info("rule == null for tag=" +tag);
         }
         DefaultDef.TableMatch tableMatch = rule.getTableMatch();
         if (tableMatch == null) {
-            LOGGER.info("tableMatch == null for tag=" 
+            LOGGER.info("tableMatch == null for tag="
             +tag
             + ", tableName="
             + tableName
@@ -86,7 +86,7 @@ public class DefaultRuleTest extends TestCase {
         DefaultDef.FactCountMatch factTableName = rule.getFactCountMatch();
         return factTableName.getMatcher();
     }
-    private Recognizer.Matcher getForeignKeyMatcher(String tag, 
+    private Recognizer.Matcher getForeignKeyMatcher(String tag,
             String foreignKeyName) {
 
         DefaultDef.AggRule rule = getAggRule(tag);
@@ -270,7 +270,7 @@ public class DefaultRuleTest extends TestCase {
         doNotMatch(matcher, "FK_HAM_N_EGGS");
     }
 /*
-        <ForeignKeyMatch id="fkc" basename="(?:FK|fk)_(.*)" 
+        <ForeignKeyMatch id="fkc" basename="(?:FK|fk)_(.*)"
                 posttemplate="_[fF][kK]"
                 charcase="exact" />
 */
@@ -279,11 +279,11 @@ public class DefaultRuleTest extends TestCase {
         final String foreignKeyName1 = "fk_toast";
         final String foreignKeyName2 = "FK_TOAST";
         final String foreignKeyName3 = "FK_ToAsT";
-        Recognizer.Matcher matcher1 = 
+        Recognizer.Matcher matcher1 =
             getForeignKeyMatcher(tag, foreignKeyName1);
-        Recognizer.Matcher matcher2 = 
+        Recognizer.Matcher matcher2 =
             getForeignKeyMatcher(tag, foreignKeyName2);
-        Recognizer.Matcher matcher3 = 
+        Recognizer.Matcher matcher3 =
             getForeignKeyMatcher(tag, foreignKeyName3);
 
         doMatch(matcher1, "toast_fk");

@@ -1186,7 +1186,7 @@ public class BuiltinFunTable extends FunTableImpl {
 
         //
         // SET FUNCTIONS
-        
+
         /*
          * AddCalculatedMembers adds calculated members that are siblings
          * of the members in the set. The set is limited to one dimension.
@@ -1202,47 +1202,46 @@ public class BuiltinFunTable extends FunTableImpl {
                     /*
                      * Determine unique levels in the set
                      */
-                	Map levelMap = new HashMap();
-                	
-                	Dimension dim = null;
-                	
-                	Iterator it = memberList.iterator();
-                	while (it.hasNext()) {
-                		Object obj = it.next();
-                		if (!(obj instanceof Member)) {
-                			throw newEvalException(this, "Only single dimension members allowed in set for AddCalculatedMembers");
-                		}
-                		Member member = (Member) obj;
-                		if (dim == null) {
-                			dim = member.getDimension();
-                		} else if (dim != member.getDimension()) {
-                			throw newEvalException(this, "Only members from the same dimension are allowed in the AddCalculatedMembers set: "  
-                					+ dim.toString() + " vs " + member.getDimension().toString());
-                		}
-                		if (!levelMap.containsKey(member.getLevel())) {
-                			levelMap.put(member.getLevel(), null); 
-                		}
-                	}
-                	/*
-                	 * For each level, add the calculated members from both
-                	 * the schema and the query
-                	 */
-                	List workingList = new ArrayList();
-                	workingList.addAll(memberList);
-                	it = levelMap.keySet().iterator();
-                	while (it.hasNext()) {
-                		Level level = (Level) it.next();
-                		List tmp = evaluator.getSchemaReader().getCalculatedMembers(level);
-                		if (tmp != null) {
-                			workingList.addAll(tmp);
-                		}
+                    Map levelMap = new HashMap();
+
+                    Dimension dim = null;
+
+                    Iterator it = memberList.iterator();
+                    while (it.hasNext()) {
+                        Object obj = it.next();
+                        if (!(obj instanceof Member)) {
+                            throw newEvalException(this, "Only single dimension members allowed in set for AddCalculatedMembers");
+                        }
+                        Member member = (Member) obj;
+                        if (dim == null) {
+                            dim = member.getDimension();
+                        } else if (dim != member.getDimension()) {
+                            throw newEvalException(this, "Only members from the same dimension are allowed in the AddCalculatedMembers set: "
+                                    + dim.toString() + " vs " + member.getDimension().toString());
+                        }
+                        if (!levelMap.containsKey(member.getLevel())) {
+                            levelMap.put(member.getLevel(), null);
+                        }
+                    }
+                    /*
+                     * For each level, add the calculated members from both
+                     * the schema and the query
+                     */
+                    List workingList = new ArrayList();
+                    workingList.addAll(memberList);
+                    it = levelMap.keySet().iterator();
+                    while (it.hasNext()) {
+                        Level level = (Level) it.next();
+                        List tmp = evaluator.getSchemaReader().getCalculatedMembers(level);
+                        if (tmp != null) {
+                            workingList.addAll(tmp);
+                        }
                         tmp = evaluator.getQuery().getSchemaReader(true).getCalculatedMembers(level);
-                		if (tmp != null) {
-                			workingList.addAll(tmp);
-                		}
-                	}
-                	memberList = workingList;
-                	
+                        if (tmp != null) {
+                            workingList.addAll(tmp);
+                        }
+                    }
+                    memberList = workingList;
                 }
                 return memberList;
             }
@@ -2106,7 +2105,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         NativeEvaluator nativeEvaluator = schemaReader.getNativeSetEvaluator(this, evaluator, args);
                         if (nativeEvaluator != null)
                             return nativeEvaluator.execute();
-                        
+
                         List list = (List) getArg(evaluator, args, 0);
                         int n = getIntArg(evaluator, args, 1);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 2, null);
@@ -3334,7 +3333,7 @@ public class BuiltinFunTable extends FunTableImpl {
         }
         return sr.getMemberChildren(member);
     }
-    
+
     protected Member[] getNonEmptyLevelMembers(Evaluator evaluator, Level level) {
         SchemaReader sr = evaluator.getSchemaReader();
         if (evaluator.isNonEmpty()) {

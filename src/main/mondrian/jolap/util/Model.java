@@ -391,7 +391,7 @@ public class Model {
             if (candidateCount == 1) {
                 return (Relationship) candidate;
             } else {
-            	LOGGER.debug("Found " + candidateCount + " candidates for inverse of " + this);
+                LOGGER.debug("Found " + candidateCount + " candidates for inverse of " + this);
                 return null;
             }
         }

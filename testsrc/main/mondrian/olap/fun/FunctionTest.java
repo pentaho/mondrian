@@ -722,10 +722,10 @@ public class FunctionTest extends FoodMartTestCase {
         //Calc measure members from schema and from query
         //----------------------------------------------------
         assertQueryReturns("WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', FORMAT_STRING='0.0%' " +
-        		"SELECT {[Measures].AllMembers} ON COLUMNS," +
-        				"non empty({[Store].[Store State].Members}) ON ROWS " +
-        		"FROM Sales " +
-        		"WHERE ([1997].[Q1])",
+                "SELECT {[Measures].AllMembers} ON COLUMNS," +
+                        "non empty({[Store].[Store State].Members}) ON ROWS " +
+                "FROM Sales " +
+                "WHERE ([1997].[Q1])",
                 fold(new String[] {
                         "Axis #0:",
                         "{[Time].[1997].[Q1]}",
@@ -743,42 +743,42 @@ public class FunctionTest extends FoodMartTestCase {
                         "{[Store].[All Stores].[USA].[CA]}",
                         "{[Store].[All Stores].[USA].[OR]}",
                         "{[Store].[All Stores].[USA].[WA]}",
-				        "Row #0: $21,744.11",
-				        "Row #0: 0.0%",
-				        "Row #0: $21,744.11",
-				        "Row #0: 5,498",
-				        "Row #0: 14,431.09",
-				        "Row #0: 36,175.20",
-				        "Row #0: 16,890",
-				        "Row #0: 1,110",
-				        "Row #0: 46.7%",
-				        "Row #1: $24,089.22",
-				        "Row #1: 0.0%",
-				        "Row #1: $24,089.22",
-				        "Row #1: 6,184",
-				        "Row #1: 16,081.07",
-				        "Row #1: 40,170.29",
-				        "Row #1: 19,287",
-				        "Row #1: 767",
-				        "Row #1: 48.0%",
-				        "Row #2: $38,042.78",
-				        "Row #2: 0.0%",
-				        "Row #2: $38,042.78",
-				        "Row #2: 9,906",
-				        "Row #2: 25,240.08",
-				        "Row #2: 63,282.86",
-				        "Row #2: 30,114",
-				        "Row #2: 1,104",
-				        "Row #2: 47.6%",
-                		""}));
+                        "Row #0: $21,744.11",
+                        "Row #0: 0.0%",
+                        "Row #0: $21,744.11",
+                        "Row #0: 5,498",
+                        "Row #0: 14,431.09",
+                        "Row #0: 36,175.20",
+                        "Row #0: 16,890",
+                        "Row #0: 1,110",
+                        "Row #0: 46.7%",
+                        "Row #1: $24,089.22",
+                        "Row #1: 0.0%",
+                        "Row #1: $24,089.22",
+                        "Row #1: 6,184",
+                        "Row #1: 16,081.07",
+                        "Row #1: 40,170.29",
+                        "Row #1: 19,287",
+                        "Row #1: 767",
+                        "Row #1: 48.0%",
+                        "Row #2: $38,042.78",
+                        "Row #2: 0.0%",
+                        "Row #2: $38,042.78",
+                        "Row #2: 9,906",
+                        "Row #2: 25,240.08",
+                        "Row #2: 63,282.86",
+                        "Row #2: 30,114",
+                        "Row #2: 1,104",
+                        "Row #2: 47.6%",
+                        ""}));
         //----------------------------------------------------
         //Calc member in query and schema not seen
         //----------------------------------------------------
         assertQueryReturns("WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', FORMAT_STRING='0.0%' " +
-        		"SELECT {[Measures].Members} ON COLUMNS," +
-        				"non empty({[Store].[Store State].Members}) ON ROWS " +
-        		"FROM Sales " +
-        		"WHERE ([1997].[Q1])",
+                "SELECT {[Measures].Members} ON COLUMNS," +
+                        "non empty({[Store].[Store State].Members}) ON ROWS " +
+                "FROM Sales " +
+                "WHERE ([1997].[Q1])",
                 fold(new String[] {
                         "Axis #0:",
                         "{[Time].[1997].[Q1]}",
@@ -792,30 +792,30 @@ public class FunctionTest extends FoodMartTestCase {
                         "{[Store].[All Stores].[USA].[CA]}",
                         "{[Store].[All Stores].[USA].[OR]}",
                         "{[Store].[All Stores].[USA].[WA]}",
-				        "Row #0: 5,498",
-				        "Row #0: 14,431.09",
-				        "Row #0: 36,175.20",
-				        "Row #0: 16,890",
-				        "Row #0: 1,110",
-				        "Row #1: 6,184",
-				        "Row #1: 16,081.07",
-				        "Row #1: 40,170.29",
-				        "Row #1: 19,287",
-				        "Row #1: 767",
-				        "Row #2: 9,906",
-				        "Row #2: 25,240.08",
-				        "Row #2: 63,282.86",
-				        "Row #2: 30,114",
-				        "Row #2: 1,104",
-                		""}));
+                        "Row #0: 5,498",
+                        "Row #0: 14,431.09",
+                        "Row #0: 36,175.20",
+                        "Row #0: 16,890",
+                        "Row #0: 1,110",
+                        "Row #1: 6,184",
+                        "Row #1: 16,081.07",
+                        "Row #1: 40,170.29",
+                        "Row #1: 19,287",
+                        "Row #1: 767",
+                        "Row #2: 9,906",
+                        "Row #2: 25,240.08",
+                        "Row #2: 63,282.86",
+                        "Row #2: 30,114",
+                        "Row #2: 1,104",
+                        ""}));
         //----------------------------------------------------
         //Calc member in dimension based on level
         //----------------------------------------------------
         assertQueryReturns("WITH MEMBER [Store].[USA].[CA plus OR] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA].[OR]})' " +
-        		"SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS," +
-        				"non empty({[Store].[Store State].AllMembers}) ON ROWS " +
-        		"FROM Sales " +
-        		"WHERE ([1997].[Q1])",
+                "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS," +
+                        "non empty({[Store].[Store State].AllMembers}) ON ROWS " +
+                "FROM Sales " +
+                "WHERE ([1997].[Q1])",
                 fold(new String[] {
                         "Axis #0:",
                         "{[Time].[1997].[Q1]}",
@@ -835,15 +835,15 @@ public class FunctionTest extends FoodMartTestCase {
                         "Row #2: 63,282.86",
                         "Row #3: 36,177",
                         "Row #3: 76,345.49",
-                		""}));
+                        ""}));
         //----------------------------------------------------
         //Calc member in dimension based on level not seen
         //----------------------------------------------------
         assertQueryReturns("WITH MEMBER [Store].[USA].[CA plus OR] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA].[OR]})' " +
-        		"SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS," +
-        				"non empty({[Store].[Store Country].AllMembers}) ON ROWS " +
-        		"FROM Sales " +
-        		"WHERE ([1997].[Q1])",
+                "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS," +
+                        "non empty({[Store].[Store Country].AllMembers}) ON ROWS " +
+                "FROM Sales " +
+                "WHERE ([1997].[Q1])",
                 fold(new String[] {
                         "Axis #0:",
                         "{[Time].[1997].[Q1]}",
@@ -854,7 +854,7 @@ public class FunctionTest extends FoodMartTestCase {
                         "{[Store].[All Stores].[USA]}",
                         "Row #0: 66,291",
                         "Row #0: 139,628.35",
-                		""}));
+                        ""}));
     }
 
     public void testAddCalculatedMembers() {
@@ -862,10 +862,10 @@ public class FunctionTest extends FoodMartTestCase {
         // AddCalculatedMembers: Calc member in dimension based on level included
         //----------------------------------------------------
         assertQueryReturns("WITH MEMBER [Store].[USA].[CA plus OR] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA].[OR]})' " +
-        		"SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS," +
-        				"AddCalculatedMembers([Store].[USA].Children) ON ROWS " +
-        		"FROM Sales " +
-        		"WHERE ([1997].[Q1])",
+                "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS," +
+                        "AddCalculatedMembers([Store].[USA].Children) ON ROWS " +
+                "FROM Sales " +
+                "WHERE ([1997].[Q1])",
                 fold(new String[] {
                         "Axis #0:",
                         "{[Time].[1997].[Q1]}",
@@ -885,16 +885,16 @@ public class FunctionTest extends FoodMartTestCase {
                         "Row #2: 63,282.86",
                         "Row #3: 36,177",
                         "Row #3: 76,345.49",
-                		""}));
+                        ""}));
         //----------------------------------------------------
         //Calc member in dimension based on level included
         //Calc members in measures in schema included
         //----------------------------------------------------
         assertQueryReturns("WITH MEMBER [Store].[USA].[CA plus OR] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA].[OR]})' " +
-        		"SELECT AddCalculatedMembers({[Measures].[Unit Sales], [Measures].[Store Sales]}) ON COLUMNS," +
-        				"AddCalculatedMembers([Store].[USA].Children) ON ROWS " +
-        		"FROM Sales " +
-        		"WHERE ([1997].[Q1])",
+                "SELECT AddCalculatedMembers({[Measures].[Unit Sales], [Measures].[Store Sales]}) ON COLUMNS," +
+                        "AddCalculatedMembers([Store].[USA].Children) ON ROWS " +
+                "FROM Sales " +
+                "WHERE ([1997].[Q1])",
                 fold(new String[] {
                         "Axis #0:",
                         "{[Time].[1997].[Q1]}",
@@ -930,14 +930,14 @@ public class FunctionTest extends FoodMartTestCase {
                         "Row #3: $45,833.33",
                         "Row #3: $45,833.33",
                         "Row #3: 0.0%",
-                		""}));
+                        ""}));
         //----------------------------------------------------
         //Two dimensions
         //----------------------------------------------------
         assertQueryReturns("SELECT AddCalculatedMembers({[Measures].[Unit Sales], [Measures].[Store Sales]}) ON COLUMNS," +
-        				"{([Store].[USA].[CA], [Gender].[F])} ON ROWS " +
-        		"FROM Sales " +
-        		"WHERE ([1997].[Q1])",
+                        "{([Store].[USA].[CA], [Gender].[F])} ON ROWS " +
+                "FROM Sales " +
+                "WHERE ([1997].[Q1])",
                 fold(new String[] {
                         "Axis #0:",
                         "{[Time].[1997].[Q1]}",
@@ -955,13 +955,13 @@ public class FunctionTest extends FoodMartTestCase {
                         "Row #0: $10,771.98",
                         "Row #0: $10,771.98",
                         "Row #0: 0.0%",
-                		""}));
+                        ""}));
         //----------------------------------------------------
         //Should throw more than one dimension error
         //----------------------------------------------------
 
         assertAxisThrows("AddCalculatedMembers({([Store].[USA].[CA], [Gender].[F])})",
-        	"Only single dimension members allowed in set for AddCalculatedMembers");
+            "Only single dimension members allowed in set for AddCalculatedMembers");
     }
 
     public void testStripCalculatedMembers() {
@@ -986,10 +986,10 @@ public class FunctionTest extends FoodMartTestCase {
         //Actual members in measures left alone
         //----------------------------------------------------
         assertQueryReturns("WITH MEMBER [Store].[USA].[CA plus OR] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA].[OR]})' " +
-        		"SELECT StripCalculatedMembers({[Measures].[Unit Sales], [Measures].[Store Sales]}) ON COLUMNS," +
-        				"StripCalculatedMembers(AddCalculatedMembers([Store].[USA].Children)) ON ROWS " +
-        		"FROM Sales " +
-        		"WHERE ([1997].[Q1])",
+                "SELECT StripCalculatedMembers({[Measures].[Unit Sales], [Measures].[Store Sales]}) ON COLUMNS," +
+                        "StripCalculatedMembers(AddCalculatedMembers([Store].[USA].Children)) ON ROWS " +
+                "FROM Sales " +
+                "WHERE ([1997].[Q1])",
                 fold(new String[] {
                         "Axis #0:",
                         "{[Time].[1997].[Q1]}",
@@ -1006,7 +1006,7 @@ public class FunctionTest extends FoodMartTestCase {
                         "Row #1: 40,170.29",
                         "Row #2: 30,114",
                         "Row #2: 63,282.86",
-                		""}));
+                        ""}));
     }
 
     public void testCurrentMemberDepends() {

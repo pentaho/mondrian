@@ -36,7 +36,7 @@ import java.io.StringReader;
  */
 public class DOMBuilder {
     private static final Logger LOGGER = Logger.getLogger(DOMBuilder.class);
-	
+
     Document factory;
     Result result;
     int dimCount;

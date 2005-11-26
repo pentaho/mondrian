@@ -29,7 +29,7 @@ import java.util.*;
  * @author jhyde
  * @since May 2, 2003
  * @version $Id$
- **/
+ */
 abstract class Rowset {
 	private static final Logger LOGGER = Logger.getLogger(Rowset.class);
 
@@ -208,14 +208,14 @@ abstract class Rowset {
         }
         saxHandler.endElement();
     }
-    
+
     private void emitXmlElement(SAXHandler saxHandler, XmlElement element) throws SAXException{
         if (element.attributes == null) {
             saxHandler.startElement(element.tag);
         } else {
             saxHandler.startElement(element.tag, element.attributes);
         }
-        
+
         if (element.text == null) {
             for (int i = 0; i < element.children.length; i++) {
                 emitXmlElement(saxHandler, element.children[i]);
@@ -223,7 +223,7 @@ abstract class Rowset {
         } else {
             saxHandler.characters(element.text);
         }
-        
+
         saxHandler.endElement();
     }
 
@@ -301,7 +301,7 @@ abstract class Rowset {
         }
         return requiredValue.equals(value);
     }
-    
+
 
     protected boolean isRestricted(RowsetDefinition.Column column) {
         return restrictions.get(column.name) != null;
@@ -353,15 +353,15 @@ abstract class Rowset {
         XmlElement(String tag, String[] attributes) {
             this(tag, attributes, null, null);
         }
-        
+
         XmlElement(String tag, String[] attributes, String text) {
             this(tag, attributes, text, null);
         }
-        
+
         XmlElement(String tag, String[] attributes, XmlElement[] children) {
             this(tag, attributes, null, children);
         }
-        
+
         private XmlElement(String tag, String[] attributes, String text, XmlElement[] children) {
             this.tag = tag;
             this.attributes = attributes;

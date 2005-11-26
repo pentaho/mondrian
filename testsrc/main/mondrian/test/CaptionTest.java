@@ -15,59 +15,59 @@ public class CaptionTest extends TestCase {
     /**
      * set caption "Anzahl Verkauf" for measure "Unit Sales"
      */
-	public void testMeasureCaption() {
-	    TestContext tc = TestContext.instance();
-	    Connection monConnection = tc.getFoodMartConnection("mondrian.test.CaptionTest$MyFoodmart");
-        String mdxQuery = "SELECT {[Measures].[Unit Sales]} ON COLUMNS, {[Time].[1997].[Q1]} ON ROWS FROM [Sales]";
-		mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
-		mondrian.olap.Result monResult = monConnection.execute(monQuery);
-		Axis[] axes = monResult.getAxes();
-		Position[] positions = axes[0].positions;
-		Member m0 = positions[0].members[0];
-		String caption = m0.getCaption();
-		Assert.assertEquals("Anzahl Verkauf", caption);
-	}
-
-	/**
-	 * set caption "Werbemedium" for nonshared dimension "Promotion Media"
-	 */
-	public void testDimCaption() {
-	    TestContext tc = TestContext.instance();
-	    Connection monConnection = tc.getFoodMartConnection("mondrian.test.CaptionTest$MyFoodmart");
-        String mdxQuery = "SELECT {[Measures].[Unit Sales]} ON COLUMNS, {[Promotion Media].[All Media]} ON ROWS FROM [Sales]";
-		mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
-		mondrian.olap.Result monResult = monConnection.execute(monQuery);
-		Axis[] axes = monResult.getAxes();
-		Position[] positions = axes[1].positions;
-		Member mall = positions[0].members[0];
-
-		String caption = mall.getHierarchy().getCaption();
-		Assert.assertEquals("Werbemedium", caption);
-	}
-
-	/**
-	 * set caption "Quadrat-Fuesse:-)" for shared dimension "Store Size in SQFT"
-	 */
-	public void testDimCaptionShared() {
-	    TestContext tc = TestContext.instance();
-		String mdxQuery = "SELECT {[Measures].[Unit Sales]} ON COLUMNS, {[Store Size in SQFT].[All Store Size in SQFTs]} ON ROWS FROM [Sales]";
+    public void testMeasureCaption() {
+        TestContext tc = TestContext.instance();
         Connection monConnection = tc.getFoodMartConnection("mondrian.test.CaptionTest$MyFoodmart");
- 		mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
-		mondrian.olap.Result monResult = monConnection.execute(monQuery);
-		Axis[] axes = monResult.getAxes();
-		Position[] positions = axes[1].positions;
-		Member mall = positions[0].members[0];
+        String mdxQuery = "SELECT {[Measures].[Unit Sales]} ON COLUMNS, {[Time].[1997].[Q1]} ON ROWS FROM [Sales]";
+        mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
+        mondrian.olap.Result monResult = monConnection.execute(monQuery);
+        Axis[] axes = monResult.getAxes();
+        Position[] positions = axes[0].positions;
+        Member m0 = positions[0].members[0];
+        String caption = m0.getCaption();
+        Assert.assertEquals("Anzahl Verkauf", caption);
+    }
 
-		String caption = mall.getHierarchy().getCaption();
-		Assert.assertEquals("Quadrat-Fuesse:-)", caption);
-	}
+    /**
+     * set caption "Werbemedium" for nonshared dimension "Promotion Media"
+     */
+    public void testDimCaption() {
+        TestContext tc = TestContext.instance();
+        Connection monConnection = tc.getFoodMartConnection("mondrian.test.CaptionTest$MyFoodmart");
+        String mdxQuery = "SELECT {[Measures].[Unit Sales]} ON COLUMNS, {[Promotion Media].[All Media]} ON ROWS FROM [Sales]";
+        mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
+        mondrian.olap.Result monResult = monConnection.execute(monQuery);
+        Axis[] axes = monResult.getAxes();
+        Position[] positions = axes[1].positions;
+        Member mall = positions[0].members[0];
+
+        String caption = mall.getHierarchy().getCaption();
+        Assert.assertEquals("Werbemedium", caption);
+    }
+
+    /**
+     * set caption "Quadrat-Fuesse:-)" for shared dimension "Store Size in SQFT"
+     */
+    public void testDimCaptionShared() {
+        TestContext tc = TestContext.instance();
+        String mdxQuery = "SELECT {[Measures].[Unit Sales]} ON COLUMNS, {[Store Size in SQFT].[All Store Size in SQFTs]} ON ROWS FROM [Sales]";
+        Connection monConnection = tc.getFoodMartConnection("mondrian.test.CaptionTest$MyFoodmart");
+         mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
+        mondrian.olap.Result monResult = monConnection.execute(monQuery);
+        Axis[] axes = monResult.getAxes();
+        Position[] positions = axes[1].positions;
+        Member mall = positions[0].members[0];
+
+        String caption = mall.getHierarchy().getCaption();
+        Assert.assertEquals("Quadrat-Fuesse:-)", caption);
+    }
 
 
-	/**
-	 * created from foodmart.xml via perl script,
-	 * some captions added.
-	 */
-	public static class MyFoodmart implements DynamicSchemaProcessor {
+    /**
+     * created from foodmart.xml via perl script,
+     * some captions added.
+     */
+    public static class MyFoodmart implements DynamicSchemaProcessor {
         final static String foodmart = TestContext.fold(new String[] {
             "<?xml version=\"1.0\"?>",
             "<Schema name=\"FoodMart\">",
@@ -618,10 +618,10 @@ public class CaptionTest extends TestCase {
             "</Role>",
             "</Schema>"});
 
-	    public String processSchema(
+        public String processSchema(
                 URL schemaUrl, Util.PropertyList properties) throws Exception {
-	        return foodmart;
-	    }
+            return foodmart;
+        }
     }
 }
 

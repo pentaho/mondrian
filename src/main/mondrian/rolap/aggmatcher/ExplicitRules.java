@@ -1064,7 +1064,7 @@ RME TODO
         protected Recognizer.Matcher getFactCountMatcher() {
             return new Recognizer.Matcher() {
                 public boolean matches(String name) {
-                	// Match is case insensitive
+                    // Match is case insensitive
                     return ExplicitRules.TableDef.this.factCountName.equalsIgnoreCase(name);
                 }
             };

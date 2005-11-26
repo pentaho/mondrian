@@ -167,7 +167,7 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     class Batch {
-    	private final Logger LOGGER = Logger.getLogger(Batch.class);
+        private final Logger LOGGER = Logger.getLogger(Batch.class);
         final RolapStar.Column[] columns;
         final BitKey bitKey;
         final List measuresList = new ArrayList();
@@ -212,16 +212,16 @@ public class FastBatchingCellReader implements CellReader {
                             FastBatchingCellReader.this.cube.getStar(), columns);
                     if (aggGen.isReady()) {
                         // PRINT TO STDOUT - DO NOT USE LOGGER
-                    	System.out.println("createLost:" + 
+                        System.out.println("createLost:" +
                             Util.nl + aggGen.createLost());
-                    	System.out.println("insertIntoLost:" + 
+                        System.out.println("insertIntoLost:" +
                             Util.nl + aggGen.insertIntoLost());
-                    	System.out.println("createCollapsed:" + 
+                        System.out.println("createCollapsed:" +
                             Util.nl + aggGen.createCollapsed());
-                    	System.out.println("insertIntoCollapsed:" + 
-                        Util.nl + aggGen.insertIntoCollapsed());
+                        System.out.println("insertIntoCollapsed:" +
+                            Util.nl + aggGen.insertIntoCollapsed());
                     } else {
-                    	LOGGER.error("AggGen failed");
+                        LOGGER.error("AggGen failed");
                     }
                 }
             }

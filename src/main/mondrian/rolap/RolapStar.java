@@ -1538,7 +1538,7 @@ public class RolapStar {
     }
 
     public static class Condition {
-    	private static final Logger LOGGER = Logger.getLogger(Condition.class);
+        private static final Logger LOGGER = Logger.getLogger(Condition.class);
 
         private final MondrianDef.Expression left;
         private final MondrianDef.Expression right;

@@ -1,3 +1,12 @@
+/*
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2003-2005 Julian Hyde
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.xmla;
 
 import java.lang.reflect.Field;
@@ -22,6 +31,9 @@ import org.xml.sax.SAXException;
  *
  * <p>See "XML for Analysis Rowsets", page 38 of the XML for Analysis
  * Specification, version 1.1.
+ *
+ * @author jhyde
+ * @version $Id$
  */
 abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     final Column[] columnDefinitions;
@@ -751,8 +763,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
         private static final String MD_CUBTYPE_CUBE = "CUBE";
         private static final String MD_CUBTYPE_VIRTUAL_CUBE = "VIRTUAL CUBE";
-        
-        
+
+
         private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
         private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
         private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
@@ -809,7 +821,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         public static final int MD_DIMTYPE_OTHER = 3;
         public static final int MD_DIMTYPE_MEASURE = 2;
         public static final int MD_DIMTYPE_TIME = 1;
-        
+
         private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
         private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
         private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
@@ -866,7 +878,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             return MdschemaDimensionsRowset.MD_DIMTYPE_OTHER;
         }
     }
-    
+
     // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olapfunctions_rowset.asp
     static class MdschemaFunctionsRowset extends Rowset {
         MdschemaFunctionsRowset(HashMap restrictions, Properties properties) {
@@ -894,7 +906,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
     }
 
-    
+
     // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olaphierarchies_rowset.asp
     static class MdschemaHierarchiesRowset extends Rowset {
         MdschemaHierarchiesRowset(HashMap restrictions, Properties properties) {
@@ -911,7 +923,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column DimensionType = new Column("DIMENSION_TYPE", Type.Integer, null, true, false, null);
         private static final Column DefaultMember = new Column("DEFAULT_MEMBER", Type.String, null, true, true, null);
         private static final Column AllMember = new Column("ALL_MEMBER", Type.String, null, true, true, null);
-        
+
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "MDSCHEMA_HIERARCHIES", MDSCHEMA_HIERARCHIES, null, new Column[] {
                     CatalogName,
@@ -968,7 +980,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         MdschemaLevelsRowset(HashMap restrictions, Properties properties) {
             super(definition, restrictions, properties);
         }
-        
+
         public static final int MDLEVEL_TYPE_UNKNOWN = 0x0000;
         public static final int MDLEVEL_TYPE_REGULAR = 0x0000;
         public static final int MDLEVEL_TYPE_ALL = 0x0001;
@@ -1045,7 +1057,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 }
             }
         }
-        
+
         private int getLevelType(Level lev) {
             if (lev.isAll()) {
                 return MDLEVEL_TYPE_ALL;
@@ -1071,7 +1083,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
     }
 
-    
+
     // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olapmeasures_rowset.asp
     static class MdschemaMeasuresRowset extends Rowset {
         MdschemaMeasuresRowset(HashMap restrictions, Properties properties) {
@@ -1099,7 +1111,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         };
 
         public void unparse(SAXHandler saxHandler) throws SAXException {
-            // return both stored and calculated members on hierarchy [Measures] 
+            // return both stored and calculated members on hierarchy [Measures]
             final Connection connection = XmlaMediator.getConnection(properties);
             final Role role = connection.getRole();
             final Cube[] cubes = connection.getSchema().getCubes();
@@ -1118,7 +1130,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 }
             }
         }
-        
+
         private void emitMember(SAXHandler saxHandler, Member member, Cube cube) throws SAXException {
             Row row = new Row();
             row.set(CatalogName.name, cube.getSchema().getName());
@@ -1135,7 +1147,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         MdschemaMembersRowset(HashMap restrictions, Properties properties) {
             super(definition, restrictions, properties);
         }
-        
+
         private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
         private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
         private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
@@ -1420,35 +1432,35 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         };
 
         public void unparse(SAXHandler saxHandler) throws SAXException {
-            final Connection connection = XmlaMediator.getConnection(properties); 
-            final Cube[] cubes = connection.getSchema().getCubes(); 
-            for (int i = 0; i < cubes.length; i++) { 
-                Cube cube = cubes[i]; 
-                final Dimension[] dimensions = cube.getDimensions(); 
-                for (int j = 0; j < dimensions.length; j++) { 
-                    final Dimension dimension = dimensions[j]; 
-                    final Hierarchy[] hierarchies = dimension.getHierarchies(); 
-                    for (int k = 0; k < hierarchies.length; k++) { 
-                        Hierarchy hierarchy = hierarchies[k]; 
+            final Connection connection = XmlaMediator.getConnection(properties);
+            final Cube[] cubes = connection.getSchema().getCubes();
+            for (int i = 0; i < cubes.length; i++) {
+                Cube cube = cubes[i];
+                final Dimension[] dimensions = cube.getDimensions();
+                for (int j = 0; j < dimensions.length; j++) {
+                    final Dimension dimension = dimensions[j];
+                    final Hierarchy[] hierarchies = dimension.getHierarchies();
+                    for (int k = 0; k < hierarchies.length; k++) {
+                        Hierarchy hierarchy = hierarchies[k];
                         Level[] levels = hierarchy.getLevels();
-                        for (int l = 0; l < levels.length; l++) { 
-                            Level level = levels[l]; 
-                            Property[] properties = level.getProperties(); 
-                            for (int m = 0; m < properties.length; m++) { 
-                                Property property = properties[m]; 
-                                Row row = new Row(); 
-                                row.set(CatalogName.name, cube.getSchema().getName()); 
-                                row.set(SchemaName.name, cube.getSchema().getName()); 
-                                row.set(CubeName.name, cube.getName()); 
+                        for (int l = 0; l < levels.length; l++) {
+                            Level level = levels[l];
+                            Property[] properties = level.getProperties();
+                            for (int m = 0; m < properties.length; m++) {
+                                Property property = properties[m];
+                                Row row = new Row();
+                                row.set(CatalogName.name, cube.getSchema().getName());
+                                row.set(SchemaName.name, cube.getSchema().getName());
+                                row.set(CubeName.name, cube.getName());
                                 row.set(DimensionUniqueName.name, dimension.getUniqueName());
                                 row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
-                                row.set(LevelUniqueName.name, level.getUniqueName()); 
-                                // row.set(MemberUniqueName.name, null);                                  
-                                row.set(PropertyName.name, property.getName()); 
-                                row.set(PropertyType.name, MDPROP_MEMBER); // Only member properties now 
+                                row.set(LevelUniqueName.name, level.getUniqueName());
+                                // row.set(MemberUniqueName.name, null);
+                                row.set(PropertyName.name, property.getName());
+                                row.set(PropertyType.name, MDPROP_MEMBER); // Only member properties now
                                 row.set(PropertyContentType.name, 0);
-                                row.set(PropertyCaption.name, property.getCaption()); 
-                                emit(row, saxHandler); 
+                                row.set(PropertyCaption.name, property.getCaption());
+                                emit(row, saxHandler);
                             }
                         }
                     }

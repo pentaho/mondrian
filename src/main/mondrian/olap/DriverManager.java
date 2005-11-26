@@ -142,7 +142,7 @@ public class DriverManager {
     public static Connection getConnection(Util.PropertyList properties,
                                            ServletContext servletContext,
                                            boolean fresh) {
-    	return getConnection(properties, servletContext, null, fresh);
+        return getConnection(properties, servletContext, null, fresh);
     }
     /**
      * Creates a connection to a Mondrian OLAP Server.
@@ -152,8 +152,8 @@ public class DriverManager {
      *   See {@link RolapConnection} for a list of allowed properties.
      * @param servletContext If not null, the <code>catalog</code> is read
      *   relative to the WAR file of this servlet.
-	 * @param dataSource - if not null an external DataSource to be used
-	 *        by Mondrian
+     * @param dataSource - if not null an external DataSource to be used
+     *        by Mondrian
      * @param fresh If <code>true</code>, a new connection is created;
      *   if <code>false</code>, the connection may come from a connection pool.
      * @return A {@link Connection}

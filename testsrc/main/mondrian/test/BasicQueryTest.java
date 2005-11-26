@@ -29,7 +29,7 @@ import junit.framework.Assert;
  * @author jhyde
  * @since Feb 14, 2003
  * @version $Id$
- **/
+ */
 public class BasicQueryTest extends FoodMartTestCase {
     public BasicQueryTest(String name) {
         super(name);
@@ -2794,7 +2794,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         // There was a test in here to deal with the sorting of nulls by different
         // DBMSs. With the work on the members function, with the hierarchized
         // result, nulls always sort high now.
-        
+
 /*        // Try to detect whether nulls are sorted high, such as Postgres and Oracle.
         // In practice, the different JDBC drivers do not report correctly in all
         // instances.
@@ -2824,7 +2824,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             nullsSortHigh = true;
         }
         */
-        
+
         int row = 0;
 
         final String expected = "Axis #0:" + nl +
@@ -4358,7 +4358,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * note: Store "HQ" does not have a "Store Manager"
      */
     public void testEmptyProperty() {
-        String query = 	"select     {[Measures].[Unit Sales]} on columns, " +
+        String query = "select     {[Measures].[Unit Sales]} on columns, " +
         "filter([Store].[Store Name].members," +
         "[Store].currentmember.properties(\"Store Manager\")=\"Smith\") on rows" +
         " from Sales";

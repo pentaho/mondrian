@@ -344,11 +344,11 @@ public class SqlQuery
             addSelect(expression, nextColumnAlias());
         }
     }
-    
+
     public String nextColumnAlias() {
         return "c" + select.size();
     }
-    
+
     /** Adds an expression to the select clause, with a specified column
      * alias. **/
     public void addSelect(final String expression, final String alias) {
@@ -396,11 +396,11 @@ public class SqlQuery
      */
     public void addOrderBy(final String expression)
     {
-    	if (dialect.isDerby() || dialect.isCloudscape()) {
-    		orderBy.add(dialect.quoteIdentifier("c" + (select.size() - 1)));
-    	} else {
-    		orderBy.add(expression);
-    	}
+        if (dialect.isDerby() || dialect.isCloudscape()) {
+            orderBy.add(dialect.quoteIdentifier("c" + (select.size() - 1)));
+        } else {
+            orderBy.add(expression);
+        }
     }
 
     /**
@@ -420,7 +420,7 @@ public class SqlQuery
         else
             orderBy.add(alias);
     }
-    
+
     public String toString()
     {
         if (generateFormattedSql) {
@@ -894,10 +894,10 @@ public class SqlQuery
         }
 
     }
-    
+
     /**
      * quotes a value so it may be used in SQL
-     * @throws NumberFormatException if numeric == true and value can not 
+     * @throws NumberFormatException if numeric == true and value can not
      * be parsed as a number
      */
     public String quote(boolean numeric, Object value) throws NumberFormatException {

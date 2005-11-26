@@ -200,8 +200,8 @@ debug("LinReg.Intercept.evaluator","BOTTOM: " +value.getIntercept());
         // <Numeric Expression>,
         // <Set>, <Numeric Expression>[, <Numeric  Expression>]
         public Object evaluate(Evaluator evaluator, Exp[] args) {
-debug("LinReg.Point.evaluator","TOP");
-	    double x = getDoubleArg(evaluator, args, 0).doubleValue();
+//debug("LinReg.Point.evaluator","TOP");
+            double x = getDoubleArg(evaluator, args, 0).doubleValue();
 debug("LinReg.Point.evaluator","x=" +x);
 
 debug("LinReg.Point.evaluator","args.length=" +args.length);

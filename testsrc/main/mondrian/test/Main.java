@@ -104,10 +104,10 @@ public class Main extends TestSuite {
 
             boolean matchTestMethods = false;
             if (Test.class.isAssignableFrom(clazz)) {
-            	Method[] methods = clazz.getMethods();
-            	for (int i = 0; i < methods.length && !matchTestMethods; i++) {
-            		matchTestMethods = methods[i].getName().startsWith("test");
-            	}
+                Method[] methods = clazz.getMethods();
+                for (int i = 0; i < methods.length && !matchTestMethods; i++) {
+                    matchTestMethods = methods[i].getName().startsWith("test");
+                }
             }
 
             if (matchTestMethods) {

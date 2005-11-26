@@ -171,10 +171,10 @@ public class XmlaTest extends TestCase {
             executeRequest(request);
         } catch (Throwable t) {
             Throwable rootThrowable = t.getCause();
-		    while (rootThrowable != null && rootThrowable instanceof MondrianException) {
+            while (rootThrowable != null && rootThrowable instanceof MondrianException) {
                 t = rootThrowable;
-			    rootThrowable = rootThrowable.getCause();
-    		}
+                rootThrowable = rootThrowable.getCause();
+            }
 
             if (Pattern.matches(messagePattern, t.getMessage()))
                 return;
@@ -2016,39 +2016,39 @@ public class XmlaTest extends TestCase {
         assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
-	public void testXmlaError() {
-		String[] expected = {
-			"<?xml version=\"1.0\"?>",
-			"<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
-			"  <SOAP-ENV:Body>",
-			"    <ExecuteResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">",
-			"      <return xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">",
-			"        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:mddataset\">",
-			"          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>",
-			"          <Messages>",
-			"            <Error ErrorCode=\"mondrian.olap.MondrianException\" Description=\"Mondrian Error:MDX cube &#39;NonexistedCube&#39; not found or not processed\" Source=\"Mondrian\" Help=\"\"/>",
-			"          </Messages>",
-			"        </root>",
-			"      </return>",
-			"    </ExecuteResponse>",
-			"  </SOAP-ENV:Body>",
-			"</SOAP-ENV:Envelope>",};
-		String[] request = {
-			"<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" ",
-			"  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
-			"  <Command>",
-			"    <Statement>SELECT {[Measures].Members} ON COLUMNS FROM [NonexistedCube]</Statement>",
-			"  </Command>",
-			"  <Properties>",
-			"    <PropertyList>",
-			"      <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
-			"      <Catalog>FoodMart</Catalog>",
-			"      <Format>Multidimensional</Format>",
-			"      <AxisFormat>TupleFormat</AxisFormat>",
-			"    </PropertyList>",
-			"  </Properties>",
-			"</Execute>"};
-		assertRequestYields(wrap(fold(request)), fold(expected));
+    public void testXmlaError() {
+        String[] expected = {
+            "<?xml version=\"1.0\"?>",
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <SOAP-ENV:Body>",
+            "    <ExecuteResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">",
+            "      <return xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">",
+            "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:mddataset\">",
+            "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>",
+            "          <Messages>",
+            "            <Error ErrorCode=\"mondrian.olap.MondrianException\" Description=\"Mondrian Error:MDX cube &#39;NonexistedCube&#39; not found or not processed\" Source=\"Mondrian\" Help=\"\"/>",
+            "          </Messages>",
+            "        </root>",
+            "      </return>",
+            "    </ExecuteResponse>",
+            "  </SOAP-ENV:Body>",
+            "</SOAP-ENV:Envelope>",};
+        String[] request = {
+            "<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" ",
+            "  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <Command>",
+            "    <Statement>SELECT {[Measures].Members} ON COLUMNS FROM [NonexistedCube]</Statement>",
+            "  </Command>",
+            "  <Properties>",
+            "    <PropertyList>",
+            "      <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "      <Catalog>FoodMart</Catalog>",
+            "      <Format>Multidimensional</Format>",
+            "      <AxisFormat>TupleFormat</AxisFormat>",
+            "    </PropertyList>",
+            "  </Properties>",
+            "</Execute>"};
+        assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
     /**

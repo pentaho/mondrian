@@ -239,7 +239,7 @@ public class RolapUtil {
                 RolapUtil.debugOut.println(status);
             }
             if (LOGGER.isDebugEnabled()) {
-            	LOGGER.debug(component + ": executing sql [" + sql + "]" + status);
+                LOGGER.debug(component + ": executing sql [" + sql + "]" + status);
             }
             getQuerySemaphore().leave();
         }

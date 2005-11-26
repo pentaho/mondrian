@@ -1034,11 +1034,11 @@ public class Query extends QueryPart {
                 member = schemaReader.getMemberByUniqueName(uniqueNameParts,
                     failIfNotFound);
             }
-        	if (getRole().canAccess(member)) {
-        		return member;
-        	} else {
-        		return null;
-        	}
+            if (getRole().canAccess(member)) {
+                return member;
+            } else {
+                return null;
+            }
         }
 
         public Member getCalculatedMember(String[] nameParts) {

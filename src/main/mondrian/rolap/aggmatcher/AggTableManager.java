@@ -109,7 +109,7 @@ public class AggTableManager {
 
         } else
 */
-    	if (getLogger().isDebugEnabled()) {
+        if (getLogger().isDebugEnabled()) {
             // print everything, Star, subTables, AggStar and subTables
             // could be a lot
             StringBuffer buf = new StringBuffer(4096);

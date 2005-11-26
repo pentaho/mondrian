@@ -137,7 +137,7 @@ public class MondrianFoodMartLoader {
             } else if (args[i].equals("-indexes")) {
                 indexes = true;
             } else if (args[i].equals("-populationQueries")) {
-            	populationQueries = true;
+                populationQueries = true;
             } else if (args[i].startsWith("-jdbcDrivers=")) {
                 jdbcDrivers = args[i].substring("-jdbcDrivers=".length());
             } else if (args[i].startsWith("-outputJdbcURL=")) {
@@ -163,7 +163,7 @@ public class MondrianFoodMartLoader {
             }
 
             if (LOGGER.isInfoEnabled()) {
-            	parametersMessage.append("\t" + args[i] + nl);
+                parametersMessage.append("\t" + args[i] + nl);
             }
         }
         if (inputJdbcURL != null) {
@@ -181,7 +181,7 @@ public class MondrianFoodMartLoader {
         }
 
         if (LOGGER.isInfoEnabled()) {
-        	LOGGER.info("Parameters: " + nl + parametersMessage.toString());
+            LOGGER.info("Parameters: " + nl + parametersMessage.toString());
         }
     }
 
@@ -198,21 +198,21 @@ public class MondrianFoodMartLoader {
                 "   [-inputfile=<file name>]" +
                 "]");
         System.out.println("");
-        System.out.println("  <jdbcURL>         	JDBC connect string for DB");
-        System.out.println("  [user]            	JDBC user name for DB");
-        System.out.println("  [password]        	JDBC password for user for DB");
-        System.out.println("                    	If no source DB parameters are given, assumes data comes from file");
-        System.out.println("  [file name]       	file containing test data - INSERT statements in MySQL format");
-        System.out.println("                    	If no input file name or input JDBC parameters are given, assume insert statements come from demo/FoodMartCreateData.zip file");
-        System.out.println("  [outputDirectory] 	Where FoodMartCreateTables.sql, FoodMartCreateData.sql and FoodMartCreateIndexes.sql will be created");
+        System.out.println("  <jdbcURL>             JDBC connect string for DB");
+        System.out.println("  [user]                JDBC user name for DB");
+        System.out.println("  [password]            JDBC password for user for DB");
+        System.out.println("                        If no source DB parameters are given, assumes data comes from file");
+        System.out.println("  [file name]           file containing test data - INSERT statements in MySQL format");
+        System.out.println("                        If no input file name or input JDBC parameters are given, assume insert statements come from demo/FoodMartCreateData.zip file");
+        System.out.println("  [outputDirectory]     Where FoodMartCreateTables.sql, FoodMartCreateData.sql and FoodMartCreateIndexes.sql will be created");
 
-        System.out.println("  <batch size>      	size of JDBC batch updates - default to 50 inserts");
-        System.out.println("  <jdbcDrivers>     	Comma-separated list of JDBC drivers.");
-        System.out.println("                    	They must be on the classpath.");
-        System.out.println("  -tables           	If specified, drop and create the tables.");
-        System.out.println("  -data             	If specified, load the data.");
-        System.out.println("  -indexes          	If specified, drop and create the tables.");
-        System.out.println("  -populationQueries	If specified, run the data loading queries. Runs by default if -data is specified.");
+        System.out.println("  <batch size>          size of JDBC batch updates - default to 50 inserts");
+        System.out.println("  <jdbcDrivers>         Comma-separated list of JDBC drivers.");
+        System.out.println("                        They must be on the classpath.");
+        System.out.println("  -tables               If specified, drop and create the tables.");
+        System.out.println("  -data                 If specified, load the data.");
+        System.out.println("  -indexes              If specified, drop and create the tables.");
+        System.out.println("  -populationQueries    If specified, run the data loading queries. Runs by default if -data is specified.");
     }
 
     public static void main(String[] args) {
@@ -261,7 +261,7 @@ public class MondrianFoodMartLoader {
         } else if (sqlQuery.getDialect().isMySQL()) {
             booleanColumnType = "TINYINT(1)";
         } else if (sqlQuery.getDialect().isMSSQL()) {
-        	booleanColumnType = "BIT";
+            booleanColumnType = "BIT";
         }
 
         bigIntColumnType = "BIGINT";
@@ -269,27 +269,27 @@ public class MondrianFoodMartLoader {
                 sqlQuery.getDialect().isFirebird()) {
             bigIntColumnType = "DECIMAL(15,0)";
         }
-        
+
         dateColumnType = "DATE";
         if (sqlQuery.getDialect().isMSSQL()) {
-        	dateColumnType = "DATETIME";
+            dateColumnType = "DATETIME";
         }
-        
+
         timestampColumnType = "TIMESTAMP";
         if (sqlQuery.getDialect().isMSSQL()) {
-        	timestampColumnType = "DATETIME";
+            timestampColumnType = "DATETIME";
         }
 
         try {
             createTables();  // This also initializes tableMetadataToLoad
             if (data) {
-            	if (!populationQueries) {
-	                if (jdbcInput) {
-	                    loadDataFromJdbcInput();
-	                } else {
-	                    loadDataFromFile();
-	                }
-            	}
+                if (!populationQueries) {
+                    if (jdbcInput) {
+                        loadDataFromJdbcInput();
+                    } else {
+                        loadDataFromFile();
+                    }
+                }
                 loadFromSQLInserts();
             }
 
@@ -360,14 +360,14 @@ public class MondrianFoodMartLoader {
                     continue;
                 }
                 if (regex == null) {
-                	Matcher m1 = mySQLRegex.matcher(line);
-                	if (m1.matches()) {
-                		regex = mySQLRegex;
-                		quoteChar = "`";
-                	} else {
-                		regex = doubleQuoteRegex;
-                		quoteChar = "\"";
-                	}
+                    Matcher m1 = mySQLRegex.matcher(line);
+                    if (m1.matches()) {
+                        regex = mySQLRegex;
+                        quoteChar = "`";
+                    } else {
+                        regex = doubleQuoteRegex;
+                        quoteChar = "\"";
+                    }
                 }
                 // Split the up the line. For example,
                 //   INSERT INTO `foo` ( `column1`,`column2` ) VALUES (1, 'bar');
@@ -387,7 +387,7 @@ public class MondrianFoodMartLoader {
                 // If table just changed, flush the previous batch.
                 if (!tableName.equals(prevTable)) {
                     if (!prevTable.equals("")) {
-                    	LOGGER.info("Table " + prevTable +
+                        LOGGER.info("Table " + prevTable +
                             ": loaded " + tableRowCount + " rows.");
                     }
                     tableRowCount = 0;
@@ -398,7 +398,7 @@ public class MondrianFoodMartLoader {
                     quotedColumnNames = columnNames.replaceAll(quoteChar,
                             sqlQuery.getDialect().getQuoteIdentifierString());
                     String[] splitColumnNames = columnNames.replaceAll(quoteChar, "")
-                    						.replaceAll(" ", "").split(",");
+                                            .replaceAll(" ", "").split(",");
                     Column[] columns = (Column[]) tableMetadataToLoad.get(tableName);
 
                     orderedColumns = new Column[columns.length];
@@ -443,7 +443,7 @@ public class MondrianFoodMartLoader {
             }
             // Print summary of the final table.
             if (!prevTable.equals("")) {
-            	LOGGER.info("Table " + prevTable +
+                LOGGER.info("Table " + prevTable +
                     ": loaded " + tableRowCount + " rows.");
                 tableRowCount = 0;
                 writeBatch(batch, batchSize);
@@ -558,7 +558,7 @@ public class MondrianFoodMartLoader {
      *
      */
     private void loadFromSQLInserts() throws Exception {
-    	InputStream is = getClass().getResourceAsStream("insert.sql");
+        InputStream is = getClass().getResourceAsStream("insert.sql");
         try {
             final InputStreamReader reader = new InputStreamReader(is);
             final BufferedReader bufferedReader = new BufferedReader(reader);
@@ -571,13 +571,13 @@ public class MondrianFoodMartLoader {
 
             String fromQuoteChar = null;
             String toQuoteChar = null;
-        	if (sqlQuery.getDialect().isMySQL()) {
-        		toQuoteChar = "`";
-        	} else if (sqlQuery.getDialect().isDB2()) {
+            if (sqlQuery.getDialect().isMySQL()) {
+                toQuoteChar = "`";
+            } else if (sqlQuery.getDialect().isDB2()) {
                 toQuoteChar = "";
             } else {
-        		toQuoteChar = "\"";
-        	}
+                toQuoteChar = "\"";
+            }
 
             while ((line = bufferedReader.readLine()) != null) {
                 ++lineNumber;
@@ -588,27 +588,27 @@ public class MondrianFoodMartLoader {
                 }
 
                 if (fromQuoteChar == null) {
-                	if (line.indexOf('`') >=0) {
-                		fromQuoteChar = "`";
-                	} else if (line.indexOf('"') >=0) {
-                		fromQuoteChar = "\"";
-                	}
+                    if (line.indexOf('`') >=0) {
+                        fromQuoteChar = "`";
+                    } else if (line.indexOf('"') >=0) {
+                        fromQuoteChar = "\"";
+                    }
                 }
 
                 if (fromQuoteChar != null && fromQuoteChar != toQuoteChar) {
-                	line = line.replaceAll(fromQuoteChar, toQuoteChar);
+                    line = line.replaceAll(fromQuoteChar, toQuoteChar);
                 }
 
                 // End of statement
                 if (line.charAt(line.length() - 1) == ';') {
                     statement.append(" ")
-						.append(line.substring(0, line.length() - 1));
+                        .append(line.substring(0, line.length() - 1));
                     executeDDL(statement.toString());
                     statement = new StringBuffer();
 
                 } else {
                     statement.append(" ")
-					.append(line.substring(0, line.length()));
+                    .append(line.substring(0, line.length()));
                 }
             }
 
@@ -669,7 +669,7 @@ public class MondrianFoodMartLoader {
 
             String insertStatement = createInsertStatement(rs, name, columns);
             if (!displayedInsert && LOGGER.isDebugEnabled()) {
-            	LOGGER.debug("Example Insert statement: " + insertStatement);
+                LOGGER.debug("Example Insert statement: " + insertStatement);
                 displayedInsert = true;
             }
             batch[batchSize++] = insertStatement;
@@ -764,7 +764,7 @@ public class MondrianFoodMartLoader {
                 int updates = 0;
                 for (int i = 0; i < updateCounts.length; updates += updateCounts[i], i++) {
                     if (updateCounts[i] == 0) {
-                    	LOGGER.error("Error in SQL: " + batch[i]);
+                        LOGGER.error("Error in SQL: " + batch[i]);
                     }
                 }
                 if (updates < batchSize) {
@@ -933,7 +933,7 @@ public class MondrianFoodMartLoader {
 
             // Only do aggregate tables
             if (populationQueries && !aggregateTableMetadataToLoad.containsKey(tableName)) {
-            	return;
+                return;
             }
 
             StringBuffer buf = new StringBuffer();
@@ -950,7 +950,7 @@ public class MondrianFoodMartLoader {
                     final String deleteDDL = buf.toString();
                     executeDDL(deleteDDL);
                 } catch (Exception e1) {
-                	LOGGER.info("Index Drop failed for " + tableName + ", " + indexName + " : but continue");
+                    LOGGER.info("Index Drop failed for " + tableName + ", " + indexName + " : but continue");
                 }
             }
 
@@ -1044,76 +1044,76 @@ public class MondrianFoodMartLoader {
         //  Aggregate tables
 
         createTable("agg_pl_01_sales_fact_1997", new Column[] {
-	        new Column("product_id", "INTEGER", "NOT NULL"),
-	        new Column("time_id", "INTEGER", "NOT NULL"),
-	        new Column("customer_id", "INTEGER", "NOT NULL"),
-	        new Column("store_sales_sum", "DECIMAL(10,4)", "NOT NULL"),
-	        new Column("store_cost_sum", "DECIMAL(10,4)", "NOT NULL"),
-	        new Column("unit_sales_sum", "DECIMAL(10,4)", "NOT NULL"),
-	        new Column("fact_count", "INTEGER", "NOT NULL"),
+            new Column("product_id", "INTEGER", "NOT NULL"),
+            new Column("time_id", "INTEGER", "NOT NULL"),
+            new Column("customer_id", "INTEGER", "NOT NULL"),
+            new Column("store_sales_sum", "DECIMAL(10,4)", "NOT NULL"),
+            new Column("store_cost_sum", "DECIMAL(10,4)", "NOT NULL"),
+            new Column("unit_sales_sum", "DECIMAL(10,4)", "NOT NULL"),
+            new Column("fact_count", "INTEGER", "NOT NULL"),
         }, false, true);
         createTable("agg_ll_01_sales_fact_1997", new Column[] {
-	        new Column("product_id", "INTEGER", "NOT NULL"),
-	        new Column("time_id", "INTEGER", "NOT NULL"),
-	        new Column("customer_id", "INTEGER", "NOT NULL"),
-	        new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-	        new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-	        new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
-	        new Column("fact_count", "INTEGER", "NOT NULL"),
+            new Column("product_id", "INTEGER", "NOT NULL"),
+            new Column("time_id", "INTEGER", "NOT NULL"),
+            new Column("customer_id", "INTEGER", "NOT NULL"),
+            new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
+            new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
+            new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
+            new Column("fact_count", "INTEGER", "NOT NULL"),
         }, false, true);
         createTable("agg_l_03_sales_fact_1997", new Column[] {
-    	        new Column("time_id", "INTEGER", "NOT NULL"),
-    	        new Column("customer_id", "INTEGER", "NOT NULL"),
-    	        new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("fact_count", "INTEGER", "NOT NULL"),
+                new Column("time_id", "INTEGER", "NOT NULL"),
+                new Column("customer_id", "INTEGER", "NOT NULL"),
+                new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("fact_count", "INTEGER", "NOT NULL"),
             }, false, true);
         createTable("agg_l_05_sales_fact_1997", new Column[] {
-    	        new Column("product_id", "INTEGER", "NOT NULL"),
-    	        new Column("customer_id", "INTEGER", "NOT NULL"),
-    	        new Column("promotion_id", "INTEGER", "NOT NULL"),
-    	        new Column("store_id", "INTEGER", "NOT NULL"),
-    	        new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("fact_count", "INTEGER", "NOT NULL"),
+                new Column("product_id", "INTEGER", "NOT NULL"),
+                new Column("customer_id", "INTEGER", "NOT NULL"),
+                new Column("promotion_id", "INTEGER", "NOT NULL"),
+                new Column("store_id", "INTEGER", "NOT NULL"),
+                new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("fact_count", "INTEGER", "NOT NULL"),
             }, false, true);
         createTable("agg_c_14_sales_fact_1997", new Column[] {
-    	        new Column("product_id", "INTEGER", "NOT NULL"),
-    	        new Column("customer_id", "INTEGER", "NOT NULL"),
-    	        new Column("store_id", "INTEGER", "NOT NULL"),
-    	        new Column("promotion_id", "INTEGER", "NOT NULL"),
-    	        new Column("month_of_year", "SMALLINT", "NOT NULL"),
-    	        new Column("quarter", "VARCHAR(30)", "NOT NULL"),
-		        new Column("the_year", "SMALLINT", "NOT NULL"),
-    	        new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("fact_count", "INTEGER", "NOT NULL"),
+                new Column("product_id", "INTEGER", "NOT NULL"),
+                new Column("customer_id", "INTEGER", "NOT NULL"),
+                new Column("store_id", "INTEGER", "NOT NULL"),
+                new Column("promotion_id", "INTEGER", "NOT NULL"),
+                new Column("month_of_year", "SMALLINT", "NOT NULL"),
+                new Column("quarter", "VARCHAR(30)", "NOT NULL"),
+                new Column("the_year", "SMALLINT", "NOT NULL"),
+                new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("fact_count", "INTEGER", "NOT NULL"),
             }, false, true);
         createTable("agg_lc_100_sales_fact_1997", new Column[] {
-    	        new Column("product_id", "INTEGER", "NOT NULL"),
-    	        new Column("customer_id", "INTEGER", "NOT NULL"),
-    	        new Column("quarter", "VARCHAR(30)", "NOT NULL"),
-		        new Column("the_year", "SMALLINT", "NOT NULL"),
-    	        new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("fact_count", "INTEGER", "NOT NULL"),
+                new Column("product_id", "INTEGER", "NOT NULL"),
+                new Column("customer_id", "INTEGER", "NOT NULL"),
+                new Column("quarter", "VARCHAR(30)", "NOT NULL"),
+                new Column("the_year", "SMALLINT", "NOT NULL"),
+                new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("fact_count", "INTEGER", "NOT NULL"),
             }, false, true);
         createTable("agg_c_special_sales_fact_1997", new Column[] {
-    	        new Column("product_id", "INTEGER", "NOT NULL"),
-    	        new Column("promotion_id", "INTEGER", "NOT NULL"),
-    	        new Column("customer_id", "INTEGER", "NOT NULL"),
-    	        new Column("store_id", "INTEGER", "NOT NULL"),
-    	        new Column("time_month", "SMALLINT", "NOT NULL"),
-    	        new Column("time_quarter", "VARCHAR(30)", "NOT NULL"),
-		        new Column("time_year", "SMALLINT", "NOT NULL"),
-    	        new Column("store_sales_sum", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("store_cost_sum", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("unit_sales_sum", "DECIMAL(10,4)", "NOT NULL"),
-    	        new Column("fact_count", "INTEGER", "NOT NULL"),
+                new Column("product_id", "INTEGER", "NOT NULL"),
+                new Column("promotion_id", "INTEGER", "NOT NULL"),
+                new Column("customer_id", "INTEGER", "NOT NULL"),
+                new Column("store_id", "INTEGER", "NOT NULL"),
+                new Column("time_month", "SMALLINT", "NOT NULL"),
+                new Column("time_quarter", "VARCHAR(30)", "NOT NULL"),
+                new Column("time_year", "SMALLINT", "NOT NULL"),
+                new Column("store_sales_sum", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("store_cost_sum", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("unit_sales_sum", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("fact_count", "INTEGER", "NOT NULL"),
             }, false, true);
 
         createTable("currency", new Column[] {
@@ -1395,28 +1395,28 @@ public class MondrianFoodMartLoader {
      */
 
     private void createTable(String name, Column[] columns) {
-    	createTable(name, columns,  true, false);
+        createTable(name, columns,  true, false);
     }
 
     private void createTable(String name, Column[] columns,  boolean loadData, boolean aggregate) {
         try {
 
-        	// Store this metadata if we are going to load the table
-        	// from JDBC or a file
+            // Store this metadata if we are going to load the table
+            // from JDBC or a file
 
-        	if (loadData) {
-        		tableMetadataToLoad.put(name, columns);
-        	}
+            if (loadData) {
+                tableMetadataToLoad.put(name, columns);
+            }
 
-        	if (aggregate) {
-        		aggregateTableMetadataToLoad.put(name, columns);
-        	}
+            if (aggregate) {
+                aggregateTableMetadataToLoad.put(name, columns);
+            }
 
             if (!tables) {
                 if (data && jdbcOutput) {
-                	if (populationQueries && !aggregate) {
-                		return;
-                	}
+                    if (populationQueries && !aggregate) {
+                        return;
+                    }
                     // We're going to load the data without [re]creating
                     // the table, so let's remove the data.
                     try {
@@ -1429,14 +1429,14 @@ public class MondrianFoodMartLoader {
 
             } else if (populationQueries && !aggregate) {
                 // only create the aggregate tables if we are running
-            	// -tables -populationQueries
-            	return;
+                // -tables -populationQueries
+                return;
             }
             // If table does not exist, that is OK
             try {
-            	executeDDL("DROP TABLE " + quoteId(name));
+                executeDDL("DROP TABLE " + quoteId(name));
             } catch (Exception e) {
-            	LOGGER.debug("Drop of " + name + " failed. Ignored");
+                LOGGER.debug("Drop of " + name + " failed. Ignored");
             }
 
             // Define the table.
@@ -1540,7 +1540,7 @@ public class MondrianFoodMartLoader {
                     Integer result = (Integer) obj;
                     return result.toString();
                 } catch (ClassCastException cce) {
-                	LOGGER.error("CCE: "  + column.name + " to Integer from: " + obj.getClass().getName() + " - " + obj.toString());
+                    LOGGER.error("CCE: "  + column.name + " to Integer from: " + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             }
@@ -1562,7 +1562,7 @@ public class MondrianFoodMartLoader {
                     Integer result = (Integer) obj;
                     return result.toString();
                 } catch (ClassCastException cce) {
-                	LOGGER.error("CCE: "  + column.name + " to Integer from: " + obj.getClass().getName() + " - " + obj.toString());
+                    LOGGER.error("CCE: "  + column.name + " to Integer from: " + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             }
@@ -1576,7 +1576,7 @@ public class MondrianFoodMartLoader {
                     Double result = (Double) obj;
                     return integerFormatter.format(result.doubleValue());
                 } catch (ClassCastException cce) {
-                	LOGGER.error("CCE: "  + column.name + " to Double from: " + obj.getClass().getName() + " - " + obj.toString());
+                    LOGGER.error("CCE: "  + column.name + " to Double from: " + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             } else {
@@ -1584,7 +1584,7 @@ public class MondrianFoodMartLoader {
                     Long result = (Long) obj;
                     return result.toString();
                 } catch (ClassCastException cce) {
-                	LOGGER.error("CCE: "  + column.name + " to Long from: " + obj.getClass().getName() + " - " + obj.toString());
+                    LOGGER.error("CCE: "  + column.name + " to Long from: " + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             }
@@ -1639,7 +1639,7 @@ public class MondrianFoodMartLoader {
                     Double result = (Double) obj;
                     return formatter.format(result.doubleValue());
                 } catch (ClassCastException cce) {
-                	LOGGER.error("CCE: "  + column.name + " to Double from: " + obj.getClass().getName() + " - " + obj.toString());
+                    LOGGER.error("CCE: "  + column.name + " to Double from: " + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             } else {
@@ -1648,7 +1648,7 @@ public class MondrianFoodMartLoader {
                     BigDecimal result = (BigDecimal) obj;
                     return formatter.format(result);
                 } catch (ClassCastException cce) {
-                	LOGGER.error("CCE: "  + column.name + " to BigDecimal from: " + obj.getClass().getName() + " - " + obj.toString());
+                    LOGGER.error("CCE: "  + column.name + " to BigDecimal from: " + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             }

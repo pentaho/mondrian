@@ -269,7 +269,7 @@ public class AggStar {
          * table that owns the join condition).
          */
         public class JoinCondition {
-        	private final Logger LOGGER = Logger.getLogger(JoinCondition.class);
+            private final Logger LOGGER = Logger.getLogger(JoinCondition.class);
             // I think this is always a MondrianDef.Column
             private final MondrianDef.Expression left;
             private final MondrianDef.Expression right;

@@ -86,69 +86,69 @@ class ExplicitRecognizer extends Recognizer {
         msgRecorder.pushContextName("ExplicitRecognizer.checkMeasures");
         try {
 
-        int nosOfMeasureColumns = 0;
-        // Look at each aggregate table column. For each measure defined,
-        // see if the measure's column name equals the column's name.
-        // If so, make the aggregate measure usage for that column.
-        for (Iterator it = aggTable.getColumns(); it.hasNext(); ) {
-            JdbcSchema.Table.Column aggColumn =
-                (JdbcSchema.Table.Column) it.next();
+            int measureColumnCounts = 0;
+            // Look at each aggregate table column. For each measure defined,
+            // see if the measure's column name equals the column's name.
+            // If so, make the aggregate measure usage for that column.
+            for (Iterator it = aggTable.getColumns(); it.hasNext(); ) {
+                JdbcSchema.Table.Column aggColumn =
+                    (JdbcSchema.Table.Column) it.next();
 
-            // if marked as ignore, then do not consider
-            if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
-                continue;
-            }
-
-            String aggColumnName = aggColumn.getName();
-
-            for (Iterator mit = getTableDef().getMeasures(); mit.hasNext();) {
-                ExplicitRules.TableDef.Measure measure =
-                    (ExplicitRules.TableDef.Measure) mit.next();
-
-            	// Column name match is case insensitive 
-                if (measure.getColumnName().equalsIgnoreCase(aggColumnName)) {
-                    // Ok, got a match, so now make a measue
-                    makeMeasure(measure, aggColumn);
-                    nosOfMeasureColumns++;
+                // if marked as ignore, then do not consider
+                if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
+                    continue;
                 }
-            }
-        }
-        // Ok, now look at all of the fact table columns with measure usage
-        // that have a sibling foreign key usage. These can be automagically
-        // generated for the aggregate table as long as it still has the foreign
-        // key.
-        for (Iterator it =
-                dbFactTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
-                it.hasNext(); ) {
-            JdbcSchema.Table.Column.Usage factUsage =
-                (JdbcSchema.Table.Column.Usage) it.next();
-            JdbcSchema.Table.Column factColumn = factUsage.getColumn();
 
-            if (factColumn.hasUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE)) {
-                // What we've got here is a measure based upon a foreign key
-                String aggFK =
-                    getTableDef().getAggregateFK(factColumn.getName());
-                // OK, not a lost dimension
-                if (aggFK != null) {
-                    JdbcSchema.Table.Column aggColumn =
-                        aggTable.getColumn(aggFK);
-                    
-                	// Column name match is case insensitive 
-                    if (aggColumn == null) {
-                    	aggColumn = aggTable.getColumn(aggFK.toLowerCase());
-                    }
-                    if (aggColumn == null) {
-                    	aggColumn = aggTable.getColumn(aggFK.toUpperCase());
-                    }
-                    
-                    if (aggColumn != null) {
-                    	makeMeasure(factUsage, aggColumn);
-                        nosOfMeasureColumns++;
+                String aggColumnName = aggColumn.getName();
+
+                for (Iterator mit = getTableDef().getMeasures(); mit.hasNext();) {
+                    ExplicitRules.TableDef.Measure measure =
+                        (ExplicitRules.TableDef.Measure) mit.next();
+
+                    // Column name match is case insensitive
+                    if (measure.getColumnName().equalsIgnoreCase(aggColumnName)) {
+                        // Ok, got a match, so now make a measue
+                        makeMeasure(measure, aggColumn);
+                        measureColumnCounts++;
                     }
                 }
             }
-        }
-        return nosOfMeasureColumns;
+            // Ok, now look at all of the fact table columns with measure usage
+            // that have a sibling foreign key usage. These can be automagically
+            // generated for the aggregate table as long as it still has the foreign
+            // key.
+            for (Iterator it =
+                     dbFactTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
+                 it.hasNext(); ) {
+                JdbcSchema.Table.Column.Usage factUsage =
+                    (JdbcSchema.Table.Column.Usage) it.next();
+                JdbcSchema.Table.Column factColumn = factUsage.getColumn();
+
+                if (factColumn.hasUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE)) {
+                    // What we've got here is a measure based upon a foreign key
+                    String aggFK =
+                        getTableDef().getAggregateFK(factColumn.getName());
+                    // OK, not a lost dimension
+                    if (aggFK != null) {
+                        JdbcSchema.Table.Column aggColumn =
+                            aggTable.getColumn(aggFK);
+
+                        // Column name match is case insensitive
+                        if (aggColumn == null) {
+                            aggColumn = aggTable.getColumn(aggFK.toLowerCase());
+                        }
+                        if (aggColumn == null) {
+                            aggColumn = aggTable.getColumn(aggFK.toUpperCase());
+                        }
+
+                        if (aggColumn != null) {
+                            makeMeasure(factUsage, aggColumn);
+                            measureColumnCounts++;
+                        }
+                    }
+                }
+            }
+            return measureColumnCounts;
 
         } finally {
             msgRecorder.popContextName();
