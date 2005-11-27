@@ -155,7 +155,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(PropertiesTest.class);
             suite.addTestSuite(I18nTest.class);
             
-            boolean testNonEmpty = true;
+            boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get())
                 testNonEmpty = false;
             if (!MondrianProperties.instance().EnableNativeCrossJoin.get())
