@@ -47,6 +47,8 @@ public class NonEmptyTest extends FoodMartTestCase {
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
 
     public void testNativeFilter() {
+        if (!MondrianProperties.instance().EnableNativeFilter.get())
+            return;
         checkNative(
                 32,
                 18,
@@ -59,43 +61,8 @@ public class NonEmptyTest extends FoodMartTestCase {
      * executes a Filter() whose condition contains a calculated member
      */
     public void testCmNativeFilter() {
-        // generates this beautiful SQL:
-        //      select 
-        //        "product_class"."product_family" as "c0", 
-        //        "product_class"."product_department" as "c1", 
-        //        "product_class"."product_category" as "c2", 
-        //        "product_class"."product_subcategory" as "c3", 
-        //        "product"."brand_name" as "c4", 
-        //        "product"."product_name" as "c5" 
-        //      from 
-        //        "product" as "product", 
-        //        "product_class" as "product_class", 
-        //        "sales_fact_1997" as "sales_fact_1997", 
-        //        "store" as "store", 
-        //        "time_by_day" as "time_by_day" 
-        //      where "product"."product_class_id" = "product_class"."product_class_id" 
-        //        and "sales_fact_1997"."product_id" = "product"."product_id" 
-        //        and "sales_fact_1997"."store_id" = "store"."store_id" 
-        //        and "store"."store_state" = 'CA' 
-        //        and "store"."store_country" = 'USA' 
-        //        and "sales_fact_1997"."time_id" = "time_by_day"."time_id" 
-        //        and "time_by_day"."the_year" = 1997 
-        //      group by 
-        //        "product_class"."product_family", 
-        //        "product_class"."product_department", 
-        //        "product_class"."product_category", 
-        //        "product_class"."product_subcategory", 
-        //        "product"."brand_name", 
-        //        "product"."product_name" 
-        //      having ((CASE WHEN ((sum("sales_fact_1997"."store_cost") = 0.0))  THEN 1.0 ELSE ((((sum("sales_fact_1997"."store_sales") - sum("sales_fact_1997"."store_cost")))  / sum("sales_fact_1997"."store_cost")))  END > 1.8))  
-        //      order by 
-        //        "product_class"."product_family", 
-        //        "product_class"."product_department", 
-        //        "product_class"."product_category", 
-        //        "product_class"."product_subcategory", 
-        //        "product"."brand_name", 
-        //        "product"."product_name"
-
+        if (!MondrianProperties.instance().EnableNativeFilter.get())
+            return;
         checkNative(
                 32,
                 8,
