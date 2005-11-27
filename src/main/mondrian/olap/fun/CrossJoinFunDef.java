@@ -83,7 +83,8 @@ class CrossJoinFunDef extends FunDefBase {
             return Collections.EMPTY_LIST;
 
         long size = (long)set0.size() * (long)set1.size();
-        if (resultLimit > 0 && size > resultLimit && evaluator.isNonEmpty()) {
+        //if (resultLimit > 0 && size > resultLimit && evaluator.isNonEmpty()) {
+        if (size > 1000 && evaluator.isNonEmpty()) {
             // instead of overflow exception try to further
             // optimize nonempty(crossjoin(a,b)) ==
             // nonempty(crossjoin(nonempty(a),nonempty(b))

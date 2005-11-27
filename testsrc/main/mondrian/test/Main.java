@@ -33,10 +33,13 @@ import mondrian.test.comp.ResultComparatorTest;
 import mondrian.util.ScheduleTest;
 import mondrian.xmla.XmlaTest;
 
+import org.apache.log4j.Logger;
+
 /**
  * <code>Main</code> is the main test suite for Mondrian.
  **/
 public class Main extends TestSuite {
+    private static final Logger logger = Logger.getLogger(Main.class);
     static public void main(String[] args) {
         new Main().runSafe(args);
     }
@@ -151,7 +154,16 @@ public class Main extends TestSuite {
             suite.addTestSuite(NamedSetTest.class);
             suite.addTestSuite(PropertiesTest.class);
             suite.addTestSuite(I18nTest.class);
-            suite.addTestSuite(NonEmptyTest.class);
+            
+            boolean testNonEmpty = true;
+            if (!MondrianProperties.instance().EnableNativeNonEmpty.get())
+                testNonEmpty = false;
+            if (!MondrianProperties.instance().EnableNativeCrossJoin.get())
+                testNonEmpty = false;
+            if (testNonEmpty)
+              suite.addTestSuite(NonEmptyTest.class);
+            else
+                logger.warn("skipping NonEmptyTests");
         }
         if (testName != null) {
             // Filter the suite, so that only tests whose names match
