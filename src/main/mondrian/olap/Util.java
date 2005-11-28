@@ -235,6 +235,9 @@ public class Util extends XOMUtil {
      * Names must not be null.
      */
     public static boolean equalName(String s, String t) {
+        if (s == null) {
+            return t == null;
+        }
         boolean caseSensitive = MondrianProperties.instance().CaseSensitive.get();
         return caseSensitive ? s.equals(t) : s.equalsIgnoreCase(t);
     }
