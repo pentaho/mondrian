@@ -164,7 +164,7 @@ class RolapDimension extends DimensionBase {
      * Assigns an ordinal for a dimension usage; also assigns the join-level of
      * the usage.
      */
-    private static synchronized int chooseOrdinal(RolapCube cube,
+    private static int chooseOrdinal(RolapCube cube,
                             MondrianDef.CubeDimension xmlCubeDimension) {
 
         if (xmlCubeDimension.name.equals(MEASURES_NAME)) {
