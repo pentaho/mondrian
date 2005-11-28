@@ -262,7 +262,7 @@ public class RolapUtil {
                     LOGGER.info("Mondrian: JDBC driver "
                         + jdbcDriver + " loaded successfully");
                 } catch (ClassNotFoundException e) {
-                    LOGGER.error("Mondrian: Warning: JDBC driver "
+                    LOGGER.info("Mondrian: Warning: JDBC driver "
                         + jdbcDriver + " not found");
                 }
             }
