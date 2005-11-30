@@ -1699,7 +1699,8 @@ public class MondrianFoodMartLoader {
                     !sqlQuery.getDialect().isOracle() &&
                     !sqlQuery.getDialect().isDB2() &&
                     !sqlQuery.getDialect().isFirebird() &&
-                    !sqlQuery.getDialect().isMSSQL()) {
+                    !sqlQuery.getDialect().isMSSQL() &&
+                    !sqlQuery.getDialect().isDerby()) {
                 if (trimmedValue.equals("1")) {
                     return "true";
                 } else if (trimmedValue.equals("0")) {
