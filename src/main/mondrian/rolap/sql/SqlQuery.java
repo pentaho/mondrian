@@ -12,17 +12,20 @@
 
 package mondrian.rolap.sql;
 
-import mondrian.olap.*;
-import mondrian.resource.MondrianResource;
-
-import org.eigenbase.util.property.Property;
-import org.eigenbase.util.property.Trigger;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import mondrian.olap.MondrianDef;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
+
+import org.eigenbase.util.property.Property;
+import org.eigenbase.util.property.Trigger;
 
 /**
  * <code>SqlQuery</code> allows us to build a <code>select</code>
@@ -405,20 +408,19 @@ public class SqlQuery
 
     /**
      * creates an ORDER BY
-     * @param alias the alias name to order by. This must appear somewhere on the select list
+     * @param expr the expr to order by
      * @param ascending sort direction
      * @param prepend true = prepend to the current list of order by elements.
      */
-    public void addOrderBy(String alias, boolean ascending, boolean prepend) {
-        alias = dialect.quoteIdentifier(alias);
+    public void addOrderBy(String expr, boolean ascending, boolean prepend) {
         if (ascending)
-            alias = alias + " ASC";
+            expr = expr + " ASC";
         else
-            alias = alias + " DESC";
+            expr = expr + " DESC";
         if (prepend)
-            orderBy.add(0, alias);
+            orderBy.add(0, expr);
         else
-            orderBy.add(alias);
+            orderBy.add(expr);
     }
 
     public String toString()
@@ -657,6 +659,22 @@ public class SqlQuery
                 best = "generic";
             }
             return best;
+        }
+        
+        /**
+         * @return SQL syntax that converts <code>expr</code> 
+         * into upper case.
+         */
+        public String toUpper(String expr) {
+            if (isDB2() || isAccess())
+                return "UCASE(" + expr + ")";
+            return "UPPER(" + expr + ")";
+        }
+        
+        public String caseWhenElse(String cond, String thenExpr, String elseExpr) {
+            if (isAccess())
+                return "IIF(" + cond + "," + thenExpr + "," + elseExpr + ")";
+            return "CASE WHEN " + cond + " THEN " + thenExpr + " ELSE " + elseExpr + " END";
         }
 
         /**

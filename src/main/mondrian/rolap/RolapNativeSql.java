@@ -334,7 +334,7 @@ public class RolapNativeSql {
             String val2 = valueCompiler.compile(args[2]);
             if (cond == null || val1 == null || val2 == null)
                 return null;
-            return "CASE WHEN " + cond + " THEN " + val1 + " ELSE " + val2 + " END";
+            return sqlQuery.getDialect().caseWhenElse(cond , val1, val2);
         }
 
     }

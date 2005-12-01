@@ -31,7 +31,13 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
     public void addLevelConstraint(SqlQuery query, RolapLevel level) {
         super.addLevelConstraint(query, level);
         String column = level.getKeyExp().getExpression(query);
-        String value = query.quote(level.isNumeric(), childName);
+        String value = childName;
+        if (!level.isNumeric()) {
+            // some dbs (like DB2) compare case sensitive
+            column = query.getDialect().toUpper(column);
+            value = value.toUpperCase();
+        }
+        value = query.quote(level.isNumeric(), value);
         query.addWhere(column, "=", value);
     }
 

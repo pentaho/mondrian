@@ -70,6 +70,7 @@ import java.util.*;
 public class Aggregation {
     private static final int MAX_CONSTRAINTS_ORACLE = 1000;
     private static final int MAX_CONSTRAINTS_MSSQL = 10000;
+    private static final int MAX_CONSTRAINTS_DB2 = 2500;
     private static final int MAX_CONSTRAINTS_DEFAULT = 10000;
     private int maxConstraints;
 
@@ -103,6 +104,8 @@ public class Aggregation {
             maxConstraints = MAX_CONSTRAINTS_ORACLE;
         else if (dialect.isMSSQL())
             maxConstraints = MAX_CONSTRAINTS_MSSQL;
+        else if (dialect.isDB2())
+            maxConstraints = MAX_CONSTRAINTS_DB2;
         else
             maxConstraints = MAX_CONSTRAINTS_DEFAULT;
     }

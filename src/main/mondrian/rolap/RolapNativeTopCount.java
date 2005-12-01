@@ -23,6 +23,7 @@ import mondrian.olap.NativeEvaluator;
 import mondrian.olap.Util;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
+import mondrian.rolap.sql.SqlQuery.Dialect;
 
 /**
  * computes a TopCount in SQL
@@ -56,9 +57,15 @@ public class RolapNativeTopCount extends RolapNativeSet {
 
         public void addConstraint(SqlQuery sqlQuery) {
             if (orderByExpr != null) {
-                String alias = sqlQuery.nextColumnAlias();
-                sqlQuery.addSelect(orderByExpr, alias);
-                sqlQuery.addOrderBy(alias, ascending, true);
+                Dialect dialect = sqlQuery.getDialect();
+                if (dialect.isMySQL()) {
+                    String alias = sqlQuery.nextColumnAlias();
+                    alias = dialect.quoteIdentifier(alias);
+                    sqlQuery.addSelect(orderByExpr, alias);
+                    sqlQuery.addOrderBy(alias, ascending, true);
+                } else {
+                    sqlQuery.addOrderBy(orderByExpr, ascending, true);
+                }
             }
             super.addConstraint(sqlQuery);
         }
