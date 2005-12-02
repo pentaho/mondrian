@@ -607,9 +607,9 @@ public class RolapStar {
 
         /**
          * This is used during both aggregate table recognition and aggregate
-         * table generation. For multiple dimension usages or multiple shared
-         * dimension with the same column names, this is used to disambiguate
-         * aggregate column names.
+         * table generation. For multiple dimension usages, multiple shared
+         * dimension or unshared dimension with the same column names, 
+         * this is used to disambiguate aggregate column names.
          */
         private final String usagePrefix;
         /**

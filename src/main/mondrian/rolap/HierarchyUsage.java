@@ -211,7 +211,7 @@ public class HierarchyUsage {
             this.fullName = this.name;
 
             this.source = null;
-            this.usagePrefix = null;
+            this.usagePrefix = d.usagePrefix;
             this.level = null;
 
             init(cube, hierarchy, null);

@@ -351,6 +351,15 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="usagePrefix" required="false">
+            <Doc>
+                If present, then this is prepended to the Dimension column
+                names during the building of collapse dimension aggregates
+                allowing 1) different dimensions to be disambiguated
+                during aggregate table recognition.
+                This should only be set for private dimensions.
+            </Doc>
+        </Attribute>
 
         <Array name="hierarchies" type="Hierarchy"><Doc></Doc></Array>
         <Code>
