@@ -918,11 +918,10 @@ public class AggGen {
 
                 if (it.hasNext()) {
                     pw.println(',');
-                } else {
-                    pw.println(';');
                 }
             }
         }
+        pw.println(';');
 
         return sw.toString();
     }
