@@ -657,11 +657,6 @@ public class AggGen {
             pw.print(
                 agg.getExpression(sqlQuery.getDialect().quoteIdentifier(
                     factTableName, c.getName())).toUpperCase());
-/*
-            pw.print("SUM(");
-            pw.print(sqlQuery.getDialect().quoteIdentifier(factTableName, c.getName()));
-            pw.print(") AS ");
-*/
             pw.print(" AS ");
             pw.print(sqlQuery.getDialect().quoteIdentifier(c.getName()));
             pw.println(',');
@@ -817,11 +812,6 @@ public class AggGen {
             pw.print(
                 agg.getExpression(sqlQuery.getDialect().quoteIdentifier(
                     t.getName(), c.getName())).toUpperCase());
-/*
-            pw.print("SUM(");
-            pw.print(sqlQuery.getDialect().quoteIdentifier(t.getName(), c.getName()));
-            pw.print(") AS ");
-*/
             pw.print(" AS ");
             pw.print(sqlQuery.getDialect().quoteIdentifier(c.getName()));
             pw.println(',');
@@ -913,8 +903,10 @@ public class AggGen {
                 JdbcSchema.Table.Column c = usage.getColumn();
                 JdbcSchema.Table t = c.getTable();
 
+                String n = (usage.usagePrefix == null)
+                    ? c.getName() : usage.usagePrefix + c.getName();
                 pw.print(prefix);
-                pw.print(sqlQuery.getDialect().quoteIdentifier(t.getName(), c.getName()));
+                pw.print(sqlQuery.getDialect().quoteIdentifier(t.getName(), n));
 
                 if (it.hasNext()) {
                     pw.println(',');
