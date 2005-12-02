@@ -58,7 +58,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
         public void addConstraint(SqlQuery sqlQuery) {
             if (orderByExpr != null) {
                 Dialect dialect = sqlQuery.getDialect();
-                if (dialect.isMySQL()) {
+                if (dialect.isMySQL() || dialect.isDB2()) {
                     String alias = sqlQuery.nextColumnAlias();
                     alias = dialect.quoteIdentifier(alias);
                     sqlQuery.addSelect(orderByExpr, alias);

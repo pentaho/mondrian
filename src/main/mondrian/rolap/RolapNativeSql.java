@@ -30,6 +30,8 @@ import mondrian.rolap.sql.SqlQuery;
 public class RolapNativeSql {
 
     private SqlQuery sqlQuery;
+    private SqlQuery.Dialect dialect;
+    
     CompositeSqlCompiler numericCompiler;
     CompositeSqlCompiler booleanCompiler;
 
@@ -85,7 +87,11 @@ public class RolapNativeSql {
             if ((exp.getCategory() & Category.Numeric) == 0)
                 return null;
             Literal literal = (Literal) exp;
-            return String.valueOf(literal.getValue());
+            String expr = String.valueOf(literal.getValue());
+            if (dialect.isDB2()) {
+                expr = "FLOAT(" + expr + ")";
+            }
+            return expr;
         }
 
         public String toString() {
@@ -126,7 +132,11 @@ public class RolapNativeSql {
             RolapStoredMeasure measure = (RolapStoredMeasure) exp;
             if (measure.isCalculated()) { return null; } // ??
             String exprInner = measure.getMondrianDefExpression().getExpression(sqlQuery);
-            return measure.getAggregator().getExpression(exprInner);
+            String expr = measure.getAggregator().getExpression(exprInner);
+            if (dialect.isDB2()) {
+                expr = "FLOAT(" + expr + ")";
+            }
+            return expr;
         }
 
         public String toString() {
@@ -345,6 +355,8 @@ public class RolapNativeSql {
      */
     RolapNativeSql(SqlQuery sqlQuery) {
         this.sqlQuery = sqlQuery;
+        this.dialect = sqlQuery.getDialect();
+        
         numericCompiler = new CompositeSqlCompiler();
         booleanCompiler = new CompositeSqlCompiler();
 
