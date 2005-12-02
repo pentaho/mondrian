@@ -241,12 +241,14 @@ class Segment {
      * @pre segments[i].aggregation == aggregation
      **/
     static void load(final Segment[] segments,
-                     final BitKey bitKey,
+                     final BitKey fkBK,
+                     final BitKey measureBK,
                      final boolean isDistinct,
                      final Collection pinnedSegments,
                      final Aggregation.Axis[] axes) {
         String sql = AggregationManager.instance().generateSQL(segments,
-                                                               bitKey,
+                                                               fkBK,
+                                                               measureBK,
                                                                isDistinct);
         Segment segment0 = segments[0];
         RolapStar star = segment0.aggregation.getStar();

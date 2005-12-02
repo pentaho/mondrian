@@ -113,7 +113,9 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
     <AggExclude name="agg_l_05_sales_fact_1997" />
 -->
     <AggExclude name="agg_c_special_sales_fact_1997" />
+<!-- 
     <AggExclude name="agg_c_14_sales_fact_1997" />
+-->
     <AggExclude name="agg_lc_100_sales_fact_1997" />
     <AggExclude name="agg_lc_10_sales_fact_1997" />
     <AggExclude name="agg_pc_10_sales_fact_1997" />

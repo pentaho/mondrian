@@ -16,7 +16,6 @@ import mondrian.rolap.sql.SqlQuery;
 
 import java.io.*;
 import java.math.BigDecimal;
-//import java.math.BigDecimal;
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -1069,6 +1068,14 @@ public class MondrianFoodMartLoader {
                 new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
                 new Column("fact_count", "INTEGER", "NOT NULL"),
             }, false, true);
+        createTable("agg_l_04_sales_fact_1997", new Column[] {
+                new Column("time_id", "INTEGER", "NOT NULL"),
+                new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("customer_count", "INTEGER", "NOT NULL"),
+                new Column("fact_count", "INTEGER", "NOT NULL"),
+            }, false, true);
         createTable("agg_l_05_sales_fact_1997", new Column[] {
                 new Column("product_id", "INTEGER", "NOT NULL"),
                 new Column("customer_id", "INTEGER", "NOT NULL"),
@@ -1077,6 +1084,16 @@ public class MondrianFoodMartLoader {
                 new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
                 new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
                 new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("fact_count", "INTEGER", "NOT NULL"),
+            }, false, true);
+        createTable("agg_c_10_sales_fact_1997", new Column[] {
+                new Column("month_of_year", "SMALLINT", "NOT NULL"),
+                new Column("quarter", "VARCHAR(30)", "NOT NULL"),
+                new Column("the_year", "SMALLINT", "NOT NULL"),
+                new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
+                new Column("customer_count", "INTEGER", "NOT NULL"),
                 new Column("fact_count", "INTEGER", "NOT NULL"),
             }, false, true);
         createTable("agg_c_14_sales_fact_1997", new Column[] {

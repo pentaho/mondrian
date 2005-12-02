@@ -109,6 +109,15 @@ public class AggregationManager extends RolapAggregationManager {
     public String getDrillThroughSQL(final CellRequest request) {
         DrillThroughQuerySpec spec = new DrillThroughQuerySpec(request);
         String sql = spec.generateSqlQuery();
+
+        if (getLogger().isDebugEnabled()) {
+            StringBuffer buf = new StringBuffer(256);
+            buf.append("DrillThroughSQL: ");
+            buf.append(sql);
+            buf.append(Util.nl);
+            getLogger().debug(buf.toString());
+        }
+
         return sql;
     }
 
@@ -116,7 +125,8 @@ public class AggregationManager extends RolapAggregationManager {
      * Generates the query to retrieve the cells for a list of segments.
      */
     public String generateSQL(final Segment[] segments,
-                              final BitKey bitKey,
+                              final BitKey fkBK,
+                              final BitKey measureBK,
                               final boolean isDistinct) {
 
         // Check if using aggregates is enabled.
@@ -124,10 +134,35 @@ public class AggregationManager extends RolapAggregationManager {
             RolapStar star = segments[0].aggregation.getStar();
 
 
-            // Find an aggregate table which matches the current query. If the
-            // aggregation contains a distinct aggregate, the match must be
-            // exact, because roll-up is not possible.
-            AggStar aggStar = star.select(bitKey, isDistinct);
+            // If there is no distinct count measure, isDistinct == false,
+            // then all we want is an AggStar whose BitKey is a superset
+            // of the combined measure BitKey and foreign-key/level BitKey.
+            //
+            // On the other hand, if there is at least one distinct count
+            // measure, isDistinct == true, then want is wanted is an AggStar
+            // whose measure BitKey is a superset of the measure BitKey,
+            // whose level BitKey is an exact match and the aggregate table
+            // can NOT have any foreign keys.
+            AggStar aggStar = null;
+            if (isDistinct) {
+                // no foreign keys
+                // level key exact match
+                // measure superset match
+
+                for (Iterator it = star.getAggStars(); it.hasNext(); ){
+                    AggStar as = (AggStar) it.next();
+                    if (! as.hasForeignKeys() && 
+                            as.select(fkBK, measureBK)) {
+                        aggStar = as;
+                        break;
+                    }
+                }
+
+            } else {
+                BitKey fullBK = fkBK.or(measureBK);
+                // superset match
+                aggStar = star.superSetMatch(fullBK);
+            }
 
             if (aggStar != null) {
                 // Got a match, hot damn
@@ -135,11 +170,17 @@ public class AggregationManager extends RolapAggregationManager {
                 if (getLogger().isDebugEnabled()) {
                     StringBuffer buf = new StringBuffer(256);
                     buf.append("MATCH: ");
+                    buf.append(star.getFactTable().getAlias());
+                    buf.append(" isDistinct=");
+                    buf.append(isDistinct);
                     buf.append(Util.nl);
-                    buf.append("  bitKey=");
-                    buf.append(bitKey);
+                    buf.append("   foreign=");
+                    buf.append(fkBK);
                     buf.append(Util.nl);
-                    buf.append("  bitkey=");
+                    buf.append("   measure=");
+                    buf.append(measureBK);
+                    buf.append(Util.nl);
+                    buf.append("   aggstar=");
                     buf.append(aggStar.getBitKey());
                     buf.append(Util.nl);
                     buf.append("AggStar=");
@@ -171,11 +212,15 @@ public class AggregationManager extends RolapAggregationManager {
 
             StringBuffer buf = new StringBuffer(256);
             buf.append("NO MATCH: ");
-            buf.append(Util.nl);
-            buf.append("  bitKey=");
-            buf.append(bitKey);
-            buf.append(Util.nl);
             buf.append(star.getFactTable().getAlias());
+            buf.append(" isDistinct=");
+            buf.append(isDistinct);
+            buf.append(Util.nl);
+            buf.append("   foreign=");
+            buf.append(fkBK);
+            buf.append(Util.nl);
+            buf.append("   measure=");
+            buf.append(measureBK);
             buf.append(Util.nl);
 
             getLogger().debug(buf.toString());

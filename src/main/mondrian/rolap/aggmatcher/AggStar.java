@@ -13,11 +13,10 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 import mondrian.recorder.MessageRecorder;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.resource.MondrianResource;
-
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -129,11 +128,15 @@ public class AggStar {
     private final RolapStar star;
     private final AggStar.FactTable aggTable;
     private final BitKey bitKey;
+    private final BitKey fkBitKey;
+    private final BitKey measureBitKey;
     private final AggStar.Table.Column[] columns;
 
     AggStar(final RolapStar star, final JdbcSchema.Table aggTable) {
         this.star = star;
         this.bitKey = BitKey.Factory.makeBitKey(star.getColumnCount());
+        this.fkBitKey = bitKey.emptyCopy();
+        this.measureBitKey = bitKey.emptyCopy();
         this.aggTable = new AggStar.FactTable(aggTable);
         this.columns = new AggStar.Table.Column[star.getColumnCount()];
     }
@@ -154,19 +157,30 @@ public class AggStar {
                 getFactTable().getNumberOfRows();
     }
 
-    /**
-     * Returns true if every bit set to 1 in the bitKey parameter is also
-     * set to 1 in this AggStar's bitKey.
-     *
-     * @param bitKey
-     * @param exact If true, bits must match exactly; if false, AggStar's
-     *   bitKey can be a superset
-     * @return
+
+    /** 
+     * Is this AggStar's BitKey a super set (proper or not) of the BitKey
+     * parameter.
+     * 
+     * @param bitKey 
+     * @return true if its a super set.
      */
-    public boolean matches(final BitKey bitKey, boolean exact) {
-        return exact ?
-                getBitKey().equals(bitKey) :
-                getBitKey().isSuperSetOf(bitKey);
+    public boolean superSetMatch(final BitKey bitKey) {
+        return getBitKey().isSuperSetOf(bitKey);
+    }
+
+    /** 
+     * Return true if this AggStar's foreign key BitKey equals the fkBK
+     * parameter and if this AggStar's measure BitKey is a super set
+     * (proper or not) of the measureBK parameter.
+     * 
+     * @param fkBK 
+     * @param measureBK 
+     * @return 
+     */
+    public boolean select(final BitKey fkBK, final BitKey measureBK) {
+        return getFKBitKey().equals(fkBK)
+            && getMeasureBitKey().isSuperSetOf(measureBK);
     }
 
     /**
@@ -178,6 +192,33 @@ public class AggStar {
         return star;
     }
 
+    /** 
+     * Return true if AggStar has measures 
+     * 
+     * @return 
+     */
+    public boolean hasMeasures() {
+        return getFactTable().hasMeasures();
+    }
+
+    /** 
+     * Return true if AggStar has levels 
+     * 
+     * @return 
+     */
+    public boolean hasLevels() {
+        return getFactTable().hasLevels();
+    }
+    
+    /** 
+     * Return true if AggStar has foreign keys. 
+     * 
+     * @return 
+     */
+    public boolean hasForeignKeys() {
+        return getFactTable().hasChildren();
+    }
+
     /**
      * Get the BitKey.
      *
@@ -185,6 +226,24 @@ public class AggStar {
      */
     public BitKey getBitKey() {
         return bitKey;
+    }
+
+    /**
+     * Get the foreign-key/level BitKey.
+     *
+     * @return
+     */
+    public BitKey getFKBitKey() {
+        return fkBitKey;
+    }
+
+    /**
+     * Get the measure BitKey.
+     *
+     * @return
+     */
+    public BitKey getMeasureBitKey() {
+        return measureBitKey;
     }
 
     /**
@@ -269,7 +328,7 @@ public class AggStar {
          * table that owns the join condition).
          */
         public class JoinCondition {
-            private final Logger LOGGER = Logger.getLogger(JoinCondition.class);
+        	private final Logger LOGGER = Logger.getLogger(JoinCondition.class);
             // I think this is always a MondrianDef.Column
             private final MondrianDef.Expression left;
             private final MondrianDef.Expression right;
@@ -442,16 +501,33 @@ public class AggStar {
         }
 
         /**
+         * This class is used for holding foreign key columns.
+         * Both DimTables and FactTables can have Level columns.
+         */
+        final class ForeignKey extends Column {
+
+            private ForeignKey(final String name,
+                  final MondrianDef.Expression expression,
+                  final boolean isNumeric,
+                  final int bitPosition) {
+                super(name, expression, isNumeric, bitPosition);
+
+                AggStar.this.fkBitKey.setByPos(bitPosition);
+            }
+        }
+        /**
          * This class is used for holding dimension level information.
          * Both DimTables and FactTables can have Level columns.
          */
         final class Level extends Column {
 
-            Level(final String name,
+            private Level(final String name,
                   final MondrianDef.Expression expression,
                   final boolean isNumeric,
                   final int bitPosition) {
                 super(name, expression, isNumeric, bitPosition);
+
+                AggStar.this.fkBitKey.setByPos(bitPosition);
             }
         }
 
@@ -549,6 +625,15 @@ public class AggStar {
         public Iterator getLevels() {
             return levels.iterator();
         }
+        
+        /** 
+         * Return true if table has levels. 
+         * 
+         * @return 
+         */
+        public boolean hasLevels() {
+            return ! levels.isEmpty();
+        }
 
         /**
          * Add a child DimTable table.
@@ -569,6 +654,15 @@ public class AggStar {
          */
         public Iterator getChildren() {
             return children.iterator();
+        }
+        
+        /** 
+         * Return true if this table has one or more child tables. 
+         * 
+         * @return 
+         */
+        public boolean hasChildren() {
+            return ! children.isEmpty();
         }
 
         /**
@@ -701,13 +795,15 @@ public class AggStar {
         public class Measure extends Table.Column {
             private final RolapAggregator aggregator;
 
-            Measure(final String name,
+            private Measure(final String name,
                     final MondrianDef.Expression expression,
                     final boolean isNumeric,
                     final int bitPosition,
                     final RolapAggregator aggregator) {
                 super(name, expression, isNumeric, bitPosition);
                 this.aggregator = aggregator;
+
+                AggStar.this.measureBitKey.setByPos(bitPosition);
             }
 
             /**
@@ -727,7 +823,10 @@ public class AggStar {
              */
             public String getExpression(final SqlQuery query) {
                 String expr = getExpression().getExpression(query);
-                return getAggregator().getExpression(expr);
+                RolapAggregator agg = getAggregator();
+                return (agg.isDistinct())
+                    ? expr
+                    : getAggregator().getExpression(expr);
             }
         }
 
@@ -812,6 +911,15 @@ public class AggStar {
             return measures.iterator();
         }
 
+        /** 
+         * Return true it table has measures 
+         * 
+         * @return 
+         */
+        public boolean hasMeasures() {
+            return ! measures.isEmpty();
+        }
+
         /**
          * Get all columns.
          *
@@ -855,17 +963,17 @@ public class AggStar {
                 boolean isNumeric = column.isNumeric();
                 RolapStar.Column rColumn = usage.rColumn;
                 if (rColumn == null) {
-                    String msg = "loadForeignKey: for column " +
+                    String msg = "loadForeignKey: for column " + 
                         name +
                         ", rColumn == null";
                     getLogger().warn(msg);
                 } else {
                     int bitPosition = rColumn.getBitPosition();
 // RME Note: this should be a Level Object, not a Column
-                    Column c = new Column(symbolicName,
-                                          expression,
-                                          isNumeric,
-                                          bitPosition);
+                    ForeignKey c = new ForeignKey(symbolicName,
+                                                  expression,
+                                                  isNumeric,
+                                                  bitPosition);
                 }
             }
         }
@@ -1126,8 +1234,23 @@ public class AggStar {
         pw.print(prefix);
         pw.println("AggStar:");
         String subprefix = prefix + "  ";
+
         pw.print(subprefix);
+        pw.print(" bk=");
         pw.println(bitKey);
+
+        pw.print(subprefix);
+        pw.print("fbk=");
+        pw.println(fkBitKey);
+
+        pw.print(subprefix);
+        pw.print("mbk=");
+        pw.println(measureBitKey);
+
+        pw.print(subprefix);
+        pw.print("has foreign key=");
+        pw.println(aggTable.hasChildren());
+
         aggTable.print(pw, subprefix);
     }
 }

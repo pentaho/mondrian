@@ -67,6 +67,61 @@ INSERT INTO "agg_l_03_sales_fact_1997" (
 FROM "sales_fact_1997"
 GROUP BY "customer_id", "time_id";
 
+##################################################################
+## agg_l_04_sales_fact_1997 done
+##################################################################
+# logical
+# lost "customer_id" "product_id" "promotion_id" "store_id"
+
+INSERT INTO "agg_l_04_sales_fact_1997" (
+    "time_id",
+    "store_sales", 
+    "store_cost", 
+    "unit_sales", 
+    "customer_count", 
+    "fact_count"
+) SELECT
+    "time_id",
+    SUM("store_sales") AS "store_sales",
+    SUM("store_cost") AS "store_cost",
+    SUM("unit_sales") AS "unit_sales",
+    COUNT(DISTINCT "customer_id") AS "customer_count",
+    COUNT(*) AS "fact_count"
+FROM "sales_fact_1997"
+GROUP BY "time_id";
+
+##################################################################
+## agg_c_10_sales_fact_1997 done
+##################################################################
+# collapse "time_id"
+# lost "customer_id" "product_id" "promotion_id" "store_id"
+
+
+INSERT INTO "agg_c_10_sales_fact_1997" (
+    "month_of_year",
+    "quarter",
+    "the_year",
+    "store_sales", 
+    "store_cost", 
+    "unit_sales", 
+    "customer_count", 
+    "fact_count"
+) SELECT
+    "D"."month_of_year",
+    "D"."quarter",
+    "D"."the_year",
+    SUM("B"."store_sales") AS "store_sales",
+    SUM("B"."store_cost") AS "store_cost",
+    SUM("B"."unit_sales") AS "unit_sales",
+    COUNT(DISTINCT "customer_id") AS "customer_count",
+    COUNT(*) AS fact_count
+FROM "sales_fact_1997" "B", "time_by_day" "D"
+WHERE 
+    "B"."time_id" = "D"."time_id"
+GROUP BY 
+         "D"."month_of_year",
+         "D"."quarter",
+         "D"."the_year";
 
 ##################################################################
 ## agg_l_05_sales_fact_1997 done

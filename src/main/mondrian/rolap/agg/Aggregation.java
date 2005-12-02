@@ -129,7 +129,7 @@ public class Aggregation {
                                   Collection pinnedSegments) {
         this.columns = columns;
 
-        BitKey bitKey = this.bitKey.copy();
+        BitKey measureBK = bitKey.emptyCopy();
         int axisCount = columns.length;
         Util.assertTrue(constraintses.length == axisCount);
 
@@ -149,14 +149,14 @@ public class Aggregation {
                 isDistinct = true;
             }
 
-            bitKey.setByPos(measure.getBitPosition());
+            measureBK.setByPos(measure.getBitPosition());
             Segment segment = new Segment(this, measure, constraintses, axes);
             segments[i] = segment;
             SoftReference ref = new SoftReference(segment);
             segmentRefs.add(ref);
             pinnedSegments.add(segment);
         }
-        Segment.load(segments, bitKey, isDistinct, pinnedSegments, axes);
+        Segment.load(segments, bitKey, measureBK, isDistinct, pinnedSegments, axes);
 
     }
 

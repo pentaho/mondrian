@@ -1660,10 +1660,11 @@ subtotals. You have to go back to the raw data in the fact table.</p>
 
 <p>
 So, when evaluating a distinct-count measure, Mondrian can only use aggregate 
-table if it has exactly the same granularity as the cell being requested. If 
+table if it has exactly the same logical/level granularity as the cell being 
+requested.  If 
 there is no aggregate table of the desired granularity, Mondrian does NOT use 
 the aggregate table, and goes instead against the fact table. Once in memory, 
-distinct count measures are cached like other measures, and can be used for 
+distinct-count measures are cached like other measures, and can be used for 
 future queries.</p>
 
 <p>
@@ -1671,6 +1672,126 @@ This has implications for aggregate design. If your application makes extensive
 use of distinct-count measures, you will need to create an aggregate table for 
 each granularity where it is used. That could be a lot of aggregate tables! (We 
 hope to have a better solution for this problem in future releases.)</p>
+
+<p>
+That said, Mondrian will rollup measures in an aggregate table that contains
+one or more distinct-count measures if none of the distinct-count measures
+are requested. In that respect an aggregate table containing distinct-count
+measures are just like any other aggregate table as long as the 
+distinct-count measures are not needed.
+</p>
+
+<p>
+When building an aggregate table that will contain a distinct-count measure,
+the measure must be rolled up to a logical dimension level, which is
+to say that the aggregate table must be a collapsed dimension aggregate. 
+If it is rolled up only
+to the dimension's foreign key, there is no guarantee that the foreign key
+is at the same granularity as the lowest logical level, which is what
+is used by MDX requests. So for an aggregate table that only rolls the
+distinct-count measure to the foreign key granularity, a request
+of that distinct-count measure may result in further rollup and, therefore,
+an error.
+</p>
+
+<p>
+Consider the following aggregate table that has lost dimensions
+<code>customer_id</code>, <code>product_id</code>, <code>promotion_id</code>
+and <code>store_id</code>.
+</p>
+    
+<blockquote>
+    <p><code>
+    INSERT INTO "agg_l_04_sales_fact_1997" (<br>
+&nbsp;&nbsp;&nbsp; "time_id",<br>
+&nbsp;&nbsp;&nbsp; "store_sales",<br>
+&nbsp;&nbsp;&nbsp; "store_cost",<br>
+&nbsp;&nbsp;&nbsp; "unit_sales",<br>
+&nbsp;&nbsp;&nbsp; "customer_count",<br>
+&nbsp;&nbsp;&nbsp; "fact_count"<br>
+    ) SELECT<br>
+&nbsp;&nbsp;&nbsp; "time_id",<br>
+&nbsp;&nbsp;&nbsp; SUM("store_sales") AS "store_sales",<br>
+&nbsp;&nbsp;&nbsp; SUM("store_cost") AS "store_cost",<br>
+&nbsp;&nbsp;&nbsp; SUM("unit_sales") AS "unit_sales",<br>
+&nbsp;&nbsp;&nbsp; COUNT(DISTINCT "customer_id") AS "customer_count",<br>
+&nbsp;&nbsp;&nbsp; COUNT(*) AS "fact_count"<br>
+    FROM "sales_fact_1997"<br>
+    GROUP BY "time_id";
+    </code></p>
+</blockquote>
+
+<p>
+Here the distinct-count measure is rolled up to the 
+<code>time_id</code> granularity, the lowest level granularity of the
+physical database table <code>time_by_day</code>.
+Noe, the lowest logical level in the 
+<code>Time</code> dimension is
+<code>month_of_year</code>
+which is higher level than the
+<code>time_id</code> granularity, thus any MDX query involving 
+the distinct-count will have to perform a further rollup - which
+would be an error.
+</p>
+
+<p>
+Now consider this collapsed <code>Time</code> dimension aggregate table 
+that has the same lost dimensions <code>customer_id</code>, 
+<code>product_id</code>, <code>promotion_id</code> and <code>store_id</code>.
+The <code>time_id</code> foreign key is no longer present, rather it 
+has been replaces with the logical levels <code>the_year</code>, 
+<code>quarter</code> and <code>month_of_year</code>.
+</p>
+
+<blockquote>
+    <p><code>
+    INSERT INTO "agg_c_10_sales_fact_1997" ( <br>
+&nbsp;&nbsp;&nbsp; "month_of_year", <br>
+&nbsp;&nbsp;&nbsp; "quarter", <br>
+&nbsp;&nbsp;&nbsp; "the_year", <br>
+&nbsp;&nbsp;&nbsp; "store_sales", <br>
+&nbsp;&nbsp;&nbsp; "store_cost", <br>
+&nbsp;&nbsp;&nbsp; "unit_sales", <br>
+&nbsp;&nbsp;&nbsp; "customer_count", <br>
+&nbsp;&nbsp;&nbsp; "fact_count" <br>
+    ) SELECT <br>
+&nbsp;&nbsp;&nbsp; "D"."month_of_year", <br>
+&nbsp;&nbsp;&nbsp; "D"."quarter", <br>
+&nbsp;&nbsp;&nbsp; "D"."the_year", <br>
+&nbsp;&nbsp;&nbsp; SUM("B"."store_sales") AS "store_sales", <br>
+&nbsp;&nbsp;&nbsp; SUM("B"."store_cost") AS "store_cost", <br>
+&nbsp;&nbsp;&nbsp; SUM("B"."unit_sales") AS "unit_sales", <br>
+&nbsp;&nbsp;&nbsp; COUNT(DISTINCT "customer_id") AS "customer_count", <br>
+&nbsp;&nbsp;&nbsp; COUNT(*) AS fact_count <br>
+    FROM "sales_fact_1997" "B", "time_by_day" "D" <br>
+    WHERE <br>
+&nbsp;&nbsp;&nbsp; "B"."time_id" = "D"."time_id" <br>
+    GROUP BY <br>
+&nbsp;&nbsp;&nbsp; "D"."month_of_year", <br>
+&nbsp;&nbsp;&nbsp; "D"."quarter", <br>
+&nbsp;&nbsp;&nbsp; "D"."the_year";
+    </code></p>
+</blockquote>
+
+<p>
+This aggregate table of the distinct-count measure can be used to fulfill
+a query as long as the query specifies the 
+<code>Time</code> dimension down to the
+<code>month_of_year</code> level.
+</p>
+
+<p>
+The general rule when building aggregate tables involving distinct-count
+measures is that there can be NO foreign keys remaining in the aggregate
+table - for each base table foreign key, it must either be dropped, a
+lost dimension aggregate, or it must be replaces with levels, a collapsed
+dimension aggregate.
+In fact, this rule, though not required, is useful to follow when
+creating any aggregate table; there is no value in maintaining
+foreign keys in aggregate tables. They should be replaced by collapsing
+to levels unless the larger memory used by such aggregate tables is
+to much for one's database system.
+</p>
 
 <h2>
 <a name="Tools_for_designing_and_maintaining_aggregate_tables">Tools for 

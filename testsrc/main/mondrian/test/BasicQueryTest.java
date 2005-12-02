@@ -2747,6 +2747,66 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #2: 135,215" + nl +
                 "Row #2: 2,826" + nl);
     }
+    
+    /** 
+     * Turn off aggregate caching and run query with both use of aggregate 
+     * tables on and off - should result in the same answer.
+     * Note that if the mondrian.rolap.aggregates.Read is not true, then
+     * no aggregate tables is be read in any event.
+     */
+    public void testCountDistinctAgg() {
+        final MondrianProperties properties = MondrianProperties.instance();
+        boolean use_agg_orig = properties.UseAggregates.get();
+        boolean do_caching_orig = properties.DisableCaching.get();
+
+        // turn off caching
+        properties.DisableCaching.setString("true");
+
+        assertQueryReturns(
+            "select {[Measures].[Unit Sales], [Measures].[Customer Count]} on rows," + nl +
+            "NON EMPTY {[Time].[1997].[Q1].[1]} ON COLUMNS" + nl +
+            "from Sales",
+            "Axis #0:"  + nl +
+            "{}"  + nl +
+            "Axis #1:"  + nl +
+            "{[Time].[1997].[Q1].[1]}"  + nl +
+            "Axis #2:"  + nl +
+            "{[Measures].[Unit Sales]}"  + nl +
+            "{[Measures].[Customer Count]}"  + nl +
+            "Row #0: 21,628"  + nl +
+            "Row #1: 1,396"  + nl);
+
+        if (use_agg_orig) {
+            properties.UseAggregates.setString("false");
+        } else {
+            properties.UseAggregates.setString("true");
+        }
+
+        assertQueryReturns(
+            "select {[Measures].[Unit Sales], [Measures].[Customer Count]} on rows," + nl +
+            "NON EMPTY {[Time].[1997].[Q1].[1]} ON COLUMNS" + nl +
+            "from Sales",
+            "Axis #0:"  + nl +
+            "{}"  + nl +
+            "Axis #1:"  + nl +
+            "{[Time].[1997].[Q1].[1]}"  + nl +
+            "Axis #2:"  + nl +
+            "{[Measures].[Unit Sales]}"  + nl +
+            "{[Measures].[Customer Count]}"  + nl +
+            "Row #0: 21,628"  + nl +
+            "Row #1: 1,396"  + nl);
+
+        if (use_agg_orig) {
+            properties.UseAggregates.setString("true");
+        } else {
+            properties.UseAggregates.setString("false");
+        }
+        if (do_caching_orig) {
+            properties.DisableCaching.setString("true");
+        } else {
+            properties.DisableCaching.setString("false");
+        }
+    }
 
     /**
      *

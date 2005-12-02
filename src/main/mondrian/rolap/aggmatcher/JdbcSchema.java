@@ -11,7 +11,6 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.MondrianDef;
-import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapStar;
 import mondrian.resource.MondrianResource;

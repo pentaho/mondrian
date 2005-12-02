@@ -223,19 +223,36 @@ public class RolapStar {
         }
     }
 
-    /**
-     * Returns the AggStar with the lowest row count or volume whose bit key
-     * is a super set of the bitKey parameter.
-     *
-     * @param bitKey Bit key to match
-     * @param exact Whether an exact match is required; if not, AggStar can
-     *   be a superset
-     * @return An AggStar, or null if none matches
+    /** 
+     * Get the AggStar whose BitKey is a super set of the bitKey parameter.  
+     * Return null is none is found.
+     * 
+     * @param bitKey 
+     * @return 
      */
-    public AggStar select(BitKey bitKey, boolean exact) {
+    public AggStar superSetMatch(BitKey bitKey) {
         for (Iterator it = getAggStars(); it.hasNext(); ){
             AggStar aggStar = (AggStar) it.next();
-            if (aggStar.matches(bitKey, exact)) {
+            if (aggStar.superSetMatch(bitKey)) {
+                return aggStar;
+            }
+        }
+        return null;
+    }
+
+    /** 
+     * Get the AggStar whose foreign key BitMap equals the fkBK parameter and
+     * whose measure BitKey is a super set of the measureBK parameter.
+     * Return null is none is found.
+     * 
+     * @param fkBK 
+     * @param measureBK 
+     * @return 
+     */
+    public AggStar select(BitKey fkBK, BitKey measureBK) {
+        for (Iterator it = getAggStars(); it.hasNext(); ){
+            AggStar aggStar = (AggStar) it.next();
+            if (aggStar.select(fkBK, measureBK)) {
                 return aggStar;
             }
         }

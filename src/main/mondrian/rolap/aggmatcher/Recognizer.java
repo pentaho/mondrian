@@ -24,7 +24,6 @@ import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.HierarchyUsage;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.resource.MondrianResource;
 
 import java.util.*;
 
