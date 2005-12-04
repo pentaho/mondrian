@@ -106,31 +106,21 @@ You must accept the terms of that agreement to use this software.
 
   <!-- jfreechart provided servlet -->
   <servlet>
-    <servlet-name>XMLgen</servlet-name>
-    <display-name>XMLgen</display-name>
-    <description>Default configuration created for servlet.</description>
-    <servlet-class>com.clarmont.olap.servlet.XMLgen</servlet-class>
-  </servlet>
-  <servlet>
     <servlet-name>GetChart</servlet-name>
     <display-name>GetChart</display-name>
     <description>Default configuration created for servlet.</description>
-    <servlet-class>com.clarmont.olap.servlet.GetChart</servlet-class>
+    <servlet-class>com.tonbeller.jpivot.chart.GetChart</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>Print</servlet-name>
     <display-name>Print</display-name>
     <description>Default configuration created for servlet.</description>
-    <servlet-class>com.clarmont.olap.servlet.print</servlet-class>
+    <servlet-class>com.tonbeller.jpivot.print.PrintServlet</servlet-class>
   </servlet>
 
   <servlet-mapping>
     <servlet-name>DisplayChart</servlet-name>
     <url-pattern>/DisplayChart</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>XMLgen</servlet-name>
-    <url-pattern>/XMLgen</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>Print</servlet-name>
