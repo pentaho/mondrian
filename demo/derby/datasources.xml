@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<DataSources>
+	<DataSource>
+		<DataSourceName>MondrianFoodMart</DataSourceName>
+		<DataSourceDescription>FoodMart 2000 Data Warehouse</DataSourceDescription>
+		<URL>http://localhost:8080/mondrian/xmla</URL>
+		<DataSourceInfo>Provider=mondrian;Jdbc='jdbc:derby:classpath:/foodmart';Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;RoleXX='California manager';JdbcUser=APP;JdbcPassword=APP</DataSourceInfo>
+		<ProviderName>Mondrian</ProviderName>
+		<ProviderType>MDP</ProviderType>
+		<AuthenticationMode>Unauthenticated</AuthenticationMode>
+	</DataSource>
+</DataSources>

@@ -43,12 +43,14 @@
   <property name="webapp.dir" value="webapp"/>
   <property name="dist.src.file" value="${dist.dir}/${dist.name}-src.zip"/>
   <property name="dist.bin.file" value="${dist.dir}/${dist.name}.zip"/>
+  <property name="dist.bin.derby.file" value="${dist.dir}/${dist.name}-derby.zip"/>
   <property name="dist.doc.file" value="${dist.dir}/doc.tar.gz"/>
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
   <property name="workbench.jar.file" value="workbench.jar"/>
   <property name="resource.jar.file" value="${lib.dir}/eigenbase-resgen.jar"/>
   <property name="xom.jar.file" value="${lib.dir}/eigenbase-xom.jar"/>
   <property name="war.file" value="${lib.dir}/${name}.war"/>
+  <property name="war.embeddedDb.file" value="${lib.dir}/${name}-embedded.war"/>
   <property name="jdk.home" value="${env.JAVA_HOME}"/>
   <property name="catalina.home" value="${env.CATALINA_HOME}"/>
   <property name="junit.home" value="${env.JUNIT_HOME}"/>
@@ -572,6 +574,28 @@ doc/deployDoc.sh" />
     <touch file="demo/access/MondrianFoodMart.mdb"/>
   </target>
 
+  <target name="check-FoodMartDerbyDB-uptodate">
+    <condition property="FoodMartDerbyDB.uptodate">
+      <or>
+        <not>
+          <available file="demo/derby/derby-foodmart.zip"/>
+        </not>
+        <uptodate
+            srcfile="demo/derby/derby-foodmart.zip"
+            targetfile="demo/derby/foodmart/service.properties"/>
+      </or>
+    </condition>
+  </target>
+
+  <target name="unzip-FoodMartDerbyDB"
+      depends="check-FoodMartDerbyDB-uptodate"
+      unless="FoodMartDerbyDB.uptodate">
+    <unzip src="demo/derby/derby-foodmart.zip" dest="demo/derby">
+      <patternset includes="**/*.*"/>
+    </unzip>
+    <touch file="demo/derby/foodmart/service.properties"/>
+  </target>
+
   <target name="release" depends="binzip"/>
 
   <target name="binzip"
@@ -608,9 +632,41 @@ ${doc.dir}/api/src-html/**/*"/>
           includes="${dist.name}-src.zip"/>
     </zip>
   </target>
+  
+  <target name="binDerbyzip"
+      depends="version,derby-war,srczip,javadoc,unzip-FoodMartDerbyDB">
+    <mkdir dir="${dist.dir}" />
+    <delete file="${dist.bin.derby.file}"/>
+    <zip zipfile="${dist.bin.derby.file}">
+      <zipfileset
+          dir="."
+          prefix="${dist.name}"
+          includes="
+${doc.dir}/**/*.jpg,
+${doc.dir}/**/*.html,
+${doc.dir}/**/*.css,
+${doc.dir}/**/*.png,
+${doc.dir}/api/**/*.xml,
+${war.embeddedDb.file},
+${jar.file},
+lib/*.dtd,
+demo/FoodMart.xml,
+LICENSE.html,
+README.txt,
+VERSION.txt"
+          excludes="
+**/*~,
+**/_vti*/*,
+**/*.psp,
+${doc.dir}/api/src-html/**/*"/>
+      <zipfileset
+          dir="${dist.dir}"
+          prefix="${dist.name}"
+          includes="${dist.name}-src.zip"/>
+    </zip>
+  </target>
 
-  <target
-      name="doczip"
+  <target name="doczip"
       depends="javadoc"
       description="Builds a zipfile of the documentation, which can then be
                    deployed to sf.net. See also doc/deployDoc.sh.">
@@ -750,13 +806,47 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <fileset dir="${lib.dir}" includes="index.jsp"/>
       <lib dir="${lib.dir}" includes="${name}.jar"/>
       <lib dir="${lib.dir}" includes="eigenbase-*.jar"/>
-      <lib dir="${lib.dir}" includes="log4j-1.2.9.jar"/>
-      <classes dir="${testclasses.dir}" includes="mondrian/xmla/XmlaUtil*.*"/>
+      <classes dir="${testclasses.dir}" includes="mondrian/xmla/*.*"/>
+      <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
     </war>
   </target>
 
   <target name="deploy-war" depends="war" description="Deploy WAR with JPivot to web server">
     <copy file="${war.file}" todir="${mondrian.webapp.deploy}"/>
+  </target>
+
+  <target name="derby-war" depends="jar,compile.tests,unzip-FoodMartDerbyDB" description="
+Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded database.
+Assumes that mondrian.jar exists (use 'jar' target)">
+    <filter filtersfile="mondrian.properties"/>
+    <mkdir dir="${lib.dir}" />
+    <delete file="${war.embeddedDb.file}"/>
+    <copy file="${lib.dir}/jpivot.war" tofile="${war.embeddedDb.file}"/>
+    <delete file="${lib.dir}/web.xml"/>
+    <!-- always replace jpivot's index.jsp -->
+    <copy overwrite="yes" file="${webapp.dir}/index.jsp" tofile="${lib.dir}/index.jsp"/>
+
+    <war warfile="${war.embeddedDb.file}"
+        update="yes"
+        webxml="${demo.dir}/derby/web.xml">
+      <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml"/>
+      <webinf dir="${demo.dir}/derby" includes="queries/*.jsp,datasources.xml"/>
+      <!-- our FoodMart.xml may be newer than jpivot's -->
+      <webinf dir="${demo.dir}" prefix="WEB-INF/queries" includes="FoodMart.xml"/>
+      <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
+      <fileset dir="${lib.dir}" includes="index.jsp"/>
+      <lib dir="${lib.dir}" includes="${name}.jar"/>
+      <lib dir="${lib.dir}" includes="eigenbase-*.jar"/>
+      <lib dir="${testlib.dir}" includes="derby.jar"/>
+      <classes dir="${demo.dir}/derby" includes="foodmart/**/*.*"/>
+      <classes dir="${testclasses.dir}" includes="mondrian/xmla/*.*"/>
+      <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
+    </war>
+  </target>
+
+  <target name="deploy-derby-war" depends="derby-war" description="Deploy WAR with JPivot to web server">
+    <mkdir dir="${mondrian.webapp.deploy}/${name}-embedded" />
+    <unzip src="${war.embeddedDb.file}" dest="${mondrian.webapp.deploy}/${name}-embedded" overwrite="true"/>
   </target>
   	
   <target name="war-no-jpivot" depends="jar" description="
