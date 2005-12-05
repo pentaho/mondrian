@@ -503,7 +503,7 @@ class RolapHierarchy extends HierarchyBase {
         RolapDimension peerDimension = new RolapDimension(
             dimension.getSchema(),
             dimension.getName() + "$Closure",
-            RolapDimension.getNextOrdinal(),
+            ((RolapDimension)dimension).getNextOrdinal(),
             DimensionType.StandardDimension);
 
         // Create a peer hierarchy.

@@ -64,9 +64,8 @@ class RolapDimension extends DimensionBase {
     private static final Logger LOGGER = Logger.getLogger(RolapDimension.class);
 
     /** Generator for {@link #globalOrdinal}. * */
-    private static int nextOrdinal = 1; // 0 is reserved for [Measures]
-    static synchronized int getNextOrdinal() {
-        return RolapDimension.nextOrdinal++;
+    synchronized int getNextOrdinal() {
+        return schema.getNextDimensionOrdinal();
     }
 
     private final Schema schema;
@@ -170,8 +169,8 @@ class RolapDimension extends DimensionBase {
         if (xmlCubeDimension.name.equals(MEASURES_NAME)) {
             return 0;
         }
+        RolapSchema schema = (RolapSchema) cube.getSchema();
         if (xmlCubeDimension instanceof MondrianDef.DimensionUsage) {
-            RolapSchema schema = (RolapSchema) cube.getSchema();
             MondrianDef.DimensionUsage usage =
                 (MondrianDef.DimensionUsage) xmlCubeDimension;
             RolapHierarchy hierarchy = schema.getSharedHierarchy(usage.source);
@@ -183,7 +182,7 @@ class RolapDimension extends DimensionBase {
                 return dimension.getGlobalOrdinal();
             }
         }
-        return RolapDimension.getNextOrdinal();
+        return schema.getNextDimensionOrdinal();
     }
 
     /**
@@ -242,7 +241,7 @@ class RolapDimension extends DimensionBase {
         RolapDimension dimension = new RolapDimension(
             schema,
             name,
-            RolapDimension.getNextOrdinal(),
+            getNextOrdinal(),
             dimensionType);
         dimension.hierarchies = (Hierarchy[]) hierarchies.clone();
         for (int i = 0; i < hierarchies.length; i++) {

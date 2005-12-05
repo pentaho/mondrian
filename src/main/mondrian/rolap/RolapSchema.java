@@ -1369,6 +1369,12 @@ public class RolapSchema implements Schema {
     RolapNativeRegistry getNativeRegistry() {
         return nativeRegistry;
     }
+ 
+    /** Generator for {@link #globalOrdinal}. * */
+    private int nextDimensionOrdinal = 1; // 0 is reserved for [Measures]
+    public synchronized int getNextDimensionOrdinal() {
+        return nextDimensionOrdinal++;
+    }
     
 }
 
