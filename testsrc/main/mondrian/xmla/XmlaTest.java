@@ -21,6 +21,12 @@ import org.eigenbase.xom.Parser;
 
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.File;
+import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -44,12 +50,17 @@ public class XmlaTest extends TestCase {
      */
     private ArrayList requestList;
 
+    private File dataDir;
+
     public XmlaTest(String s) {
         super(s);
     }
 
     protected void setUp() throws Exception {
         super.setUp();
+
+        makeDataDir();
+
         // Deal with embedded & that can be in the JDBC URL
         String connectString = TestContext.getConnectString();
         dataSource = "MondrianFoodMart";
@@ -135,6 +146,12 @@ public class XmlaTest extends TestCase {
         return TestContext.fold(strings);
     }
 
+    private String xmlwrap(String msg) {
+        if (msg.endsWith(nl)) {
+            msg = msg.substring(0, msg.length() - nl.length());
+        }
+        return "<?xml version=\"1.0\"?>" + nl + wrap(msg);
+    }
     private String wrap(String request) {
         request = Pattern.compile("^").matcher(request).replaceAll("        ");
         return "<SOAP-ENV:Envelope" + nl +
@@ -195,7 +212,9 @@ public class XmlaTest extends TestCase {
             "        <RestrictionList/>",
             "    </Restrictions>",
             "    <Properties>",
-            "        <PropertyList/>",
+            "        <PropertyList>",
+            "            <Content>Data</Content>",
+            "        </PropertyList>",
             "    </Properties>",
             "</Discover>"};
         String[] expected = {
@@ -259,17 +278,17 @@ public class XmlaTest extends TestCase {
     }
 
     public void testDiscoverCubes() {
-        String[] request = {
-            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
-            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
-            "    <RequestType>MDSCHEMA_CUBES</RequestType>",
-            "    <Restrictions>",
-            "        <RestrictionList>",
-            "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>",
-            "        </RestrictionList>",
-            "    </Restrictions>",
-            "    <Properties>",
-            "        <PropertyList>",
+String[] request = {
+    "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+    "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+    "    <RequestType>MDSCHEMA_CUBES</RequestType>",
+    "    <Restrictions>",
+    "        <RestrictionList>",
+    "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>",
+    "        </RestrictionList>",
+    "    </Restrictions>",
+    "    <Properties>",
+        "        <PropertyList>",
             "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
             "            <Catalog>FoodMart</Catalog>",
             "            <Format>Tabular</Format>",
@@ -281,29 +300,29 @@ public class XmlaTest extends TestCase {
             "          <row>",
             "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>",
             "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>",
-            "            <CUBE_NAME>Store</CUBE_NAME>",
-            "            <CUBE_TYPE>CUBE</CUBE_TYPE>",
-            "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>",
-            "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>",
-            "            <IS_LINKABLE>false</IS_LINKABLE>",
-            "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>",
-            "          </row>",
-            ".*"};
-        assertRequestMatches(wrap(fold(request)), fold(responsePattern));
-    }
+    "            <CUBE_NAME>Store</CUBE_NAME>",
+    "            <CUBE_TYPE>CUBE</CUBE_TYPE>",
+    "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>",
+    "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>",
+    "            <IS_LINKABLE>false</IS_LINKABLE>",
+    "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>",
+    "          </row>",
+    ".*"};
+assertRequestMatches(wrap(fold(request)), fold(responsePattern));
+}
 
-    public void testDiscoverCubesRestricted() {
-        String[] request = {
-            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
-            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
-            "    <RequestType>MDSCHEMA_CUBES</RequestType>",
-            "    <Restrictions>",
-            "        <RestrictionList>",
-            "            <CUBE_NAME>Sales</CUBE_NAME>",
-            "        </RestrictionList>",
-            "    </Restrictions>",
-            "    <Properties>",
-            "        <PropertyList>",
+public void testDiscoverCubesRestricted() {
+String[] request = {
+    "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+    "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+    "    <RequestType>MDSCHEMA_CUBES</RequestType>",
+    "    <Restrictions>",
+    "        <RestrictionList>",
+    "            <CUBE_NAME>Sales</CUBE_NAME>",
+    "        </RestrictionList>",
+    "    </Restrictions>",
+    "    <Properties>",
+        "        <PropertyList>",
             "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
             "            <Catalog>FoodMart</Catalog>",
             "            <Format>Tabular</Format>",
@@ -2051,6 +2070,126 @@ public class XmlaTest extends TestCase {
         assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
+    // RME
+    // DISCOVER_DATASOURCES
+    public void testDiscoverDataSourcesDefault() 
+            throws IOException {
+        String request = 
+            readDataFile("DISCOVER_DATASOURCES_Default_request.xml");
+        String response = 
+            readDataFile("DISCOVER_DATASOURCES_Default_response.xml");
+// TODO
+//        assertRequestYields(request, xmlwrap(response));
+    }
+    public void testDiscoverDataSourcesNone() 
+            throws IOException {
+        String request = 
+            readDataFile("DISCOVER_DATASOURCES_None_request.xml");
+        String response = 
+            readDataFile("DISCOVER_DATASOURCES_None_response.xml");
+// TODO
+//        assertRequestYields(request, xmlwrap(response));
+    }
+    public void testDiscoverDataSourcesData() 
+            throws IOException {
+        String request = 
+            readDataFile("DISCOVER_DATASOURCES_Data_request.xml");
+        String response = 
+            readDataFile("DISCOVER_DATASOURCES_Data_response.xml");
+// TODO
+//        assertRequestYields(request, xmlwrap(response));
+    }
+    public void testDiscoverDataSourcesSchema() 
+            throws IOException {
+        String request = 
+            readDataFile("DISCOVER_DATASOURCES_Schema_request.xml");
+        String response = 
+            readDataFile("DISCOVER_DATASOURCES_Schema_response.xml");
+// TODO
+//        assertRequestYields(request, xmlwrap(response));
+    }
+    public void testDiscoverDataSourcesSchemaData() 
+            throws IOException {
+        String request = 
+            readDataFile("DISCOVER_DATASOURCES_SchemaData_request.xml");
+        String response = 
+            readDataFile("DISCOVER_DATASOURCES_SchemaData_response.xml");
+// TODO
+//        assertRequestYields(request, xmlwrap(response));
+    }
+    // DBSCHEMA_CATALOGS
+    public void testDiscoverDbSchemaCatalogsDefault() 
+            throws IOException {
+        String request = 
+            readDataFile("DBSCHEMA_CATALOGS_Default_request.xml");
+        String response = 
+            readDataFile("DBSCHEMA_CATALOGS_Default_response.xml");
+// TODO
+//        assertRequestYields(request, xmlwrap(response));
+    }
+    // MDSCHEMA_MEASURES
+    public void testDiscoverMdSchemaMeasuresSchemaData() 
+            throws IOException {
+        String request = 
+            readDataFile("MDSCHEMA_MEASURES_SchemaData_request.xml");
+        String response = 
+            readDataFile("MDSCHEMA_MEASURES_SchemaData_respose.xml");
+// TODO
+//        assertRequestYields(request, xmlwrap(response));
+    }
+    // MDSCHEMA_CUBES
+    public void testDiscoverMdSchemaCubesSchemaData() 
+            throws IOException {
+        String request = 
+            readDataFile("MDSCHEMA_CUBES_SchemaData_request.xml");
+        String response = 
+            readDataFile("MDSCHEMA_CUBES_SchemaData_response.xml");
+// TODO
+//        assertRequestYields(request, xmlwrap(response));
+    }
+    // MDSCHEMA_DIMENSIONS
+    public void testDiscoverMdSchemaDimensionsSchemaData() 
+            throws IOException {
+        String request = 
+            readDataFile("MDSCHEMA_DIMENSIONS_SchemaData_request.xml");
+        String response = 
+            readDataFile("MDSCHEMA_DIMENSIONS_SchemaData_response.xml");
+// TODO
+//        assertRequestYields(request, xmlwrap(response));
+    }
+    // MDSCHEMA_LEVELS
+    public void testDiscoverMdSchemaLevelsSchemaData12() 
+            throws IOException {
+        String request = 
+            readDataFile("MDSCHEMA_LEVELS_SchemaData_request_12.xml");
+        String response = 
+            readDataFile("MDSCHEMA_LEVELS_SchemaData_response_12.xml");
+// TODO
+//        assertRequestYields(request, xmlwrap(response));
+    }
+    // EXECUTE
+    public void testExecuteData() 
+            throws IOException {
+        String request = 
+            readDataFile("EXECUTE_Data_request.xml");
+        String response = 
+            readDataFile("EXECUTE_Data_response.xml");
+// TODO
+//        assertRequestYields(request, xmlwrap(response));
+    }
+    public void testExecuteSchemaData() 
+            throws IOException {
+        String request = 
+            readDataFile("EXECUTE_SchemaData_request.xml");
+        String response = 
+            readDataFile("EXECUTE_SchemaData_response.xml");
+// TODO
+//        assertRequestYields(request, xmlwrap(response));
+    }
+
+
+
+
     /**
      * Asserts that two string arrays are equal.
      */
@@ -2134,6 +2273,60 @@ public class XmlaTest extends TestCase {
             s = s.substring(0, s.length() - spurious.length());
         }
         return s;
+    }
+    protected void makeDataDir() {
+        // get location where tests are being run
+        // we assume that this is the mondrian directory
+        String mondrianPathTop = System.getProperty("user.dir");
+
+        File mondrianDirTop = new File(mondrianPathTop);
+
+        File testSrcDir = new File(mondrianDirTop, "testsrc");
+        if (! testSrcDir.exists()) {
+            return;
+        }
+        File mainDir = new File(testSrcDir, "main");
+        if (! mainDir.exists()) {
+            return;
+        }
+        File mondrianDir = new File(mainDir, "mondrian");
+        if (! mondrianDir.exists()) {
+            return;
+        }
+        File xmlaDir = new File(mondrianDir, "xmla");
+        if (! xmlaDir.exists()) {
+            return;
+        }
+        dataDir = new File(xmlaDir, "data");
+        if (! dataDir.exists()) {
+            dataDir = null;
+            return;
+        }
+    }
+    protected String readDataFile(String name) throws IOException {
+        if (dataDir == null) {
+            fail("Could not create xmla data directory: " +
+                "/home/emberson/java/mondrian/mondrian/testsrc");
+        }
+        File f = new File(dataDir, name);
+        if (! f.exists()) {
+            fail("Does not exists Data File :: " +
+                f.getPath());
+        }
+        InputStream fin = new FileInputStream(f);
+        InputStreamReader reader = new InputStreamReader(fin);
+        BufferedReader bufReader = new BufferedReader(reader);
+
+        StringBuffer buf = new StringBuffer(1024);
+        char[] chars = new char[256];
+        int len = bufReader.read(chars);
+        while (len > 0) {
+            buf.append(chars, 0, len);
+            len = bufReader.read(chars);
+        }
+
+        return buf.toString();
+
     }
 
 }

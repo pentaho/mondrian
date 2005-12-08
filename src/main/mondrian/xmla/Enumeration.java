@@ -95,11 +95,35 @@ class Enumeration extends EnumeratedValues {
         }
     }
 
+/*
+// RME
     public static class Content extends EnumeratedValues.BasicValue {
         public static final EnumeratedValues enumeration = new EnumeratedValues();
 
         public Content(String name, int ordinal, String description) {
             super(name, ordinal, description);
+        }
+    }
+*/
+    public static final class Content extends EnumeratedValues.BasicValue {
+        public static final int NONE_ORDINAL        = 0;
+        public static final int SCHEMA_ORDINAL      = 1;
+        public static final int DATA_ORDINAL        = 2;
+        public static final int SCHEMA_DATA_ORDINAL = 3;
+
+        public static final Content None = new Content("None", NONE_ORDINAL, "none");
+        public static final Content Schema = new Content("Schema", SCHEMA_ORDINAL, "schema");
+        public static final Content Data = new Content("Data", DATA_ORDINAL, "data");
+        public static final Content SchemaData = new Content("SchemaData", SCHEMA_DATA_ORDINAL, "schemadata");
+        public Content(String name, int ordinal, String description) {
+            super(name, ordinal, description);
+        }
+        public static final EnumeratedValues enumeration = new EnumeratedValues(
+                new Content[] {None, Schema, Data, SchemaData}
+        );
+
+        public static Content getValue(String name) {
+            return (Content) enumeration.getValue(name, true);
         }
     }
 

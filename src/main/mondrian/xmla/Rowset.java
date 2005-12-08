@@ -82,12 +82,19 @@ abstract class Rowset {
         list = pruneRestrictions(list);
         this.restrictedColumns = (RowsetDefinition.Column[]) list.toArray(
                 new RowsetDefinition.Column[0]);
+    }
+    
+    /** 
+     * Should not call methods that are re-defined in derived classes from
+     * the constructor of the base class.
+     */
+    protected void initialize() {
         for (Iterator propertiesIter = properties.keySet().iterator();
                 propertiesIter.hasNext();) {
             String propertyName = (String) propertiesIter.next();
             final PropertyDefinition propertyDef = PropertyDefinition.getValue(propertyName);
             if (propertyDef == null) {
-                throw Util.newError("Rowset '" + definition.name +
+                throw Util.newError("Rowset '" + rowsetDefinition.name +
                         "' does not support property '" + propertyName + "'");
             }
             final String propertyValue = properties.getProperty(propertyName);
@@ -130,7 +137,11 @@ abstract class Rowset {
      * Writes the contents of this rowset as a series of SAX events.
      * @param saxHandler Handler to write to
      */
-    public abstract void unparse(SAXHandler saxHandler) throws SAXException;
+    public void unparse(SAXHandler saxHandler) throws SAXException {
+        initialize();
+        unparseImpl(saxHandler);
+    }
+    protected abstract void unparseImpl(SAXHandler saxHandler) throws SAXException;
 
     private static boolean haveCommonMember(String[] a, String[] b) {
         for (int i = 0; i < a.length; i++) {

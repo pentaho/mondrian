@@ -258,11 +258,35 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
+// RME
+        // default value is SchemaData
+        private int contentOrdinal = Enumeration.Content.SCHEMA_DATA_ORDINAL;
+
         public DiscoverDatasourcesRowset(HashMap restrictions, Properties properties) {
             super(definition, restrictions, properties);
         }
+        protected void setProperty(PropertyDefinition propertyDef, String value) {
+            switch (propertyDef.ordinal) {
+            case PropertyDefinition.Content_ORDINAL:
+                Enumeration.Content content = Enumeration.Content.getValue(value);
+                if (content == null) {
+                    throw Util.newError("Bad Content Property value: " +value);
+                }
+                contentOrdinal = content.getOrdinal();
+                break;
+            default:
+                super.setProperty(propertyDef, value);
+            }
+        }
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
+            switch (contentOrdinal) {
+            case Enumeration.Content.NONE_ORDINAL :
+                break;
+            case Enumeration.Content.SCHEMA_ORDINAL :
+                //TODO
+                throw new UnsupportedOperationException();
+            case Enumeration.Content.DATA_ORDINAL :
         	for (Iterator it = XmlaMediator.dataSourcesMap.values().iterator(); it.hasNext();) {
         		DataSourcesConfig.DataSource ds = (DataSourcesConfig.DataSource)it.next();
 	            Row row = new Row();
@@ -275,6 +299,11 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 	            row.set(AuthenticationMode.name, ds.getAuthenticationMode());
 	            emit(row, saxHandler);
         	}
+                break;
+            case Enumeration.Content.SCHEMA_DATA_ORDINAL :
+                //TODO
+                throw new UnsupportedOperationException();
+            }
         }
     }
 
@@ -299,7 +328,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             final RowsetDefinition[] rowsetDefinitions = (RowsetDefinition[])
                     enumeration.getValuesSortedByName().
                     toArray(new RowsetDefinition[0]);
@@ -366,7 +395,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             final String[] propertyNames = PropertyDefinition.enumeration.getNames();
             for (int i = 0; i < propertyNames.length; i++) {
                 PropertyDefinition propertyDefinition = PropertyDefinition.getValue(propertyNames[i]);
@@ -416,7 +445,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             Enumeration[] enumerators = getEnumerators();
             for (int i = 0; i < enumerators.length; i++) {
                 Enumeration enumerator = enumerators[i];
@@ -550,7 +579,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             "When", "Where", "With", "WTD", "Xor",
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             for (int i = 0; i < keywords.length; i++) {
                 String keyword = keywords[i];
                 Row row = new Row();
@@ -588,7 +617,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             emit(Enumeration.Literal.enumeration, saxHandler);
         }
 
@@ -614,7 +643,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             Connection connection = XmlaMediator.getConnection(properties);
             if (connection == null) {
                 return;
@@ -647,7 +676,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             //TODO
             throw new UnsupportedOperationException();
         }
@@ -670,7 +699,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             //TODO
             throw new UnsupportedOperationException();
         }
@@ -697,7 +726,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             //TODO
             throw new UnsupportedOperationException();
         }
@@ -724,7 +753,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             //TODO
             throw new UnsupportedOperationException();
         }
@@ -749,7 +778,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             //TODO
             throw new UnsupportedOperationException();
         }
@@ -793,7 +822,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             final Connection connection = XmlaMediator.getConnection(properties);
             final Cube[] cubes = connection.getSchema().getCubes();
             for (int i = 0; i < cubes.length; i++) {
@@ -846,7 +875,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             final Connection connection = XmlaMediator.getConnection(properties);
             final Cube[] cubes = connection.getSchema().getCubes();
             for (int i = 0; i < cubes.length; i++) {
@@ -900,7 +929,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             //TODO
             throw new UnsupportedOperationException();
         }
@@ -942,7 +971,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             final Connection connection = XmlaMediator.getConnection(properties);
             final Cube[] cubes = connection.getSchema().getCubes();
             for (int i = 0; i < cubes.length; i++) {
@@ -1026,7 +1055,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             final Connection connection = XmlaMediator.getConnection(properties);
             final Cube[] cubes = connection.getSchema().getCubes();
             for (int i = 0; i < cubes.length; i++) {
@@ -1110,7 +1139,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             // return both stored and calculated members on hierarchy [Measures]
             final Connection connection = XmlaMediator.getConnection(properties);
             final Role role = connection.getRole();
@@ -1188,7 +1217,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             final Connection connection = XmlaMediator.getConnection(properties);
             final Cube[] cubes = connection.getSchema().getCubes();
             for (int i = 0; i < cubes.length; i++) {
@@ -1212,7 +1241,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                                 // stay with default value
                             }
                         }
-                        unparseMember(connection, cube, member, saxHandler, treeOp);
+                        unparseImplMember(connection, cube, member, saxHandler, treeOp);
                     }
                     continue;
                 }
@@ -1240,7 +1269,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                             // therefore we have nothing to work relative to.
                             // We supply our own treeOp expression here, for
                             // our own devious purposes.
-                            unparseMember(connection, cube, member, saxHandler,
+                            unparseImplMember(connection, cube, member, saxHandler,
                                     Enumeration.TreeOp.Self.ordinal |
                                     Enumeration.TreeOp.Descendants.ordinal);
                         }
@@ -1261,7 +1290,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
          * parameter, other relatives of the member. This method recursively
          * invokes itself to walk up, down, or across the hierarchy.
          */
-        private void unparseMember(final Connection connection, Cube cube,
+        private void unparseImplMember(final Connection connection, Cube cube,
                 Member member, SAXHandler saxHandler,
                 int treeOp) throws SAXException {
             // Visit node itself.
@@ -1285,7 +1314,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     if (sibling == member) {
                         continue;
                     }
-                    unparseMember(connection, cube, sibling, saxHandler,
+                    unparseImplMember(connection, cube, sibling, saxHandler,
                             Enumeration.TreeOp.Self.ordinal);
                 }
             }
@@ -1295,7 +1324,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         connection.getSchemaReader().getMemberChildren(member);
                 for (int i = 0; i < children.length; i++) {
                     Member child = children[i];
-                    unparseMember(connection, cube, child, saxHandler,
+                    unparseImplMember(connection, cube, child, saxHandler,
                             Enumeration.TreeOp.Self.ordinal |
                             Enumeration.TreeOp.Descendants.ordinal);
                 }
@@ -1304,7 +1333,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         connection.getSchemaReader().getMemberChildren(member);
                 for (int i = 0; i < children.length; i++) {
                     Member child = children[i];
-                    unparseMember(connection, cube, child, saxHandler,
+                    unparseImplMember(connection, cube, child, saxHandler,
                             Enumeration.TreeOp.Self.ordinal);
                 }
             }
@@ -1313,7 +1342,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 final Member parent =
                         connection.getSchemaReader().getMemberParent(member);
                 if (parent != null) {
-                    unparseMember(connection, cube, parent, saxHandler,
+                    unparseImplMember(connection, cube, parent, saxHandler,
                             Enumeration.TreeOp.Self.ordinal |
                             Enumeration.TreeOp.Ancestors.ordinal);
                 }
@@ -1321,7 +1350,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 final Member parent =
                         connection.getSchemaReader().getMemberParent(member);
                 if (parent != null) {
-                    unparseMember(connection, cube, parent, saxHandler,
+                    unparseImplMember(connection, cube, parent, saxHandler,
                             Enumeration.TreeOp.Self.ordinal);
                 }
             }
@@ -1387,7 +1416,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             throw new UnsupportedOperationException();
         }
     }
@@ -1431,7 +1460,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
+        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
             final Connection connection = XmlaMediator.getConnection(properties);
             final Cube[] cubes = connection.getSchema().getCubes();
             for (int i = 0; i < cubes.length; i++) {
