@@ -275,7 +275,7 @@ public class MondrianFoodMartLoader {
         }
 
         timestampColumnType = "TIMESTAMP";
-        if (sqlQuery.getDialect().isMSSQL()) {
+        if (sqlQuery.getDialect().isMSSQL() || sqlQuery.getDialect().isMySQL()) {
             timestampColumnType = "DATETIME";
         }
 
