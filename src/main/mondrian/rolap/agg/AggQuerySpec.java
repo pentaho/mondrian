@@ -167,7 +167,10 @@ class AggQuerySpec {
             final String alias = "d" + i;
             innerSqlQuery.addSelect(expr, alias);
             outerSqlQuery.addSelect(alias);
-            outerSqlQuery.addGroupBy(alias);
+
+            if (! hasDistinct()) {
+                outerSqlQuery.addGroupBy(alias);
+            }
         }
         // add measures
         // this can also add non-shared local dimension columns, which are 
@@ -202,7 +205,9 @@ class AggQuerySpec {
                 sqlQuery.addSelect(expr, getColumnAlias(i));
             }
 
-            if (isAggregate()) {
+            // only add a group-by clause if we are NOT doing
+            // a distinct count measure
+            if (! hasDistinct()) {
                 sqlQuery.addGroupBy(expr);
             }
         }
