@@ -23,6 +23,7 @@ import mondrian.olap.NativeEvaluator;
 import mondrian.olap.Util;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
+import mondrian.rolap.sql.SqlQuery.Dialect;
 
 /**
  * computes a Filter(set, condition) in SQL
@@ -53,7 +54,15 @@ public class RolapNativeFilter extends RolapNativeSet {
         }
 
         public void addConstraint(SqlQuery sqlQuery) {
-            sqlQuery.addHaving(filterExpr);
+            Dialect dialect = sqlQuery.getDialect();
+            if (dialect.isDerby()) {
+                String alias = sqlQuery.nextColumnAlias();
+                alias = dialect.quoteIdentifier(alias);
+                sqlQuery.addSelect(filterExpr, alias);
+                sqlQuery.addHaving(alias);
+            } else {
+                sqlQuery.addHaving(filterExpr);
+            }
             super.addConstraint(sqlQuery);
         }
 
