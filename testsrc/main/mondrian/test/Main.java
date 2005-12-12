@@ -145,7 +145,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(AccessControlTest.class);
             suite.addTestSuite(ParserTest.class);
             suite.addTestSuite(ParentChildHierarchyTest.class);
-            //suite.addTestSuite(XmlaTest.class);
+            suite.addTestSuite(XmlaTest.class);
             if (isRunOnce()) suite.addTestSuite(TestCalculatedMembers.class);
             suite.addTestSuite(RaggedHierarchyTest.class);
             suite.addTestSuite(CompatibilityTest.class);
@@ -154,7 +154,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(NamedSetTest.class);
             suite.addTestSuite(PropertiesTest.class);
             suite.addTestSuite(I18nTest.class);
-            
+
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get())
                 testNonEmpty = false;
