@@ -10,15 +10,18 @@
 	<classpathentry kind="lib" path="lib/mof.jar"/>
 	<classpathentry kind="lib" path="lib/eigenbase-resgen.jar"/>
 	<classpathentry kind="lib" path="lib/eigenbase-xom.jar"/>
-	<classpathentry kind="lib" path="lib/ant.jar"/>
 	<classpathentry kind="lib" path="lib/xalan.jar"/>
 	<classpathentry kind="lib" path="lib/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
 	<classpathentry kind="lib" path="lib/jsp-api.jar"/>
-	<classpathentry kind="lib" path="lib/servlet-api.jar"/>
 	<classpathentry kind="lib" path="testlib/junit.jar"/>
 	<classpathentry kind="lib" path="lib/commons-dbcp.jar"/>
 	<classpathentry kind="lib" path="lib/commons-pool.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.9.jar"/>
+	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
+	<classpathentry kind="lib" path="lib/eigenbase-properties.jar"/>
+	<classpathentry kind="lib" path="lib/servlet.jar"/>
+	<classpathentry kind="lib" path="testlib/commons-math-1.0.jar"/>
+	<classpathentry kind="lib" path="testlib/derby.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
