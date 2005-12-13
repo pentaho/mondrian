@@ -25,7 +25,7 @@ import mondrian.rolap.sql.TupleConstraint;
 
 /**
  * computes a Filter(set, condition) in SQL
- * 
+ *
  * @author av
  * @since Nov 21, 2005
  */
@@ -93,13 +93,21 @@ public class RolapNativeFilter extends RolapNativeSet {
         try {
             con = ds.getConnection();
 
+            // Disable filters against Derby, because its HAVING support is
+            // crippled. See bug 1379182.
+            final SqlQuery.Dialect dialect =
+                    SqlQuery.Dialect.create(con.getMetaData());
+            if (dialect.isDerby()) {
+                return null;
+            }
+
             // generate the WHERE condition
             SqlQuery sqlQuery = SqlTupleReader.newQuery(con, "NativeFilter");
             RolapNativeSql sql = new RolapNativeSql(sqlQuery);
             String filterExpr = sql.generateFilterCondition(args[1]);
-            if (filterExpr == null)
+            if (filterExpr == null) {
                 return null;
-
+            }
             LOGGER.info("using native filter");
 
             TupleConstraint constraint = new FilterConstraint(cargs, evaluator, filterExpr);
