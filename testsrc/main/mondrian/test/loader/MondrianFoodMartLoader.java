@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 
 /**
  * Utility to load the FoodMart dataset into an arbitrary JDBC database.
@@ -86,7 +86,12 @@ import org.apache.log4j.Logger;
  * @version $Id$
  */
 public class MondrianFoodMartLoader {
+    // Constants
+
     private static final Logger LOGGER = Logger.getLogger(MondrianFoodMartLoader.class);
+    private static final String nl = System.getProperty("line.separator");
+
+    // Fields
 
     final Pattern decimalDataTypeRegex = Pattern.compile("DECIMAL\\((.*),(.*)\\)");
     final DecimalFormat integerFormatter = new DecimalFormat(decimalFormat(15, 0));
@@ -105,7 +110,7 @@ public class MondrianFoodMartLoader {
     private boolean tables = false;
     private boolean indexes = false;
     private boolean data = false;
-    private static final String nl = System.getProperty("line.separator");
+    private boolean verbose;
     private boolean jdbcInput = false;
     private boolean jdbcOutput = false;
     private boolean populationQueries = false;
@@ -116,20 +121,32 @@ public class MondrianFoodMartLoader {
     private FileWriter fileOutput = null;
 
     private SqlQuery sqlQuery;
-    private String booleanColumnType;
-    private String bigIntColumnType;
-    private String dateColumnType;
-    private String timestampColumnType;
     private final Map tableMetadataToLoad = new HashMap();
     private final Map aggregateTableMetadataToLoad = new HashMap();
+    private SqlQuery.Dialect dialect;
+
 
     public MondrianFoodMartLoader(String[] args) {
 
         StringBuffer errorMessage = new StringBuffer();
         StringBuffer parametersMessage = new StringBuffer();
 
-        for ( int i=0; i<args.length; i++ )  {
-            if (args[i].equals("-tables")) {
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals("-verbose")) {
+                if (!verbose) {
+                    if (!LOGGER.isDebugEnabled()) {
+                        LOGGER.setLevel(Level.DEBUG);
+                    }
+                    LOGGER.addAppender(
+                            // Appender writes to system out.
+                            new ConsoleAppender(
+                                    // Formats the message on its own line,
+                                    // omits timestamp, priority etc.
+                                    new PatternLayout("%m%n"),
+                                    "System.out"));
+                    verbose = true;
+                }
+            } else if (args[i].equals("-tables")) {
                 tables = true;
             } else if (args[i].equals("-data")) {
                 data = true;
@@ -185,9 +202,12 @@ public class MondrianFoodMartLoader {
     }
 
     public void usage() {
-        System.out.println("Usage: MondrianFoodMartLoader [-tables] [-data] [-indexes] [-populationQueries]" +
+        System.out.println("Usage: MondrianFoodMartLoader " +
+                "[-verbose] [-tables] [-data] [-indexes] [-populationQueries]" +
                 "-jdbcDrivers=<jdbcDriver> " +
-                "-outputJdbcURL=<jdbcURL> [-outputJdbcUser=user] [-outputJdbcPassword=password]" +
+                "-outputJdbcURL=<jdbcURL> " +
+                "[-outputJdbcUser=user] " +
+                "[-outputJdbcPassword=password]" +
                 "[-outputJdbcBatchSize=<batch size>] " +
                 "| " +
                 "[-outputDirectory=<directory name>] " +
@@ -197,17 +217,19 @@ public class MondrianFoodMartLoader {
                 "   [-inputfile=<file name>]" +
                 "]");
         System.out.println("");
-        System.out.println("  <jdbcURL>             JDBC connect string for DB");
-        System.out.println("  [user]                JDBC user name for DB");
-        System.out.println("  [password]            JDBC password for user for DB");
-        System.out.println("                        If no source DB parameters are given, assumes data comes from file");
-        System.out.println("  [file name]           file containing test data - INSERT statements in MySQL format");
-        System.out.println("                        If no input file name or input JDBC parameters are given, assume insert statements come from demo/FoodMartCreateData.zip file");
-        System.out.println("  [outputDirectory]     Where FoodMartCreateTables.sql, FoodMartCreateData.sql and FoodMartCreateIndexes.sql will be created");
-
-        System.out.println("  <batch size>          size of JDBC batch updates - default to 50 inserts");
-        System.out.println("  <jdbcDrivers>         Comma-separated list of JDBC drivers.");
-        System.out.println("                        They must be on the classpath.");
+        System.out.println("  <jdbcURL>             JDBC connect string for DB.");
+        System.out.println("  [user]                JDBC user name for DB.");
+        System.out.println("  [password]            JDBC password for user for DB.");
+        System.out.println("                        If no source DB parameters are given, assumes data comes from file.");
+        System.out.println("  [file name]           File containing test data - INSERT statements in MySQL format.");
+        System.out.println("                        If no input file name or input JDBC parameters are given,");
+        System.out.println("                        assume insert statements come from demo/FoodMartCreateData.zip file");
+        System.out.println("  [outputDirectory]     Where FoodMartCreateTables.sql, FoodMartCreateData.sql");
+        System.out.println("                        and FoodMartCreateIndexes.sql will be created.");
+        System.out.println("  <batch size>          Size of JDBC batch updates - default to 50 inserts.");
+        System.out.println("  <jdbcDrivers>         Comma-separated list of JDBC drivers;");
+        System.out.println("                        they must be on the classpath.");
+        System.out.println("  -verbose              Verbose mode.");
         System.out.println("  -tables               If specified, drop and create the tables.");
         System.out.println("  -data                 If specified, load the data.");
         System.out.println("  -indexes              If specified, drop and create the tables.");
@@ -254,30 +276,7 @@ public class MondrianFoodMartLoader {
         LOGGER.info("Output connection is " + productName + ", " + version);
 
         sqlQuery = new SqlQuery(metaData);
-        booleanColumnType = "SMALLINT";
-        if (sqlQuery.getDialect().isPostgres()) {
-            booleanColumnType = "BOOLEAN";
-        } else if (sqlQuery.getDialect().isMySQL()) {
-            booleanColumnType = "TINYINT(1)";
-        } else if (sqlQuery.getDialect().isMSSQL()) {
-            booleanColumnType = "BIT";
-        }
-
-        bigIntColumnType = "BIGINT";
-        if (sqlQuery.getDialect().isOracle() ||
-                sqlQuery.getDialect().isFirebird()) {
-            bigIntColumnType = "DECIMAL(15,0)";
-        }
-
-        dateColumnType = "DATE";
-        if (sqlQuery.getDialect().isMSSQL()) {
-            dateColumnType = "DATETIME";
-        }
-
-        timestampColumnType = "TIMESTAMP";
-        if (sqlQuery.getDialect().isMSSQL() || sqlQuery.getDialect().isMySQL()) {
-            timestampColumnType = "DATETIME";
-        }
+        dialect = sqlQuery.getDialect();
 
         try {
             createTables();  // This also initializes tableMetadataToLoad
@@ -395,7 +394,7 @@ public class MondrianFoodMartLoader {
                     prevTable = tableName;
                     quotedTableName = quoteId(tableName);
                     quotedColumnNames = columnNames.replaceAll(quoteChar,
-                            sqlQuery.getDialect().getQuoteIdentifierString());
+                            dialect.getQuoteIdentifierString());
                     String[] splitColumnNames = columnNames.replaceAll(quoteChar, "")
                                             .replaceAll(" ", "").split(",");
                     Column[] columns = (Column[]) tableMetadataToLoad.get(tableName);
@@ -570,9 +569,9 @@ public class MondrianFoodMartLoader {
 
             String fromQuoteChar = null;
             String toQuoteChar = null;
-            if (sqlQuery.getDialect().isMySQL()) {
+            if (dialect.isMySQL()) {
                 toQuoteChar = "`";
-            } else if (sqlQuery.getDialect().isDB2()) {
+            } else if (dialect.isDB2()) {
                 toQuoteChar = "";
             } else {
                 toQuoteChar = "\"";
@@ -587,9 +586,9 @@ public class MondrianFoodMartLoader {
                 }
 
                 if (fromQuoteChar == null) {
-                    if (line.indexOf('`') >=0) {
+                    if (line.indexOf('`') >= 0) {
                         fromQuoteChar = "`";
-                    } else if (line.indexOf('"') >=0) {
+                    } else if (line.indexOf('"') >= 0) {
                         fromQuoteChar = "\"";
                     }
                 }
@@ -647,10 +646,10 @@ public class MondrianFoodMartLoader {
             if (i > 0) {
                 buf.append(",");
             }
-            buf.append(quoteId(inputSqlQuery, column.name));
+            buf.append(quoteId(inputSqlQuery.getDialect(), column.name));
         }
         buf.append(" from ")
-            .append(quoteId(inputSqlQuery, name));
+            .append(quoteId(inputSqlQuery.getDialect(), name));
         String ddl = buf.toString();
         Statement statement = inputConnection.createStatement();
         LOGGER.debug("Input table SQL: " + ddl);
@@ -942,7 +941,7 @@ public class MondrianFoodMartLoader {
                 try {
                     buf.append("DROP INDEX ")
                         .append(quoteId(indexName));
-                    if (sqlQuery.getDialect().isMySQL()) {
+                    if (dialect.isMySQL()) {
                         buf.append(" ON ")
                             .append(quoteId(tableName));
                     }
@@ -974,7 +973,7 @@ public class MondrianFoodMartLoader {
     }
 
     /**
-     * Define all tables for the FoodMart database.
+     * Defines all tables for the FoodMart database.<p/>
      *
      * Also initializes mapTableNameToColumns
      *
@@ -986,407 +985,407 @@ public class MondrianFoodMartLoader {
         }
 
         createTable("sales_fact_1997", new Column[] {
-          new Column("product_id", "INTEGER", "NOT NULL"),
-          new Column("time_id", "INTEGER", "NOT NULL"),
-          new Column("customer_id", "INTEGER", "NOT NULL"),
-          new Column("promotion_id", "INTEGER", "NOT NULL"),
-          new Column("store_id", "INTEGER", "NOT NULL"),
-          new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
+            new Column("product_id", Type.Integer, false),
+            new Column("time_id", Type.Integer, false),
+            new Column("customer_id", Type.Integer, false),
+            new Column("promotion_id", Type.Integer, false),
+            new Column("store_id", Type.Integer, false),
+            new Column("store_sales", Type.Currency, false),
+            new Column("store_cost", Type.Currency, false),
+            new Column("unit_sales", Type.Currency, false),
         });
         createTable("sales_fact_1998", new Column[] {
-          new Column("product_id", "INTEGER", "NOT NULL"),
-          new Column("time_id", "INTEGER", "NOT NULL"),
-          new Column("customer_id", "INTEGER", "NOT NULL"),
-          new Column("promotion_id", "INTEGER", "NOT NULL"),
-          new Column("store_id", "INTEGER", "NOT NULL"),
-          new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
+            new Column("product_id", Type.Integer, false),
+            new Column("time_id", Type.Integer, false),
+            new Column("customer_id", Type.Integer, false),
+            new Column("promotion_id", Type.Integer, false),
+            new Column("store_id", Type.Integer, false),
+            new Column("store_sales", Type.Currency, false),
+            new Column("store_cost", Type.Currency, false),
+            new Column("unit_sales", Type.Currency, false),
         });
         createTable("sales_fact_dec_1998", new Column[] {
-          new Column("product_id", "INTEGER", "NOT NULL"),
-          new Column("time_id", "INTEGER", "NOT NULL"),
-          new Column("customer_id", "INTEGER", "NOT NULL"),
-          new Column("promotion_id", "INTEGER", "NOT NULL"),
-          new Column("store_id", "INTEGER", "NOT NULL"),
-          new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
+            new Column("product_id", Type.Integer, false),
+            new Column("time_id", Type.Integer, false),
+            new Column("customer_id", Type.Integer, false),
+            new Column("promotion_id", Type.Integer, false),
+            new Column("store_id", Type.Integer, false),
+            new Column("store_sales", Type.Currency, false),
+            new Column("store_cost", Type.Currency, false),
+            new Column("unit_sales", Type.Currency, false),
         });
         createTable("inventory_fact_1997", new Column[] {
-          new Column("product_id", "INTEGER", "NOT NULL"),
-          new Column("time_id", "INTEGER", ""),
-          new Column("warehouse_id", "INTEGER", ""),
-          new Column("store_id", "INTEGER", ""),
-          new Column("units_ordered", "INTEGER", ""),
-          new Column("units_shipped", "INTEGER", ""),
-          new Column("warehouse_sales", "DECIMAL(10,4)", ""),
-          new Column("warehouse_cost", "DECIMAL(10,4)", ""),
-          new Column("supply_time", "SMALLINT", ""),
-          new Column("store_invoice", "DECIMAL(10,4)", ""),
+            new Column("product_id", Type.Integer, false),
+            new Column("time_id", Type.Integer, true),
+            new Column("warehouse_id", Type.Integer, true),
+            new Column("store_id", Type.Integer, true),
+            new Column("units_ordered", Type.Integer, true),
+            new Column("units_shipped", Type.Integer, true),
+            new Column("warehouse_sales", Type.Currency, true),
+            new Column("warehouse_cost", Type.Currency, true),
+            new Column("supply_time", Type.Smallint, true),
+            new Column("store_invoice", Type.Currency, true),
         });
         createTable("inventory_fact_1998", new Column[] {
-          new Column("product_id", "INTEGER", "NOT NULL"),
-          new Column("time_id", "INTEGER", ""),
-          new Column("warehouse_id", "INTEGER", ""),
-          new Column("store_id", "INTEGER", ""),
-          new Column("units_ordered", "INTEGER", ""),
-          new Column("units_shipped", "INTEGER", ""),
-          new Column("warehouse_sales", "DECIMAL(10,4)", ""),
-          new Column("warehouse_cost", "DECIMAL(10,4)", ""),
-          new Column("supply_time", "SMALLINT", ""),
-          new Column("store_invoice", "DECIMAL(10,4)", ""),
+            new Column("product_id", Type.Integer, false),
+            new Column("time_id", Type.Integer, true),
+            new Column("warehouse_id", Type.Integer, true),
+            new Column("store_id", Type.Integer, true),
+            new Column("units_ordered", Type.Integer, true),
+            new Column("units_shipped", Type.Integer, true),
+            new Column("warehouse_sales", Type.Currency, true),
+            new Column("warehouse_cost", Type.Currency, true),
+            new Column("supply_time", Type.Smallint, true),
+            new Column("store_invoice", Type.Currency, true),
         });
 
         //  Aggregate tables
 
         createTable("agg_pl_01_sales_fact_1997", new Column[] {
-            new Column("product_id", "INTEGER", "NOT NULL"),
-            new Column("time_id", "INTEGER", "NOT NULL"),
-            new Column("customer_id", "INTEGER", "NOT NULL"),
-            new Column("store_sales_sum", "DECIMAL(10,4)", "NOT NULL"),
-            new Column("store_cost_sum", "DECIMAL(10,4)", "NOT NULL"),
-            new Column("unit_sales_sum", "DECIMAL(10,4)", "NOT NULL"),
-            new Column("fact_count", "INTEGER", "NOT NULL"),
+            new Column("product_id", Type.Integer, false),
+            new Column("time_id", Type.Integer, false),
+            new Column("customer_id", Type.Integer, false),
+            new Column("store_sales_sum", Type.Currency, false),
+            new Column("store_cost_sum", Type.Currency, false),
+            new Column("unit_sales_sum", Type.Currency, false),
+            new Column("fact_count", Type.Integer, false),
         }, false, true);
         createTable("agg_ll_01_sales_fact_1997", new Column[] {
-            new Column("product_id", "INTEGER", "NOT NULL"),
-            new Column("time_id", "INTEGER", "NOT NULL"),
-            new Column("customer_id", "INTEGER", "NOT NULL"),
-            new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-            new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-            new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
-            new Column("fact_count", "INTEGER", "NOT NULL"),
+            new Column("product_id", Type.Integer, false),
+            new Column("time_id", Type.Integer, false),
+            new Column("customer_id", Type.Integer, false),
+            new Column("store_sales", Type.Currency, false),
+            new Column("store_cost", Type.Currency, false),
+            new Column("unit_sales", Type.Currency, false),
+            new Column("fact_count", Type.Integer, false),
         }, false, true);
         createTable("agg_l_03_sales_fact_1997", new Column[] {
-                new Column("time_id", "INTEGER", "NOT NULL"),
-                new Column("customer_id", "INTEGER", "NOT NULL"),
-                new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("fact_count", "INTEGER", "NOT NULL"),
-            }, false, true);
+            new Column("time_id", Type.Integer, false),
+            new Column("customer_id", Type.Integer, false),
+            new Column("store_sales", Type.Currency, false),
+            new Column("store_cost", Type.Currency, false),
+            new Column("unit_sales", Type.Currency, false),
+            new Column("fact_count", Type.Integer, false),
+        }, false, true);
         createTable("agg_l_04_sales_fact_1997", new Column[] {
-                new Column("time_id", "INTEGER", "NOT NULL"),
-                new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("customer_count", "INTEGER", "NOT NULL"),
-                new Column("fact_count", "INTEGER", "NOT NULL"),
-            }, false, true);
+            new Column("time_id", Type.Integer, false),
+            new Column("store_sales", Type.Currency, false),
+            new Column("store_cost", Type.Currency, false),
+            new Column("unit_sales", Type.Currency, false),
+            new Column("customer_count", Type.Integer, false),
+            new Column("fact_count", Type.Integer, false),
+        }, false, true);
         createTable("agg_l_05_sales_fact_1997", new Column[] {
-                new Column("product_id", "INTEGER", "NOT NULL"),
-                new Column("customer_id", "INTEGER", "NOT NULL"),
-                new Column("promotion_id", "INTEGER", "NOT NULL"),
-                new Column("store_id", "INTEGER", "NOT NULL"),
-                new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("fact_count", "INTEGER", "NOT NULL"),
-            }, false, true);
+            new Column("product_id", Type.Integer, false),
+            new Column("customer_id", Type.Integer, false),
+            new Column("promotion_id", Type.Integer, false),
+            new Column("store_id", Type.Integer, false),
+            new Column("store_sales", Type.Currency, false),
+            new Column("store_cost", Type.Currency, false),
+            new Column("unit_sales", Type.Currency, false),
+            new Column("fact_count", Type.Integer, false),
+        }, false, true);
         createTable("agg_c_10_sales_fact_1997", new Column[] {
-                new Column("month_of_year", "SMALLINT", "NOT NULL"),
-                new Column("quarter", "VARCHAR(30)", "NOT NULL"),
-                new Column("the_year", "SMALLINT", "NOT NULL"),
-                new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("customer_count", "INTEGER", "NOT NULL"),
-                new Column("fact_count", "INTEGER", "NOT NULL"),
-            }, false, true);
+            new Column("month_of_year", Type.Smallint, false),
+            new Column("quarter", Type.Varchar30, false),
+            new Column("the_year", Type.Smallint, false),
+            new Column("store_sales", Type.Currency, false),
+            new Column("store_cost", Type.Currency, false),
+            new Column("unit_sales", Type.Currency, false),
+            new Column("customer_count", Type.Integer, false),
+            new Column("fact_count", Type.Integer, false),
+        }, false, true);
         createTable("agg_c_14_sales_fact_1997", new Column[] {
-                new Column("product_id", "INTEGER", "NOT NULL"),
-                new Column("customer_id", "INTEGER", "NOT NULL"),
-                new Column("store_id", "INTEGER", "NOT NULL"),
-                new Column("promotion_id", "INTEGER", "NOT NULL"),
-                new Column("month_of_year", "SMALLINT", "NOT NULL"),
-                new Column("quarter", "VARCHAR(30)", "NOT NULL"),
-                new Column("the_year", "SMALLINT", "NOT NULL"),
-                new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("fact_count", "INTEGER", "NOT NULL"),
-            }, false, true);
+            new Column("product_id", Type.Integer, false),
+            new Column("customer_id", Type.Integer, false),
+            new Column("store_id", Type.Integer, false),
+            new Column("promotion_id", Type.Integer, false),
+            new Column("month_of_year", Type.Smallint, false),
+            new Column("quarter", Type.Varchar30, false),
+            new Column("the_year", Type.Smallint, false),
+            new Column("store_sales", Type.Currency, false),
+            new Column("store_cost", Type.Currency, false),
+            new Column("unit_sales", Type.Currency, false),
+            new Column("fact_count", Type.Integer, false),
+        }, false, true);
         createTable("agg_lc_100_sales_fact_1997", new Column[] {
-                new Column("product_id", "INTEGER", "NOT NULL"),
-                new Column("customer_id", "INTEGER", "NOT NULL"),
-                new Column("quarter", "VARCHAR(30)", "NOT NULL"),
-                new Column("the_year", "SMALLINT", "NOT NULL"),
-                new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("fact_count", "INTEGER", "NOT NULL"),
-            }, false, true);
+            new Column("product_id", Type.Integer, false),
+            new Column("customer_id", Type.Integer, false),
+            new Column("quarter", Type.Varchar30, false),
+            new Column("the_year", Type.Smallint, false),
+            new Column("store_sales", Type.Currency, false),
+            new Column("store_cost", Type.Currency, false),
+            new Column("unit_sales", Type.Currency, false),
+            new Column("fact_count", Type.Integer, false),
+        }, false, true);
         createTable("agg_c_special_sales_fact_1997", new Column[] {
-                new Column("product_id", "INTEGER", "NOT NULL"),
-                new Column("promotion_id", "INTEGER", "NOT NULL"),
-                new Column("customer_id", "INTEGER", "NOT NULL"),
-                new Column("store_id", "INTEGER", "NOT NULL"),
-                new Column("time_month", "SMALLINT", "NOT NULL"),
-                new Column("time_quarter", "VARCHAR(30)", "NOT NULL"),
-                new Column("time_year", "SMALLINT", "NOT NULL"),
-                new Column("store_sales_sum", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("store_cost_sum", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("unit_sales_sum", "DECIMAL(10,4)", "NOT NULL"),
-                new Column("fact_count", "INTEGER", "NOT NULL"),
-            }, false, true);
+            new Column("product_id", Type.Integer, false),
+            new Column("promotion_id", Type.Integer, false),
+            new Column("customer_id", Type.Integer, false),
+            new Column("store_id", Type.Integer, false),
+            new Column("time_month", Type.Smallint, false),
+            new Column("time_quarter", Type.Varchar30, false),
+            new Column("time_year", Type.Smallint, false),
+            new Column("store_sales_sum", Type.Currency, false),
+            new Column("store_cost_sum", Type.Currency, false),
+            new Column("unit_sales_sum", Type.Currency, false),
+            new Column("fact_count", Type.Integer, false),
+        }, false, true);
 
         createTable("currency", new Column[] {
-          new Column("currency_id", "INTEGER", "NOT NULL"),
-          new Column("date", dateColumnType, "NOT NULL"),
-          new Column("currency", "VARCHAR(30)", "NOT NULL"),
-          new Column("conversion_ratio", "DECIMAL(10,4)", "NOT NULL"),
+            new Column("currency_id", Type.Integer, false),
+            new Column("date", Type.Date, false),
+            new Column("currency", Type.Varchar30, false),
+            new Column("conversion_ratio", Type.Currency, false),
         });
         createTable("account", new Column[] {
-          new Column("account_id", "INTEGER", "NOT NULL"),
-          new Column("account_parent", "INTEGER", ""),
-          new Column("account_description", "VARCHAR(30)", ""),
-          new Column("account_type", "VARCHAR(30)", "NOT NULL"),
-          new Column("account_rollup", "VARCHAR(30)", "NOT NULL"),
-          new Column("Custom_Members", "VARCHAR(255)", ""),
+            new Column("account_id", Type.Integer, false),
+            new Column("account_parent", Type.Integer, true),
+            new Column("account_description", Type.Varchar30, true),
+            new Column("account_type", Type.Varchar30, false),
+            new Column("account_rollup", Type.Varchar30, false),
+            new Column("Custom_Members", Type.Varchar255, true),
         });
         createTable("category", new Column[] {
-          new Column("category_id", "VARCHAR(30)", "NOT NULL"),
-          new Column("category_parent", "VARCHAR(30)", ""),
-          new Column("category_description", "VARCHAR(30)", "NOT NULL"),
-          new Column("category_rollup", "VARCHAR(30)", ""),
+            new Column("category_id", Type.Varchar30, false),
+            new Column("category_parent", Type.Varchar30, true),
+            new Column("category_description", Type.Varchar30, false),
+            new Column("category_rollup", Type.Varchar30, true),
         });
         createTable("customer", new Column[] {
-          new Column("customer_id", "INTEGER", "NOT NULL"),
-          new Column("account_num", bigIntColumnType, "NOT NULL"),
-          new Column("lname", "VARCHAR(30)", "NOT NULL"),
-          new Column("fname", "VARCHAR(30)", "NOT NULL"),
-          new Column("mi", "VARCHAR(30)", ""),
-          new Column("address1", "VARCHAR(30)", ""),
-          new Column("address2", "VARCHAR(30)", ""),
-          new Column("address3", "VARCHAR(30)", ""),
-          new Column("address4", "VARCHAR(30)", ""),
-          new Column("city", "VARCHAR(30)", ""),
-          new Column("state_province", "VARCHAR(30)", ""),
-          new Column("postal_code", "VARCHAR(30)", "NOT NULL"),
-          new Column("country", "VARCHAR(30)", "NOT NULL"),
-          new Column("customer_region_id", "INTEGER", "NOT NULL"),
-          new Column("phone1", "VARCHAR(30)", "NOT NULL"),
-          new Column("phone2", "VARCHAR(30)", "NOT NULL"),
-          new Column("birthdate", dateColumnType, "NOT NULL"),
-          new Column("marital_status", "VARCHAR(30)", "NOT NULL"),
-          new Column("yearly_income", "VARCHAR(30)", "NOT NULL"),
-          new Column("gender", "VARCHAR(30)", "NOT NULL"),
-          new Column("total_children", "SMALLINT", "NOT NULL"),
-          new Column("num_children_at_home", "SMALLINT", "NOT NULL"),
-          new Column("education", "VARCHAR(30)", "NOT NULL"),
-          new Column("date_accnt_opened", dateColumnType, "NOT NULL"),
-          new Column("member_card", "VARCHAR(30)", ""),
-          new Column("occupation", "VARCHAR(30)", ""),
-          new Column("houseowner", "VARCHAR(30)", ""),
-          new Column("num_cars_owned", "INTEGER", ""),
-          new Column("fullname", "VARCHAR(60)", "NOT NULL"),
+            new Column("customer_id", Type.Integer, false),
+            new Column("account_num", Type.Bigint, false),
+            new Column("lname", Type.Varchar30, false),
+            new Column("fname", Type.Varchar30, false),
+            new Column("mi", Type.Varchar30, true),
+            new Column("address1", Type.Varchar30, true),
+            new Column("address2", Type.Varchar30, true),
+            new Column("address3", Type.Varchar30, true),
+            new Column("address4", Type.Varchar30, true),
+            new Column("city", Type.Varchar30, true),
+            new Column("state_province", Type.Varchar30, true),
+            new Column("postal_code", Type.Varchar30, false),
+            new Column("country", Type.Varchar30, false),
+            new Column("customer_region_id", Type.Integer, false),
+            new Column("phone1", Type.Varchar30, false),
+            new Column("phone2", Type.Varchar30, false),
+            new Column("birthdate", Type.Date, false),
+            new Column("marital_status", Type.Varchar30, false),
+            new Column("yearly_income", Type.Varchar30, false),
+            new Column("gender", Type.Varchar30, false),
+            new Column("total_children", Type.Smallint, false),
+            new Column("num_children_at_home", Type.Smallint, false),
+            new Column("education", Type.Varchar30, false),
+            new Column("date_accnt_opened", Type.Date, false),
+            new Column("member_card", Type.Varchar30, true),
+            new Column("occupation", Type.Varchar30, true),
+            new Column("houseowner", Type.Varchar30, true),
+            new Column("num_cars_owned", Type.Integer, true),
+            new Column("fullname", Type.Varchar60, false),
         });
         createTable("days", new Column[] {
-          new Column("day", "INTEGER", "NOT NULL"),
-          new Column("week_day", "VARCHAR(30)", "NOT NULL"),
+            new Column("day", Type.Integer, false),
+            new Column("week_day", Type.Varchar30, false),
         });
         createTable("department", new Column[] {
-          new Column("department_id", "INTEGER", "NOT NULL"),
-          new Column("department_description", "VARCHAR(30)", "NOT NULL"),
+            new Column("department_id", Type.Integer, false),
+            new Column("department_description", Type.Varchar30, false),
         });
         createTable("employee", new Column[] {
-          new Column("employee_id", "INTEGER", "NOT NULL"),
-          new Column("full_name", "VARCHAR(30)", "NOT NULL"),
-          new Column("first_name", "VARCHAR(30)", "NOT NULL"),
-          new Column("last_name", "VARCHAR(30)", "NOT NULL"),
-          new Column("position_id", "INTEGER", ""),
-          new Column("position_title", "VARCHAR(30)", ""),
-          new Column("store_id", "INTEGER", "NOT NULL"),
-          new Column("department_id", "INTEGER", "NOT NULL"),
-          new Column("birth_date", dateColumnType, "NOT NULL"),
-          new Column("hire_date", timestampColumnType, ""),
-          new Column("end_date", timestampColumnType, ""),
-          new Column("salary", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("supervisor_id", "INTEGER", ""),
-          new Column("education_level", "VARCHAR(30)", "NOT NULL"),
-          new Column("marital_status", "VARCHAR(30)", "NOT NULL"),
-          new Column("gender", "VARCHAR(30)", "NOT NULL"),
-          new Column("management_role", "VARCHAR(30)", ""),
+            new Column("employee_id", Type.Integer, false),
+            new Column("full_name", Type.Varchar30, false),
+            new Column("first_name", Type.Varchar30, false),
+            new Column("last_name", Type.Varchar30, false),
+            new Column("position_id", Type.Integer, true),
+            new Column("position_title", Type.Varchar30, true),
+            new Column("store_id", Type.Integer, false),
+            new Column("department_id", Type.Integer, false),
+            new Column("birth_date", Type.Date, false),
+            new Column("hire_date", Type.Timestamp, true),
+            new Column("end_date", Type.Timestamp, true),
+            new Column("salary", Type.Currency, false),
+            new Column("supervisor_id", Type.Integer, true),
+            new Column("education_level", Type.Varchar30, false),
+            new Column("marital_status", Type.Varchar30, false),
+            new Column("gender", Type.Varchar30, false),
+            new Column("management_role", Type.Varchar30, true),
         });
         createTable("employee_closure", new Column[] {
-          new Column("employee_id", "INTEGER", "NOT NULL"),
-          new Column("supervisor_id", "INTEGER", "NOT NULL"),
-          new Column("distance", "INTEGER", ""),
+            new Column("employee_id", Type.Integer, false),
+            new Column("supervisor_id", Type.Integer, false),
+            new Column("distance", Type.Integer, true),
         });
         createTable("expense_fact", new Column[] {
-          new Column("store_id", "INTEGER", "NOT NULL"),
-          new Column("account_id", "INTEGER", "NOT NULL"),
-          new Column("exp_date", timestampColumnType, "NOT NULL"),
-          new Column("time_id", "INTEGER", "NOT NULL"),
-          new Column("category_id", "VARCHAR(30)", "NOT NULL"),
-          new Column("currency_id", "INTEGER", "NOT NULL"),
-          new Column("amount", "DECIMAL(10,4)", "NOT NULL"),
+            new Column("store_id", Type.Integer, false),
+            new Column("account_id", Type.Integer, false),
+            new Column("exp_date", Type.Timestamp, false),
+            new Column("time_id", Type.Integer, false),
+            new Column("category_id", Type.Varchar30, false),
+            new Column("currency_id", Type.Integer, false),
+            new Column("amount", Type.Currency, false),
         });
         createTable("position", new Column[] {
-          new Column("position_id", "INTEGER", "NOT NULL"),
-          new Column("position_title", "VARCHAR(30)", "NOT NULL"),
-          new Column("pay_type", "VARCHAR(30)", "NOT NULL"),
-          new Column("min_scale", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("max_scale", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("management_role", "VARCHAR(30)", "NOT NULL"),
+            new Column("position_id", Type.Integer, false),
+            new Column("position_title", Type.Varchar30, false),
+            new Column("pay_type", Type.Varchar30, false),
+            new Column("min_scale", Type.Currency, false),
+            new Column("max_scale", Type.Currency, false),
+            new Column("management_role", Type.Varchar30, false),
         });
         createTable("product", new Column[] {
-          new Column("product_class_id", "INTEGER", "NOT NULL"),
-          new Column("product_id", "INTEGER", "NOT NULL"),
-          new Column("brand_name", "VARCHAR(60)", ""),
-          new Column("product_name", "VARCHAR(60)", "NOT NULL"),
-          new Column("SKU", bigIntColumnType, "NOT NULL"),
-          new Column("SRP", "DECIMAL(10,4)", ""),
-          new Column("gross_weight", "REAL", ""),
-          new Column("net_weight", "REAL", ""),
-          new Column("recyclable_package", booleanColumnType, ""),
-          new Column("low_fat", booleanColumnType, ""),
-          new Column("units_per_case", "SMALLINT", ""),
-          new Column("cases_per_pallet", "SMALLINT", ""),
-          new Column("shelf_width", "REAL", ""),
-          new Column("shelf_height", "REAL", ""),
-          new Column("shelf_depth", "REAL", ""),
+            new Column("product_class_id", Type.Integer, false),
+            new Column("product_id", Type.Integer, false),
+            new Column("brand_name", Type.Varchar60, true),
+            new Column("product_name", Type.Varchar60, false),
+            new Column("SKU", Type.Bigint, false),
+            new Column("SRP", Type.Currency, true),
+            new Column("gross_weight", Type.Real, true),
+            new Column("net_weight", Type.Real, true),
+            new Column("recyclable_package", Type.Boolean, true),
+            new Column("low_fat", Type.Boolean, true),
+            new Column("units_per_case", Type.Smallint, true),
+            new Column("cases_per_pallet", Type.Smallint, true),
+            new Column("shelf_width", Type.Real, true),
+            new Column("shelf_height", Type.Real, true),
+            new Column("shelf_depth", Type.Real, true),
         });
         createTable("product_class", new Column[] {
-          new Column("product_class_id", "INTEGER", "NOT NULL"),
-          new Column("product_subcategory", "VARCHAR(30)", ""),
-          new Column("product_category", "VARCHAR(30)", ""),
-          new Column("product_department", "VARCHAR(30)", ""),
-          new Column("product_family", "VARCHAR(30)", ""),
+            new Column("product_class_id", Type.Integer, false),
+            new Column("product_subcategory", Type.Varchar30, true),
+            new Column("product_category", Type.Varchar30, true),
+            new Column("product_department", Type.Varchar30, true),
+            new Column("product_family", Type.Varchar30, true),
         });
         createTable("promotion", new Column[] {
-          new Column("promotion_id", "INTEGER", "NOT NULL"),
-          new Column("promotion_district_id", "INTEGER", ""),
-          new Column("promotion_name", "VARCHAR(30)", ""),
-          new Column("media_type", "VARCHAR(30)", ""),
-          new Column("cost", "DECIMAL(10,4)", ""),
-          new Column("start_date", timestampColumnType, ""),
-          new Column("end_date", timestampColumnType, ""),
+            new Column("promotion_id", Type.Integer, false),
+            new Column("promotion_district_id", Type.Integer, true),
+            new Column("promotion_name", Type.Varchar30, true),
+            new Column("media_type", Type.Varchar30, true),
+            new Column("cost", Type.Currency, true),
+            new Column("start_date", Type.Timestamp, true),
+            new Column("end_date", Type.Timestamp, true),
         });
         createTable("region", new Column[] {
-          new Column("region_id", "INTEGER", "NOT NULL"),
-          new Column("sales_city", "VARCHAR(30)", ""),
-          new Column("sales_state_province", "VARCHAR(30)", ""),
-          new Column("sales_district", "VARCHAR(30)", ""),
-          new Column("sales_region", "VARCHAR(30)", ""),
-          new Column("sales_country", "VARCHAR(30)", ""),
-          new Column("sales_district_id", "INTEGER", ""),
+            new Column("region_id", Type.Integer, false),
+            new Column("sales_city", Type.Varchar30, true),
+            new Column("sales_state_province", Type.Varchar30, true),
+            new Column("sales_district", Type.Varchar30, true),
+            new Column("sales_region", Type.Varchar30, true),
+            new Column("sales_country", Type.Varchar30, true),
+            new Column("sales_district_id", Type.Integer, true),
         });
         createTable("reserve_employee", new Column[] {
-          new Column("employee_id", "INTEGER", "NOT NULL"),
-          new Column("full_name", "VARCHAR(30)", "NOT NULL"),
-          new Column("first_name", "VARCHAR(30)", "NOT NULL"),
-          new Column("last_name", "VARCHAR(30)", "NOT NULL"),
-          new Column("position_id", "INTEGER", ""),
-          new Column("position_title", "VARCHAR(30)", ""),
-          new Column("store_id", "INTEGER", "NOT NULL"),
-          new Column("department_id", "INTEGER", "NOT NULL"),
-          new Column("birth_date", timestampColumnType, "NOT NULL"),
-          new Column("hire_date", timestampColumnType, ""),
-          new Column("end_date", timestampColumnType, ""),
-          new Column("salary", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("supervisor_id", "INTEGER", ""),
-          new Column("education_level", "VARCHAR(30)", "NOT NULL"),
-          new Column("marital_status", "VARCHAR(30)", "NOT NULL"),
-          new Column("gender", "VARCHAR(30)", "NOT NULL"),
+            new Column("employee_id", Type.Integer, false),
+            new Column("full_name", Type.Varchar30, false),
+            new Column("first_name", Type.Varchar30, false),
+            new Column("last_name", Type.Varchar30, false),
+            new Column("position_id", Type.Integer, true),
+            new Column("position_title", Type.Varchar30, true),
+            new Column("store_id", Type.Integer, false),
+            new Column("department_id", Type.Integer, false),
+            new Column("birth_date", Type.Timestamp, false),
+            new Column("hire_date", Type.Timestamp, true),
+            new Column("end_date", Type.Timestamp, true),
+            new Column("salary", Type.Currency, false),
+            new Column("supervisor_id", Type.Integer, true),
+            new Column("education_level", Type.Varchar30, false),
+            new Column("marital_status", Type.Varchar30, false),
+            new Column("gender", Type.Varchar30, false),
         });
         createTable("salary", new Column[] {
-          new Column("pay_date", timestampColumnType, "NOT NULL"),
-          new Column("employee_id", "INTEGER", "NOT NULL"),
-          new Column("department_id", "INTEGER", "NOT NULL"),
-          new Column("currency_id", "INTEGER", "NOT NULL"),
-          new Column("salary_paid", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("overtime_paid", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("vacation_accrued", "REAL", "NOT NULL"),
-          new Column("vacation_used", "REAL", "NOT NULL"),
+            new Column("pay_date", Type.Timestamp, false),
+            new Column("employee_id", Type.Integer, false),
+            new Column("department_id", Type.Integer, false),
+            new Column("currency_id", Type.Integer, false),
+            new Column("salary_paid", Type.Currency, false),
+            new Column("overtime_paid", Type.Currency, false),
+            new Column("vacation_accrued", Type.Real, false),
+            new Column("vacation_used", Type.Real, false),
         });
         createTable("store", new Column[] {
-          new Column("store_id", "INTEGER", "NOT NULL"),
-          new Column("store_type", "VARCHAR(30)", ""),
-          new Column("region_id", "INTEGER", ""),
-          new Column("store_name", "VARCHAR(30)", ""),
-          new Column("store_number", "INTEGER", ""),
-          new Column("store_street_address", "VARCHAR(30)", ""),
-          new Column("store_city", "VARCHAR(30)", ""),
-          new Column("store_state", "VARCHAR(30)", ""),
-          new Column("store_postal_code", "VARCHAR(30)", ""),
-          new Column("store_country", "VARCHAR(30)", ""),
-          new Column("store_manager", "VARCHAR(30)", ""),
-          new Column("store_phone", "VARCHAR(30)", ""),
-          new Column("store_fax", "VARCHAR(30)", ""),
-          new Column("first_opened_date", timestampColumnType, ""),
-          new Column("last_remodel_date", timestampColumnType, ""),
-          new Column("store_sqft", "INTEGER", ""),
-          new Column("grocery_sqft", "INTEGER", ""),
-          new Column("frozen_sqft", "INTEGER", ""),
-          new Column("meat_sqft", "INTEGER", ""),
-          new Column("coffee_bar", booleanColumnType, ""),
-          new Column("video_store", booleanColumnType, ""),
-          new Column("salad_bar", booleanColumnType, ""),
-          new Column("prepared_food", booleanColumnType, ""),
-          new Column("florist", booleanColumnType, ""),
+            new Column("store_id", Type.Integer, false),
+            new Column("store_type", Type.Varchar30, true),
+            new Column("region_id", Type.Integer, true),
+            new Column("store_name", Type.Varchar30, true),
+            new Column("store_number", Type.Integer, true),
+            new Column("store_street_address", Type.Varchar30, true),
+            new Column("store_city", Type.Varchar30, true),
+            new Column("store_state", Type.Varchar30, true),
+            new Column("store_postal_code", Type.Varchar30, true),
+            new Column("store_country", Type.Varchar30, true),
+            new Column("store_manager", Type.Varchar30, true),
+            new Column("store_phone", Type.Varchar30, true),
+            new Column("store_fax", Type.Varchar30, true),
+            new Column("first_opened_date", Type.Timestamp, true),
+            new Column("last_remodel_date", Type.Timestamp, true),
+            new Column("store_sqft", Type.Integer, true),
+            new Column("grocery_sqft", Type.Integer, true),
+            new Column("frozen_sqft", Type.Integer, true),
+            new Column("meat_sqft", Type.Integer, true),
+            new Column("coffee_bar", Type.Boolean, true),
+            new Column("video_store", Type.Boolean, true),
+            new Column("salad_bar", Type.Boolean, true),
+            new Column("prepared_food", Type.Boolean, true),
+            new Column("florist", Type.Boolean, true),
         });
         createTable("store_ragged", new Column[] {
-          new Column("store_id", "INTEGER", "NOT NULL"),
-          new Column("store_type", "VARCHAR(30)", ""),
-          new Column("region_id", "INTEGER", ""),
-          new Column("store_name", "VARCHAR(30)", ""),
-          new Column("store_number", "INTEGER", ""),
-          new Column("store_street_address", "VARCHAR(30)", ""),
-          new Column("store_city", "VARCHAR(30)", ""),
-          new Column("store_state", "VARCHAR(30)", ""),
-          new Column("store_postal_code", "VARCHAR(30)", ""),
-          new Column("store_country", "VARCHAR(30)", ""),
-          new Column("store_manager", "VARCHAR(30)", ""),
-          new Column("store_phone", "VARCHAR(30)", ""),
-          new Column("store_fax", "VARCHAR(30)", ""),
-          new Column("first_opened_date", timestampColumnType, ""),
-          new Column("last_remodel_date", timestampColumnType, ""),
-          new Column("store_sqft", "INTEGER", ""),
-          new Column("grocery_sqft", "INTEGER", ""),
-          new Column("frozen_sqft", "INTEGER", ""),
-          new Column("meat_sqft", "INTEGER", ""),
-          new Column("coffee_bar", booleanColumnType, ""),
-          new Column("video_store", booleanColumnType, ""),
-          new Column("salad_bar", booleanColumnType, ""),
-          new Column("prepared_food", booleanColumnType, ""),
-          new Column("florist", booleanColumnType, ""),
+            new Column("store_id", Type.Integer, false),
+            new Column("store_type", Type.Varchar30, true),
+            new Column("region_id", Type.Integer, true),
+            new Column("store_name", Type.Varchar30, true),
+            new Column("store_number", Type.Integer, true),
+            new Column("store_street_address", Type.Varchar30, true),
+            new Column("store_city", Type.Varchar30, true),
+            new Column("store_state", Type.Varchar30, true),
+            new Column("store_postal_code", Type.Varchar30, true),
+            new Column("store_country", Type.Varchar30, true),
+            new Column("store_manager", Type.Varchar30, true),
+            new Column("store_phone", Type.Varchar30, true),
+            new Column("store_fax", Type.Varchar30, true),
+            new Column("first_opened_date", Type.Timestamp, true),
+            new Column("last_remodel_date", Type.Timestamp, true),
+            new Column("store_sqft", Type.Integer, true),
+            new Column("grocery_sqft", Type.Integer, true),
+            new Column("frozen_sqft", Type.Integer, true),
+            new Column("meat_sqft", Type.Integer, true),
+            new Column("coffee_bar", Type.Boolean, true),
+            new Column("video_store", Type.Boolean, true),
+            new Column("salad_bar", Type.Boolean, true),
+            new Column("prepared_food", Type.Boolean, true),
+            new Column("florist", Type.Boolean, true),
         });
         createTable("time_by_day", new Column[] {
-          new Column("time_id", "INTEGER", "NOT NULL"),
-          new Column("the_date", timestampColumnType, ""),
-          new Column("the_day", "VARCHAR(30)", ""),
-          new Column("the_month", "VARCHAR(30)", ""),
-          new Column("the_year", "SMALLINT", ""),
-          new Column("day_of_month", "SMALLINT", ""),
-          new Column("week_of_year", "INTEGER", ""),
-          new Column("month_of_year", "SMALLINT", ""),
-          new Column("quarter", "VARCHAR(30)", ""),
-          new Column("fiscal_period", "VARCHAR(30)", ""),
+            new Column("time_id", Type.Integer, false),
+            new Column("the_date", Type.Timestamp, true),
+            new Column("the_day", Type.Varchar30, true),
+            new Column("the_month", Type.Varchar30, true),
+            new Column("the_year", Type.Smallint, true),
+            new Column("day_of_month", Type.Smallint, true),
+            new Column("week_of_year", Type.Integer, true),
+            new Column("month_of_year", Type.Smallint, true),
+            new Column("quarter", Type.Varchar30, true),
+            new Column("fiscal_period", Type.Varchar30, true),
         });
         createTable("warehouse", new Column[] {
-          new Column("warehouse_id", "INTEGER", "NOT NULL"),
-          new Column("warehouse_class_id", "INTEGER", ""),
-          new Column("stores_id", "INTEGER", ""),
-          new Column("warehouse_name", "VARCHAR(60)", ""),
-          new Column("wa_address1", "VARCHAR(30)", ""),
-          new Column("wa_address2", "VARCHAR(30)", ""),
-          new Column("wa_address3", "VARCHAR(30)", ""),
-          new Column("wa_address4", "VARCHAR(30)", ""),
-          new Column("warehouse_city", "VARCHAR(30)", ""),
-          new Column("warehouse_state_province", "VARCHAR(30)", ""),
-          new Column("warehouse_postal_code", "VARCHAR(30)", ""),
-          new Column("warehouse_country", "VARCHAR(30)", ""),
-          new Column("warehouse_owner_name", "VARCHAR(30)", ""),
-          new Column("warehouse_phone", "VARCHAR(30)", ""),
-          new Column("warehouse_fax", "VARCHAR(30)", ""),
+            new Column("warehouse_id", Type.Integer, false),
+            new Column("warehouse_class_id", Type.Integer, true),
+            new Column("stores_id", Type.Integer, true),
+            new Column("warehouse_name", Type.Varchar60, true),
+            new Column("wa_address1", Type.Varchar30, true),
+            new Column("wa_address2", Type.Varchar30, true),
+            new Column("wa_address3", Type.Varchar30, true),
+            new Column("wa_address4", Type.Varchar30, true),
+            new Column("warehouse_city", Type.Varchar30, true),
+            new Column("warehouse_state_province", Type.Varchar30, true),
+            new Column("warehouse_postal_code", Type.Varchar30, true),
+            new Column("warehouse_country", Type.Varchar30, true),
+            new Column("warehouse_owner_name", Type.Varchar30, true),
+            new Column("warehouse_phone", Type.Varchar30, true),
+            new Column("warehouse_fax", Type.Varchar30, true),
         });
         createTable("warehouse_class", new Column[] {
-          new Column("warehouse_class_id", "INTEGER", "NOT NULL"),
-          new Column("description", "VARCHAR(30)", ""),
+            new Column("warehouse_class_id", Type.Integer, false),
+            new Column("description", Type.Varchar30, true),
         });
         if (outputDirectory != null) {
             fileOutput.close();
@@ -1418,8 +1417,14 @@ public class MondrianFoodMartLoader {
     private void createTable(String name, Column[] columns,  boolean loadData, boolean aggregate) {
         try {
 
+            // Initialize columns
+            for (int i = 0; i < columns.length; i++) {
+                columns[i].init(dialect);
+            }
+
             // Store this metadata if we are going to load the table
             // from JDBC or a file
+
 
             if (loadData) {
                 tableMetadataToLoad.put(name, columns);
@@ -1467,7 +1472,7 @@ public class MondrianFoodMartLoader {
                 }
                 buf.append(nl);
                 buf.append("    ").append(quoteId(column.name)).append(" ")
-                    .append(column.type);
+                    .append(column.typeName);
                 if (!column.constraint.equals("")) {
                     buf.append(" ").append(column.constraint);
                 }
@@ -1501,29 +1506,29 @@ public class MondrianFoodMartLoader {
      */
 
     private String quoteId(String name) {
-        return quoteId(sqlQuery, name);
+        return quoteId(dialect, name);
     }
 
     /**
      * Quote the given SQL identifier suitable for the given DBMS type.
      *
-     * @param givenQueryType
+     * @param dialect
      * @param name
      * @return
      */
-    private String quoteId(SqlQuery givenQueryType, String name) {
-        return givenQueryType.getDialect().quoteIdentifier(name);
+    private String quoteId(SqlQuery.Dialect dialect, String name) {
+        return dialect.quoteIdentifier(name);
     }
 
     /**
      * String representation of the column in the result set, suitable for
-     * inclusion in a SQL insert statement.
+     * inclusion in a SQL insert statement.<p/>
      *
      * The column in the result set is transformed according to the type in
-     * the column parameter.
+     * the column parameter.<p/>
      *
-     * Different DBMSs return different Java types for a given column.
-     * ClassCastExceptions may occur.
+     * Different DBMSs (and drivers) return different Java types for a given
+     * column; {@link ClassCastException}s may occur.
      *
      * @param rs        ResultSet row to process
      * @param column    Column to process
@@ -1533,7 +1538,7 @@ public class MondrianFoodMartLoader {
     private String columnValue(ResultSet rs, Column column) throws Exception {
 
         Object obj = rs.getObject(column.name);
-        String columnType = column.type;
+        String columnType = column.typeName;
 
         if (obj == null) {
             return "NULL";
@@ -1543,7 +1548,7 @@ public class MondrianFoodMartLoader {
          * Output for an INTEGER column, handling Doubles and Integers
          * in the result set
          */
-        if (columnType.startsWith("INTEGER")) {
+        if (columnType.startsWith(Type.Integer.name)) {
             if (obj.getClass() == Double.class) {
                 try {
                     Double result = (Double) obj;
@@ -1566,7 +1571,7 @@ public class MondrianFoodMartLoader {
          * Output for an SMALLINT column, handling Integers
          * in the result set
          */
-        } else if (columnType.startsWith("SMALLINT")) {
+        } else if (columnType.startsWith(Type.Smallint.name)) {
             if (obj.getClass() == Boolean.class) {
                 Boolean result = (Boolean) obj;
                 if (result.booleanValue()) {
@@ -1617,7 +1622,7 @@ public class MondrianFoodMartLoader {
          */
         } else if (columnType.startsWith("TIMESTAMP")) {
             Timestamp ts = (Timestamp) obj;
-            if (sqlQuery.getDialect().isOracle()) {
+            if (dialect.isOracle()) {
                 return "TIMESTAMP '" + ts + "'";
             } else {
                 return "'" + ts + "'";
@@ -1629,7 +1634,7 @@ public class MondrianFoodMartLoader {
          */
         } else if (columnType.startsWith("DATE")) {
             Date dt = (Date) obj;
-            if (sqlQuery.getDialect().isOracle()) {
+            if (dialect.isOracle()) {
                 return "DATE '" + dateFormatter.format(dt) + "'";
             } else {
                 return "'" + dateFormatter.format(dt) + "'";
@@ -1638,7 +1643,7 @@ public class MondrianFoodMartLoader {
         /*
          * Output for a FLOAT
          */
-        } else if (columnType.startsWith("REAL")) {
+        } else if (columnType.startsWith(Type.Real.name)) {
             Float result = (Float) obj;
             return result.toString();
 
@@ -1681,7 +1686,7 @@ public class MondrianFoodMartLoader {
     }
 
     private String columnValue(String columnValue, Column column) throws Exception {
-        String columnType = column.type;
+        String columnType = column.typeName;
 
         if (columnValue == null) {
             return "NULL";
@@ -1691,7 +1696,7 @@ public class MondrianFoodMartLoader {
          * Output for a TIMESTAMP
          */
         if (columnType.startsWith("TIMESTAMP")) {
-            if (sqlQuery.getDialect().isOracle()) {
+            if (dialect.isOracle()) {
                 return "TIMESTAMP " + columnValue;
             }
 
@@ -1699,25 +1704,21 @@ public class MondrianFoodMartLoader {
          * Output for a DATE
          */
         } else if (columnType.startsWith("DATE")) {
-            if (sqlQuery.getDialect().isOracle()) {
+            if (dialect.isOracle()) {
                 return "DATE " + columnValue;
             }
 
         /*
          * Output for a BOOLEAN (Postgres) or BIT (other DBMSs)
-         *
-         * FIXME This code assumes that only a boolean column would
-         * map onto booleanColumnType. It would be better if we had a
-         * logical and physical type for each column.
          */
-        } else if (columnType.equals(booleanColumnType)) {
+        } else if (column.type == Type.Boolean) {
             String trimmedValue = columnValue.trim();
-            if (!sqlQuery.getDialect().isMySQL() &&
-                    !sqlQuery.getDialect().isOracle() &&
-                    !sqlQuery.getDialect().isDB2() &&
-                    !sqlQuery.getDialect().isFirebird() &&
-                    !sqlQuery.getDialect().isMSSQL() &&
-                    !sqlQuery.getDialect().isDerby()) {
+            if (!dialect.isMySQL() &&
+                    !dialect.isOracle() &&
+                    !dialect.isDB2() &&
+                    !dialect.isFirebird() &&
+                    !dialect.isMSSQL() &&
+                    !dialect.isDerby()) {
                 if (trimmedValue.equals("1")) {
                     return "true";
                 } else if (trimmedValue.equals("0")) {
@@ -1804,15 +1805,102 @@ public class MondrianFoodMartLoader {
 
     private static class Column {
         private final String name;
-        private final String type;
+        private final Type type;
+        private String typeName;
         private final String constraint;
 
-        public Column(String name, String type, String constraint) {
+        public Column(String name, Type type, boolean nullsAllowed) {
             this.name = name;
             this.type = type;
-            this.constraint = constraint;
+            this.constraint = nullsAllowed ? "" : "NOT NULL";
+        }
+
+        public void init(SqlQuery.Dialect dialect) {
+            this.typeName = type.toPhysical(dialect);
         }
     }
+
+    /**
+     * Represents a logical type, such as "BOOLEAN".<p/>
+     *
+     * Specific databases will represent this their own particular physical
+     * type, for example "TINYINT(1)", "BOOLEAN" or "BIT";
+     * see {@link #toPhysical(mondrian.rolap.sql.SqlQuery.Dialect)}.
+     */
+    private static class Type {
+        /**
+         * The name of this type. Immutable, and independent of the RDBMS.
+         */
+        private final String name;
+
+        private static final Type Integer = new Type("INTEGER");
+        private static final Type Currency = new Type("DECIMAL(10,4)");
+        private static final Type Smallint = new Type("SMALLINT");
+        private static final Type Varchar30 = new Type("VARCHAR(30)");
+        private static final Type Varchar255 = new Type("VARCHAR(255)");
+        private static final Type Varchar60 = new Type("VARCHAR(60)");
+        private static final Type Real = new Type("REAL");
+        private static final Type Boolean = new Type("BOOLEAN");
+        private static final Type Bigint = new Type("BIGINT");
+        private static final Type Date = new Type("DATE");
+        private static final Type Timestamp = new Type("TIMESTAMP");
+
+        private Type(String name) {
+            this.name = name;
+        }
+
+        /**
+         * Returns the physical type which a given RDBMS (dialect) uses to
+         * represent this logical type.
+         */
+        String toPhysical(SqlQuery.Dialect dialect) {
+            if (this == Integer ||
+                    this == Currency ||
+                    this == Smallint ||
+                    this == Varchar30 ||
+                    this == Varchar60 ||
+                    this == Varchar255 ||
+                    this == Real) {
+                return name;
+            }
+            if (this == Boolean) {
+                if (dialect.isPostgres()) {
+                    return name;
+                } else if (dialect.isMySQL()) {
+                    return "TINYINT(1)";
+                } else if (dialect.isMSSQL()) {
+                    return "BIT";
+                } else {
+                    return Smallint.name;
+                }
+            }
+            if (this == Bigint) {
+                if (dialect.isOracle() ||
+                        dialect.isFirebird()) {
+                    return "DECIMAL(15,0)";
+                } else {
+                    return name;
+                }
+            }
+            if (this == Date) {
+                if (dialect.isMSSQL()) {
+                    return "DATETIME";
+                } else {
+                    return name;
+                }
+            }
+            if (this == Timestamp) {
+                if (dialect.isMSSQL() ||
+                        dialect.isMySQL()) {
+                    return "DATETIME";
+                } else {
+                    return name;
+                }
+            }
+            throw new AssertionError("unexpected type: " + name);
+        }
+    }
+
 }
 
 
