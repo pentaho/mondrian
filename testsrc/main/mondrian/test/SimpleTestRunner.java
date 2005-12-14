@@ -86,6 +86,12 @@ public class SimpleTestRunner {
                 try {
                     // maybe it has a no argument constructor
                     testcase = makeTestCase(classname);
+                } catch (InstantiationException ex) {
+                    String msg = "InstantiationException: " +
+                        "most likely the test class does not have a " +
+                        "zero-parameter, public constructor.";
+                    System.out.println(msg);
+                    System.exit(1);
                 } catch (Exception ex) {
                     testcase = null;
                     // ignore
@@ -124,7 +130,7 @@ public class SimpleTestRunner {
 
             suite.run(tr);
             System.out.println("Test Class: " +classname);
-            System.out.println("  Method : all");
+            System.out.println("  Method Count : " +tr.runCount());
             System.out.println("  Error Count : " +tr.errorCount());
             if (tr.errorCount() != 0) {
                 Enumeration e = tr.errors();
