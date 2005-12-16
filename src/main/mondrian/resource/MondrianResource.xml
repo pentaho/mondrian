@@ -316,7 +316,7 @@
 </exception>
 
 <exception id="350550" name="DupDimensionsInTuple">
-    <text>Tuple contains more than member of dimension ''{0}''.</text>
+    <text>Tuple contains more than one member of dimension ''{0}''.</text>
 </exception>
 
 <!-- ====================================================================== -->

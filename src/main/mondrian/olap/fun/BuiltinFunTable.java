@@ -363,6 +363,34 @@ public class BuiltinFunTable extends FunTableImpl {
         });
 
         define(new FunDefBase(
+                "CurrentMember",
+                "<Hierarchy>.CurrentMember",
+                "Returns the current member along a hierarchy during an iteration.",
+                "pmh") {
+            public Object evaluate(Evaluator evaluator, Exp[] args) {
+                Hierarchy hierarchy = getHierarchyArg(evaluator, args, 0, true);
+                final Dimension dimension = hierarchy.getDimension();
+                final Member member = evaluator.getContext(dimension);
+                if (member.getHierarchy() == hierarchy) {
+                    return member;
+                } else {
+                    // The current member of this dimension belongs to a
+                    // different hierarchy in this dimension. We don't want to
+                    // constrain twice, so return the default member of this
+                    // hierarchy.
+                    return hierarchy.getDefaultMember();
+                }
+            }
+
+            public boolean callDependsOn(FunCall call, Dimension dimension) {
+                // Depends on only one dimension. For example
+                // [Gender].CurrentMember depends upon the [Gender] dimension
+                // only.
+                return call.getArg(0).getTypeX().usesDimension(dimension);
+            }
+        });
+
+        define(new FunDefBase(
                 "DataMember",
                 "<Member>.DataMember",
                 "Returns the system-generated data member that is associated with a nonleaf member of a dimension.",

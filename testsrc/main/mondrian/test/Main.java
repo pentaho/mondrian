@@ -153,6 +153,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(UdfTest.class);
             suite.addTestSuite(NamedSetTest.class);
             suite.addTestSuite(PropertiesTest.class);
+            suite.addTestSuite(MultipleHierarchyTest.class);
             suite.addTestSuite(I18nTest.class);
 
             boolean testNonEmpty = isRunOnce();

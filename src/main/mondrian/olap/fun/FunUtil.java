@@ -1837,50 +1837,60 @@ public class FunUtil extends Util {
             // it? But we add an implicit 'CurrentMember', for example,
             // '[Time].PrevMember' actually means
             // '[Time].CurrentMember.PrevMember'.
-            if (to == Category.Hierarchy ||
-                    to == Category.Level ||
-                    to == Category.Member ||
-                    to == Category.Tuple) {
+            switch (to) {
+            case Category.Hierarchy:
+            case Category.Level:
+            case Category.Member:
+            case Category.Tuple:
                 conversionCount[0]++;
                 return true;
-            } else {
+            default:
                 return false;
             }
         case Category.Hierarchy:
-            if (to == Category.Dimension) {
+            switch (to) {
+            case Category.Dimension:
                 conversionCount[0]++;
                 return true;
-            } else {
+            default:
                 return false;
             }
         case Category.Level:
-            if (to == Category.Dimension ||
-                    to == Category.Hierarchy) {
+            switch (to) {
+            case Category.Dimension:
+                // It's more difficult to convert to a dimension than a
+                // hierarchy. For example, we want '[Store City].CurrentMember'
+                // to resolve to <Hierarchy>.CurrentMember rather than
+                // <Dimension>.CurrentMember.
+                conversionCount[0] += 2;
+                return true;
+            case Category.Hierarchy:
                 conversionCount[0]++;
                 return true;
-            } else {
+            default:
                 return false;
             }
         case Category.Logical:
             return false;
         case Category.Member:
-            if (to == Category.Dimension ||
-                    to == Category.Hierarchy ||
-                    to == Category.Level ||
-                    to == Category.Tuple) {
+            switch (to) {
+            case Category.Dimension:
+            case Category.Hierarchy:
+            case Category.Level:
+            case Category.Tuple:
                 conversionCount[0]++;
                 return true;
-            } else if (to == (Category.Numeric | Category.Expression)) {
+            case (Category.Numeric | Category.Expression):
                 // We assume that members are numeric, so a cast to a numeric
                 // expression is less expensive than a conversion to a string
                 // expression.
                 conversionCount[0]++;
                 return true;
-            } else if (to == Category.Value ||
-                    to == (Category.String | Category.Expression)) {
+            case Category.Value:
+            case (Category.String | Category.Expression):
                 conversionCount[0] += 2;
                 return true;
-            } else {
+            default:
                 return false;
             }
         case Category.Numeric | Category.Constant:

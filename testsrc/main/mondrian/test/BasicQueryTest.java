@@ -593,12 +593,12 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " {[Gender].MEMBERS} ON ROWS" + nl +
                 "FROM [Sales]" +
                 "WHERE ([Marital Status].[S], [Marital Status].[M])",
-                "Tuple contains more than member of dimension '[Marital Status]'.");
+                "Tuple contains more than one member of dimension '[Marital Status]'.");
 
         // testcase for bug 996088
         assertThrows(
                 "select" + nl +
-                "{[Measures].[Unit Sales]} on columns,\n" + nl +
+                "{[Measures].[Unit Sales]} on columns," + nl +
                 "{([Product].[All Products], [Time].[1997])} ON rows" + nl +
                 "from Sales" + nl +
                 "where ([Time].[1997])",
@@ -839,7 +839,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "select" + nl +
                 " {[Measures].[Unit Sales], [Measures].[Dairy ever]}  on columns," + nl +
                 "  [Customers who never bought dairy] on rows" + nl +
-                "from Sales\r\n",
+                "from Sales",
                 "xxx");
     }
 
@@ -2747,12 +2747,12 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #2: 135,215" + nl +
                 "Row #2: 2,826" + nl);
     }
-    
-    /** 
-     * Turn off aggregate caching and run query with both use of aggregate 
+
+    /**
+     * Turn off aggregate caching and run query with both use of aggregate
      * tables on and off - should result in the same answer.
-     * Note that if the mondrian.rolap.aggregates.Read is not true, then
-     * no aggregate tables is be read in any event.
+     * Note that if the "mondrian.rolap.aggregates.Read" property is not true,
+     * then no aggregate tables is be read in any event.
      */
     public void testCountDistinctAgg() {
         final MondrianProperties properties = MondrianProperties.instance();
@@ -4564,27 +4564,27 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testMemberVisibility() {
         Schema schema = getConnection().getSchema();
-        final Cube cube = schema.createCube(
-                "<Cube name=\"Sales_MemberVis\">\n" +
-                "  <Table name=\"sales_fact_1997\"/>\n" +
-                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
-                "      formatString=\"Standard\" visible=\"false\"/>\n" +
-                "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n" +
-                "      formatString=\"#,###.00\"/>\n" +
-                "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
-                "      formatString=\"#,###.00\"/>\n" +
-                "  <Measure name=\"Sales Count\" column=\"product_id\" aggregator=\"count\"\n" +
-                "      formatString=\"#,###\"/>\n" +
-                "  <Measure name=\"Customer Count\" column=\"customer_id\"\n" +
-                "      aggregator=\"distinct count\" formatString=\"#,###\"/>\n" +
-                "  <CalculatedMember\n" +
-                "      name=\"Profit\"\n" +
-                "      dimension=\"Measures\"\n" +
-                "      visible=\"false\"\n" +
-                "      formula=\"[Measures].[Store Sales]-[Measures].[Store Cost]\">\n" +
-                "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n" +
-                "  </CalculatedMember>\n" +
-                "</Cube>");
+        final Cube cube = schema.createCube(fold(new String[] {
+                "<Cube name=\"Sales_MemberVis\">",
+                "  <Table name=\"sales_fact_1997\"/>",
+                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"",
+                "      formatString=\"Standard\" visible=\"false\"/>",
+                "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"",
+                "      formatString=\"#,###.00\"/>",
+                "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"",
+                "      formatString=\"#,###.00\"/>",
+                "  <Measure name=\"Sales Count\" column=\"product_id\" aggregator=\"count\"",
+                "      formatString=\"#,###\"/>",
+                "  <Measure name=\"Customer Count\" column=\"customer_id\"",
+                "      aggregator=\"distinct count\" formatString=\"#,###\"/>",
+                "  <CalculatedMember",
+                "      name=\"Profit\"",
+                "      dimension=\"Measures\"",
+                "      visible=\"false\"",
+                "      formula=\"[Measures].[Store Sales]-[Measures].[Store Cost]\">",
+                "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>",
+                "  </CalculatedMember>",
+                "</Cube>"}));
         final SchemaReader scr = cube.getSchemaReader(null);
         Member member = scr.getMemberByUniqueName(new String[] {"Measures", "Unit Sales"}, true);
         Object visible = member.getPropertyValue(Property.VISIBLE.name);
