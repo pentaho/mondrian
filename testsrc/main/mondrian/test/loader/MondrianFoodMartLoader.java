@@ -110,7 +110,6 @@ public class MondrianFoodMartLoader {
     private boolean tables = false;
     private boolean indexes = false;
     private boolean data = false;
-    private boolean verbose;
     private boolean jdbcInput = false;
     private boolean jdbcOutput = false;
     private boolean populationQueries = false;
@@ -131,20 +130,22 @@ public class MondrianFoodMartLoader {
         StringBuffer errorMessage = new StringBuffer();
         StringBuffer parametersMessage = new StringBuffer();
 
+        // Add a console appender for error messages.
+        final ConsoleAppender consoleAppender =
+                new ConsoleAppender(
+                        // Formats the message on its own line,
+                        // omits timestamp, priority etc.
+                        new PatternLayout("%m%n"),
+                        "System.out");
+        consoleAppender.setThreshold(Level.ERROR);
+        LOGGER.addAppender(consoleAppender);
+
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-verbose")) {
-                if (!verbose) {
-                    if (!LOGGER.isDebugEnabled()) {
-                        LOGGER.setLevel(Level.DEBUG);
-                    }
-                    LOGGER.addAppender(
-                            // Appender writes to system out.
-                            new ConsoleAppender(
-                                    // Formats the message on its own line,
-                                    // omits timestamp, priority etc.
-                                    new PatternLayout("%m%n"),
-                                    "System.out"));
-                    verbose = true;
+                // Make sure the logger is passing at least debug events.
+                consoleAppender.setThreshold(Level.DEBUG);
+                if (!LOGGER.isDebugEnabled()) {
+                    LOGGER.setLevel(Level.DEBUG);
                 }
             } else if (args[i].equals("-tables")) {
                 tables = true;
