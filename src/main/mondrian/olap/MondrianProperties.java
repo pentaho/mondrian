@@ -15,10 +15,8 @@ import org.apache.log4j.Logger;
 import org.eigenbase.util.property.*;
 
 import javax.servlet.ServletContext;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -36,6 +34,13 @@ import java.util.Properties;
  * @version $Id$
  */
 public class MondrianProperties extends TriggerableProperties {
+
+    private final FilePropertySource mondrianDotPropertiesSource =
+            new FilePropertySource(new File(mondrianDotProperties));
+    private final FilePropertySource buildDotPropertiesSource =
+            new FilePropertySource(new File(buildDotProperties));
+    private int populateCount;
+
     private static final Logger LOGGER =
             Logger.getLogger(MondrianProperties.class);
 
@@ -46,8 +51,13 @@ public class MondrianProperties extends TriggerableProperties {
     private static MondrianProperties instance;
     private static final String mondrianDotProperties = "mondrian.properties";
     private static final String buildDotProperties = "build.properties";
+    private static final String servletPath =
+            "/WEB-INF/" + mondrianDotProperties;
 
 
+    /**
+     * Returns the singleton.
+     */
     public static synchronized MondrianProperties instance() {
         if (instance == null) {
             instance = new MondrianProperties();
@@ -56,13 +66,109 @@ public class MondrianProperties extends TriggerableProperties {
         return instance;
     }
 
-    private int populateCount;
-
     public MondrianProperties() {
     }
 
     public boolean triggersAreEnabled() {
         return EnableTriggers.get();
+    }
+
+    /**
+     * Represents a place that properties can be read from, and remembers the
+     * timestamp that we last read them.
+     */
+    public interface PropertySource {
+        /**
+         * Opens an input stream from the source.
+         * Also updates
+         */
+        InputStream openStream();
+
+        /**
+         * Returns true if the source exists and has been modified since last
+         * time we called {@link #openStream()}.
+         */
+        boolean isStale();
+
+        String getDescription();
+    }
+
+    /**
+     * Implementation of {@link PropertySource} which reads from a
+     * {@link File}.
+     */
+    static class FilePropertySource implements PropertySource {
+        private final File file;
+        private long lastModified;
+
+        FilePropertySource(File file) {
+            this.file = file;
+            this.lastModified = 0;
+        }
+
+        public InputStream openStream() {
+            try {
+                this.lastModified = file.lastModified();
+                return new FileInputStream(file);
+            } catch (FileNotFoundException e) {
+                throw Util.newInternal(
+                        e,
+                        "Error while opening properties file '" + file + "'");
+            }
+        }
+
+        public boolean isStale() {
+            return file.exists() &&
+                    file.lastModified() > this.lastModified;
+        }
+
+        public String getDescription() {
+            return "file=" + file.getAbsolutePath() +
+                " (exists=" + file.exists() + ")";
+        }
+    }
+
+    /**
+     * Implementation of {@link PropertySource} which reads from a {@link URL}.
+     */
+    static class UrlPropertySource implements PropertySource {
+        private final URL url;
+        private long lastModified;
+
+        UrlPropertySource(URL url) {
+            this.url = url;
+        }
+
+        private URLConnection getConnection() {
+            try {
+                return url.openConnection();
+            } catch (IOException e) {
+                throw Util.newInternal(
+                        e,
+                        "Error while opening properties file '" + url + "'");
+            }
+        }
+
+        public InputStream openStream() {
+            try {
+                final URLConnection connection = getConnection();
+                this.lastModified = connection.getLastModified();
+                return connection.getInputStream();
+            } catch (IOException e) {
+                throw Util.newInternal(
+                        e,
+                        "Error while opening properties file '" + url + "'");
+            }
+        }
+
+        public boolean isStale() {
+            final long lastModified = getConnection().getLastModified();
+            return lastModified > this.lastModified;
+        }
+
+        public String getDescription() {
+            return url.toExternalForm();
+        }
     }
 
     /**
@@ -73,59 +179,27 @@ public class MondrianProperties extends TriggerableProperties {
      * @param servletContext May be null
      */
     public void populate(ServletContext servletContext) {
-        // Read properties file "mondrian.properties", if it exists.
-        File file = new File(mondrianDotProperties);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("populate: file=" +
-                file.getAbsolutePath() +
-                " exists=" +
-                file.exists()
-                );
-        }
-        if (file.exists()) {
-            try {
-                URL url = Util.toURL(file);
-                load(url);
+        // Read properties file "mondrian.properties", if it exists. If we have
+        // read the file before, only read it if it is newer.
+        loadIfStale(mondrianDotPropertiesSource);
 
-                // For file-based installations (i.e. testing), load any overrides from
-                // build.properties.
-                file = new File(buildDotProperties);
-
-                if (file.exists()) {
-                    url = Util.toURL(file);
-                    load(url);
-                }
-            } catch (MalformedURLException e) {
-                LOGGER.error("Mondrian: file '"
-                    + file.getAbsolutePath()
-                    + "' could not be loaded ("
-                    + e
-                    + ")");
-            }
-        } else if (populateCount == 0 && false) {
-            LOGGER.warn("Mondrian: Warning: file '"
-                + file.getAbsolutePath()
-                + "' not found");
-        }
+        // For file-based installations (i.e. testing), load any overrides from
+        // "build.properties".
+        loadIfStale(buildDotPropertiesSource);
 
         // If we're in a servlet, read "mondrian.properties" from WEB-INF
         // directory.
         if (servletContext != null) {
             try {
-                final URL resourceUrl = servletContext.getResource(
-                        "/WEB-INF/" + mondrianDotProperties);
+                final URL resourceUrl = servletContext.getResource(servletPath);
                 if (resourceUrl != null) {
-                    load(resourceUrl);
-                } else if (populateCount == 0 && false) {
-                    LOGGER.warn("Mondrian: Warning: servlet resource '"
-                        + mondrianDotProperties
-                        + "' not found");
+                    final UrlPropertySource source =
+                            new UrlPropertySource(resourceUrl);
+                    loadIfStale(source);
                 }
             } catch (MalformedURLException e) {
-                LOGGER.error("Mondrian: '" + mondrianDotProperties
-                    + "' could not be loaded from servlet context ("
-                    + e
-                    + ")");
+                LOGGER.error("Mondrian: could not load servlet resource '" +
+                        servletPath + "'", e);
             }
         }
         // copy in all system properties which start with "mondrian."
@@ -152,21 +226,37 @@ public class MondrianProperties extends TriggerableProperties {
     }
 
     /**
+     * Reads properties from a source.
+     * If the source does not exist, or has not changed since we last read it,
+     * does nothing.
+     *
+     * @param source Source of properties
+     */
+    private void loadIfStale(PropertySource source) {
+        if (source.isStale()) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Mondrian: loading " + source.getDescription());
+            }
+            load(source);
+        }
+    }
+
+    /**
      * Tries to load properties from a URL. Does not fail, just prints success
      * or failure to log.
      */
-    private void load(final URL url) {
+    private void load(final PropertySource source) {
         try {
-            load(url.openStream());
+            load(source.openStream());
             if (populateCount == 0) {
                 LOGGER.info("Mondrian: properties loaded from '"
-                    + url
+                    + source
                     + "'");
             }
         } catch (IOException e) {
             LOGGER.error("Mondrian: error while loading properties "
                 + "from '"
-                + url
+                + source
                 + "' ("
                 + e
                 + ")");
