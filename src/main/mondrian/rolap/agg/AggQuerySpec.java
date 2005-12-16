@@ -11,26 +11,25 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.Util;
-import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.RolapStar;
+import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
 
 /**
- * An AggStar's version of the QuerySpec.
+ * An AggStar's version of the {@link QuerySpec}.<p/>
  *
- * When/If the AggStar code is merged into RolapStar (or RolapStar is merged)
- * into AggStar, then this, indeed, can implement the QuerySpec interface.
+ * When/if the {@link AggStar} code is merged into {@link RolapStar}
+ * (or RolapStar is merged into AggStar}, then this, indeed, can implement the
+ * {@link QuerySpec} interface.
  *
- * @author <a>Richard M. Emberson</a>
- * @version
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 class AggQuerySpec {
-    private final Logger LOGGER = Logger.getLogger(AggQuerySpec.class);
+    private static final Logger LOGGER = Logger.getLogger(AggQuerySpec.class);
+    
     private final AggStar aggStar;
     private final Segment[] segments;
     /**
@@ -39,9 +38,10 @@ class AggQuerySpec {
      */
     private final boolean isDistinct;
 
-    AggQuerySpec(final AggStar aggStar,
-                 final Segment[] segments,
-                 final boolean isDistinct) {
+    AggQuerySpec(
+            final AggStar aggStar,
+            final Segment[] segments,
+            final boolean isDistinct) {
         this.aggStar = aggStar;
         this.segments = segments;
         this.isDistinct = isDistinct;
@@ -50,12 +50,15 @@ class AggQuerySpec {
     protected SqlQuery newSqlQuery() {
         return getStar().getSqlQuery();
     }
+
     public RolapStar getStar() {
         return aggStar.getStar();
     }
+
     public int getMeasureCount() {
         return segments.length;
     }
+
     public AggStar.FactTable.Column getMeasureAsColumn(final int i) {
         int bitPos = segments[i].measure.getBitPosition();
         return aggStar.lookupColumn(bitPos);
@@ -66,12 +69,15 @@ class AggQuerySpec {
         return aggStar.lookupMeasure(bitPos);
     }
 */
+
     public String getMeasureAlias(final int i) {
         return "m" + Integer.toString(i);
     }
+
     public int getColumnCount() {
         return segments[0].aggregation.getColumns().length;
     }
+
     public AggStar.Table.Column getColumn(final int i) {
         RolapStar.Column[] columns = segments[0].aggregation.getColumns();
         int bitPos = columns[i].getBitPosition();
@@ -83,26 +89,25 @@ class AggQuerySpec {
         }
         return column;
     }
+
     public String getColumnAlias(final int i) {
         return "c" + Integer.toString(i);
     }
+
     public ColumnConstraint[] getConstraints(final int i) {
         return segments[0].axes[i].getConstraints();
     }
+
     public String generateSqlQuery() {
         SqlQuery sqlQuery = newSqlQuery();
-
-        if ((! sqlQuery.getDialect().allowsCountDistinct()) && hasDistinct()) {
-            distinctGenerateSQL(sqlQuery);
-        } else {
-            nonDistinctGenerateSQL(sqlQuery);
-        }
-
+        generateSql(sqlQuery);
         return sqlQuery.toString();
     }
+
     protected boolean hasDistinct() {
         return isDistinct;
     }
+
     protected void addMeasure(final int i, final SqlQuery sqlQuery) {
         AggStar.FactTable.Column column = getMeasureAsColumn(i);
 
@@ -112,75 +117,8 @@ class AggQuerySpec {
         String expr = column.getExpression(sqlQuery);
         sqlQuery.addSelect(expr, alias);
     }
-    protected void addMeasure(final int i, 
-            final SqlQuery innerSqlQuery, 
-            final SqlQuery outerSqlQuery) {
-        AggStar.FactTable.Column column = getMeasureAsColumn(i);
 
-        column.getTable().addToFrom(innerSqlQuery, false, true);
-        String alias = getMeasureAlias(i);
-
-        String expr = column.getExpression(outerSqlQuery);
-        innerSqlQuery.addSelect(expr, alias);
-
-        if (column instanceof AggStar.FactTable.Measure) {
-            AggStar.FactTable.Measure measure = 
-                (AggStar.FactTable.Measure) column;
-            outerSqlQuery.addSelect(
-                measure.getAggregator().getNonDistinctAggregator().getExpression(
-                    alias));
-        } else {
-            // its a non-shared local dimension in a 
-            // collapsed dimension aggregate (please say 5 times fast).
-            outerSqlQuery.addSelect(expr, alias);
-        }
-    }
-
-    protected boolean isAggregate() {
-        return true;
-    }
-
-    protected void distinctGenerateSQL(final SqlQuery outerSqlQuery) {
-        // Generate something like
-        //  select d0, d1, count(m0)
-        //  from (
-        //    select distinct x as d0, y as d1, z as m0
-        //    from t) as foo
-        //  group by d0, d1
-
-        final SqlQuery innerSqlQuery = newSqlQuery();
-        innerSqlQuery.setDistinct(true);
-
-        // add constraining dimensions
-        int columnCnt = getColumnCount();
-        for (int i = 0; i < columnCnt; i++) {
-            AggStar.Table.Column column = getColumn(i);
-            AggStar.Table table = column.getTable();
-            table.addToFrom(innerSqlQuery, false, true);
-            String expr = column.getExpression(innerSqlQuery);
-            ColumnConstraint[] constraints = getConstraints(i);
-            if (constraints != null) {
-                innerSqlQuery.addWhere(RolapStar.Column.createInExpr(expr,
-                                                    constraints,
-                                                    column.isNumeric()));
-            }
-            final String alias = "d" + i;
-            innerSqlQuery.addSelect(expr, alias);
-            outerSqlQuery.addSelect(alias);
-
-            if (! hasDistinct()) {
-                outerSqlQuery.addGroupBy(alias);
-            }
-        }
-        // add measures
-        // this can also add non-shared local dimension columns, which are 
-        // not measures
-        for (int i = 0, count = getMeasureCount(); i < count; i++) {
-            addMeasure(i, innerSqlQuery, outerSqlQuery);
-        }
-        outerSqlQuery.addFrom(innerSqlQuery, "dummyname", true);
-    }
-    protected void nonDistinctGenerateSQL(final SqlQuery sqlQuery) {
+    protected void generateSql(final SqlQuery sqlQuery) {
         // add constraining dimensions
         int columnCnt = getColumnCount();
         for (int i = 0; i < columnCnt; i++) {
@@ -205,19 +143,18 @@ class AggQuerySpec {
                 sqlQuery.addSelect(expr, getColumnAlias(i));
             }
 
-            // only add a group-by clause if we are NOT doing
-            // a distinct count measure
-            if (! hasDistinct()) {
+            if (!hasDistinct()) {
                 sqlQuery.addGroupBy(expr);
             }
         }
 
-        // add measures
-        // this can also add non-shared local dimension columns, which are 
-        // not measures
+        // Add measures.
+        // This can also add non-shared local dimension columns, which are
+        // not measures.
         for (int i = 0, count = getMeasureCount(); i < count; i++) {
             addMeasure(i, sqlQuery);
         }
     }
-
 }
+
+// End AggQuerySpec.java

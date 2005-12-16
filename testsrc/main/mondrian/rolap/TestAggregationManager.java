@@ -303,11 +303,7 @@ public class TestAggregationManager extends TestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.ACCESS_DIALECT,
-                "FIXME - currently generates an invalid query with count but no group by",
-                26),
-            new SqlPattern(
-                SqlPattern.MY_SQL_DIALECT,
+                SqlPattern.MY_SQL_DIALECT | SqlPattern.ACCESS_DIALECT,
                 "select " +
                 "`agg_c_10_sales_fact_1997`.`the_year` as `c0`, " +
                 "`agg_c_10_sales_fact_1997`.`quarter` as `c1`, " +
