@@ -339,9 +339,10 @@ public class SqlQuery
      * column alias.
      */
     public void addSelect(final String expression) {
-        // some DB2 versions (AS/400) throw an error, if a column alias is
-        //  *not* used in a subsequent order by (Group by)
-        if (dialect.isAS400()) {
+        // Some DB2 versions (AS/400) throw an error if a column alias is
+        //  *not* used in a subsequent order by (Group by).
+    	// Derby fails on 'SELECT... HAVING' if column has alias.
+        if (dialect.isAS400() || dialect.isDerby()) {
             addSelect(expression, null);
         } else {
             addSelect(expression, nextColumnAlias());
@@ -407,20 +408,23 @@ public class SqlQuery
     }
 
     /**
-     * creates an ORDER BY
+     * Adds an item to the ORDER BY clause.
+     *
      * @param expr the expr to order by
      * @param ascending sort direction
      * @param prepend true = prepend to the current list of order by elements.
      */
     public void addOrderBy(String expr, boolean ascending, boolean prepend) {
-        if (ascending)
+        if (ascending) {
             expr = expr + " ASC";
-        else
+        } else {
             expr = expr + " DESC";
-        if (prepend)
+        }
+        if (prepend) {
             orderBy.add(0, expr);
-        else
+        } else {
             orderBy.add(expr);
+        }
     }
 
     public String toString()
@@ -660,9 +664,9 @@ public class SqlQuery
             }
             return best;
         }
-        
+
         /**
-         * @return SQL syntax that converts <code>expr</code> 
+         * @return SQL syntax that converts <code>expr</code>
          * into upper case.
          */
         public String toUpper(String expr) {
@@ -670,7 +674,7 @@ public class SqlQuery
                 return "UCASE(" + expr + ")";
             return "UPPER(" + expr + ")";
         }
-        
+
         public String caseWhenElse(String cond, String thenExpr, String elseExpr) {
             if (isAccess())
                 return "IIF(" + cond + "," + thenExpr + "," + elseExpr + ")";
@@ -888,9 +892,9 @@ public class SqlQuery
         }
 
         /**
-         * Chooses the variant within an array of {@link
-         * mondrian.olap.MondrianDef.SQL} which best matches the current SQL
-         * dialect.
+         * Chooses the variant within an array of
+         * {@link mondrian.olap.MondrianDef.SQL} which best matches the current
+         * SQL dialect.
          */
         public String chooseQuery(final MondrianDef.SQL[] sqls) {
             String best = getBestName();
@@ -914,15 +918,17 @@ public class SqlQuery
     }
 
     /**
-     * quotes a value so it may be used in SQL
+     * Quotes a value so it may be used in SQL.
+     *
      * @throws NumberFormatException if numeric == true and value can not
      * be parsed as a number
      */
     public String quote(boolean numeric, Object value) throws NumberFormatException {
         String string = String.valueOf(value);
         if (numeric) {
-            if (value instanceof Number)
+            if (value instanceof Number) {
                 return string;
+            }
             // make sure it can be parsed as a Number
             Double.valueOf(string);
             return string;

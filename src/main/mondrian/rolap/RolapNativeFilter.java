@@ -1,11 +1,13 @@
 /*
- //This software is subject to the terms of the Common Public License
- //Agreement, available at the following URL:
- //http://www.opensource.org/licenses/cpl.html.
- //Copyright (C) 2004-2005 TONBELLER AG
- //All Rights Reserved.
- //You must accept the terms of that agreement to use this software.
- */
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2004-2005 TONBELLER AG
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.rolap;
 
 import java.sql.Connection;
@@ -93,14 +95,6 @@ public class RolapNativeFilter extends RolapNativeSet {
         try {
             con = ds.getConnection();
 
-            // Disable filters against Derby, because its HAVING support is
-            // crippled. See bug 1379182.
-            final SqlQuery.Dialect dialect =
-                    SqlQuery.Dialect.create(con.getMetaData());
-            if (dialect.isDerby()) {
-                return null;
-            }
-
             // generate the WHERE condition
             SqlQuery sqlQuery = SqlTupleReader.newQuery(con, "NativeFilter");
             RolapNativeSql sql = new RolapNativeSql(sqlQuery);
@@ -126,3 +120,5 @@ public class RolapNativeFilter extends RolapNativeSet {
     }
 
 }
+
+// End RolapNativeFilter.java

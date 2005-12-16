@@ -240,7 +240,7 @@ class SqlMemberSource implements MemberReader, SqlTupleReader.MemberBuilder {
             }
             if (mustCount[0]) {
                 sqlQuery.addSelect(columnList);
-                sqlQuery.addOrderBy(columnList);
+                sqlQuery.addOrderBy(columnList, true, false);
             } else {
                 sqlQuery.addSelect("count(DISTINCT " + columnList + ")");
             }
@@ -417,7 +417,7 @@ RME is this right
             exp = level.getOrdinalExp();
             hierarchy.addToFrom(sqlQuery, exp);
             expString = exp.getExpression(sqlQuery);
-            sqlQuery.addOrderBy(expString);
+            sqlQuery.addOrderBy(expString, true, false);
             sqlQuery.addGroupBy(expString);
 
             RolapProperty[] properties = level.getRolapProperties();
@@ -561,7 +561,7 @@ RME is this right
 
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
-        sqlQuery.addOrderBy(orderBy);
+        sqlQuery.addOrderBy(orderBy, true, false);
         if (!orderBy.equals(q)) {
             sqlQuery.addGroupBy(orderBy);
         }
@@ -859,7 +859,7 @@ RME is this right
         sqlQuery.addGroupBy(childId);
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
-        sqlQuery.addOrderBy(orderBy);
+        sqlQuery.addOrderBy(orderBy, true, false);
         if (!orderBy.equals(childId)) {
             sqlQuery.addGroupBy(orderBy);
         }
@@ -910,7 +910,7 @@ RME is this right
         sqlQuery.addGroupBy(childId);
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
-        sqlQuery.addOrderBy(orderBy);
+        sqlQuery.addOrderBy(orderBy, true, false);
         if (!orderBy.equals(childId)) {
             sqlQuery.addGroupBy(orderBy);
         }

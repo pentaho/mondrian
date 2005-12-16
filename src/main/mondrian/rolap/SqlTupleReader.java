@@ -17,6 +17,8 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
+
 import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
@@ -388,7 +390,7 @@ public class SqlTupleReader implements TupleReader {
 
             String ordinalSql = level2.getOrdinalExp().getExpression(sqlQuery);
             sqlQuery.addGroupBy(ordinalSql);
-            sqlQuery.addOrderBy(ordinalSql);
+            sqlQuery.addOrderBy(ordinalSql, true, false);
             RolapProperty[] properties = level2.getRolapProperties();
             for (int j = 0; j < properties.length; j++) {
                 RolapProperty property = properties[j];
