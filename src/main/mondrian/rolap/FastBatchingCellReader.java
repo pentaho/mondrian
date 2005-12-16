@@ -166,8 +166,8 @@ public class FastBatchingCellReader implements CellReader {
         this.dirty = dirty;
     }
 
+    private static final Logger BATCH_LOGGER = Logger.getLogger(Batch.class);
     class Batch {
-        private final Logger LOGGER = Logger.getLogger(Batch.class);
         final RolapStar.Column[] columns;
         final BitKey bitKey;
         final List measuresList = new ArrayList();
@@ -204,14 +204,14 @@ public class FastBatchingCellReader implements CellReader {
                     buf.append("AggGen: Sorry, can not create SQL for virtual Cube \"");
                     buf.append(FastBatchingCellReader.this.cube.getName());
                     buf.append("\", operation not currently supported");
-                    LOGGER.error(buf.toString());
+                    BATCH_LOGGER.error(buf.toString());
 
                 } else {
                     mondrian.rolap.aggmatcher.AggGen aggGen =
                         new mondrian.rolap.aggmatcher.AggGen(
                             FastBatchingCellReader.this.cube.getStar(), columns);
                     if (aggGen.isReady()) {
-                        // PRINT TO STDOUT - DO NOT USE LOGGER
+                        // PRINT TO STDOUT - DO NOT USE BATCH_LOGGER
                         System.out.println("createLost:" +
                             Util.nl + aggGen.createLost());
                         System.out.println("insertIntoLost:" +
@@ -221,7 +221,7 @@ public class FastBatchingCellReader implements CellReader {
                         System.out.println("insertIntoCollapsed:" +
                             Util.nl + aggGen.insertIntoCollapsed());
                     } else {
-                        LOGGER.error("AggGen failed");
+                        BATCH_LOGGER.error("AggGen failed");
                     }
                 }
             }
@@ -280,9 +280,9 @@ public class FastBatchingCellReader implements CellReader {
                 aggmgr.loadAggregation(measures, columns, bitKey,
                     constraintses, pinnedSegments);
             }
-            if (LOGGER.isDebugEnabled()) {
+            if (BATCH_LOGGER.isDebugEnabled()) {
                 long t2 = System.currentTimeMillis();
-                LOGGER.debug("Batch.loadAggregation (millis) " + (t2 - t1));
+                BATCH_LOGGER.debug("Batch.loadAggregation (millis) " + (t2 - t1));
             }
         }
 

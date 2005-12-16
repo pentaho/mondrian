@@ -316,6 +316,8 @@ public class AggStar {
         columns[column.getBitPosition()] = column;
     }
 
+    private static final Logger JOIN_CONDITION_LOGGER = 
+                    Logger.getLogger(AggStar.Table.JoinCondition.class);
     /**
      * Base Table class for the FactTable and DimTable classes.
      * This class parallels the RolapStar.Table class.
@@ -328,7 +330,6 @@ public class AggStar {
          * table that owns the join condition).
          */
         public class JoinCondition {
-        	private final Logger LOGGER = Logger.getLogger(JoinCondition.class);
             // I think this is always a MondrianDef.Column
             private final MondrianDef.Expression left;
             private final MondrianDef.Expression right;
@@ -336,7 +337,8 @@ public class AggStar {
             private JoinCondition(final MondrianDef.Expression left,
                                   final MondrianDef.Expression right) {
                 if (!(left instanceof MondrianDef.Column)) {
-                    LOGGER.debug("JoinCondition.left NOT Column: "
+                    JOIN_CONDITION_LOGGER.debug(
+                        "JoinCondition.left NOT Column: "
                         +left.getClass().getName());
                 }
                 this.left = left;
