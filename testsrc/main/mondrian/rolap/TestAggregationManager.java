@@ -58,10 +58,10 @@ public class TestAggregationManager extends TestCase {
      * generates the correct SQL.
      */
     public void testFemaleUnitSalesSql() {
-        CellRequest request = createRequest("Sales", 
+        CellRequest request = createRequest("Sales",
             "[Measures].[Unit Sales]", "customer", "gender", "F");
 
-        SqlPattern[] patterns = {      
+        SqlPattern[] patterns = {
             new SqlPattern(
                 SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
                 "select `customer`.`gender` as `c0`," +
@@ -74,7 +74,7 @@ public class TestAggregationManager extends TestCase {
             )
         };
 
-        assertRequestSql(new CellRequest[] {request}, patterns); 
+        assertRequestSql(new CellRequest[] {request}, patterns);
     }
 
     /**
@@ -84,10 +84,10 @@ public class TestAggregationManager extends TestCase {
      * TODO: Enable this test.
      */
     private void _testFemaleUnitSalesSql_withAggs() {
-        CellRequest request = createRequest("Sales", 
+        CellRequest request = createRequest("Sales",
             "[Measures].[Unit Sales]", "customer", "gender", "F");
 
-        SqlPattern[] patterns = {      
+        SqlPattern[] patterns = {
             new SqlPattern(
                 SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
                 "select `customer`.`gender` as `c0`," +
@@ -101,7 +101,7 @@ public class TestAggregationManager extends TestCase {
             )
         };
 
-        assertRequestSql(new CellRequest[] {request}, patterns); 
+        assertRequestSql(new CellRequest[] {request}, patterns);
     }
 
     /**
@@ -125,7 +125,7 @@ public class TestAggregationManager extends TestCase {
                     new String[] {"gender", "store_state"},
                     new String[] {"F", "OR"})};
 
-        SqlPattern[] patterns = {      
+        SqlPattern[] patterns = {
             new SqlPattern(
                 SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
                 "select `customer`.`gender` as `c0`," +
@@ -143,7 +143,7 @@ public class TestAggregationManager extends TestCase {
             )
         };
 
-        assertRequestSql(requests, patterns); 
+        assertRequestSql(requests, patterns);
     }
 
     /**
@@ -167,7 +167,7 @@ public class TestAggregationManager extends TestCase {
                     new String[] {"gender", "store_state"},
                     new String[] {"F", "OR"})};
 
-        SqlPattern[] patterns = {      
+        SqlPattern[] patterns = {
             new SqlPattern(
                 SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
                 "select `customer`.`gender` as `c0`," +
@@ -185,7 +185,7 @@ public class TestAggregationManager extends TestCase {
             )
         };
 
-        assertRequestSql(requests, patterns); 
+        assertRequestSql(requests, patterns);
     }
 
     /**
@@ -225,10 +225,10 @@ public class TestAggregationManager extends TestCase {
      * If a hierarchy lives in the fact table, we should not generate a join.
      */
     public void testHierarchyInFactTable() {
-        CellRequest request = createRequest("Store", 
+        CellRequest request = createRequest("Store",
             "[Measures].[Store Sqft]", "store", "store_type", "Supermarket");
 
-        SqlPattern[] patterns = {      
+        SqlPattern[] patterns = {
             new SqlPattern(
                 SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
                 "select `store`.`store_type` as `c0`," +
@@ -240,19 +240,39 @@ public class TestAggregationManager extends TestCase {
             )
         };
 
-        assertRequestSql(new CellRequest[] {request}, patterns); 
+        assertRequestSql(new CellRequest[] {request}, patterns);
     }
 
     public void testCountDistinctAggMiss() {
         CellRequest request = createRequest(
-            "Sales", "[Measures].[Customer Count]", 
-            new String[] { "time_by_day", "time_by_day" }, 
-            new String[] { "the_year", "quarter" }, 
+            "Sales", "[Measures].[Customer Count]",
+            new String[] { "time_by_day", "time_by_day" },
+            new String[] { "the_year", "quarter" },
             new String[] { "1997", "Q1" });
 
-        SqlPattern[] patterns = {      
+        SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
+                SqlPattern.ACCESS_DIALECT,
+                "select " +
+                "d0 as `c0`, d1 as `c1`, " +
+                "count(m0) as `c2`" +
+                " from (" +
+                "select distinct `time_by_day`.`the_year` as `d0`, " +
+                "`time_by_day`.`quarter` as `d1`, " +
+                "`sales_fact_1997`.`customer_id` as `m0` " +
+                "from " +
+                "`time_by_day` as `time_by_day`, " +
+                "`sales_fact_1997` as `sales_fact_1997` " +
+                "where " +
+                "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and " +
+                "`time_by_day`.`the_year` = 1997 and " +
+                "`time_by_day`.`quarter` = 'Q1'" +
+                ") as `dummyname` " +
+                "group by d0, d1",
+                26
+            ),
+            new SqlPattern(
+                SqlPattern.MY_SQL_DIALECT,
                 "select " +
                 "`time_by_day`.`the_year` as `c0`, " +
                 "`time_by_day`.`quarter` as `c1`, " +
@@ -271,18 +291,23 @@ public class TestAggregationManager extends TestCase {
             )
         };
 
-        assertRequestSql(new CellRequest[] {request}, patterns); 
+        assertRequestSql(new CellRequest[] {request}, patterns);
     }
+
     public void testCountDistinctAggMatch() {
         CellRequest request = createRequest(
-            "Sales", "[Measures].[Customer Count]", 
-            new String[] { "time_by_day", "time_by_day", "time_by_day" }, 
-            new String[] { "the_year", "quarter", "month_of_year" }, 
+            "Sales", "[Measures].[Customer Count]",
+            new String[] { "time_by_day", "time_by_day", "time_by_day" },
+            new String[] { "the_year", "quarter", "month_of_year" },
             new String[] { "1997", "Q1", "1" });
 
-        SqlPattern[] patterns = {      
+        SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
+                SqlPattern.ACCESS_DIALECT,
+                "FIXME - currently generates an invalid query with count but no group by",
+                26),
+            new SqlPattern(
+                SqlPattern.MY_SQL_DIALECT,
                 "select " +
                 "`agg_c_10_sales_fact_1997`.`the_year` as `c0`, " +
                 "`agg_c_10_sales_fact_1997`.`quarter` as `c1`, " +
@@ -294,11 +319,10 @@ public class TestAggregationManager extends TestCase {
                 "`agg_c_10_sales_fact_1997`.`the_year` = 1997 and " +
                 "`agg_c_10_sales_fact_1997`.`quarter` = 'Q1' and " +
                 "`agg_c_10_sales_fact_1997`.`month_of_year` = 1",
-                26
-            )
+                26)
         };
 
-        assertRequestSql(new CellRequest[] {request}, patterns); 
+        assertRequestSql(new CellRequest[] {request}, patterns);
     }
 
     static class Bomb extends RuntimeException {
@@ -351,16 +375,16 @@ public class TestAggregationManager extends TestCase {
         assertEquals(sql, bomb.sql);
     }
 
-    private CellRequest createRequest(final String cube, final String measure, 
+    private CellRequest createRequest(final String cube, final String measure,
         final String table, final String column, final String value) {
-        final Connection connection = 
+        final Connection connection =
             TestContext.instance().getFoodMartConnection(false);
         final boolean fail = true;
         Cube salesCube = connection.getSchema().lookupCube(cube, fail);
-        Member storeSqftMeasure = 
+        Member storeSqftMeasure =
             salesCube.getSchemaReader(null).getMemberByUniqueName(
                 Util.explode(measure), fail);
-        RolapStar.Measure starMeasure = 
+        RolapStar.Measure starMeasure =
             RolapStar.getStarMeasure(storeSqftMeasure);
         CellRequest request = new CellRequest(starMeasure);
         final RolapStar star = starMeasure.getStar();
@@ -372,9 +396,9 @@ public class TestAggregationManager extends TestCase {
 
     private CellRequest createRequest(
             final String cube, final String measureName,
-            final String[] tables, final String[] columns, 
+            final String[] tables, final String[] columns,
             final String[] values) {
-        final Connection connection = 
+        final Connection connection =
             TestContext.instance().getFoodMartConnection(false);
         final boolean fail = true;
         Cube salesCube = connection.getSchema().lookupCube(cube, fail);
@@ -395,7 +419,7 @@ public class TestAggregationManager extends TestCase {
     }
 
     private RolapCube getCube(final String cube) {
-        final Connection connection = 
+        final Connection connection =
             TestContext.instance().getFoodMartConnection(false);
         final boolean fail = true;
         return (RolapCube) connection.getSchema().lookupCube(cube, fail);
@@ -485,7 +509,7 @@ public class TestAggregationManager extends TestCase {
                 return DB2_DIALECT;
             } else if (dialect.isAS400()) {
                 return AS400_DIALECT;
-            } else if (dialect.isOldAS400()) {       
+            } else if (dialect.isOldAS400()) {
                 return OLD_AS400_DIALECT;
             } else if (dialect.isInformix()) {
                 return INFOMIX_DIALECT;
@@ -495,9 +519,9 @@ public class TestAggregationManager extends TestCase {
                 return ORACLE_DIALECT;
             } else if (dialect.isPostgres()) {
                 return POSTGRES_DIALECT;
-            } else if (dialect.isMySQL()) {       
+            } else if (dialect.isMySQL()) {
                 return MY_SQL_DIALECT;
-            } else if (dialect.isSybase()) { 
+            } else if (dialect.isSybase()) {
                 return SYBASE_DIALECT;
             } else {
                 return UNKNOWN_DIALECT;
