@@ -67,9 +67,11 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
 ${lib.dir}/mondrian.jar,
 ${lib.dir}/mondrian.war,
 ${lib.dir}/mondrian.xml,
+${lib.dir}/mondrian-embedded.war,
 ${lib.dir}/web.xml,
 ${lib.dir}/index.jsp,
-demo/FoodMartCreateData.sql"/>
+demo/FoodMartCreateData.sql,
+demo/access/MondrianFoodMart.mdb"/>
 
   <path id="project.classpath">
     <pathelement location="${classes.dir}"/>
@@ -169,6 +171,7 @@ demo/FoodMartCreateData.sql"/>
           <fileset dir="${classes.dir}" includes="**/*.class,**/*.properties"/>
           <fileset dir="${testclasses.dir}" includes="**/*.class,**/*.properties"/>
           <fileset dir="." includes="${generated.java.files},${generated.lib.files}"/>
+          <fileset dir="demo/derby/foodmart"/>
       </delete>
   </target>
 
@@ -501,7 +504,7 @@ ${testsrc.dir}/**/*.html,
 ${testsrc.dir}/**/*.txt,
 ${testlib.dir}/commons-math-1.0.jar,
 ${testlib.dir}/junit.jar,
-${webapp.dir}/WEB-INF/web*.xml,
+${webapp.dir}/WEB-INF/*.xml,
 ${webapp.dir}/**/*.jsp,
 ${webapp.dir}/WEB-INF/*.xsl,
 ${webapp.dir}/WEB-INF/*.tld,
@@ -799,7 +802,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
     <war warfile="${war.file}"
         update="yes"
         webxml="${lib.dir}/web.xml">
-      <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml"/>
+      <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml,web-jpivot.xml"/>
       <!-- our FoodMart.xml may be newer than jpivot's -->
       <webinf dir="${demo.dir}" prefix="WEB-INF/queries" includes="FoodMart.xml"/>
       <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
@@ -816,8 +819,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
   </target>
 
   <target name="derby-war" depends="jar,compile.tests,unzip-FoodMartDerbyDB" description="
-Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded database.
-Assumes that mondrian.jar exists (use 'jar' target)">
+Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded database.">
     <filter filtersfile="mondrian.properties"/>
     <mkdir dir="${lib.dir}" />
     <delete file="${war.embeddedDb.file}"/>
@@ -829,7 +831,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
     <war warfile="${war.embeddedDb.file}"
         update="yes"
         webxml="${demo.dir}/derby/web.xml">
-      <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml"/>
+      <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml,web-jpivot.xml"/>
       <webinf dir="${demo.dir}/derby" includes="queries/*.jsp,datasources.xml"/>
       <!-- our FoodMart.xml may be newer than jpivot's -->
       <webinf dir="${demo.dir}" prefix="WEB-INF/queries" includes="FoodMart.xml"/>
