@@ -279,8 +279,16 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://D:/open/thirdparty/junit/src.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../thirdparty/junit/src.jar!/" />
       </SOURCES>
+    </library>
+    <library name="xmlatest">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/../testlib" />
+        <root url="jar://$PROJECT_DIR$/../testlib/xmlunit1.0.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
     </library>
   </component>
   <component name="uidesigner-configuration">
