@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 1998-2005 Kana Software, Inc. and others.
+// (C) Copyright 1998-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -31,7 +31,7 @@ import mondrian.rolap.RolapUtil;
 import mondrian.rolap.TestAggregationManager;
 import mondrian.test.comp.ResultComparatorTest;
 import mondrian.util.ScheduleTest;
-import mondrian.xmla.XmlaTest;
+import mondrian.xmla.test.XmlaTest;
 
 import org.apache.log4j.Logger;
 

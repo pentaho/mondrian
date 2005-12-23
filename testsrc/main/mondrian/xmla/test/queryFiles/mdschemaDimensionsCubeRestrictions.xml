@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+<xmlacycle>
+  <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <RequestType>MDSCHEMA_DIMENSIONS</RequestType>
+    <Restrictions>
+      <RestrictionList>
+	<CATALOG_NAME>${catalog}</CATALOG_NAME>
+	<CUBE_NAME>Sales</CUBE_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+	<DataSourceInfo>${datasource}</DataSourceInfo>
+	<Catalog>${catalog}</Catalog>
+	<Format>Tabular</Format>
+      </PropertyList>
+    </Properties>
+  </Discover>
+  <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <return>
+      <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset">
+	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		    targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+		    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		    xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+		    elementFormDefault="qualified"/>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_NAME>Measures</DIMENSION_NAME>
+          <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+          <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
+          <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
+          <DIMENSION_TYPE>2</DIMENSION_TYPE>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_NAME>Store</DIMENSION_NAME>
+          <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+          <DIMENSION_CAPTION>Store</DIMENSION_CAPTION>
+          <DIMENSION_ORDINAL>1</DIMENSION_ORDINAL>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_NAME>Store Size in SQFT</DIMENSION_NAME>
+          <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
+          <DIMENSION_CAPTION>Store Size in SQFT</DIMENSION_CAPTION>
+          <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_NAME>Store Type</DIMENSION_NAME>
+          <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
+          <DIMENSION_CAPTION>Store Type</DIMENSION_CAPTION>
+          <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_NAME>Time</DIMENSION_NAME>
+          <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+          <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
+          <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
+          <DIMENSION_TYPE>1</DIMENSION_TYPE>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_NAME>Product</DIMENSION_NAME>
+          <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
+          <DIMENSION_CAPTION>Product</DIMENSION_CAPTION>
+          <DIMENSION_ORDINAL>5</DIMENSION_ORDINAL>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_NAME>Promotion Media</DIMENSION_NAME>
+          <DIMENSION_UNIQUE_NAME>[Promotion Media]</DIMENSION_UNIQUE_NAME>
+          <DIMENSION_CAPTION>Promotion Media</DIMENSION_CAPTION>
+          <DIMENSION_ORDINAL>6</DIMENSION_ORDINAL>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_NAME>Promotions</DIMENSION_NAME>
+          <DIMENSION_UNIQUE_NAME>[Promotions]</DIMENSION_UNIQUE_NAME>
+          <DIMENSION_CAPTION>Promotions</DIMENSION_CAPTION>
+          <DIMENSION_ORDINAL>7</DIMENSION_ORDINAL>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_NAME>Customers</DIMENSION_NAME>
+          <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+          <DIMENSION_CAPTION>Customers</DIMENSION_CAPTION>
+          <DIMENSION_ORDINAL>8</DIMENSION_ORDINAL>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_NAME>Education Level</DIMENSION_NAME>
+          <DIMENSION_UNIQUE_NAME>[Education Level]</DIMENSION_UNIQUE_NAME>
+          <DIMENSION_CAPTION>Education Level</DIMENSION_CAPTION>
+          <DIMENSION_ORDINAL>9</DIMENSION_ORDINAL>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_NAME>Gender</DIMENSION_NAME>
+          <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
+          <DIMENSION_CAPTION>Gender</DIMENSION_CAPTION>
+          <DIMENSION_ORDINAL>10</DIMENSION_ORDINAL>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_NAME>Marital Status</DIMENSION_NAME>
+          <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
+          <DIMENSION_CAPTION>Marital Status</DIMENSION_CAPTION>
+          <DIMENSION_ORDINAL>11</DIMENSION_ORDINAL>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_NAME>Yearly Income</DIMENSION_NAME>
+          <DIMENSION_UNIQUE_NAME>[Yearly Income]</DIMENSION_UNIQUE_NAME>
+          <DIMENSION_CAPTION>Yearly Income</DIMENSION_CAPTION>
+          <DIMENSION_ORDINAL>12</DIMENSION_ORDINAL>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+	</row>
+      </root>
+    </return>
+  </DiscoverResponse>
+</xmlacycle>

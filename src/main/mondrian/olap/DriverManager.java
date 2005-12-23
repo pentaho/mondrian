@@ -12,18 +12,13 @@
 
 package mondrian.olap;
 import mondrian.rolap.RolapConnection;
-import mondrian.resource.MondrianResource;
+import mondrian.spi.impl.ServletContextCatalogLocator;
 
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 /**
- * The basic service for managing a set of OLAP drivers
+ * The basic service for managing a set of OLAP drivers.
  *
  * @author jhyde
  * @since 15 January, 2002
@@ -49,69 +44,25 @@ public class DriverManager {
      * @return A {@link Connection}
      * @post return != null
      */
-    public static Connection getConnection(String connectString,
-                                           ServletContext servletContext,
-                                           boolean fresh) {
+    public static Connection getConnection(
+            String connectString,
+            ServletContext servletContext,
+            boolean fresh) {
         Util.PropertyList properties = Util.parseConnectString(connectString);
         return getConnection(properties, servletContext, fresh);
     }
 
-    private static void fixup(Util.PropertyList connectionProperties,
-                              ServletContext servletContext) {
+    private static void fixup(
+            Util.PropertyList connectionProperties,
+            ServletContext servletContext) {
         String catalog = connectionProperties.get("catalog");
-        // If the catalog is an absolute path, it refers to a resource inside
-        // our WAR file, so replace the URL.
-        if (catalog != null && catalog.startsWith("/")) {
-            try {
-                URL url = servletContext.getResource(catalog);
-                if (url == null) {
-                    // The catalog does not exist, but construct a feasible
-                    // URL so that the error message makes sense.
-                    url = servletContext.getResource("/");
-                    url = new URL(url.getProtocol(), url.getHost(),
-                            url.getPort(), url.getFile() + catalog.substring(1));
-                }
-                if (url != null) {
-                    catalog = url.toString();
-                    connectionProperties.put("catalog", catalog);
-                }
-            } catch (MalformedURLException e) {
-                // Ignore the error
+        if (servletContext != null) {
+            final ServletContextCatalogLocator locator =
+                    new ServletContextCatalogLocator(servletContext);
+            final String newCatalog = locator.locate(catalog);
+            if (newCatalog.equals(catalog)) {
+                connectionProperties.put("catalog", catalog);
             }
-        }
-    }
-
-    private static Connection getAdomdConnection(String connectString,
-                                                 boolean fresh) {
-        try {
-            Class clazz = Class.forName("Broadbase.mdx.adomd.AdomdConnection");
-            try {
-                String sCatalog = null;
-                Constructor constructor = clazz.getConstructor(
-                    new Class[] {
-                        String.class,
-                        String.class,
-                        Boolean.TYPE
-                    }
-                );
-                return (Connection) constructor.newInstance(
-                    new Object[] {
-                        connectString,
-                        sCatalog,
-                        (fresh) ? Boolean.TRUE : Boolean.FALSE
-                    }
-                );
-            } catch (IllegalAccessException e) {
-                throw Util.newInternal(e, "while creating " + clazz);
-            } catch (NoSuchMethodException e) {
-                throw Util.newInternal(e, "while creating " + clazz);
-            } catch (InstantiationException e) {
-                throw Util.newInternal(e, "while creating " + clazz);
-            } catch (InvocationTargetException e) {
-                throw Util.newInternal(e, "while creating " + clazz);
-            }
-        } catch (ClassNotFoundException e) {
-            throw Util.newInternal(e, "while connecting to " + connectString);
         }
     }
 
@@ -139,11 +90,13 @@ public class DriverManager {
      * @return A {@link Connection}
      * @post return != null
      */
-    public static Connection getConnection(Util.PropertyList properties,
-                                           ServletContext servletContext,
-                                           boolean fresh) {
+    public static Connection getConnection(
+            Util.PropertyList properties,
+            ServletContext servletContext,
+            boolean fresh) {
         return getConnection(properties, servletContext, null, fresh);
     }
+    
     /**
      * Creates a connection to a Mondrian OLAP Server.
      *
@@ -159,14 +112,14 @@ public class DriverManager {
      * @return A {@link Connection}
      * @post return != null
      */
-    public static Connection getConnection(Util.PropertyList properties,
-                                           ServletContext servletContext,
-                                           DataSource dataSource,
-                                           boolean fresh) {
+    public static Connection getConnection(
+            Util.PropertyList properties,
+            ServletContext servletContext,
+            DataSource dataSource,
+            boolean fresh) {
         String provider = properties.get("PROVIDER");
         if (!provider.equalsIgnoreCase("mondrian")) {
-            String connectString = properties.toString();
-            return getAdomdConnection(connectString, fresh);
+            throw Util.newError("Provider not recognized: " + provider);
         }
         if (servletContext != null) {
             MondrianProperties.instance().populate(servletContext);

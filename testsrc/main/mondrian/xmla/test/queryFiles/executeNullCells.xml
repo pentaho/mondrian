@@ -1,0 +1,370 @@
+<?xml version="1.0"?>
+<xmlacycle>
+  <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <Command>
+      <Statement>
+	SELECT {[Measures].[Store Cost]} ON columns, {[Store Size in SQFT].[All Store Size in SQFT].Children} ON rows FROM [Sales] WHERE [Time].[1997]
+      </Statement>
+    </Command>
+    <Properties>
+      <PropertyList>
+        <Catalog>${catalog}</Catalog>
+        <DataSourceInfo>${datasource}</DataSourceInfo>
+        <Format>Multidimensional</Format>
+        <AxisFormat>TupleFormat</AxisFormat>
+      </PropertyList>
+    </Properties>
+  </Execute>
+  <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <return xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <root xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset">
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"/>
+        <OlapInfo>
+          <CubeInfo>
+            <Cube>
+              <CubeName>Sales</CubeName>
+            </Cube>
+          </CubeInfo>
+          <AxesInfo>
+            <AxisInfo name="SlicerAxis">
+              <HierarchyInfo name="Time">
+                <UName name="[Time].[MEMBER_UNIQUE_NAME]"/>
+                <Caption name="[Time].[MEMBER_CAPTION]"/>
+                <LName name="[Time].[LEVEL_UNIQUE_NAME]"/>
+                <LNum name="[Time].[LEVEL_NUMBER]"/>
+                <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
+                <Depth name="[Time].[DEPTH]"/>
+              </HierarchyInfo>
+            </AxisInfo>
+            <AxisInfo name="Axis0">
+              <HierarchyInfo name="Measures">
+                <UName name="[Measures].[MEMBER_UNIQUE_NAME]"/>
+                <Caption name="[Measures].[MEMBER_CAPTION]"/>
+                <LName name="[Measures].[LEVEL_UNIQUE_NAME]"/>
+                <LNum name="[Measures].[LEVEL_NUMBER]"/>
+                <DisplayInfo name="[Measures].[DISPLAY_INFO]"/>
+                <Depth name="[Measures].[DEPTH]"/>
+              </HierarchyInfo>
+            </AxisInfo>
+            <AxisInfo name="Axis1">
+              <HierarchyInfo name="Store Size in SQFT">
+                <UName name="[Store Size in SQFT].[MEMBER_UNIQUE_NAME]"/>
+                <Caption name="[Store Size in SQFT].[MEMBER_CAPTION]"/>
+                <LName name="[Store Size in SQFT].[LEVEL_UNIQUE_NAME]"/>
+                <LNum name="[Store Size in SQFT].[LEVEL_NUMBER]"/>
+                <DisplayInfo name="[Store Size in SQFT].[DISPLAY_INFO]"/>
+                <Depth name="[Store Size in SQFT].[DEPTH]"/>
+              </HierarchyInfo>
+            </AxisInfo>
+          </AxesInfo>
+          <CellInfo>
+            <Value name="VALUE"/>
+            <FmtValue name="FORMATTED_VALUE"/>
+            <FormatString name="FORMAT_STRING"/>
+          </CellInfo>
+        </OlapInfo>
+        <Axes>
+          <Axis name="SlicerAxis">
+            <Tuples>
+              <Tuple>
+                <Member Hierarchy="Time">
+                  <UName>[Time].[1997]</UName>
+                  <Caption>1997</Caption>
+                  <LName>[Time].[Year]</LName>
+                  <LNum>0</LNum>
+                  <DisplayInfo>4</DisplayInfo>
+                  <Depth>0</Depth>
+                </Member>
+              </Tuple>
+            </Tuples>
+          </Axis>
+          <Axis name="Axis0">
+            <Tuples>
+              <Tuple>
+                <Member Hierarchy="Measures">
+                  <UName>[Measures].[Store Cost]</UName>
+                  <Caption>Store Cost</Caption>
+                  <LName>[Measures].[MeasuresLevel]</LName>
+                  <LNum>0</LNum>
+                  <DisplayInfo>0</DisplayInfo>
+                  <Depth>0</Depth>
+                </Member>
+              </Tuple>
+            </Tuples>
+          </Axis>
+          <Axis name="Axis1">
+            <Tuples>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[null]</UName>
+                  <Caption>null</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>0</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[20319]</UName>
+                  <Caption>20319</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[21215]</UName>
+                  <Caption>21215</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[22478]</UName>
+                  <Caption>22478</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[23112]</UName>
+                  <Caption>23112</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[23593]</UName>
+                  <Caption>23593</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[23598]</UName>
+                  <Caption>23598</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[23688]</UName>
+                  <Caption>23688</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[23759]</UName>
+                  <Caption>23759</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[24597]</UName>
+                  <Caption>24597</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[27694]</UName>
+                  <Caption>27694</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[28206]</UName>
+                  <Caption>28206</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[30268]</UName>
+                  <Caption>30268</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[30584]</UName>
+                  <Caption>30584</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[30797]</UName>
+                  <Caption>30797</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[33858]</UName>
+                  <Caption>33858</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[34452]</UName>
+                  <Caption>34452</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[34791]</UName>
+                  <Caption>34791</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[36509]</UName>
+                  <Caption>36509</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[38382]</UName>
+                  <Caption>38382</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+              <Tuple>
+                <Member Hierarchy="Store Size in SQFT">
+                  <UName>[Store Size in SQFT].[All Store Size in SQFT].[39696]</UName>
+                  <Caption>39696</Caption>
+                  <LName>[Store Size in SQFT].[Store Sqft]</LName>
+                  <LNum>1</LNum>
+                  <DisplayInfo>131072</DisplayInfo>
+                  <Depth>1</Depth>
+                </Member>
+              </Tuple>
+            </Tuples>
+          </Axis>
+        </Axes>
+        <CellData>
+          <Cell CellOrdinal="0">
+            <Value xsi:type="xsd:double">33307.6854</Value>
+            <FmtValue>33,307.69</FmtValue>
+            <FormatString>#,###.00</FormatString>
+          </Cell>
+          <Cell CellOrdinal="1">
+            <Value xsi:type="xsd:double">21948.944</Value>
+            <FmtValue>21,948.94</FmtValue>
+            <FormatString>#,###.00</FormatString>
+          </Cell>
+          <Cell CellOrdinal="2">
+            <Value xsi:type="xsd:double">20956.8025</Value>
+            <FmtValue>20,956.80</FmtValue>
+            <FormatString>#,###.00</FormatString>
+          </Cell>
+          <Cell CellOrdinal="3">
+            <Value xsi:type="xsd:double">1778.9159</Value>
+            <FmtValue>1,778.92</FmtValue>
+            <FormatString>#,###.00</FormatString>
+          </Cell>
+          <Cell CellOrdinal="6">
+            <Value xsi:type="xsd:double">21771.536</Value>
+            <FmtValue>21,771.54</FmtValue>
+            <FormatString>#,###.00</FormatString>
+          </Cell>
+          <Cell CellOrdinal="7">
+            <Value xsi:type="xsd:double">18266.4404</Value>
+            <FmtValue>18,266.44</FmtValue>
+            <FormatString>#,###.00</FormatString>
+          </Cell>
+          <Cell CellOrdinal="10">
+            <Value xsi:type="xsd:double">34823.5566</Value>
+            <FmtValue>34,823.56</FmtValue>
+            <FormatString>#,###.00</FormatString>
+          </Cell>
+          <Cell CellOrdinal="11">
+            <Value xsi:type="xsd:double">1896.6174</Value>
+            <FmtValue>1,896.62</FmtValue>
+            <FormatString>#,###.00</FormatString>
+          </Cell>
+          <Cell CellOrdinal="12">
+            <Value xsi:type="xsd:double">19795.491</Value>
+            <FmtValue>19,795.49</FmtValue>
+            <FormatString>#,###.00</FormatString>
+          </Cell>
+          <Cell CellOrdinal="15">
+            <Value xsi:type="xsd:double">29959.2813</Value>
+            <FmtValue>29,959.28</FmtValue>
+            <FormatString>#,###.00</FormatString>
+          </Cell>
+          <Cell CellOrdinal="20">
+            <Value xsi:type="xsd:double">21121.9631</Value>
+            <FmtValue>21,121.96</FmtValue>
+            <FormatString>#,###.00</FormatString>
+          </Cell>
+        </CellData>
+      </root>
+    </return>
+  </ExecuteResponse>
+</xmlacycle>

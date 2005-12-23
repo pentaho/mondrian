@@ -76,12 +76,12 @@ Revision is $Id$
             </Doc>
         </Object>
 		<Code><![CDATA[
-			private static final String PROVIDER_TYPE_TDP = "TDP";
-			private static final String PROVIDER_TYPE_MDP = "MDP";
-			private static final String PROVIDER_TYPE_DMP = "DMP";
-			private static final String AUTH_MODE_UNAUTHENTICATED = "Unauthenticated";
-			private static final String AUTH_MODE_AUTHENTICATED = "Authenticated";
-			private static final String AUTH_MODE_INTEGRATED = "Integrated";
+			public static final String PROVIDER_TYPE_TDP = "TDP";
+			public static final String PROVIDER_TYPE_MDP = "MDP";
+			public static final String PROVIDER_TYPE_DMP = "DMP";
+			public static final String AUTH_MODE_UNAUTHENTICATED = "Unauthenticated";
+			public static final String AUTH_MODE_AUTHENTICATED = "Authenticated";
+			public static final String AUTH_MODE_INTEGRATED = "Integrated";
 		
 			public String getDataSourceName() {
 				return name;
@@ -108,7 +108,7 @@ Revision is $Id$
 			}
 		
 			public String getAuthenticationMode() {
-				return AUTH_MODE_UNAUTHENTICATED;
+				return authenticationMode;
 			}
 			]]>
 		</Code>

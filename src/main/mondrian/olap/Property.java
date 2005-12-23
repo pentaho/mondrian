@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2005 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -347,6 +347,25 @@ public class Property extends EnumeratedValues.BasicValue {
      */
     public static final Property DATATYPE =
             new Property("DATATYPE", TYPE_STRING, DATATYPE_ORDINAL, false, false, true, "The datatype of the cell.");
+
+    public static final int DEPTH_ORDINAL = 43;
+    /**
+     * Definition of the property which
+     * holds the level depth of a member.
+     * Caution: Level depth of members in parent-child hierarchy isn't from their levels.
+     * It's calculated from the underlying data dynamically.
+     */
+    public static final Property DEPTH =
+            new Property("DEPTH", TYPE_NUMERIC, DEPTH_ORDINAL, true, true, false, "The level depth of a member");
+
+    public static final int DISPLAY_INFO_ORDINAL = 44;
+    /**
+     * Definition of the property which
+     * holds the DISPLAY_INFO required by XML/A
+     * Caution: This property's value is calculated base on a specified MDX query, so it's value is dynamical at runtime.
+     */
+    public static final Property DISPLAY_INFO =
+            new Property("DISPLAY_INFO", TYPE_NUMERIC, DISPLAY_INFO_ORDINAL, false, true, false, "Display instruction of a member for XML/A");
 
     /**
      * The various property names which define a format string.

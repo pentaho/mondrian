@@ -3,27 +3,18 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde
+// (C) Copyright 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.xmla;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
 import mondrian.olap.*;
 import mondrian.rolap.RolapCube;
-import mondrian.util.SAXHandler;
+import mondrian.rolap.RolapLevel;
 
-import org.xml.sax.SAXException;
+import java.lang.reflect.Field;
+import java.util.*;
 
 /**
  * <code>RowsetDefinition</code> defines a rowset, including the columns it
@@ -38,11 +29,13 @@ import org.xml.sax.SAXException;
 abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     final Column[] columnDefinitions;
     private static final String nl = Util.nl;
-    /** Returns a list of XML for Analysis data sources
+    /**
+     * Returns a list of XML for Analysis data sources
      * available on the server or Web Service. (For an
      * example of how these may be published, see
      * "XML for Analysis Implementation Walkthrough"
-     * in the XML for Analysis specification.) */
+     * in the XML for Analysis specification.)
+     */
     public static final int DISCOVER_DATASOURCES = 0;
     public static final int DISCOVER_PROPERTIES = 1;
     public static final int DISCOVER_SCHEMA_ROWSETS = 2;
@@ -100,7 +93,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         return (RowsetDefinition) enumeration.getValue(name, true);
     }
 
-    public abstract Rowset getRowset(HashMap restrictions, Properties properties);
+    public abstract Rowset getRowset(XmlaRequest request, XmlaHandler handler);
 
     public Column lookupColumn(String name) {
         for (int i = 0; i < columnDefinitions.length; i++) {
@@ -166,10 +159,11 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
         /**
          * Creates a column.
+         *
          * @param name
-         * @param type A {@link Type} value
+         * @param type           A {@link mondrian.xmla.RowsetDefinition.Type} value
          * @param enumeratedType Must be specified for enumeration or array
-         *   of enumerations
+         *                       of enumerations
          * @param description
          * @param restriction
          * @param nullable
@@ -253,63 +247,34 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     ProviderType,
                     AuthenticationMode,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new DiscoverDatasourcesRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new DiscoverDatasourcesRowset(request, handler);
             }
         };
 
-// RME
-        // default value is SchemaData
-        private int contentOrdinal = Enumeration.Content.SCHEMA_DATA_ORDINAL;
-
-        public DiscoverDatasourcesRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
-        }
-        protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
-                Enumeration.Content content = Enumeration.Content.getValue(value);
-                if (content == null) {
-                    throw Util.newError("Bad Content Property value: " +value);
-                }
-                contentOrdinal = content.getOrdinal();
-                break;
-            default:
-                super.setProperty(propertyDef, value);
-            }
+        public DiscoverDatasourcesRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
-            switch (contentOrdinal) {
-            case Enumeration.Content.NONE_ORDINAL :
-                break;
-            case Enumeration.Content.SCHEMA_ORDINAL :
-                //TODO
-                throw new UnsupportedOperationException();
-            case Enumeration.Content.DATA_ORDINAL :
-        	for (Iterator it = XmlaMediator.dataSourcesMap.values().iterator(); it.hasNext();) {
-        		DataSourcesConfig.DataSource ds = (DataSourcesConfig.DataSource)it.next();
-	            Row row = new Row();
-	            row.set(DataSourceName.name, ds.getDataSourceName());
-	            row.set(DataSourceDescription.name, ds.getDataSourceDescription());
-	            row.set(URL.name, ds.getURL());
-	            row.set(DataSourceInfo.name, ds.getDataSourceName());
-	            row.set(ProviderName.name, ds.getProviderName());
-	            row.set(ProviderType.name, ds.getProviderType());
-	            row.set(AuthenticationMode.name, ds.getAuthenticationMode());
-	            emit(row, saxHandler);
-        	}
-                break;
-            case Enumeration.Content.SCHEMA_DATA_ORDINAL :
-                //TODO
-                throw new UnsupportedOperationException();
+        public void unparse(XmlaResponse response) {
+            for (Iterator it = handler.getDataSourceEntries().values().iterator(); it.hasNext();) {
+                DataSourcesConfig.DataSource ds = (DataSourcesConfig.DataSource) it.next();
+                Row row = new Row();
+                row.set(DataSourceName.name, ds.getDataSourceName());
+                row.set(DataSourceDescription.name, ds.getDataSourceDescription());
+                row.set(URL.name, ds.getURL());
+                row.set(DataSourceInfo.name, ds.getDataSourceName());
+                row.set(ProviderName.name, ds.getProviderName());
+                row.set(ProviderType.name, ds.getProviderType());
+                row.set(AuthenticationMode.name, ds.getAuthenticationMode());
+                emit(row, response);
             }
         }
     }
 
     static class DiscoverSchemaRowsetsRowset extends Rowset {
         private static final Column SchemaName = new Column("SchemaName", Type.StringArray, null, true, false, "The name of the schema/request. This returns the values in the RequestTypes enumeration, plus any additional types supported by the provider. The provider defines rowset structures for the additional types");
-        private static final Column Restrictions = new Column("Restrictions", Type.Array,null, false, true, "An array of the restrictions suppoted by provider. An example follows this table.");
+        private static final Column Restrictions = new Column("Restrictions", Type.Array, null, false, true, "An array of the restrictions suppoted by provider. An example follows this table.");
         private static final Column Description = new Column("Description", Type.String, null, false, true, "A localizable description of the schema");
         private static RowsetDefinition definition = new RowsetDefinition(
                 "DISCOVER_SCHEMA_ROWSETS", DISCOVER_SCHEMA_ROWSETS,
@@ -319,16 +284,16 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     Restrictions,
                     Description,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new DiscoverSchemaRowsetsRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new DiscoverSchemaRowsetsRowset(request, handler);
             }
         };
 
-        public DiscoverSchemaRowsetsRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        public DiscoverSchemaRowsetsRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
+        public void unparse(XmlaResponse response) {
             final RowsetDefinition[] rowsetDefinitions = (RowsetDefinition[])
                     enumeration.getValuesSortedByName().
                     toArray(new RowsetDefinition[0]);
@@ -338,33 +303,33 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 row.set(SchemaName.name, rowsetDefinition.name);
                 row.set(Restrictions.name, getRestrictions(rowsetDefinition));
                 row.set(Description.name, rowsetDefinition.description);
-                emit(row, saxHandler);
+                emit(row, response);
             }
         }
 
-        private Rowset.XmlElement[] getRestrictions(RowsetDefinition rowsetDefinition) {
+        private XmlElement[] getRestrictions(RowsetDefinition rowsetDefinition) {
             ArrayList restrictionList = new ArrayList();
             final Column[] columns = rowsetDefinition.columnDefinitions;
             for (int j = 0; j < columns.length; j++) {
                 Column column = columns[j];
                 if (column.restriction) {
                     restrictionList.add(
-                            new Rowset.XmlElement(Restrictions.name, null, new Rowset.XmlElement[] {
-                                new Rowset.XmlElement("Name", null, column.name),
-                                new Rowset.XmlElement("Type", null, column.getColumnType())
+                            new XmlElement(Restrictions.name, null, new XmlElement[] {
+                                new XmlElement("Name", null, column.name),
+                                new XmlElement("Type", null, column.getColumnType())
                             }));
                 }
             }
-            final Rowset.XmlElement[] restrictions = (Rowset.XmlElement[])
+            final XmlElement[] restrictions = (XmlElement[])
                     restrictionList.toArray(
-                            new Rowset.XmlElement[restrictionList.size()]);
+                            new XmlElement[restrictionList.size()]);
             return restrictions;
         }
     }
 
     static class DiscoverPropertiesRowset extends Rowset {
-        DiscoverPropertiesRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        DiscoverPropertiesRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final Column PropertyName = new Column("PropertyName", Type.StringSometimesArray, null, true, false,
@@ -390,12 +355,12 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     IsRequired,
                     Value,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new DiscoverPropertiesRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new DiscoverPropertiesRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
+        public void unparse(XmlaResponse response) {
             final String[] propertyNames = PropertyDefinition.enumeration.getNames();
             for (int i = 0; i < propertyNames.length; i++) {
                 PropertyDefinition propertyDefinition = PropertyDefinition.getValue(propertyNames[i]);
@@ -406,14 +371,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 row.set(PropertyAccessType.name, propertyDefinition.access);
                 //row.set(IsRequired.name, false);
                 //row.set(Value.name, null);
-                emit(row, saxHandler);
+                emit(row, response);
             }
         }
     }
 
     static class DiscoverEnumeratorsRowset extends Rowset {
-        DiscoverEnumeratorsRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        DiscoverEnumeratorsRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final Column EnumName = new Column("EnumName", Type.StringArray, null, true, false,
@@ -440,12 +405,12 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     ElementDescription,
                     ElementValue,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new DiscoverEnumeratorsRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new DiscoverEnumeratorsRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
+        public void unparse(XmlaResponse response) {
             Enumeration[] enumerators = getEnumerators();
             for (int i = 0; i < enumerators.length; i++) {
                 Enumeration enumerator = enumerators[i];
@@ -460,15 +425,15 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     row.set(ElementName.name, value.getName());
                     row.set(ElementDescription.name, value.getDescription());
                     switch (enumerator.type.ordinal) {
-                    case RowsetDefinition.Type.String_ORDINAL:
-                    case RowsetDefinition.Type.StringArray_ORDINAL:
+                    case Type.String_ORDINAL:
+                    case Type.StringArray_ORDINAL:
                         // these don't have ordinals
                         break;
                     default:
                         row.set(ElementValue.name, value.getOrdinal());
                         break;
                     }
-                    emit(row, saxHandler);
+                    emit(row, response);
                 }
             }
         }
@@ -500,8 +465,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     }
 
     static class DiscoverKeywordsRowset extends Rowset {
-        DiscoverKeywordsRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        DiscoverKeywordsRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final Column Keyword = new Column("Keyword", Type.StringSometimesArray, null, true, false,
@@ -513,8 +478,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 new Column[] {
                     Keyword,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new DiscoverKeywordsRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new DiscoverKeywordsRowset(request, handler);
             }
         };
 
@@ -579,19 +544,19 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             "When", "Where", "With", "WTD", "Xor",
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
+        public void unparse(XmlaResponse response) {
             for (int i = 0; i < keywords.length; i++) {
                 String keyword = keywords[i];
                 Row row = new Row();
                 row.set(Keyword.name, keyword);
-                emit(row, saxHandler);
+                emit(row, response);
             }
         }
     }
 
     static class DiscoverLiteralsRowset extends Rowset {
-        DiscoverLiteralsRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        DiscoverLiteralsRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         public static final RowsetDefinition definition = new RowsetDefinition(
@@ -612,20 +577,20 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     new Column("LiteralMaxLength", Type.Integer, null, false, true,
                             "The maximum number of characters in the literal. If there is no maximum or the maximum is unknown, the value is ?1."),
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new DiscoverLiteralsRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new DiscoverLiteralsRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
-            emit(Enumeration.Literal.enumeration, saxHandler);
+        public void unparse(XmlaResponse response) {
+            emit(Enumeration.Literal.enumeration, response);
         }
 
     }
 
     static class DbschemaCatalogsRowset extends Rowset {
-        DbschemaCatalogsRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        DbschemaCatalogsRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, "Catalog name. Cannot be NULL.");
@@ -638,26 +603,27 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     CatalogName,
                     Description,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new DbschemaCatalogsRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new DbschemaCatalogsRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
-            Connection connection = XmlaMediator.getConnection(properties);
+        public void unparse(XmlaResponse response) {
+            Connection connection = handler.getConnection(request);
             if (connection == null) {
                 return;
             }
             Row row = new Row();
             final Schema schema = connection.getSchema();
             row.set(CatalogName.name, schema.getName());
-            emit(row, saxHandler);
+            //row.set(Description.name, "No description");
+            emit(row, response);
         }
     }
 
     static class DbschemaColumnsRowset extends Rowset {
-        DbschemaColumnsRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        DbschemaColumnsRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final Column TableCatalog = new Column("TABLE_CATALOG", Type.String, null, true, false, null);
@@ -671,20 +637,20 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     TableName,
                     ColumnName,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new DbschemaColumnsRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new DbschemaColumnsRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
+        public void unparse(XmlaResponse response) {
             //TODO
             throw new UnsupportedOperationException();
         }
     }
 
     static class DbschemaProviderTypesRowset extends Rowset {
-        DbschemaProviderTypesRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        DbschemaProviderTypesRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final Column DataType = new Column("DATA_TYPE", Type.UnsignedInteger, null, true, false, null);
@@ -694,20 +660,20 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     DataType,
                     BestMatch,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new DbschemaProviderTypesRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new DbschemaProviderTypesRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
+        public void unparse(XmlaResponse response) {
             //TODO
             throw new UnsupportedOperationException();
         }
     }
 
     static class DbschemaTablesRowset extends Rowset {
-        DbschemaTablesRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        DbschemaTablesRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final Column TableCatalog = new Column("TABLE_CATALOG", Type.String, null, true, false, null);
@@ -721,20 +687,20 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     TableName,
                     TableType,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new DbschemaTablesRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new DbschemaTablesRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
+        public void unparse(XmlaResponse response) {
             //TODO
             throw new UnsupportedOperationException();
         }
     }
 
     static class DbschemaTablesInfoRowset extends Rowset {
-        DbschemaTablesInfoRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        DbschemaTablesInfoRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final Column TableCatalog = new Column("TABLE_CATALOG", Type.String, null, true, false, null);
@@ -748,20 +714,20 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     TableName,
                     TableType,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new DbschemaTablesInfoRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new DbschemaTablesInfoRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
+        public void unparse(XmlaResponse response) {
             //TODO
             throw new UnsupportedOperationException();
         }
     }
 
     static class MdschemaActionsRowset extends Rowset {
-        MdschemaActionsRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        MdschemaActionsRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
@@ -773,12 +739,12 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     Coordinate,
                     CoordinateType,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new MdschemaActionsRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new MdschemaActionsRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
+        public void unparse(XmlaResponse response) {
             //TODO
             throw new UnsupportedOperationException();
         }
@@ -786,8 +752,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
     // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olapcubes_rowset.asp
     static class MdschemaCubesRowset extends Rowset {
-        MdschemaCubesRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        MdschemaCubesRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final String MD_CUBTYPE_CUBE = "CUBE";
@@ -817,34 +783,40 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     IsLinkable,
                     IsSqlAllowed,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new MdschemaCubesRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new MdschemaCubesRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
-            final Connection connection = XmlaMediator.getConnection(properties);
+        public void unparse(XmlaResponse response) {
+            final Connection connection = handler.getConnection(request);
             final Cube[] cubes = connection.getSchema().getCubes();
             for (int i = 0; i < cubes.length; i++) {
                 Cube cube = cubes[i];
+
+                // Access control
+                if (!canAccess(connection, cube)) {
+                    continue;
+                }
+
                 Row row = new Row();
                 row.set(CatalogName.name, cube.getSchema().getName());
                 row.set(SchemaName.name, cube.getSchema().getName());
                 row.set(CubeName.name, cube.getName());
-                row.set(CubeType.name, ((RolapCube)cube).isVirtual() ? MD_CUBTYPE_VIRTUAL_CUBE : MD_CUBTYPE_CUBE);
+                row.set(CubeType.name, ((RolapCube) cube).isVirtual() ? MD_CUBTYPE_VIRTUAL_CUBE : MD_CUBTYPE_CUBE);
                 row.set(IsDrillthroughEnabled.name, true);
                 row.set(IsWriteEnabled.name, false);
                 row.set(IsLinkable.name, false);
                 row.set(IsSqlAllowed.name, false);
-                emit(row, saxHandler);
+                emit(row, response);
             }
         }
     }
 
     // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olapdimensions_rowset.asp
     static class MdschemaDimensionsRowset extends Rowset {
-        MdschemaDimensionsRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        MdschemaDimensionsRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         public static final int MD_DIMTYPE_OTHER = 3;
@@ -870,19 +842,25 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     DimensionOrdinal,
                     DimensionType,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new MdschemaDimensionsRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new MdschemaDimensionsRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
-            final Connection connection = XmlaMediator.getConnection(properties);
+        public void unparse(XmlaResponse response) {
+            final Connection connection = handler.getConnection(request);
             final Cube[] cubes = connection.getSchema().getCubes();
             for (int i = 0; i < cubes.length; i++) {
                 Cube cube = cubes[i];
                 final Dimension[] dimensions = cube.getDimensions();
                 for (int j = 0; j < dimensions.length; j++) {
                     Dimension dimension = dimensions[j];
+
+                    // Access control
+                    if (!canAccess(connection, dimension)) {
+                        continue;
+                    }
+
                     Row row = new Row();
                     row.set(CatalogName.name, cube.getSchema().getName());
                     row.set(SchemaName.name, cube.getSchema().getName());
@@ -892,7 +870,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     row.set(DimensionCaption.name, dimension.getCaption());
                     row.set(DimensionOrdinal.name, dimension.getOrdinal(cube));
                     row.set(DimensionType.name, getDimensionType(dimension));
-                    emit(row, saxHandler);
+                    emit(row, response);
                 }
             }
         }
@@ -901,7 +879,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     static int getDimensionType(Dimension dim) {
         if (dim.isMeasures())
             return MdschemaDimensionsRowset.MD_DIMTYPE_MEASURE;
-        else if (mondrian.olap.DimensionType.TimeDimension.equals(dim.getDimensionType())) {
+        else if (DimensionType.TimeDimension.equals(dim.getDimensionType())) {
             return MdschemaDimensionsRowset.MD_DIMTYPE_TIME;
         } else {
             return MdschemaDimensionsRowset.MD_DIMTYPE_OTHER;
@@ -910,9 +888,10 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
     // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olapfunctions_rowset.asp
     static class MdschemaFunctionsRowset extends Rowset {
-        MdschemaFunctionsRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        MdschemaFunctionsRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
+
         private static final Column LibraryName = new Column("LIBRARY_NAME", Type.String, null, true, true, null);
         private static final Column InterfaceName = new Column("INTERFACE_NAME", Type.String, null, true, true, null);
         private static final Column FunctionName = new Column("FUNCTION_NAME", Type.String, null, true, true, null);
@@ -924,12 +903,12 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     FunctionName,
                     Origin,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new MdschemaFunctionsRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new MdschemaFunctionsRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
+        public void unparse(XmlaResponse response) {
             //TODO
             throw new UnsupportedOperationException();
         }
@@ -938,8 +917,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
     // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olaphierarchies_rowset.asp
     static class MdschemaHierarchiesRowset extends Rowset {
-        MdschemaHierarchiesRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        MdschemaHierarchiesRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
@@ -952,6 +931,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column DimensionType = new Column("DIMENSION_TYPE", Type.Integer, null, true, false, null);
         private static final Column DefaultMember = new Column("DEFAULT_MEMBER", Type.String, null, true, true, null);
         private static final Column AllMember = new Column("ALL_MEMBER", Type.String, null, true, true, null);
+        private static final Column ParentChild = new Column("PARENT_CHILD", Type.Boolean, null, false, false, null);
 
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "MDSCHEMA_HIERARCHIES", MDSCHEMA_HIERARCHIES, null, new Column[] {
@@ -965,14 +945,15 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     DimensionType,
                     DefaultMember,
                     AllMember,
+                    ParentChild,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new MdschemaHierarchiesRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new MdschemaHierarchiesRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
-            final Connection connection = XmlaMediator.getConnection(properties);
+        public void unparse(XmlaResponse response) {
+            final Connection connection = handler.getConnection(request);
             final Cube[] cubes = connection.getSchema().getCubes();
             for (int i = 0; i < cubes.length; i++) {
                 Cube cube = cubes[i];
@@ -981,7 +962,13 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     Dimension dimension = dimensions[j];
                     final Hierarchy[] hierarchies = dimension.getHierarchies();
                     for (int k = 0; k < hierarchies.length; k++) {
-                        HierarchyBase hierarchy = (HierarchyBase)hierarchies[k];
+                        HierarchyBase hierarchy = (HierarchyBase) hierarchies[k];
+
+                        // Access control
+                        if (!canAccess(connection, hierarchy)) {
+                            continue;
+                        }
+
                         Row row = new Row();
                         row.set(CatalogName.name, cube.getSchema().getName());
                         row.set(SchemaName.name, cube.getSchema().getName());
@@ -993,11 +980,13 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         row.set(DimensionType.name, getDimensionType(dimension));
                         row.set(DefaultMember.name, hierarchy.getDefaultMember());
                         if (hierarchy.hasAll()) {
-                            row.set(AllMember.name, Util.makeFqName(
-                                    hierarchy,
-                                    hierarchy.getAllMemberName()));
+                            row.set(AllMember.name, Util.makeFqName(hierarchy, hierarchy.getAllMemberName()));
                         }
-                        emit(row, saxHandler);
+                        RolapLevel nonAllFirstLevel =
+                                (RolapLevel) hierarchy.getLevels()[
+                                (hierarchy.hasAll() ? 1 : 0)];
+                        row.set(ParentChild.name, nonAllFirstLevel.isParentChild());
+                        emit(row, response);
                     }
                 }
             }
@@ -1006,8 +995,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
     // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olaplevels_rowset.asp
     static class MdschemaLevelsRowset extends Rowset {
-        MdschemaLevelsRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        MdschemaLevelsRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         public static final int MDLEVEL_TYPE_UNKNOWN = 0x0000;
@@ -1050,13 +1039,13 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     LevelNumber,
                     LevelType,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new MdschemaLevelsRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new MdschemaLevelsRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
-            final Connection connection = XmlaMediator.getConnection(properties);
+        public void unparse(XmlaResponse response) {
+            final Connection connection = handler.getConnection(request);
             final Cube[] cubes = connection.getSchema().getCubes();
             for (int i = 0; i < cubes.length; i++) {
                 Cube cube = cubes[i];
@@ -1069,6 +1058,12 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         final Level[] levels = hierarchy.getLevels();
                         for (int m = 0; m < levels.length; m++) {
                             Level level = levels[m];
+
+                            // Access control
+                            if (!canAccess(connection, level)) {
+                                continue;
+                            }
+
                             Row row = new Row();
                             row.set(CatalogName.name, cube.getSchema().getName());
                             row.set(SchemaName.name, cube.getSchema().getName());
@@ -1080,7 +1075,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                             row.set(LevelCaption.name, level.getCaption());
                             row.set(LevelNumber.name, level.getDepth()); // see notes on this #getDepth()
                             row.set(LevelType.name, getLevelType(level));
-                            emit(row, saxHandler);
+                            emit(row, response);
                         }
                     }
                 }
@@ -1088,35 +1083,45 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
 
         private int getLevelType(Level lev) {
+            int ret = 0;
+
             if (lev.isAll()) {
-                return MDLEVEL_TYPE_ALL;
-            } else {
-                mondrian.olap.LevelType type = lev.getLevelType();
-                switch(type.getOrdinal()) {
-                case mondrian.olap.LevelType.RegularORDINAL:
-                    return MDLEVEL_TYPE_REGULAR;
-                case mondrian.olap.LevelType.TimeDaysORDINAL:
-                    return MDLEVEL_TYPE_TIME_DAYS;
-                case mondrian.olap.LevelType.TimeMonthsORDINAL:
-                    return MDLEVEL_TYPE_TIME_MONTHS;
-                case mondrian.olap.LevelType.TimeQuartersORDINAL:
-                    return MDLEVEL_TYPE_TIME_QUARTERS;
-                case mondrian.olap.LevelType.TimeWeeksORDINAL:
-                    return MDLEVEL_TYPE_TIME_WEEKS;
-                case mondrian.olap.LevelType.TimeYearsORDINAL:
-                    return MDLEVEL_TYPE_TIME_YEARS;
-                default:
-                    return MDLEVEL_TYPE_UNKNOWN;
-                }
+                ret |= MDLEVEL_TYPE_ALL;
             }
+
+            mondrian.olap.LevelType type = lev.getLevelType();
+            switch (type.getOrdinal()) {
+            case mondrian.olap.LevelType.RegularORDINAL:
+                ret |= MDLEVEL_TYPE_REGULAR;
+                break;
+            case mondrian.olap.LevelType.TimeDaysORDINAL:
+                ret |= MDLEVEL_TYPE_TIME_DAYS;
+                break;
+            case mondrian.olap.LevelType.TimeMonthsORDINAL:
+                ret |= MDLEVEL_TYPE_TIME_MONTHS;
+                break;
+            case mondrian.olap.LevelType.TimeQuartersORDINAL:
+                ret |= MDLEVEL_TYPE_TIME_QUARTERS;
+                break;
+            case mondrian.olap.LevelType.TimeWeeksORDINAL:
+                ret |= MDLEVEL_TYPE_TIME_WEEKS;
+                break;
+            case mondrian.olap.LevelType.TimeYearsORDINAL:
+                ret |= MDLEVEL_TYPE_TIME_YEARS;
+                break;
+            default:
+                ret |= MDLEVEL_TYPE_UNKNOWN;
+            }
+
+            return ret;
         }
     }
 
 
     // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olapmeasures_rowset.asp
     static class MdschemaMeasuresRowset extends Rowset {
-        MdschemaMeasuresRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        MdschemaMeasuresRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
@@ -1134,14 +1139,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     MeasureUniqueName,
                     MeasureCaption,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new MdschemaMeasuresRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new MdschemaMeasuresRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
+        public void unparse(XmlaResponse response) {
             // return both stored and calculated members on hierarchy [Measures]
-            final Connection connection = XmlaMediator.getConnection(properties);
+            final Connection connection = handler.getConnection(request);
             final Role role = connection.getRole();
             final Cube[] cubes = connection.getSchema().getCubes();
             for (int i = 0; i < cubes.length; i++) {
@@ -1151,16 +1156,21 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 final Hierarchy measuresHierarchy = measuresDimension.getHierarchies()[0];
                 Member[] storedMembers = schemaReader.getLevelMembers(measuresHierarchy.getLevels()[0]);
                 for (int j = 0; j < storedMembers.length; j++) {
-                    emitMember(saxHandler, storedMembers[j], cube);
+                    emitMember(response, connection, storedMembers[j], cube);
                 }
                 List calculatedMembers = schemaReader.getCalculatedMembers(measuresHierarchy);
-                for (Iterator it = calculatedMembers.iterator(); it.hasNext();){
-                    emitMember(saxHandler, (Member)it.next(), cube);
+                for (Iterator it = calculatedMembers.iterator(); it.hasNext();) {
+                    emitMember(response, connection, (Member) it.next(), cube);
                 }
             }
         }
 
-        private void emitMember(SAXHandler saxHandler, Member member, Cube cube) throws SAXException {
+        private void emitMember(XmlaResponse response, Connection connection, Member member, Cube cube) {
+            // Access control
+            if (!canAccess(connection, member)) {
+                return;
+            }
+
             Row row = new Row();
             row.set(CatalogName.name, cube.getSchema().getName());
             row.set(SchemaName.name, cube.getSchema().getName());
@@ -1168,13 +1178,13 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             row.set(MeasureName.name, member.getName());
             row.set(MeasureUniqueName.name, member.getUniqueName());
             row.set(MeasureCaption.name, member.getCaption());
-            emit(row, saxHandler);
+            emit(row, response);
         }
     }
 
     static class MdschemaMembersRowset extends Rowset {
-        MdschemaMembersRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        MdschemaMembersRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
@@ -1193,6 +1203,9 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column ParentLevel = new Column("PARENT_LEVEL", Type.Integer, null, false, false, null);
         private static final Column ParentUniqueName = new Column("PARENT_UNIQUE_NAME", Type.String, null, true, true, null);
         private static final Column TreeOp = new Column("TREE_OP", Type.Enumeration, Enumeration.TreeOp.enumeration, true, true, null);
+        /* Mondrian specified member properties. */
+        private static final Column Depth = new Column("DEPTH", Type.Integer, null, false, false, null);
+
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "MDSCHEMA_MEMBERS", MDSCHEMA_MEMBERS, null, new Column[] {
                     CatalogName,
@@ -1211,14 +1224,15 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     ParentLevel,
                     ParentUniqueName,
                     TreeOp,
+                    Depth,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new MdschemaMembersRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new MdschemaMembersRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
-            final Connection connection = XmlaMediator.getConnection(properties);
+        public void unparse(XmlaResponse response) {
+            final Connection connection = handler.getConnection(request);
             final Cube[] cubes = connection.getSchema().getCubes();
             for (int i = 0; i < cubes.length; i++) {
                 Cube cube = cubes[i];
@@ -1241,7 +1255,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                                 // stay with default value
                             }
                         }
-                        unparseImplMember(connection, cube, member, saxHandler, treeOp);
+                        unparseMember(connection, cube, member, response, treeOp);
                     }
                     continue;
                 }
@@ -1269,7 +1283,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                             // therefore we have nothing to work relative to.
                             // We supply our own treeOp expression here, for
                             // our own devious purposes.
-                            unparseImplMember(connection, cube, member, saxHandler,
+                            unparseMember(connection, cube, member, response,
                                     Enumeration.TreeOp.Self.ordinal |
                                     Enumeration.TreeOp.Descendants.ordinal);
                         }
@@ -1290,12 +1304,12 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
          * parameter, other relatives of the member. This method recursively
          * invokes itself to walk up, down, or across the hierarchy.
          */
-        private void unparseImplMember(final Connection connection, Cube cube,
-                Member member, SAXHandler saxHandler,
-                int treeOp) throws SAXException {
+        private void unparseMember(final Connection connection, Cube cube,
+                Member member, XmlaResponse response,
+                int treeOp) {
             // Visit node itself.
             if (mask(treeOp, Enumeration.TreeOp.Self.ordinal)) {
-                emitMember(member, connection, cube, saxHandler);
+                emitMember(member, connection, cube, response);
             }
             // Visit node's siblings (not including itself).
             if (mask(treeOp, Enumeration.TreeOp.Siblings.ordinal)) {
@@ -1314,7 +1328,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     if (sibling == member) {
                         continue;
                     }
-                    unparseImplMember(connection, cube, sibling, saxHandler,
+                    unparseMember(connection, cube, sibling, response,
                             Enumeration.TreeOp.Self.ordinal);
                 }
             }
@@ -1324,7 +1338,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         connection.getSchemaReader().getMemberChildren(member);
                 for (int i = 0; i < children.length; i++) {
                     Member child = children[i];
-                    unparseImplMember(connection, cube, child, saxHandler,
+                    unparseMember(connection, cube, child, response,
                             Enumeration.TreeOp.Self.ordinal |
                             Enumeration.TreeOp.Descendants.ordinal);
                 }
@@ -1333,7 +1347,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         connection.getSchemaReader().getMemberChildren(member);
                 for (int i = 0; i < children.length; i++) {
                     Member child = children[i];
-                    unparseImplMember(connection, cube, child, saxHandler,
+                    unparseMember(connection, cube, child, response,
                             Enumeration.TreeOp.Self.ordinal);
                 }
             }
@@ -1342,7 +1356,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 final Member parent =
                         connection.getSchemaReader().getMemberParent(member);
                 if (parent != null) {
-                    unparseImplMember(connection, cube, parent, saxHandler,
+                    unparseMember(connection, cube, parent, response,
                             Enumeration.TreeOp.Self.ordinal |
                             Enumeration.TreeOp.Ancestors.ordinal);
                 }
@@ -1350,7 +1364,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 final Member parent =
                         connection.getSchemaReader().getMemberParent(member);
                 if (parent != null) {
-                    unparseImplMember(connection, cube, parent, saxHandler,
+                    unparseMember(connection, cube, parent, response,
                             Enumeration.TreeOp.Self.ordinal);
                 }
             }
@@ -1369,11 +1383,16 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
 
         private void emitMember(Member member, final Connection connection,
-                Cube cube, SAXHandler saxHandler) throws SAXException {
+                Cube cube, XmlaResponse response) {
+            // Access control
+            if (!canAccess(connection, member)) {
+                return;
+            }
+
             final Level level = member.getLevel();
             final Hierarchy hierarchy = level.getHierarchy();
             final Dimension dimension = hierarchy.getDimension();
-            Rowset.Row row = new Rowset.Row();
+            Row row = new Row();
             row.set(CatalogName.name, cube.getSchema().getName());
             row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
@@ -1389,13 +1408,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             row.set(ChildrenCardinality.name, member.getPropertyValue(Property.CHILDREN_CARDINALITY.name));
             row.set(ParentLevel.name, member.getParentMember() == null ? 0 : member.getParentMember().getDepth());
             row.set(ParentUniqueName.name, member.getParentUniqueName());
-            emit(row, saxHandler);
+            row.set(Depth.name, member.getDepth());
+            emit(row, response);
         }
     }
 
     static class MdschemaSetsRowset extends Rowset {
-        MdschemaSetsRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        MdschemaSetsRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
@@ -1411,20 +1431,20 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     SetName,
                     Scope,
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new MdschemaSetsRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new MdschemaSetsRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
+        public void unparse(XmlaResponse response) {
             throw new UnsupportedOperationException();
         }
     }
 
     // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olapproperties_rowset.asp
     static class MdschemaPropertiesRowset extends Rowset {
-        MdschemaPropertiesRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
+        MdschemaPropertiesRowset(XmlaRequest request, XmlaHandler handler) {
+            super(definition, request, handler);
         }
 
         private static final int MDPROP_MEMBER = 0x01;
@@ -1455,13 +1475,13 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     PropertyContentType,
                     PropertyCaption
                 }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new MdschemaPropertiesRowset(restrictions, properties);
+            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+                return new MdschemaPropertiesRowset(request, handler);
             }
         };
 
-        protected void unparseImpl(SAXHandler saxHandler) throws SAXException {
-            final Connection connection = XmlaMediator.getConnection(properties);
+        public void unparse(XmlaResponse response) {
+            final Connection connection = handler.getConnection(request);
             final Cube[] cubes = connection.getSchema().getCubes();
             for (int i = 0; i < cubes.length; i++) {
                 Cube cube = cubes[i];
@@ -1489,13 +1509,18 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                                 row.set(PropertyType.name, MDPROP_MEMBER); // Only member properties now
                                 row.set(PropertyContentType.name, 0);
                                 row.set(PropertyCaption.name, property.getCaption());
-                                emit(row, saxHandler);
+                                emit(row, response);
                             }
                         }
                     }
                 }
             }
         }
+    }
+
+    private static boolean canAccess(Connection conn, OlapElement elem) {
+        Role role = conn.getSchemaReader().getRole();
+        return role.canAccess(elem);
     }
 }
 

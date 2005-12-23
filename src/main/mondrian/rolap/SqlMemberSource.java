@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2005 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -647,13 +647,14 @@ RME is this right
             if (parentLevel == null) {
                 parentLevel = (RolapLevel) member.getLevel();
                 // check for parent/child
-                if (parentLevel.getParentExp() != null)
+                if (parentLevel.isParentChild()) {
                     return null;
+                }
                 childLevel = getChildLevel(parentLevel);
                 if (childLevel == null) {
                     return null;
                 }
-                if (childLevel.getParentExp() != null) {
+                if (childLevel.isParentChild()) {
                     return null;
                 }
             } else if (parentLevel != member.getLevel()) {
@@ -684,7 +685,7 @@ RME is this right
         boolean parentChild;
         final RolapLevel parentLevel = (RolapLevel) parentMember.getLevel();
         RolapLevel childLevel;
-        if (parentLevel.getParentExp() != null) {
+        if (parentLevel.isParentChild()) {
             sql = makeChildMemberSqlPC(parentMember, jdbcConnection);
             parentChild = true;
             childLevel = parentLevel;
@@ -701,7 +702,7 @@ RME is this right
                 // member is at last level, so can have no children
                 return;
             }
-            if (childLevel.getParentExp() != null) {
+            if (childLevel.isParentChild()) {
                 sql = makeChildMemberSql_PCRoot(parentMember, jdbcConnection);
                 parentChild = true;
             } else {

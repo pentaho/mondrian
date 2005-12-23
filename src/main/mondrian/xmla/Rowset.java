@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde <jhyde@users.sf.net>
+// (C) Copyright 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,37 +11,41 @@
 */
 package mondrian.xmla;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import mondrian.olap.EnumeratedValues;
 import mondrian.olap.Util;
-import mondrian.util.SAXHandler;
 
 import org.apache.log4j.Logger;
-import org.xml.sax.SAXException;
-
-import java.util.*;
 
 /**
  * Base class for an XML for Analysis schema rowset. A concrete derived class
  * should implement {@link #unparse}, calling {@link #emit} for each row.
  *
- * @see RowsetDefinition
- *
  * @author jhyde
+ * @see mondrian.xmla.RowsetDefinition
  * @since May 2, 2003
  * @version $Id$
  */
 abstract class Rowset {
-	private static final Logger LOGGER = Logger.getLogger(Rowset.class);
+    private static final Logger LOGGER = Logger.getLogger(Rowset.class);
 
     private final RowsetDefinition rowsetDefinition;
-    protected final HashMap restrictions;
-    protected final Properties properties;
+    protected final Map restrictions;
+    protected final Map properties;
+    protected final XmlaRequest request;
+    protected final XmlaHandler handler;
     private final RowsetDefinition.Column[] restrictedColumns;
 
-    Rowset(RowsetDefinition definition, HashMap restrictions, Properties properties) {
+    Rowset(RowsetDefinition definition, XmlaRequest request, XmlaHandler handler) {
         this.rowsetDefinition = definition;
-        this.restrictions = restrictions;
-        this.properties = properties;
+        this.restrictions = request.getRestrictions();
+        this.properties = request.getProperties();
+        this.request = request;
+        this.handler = handler;
         ArrayList list = new ArrayList();
         for (Iterator restrictionsIter = restrictions.keySet().iterator();
              restrictionsIter.hasNext();) {
@@ -82,22 +86,15 @@ abstract class Rowset {
         list = pruneRestrictions(list);
         this.restrictedColumns = (RowsetDefinition.Column[]) list.toArray(
                 new RowsetDefinition.Column[0]);
-    }
-    
-    /** 
-     * Should not call methods that are re-defined in derived classes from
-     * the constructor of the base class.
-     */
-    protected void initialize() {
         for (Iterator propertiesIter = properties.keySet().iterator();
-                propertiesIter.hasNext();) {
+             propertiesIter.hasNext();) {
             String propertyName = (String) propertiesIter.next();
             final PropertyDefinition propertyDef = PropertyDefinition.getValue(propertyName);
             if (propertyDef == null) {
-                throw Util.newError("Rowset '" + rowsetDefinition.name +
+                throw Util.newError("Rowset '" + definition.name +
                         "' does not support property '" + propertyName + "'");
             }
-            final String propertyValue = properties.getProperty(propertyName);
+            final String propertyValue = (String) properties.get(propertyName);
             setProperty(propertyDef, propertyValue);
         }
     }
@@ -108,19 +105,15 @@ abstract class Rowset {
 
     /**
      * Sets a property for this rowset. Called by the constructor for each
-     * supplied property.
-     *
-     * <p>A derived class should override this method and intercept each
+     * supplied property.<p/>
+     * 
+     * A derived class should override this method and intercept each
      * property it supports. Any property it does not support, it should forward
-     * to the base class method, which will probably throw an error.
+     * to the base class method, which will probably throw an error.<p/>
      */
     protected void setProperty(PropertyDefinition propertyDef, String value) {
         switch (propertyDef.ordinal) {
         case PropertyDefinition.Format_ORDINAL:
-            final Enumeration.Format format = Enumeration.Format.getValue(value);
-            if (format != Enumeration.Format.Tabular) {
-                throw Util.newError("<Format> value '" + format + "' not supported");
-            }
             break;
         case PropertyDefinition.DataSourceInfo_ORDINAL:
             break;
@@ -135,13 +128,8 @@ abstract class Rowset {
 
     /**
      * Writes the contents of this rowset as a series of SAX events.
-     * @param saxHandler Handler to write to
      */
-    public void unparse(SAXHandler saxHandler) throws SAXException {
-        initialize();
-        unparseImpl(saxHandler);
-    }
-    protected abstract void unparseImpl(SAXHandler saxHandler) throws SAXException;
+    public abstract void unparse(XmlaResponse response);
 
     private static boolean haveCommonMember(String[] a, String[] b) {
         for (int i = 0; i < a.length; i++) {
@@ -155,13 +143,12 @@ abstract class Rowset {
     }
 
     /**
-     * Emits a row for this rowset, reading fields from a {@link Row} object.
+     * Emits a row for this rowset, reading fields from a {@link mondrian.xmla.Rowset.Row} object.
      *
      * @param row
-     * @param saxHandler
-     * @throws SAXException
+     * @param response
      */
-    protected void emit(Row row, SAXHandler saxHandler) throws SAXException {
+    protected void emit(Row row, XmlaResponse response) {
         for (int i = 0; i < restrictedColumns.length; i++) {
             RowsetDefinition.Column column = restrictedColumns[i];
             Object value = row.get(column.name);
@@ -188,7 +175,10 @@ abstract class Rowset {
                 return;
             }
         }
-        saxHandler.startElement("row");
+
+        SaxWriter writer = response.getWriter();
+
+        writer.startElement("row");
         for (int i = 0; i < rowsetDefinition.columnDefinitions.length; i++) {
             RowsetDefinition.Column column = rowsetDefinition.columnDefinitions[i];
             Object value = row.get(column.name);
@@ -200,42 +190,40 @@ abstract class Rowset {
             } else if (value instanceof XmlElement[]) {
                 XmlElement[] elements = (XmlElement[]) value;
                 for (int j = 0; j < elements.length; j++) {
-                    //saxHandler.startElement(column.name);
-                    emitXmlElement(saxHandler, elements[j]);
-                    //saxHandler.endElement();
+                    emitXmlElement(writer, elements[j]);
                 }
             } else if (value instanceof Object[]) {
                 Object[] values = (Object[]) value;
                 for (int j = 0; j < values.length; j++) {
-                    saxHandler.startElement(column.name);
-                    saxHandler.characters(values[j].toString());
-                    saxHandler.endElement();
+                    writer.startElement(column.name);
+                    writer.characters(values[j].toString());
+                    writer.endElement();
                 }
             } else {
-                saxHandler.startElement(column.name);
-                saxHandler.characters(value.toString());
-                saxHandler.endElement();
+                writer.startElement(column.name);
+                writer.characters(value.toString());
+                writer.endElement();
             }
         }
-        saxHandler.endElement();
+        writer.endElement();
     }
 
-    private void emitXmlElement(SAXHandler saxHandler, XmlElement element) throws SAXException{
+    private void emitXmlElement(SaxWriter writer, XmlElement element) {
         if (element.attributes == null) {
-            saxHandler.startElement(element.tag);
+            writer.startElement(element.tag);
         } else {
-            saxHandler.startElement(element.tag, element.attributes);
+            writer.startElement(element.tag, element.attributes);
         }
 
         if (element.text == null) {
             for (int i = 0; i < element.children.length; i++) {
-                emitXmlElement(saxHandler, element.children[i]);
+                emitXmlElement(writer, element.children[i]);
             }
         } else {
-            saxHandler.characters(element.text);
+            writer.characters(element.text);
         }
 
-        saxHandler.endElement();
+        writer.endElement();
     }
 
     private static boolean contains(String[] strings, String value) {
@@ -252,10 +240,9 @@ abstract class Rowset {
      * reflection.
      *
      * @param row
-     * @param saxHandler
-     * @throws SAXException
+     * @param response
      */
-    protected void emit(Object row, SAXHandler saxHandler) throws SAXException {
+    protected void emit(Object row, XmlaResponse response) {
         for (int i = 0; i < restrictedColumns.length; i++) {
             RowsetDefinition.Column column = restrictedColumns[i];
             Object value = column.get(row);
@@ -275,28 +262,31 @@ abstract class Rowset {
                 throw Util.newInternal("Restriction value is of wrong type: " + requiredValue);
             }
         }
-        saxHandler.startElement("row");
+
+        SaxWriter writer = response.getWriter();
+
+        writer.startElement("row");
         for (int i = 0; i < rowsetDefinition.columnDefinitions.length; i++) {
             RowsetDefinition.Column column = rowsetDefinition.columnDefinitions[i];
             Object value = column.get(row);
             if (value != null) {
-                saxHandler.startElement(column.name);
-                saxHandler.characters(value.toString());
-                saxHandler.endElement();
+                writer.startElement(column.name);
+                writer.characters(value.toString());
+                writer.endElement();
             }
         }
-        saxHandler.endElement();
+        writer.endElement();
     }
 
     /**
      * Emits all of the values in an enumeration.
      */
-    protected void emit(EnumeratedValues enumeration, SAXHandler saxHandler) throws SAXException {
+    protected void emit(EnumeratedValues enumeration, XmlaResponse response) {
         final List valuesSortedByName = enumeration.getValuesSortedByName();
         for (int i = 0; i < valuesSortedByName.size(); i++) {
             EnumeratedValues.Value value = (EnumeratedValues.Value)
                     valuesSortedByName.get(i);
-            emit(value, saxHandler);
+            emit(value, response);
         }
     }
 
@@ -320,7 +310,8 @@ abstract class Rowset {
 
 
     /**
-     * A set of name/value pairs, which can be output using {@link #emit}.
+     * A set of name/value pairs, which can be output using
+     * {@link Rowset#emit}.
      */
     protected class Row {
         private final ArrayList names = new ArrayList();
@@ -332,12 +323,15 @@ abstract class Rowset {
                 values.add(value);
             }
         }
+
         void set(String name, int value) {
             set(name, Integer.toString(value));
         }
+
         void set(String name, boolean value) {
             set(name, value ? "true" : "false");
         }
+
         /**
          * Retrieves the value of a field with a given name, or null if the
          * field's value is not defined.
@@ -353,7 +347,7 @@ abstract class Rowset {
     }
 
     /**
-     * Holder for non-scalar column values of a {@link Row}.
+     * Holder for non-scalar column values of a {@link mondrian.xmla.Rowset.Row}.
      */
     protected class XmlElement {
         private final String tag;

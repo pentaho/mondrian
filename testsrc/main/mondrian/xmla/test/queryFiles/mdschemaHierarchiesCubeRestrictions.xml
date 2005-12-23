@@ -1,0 +1,206 @@
+<?xml version="1.0"?>
+<xmlacycle>
+  <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <RequestType>MDSCHEMA_HIERARCHIES</RequestType>
+    <Restrictions>
+      <RestrictionList>
+	<CATALOG_NAME>${catalog}</CATALOG_NAME>
+	<CUBE_NAME>Sales</CUBE_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+	<DataSourceInfo>${datasource}</DataSourceInfo>
+	<Catalog>${catalog}</Catalog>
+	<Format>Tabular</Format>
+      </PropertyList>
+    </Properties>
+  </Discover>
+  <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <return>
+      <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset">
+	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified"/>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Measures</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Measures</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>2</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Measures].[Unit Sales]</DEFAULT_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Store</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Store</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Store].[All Stores]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Store].[All Stores]</ALL_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Store Size in SQFT</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Store Size in SQFT]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Store Size in SQFT</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Store Size in SQFT].[All Store Size in SQFT]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Store Size in SQFT].[All Store Size in SQFT]</ALL_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Store Type</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Store Type]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Store Type</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Store Type].[All Store Type]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Store Type].[All Store Type]</ALL_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Time</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>1</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Time].[1997]</DEFAULT_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Time.Weekly]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>1</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Time.Weekly].[All Time.Weeklys]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Time.Weekly].[All Time.Weeklys]</ALL_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Product</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Product]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Product</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Product].[All Products]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Product].[All Products]</ALL_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Promotion Media]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Promotion Media</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Promotion Media]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Promotion Media</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Promotion Media].[All Media]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Promotion Media].[All Media]</ALL_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Promotions]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Promotions</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Promotions]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Promotions</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Promotions].[All Promotions]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Promotions].[All Promotions]</ALL_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Customers</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Customers</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Customers].[All Customers]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Customers].[All Customers]</ALL_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Education Level]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Education Level</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Education Level]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Education Level</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Education Level].[All Education Level]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Education Level].[All Education Level]</ALL_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Gender</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Gender</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Gender].[All Gender]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Gender].[All Gender]</ALL_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Marital Status</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Marital Status]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Marital Status</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Marital Status].[All Marital Status]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Marital Status].[All Marital Status]</ALL_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Yearly Income]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Yearly Income</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Yearly Income]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Yearly Income</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>3</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Yearly Income].[All Yearly Income]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Yearly Income].[All Yearly Income]</ALL_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+      </root>
+    </return>
+  </DiscoverResponse>
+</xmlacycle>

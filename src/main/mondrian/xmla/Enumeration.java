@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde <jhyde@users.sf.net>
+// (C) Copyright 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,14 +26,14 @@ class Enumeration extends EnumeratedValues {
     public final RowsetDefinition.Type type;
 
     public Enumeration(String name, String description,
-            RowsetDefinition.Type type, EnumeratedValues.Value[] values) {
+            RowsetDefinition.Type type, Value[] values) {
         super(values);
         this.name = name;
         this.description = description;
         this.type = type;
     }
 
-    public static final class Methods extends EnumeratedValues.BasicValue {
+    public static final class Methods extends BasicValue {
         public static final Methods discover = new Methods("Discover", 1);
         public static final Methods execute = new Methods("Execute", 2);
         public static final Methods discoverAndExecute = new Methods("Discover/Execute", 3);
@@ -49,7 +49,7 @@ class Enumeration extends EnumeratedValues {
         );
     }
 
-    public static final class Access extends EnumeratedValues.BasicValue {
+    public static final class Access extends BasicValue {
         public static final Access read = new Access("Read", 1);
         public static final Access write = new Access("Write", 2);
         public static final Access readWrite = new Access("Read/Write", 3);
@@ -65,7 +65,7 @@ class Enumeration extends EnumeratedValues {
         );
     }
 
-    public static final class Format extends EnumeratedValues.BasicValue {
+    public static final class Format extends BasicValue {
         public static final Format Tabular = new Format("Tabular", 0, "a flat or hierarchical rowset. Similar to the XML RAW format in SQL. The Format property should be set to Tabular for OLE DB for Data Mining commands.");
         public static final Format Multidimensional = new Format("Multidimensional", 1, "Indicates that the result set will use the MDDataSet format (Execute method only).");
         public static final Format Native = new Format("Native", 2, "The client does not request a specific format, so the provider may return the format  appropriate to the query. (The actual result type is identified by namespace of the result.)");
@@ -81,7 +81,7 @@ class Enumeration extends EnumeratedValues {
         }
     }
 
-    public static final class AxisFormat extends EnumeratedValues.BasicValue {
+    public static final class AxisFormat extends BasicValue {
         public AxisFormat(String name, int ordinal) {
             super(name, ordinal, null);
         }
@@ -95,39 +95,15 @@ class Enumeration extends EnumeratedValues {
         }
     }
 
-/*
-// RME
-    public static class Content extends EnumeratedValues.BasicValue {
+    public static class Content extends BasicValue {
         public static final EnumeratedValues enumeration = new EnumeratedValues();
 
         public Content(String name, int ordinal, String description) {
             super(name, ordinal, description);
         }
     }
-*/
-    public static final class Content extends EnumeratedValues.BasicValue {
-        public static final int NONE_ORDINAL        = 0;
-        public static final int SCHEMA_ORDINAL      = 1;
-        public static final int DATA_ORDINAL        = 2;
-        public static final int SCHEMA_DATA_ORDINAL = 3;
 
-        public static final Content None = new Content("None", NONE_ORDINAL, "none");
-        public static final Content Schema = new Content("Schema", SCHEMA_ORDINAL, "schema");
-        public static final Content Data = new Content("Data", DATA_ORDINAL, "data");
-        public static final Content SchemaData = new Content("SchemaData", SCHEMA_DATA_ORDINAL, "schemadata");
-        public Content(String name, int ordinal, String description) {
-            super(name, ordinal, description);
-        }
-        public static final EnumeratedValues enumeration = new EnumeratedValues(
-                new Content[] {None, Schema, Data, SchemaData}
-        );
-
-        public static Content getValue(String name) {
-            return (Content) enumeration.getValue(name, true);
-        }
-    }
-
-    public static class MDXSupport extends EnumeratedValues.BasicValue {
+    public static class MDXSupport extends BasicValue {
         public static final EnumeratedValues enumeration = new EnumeratedValues();
 
         public MDXSupport(String name, int ordinal, String description) {
@@ -135,7 +111,7 @@ class Enumeration extends EnumeratedValues {
         }
     }
 
-    public static class StateSupport extends EnumeratedValues.BasicValue {
+    public static class StateSupport extends BasicValue {
         public static final EnumeratedValues enumeration = new EnumeratedValues();
 
         public StateSupport(String name, int ordinal, String description) {
@@ -143,7 +119,7 @@ class Enumeration extends EnumeratedValues {
         }
     }
 
-    static class AuthenticationMode extends EnumeratedValues.BasicValue {
+    static class AuthenticationMode extends BasicValue {
         private AuthenticationMode(String name, int ordinal, String description) {
             super(name, ordinal, description);
         }
@@ -158,7 +134,7 @@ class Enumeration extends EnumeratedValues {
         );
     }
 
-    static class ProviderType extends EnumeratedValues.BasicValue {
+    static class ProviderType extends BasicValue {
         private ProviderType(String name, int ordinal, String description) {
             super(name, ordinal, description);
         }
@@ -173,7 +149,7 @@ class Enumeration extends EnumeratedValues {
         );
     }
 
-    public static class Literal extends EnumeratedValues.BasicValue {
+    public static class Literal extends BasicValue {
         public final String literalName;
         public final String literalValue;
         public final String literalInvalidChars;
@@ -243,7 +219,7 @@ class Enumeration extends EnumeratedValues {
                 });
     }
 
-    public static class TreeOp extends EnumeratedValues.BasicValue {
+    public static class TreeOp extends BasicValue {
         TreeOp(String name, int ordinal, String description) {
             super(name, ordinal, description);
         }

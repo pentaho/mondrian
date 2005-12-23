@@ -70,6 +70,7 @@ public class RolapUtil {
             return "null";
         }
     };
+    public static final String sqlNullLiteral = "null";
 
     /**
      * Names of classes of drivers we've loaded (or have tried to load).

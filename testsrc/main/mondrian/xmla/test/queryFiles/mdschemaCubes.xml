@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<xmlacycle>
+<Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <RequestType>MDSCHEMA_CUBES</RequestType>
+  <Restrictions>
+    <RestrictionList>
+      <CATALOG_NAME>${catalog}</CATALOG_NAME>
+    </RestrictionList>
+  </Restrictions>
+  <Properties>
+    <PropertyList>
+      <DataSourceInfo>${datasource}</DataSourceInfo>
+      <Catalog>${catalog}</Catalog>
+      <Format>Tabular</Format>
+    </PropertyList>
+  </Properties>
+</Discover>
+<DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset">
+      <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified"/>
+      <row>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <CUBE_TYPE>CUBE</CUBE_TYPE>
+        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+        <IS_LINKABLE>false</IS_LINKABLE>
+        <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>
+      </row>
+      <row>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+        <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
+        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+        <IS_LINKABLE>false</IS_LINKABLE>
+        <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>
+      </row>
+      <row>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+        <CUBE_NAME>Warehouse</CUBE_NAME>
+        <CUBE_TYPE>CUBE</CUBE_TYPE>
+        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+        <IS_LINKABLE>false</IS_LINKABLE>
+        <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>
+      </row>
+      <row>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+        <CUBE_TYPE>CUBE</CUBE_TYPE>
+        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+        <IS_LINKABLE>false</IS_LINKABLE>
+        <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>
+      </row>
+      <row>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+        <CUBE_NAME>HR</CUBE_NAME>
+        <CUBE_TYPE>CUBE</CUBE_TYPE>
+        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+        <IS_LINKABLE>false</IS_LINKABLE>
+        <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>
+      </row>
+      <row>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+        <CUBE_NAME>Store</CUBE_NAME>
+        <CUBE_TYPE>CUBE</CUBE_TYPE>
+        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+        <IS_LINKABLE>false</IS_LINKABLE>
+        <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>
+      </row>
+    </root>
+  </return>
+</DiscoverResponse>
+</xmlacycle>

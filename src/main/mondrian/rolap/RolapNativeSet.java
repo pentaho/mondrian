@@ -1,11 +1,11 @@
 /*
- //This software is subject to the terms of the Common Public License
- //Agreement, available at the following URL:
- //http://www.opensource.org/licenses/cpl.html.
- //Copyright (C) 2004-2005 TONBELLER AG
- //All Rights Reserved.
- //You must accept the terms of that agreement to use this software.
- */
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2004-2005 TONBELLER AG
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.rolap;
 
 import java.util.ArrayList;
@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
  *
  * @author av
  * @since Nov 12, 2005
+ * @version $Id$
  */
 public abstract class RolapNativeSet extends RolapNative {
     protected static final Logger LOGGER = Logger.getLogger(RolapNativeSet.class);
@@ -455,14 +456,17 @@ public abstract class RolapNativeSet extends RolapNative {
     protected static boolean isSimpleLevel(RolapLevel level) {
         RolapHierarchy hier = (RolapHierarchy) level.getHierarchy();
         // does not work with ragged hierarchies
-        if (hier.isRagged())
+        if (hier.isRagged()) {
             return false;
+        }
         // does not work with parent/child
-        if (level.getParentExp() != null)
+        if (level.isParentChild()) {
             return false;
+        }
         // does not work for measures
-        if (level.isMeasure())
+        if (level.isMeasure()) {
             return false;
+        }
         return true;
     }
 

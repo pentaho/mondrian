@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<xmlacycle>
+  <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <RequestType>MDSCHEMA_MEMBERS</RequestType>
+    <Restrictions>
+      <RestrictionList>
+	<CATALOG_NAME>${catalog}</CATALOG_NAME>
+	<CUBE_NAME>Sales</CUBE_NAME>
+	<LEVEL_UNIQUE_NAME>[Time].[Year]</LEVEL_UNIQUE_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+	<DataSourceInfo>${datasource}</DataSourceInfo>
+	<Catalog>${catalog}</Catalog>
+	<Format>Tabular</Format>
+      </PropertyList>
+    </Properties>
+  </Discover>
+  <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <return>
+      <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset">
+	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		    targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+		    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		    xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+		    elementFormDefault="qualified"/>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+          <LEVEL_UNIQUE_NAME>[Time].[Year]</LEVEL_UNIQUE_NAME>
+          <LEVEL_NUMBER>0</LEVEL_NUMBER>
+          <MEMBER_NAME>1997</MEMBER_NAME>
+          <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>
+          <MEMBER_UNIQUE_NAME>[Time].[1997]</MEMBER_UNIQUE_NAME>
+          <MEMBER_TYPE>1</MEMBER_TYPE>
+          <MEMBER_CAPTION>1997</MEMBER_CAPTION>
+          <CHILDREN_CARDINALITY>4</CHILDREN_CARDINALITY>
+          <PARENT_LEVEL>0</PARENT_LEVEL>
+          <DEPTH>0</DEPTH>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+          <LEVEL_UNIQUE_NAME>[Time].[Year]</LEVEL_UNIQUE_NAME>
+          <LEVEL_NUMBER>0</LEVEL_NUMBER>
+          <MEMBER_NAME>1998</MEMBER_NAME>
+          <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>
+          <MEMBER_UNIQUE_NAME>[Time].[1998]</MEMBER_UNIQUE_NAME>
+          <MEMBER_TYPE>1</MEMBER_TYPE>
+          <MEMBER_CAPTION>1998</MEMBER_CAPTION>
+          <CHILDREN_CARDINALITY>4</CHILDREN_CARDINALITY>
+          <PARENT_LEVEL>0</PARENT_LEVEL>
+          <DEPTH>0</DEPTH>
+	</row>
+      </root>
+    </return>
+  </DiscoverResponse>
+</xmlacycle>

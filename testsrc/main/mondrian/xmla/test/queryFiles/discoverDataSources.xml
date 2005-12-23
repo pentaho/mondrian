@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<xmlacycle>
+<Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <RequestType>DISCOVER_DATASOURCES</RequestType>
+  <Restrictions>
+    <RestrictionList/>
+  </Restrictions>
+  <Properties>
+    <PropertyList>
+      <Format>Tabular</Format>
+    </PropertyList>
+  </Properties>
+</Discover>
+<DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset">
+      <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified"/>
+      <row>
+        <DataSourceName>MondrianFoodMart</DataSourceName>
+        <DataSourceDescription>MondrianFoodMart</DataSourceDescription>
+        <URL>http://localhost:8080/mondrian/xmla</URL>
+        <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        <ProviderName>Mondrian</ProviderName>
+        <ProviderType>MDP</ProviderType>
+        <AuthenticationMode>Unauthenticated</AuthenticationMode>
+      </row>
+    </root>
+  </return>
+</DiscoverResponse>
+</xmlacycle>

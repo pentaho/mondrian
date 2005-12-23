@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<xmlacycle>
+  <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <RequestType>MDSCHEMA_DIMENSIONS</RequestType>
+    <Restrictions>
+      <RestrictionList>
+	<CATALOG_NAME>${catalog}</CATALOG_NAME>
+	<CUBE_NAME>Sales</CUBE_NAME>
+	<DIMENSION_NAME>Time</DIMENSION_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+	<DataSourceInfo>${datasource}</DataSourceInfo>
+	<Catalog>${catalog}</Catalog>
+	<Format>Tabular</Format>
+      </PropertyList>
+    </Properties>
+  </Discover>
+  <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <return>
+      <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset">
+	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		    targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+		    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		    xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+		    elementFormDefault="qualified"/>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_NAME>Time</DIMENSION_NAME>
+          <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+          <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
+          <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
+          <DIMENSION_TYPE>1</DIMENSION_TYPE>
+	</row>
+      </root>
+    </return>
+  </DiscoverResponse>
+</xmlacycle>

@@ -240,9 +240,18 @@ public class RolapLevel extends LevelBase {
     String getNullParentValue() {
         return nullParentValue;
     }
+
+    /**
+     * Returns whether this level is parent-child.
+     */
+    public boolean isParentChild() {
+        return parentExp != null;
+    }
+
     MondrianDef.Expression getParentExp() {
         return parentExp;
     }
+
     MondrianDef.Expression getNameExp() {
         return nameExp;
     }

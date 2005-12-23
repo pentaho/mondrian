@@ -128,7 +128,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
                 memberDepth -= topLevel.getDepth();
             }
             return memberDepth;
-        } else if (((RolapLevel) member.getLevel()).getParentExp() != null) {
+        } else if (((RolapLevel) member.getLevel()).isParentChild()) {
             // For members of parent-child hierarchy, members in the same level may have
             // different depths.
             int depth = 0;

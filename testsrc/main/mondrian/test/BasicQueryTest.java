@@ -4788,6 +4788,21 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "from [Sales]",
                 "Dimension '[Time]' more than once in same tuple");
     }
+
+    public void testNullMember() {
+        assertQueryReturns("SELECT " + nl +
+                           "{[Measures].[Store Cost]} ON columns, " + nl +
+                           "{[Store Size in SQFT].[All Store Size in SQFT].[null]} ON rows " + nl +
+                           "FROM [Sales] " + nl +
+                           "WHERE [Time].[1997]",
+                           "Axis #0:" + nl +
+                           "{[Time].[1997]}" + nl +
+                           "Axis #1:" + nl +
+                           "{[Measures].[Store Cost]}" + nl +
+                           "Axis #2:" + nl +
+                           "{[Store Size in SQFT].[All Store Size in SQFT].[null]}" + nl +
+                           "Row #0: 33,307.69" + nl);
+    }
 }
 
 // End BasicQueryTest.java

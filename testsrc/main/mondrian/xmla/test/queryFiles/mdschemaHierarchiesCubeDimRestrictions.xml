@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<xmlacycle>
+  <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <RequestType>MDSCHEMA_HIERARCHIES</RequestType>
+    <Restrictions>
+      <RestrictionList>
+	<CATALOG_NAME>${catalog}</CATALOG_NAME>
+	<CUBE_NAME>Sales</CUBE_NAME>
+	<DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+	<DataSourceInfo>${datasource}</DataSourceInfo>
+	<Catalog>${catalog}</Catalog>
+	<Format>Tabular</Format>
+      </PropertyList>
+    </Properties>
+  </Discover>
+  <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <return>
+      <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset">
+	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified"/>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Time</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>1</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Time].[1997]</DEFAULT_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+	<row>
+          <CATALOG_NAME>${catalog}</CATALOG_NAME>
+          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+          <HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Time.Weekly]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
+          <DIMENSION_TYPE>1</DIMENSION_TYPE>
+          <DEFAULT_MEMBER>[Time.Weekly].[All Time.Weeklys]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Time.Weekly].[All Time.Weeklys]</ALL_MEMBER>
+          <PARENT_CHILD>false</PARENT_CHILD>
+	</row>
+      </root>
+    </return>
+  </DiscoverResponse>
+</xmlacycle>
+  

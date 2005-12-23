@@ -69,7 +69,7 @@ public class SqlConstraintUtils {
 
             String expr = column.getExpression(sqlQuery);
             String value = sqlQuery.quote(column.isNumeric(), values[i]);
-            sqlQuery.addWhere(expr, " = ", value);
+            sqlQuery.addWhere(expr, RolapUtil.sqlNullLiteral.equals(value) ? " is " : " = ", value);
         }
     }
 
