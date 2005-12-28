@@ -699,6 +699,8 @@ doc/**/*.xml"
     <mkdir dir="${lib.dir}" />
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml" 
         todir="${classes.dir}"/>
+    <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml" 
+        todir="${classes.dir}"/>
     <zip
         zipfile="${jar.file}"
         update="true">
