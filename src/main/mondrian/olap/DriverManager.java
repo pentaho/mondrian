@@ -60,7 +60,7 @@ public class DriverManager {
             final ServletContextCatalogLocator locator =
                     new ServletContextCatalogLocator(servletContext);
             final String newCatalog = locator.locate(catalog);
-            if (newCatalog.equals(catalog)) {
+            if (!newCatalog.equals(catalog)) {
                 connectionProperties.put("catalog", catalog);
             }
         }
