@@ -254,9 +254,17 @@ database or schema first. This is database-specific.</p>
 log4j:WARN Please initialize the log4j system properly.</code></p>
 </blockquote>
 <h4>Examples</h4>
-<p>On Linux, create a MySQL schema called 'foodmart', and create
+
+<p>Here are some examples to give you a general idea how
+<code>MondrianFoodMartLoader</code> is invoked. The command line you use
+will vary depending upon your operating system, and intended
+source and target data sources.</p>
+
+<p>The following example is a Linux command line to
+create a MySQL schema called 'foodmart', and create
 FoodMart tables from the test dataset in the SQL
 scripts:</p>
+
 <blockquote>
   <p><code><i><b>$</b></i> mysqladmin create foodmart<b><i><br>
 $</i></b> java -cp
@@ -270,9 +278,11 @@ $</i></b> java -cp
 -outputJdbcURL="jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin"</code><br>
   </p>
 </blockquote>
-<p>On Windows, create FoodMart tables for PostgreSQL from the test
-dataset in
-the Access database:</p>
+
+<p>The following example is a Windows command line to
+create FoodMart tables for PostgreSQL from the test
+dataset in the Access database:</p>
+
 <blockquote>
   <p><code><i><b>C:\mondrian&gt;</b></i> java -cp
 "C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-1.2.9.jar;C:\mondrian\lib\eigenbase-xom.jar;C:\mondrian\lib\eigenbase-resgen.jar;C:\mondrian\lib\eigenbase-properties.jar;C:\mondrian\lib\postgres-jdbc.jar"<br>
@@ -286,6 +296,7 @@ the Access database:</p>
 &nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcUser=postgres<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcPassword=password</code></p>
 </blockquote>
+
 <h2><a name="5_Deploy_and_run_the_web_app">3. Deploy and run the web
 application with a non-embedded database<br>
 </a></h2>
