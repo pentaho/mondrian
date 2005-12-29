@@ -96,11 +96,13 @@ public class DefaultXmlaServlet extends XmlaServlet {
         return hdrBodyElems;
     }
 
-    protected byte[] handleSoapHeader(Element bodyElem, String charEncoding, Map context) throws Exception {
+    protected byte[] handleSoapHeader(Element bodyElem, String charEncoding,
+                                      Map context) throws Exception {
         return null; // no header data to return.
     }
 
-    protected byte[] handleSoapBody(Element hdrElem, Element bodyElem, String charEncoding, Map context) throws Exception {
+    protected byte[] handleSoapBody(Element hdrElem, Element bodyElem,
+                                    String charEncoding, Map context) throws Exception {
         Element[] dreqs = XmlaUtil.filterChildElements(bodyElem, NS_XMLA, "Discover");
         Element[] ereqs = XmlaUtil.filterChildElements(bodyElem, NS_XMLA, "Execute");
         if (dreqs.length + ereqs.length != 1) {
@@ -111,7 +113,9 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
         ByteArrayOutputStream osBuf = new ByteArrayOutputStream();
 
-        XmlaRequest xmlaReq = new DefaultXmlaRequest(xmlaReqElem, (String) context.get("role"));
+        // use context variable `role' as this request's XML/A role
+        XmlaRequest xmlaReq = new DefaultXmlaRequest(xmlaReqElem,
+                                                     (String) context.get("role"));
         XmlaResponse xmlaRes = new DefaultXmlaResponse(osBuf, charEncoding);
 
         xmlaHandler.process(xmlaReq, xmlaRes);
@@ -119,13 +123,17 @@ public class DefaultXmlaServlet extends XmlaServlet {
         return osBuf.toByteArray();
     }
 
-    protected void marshallSoapMessage(OutputStream outputStream, String encoding, byte[] soapHeader, byte[] soapBody) {
+    protected void marshallSoapMessage(OutputStream outputStream, String encoding,
+                                       byte[] soapHeader, byte[] soapBody) {
         Object[] byteChunks = new Object[5];
 
         try {
             StringBuffer buf = new StringBuffer();
-            buf.append("<?xml version=\"1.0\" encoding=\"").append(encoding).append("\"?>\r\n");
-            buf.append("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"").append(NS_SOAP).append("\" SOAP-ENV:encodingStyle=\"").append(NS_SOAP_ENCODING_STYLE).append("\">\r\n");
+            buf.append("<?xml version=\"1.0\" encoding=\"").append(encoding).
+                append("\"?>\r\n");
+            buf.append("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"").append(NS_SOAP).
+                append("\" SOAP-ENV:encodingStyle=\"").
+                append(NS_SOAP_ENCODING_STYLE).append("\">\r\n");
             buf.append("<SOAP-ENV:Header>\r\n");
             byteChunks[0] = buf.toString().getBytes(encoding);
 

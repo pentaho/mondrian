@@ -29,14 +29,12 @@ import org.w3c.dom.Element;
  */
 public interface XmlaRequestCallback {
 
-    public void init(
-            ServletConfig servletConfig) throws ServletException;
+    public void init(ServletConfig servletConfig) throws ServletException;
 
-    public void invoke(
-            Map context,
-            HttpServletRequest request,
-            Element soapHeader,
-            Element soapBody) throws Exception;
+    public void invoke(Map context,
+                       HttpServletRequest request,
+                       Element soapHeader,
+                       Element soapBody) throws Exception;
 }
 
 // End XmlaRequestCallback.java

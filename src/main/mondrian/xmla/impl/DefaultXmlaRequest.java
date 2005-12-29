@@ -26,11 +26,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * TODO: add type description.
+ * Default implementation of {@link mondrian.xmla.XmlaRequest} by DOM API.
  *
  * @author Gang Chen
  */
-public class DefaultXmlaRequest implements XmlaRequest, XmlaConstants {
+public class DefaultXmlaRequest implements XmlaRequest,
+                                           XmlaConstants {
 
     private static final String MSG_INVALID_XMLA = "Invalid XML/A message";
     private static final String MSG_INVALID_DRILLTHROUGH = "Invalid DRILLTHROUGH statement";
@@ -133,19 +134,25 @@ public class DefaultXmlaRequest implements XmlaRequest, XmlaConstants {
     }
 
     private void initDiscover(Element discoverRoot) {
-        Element[] childElems = XmlaUtil.filterChildElements(discoverRoot, NS_XMLA, "RequestType");
+        Element[] childElems = XmlaUtil.filterChildElements(discoverRoot,
+                                                            NS_XMLA,
+                                                            "RequestType");
         if (childElems.length != 1) {
             throw Util.newError(MSG_INVALID_XMLA);
         }
         requestType = XmlaUtil.textInElement(childElems[0]); // <RequestType>
 
-        childElems = XmlaUtil.filterChildElements(discoverRoot, NS_XMLA, "Restrictions");
+        childElems = XmlaUtil.filterChildElements(discoverRoot,
+                                                  NS_XMLA,
+                                                  "Restrictions");
         if (childElems.length != 1) {
             throw Util.newError(MSG_INVALID_XMLA);
         }
         initRestrictions(childElems[0]); // <Restriciotns><RestrictionList>
 
-        childElems = XmlaUtil.filterChildElements(discoverRoot, NS_XMLA, "Properties");
+        childElems = XmlaUtil.filterChildElements(discoverRoot,
+                                                  NS_XMLA,
+                                                  "Properties");
         if (childElems.length != 1) {
             throw Util.newError(MSG_INVALID_XMLA);
         }
@@ -153,13 +160,17 @@ public class DefaultXmlaRequest implements XmlaRequest, XmlaConstants {
     }
 
     private void initExecute(Element executeRoot) {
-        Element[] childElems = XmlaUtil.filterChildElements(executeRoot, NS_XMLA, "Command");
+        Element[] childElems = XmlaUtil.filterChildElements(executeRoot,
+                                                            NS_XMLA,
+                                                            "Command");
         if (childElems.length != 1) {
             throw Util.newError(MSG_INVALID_XMLA);
         }
         initCommand(childElems[0]); // <Command><Statement>
 
-        childElems = XmlaUtil.filterChildElements(executeRoot, NS_XMLA, "Properties");
+        childElems = XmlaUtil.filterChildElements(executeRoot,
+                                                  NS_XMLA,
+                                                  "Properties");
         if (childElems.length != 1) {
             throw Util.newError(MSG_INVALID_XMLA);
         }
@@ -168,7 +179,9 @@ public class DefaultXmlaRequest implements XmlaRequest, XmlaConstants {
 
     private void initRestrictions(Element restrictionsRoot) {
         Map restricions = new HashMap();
-        Element[] childElems = XmlaUtil.filterChildElements(restrictionsRoot, NS_XMLA, "RestrictionList");
+        Element[] childElems = XmlaUtil.filterChildElements(restrictionsRoot,
+                                                            NS_XMLA,
+                                                            "RestrictionList");
         if (childElems.length == 1) {
             NodeList nlst = childElems[0].getChildNodes();
             for (int i = 0, nlen = nlst.getLength(); i < nlen; i++) {
@@ -207,7 +220,9 @@ public class DefaultXmlaRequest implements XmlaRequest, XmlaConstants {
 
     private void initProperties(Element propertiesRoot) {
         Map properties = new HashMap();
-        Element[] childElems = XmlaUtil.filterChildElements(propertiesRoot, NS_XMLA, "PropertyList");
+        Element[] childElems = XmlaUtil.filterChildElements(propertiesRoot,
+                                                            NS_XMLA,
+                                                            "PropertyList");
         if (childElems.length == 1) {
             NodeList nlst = childElems[0].getChildNodes();
             for (int i = 0, nlen = nlst.getLength(); i < nlen; i++) {
@@ -228,7 +243,9 @@ public class DefaultXmlaRequest implements XmlaRequest, XmlaConstants {
 
 
     private void initCommand(Element commandRoot) {
-        Element[] childElems = XmlaUtil.filterChildElements(commandRoot, NS_XMLA, "Statement");
+        Element[] childElems = XmlaUtil.filterChildElements(commandRoot,
+                                                            NS_XMLA,
+                                                            "Statement");
         if (childElems.length != 1) {
             throw Util.newError(MSG_INVALID_XMLA);
         }

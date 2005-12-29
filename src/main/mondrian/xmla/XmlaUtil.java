@@ -138,14 +138,16 @@ public class XmlaUtil {
     /**
      * @return null if there is no child element.
      */
-    public static Element firstChildElement(Element parent, String ns, String lname) {
+    public static Element firstChildElement(Element parent,
+                                            String ns,
+                                            String lname) {
         NodeList nlst = parent.getChildNodes();
         for (int i = 0, nlen = nlst.getLength(); i < nlen; i++) {
             Node n = nlst.item(i);
             if (n instanceof Element) {
                 Element e = (Element) n;
                 if ((ns == null || ns.equals(e.getNamespaceURI())) &&
-                        (lname == null || lname.equals(e.getLocalName()))) {
+                    (lname == null || lname.equals(e.getLocalName()))) {
                     return e;
                 }
             }
@@ -153,7 +155,9 @@ public class XmlaUtil {
         return null;
     }
 
-    public static Element[] filterChildElements(Element parent, String ns, String lname) {
+    public static Element[] filterChildElements(Element parent,
+                                                String ns,
+                                                String lname) {
         List elems = new ArrayList();
         NodeList nlst = parent.getChildNodes();
         for (int i = 0, nlen = nlst.getLength(); i < nlen; i++) {
@@ -161,7 +165,7 @@ public class XmlaUtil {
             if (n instanceof Element) {
                 Element e = (Element) n;
                 if ((ns == null || ns.equals(e.getNamespaceURI())) &&
-                        (lname == null || lname.equals(e.getLocalName()))) {
+                    (lname == null || lname.equals(e.getLocalName()))) {
                     elems.add(e);
                 }
             }

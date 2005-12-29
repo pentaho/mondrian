@@ -41,13 +41,15 @@ public class XmlaHandler implements XmlaConstants {
     }
 
 
-    public XmlaHandler(DataSourcesConfig.DataSources dataSources, CatalogLocator catalogLocator) {
+    public XmlaHandler(DataSourcesConfig.DataSources dataSources,
+                       CatalogLocator catalogLocator) {
         this.catalogLocator = catalogLocator;
         Map map = new HashMap();
         for (int i = 0; i < dataSources.dataSources.length; i++) {
             DataSourcesConfig.DataSource ds = dataSources.dataSources[i];
             if (map.containsKey(ds.getDataSourceName())) {
-                throw Util.newError("duplicated data source name '" + ds.getDataSourceName() + "'");
+                throw Util.newError("duplicated data source name '" +
+                                    ds.getDataSourceName() + "'");
             }
             map.put(ds.getDataSourceName(), ds);
         }
@@ -104,7 +106,9 @@ public class XmlaHandler implements XmlaConstants {
                 }
             }
         } catch (Error e) {
-            throw new UnsupportedOperationException("Property <" + propertyName + "> must be provided");
+            throw new UnsupportedOperationException("Property <" +
+                                                    propertyName +
+                                                    "> must be provided");
         }
 
         // Handle execute
@@ -120,10 +124,11 @@ public class XmlaHandler implements XmlaConstants {
 
         writer.startElement("ExecuteResponse", new String[] {"xmlns", NS_XMLA});
         writer.startElement("return", new String[] {"xmlns:xsi", NS_XSI,
-                                                   "xmlns:xsd", NS_XSD,});
+                                                    "xmlns:xsd", NS_XSD,});
         writer.startElement("root",
-                new String[] {"xmlns",
-                             request.isDrillThrough() ? NS_XMLA_ROWSET : NS_XMLA_MDDATASET});
+                            new String[] {"xmlns",
+                                          request.isDrillThrough() ? NS_XMLA_ROWSET :
+                                                                     NS_XMLA_MDDATASET});
         writer.startElement("xsd:schema", new String[] {"xmlns:xsd", NS_XSD});
         //TODO: schema definition
         writer.endElement();
@@ -163,7 +168,8 @@ public class XmlaHandler implements XmlaConstants {
 
         try {
             conn = ((RolapConnection) connection).getDataSource().getConnection();
-            stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                                        ResultSet.CONCUR_READ_ONLY);
 
             String temp = dtSql.toUpperCase();
             int selOff = temp.indexOf("SELECT");
@@ -184,9 +190,11 @@ public class XmlaHandler implements XmlaConstants {
                 LOGGER.debug("drill through sql: " + dtSql);
             }
             rs = stmt.executeQuery(dtSql);
-            rowset = new TabularRowSet(rs, request.drillThroughMaxRows(), request.drillThroughFirstRowset(), count);
+            rowset = new TabularRowSet(rs, request.drillThroughMaxRows(),
+                                       request.drillThroughFirstRowset(), count);
         } catch (SQLException sqle) {
-            throw Util.newError(sqle, "Errors when executing DrillThrough sql '" + dtSql + "'");
+            throw Util.newError(sqle, "Errors when executing DrillThrough sql '" +
+                                      dtSql + "'");
         } finally {
             try {
                 if (rs != null) rs.close();
@@ -210,7 +218,10 @@ public class XmlaHandler implements XmlaConstants {
         private List rows;
         private int totalCount;
 
-        public TabularRowSet(ResultSet rs, int maxRows, int firstRowset, int totalCount) throws SQLException {
+        public TabularRowSet(ResultSet rs,
+                             int maxRows,
+                             int firstRowset,
+                             int totalCount) throws SQLException {
             this.totalCount = totalCount;
             ResultSetMetaData md = rs.getMetaData();
             int columnCount = md.getColumnCount();
@@ -245,7 +256,6 @@ public class XmlaHandler implements XmlaConstants {
                 encodedHeader[i] = XmlaUtil.encodeElementName(header[i]);
             }
 
-
             String countStr = Integer.toString(totalCount);
             writer.startElement("row");
             for (int i = 0; i < encodedHeader.length; i++) {
@@ -264,10 +274,11 @@ public class XmlaHandler implements XmlaConstants {
                     if (value == null) {
                         writer.characters("null");
                     } else {
-                        if (value instanceof Number)
-                            writer.characters(XmlaUtil.normalizeNumricString(row[i].toString()));
-                        else
+                        if (value instanceof Number) {
+                            writer.characters(XmlaUtil.normalizeNumricString(value.toString()));
+                        } else {
                             writer.characters(row[i].toString());
+                        }
                     }
                     writer.endElement();
                 }
@@ -375,7 +386,8 @@ public class XmlaHandler implements XmlaConstants {
                     "name", hierarchies[j].getName()});
                 for (int k = 0; k < props.length; k++) {
                     writer.element(props[k], new String[] {
-                        "name", hierarchies[j].getUniqueName() + ".[" + propLongs[k] + "]"});
+                        "name", hierarchies[j].getUniqueName() + ".[" + 
+                                propLongs[k] + "]"});
                 }
                 writer.endElement(); // HierarchyInfo
             }
@@ -408,10 +420,11 @@ public class XmlaHandler implements XmlaConstants {
                         Object value = null;
                         if (propLongs[m].equals(Property.DISPLAY_INFO.name)) {
                             Integer childrenCard =
-                                    (Integer) member.getPropertyValue(Property.CHILDREN_CARDINALITY.name);
-                            int displayInfo = calculateDisplayInfo((j == 0 ? null : positions[j - 1]),
-                                    (j + 1 == positions.length ? null : positions[j + 1]),
-                                    member, k, childrenCard.intValue());
+                                (Integer) member.getPropertyValue(Property.CHILDREN_CARDINALITY.name);
+                            int displayInfo =
+                                calculateDisplayInfo((j == 0 ? null : positions[j - 1]),
+                                                     (j + 1 == positions.length ? null : positions[j + 1]),
+                                                     member, k, childrenCard.intValue());
                             value = new Integer(displayInfo);
                         } else if (propLongs[m].equals(Property.DEPTH.name)) {
                             value = new Integer(member.getDepth());
@@ -435,7 +448,7 @@ public class XmlaHandler implements XmlaConstants {
         private int calculateDisplayInfo(Position prevPosition, Position nextPosition,
                 Member currentMember, int memberOrdinal, int childrenCount) {
             int displayInfo = 0xffff & childrenCount;
-
+            
             if (nextPosition != null) {
                 String currentUName = currentMember.getUniqueName();
                 String nextParentUName = nextPosition.members[memberOrdinal].getParentUniqueName();
@@ -540,11 +553,13 @@ public class XmlaHandler implements XmlaConstants {
     }
 
     private void discover(XmlaRequest request, XmlaResponse response) {
-        final RowsetDefinition rowsetDefinition = RowsetDefinition.getValue(request.getRequestType());
+        final RowsetDefinition rowsetDefinition =
+            RowsetDefinition.getValue(request.getRequestType());
         Rowset rowset = rowsetDefinition.getRowset(request, this);
 
         try {
-            final String formatName = (String) request.getProperties().get(PropertyDefinition.Format.name);
+            final String formatName =
+                (String) request.getProperties().get(PropertyDefinition.Format.name);
             Enumeration.Format format = Enumeration.Format.getValue(formatName);
             if (format != Enumeration.Format.Tabular) {
                 throw new UnsupportedOperationException("<Format>: only 'Tabular' allowed in Discover method type");
@@ -593,14 +608,18 @@ public class XmlaHandler implements XmlaConstants {
      */
     Connection getConnection(XmlaRequest request) {
         Map properties = request.getProperties();
-        final String dataSourceInfo = (String) properties.get(PropertyDefinition.DataSourceInfo.name);
+        final String dataSourceInfo =
+            (String) properties.get(PropertyDefinition.DataSourceInfo.name);
         if (!dataSourcesMap.containsKey(dataSourceInfo)) {
             throw Util.newError("no data source is configured with name '" + dataSourceInfo + "'");
         }
 
-        DataSourcesConfig.DataSource ds = (DataSourcesConfig.DataSource) dataSourcesMap.get(dataSourceInfo);
-        Util.PropertyList connectProperties = Util.parseConnectString(ds.getDataSourceInfo());
-        connectProperties.put("catalog", catalogLocator.locate(connectProperties.get("catalog")));
+        DataSourcesConfig.DataSource ds =
+            (DataSourcesConfig.DataSource) dataSourcesMap.get(dataSourceInfo);
+        Util.PropertyList connectProperties =
+            Util.parseConnectString(ds.getDataSourceInfo());
+        connectProperties.put("catalog",
+                              catalogLocator.locate(connectProperties.get("catalog")));
 
         // Checking access
         if (!DataSourcesConfig.DataSource.AUTH_MODE_UNAUTHENTICATED.equalsIgnoreCase(ds.getAuthenticationMode()) &&
@@ -609,7 +628,8 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         connectProperties.put("role", request.getRole());
-        RolapConnection conn = (RolapConnection) DriverManager.getConnection(connectProperties, null, false);
+        RolapConnection conn =
+            (RolapConnection) DriverManager.getConnection(connectProperties, null, false);
 
         return conn;
     }

@@ -52,7 +52,8 @@ public class DefaultSaxWriter implements SaxWriter {
     public DefaultSaxWriter(OutputStream stream) {
         this(new OutputStreamWriter(stream));
     }
-    public DefaultSaxWriter(OutputStream stream, String xmlEncoding) throws UnsupportedEncodingException {
+    public DefaultSaxWriter(OutputStream stream, String xmlEncoding)
+        throws UnsupportedEncodingException {
         this(new OutputStreamWriter(stream, xmlEncoding));
     }
 

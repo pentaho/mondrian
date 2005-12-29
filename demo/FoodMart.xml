@@ -59,7 +59,7 @@
       <Table name="time_by_day"/>
       <Level name="Year" column="the_year" type="Numeric" uniqueMembers="true"
           levelType="TimeYears"/>
-      <Level name="Week" column="week_of_year" uniqueMembers="false"
+      <Level name="Week" column="week_of_year" type="Numeric" uniqueMembers="false"
           levelType="TimeWeeks"/>
       <Level name="Day" column="day_of_month" uniqueMembers="false" type="Numeric"
           levelType="TimeDays"/>

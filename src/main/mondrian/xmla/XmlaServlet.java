@@ -33,7 +33,8 @@ import java.util.*;
  * @since December, 2005
  * @version $Id$
  */
-public abstract class XmlaServlet extends HttpServlet implements XmlaConstants {
+public abstract class XmlaServlet extends HttpServlet
+                                  implements XmlaConstants {
 
     private static final Logger LOGGER = Logger.getLogger(XmlaServlet.class);
 
@@ -67,8 +68,10 @@ public abstract class XmlaServlet extends HttpServlet implements XmlaConstants {
                 dataSourcesConfigUrl = new URL(paramValue);
             } catch (MalformedURLException mue) {
                 paramValue = "WEB-INF/" + paramValue;
-                LOGGER.warn("Use default datasources config file '" + paramValue + "' in web context direcotry");
-                dataSourcesConfigUrl = new File(servletContext.getRealPath(paramValue)).toURL();
+                LOGGER.warn("Use default datasources config file '" +
+                            paramValue + "' in web context direcotry");
+                dataSourcesConfigUrl =
+                    new File(servletContext.getRealPath(paramValue)).toURL();
             }
         } catch (MalformedURLException mue) {
             throw Util.newError(mue, "invalid URL path '" + paramValue + "'");
@@ -149,7 +152,8 @@ public abstract class XmlaServlet extends HttpServlet implements XmlaConstants {
         } catch (Throwable t) {
             LOGGER.error("Unable to unmarshall SOAP message", t);
             soapResBody = handleFault(t, soapResCharEncoding);
-            marshallSoapMessage(outputStream, soapResCharEncoding, soapResHeader, soapResBody);
+            marshallSoapMessage(outputStream, soapResCharEncoding,
+                                soapResHeader, soapResBody);
             return;
         }
 
@@ -165,7 +169,8 @@ public abstract class XmlaServlet extends HttpServlet implements XmlaConstants {
         } catch (Throwable t) {
             LOGGER.error("Errors when invoking callbacks", t);
             soapResBody = handleFault(t, soapResCharEncoding);
-            marshallSoapMessage(outputStream, soapResCharEncoding, soapResHeader, soapResBody);
+            marshallSoapMessage(outputStream, soapResCharEncoding,
+                                soapResHeader, soapResBody);
             return;
         }
         // freeze context binding
@@ -177,12 +182,17 @@ public abstract class XmlaServlet extends HttpServlet implements XmlaConstants {
             }
 
             // process application specified SOAP header here
-            soapResHeader = handleSoapHeader(hdrElem,response.getCharacterEncoding(), context);
+            soapResHeader = handleSoapHeader(hdrElem,
+                                             response.getCharacterEncoding(),
+                                             context);
 
             // process XML/A request
-            soapResBody = handleSoapBody(hdrElem, bodyElem, response.getCharacterEncoding(), context);
+            soapResBody = handleSoapBody(hdrElem, bodyElem,
+                                         response.getCharacterEncoding(),
+                                         context);
 
-            marshallSoapMessage(outputStream, soapResCharEncoding, soapResHeader, soapResBody);
+            marshallSoapMessage(outputStream, soapResCharEncoding,
+                                soapResHeader, soapResBody);
         } catch (Throwable t) {
             LOGGER.error("Errors when handling XML/A message", t);
             soapResBody = handleFault(t, soapResCharEncoding);
@@ -245,7 +255,8 @@ public abstract class XmlaServlet extends HttpServlet implements XmlaConstants {
             DataSourcesConfig.DataSources dataSources = new DataSourcesConfig.DataSources(doc);
             xmlaHandler = new XmlaHandler(dataSources, catalogLocator);
         } catch (XOMException e) {
-            throw Util.newError(e, "Failed to parse data sources config '" + dataSourcesConfigUrl.toExternalForm() + "'");
+            throw Util.newError(e, "Failed to parse data sources config '" +
+                                dataSourcesConfigUrl.toExternalForm() + "'");
         }
     }
 
@@ -266,12 +277,14 @@ public abstract class XmlaServlet extends HttpServlet implements XmlaConstants {
                 try {
                     Class cls = Class.forName(className);
                     if (XmlaRequestCallback.class.isAssignableFrom(cls)) {
-                        XmlaRequestCallback callback = (XmlaRequestCallback) cls.newInstance();
+                        XmlaRequestCallback callback =
+                            (XmlaRequestCallback) cls.newInstance();
 
                         try {
                             callback.init(servletConfig);
                         } catch (Exception e) {
-                            LOGGER.warn("Failed to initialize callback '" + className + "'", e);
+                            LOGGER.warn("Failed to initialize callback '" +
+                                        className + "'", e);
                             continue nextCallback;
                         }
 
@@ -279,10 +292,13 @@ public abstract class XmlaServlet extends HttpServlet implements XmlaConstants {
                         count++;
 
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.info("Register callback '" + className + "'");
+                            LOGGER.info("Register callback '" +
+                                        className + "'");
                         }
                     } else {
-                        LOGGER.warn("'" + className + "' is not an implementation of '" + XmlaRequestCallback.class + "'");
+                        LOGGER.warn("'" + className +
+                                    "' is not an implementation of '" +
+                                    XmlaRequestCallback.class + "'");
                     }
                 } catch (ClassNotFoundException cnfe) {
                     LOGGER.warn("Callback class '" + className + "' not found", cnfe);

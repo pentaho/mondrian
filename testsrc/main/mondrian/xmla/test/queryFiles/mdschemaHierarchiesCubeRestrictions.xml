@@ -54,8 +54,8 @@
           <HIERARCHY_UNIQUE_NAME>[Store Size in SQFT]</HIERARCHY_UNIQUE_NAME>
           <HIERARCHY_CAPTION>Store Size in SQFT</HIERARCHY_CAPTION>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-          <DEFAULT_MEMBER>[Store Size in SQFT].[All Store Size in SQFT]</DEFAULT_MEMBER>
-          <ALL_MEMBER>[Store Size in SQFT].[All Store Size in SQFT]</ALL_MEMBER>
+          <DEFAULT_MEMBER>[Store Size in SQFT].[All Store Size in SQFTs]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Store Size in SQFT].[All Store Size in SQFTs]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
 	</row>
 	<row>
@@ -67,8 +67,8 @@
           <HIERARCHY_UNIQUE_NAME>[Store Type]</HIERARCHY_UNIQUE_NAME>
           <HIERARCHY_CAPTION>Store Type</HIERARCHY_CAPTION>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-          <DEFAULT_MEMBER>[Store Type].[All Store Type]</DEFAULT_MEMBER>
-          <ALL_MEMBER>[Store Type].[All Store Type]</ALL_MEMBER>
+          <DEFAULT_MEMBER>[Store Type].[All Store Types]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Store Type].[All Store Types]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
 	</row>
 	<row>
@@ -157,8 +157,8 @@
           <HIERARCHY_UNIQUE_NAME>[Education Level]</HIERARCHY_UNIQUE_NAME>
           <HIERARCHY_CAPTION>Education Level</HIERARCHY_CAPTION>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-          <DEFAULT_MEMBER>[Education Level].[All Education Level]</DEFAULT_MEMBER>
-          <ALL_MEMBER>[Education Level].[All Education Level]</ALL_MEMBER>
+          <DEFAULT_MEMBER>[Education Level].[All Education Levels]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Education Level].[All Education Levels]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
 	</row>
 	<row>
@@ -196,8 +196,8 @@
           <HIERARCHY_UNIQUE_NAME>[Yearly Income]</HIERARCHY_UNIQUE_NAME>
           <HIERARCHY_CAPTION>Yearly Income</HIERARCHY_CAPTION>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-          <DEFAULT_MEMBER>[Yearly Income].[All Yearly Income]</DEFAULT_MEMBER>
-          <ALL_MEMBER>[Yearly Income].[All Yearly Income]</ALL_MEMBER>
+          <DEFAULT_MEMBER>[Yearly Income].[All Yearly Incomes]</DEFAULT_MEMBER>
+          <ALL_MEMBER>[Yearly Income].[All Yearly Incomes]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
 	</row>
       </root>

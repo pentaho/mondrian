@@ -1154,13 +1154,10 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 SchemaReader schemaReader = cube.getSchemaReader(role);
                 final Dimension measuresDimension = cube.getDimensions()[0];
                 final Hierarchy measuresHierarchy = measuresDimension.getHierarchies()[0];
+                // #getLevelMembers() already returns both stored and calculated members
                 Member[] storedMembers = schemaReader.getLevelMembers(measuresHierarchy.getLevels()[0]);
                 for (int j = 0; j < storedMembers.length; j++) {
                     emitMember(response, connection, storedMembers[j], cube);
-                }
-                List calculatedMembers = schemaReader.getCalculatedMembers(measuresHierarchy);
-                for (Iterator it = calculatedMembers.iterator(); it.hasNext();) {
-                    emitMember(response, connection, (Member) it.next(), cube);
                 }
             }
         }
