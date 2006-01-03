@@ -15,6 +15,8 @@ import mondrian.olap.type.Type;
 import mondrian.olap.type.StringType;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.SymbolType;
+import mondrian.calc.*;
+import mondrian.calc.impl.ConstantCalc;
 
 import java.io.PrintWriter;
 
@@ -115,7 +117,7 @@ public class Literal extends ExpBase {
         return type;
     }
 
-    public Type getTypeX() {
+    public Type getType() {
         switch (type) {
         case Category.Symbol:
             return new SymbolType();
@@ -140,6 +142,10 @@ public class Literal extends ExpBase {
         return o;
     }
 
+    public Calc accept(ExpCompiler compiler) {
+        return new ConstantCalc(getType(), o);
+    }
+
     public Object getValue() {
         return o;
     }
@@ -152,9 +158,6 @@ public class Literal extends ExpBase {
         }
     }
 
-    public boolean dependsOn(Dimension dimension) {
-        return false;
-    }
 }
 
 // End Literal.java

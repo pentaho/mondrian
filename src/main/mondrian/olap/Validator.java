@@ -9,6 +9,8 @@
 */
 package mondrian.olap;
 
+import mondrian.olap.fun.ParameterFunDef;
+
 /**
  * Provides context necessary to resolve identifiers to objects, function
  * calls to specific functions.
@@ -73,16 +75,8 @@ public interface Validator {
      * @param conversionCount in/out count of number of conversions performed;
      *             is incremented if the conversion is non-trivial (for
      *             example, converting a member to a level).
-     *
-     * @see #convert
      */
     boolean canConvert(Exp fromExp, int to, int[] conversionCount);
-
-    /**
-     * Adds a casting function, if necessary, to ensure that an expression is
-     * of a given type. Throws an error if conversion is not possible.
-     */
-    Exp convert(Exp fromExp, int to);
 
     /**
      * Returns the table of function and operator definitions.
@@ -93,7 +87,7 @@ public interface Validator {
      * Creates or retrieves the parameter corresponding to a "Parameter" or
      * "ParamRef" function call.
      */
-    Parameter createOrLookupParam(FunCall call);
+    Parameter createOrLookupParam(ParameterFunDef funDef, Exp[] args);
 }
 
 // End Validator.java

@@ -427,7 +427,7 @@ public class StandAlone {
 
         System.out.println(indentString + "Level " + level.getName());
 
-        level.unparse(new PrintWriter(System.out));
+        System.out.print(level.getUniqueName());
     }
 }
 

@@ -12,10 +12,9 @@
 
 package mondrian.olap;
 
-import org.apache.log4j.Logger;
-
 import mondrian.olap.type.Type;
-import mondrian.olap.type.SetType;
+
+import org.apache.log4j.Logger;
 
 /**
  * Skeleton implementation of {@link NamedSet} interface.
@@ -44,33 +43,24 @@ class SetBase extends OlapElementBase implements NamedSet {
         return LOGGER;
     }
 
-    // from Element
-    public Object getObject() {
-        return null;
-    }
     public String getUniqueName() {
         return "[" + name + "]";
     }
+
     public String getName() {
         return name;
     }
+
     public String getQualifiedName() {
         return null;
     }
+
     public String getDescription() {
         return null;
     }
 
-    public int getCategory() {
-        return Category.Set;
-    }
-
-    public Type getTypeX() {
-        return new SetType(exp.getTypeX());
-    }
-
     public Hierarchy getHierarchy() {
-        return exp.getTypeX().getHierarchy();
+        return exp.getType().getHierarchy();
     }
 
     public Dimension getDimension() {
@@ -85,31 +75,17 @@ class SetBase extends OlapElementBase implements NamedSet {
         this.name = name;
     }
 
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
+    public Exp getExp() {
+        return exp;
     }
 
-    public Exp accept(Validator validator) {
-        // A set is sometimes used in more than one cube. So, clone the
-        // expression and re-validate every time it is used.
-        //
-        // But keep the expression wrapped in a NamedSet, so that the
-        // expression is evaluated once per query. (We don't want the
-        // expression to be evaluated context-sensitive.)
-        final Exp clonedExp = (Exp) exp.clone();
-        final Exp exp3 = clonedExp.accept(validator);
-        return new SetBase(name, exp3);
+    public NamedSet validate(Validator validator) {
+        Exp exp2 = validator.validate(exp, false);
+        return new SetBase(name, exp2);
     }
 
-    public void childrenAccept(Visitor visitor) {
-    }
-
-    public boolean dependsOn(Dimension dimension) {
-        return exp.dependsOn(dimension);
-    }
-
-    public Object evaluate(Evaluator evaluator) {
-        return evaluator.evaluateNamedSet(name, exp);
+    public Type getType() {
+        return exp.getType();
     }
 }
 

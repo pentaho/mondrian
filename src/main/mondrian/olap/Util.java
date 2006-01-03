@@ -22,9 +22,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
-import mondrian.olap.fun.FunUtil;
+import mondrian.olap.fun.*;
 import mondrian.resource.MondrianResource;
 import mondrian.util.Format;
+import mondrian.mdx.*;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.
@@ -39,7 +40,7 @@ public class Util extends XOMUtil {
 
     private static final Logger LOGGER = Logger.getLogger(Util.class);
 
-    public static final Object nullValue = new NullCellValue();
+    public static final Object nullValue = new Double(FunUtil.DoubleNull);
 
     /**
      * Cumulative time spent accessing the database.
@@ -539,7 +540,22 @@ public class Util extends XOMUtil {
     }
 
     public static OlapElement lookup(Query q, String[] nameParts) {
-        return (OlapElement) lookup(q, nameParts, false);
+        final Exp exp = lookup(q, nameParts, false);
+        if (exp instanceof MemberExpr) {
+            MemberExpr memberExpr = (MemberExpr) exp;
+            return memberExpr.getMember();
+        } else if (exp instanceof LevelExpr) {
+            LevelExpr levelExpr = (LevelExpr) exp;
+            return levelExpr.getLevel();
+        } else if (exp instanceof HierarchyExpr) {
+            HierarchyExpr hierarchyExpr = (HierarchyExpr) exp;
+            return hierarchyExpr.getHierarchy();
+        } else if (exp instanceof DimensionExpr) {
+            DimensionExpr dimensionExpr = (DimensionExpr) exp;
+            return dimensionExpr.getDimension();
+        } else {
+            throw Util.newInternal("Not an olap element: " + exp);
+        }
     }
 
     /**
@@ -585,16 +601,42 @@ public class Util extends XOMUtil {
                         q.getCube(), namePartsButOne, false, Category.Member);
                 if (olapElement != null &&
                         isValidProperty((Member) olapElement, propertyName)) {
-                    return new FunCall(
+                    return new UnresolvedFunCall(
                             propertyName, Syntax.Property, new Exp[] {
-                                olapElement});
+                                createExpr(olapElement)});
                 }
             }
 
             throw MondrianResource.instance().MdxChildObjectNotFound.ex(
                     fullName, q.getCube().getQualifiedName());
         }
-        return olapElement;
+        return createExpr(olapElement);
+    }
+
+    /**
+     * Converts an olap element (dimension, hierarchy, level or member) into
+     * an expression representing a usage of that element in an MDX statement.
+     */
+    public static Exp createExpr(OlapElement element)
+    {
+        if (element instanceof Member) {
+            Member member = (Member) element;
+            return new MemberExpr(member);
+        } else if (element instanceof Level) {
+            Level level = (Level) element;
+            return new LevelExpr(level);
+        } else if (element instanceof Hierarchy) {
+            Hierarchy hierarchy = (Hierarchy) element;
+            return new HierarchyExpr(hierarchy);
+        } else if (element instanceof Dimension) {
+            Dimension dimension = (Dimension) element;
+            return new DimensionExpr(dimension);
+        } else if (element instanceof NamedSet) {
+            NamedSet namedSet = (NamedSet) element;
+            return new NamedSetExpr(namedSet);
+        } else {
+            throw Util.newInternal("Unexpected element type: " + element);
+        }
     }
 
     /**
@@ -768,29 +810,49 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * A <code>NullCellValue</code> is a placeholder value used when cells have
-     * a null value. It is a singleton.
+     * Insert a call to this method if you want to flag a piece of
+     * undesirable code.
+     *
+     * @deprecated
      */
-    public static class NullCellValue implements Comparable {
-        public String toString() {
-            return "#NULL";
-        }
+    public static void deprecated(String reason) {
+        throw new UnsupportedOperationException(reason);
+    }
 
-        public int compareTo(Object o) {
-            // Null is less than every other value.
-            if (o == this) {
-                return 0;
-            } else {
-                return -1;
+    public static Member[] addLevelCalculatedMembers(
+            SchemaReader reader,
+            Level level,
+            Member[] members) {
+        List calcMembers = reader.getCalculatedMembers(level.getHierarchy());
+        List calcMembersInThisLevel = new ArrayList();
+        for (int i = 0; i < calcMembers.size(); i++) {
+            Member member = (Member) calcMembers.get(i);
+            if (member.getLevel().equals(level)) {
+                calcMembersInThisLevel.add(member);
             }
         }
-    };
+        if (!calcMembersInThisLevel.isEmpty()) {
+            List newMemberList = new ArrayList(Arrays.asList(members));
+            newMemberList.addAll(calcMembersInThisLevel);
+            members = (Member[])
+                    newMemberList.toArray(new Member[newMemberList.size()]);
+        }
+        return members;
+    }
+
+    /**
+     * Returns an exception which indicates that a particular piece of
+     * functionality should work, but a developer has not implemented it yet.
+     */
+    public static RuntimeException needToImplement(Object o) {
+        throw new UnsupportedOperationException("need to implement " + o);
+    }
 
     public static class ErrorCellValue {
         public String toString() {
             return "#ERR";
         }
-    };
+    }
 
     /**
      * Throws an internal error if condition is not true. It would be called
@@ -1319,10 +1381,6 @@ public class Util extends XOMUtil {
             public void validate(Formula formula) {
             }
 
-            public Exp convert(Exp fromExp, int to) {
-                return FunUtil.convert(fromExp, to, this);
-            }
-
             public boolean canConvert(Exp fromExp, int to, int[] conversionCount) {
                 return true;
             }
@@ -1335,11 +1393,14 @@ public class Util extends XOMUtil {
                 return funTable;
             }
 
-            public Parameter createOrLookupParam(FunCall call) {
+            public Parameter createOrLookupParam(
+                    ParameterFunDef funDef,
+                    Exp[] args) {
                 return null;
             }
         };
     }
+
 }
 
 // End Util.java

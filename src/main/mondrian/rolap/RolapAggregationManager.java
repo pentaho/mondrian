@@ -18,7 +18,6 @@ import mondrian.olap.Level;
 import mondrian.olap.Member;
 import mondrian.olap.Util;
 import mondrian.rolap.agg.CellRequest;
-import mondrian.resource.MondrianResource;
 
 import java.util.Map;
 import java.util.Set;
@@ -36,7 +35,6 @@ import java.util.Set;
  * @version $Id$
  **/
 public abstract class RolapAggregationManager implements CellReader {
-
 
     /**
      * Creates a request to evaluate the cell identified by
@@ -206,6 +204,9 @@ public abstract class RolapAggregationManager implements CellReader {
 
     public abstract String getDrillThroughSQL(CellRequest request);
 
+    public int getMissCount() {
+        return 0; // never lies
+    }
 }
 
 // End RolapAggregationManager.java

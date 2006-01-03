@@ -11,10 +11,8 @@
 */
 package mondrian.jolap;
 
-import mondrian.olap.Exp;
-import mondrian.olap.FunCall;
-import mondrian.olap.Literal;
-import mondrian.olap.Util;
+import mondrian.mdx.UnresolvedFunCall;
+import mondrian.olap.*;
 
 import javax.olap.OLAPException;
 import javax.olap.query.dimensionfilters.RankingMemberFilter;
@@ -48,15 +46,15 @@ class MondrianRankingMemberFilter extends MondrianDataBasedMemberFilter
     Exp _convert(Exp exp) throws OLAPException {
         if (type == RankingTypeEnum.BOTTOM) {
             if (bottomPercent) {
-                return new FunCall("BottomPercent", new Exp[] {exp, Literal.create(new Integer(bottom))});
+                return new UnresolvedFunCall("BottomPercent", new Exp[] {exp, Literal.create(new Integer(bottom))});
             } else {
-                return new FunCall("Bottom", new Exp[] {exp, Literal.create(new Integer(bottom))});
+                return new UnresolvedFunCall("Bottom", new Exp[] {exp, Literal.create(new Integer(bottom))});
             }
         } else if (type == RankingTypeEnum.TOP) {
             if (topPercent) {
-                return new FunCall("TopPercent", new Exp[] {exp, Literal.create(new Integer(top))});
+                return new UnresolvedFunCall("TopPercent", new Exp[] {exp, Literal.create(new Integer(top))});
             } else {
-                return new FunCall("Top", new Exp[] {exp, Literal.create(new Integer(top))});
+                return new UnresolvedFunCall("Top", new Exp[] {exp, Literal.create(new Integer(top))});
             }
         } else if (type == RankingTypeEnum.TOP_BOTTOM) {
             throw new UnsupportedOperationException();

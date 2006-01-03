@@ -11,15 +11,14 @@
 */
 
 package mondrian.rolap;
+import mondrian.calc.Calc;
 import mondrian.olap.*;
 import mondrian.olap.fun.MondrianEvaluationException;
-import mondrian.rolap.agg.AggregationManager;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.agg.AggregationManager;
 
 import org.apache.log4j.Logger;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.*;
 
 /**
@@ -36,78 +35,49 @@ class RolapResult extends ResultBase {
     private static final int MAX_AGGREGATION_PASS_COUNT = 5;
 
     private final RolapEvaluator evaluator;
-    /**
-     * Evaluator containing context resulting from evaluating the slicer.
-     */
-    private RolapEvaluator slicerEvaluator;
     private final CellKey point;
     private final Map cellValues;
     private final FastBatchingCellReader batchingReader;
     AggregatingCellReader aggregatingReader = new AggregatingCellReader();
     private final int[] modulos;
-    private final Random random =
-            Util.createRandom(MondrianProperties.instance().TestSeed.get());
 
-    /**
-     * Maps expressions to the dimensions which they are independent of.
-     */
-    private final Map expIndDims = new HashMap();
-
-
-    /**
-     * Maps the names of sets to their values. Populated on demand.
-     */
-    private final Map namedSetValues = new HashMap();
-
-    RolapResult(Query query) {
+    RolapResult(Query query, boolean execute) {
         super(query, new RolapAxis[query.axes.length]);
-
 
         this.point = new CellKey(new int[query.axes.length]);
         final int expDeps = MondrianProperties.instance().TestExpDependencies.get();
         if (expDeps > 0) {
-            this.evaluator = new DependencyTestingEvaluator(this, expDeps);
+            this.evaluator = new RolapDependencyTestingEvaluator(this, expDeps);
         } else {
             final RolapEvaluator.RolapEvaluatorRoot root =
-                    new RolapEvaluator.RolapEvaluatorRoot(this);
+                    new RolapResultEvaluatorRoot(this);
             this.evaluator = new RolapEvaluator(root);
         }
         RolapCube rcube = (RolapCube) query.getCube();
         this.batchingReader = new FastBatchingCellReader(rcube);
         this.cellValues = new HashMap();
+        this.modulos = new int[axes.length + 1];
+        if (!execute) {
+            return;
+        }
 
         try {
             for (int i = -1; i < axes.length; i++) {
                 QueryAxis axis;
+                final Calc calc;
                 if (i == -1) {
-                    if (query.slicer != null) {
-                        FunCall call = new FunCall(
-                                "{}",
-                                Syntax.Braces,
-                                new Exp[] {
-                                    new FunCall(
-                                            "()",
-                                            Syntax.Parentheses,
-                                            new Exp[] {
-                                                query.slicer}
-                                    )});
-                        Exp call2 = call.accept(query.createValidator());
-                        axis = new QueryAxis(
-                                false,
-                                call2,
-                                AxisOrdinal.Slicer,
-                                QueryAxis.SubtotalVisibility.Undefined);
-                    } else {
-                        axis = null;
-                    }
+                    axis = query.slicerAxis;
+                    calc = query.slicerCalc;
                 } else {
                     axis = query.axes[i];
+                    calc = query.axisCalcs[i];
                 }
 
                 int attempt = 0;
                 while (true) {
                     evaluator.setCellReader(batchingReader);
-                    RolapAxis axisResult = executeAxis(evaluator.push(), axis);
+                    RolapAxis axisResult =
+                            executeAxis(evaluator.push(), axis, calc);
                     Util.discard(axisResult);
                     evaluator.clearExpResultCache();
                     if (!batchingReader.loadAggregations()) {
@@ -121,7 +91,7 @@ class RolapResult extends ResultBase {
                 }
 
                 evaluator.setCellReader(aggregatingReader);
-                RolapAxis axisResult = executeAxis(evaluator.push(), axis);
+                RolapAxis axisResult = executeAxis(evaluator.push(), axis, calc);
                 evaluator.clearExpResultCache();
 
                 if (i == -1) {
@@ -147,7 +117,6 @@ class RolapResult extends ResultBase {
                         }
                         evaluator.setContext(member);
                     }
-                    slicerEvaluator = (RolapEvaluator) evaluator.push();
                 } else {
                     this.axes[i] = axisResult;
                 }
@@ -179,7 +148,6 @@ class RolapResult extends ResultBase {
             // p[0] = (23 % modulo[1]) / modulo[0] = (23 % 4) / 1 = 3
             // p[1] = (23 % modulo[2]) / modulo[1] = (23 % 12) / 4 = 2
             // p[2] = (23 % modulo[3]) / modulo[2] = (23 % 24) / 12 = 1
-            this.modulos = new int[axes.length + 1];
             int modulo = modulos[0] = 1;
             for (int i = 0; i < axes.length; i++) {
                 modulo *= axes[i].positions.length;
@@ -213,7 +181,8 @@ class RolapResult extends ResultBase {
         return new RolapCell(this, getCellOrdinal(pos), value);
     }
 
-    private RolapAxis executeAxis(Evaluator evaluator, QueryAxis axis) {
+    private RolapAxis executeAxis(
+            Evaluator evaluator, QueryAxis axis, Calc axisCalc) {
         Position[] positions;
         if (axis == null) {
             // Create an axis containing one position with no members (not
@@ -223,9 +192,8 @@ class RolapResult extends ResultBase {
             positions = new Position[] {position};
 
         } else {
-            Exp exp = axis.set;
             evaluator.setNonEmpty(axis.nonEmpty);
-            Object value = exp.evaluate(evaluator);
+            Object value = axisCalc.evaluate(evaluator);
             evaluator.setNonEmpty(false);
             if (value == null) {
                 value = Collections.EMPTY_LIST;
@@ -267,18 +235,17 @@ class RolapResult extends ResultBase {
 
                 // Retrieve the aggregations collected.
                 //
-                //
                 if (!batchingReader.loadAggregations()) {
                     // We got all of the cells we needed, so the result must be
                     // correct.
                     return;
                 }
                 if (count++ > MAX_AGGREGATION_PASS_COUNT) {
-                    if (evaluator instanceof DependencyTestingEvaluator) {
+                    if (evaluator instanceof RolapDependencyTestingEvaluator) {
                         // The dependency testing evaluator can trigger new
                         // requests every cycle. So let is run as normal for
                         // the first N times, then run it disabled.
-                        ((DependencyTestingEvalutorRoot) evaluator.root).disabled = true;
+                        ((RolapDependencyTestingEvaluator.DteRoot) evaluator.root).disabled = true;
                         if (count > MAX_AGGREGATION_PASS_COUNT * 2) {
                             throw Util.newInternal("Query required more than "
                                 + count + " iterations");
@@ -295,33 +262,18 @@ class RolapResult extends ResultBase {
         }
     }
 
-    /**
-     * Evaluates a named set.
-     *
-     * <p>A given set is only evaluated once each time a query is executed; the
-     * result is added to the {@link #namedSetValues} cache on first execution
-     * and re-used.
-     *
-     * <p>Named sets are always evaluated in the context of the slicer.
-     */
-    Object evaluateNamedSet(String name, Exp exp) {
-        Object value = namedSetValues.get(name);
-        if (value == null) {
-            value = evaluateExp(exp, (RolapEvaluator) slicerEvaluator.push());
-
-            namedSetValues.put(name, value);
-        }
-        return value;
+    boolean isDirty() {
+        return batchingReader.isDirty();
     }
 
-    private Object evaluateExp(Exp exp, RolapEvaluator evaluator) {
+    private Object evaluateExp(Calc calc, Evaluator evaluator) {
         int attempt = 0;
         boolean dirty = batchingReader.isDirty();
         while (true) {
             RolapEvaluator ev = (RolapEvaluator) evaluator.push();
 
             ev.setCellReader(batchingReader);
-            Object preliminaryValue = exp.evaluate(ev);
+            Object preliminaryValue = calc.evaluate(ev);
             Util.discard(preliminaryValue);
             if (!batchingReader.loadAggregations()) {
                 break;
@@ -341,7 +293,7 @@ class RolapResult extends ResultBase {
         }
         RolapEvaluator ev = (RolapEvaluator) evaluator.push();
         ev.setCellReader(aggregatingReader);
-        Object value = exp.evaluate(ev);
+        Object value = calc.evaluate(ev);
         return value;
     }
 
@@ -352,14 +304,15 @@ class RolapResult extends ResultBase {
     private static class AggregatingCellReader implements CellReader {
         private final RolapAggregationManager aggMan =
             AggregationManager.instance();
-        /**
-         * Overrides {@link CellReader#get}. Returns <code>null</code> if no
-         * aggregation contains the required cell.
-         **/
+
         // implement CellReader
         public Object get(Evaluator evaluator) {
             final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
             return aggMan.getCellFromCache(rolapEvaluator.getCurrentMembers());
+        }
+
+        public int getMissCount() {
+            return aggMan.getMissCount();
         }
     }
 
@@ -378,19 +331,22 @@ class RolapResult extends ResultBase {
                 } catch (MondrianEvaluationException e) {
                     o = e;
                 }
-                if (o != null && o != RolapUtil.valueNotReadyException) {
-                    CellKey key = point.copy();
-                    cellValues.put(key, o);
-                    // Compute the formatted value, to ensure that any needed
-                    // values are in the cache.
-                    try {
-                        Cell cell = getCell(point.ordinals);
-                        Util.discard(cell.getFormattedValue());
-                    } catch (MondrianEvaluationException e) {
-                        // ignore
-                    } catch (Throwable e) {
-                        Util.discard(e);
-                    }
+                if (o == null ||
+                        o == Util.nullValue ||
+                        o == RolapUtil.valueNotReadyException) {
+                    continue;
+                }
+                CellKey key = point.copy();
+                cellValues.put(key, o);
+                // Compute the formatted value, to ensure that any needed
+                // values are in the cache.
+                try {
+                    Cell cell = getCell(point.ordinals);
+                    Util.discard(cell.getFormattedValue());
+                } catch (MondrianEvaluationException e) {
+                    // ignore
+                } catch (Throwable e) {
+                    Util.discard(e);
                 }
             }
         } else {
@@ -443,6 +399,11 @@ class RolapResult extends ResultBase {
         return cellEvaluator;
     }
 
+    Evaluator getRootEvaluator()
+    {
+        return evaluator;
+    }
+
     Evaluator getEvaluator(int[] pos) {
         // Set up evaluator's context, so that context-dependent format
         // strings work properly.
@@ -467,250 +428,50 @@ class RolapResult extends ResultBase {
     }
 
     /**
-     * Evaluator which checks dependencies of expressions.
+     * Extension to {@link RolapEvaluator.RolapEvaluatorRoot} which is capable
+     * of evaluating named sets.<p/>
      *
-     * <p>For each expression evaluation, this valuator evaluates each
-     * expression more times, and makes sure that the results of the expression
-     * are independent of dimensions which the expression claims to be
-     * independent of.
+     * A given set is only evaluated once each time a query is executed; the
+     * result is added to the {@link #namedSetValues} cache on first execution
+     * and re-used.<p/>
      *
-     * <p>Since it evaluates each expression twice, it also exposes function
-     * implementations which change the context of the evaluator.
+     * Named sets are always evaluated in the context of the slicer.<p/>
      */
-    private class DependencyTestingEvaluator extends RolapEvaluator {
-
-        /**
-         * Creates an evaluator.
-         */
-        DependencyTestingEvaluator(RolapResult result, int expDeps) {
-            super(new DependencyTestingEvalutorRoot(result, expDeps));
-        }
-
-        /**
-         * Creates a child evaluator.
-         */
-        private DependencyTestingEvaluator(
-                RolapEvaluatorRoot root,
-                DependencyTestingEvaluator evaluator,
-                CellReader cellReader,
-                Member[] cloneCurrentMembers) {
-            super(root, evaluator, cellReader, cloneCurrentMembers);
-        }
-
-        /**
-         * Returns the dimensions an expression depends on, caching the result.
-         */
-        private Dimension[] getIndependentDimensions(Exp exp) {
-            Dimension[] indDims = (Dimension[]) expIndDims.get(exp);
-            if (indDims == null) {
-                List indDimList = new ArrayList();
-                final Dimension[] dims = root.cube.getDimensions();
-                for (int i = 0; i < dims.length; i++) {
-                    Dimension dim = dims[i];
-                    if (!exp.dependsOn(dim)) {
-                        indDimList.add(dim);
-                    }
-                }
-                indDims = (Dimension[])
-                        indDimList.toArray(new Dimension[indDimList.size()]);
-                expIndDims.put(exp, indDims);
-            }
-            return indDims;
-        }
-
-        public RolapEvaluator _push() {
-            Member[] cloneCurrentMembers =
-                    (Member[]) this.getCurrentMembers().clone();
-            return new DependencyTestingEvaluator(
-                    root,
-                    this,
-                    cellReader,
-                    cloneCurrentMembers);
-        }
-
-        public Object visit(FunCall funCall) {
-            final DependencyTestingEvalutorRoot dteRoot =
-                    (DependencyTestingEvalutorRoot) root;
-            if (dteRoot.faking) {
-                ++dteRoot.fakeCallCount;
-            } else {
-                ++dteRoot.callCount;
-            }
-            // Evaluate the call for real.
-            final Object result = super.visit(funCall);
-            if (batchingReader.isDirty()) {
-                return result;
-            }
-
-            // Change one of the allegedly independent dimensions and evaluate
-            // again.
-            //
-            // Don't do it if the faking is disabled,
-            // or if we're already faking another dimension,
-            // or if we're filtering out nonempty cells (which makes us
-            // dependent on everything),
-            // or if the ratio of fake evals to real evals is too high (which
-            // would make us too slow).
-            if (dteRoot.disabled ||
-                    dteRoot.faking ||
-                    isNonEmpty() ||
-                    (double) dteRoot.fakeCallCount >
-                    (double) dteRoot.callCount * random.nextDouble() * 2 *
-                    dteRoot.expDeps) {
-                return result;
-            }
-            Dimension[] independentDimensions =
-                    getIndependentDimensions(funCall);
-            if (independentDimensions.length == 0) {
-                return result;
-            }
-            dteRoot.faking = true;
-            ++dteRoot.fakeCount;
-            ++dteRoot.fakeCallCount;
-            final int i = random.nextInt(independentDimensions.length);
-            final Member saveMember = getContext(independentDimensions[i]);
-            final Member otherMember =
-                    chooseOtherMember(saveMember, query.getSchemaReader(false));
-            setContext(otherMember);
-            final Object otherResult = super.visit(funCall);
-            if (!equals(otherResult, result)) {
-                final Member[] members = getCurrentMembers();
-                final StringBuffer buf = new StringBuffer();
-                for (int j = 0; j < members.length; j++) {
-                    if (j > 0) {
-                        buf.append(", ");
-                    }
-                    buf.append(members[j].getUniqueName());
-                }
-                throw Util.newInternal(
-                        "Expression '" + funCall.toMdx() +
-                        "' claims to be independent of dimension " +
-                        saveMember.getDimension() + " but is not; context is {" +
-                        buf.toString() + "}; First result: " +
-                        toString(result) + ", Second result: " +
-                        toString(otherResult));
-            }
-            // Restore context.
-            setContext(saveMember);
-            dteRoot.faking = false;
-            return result;
-        }
-
-        /**
-         * Chooses another member of the same hierarchy.
-         * The member will come from all levels with the same probability.
-         * For example, given [Gender].[M], the result has a
-         * @param save
-         * @param schemaReader
-         * @return
-         */
-        private Member chooseOtherMember(
-                final Member save, SchemaReader schemaReader) {
-            final Hierarchy hierarchy = save.getHierarchy();
-            while (true) {
-                // Choose a random level.
-                final Level[] levels = hierarchy.getLevels();
-                final int levelDepth = random.nextInt(levels.length) + 1;
-                Member member = null;
-                for (int i = 0; i < levelDepth; i++) {
-                    Member[] members;
-                    if (i == 0) {
-                        members = schemaReader.getLevelMembers(levels[i]);
-                    } else {
-                        members = schemaReader.getMemberChildren(member);
-                    }
-                    if (members.length == 0) {
-                        break;
-                    }
-                    member = members[random.nextInt(members.length)];
-                }
-                // If the member chosen happens to be the same as the original
-                // member, try again.
-                if (member != save) {
-                    return member;
-                }
-            }
-        }
-
-        private boolean equals(Object o1, Object o2) {
-            if (o1 == null) {
-                return o2 == null;
-            }
-            if (o2 == null) {
-                return false;
-            }
-            if (o1 instanceof Object[]) {
-                if (o2 instanceof Object[]) {
-                    Object[] a1 = (Object[]) o1;
-                    Object[] a2 = (Object[]) o2;
-                    if (a1.length == a2.length) {
-                        for (int i = 0; i < a1.length; i++) {
-                            if (!equals(a1[i], a2[i])) {
-                                return false;
-                            }
-                        }
-                        return true;
-                    }
-                }
-                return false;
-            }
-            if (o1 instanceof List) {
-                if (o2 instanceof List) {
-                    return equals(
-                            ((List) o1).toArray(),
-                            ((List) o2).toArray());
-                }
-                return false;
-            }
-            return o1.equals(o2);
-        }
-
-        private String toString(Object o) {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            toString(o, pw);
-            return sw.toString();
-        }
-
-        private void toString(Object o, PrintWriter pw) {
-            if (o instanceof Object[]) {
-                Object[] a = (Object[]) o;
-                pw.print("{");
-                for (int i = 0; i < a.length; i++) {
-                    Object o1 = a[i];
-                    if (i > 0) {
-                        pw.print(", ");
-                    }
-                    toString(o1, pw);
-                }
-                pw.print("}");
-            } else if (o instanceof List) {
-                List list = (List) o;
-                toString(list.toArray(), pw);
-            } else if (o instanceof Member) {
-                Member member = (Member) o;
-                pw.print(member.getUniqueName());
-            } else {
-                pw.print(o);
-            }
-        }
-    }
-
-    private static class DependencyTestingEvalutorRoot
+    protected static class RolapResultEvaluatorRoot
             extends RolapEvaluator.RolapEvaluatorRoot {
-        final int expDeps;
-        int callCount;
-        int fakeCallCount;
-        int fakeCount;
-        boolean faking;
-        boolean disabled;
+        /**
+         * Maps the names of sets to their values. Populated on demand.
+         */
+        private final Map namedSetValues = new HashMap();
 
-        DependencyTestingEvalutorRoot(RolapResult result, int expDeps) {
-            super(result);
-            this.expDeps = expDeps;
+        /**
+         * Evaluator containing context resulting from evaluating the slicer.
+         */
+        private RolapEvaluator slicerEvaluator;
+        private final RolapResult result;
+
+        public RolapResultEvaluatorRoot(RolapResult result) {
+            super(result.query);
+            this.result = result;
         }
 
+        protected void init(Evaluator evaluator) {
+            slicerEvaluator = (RolapEvaluator) evaluator;
+        }
+
+        protected Object evaluateNamedSet(String name, Exp exp) {
+            Object value = namedSetValues.get(name);
+            if (value == null) {
+                final RolapEvaluator.RolapEvaluatorRoot root =
+                        ((RolapEvaluator) slicerEvaluator).root;
+                final Calc calc = root.getCompiled(exp, false);
+                value = result.evaluateExp(calc, slicerEvaluator.push());
+                namedSetValues.put(name, value);
+            }
+            return value;
+        }
     }
+
 }
 
 // End RolapResult.java

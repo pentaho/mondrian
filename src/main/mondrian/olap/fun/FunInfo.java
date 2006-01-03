@@ -48,8 +48,9 @@ public class FunInfo implements Comparable {
         this.name = funDef.getName();
         this.description = funDef.getDescription();
         this.returnTypes = new int[] { funDef.getReturnCategory() };
-        this.parameterTypes = new int[][] { funDef.getParameterTypes() };
+        this.parameterTypes = new int[][] { funDef.getParameterCategories() };
     }
+
     FunInfo(MultiResolver multiResolver) {
         this.syntax = multiResolver.getSyntax();
         this.name = multiResolver.getName();
@@ -59,11 +60,11 @@ public class FunInfo implements Comparable {
         this.returnTypes = new int[signatures.length];
         this.parameterTypes = new int[signatures.length][];
         for (int i = 0; i < signatures.length; i++) {
-            this.returnTypes[i] = FunUtil.decodeReturnType(signatures[i]);
-            this.parameterTypes[i] = FunUtil.decodeParameterTypes(signatures[i]);
+            this.returnTypes[i] = FunUtil.decodeReturnCategory(signatures[i]);
+            this.parameterTypes[i] = FunUtil.decodeParameterCategories(signatures[i]);
         }
     }
-    
+
     FunInfo(Resolver resolver) {
         this.syntax = resolver.getSyntax();
         this.name = resolver.getName();
@@ -101,30 +102,29 @@ public class FunInfo implements Comparable {
 
     /**
      * Returns the description of this function.
-     **/
+     */
     public String getDescription() {
         return this.description;
     }
 
     /**
      * Returns the type of value returned by this function. Values are the same
-     * as those returned by {@link mondrian.olap.Exp#getType}.
-     **/
-    public int[] getReturnTypes() {
+     * as those returned by {@link mondrian.olap.Exp#getCategory()}.
+     */
+    public int[] getReturnCategories() {
         return this.returnTypes;
     }
 
     /**
      * Returns the types of the arguments of this function. Values are the same
-     * as those returned by {@link mondrian.olap.Exp#getType}. The
+     * as those returned by {@link mondrian.olap.Exp#getCategory()}. The
      * 0<sup>th</sup> argument of methods and properties are the object they
      * are applied to. Infix operators have two arguments, and prefix operators
      * have one argument.
-     **/
-    public int[][] getParameterTypes() {
+     */
+    public int[][] getParameterCategories() {
         return this.parameterTypes;
     }
-
 
     public int compareTo(Object o) {
         FunInfo fi = (FunInfo) o;

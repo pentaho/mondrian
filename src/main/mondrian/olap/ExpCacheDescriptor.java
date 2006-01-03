@@ -9,6 +9,9 @@
 */
 package mondrian.olap;
 
+import mondrian.calc.*;
+import mondrian.calc.impl.BetterExpCompiler;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,19 +26,40 @@ import java.util.List;
 public class ExpCacheDescriptor {
     private final Exp exp;
     private int[] dependentDimensionOrdinals;
+    private final Calc calc;
+
+    public ExpCacheDescriptor(Exp exp, Calc calc, Evaluator evaluator) {
+        this.calc = calc;
+        this.exp = exp;
+        computeDepends(calc, evaluator);
+    }
 
     /**
      * Creates a descriptor.
      */
     public ExpCacheDescriptor(Exp exp, Evaluator evaluator) {
+        this(exp, new BetterExpCompiler(evaluator, null));
+    }
+
+    /**
+     * Creates a descriptor.
+     */
+    public ExpCacheDescriptor(Exp exp, ExpCompiler compiler) {
         this.exp = exp;
 
+        // Compile expression.
+        this.calc = compiler.compile(exp);
+
         // Compute list of dependent dimensions.
+        computeDepends(calc, compiler.getEvaluator());
+    }
+
+    private void computeDepends(Calc calc, Evaluator evaluator) {
         final List ordinalList = new ArrayList();
         final Member[] members = evaluator.getMembers();
         for (int i = 0; i < members.length; i++) {
             Dimension dimension = members[i].getDimension();
-            if (exp.dependsOn(dimension)) {
+            if (calc.dependsOn(dimension)) {
                 ordinalList.add(new Integer(i));
             }
         }
@@ -50,6 +74,14 @@ public class ExpCacheDescriptor {
         return exp;
     }
 
+    public Calc getCalc() {
+        return calc;
+    }
+
+    public Object evaluate(Evaluator evaluator) {
+        return calc.evaluate(evaluator);
+    }
+
     /**
      * Returns the ordinals of the dimensions which this expression is
      * dependent upon. When the cache descriptor is used to generate a cache
@@ -58,6 +90,7 @@ public class ExpCacheDescriptor {
     public int[] getDependentDimensionOrdinals() {
         return dependentDimensionOrdinals;
     }
+
 }
 
 // End ExpCacheDescriptor.java

@@ -14,6 +14,10 @@ import mondrian.olap.type.Type;
 import mondrian.olap.type.SetType;
 import mondrian.olap.type.MemberType;
 import mondrian.resource.MondrianResource;
+import mondrian.calc.*;
+import mondrian.calc.impl.AbstractListCalc;
+
+import java.util.List;
 
 /**
  * Definition of Ytd, Qtd, Mtd, Wtd functions.
@@ -33,27 +37,15 @@ class XtdFunDef extends FunDefBase {
             Hierarchy hierarchy = validator.getQuery()
                     .getCube().getTimeDimension()
                     .getHierarchy();
-            return new SetType(
-                    new MemberType(hierarchy, null, null));
+            return new SetType(MemberType.forHierarchy(hierarchy));
         }
-        final Type type = args[0].getTypeX();
+        final Type type = args[0].getType();
         if (type.getHierarchy().getDimension()
                 .getDimensionType() !=
                 DimensionType.TimeDimension) {
             throw MondrianResource.instance().TimeArgNeeded.ex(getName());
         }
         return super.getResultType(validator, args);
-    }
-
-    public boolean callDependsOn(FunCall call, Dimension dimension) {
-        // The zero argument form (e.g. Ytd()) depends on the time dimension.
-        // The one argument form depends upon what its arg depends on.
-        if (call.getArgCount() == 0) {
-            final Type type = call.getTypeX();
-            return type.usesDimension(dimension);
-        } else {
-            return super.callDependsOn(call, dimension);
-        }
     }
 
     private Level getLevel(Evaluator evaluator) {
@@ -70,6 +62,32 @@ class XtdFunDef extends FunDefBase {
             return evaluator.getCube().getWeekLevel();
         default:
             throw levelType.unexpected();
+        }
+    }
+
+    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        final Level level = getLevel(compiler.getEvaluator());
+        switch (call.getArgCount()) {
+        case 0:
+            return new AbstractListCalc(call, new Calc[0]) {
+                public List evaluateList(Evaluator evaluator) {
+                    return periodsToDate(evaluator, level, null);
+                }
+
+                public boolean dependsOn(Dimension dimension) {
+                    return dimension.getDimensionType() ==
+                            mondrian.olap.DimensionType.TimeDimension;
+                }
+            };
+        default:
+            final MemberCalc memberCalc =
+                    compiler.compileMember(call.getArg(0));
+            return new AbstractListCalc(call, new Calc[] {memberCalc}) {
+                public List evaluateList(Evaluator evaluator) {
+                    return periodsToDate(evaluator, level,
+                            memberCalc.evaluateMember(evaluator));
+                }
+            };
         }
     }
 

@@ -13,6 +13,9 @@
 package mondrian.olap;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
+import mondrian.mdx.MemberExpr;
+import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
 
 import java.io.PrintWriter;
 
@@ -55,7 +58,7 @@ public class Parameter extends ExpBase {
         return category;
     }
 
-    public Type getTypeX() {
+    public Type getType() {
         return type;
     }
 
@@ -92,6 +95,11 @@ public class Parameter extends ExpBase {
         return p;
     }
 
+    public Calc accept(ExpCompiler compiler) {
+        // delegate to underlying expression
+        return compiler.compile(exp);
+    }
+
     public String getName() {
         return name;
     }
@@ -111,7 +119,8 @@ public class Parameter extends ExpBase {
         case Category.String:
             return Literal.createString(value);
         case Category.Member:
-            return Util.lookup(query, Util.explode(value));
+            Member member = (Member) Util.lookup(query, Util.explode(value));
+            return new MemberExpr(member);
         default:
             throw Category.instance.badValue(category);
         }
@@ -127,7 +136,7 @@ public class Parameter extends ExpBase {
             // exp can be a unary minus FunCall
             if (exp instanceof FunCall) {
                 FunCall f = (FunCall)exp;
-                if (f.getFunName().equals("-")) {
+                if (f.getFunDef().getName().equals("-")) {
                     Literal lit = (Literal)f.getArg(0);
                     Object o = lit.getValue();
                     if (o instanceof Double) {
@@ -167,7 +176,7 @@ public class Parameter extends ExpBase {
             exp = Literal.createString((String)value);
             break;
         default:
-            exp = (Member)value;
+            exp = new MemberExpr((Member) value);
         }
     }
 
@@ -214,7 +223,7 @@ public class Parameter extends ExpBase {
                 pw.print(getParameterType());
                 break;
             case Category.Member:
-                type.getHierarchy().unparse(pw);
+                pw.print(type.getHierarchy().getUniqueName());
                 break;
             default:
                 throw Category.instance.badValue(category);

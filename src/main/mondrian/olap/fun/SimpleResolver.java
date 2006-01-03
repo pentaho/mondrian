@@ -47,7 +47,7 @@ class SimpleResolver implements Resolver {
 
     public FunDef resolve(
             Exp[] args, Validator validator, int[] conversionCount) {
-        int[] parameterTypes = funDef.getParameterTypes();
+        int[] parameterTypes = funDef.getParameterCategories();
         if (parameterTypes.length != args.length) {
             return null;
         }
@@ -61,7 +61,7 @@ class SimpleResolver implements Resolver {
     }
 
     public boolean requiresExpression(int k) {
-        int[] parameterTypes = funDef.getParameterTypes();
+        int[] parameterTypes = funDef.getParameterCategories();
         return ((k >= parameterTypes.length) ||
                (parameterTypes[k] != Category.Set));
     }

@@ -17,19 +17,16 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import mondrian.olap.Exp;
-import mondrian.olap.FunDef;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.NativeEvaluator;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
 
 /**
- * computes a Filter(set, condition) in SQL
+ * Computes a Filter(set, condition) in SQL.
  *
  * @author av
  * @since Nov 21, 2005
+ * @version $Id$
  */
 public class RolapNativeFilter extends RolapNativeSet {
 
@@ -71,25 +68,30 @@ public class RolapNativeFilter extends RolapNativeSet {
     }
 
     NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
-        if (!isEnabled())
+        if (!isEnabled()) {
             return null;
+        }
         // is this "Filter(<set>, <numeric expr>)"
         String funName = fun.getName();
-        if (!"Filter".equalsIgnoreCase(funName))
+        if (!"Filter".equalsIgnoreCase(funName)) {
             return null;
+        }
 
-        if (args.length != 2)
+        if (args.length != 2) {
             return null;
+        }
 
         // extract the set expression
         CrossJoinArg[] cargs = checkCrossJoinArg(args[0]);
-        if (cargs == null)
+        if (cargs == null) {
             return null;
-        if (isPreferInterpreter(cargs))
+        }
+        if (isPreferInterpreter(cargs)) {
             return null;
+        }
 
         // extract "order by" expression
-        RolapSchemaReader schemaReader = (RolapSchemaReader) evaluator.getSchemaReader();
+        SchemaReader schemaReader = evaluator.getSchemaReader();
         DataSource ds = schemaReader.getDataSource();
         Connection con = null;
         try {

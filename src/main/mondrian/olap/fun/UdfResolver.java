@@ -14,9 +14,17 @@ import mondrian.olap.type.*;
 import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
 import mondrian.spi.UserDefinedFunction;
+import mondrian.calc.*;
+import mondrian.calc.impl.GenericCalc;
+
+import java.io.PrintWriter;
 
 /**
  * Resolver for user-defined functions.
+ *
+ * @author jhyde
+ * @since 2.0
+ * @version $Id$
  */
 public class UdfResolver implements Resolver {
     private final UserDefinedFunction udf;
@@ -48,7 +56,7 @@ public class UdfResolver implements Resolver {
         for (int i = 0; i < parameterTypes.length; i++) {
             Type parameterType = parameterTypes[i];
             final Exp arg = args[i];
-            final Type argType = argTypes[i] = arg.getTypeX();
+            final Type argType = argTypes[i] = arg.getType();
             if (parameterType.equals(argType)) {
                 continue;
             }
@@ -115,12 +123,101 @@ public class UdfResolver implements Resolver {
             return udf.execute(evaluator, args);
         }
 
-        // Be conservative. Assume that this function depends on everything.
-        // This will effectively disable caching.
-        public boolean callDependsOn(FunCall call, Dimension dimension) {
+        public Calc compileCall(FunCall call, ExpCompiler compiler) {
+            final Exp[] args = call.getArgs();
+            Calc[] calcs = new Calc[args.length];
+            Exp[] expCalcs = new Exp[args.length];
+            for (int i = 0; i < args.length; i++) {
+                Exp arg = args[i];
+                final Calc calc = compiler.compile(arg);
+                final Calc scalarCalc = compiler.compileScalar(arg, true);
+                expCalcs[i] = new CalcExp(calc, scalarCalc);
+            }
+            return new CalcImpl(call, calcs, udf, expCalcs);
+        }
+    }
+
+    /**
+     * Expression which evaluates a user-defined function.
+     */
+    private static class CalcImpl extends GenericCalc {
+        private final Calc[] calcs;
+        private final UserDefinedFunction udf;
+        private final Exp[] args;
+
+        public CalcImpl(
+                FunCall call,
+                Calc[] calcs,
+                UserDefinedFunction udf,
+                Exp[] args) {
+            super(call);
+            this.calcs = calcs;
+            this.udf = udf;
+            this.args = args;
+        }
+
+        public Calc[] getCalcs() {
+            return calcs;
+        }
+
+        public Object evaluate(Evaluator evaluator) {
+            return udf.execute(evaluator, args);
+        }
+
+        public boolean dependsOn(Dimension dimension) {
+            // Be pessimistic. This effectively disables expression caching.
             return true;
         }
     }
+
+    /**
+     * Wrapper around a {@link Calc} to make it appear as an {@link Exp}.
+     * Only the {@link #evaluate(mondrian.olap.Evaluator)}
+     * and {@link #evaluateScalar(mondrian.olap.Evaluator)} methods are
+     * supported.
+     */
+    private static class CalcExp implements Exp {
+        private final Calc calc;
+        private final Calc scalarCalc;
+
+        public CalcExp(Calc calc, Calc scalarCalc) {
+            this.calc = calc;
+            this.scalarCalc = scalarCalc;
+        }
+
+        public Object clone() {
+            throw new UnsupportedOperationException();
+        }
+
+        public int getCategory() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Type getType() {
+            throw new UnsupportedOperationException();
+        }
+
+        public void unparse(PrintWriter pw) {
+            throw new UnsupportedOperationException();
+        }
+
+        public Exp accept(Validator validator) {
+            throw new UnsupportedOperationException();
+        }
+
+        public Calc accept(ExpCompiler compiler) {
+            throw new UnsupportedOperationException();
+        }
+
+        public Object evaluate(Evaluator evaluator) {
+            return calc.evaluate(evaluator);
+        }
+
+        public Object evaluateScalar(Evaluator evaluator) {
+            return scalarCalc.evaluate(evaluator);
+        }
+    }
+
 }
 
 // End UdfResolver.java

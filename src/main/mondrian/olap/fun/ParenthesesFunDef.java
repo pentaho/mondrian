@@ -12,6 +12,8 @@
 package mondrian.olap.fun;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
+import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
 
 import java.io.PrintWriter;
 
@@ -48,11 +50,15 @@ class ParenthesesFunDef extends FunDefBase {
 
     public Type getResultType(Validator validator, Exp[] args) {
         Util.assertTrue(args.length == 1);
-        return args[0].getTypeX();
+        return args[0].getType();
     }
 
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         return args[0].evaluate(evaluator);
+    }
+
+    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        return compiler.compile(call.getArg(0));
     }
 }
 

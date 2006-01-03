@@ -21,17 +21,33 @@ import mondrian.olap.Level;
  * @version $Id$
  */
 public class HierarchyType implements Type {
+    private final Dimension dimension;
     private final Hierarchy hierarchy;
 
     /**
      * Creates a type representing a hierarchy.
      */
-    public HierarchyType(Hierarchy hierarchy) {
+    public HierarchyType(Dimension dimension, Hierarchy hierarchy) {
+        this.dimension = dimension;
         this.hierarchy = hierarchy;
     }
 
-    public boolean usesDimension(Dimension dimension) {
-        return hierarchy.getDimension() == dimension;
+    public static HierarchyType forHierarchy(Hierarchy hierarchy) {
+        return new HierarchyType(hierarchy.getDimension(), hierarchy);
+    }
+
+    public static HierarchyType forType(Type type) {
+        return new HierarchyType(type.getDimension(), type.getHierarchy());
+    }
+
+    public boolean usesDimension(Dimension dimension, boolean maybe) {
+        final Dimension hierarchyDimension = hierarchy.getDimension();
+        return hierarchyDimension == dimension ||
+                (maybe && hierarchyDimension == null);
+    }
+
+    public Dimension getDimension() {
+        return dimension;
     }
 
     public Hierarchy getHierarchy() {

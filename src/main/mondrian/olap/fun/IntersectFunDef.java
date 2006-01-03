@@ -9,9 +9,9 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.FunDef;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Exp;
+import mondrian.olap.*;
+import mondrian.calc.*;
+import mondrian.calc.impl.AbstractListCalc;
 
 import java.util.*;
 
@@ -26,6 +26,42 @@ class IntersectFunDef extends FunDefBase
     {
         super(dummyFunDef);
         this.all = all;
+    }
+
+    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        final ListCalc listCalc1 = compiler.compileList(call.getArg(0));
+        final ListCalc listCalc2 = compiler.compileList(call.getArg(1));
+        // todo: optimize for member lists vs. tuple lists
+        return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
+            public List evaluateList(Evaluator evaluator) {
+                List left = listCalc1.evaluateList(evaluator);
+                if (left == null || left.isEmpty()) {
+                    return Collections.EMPTY_LIST;
+                }
+                Collection right = listCalc2.evaluateList(evaluator);
+                if (right == null || right.isEmpty()) {
+                    return Collections.EMPTY_LIST;
+                }
+                right = buildSearchableCollection(right);
+                List result = new ArrayList();
+
+                for (Iterator i = left.iterator(); i.hasNext();) {
+                    Object leftObject = i.next();
+                    Object resultObject = leftObject;
+
+                    if (leftObject instanceof Object[]) {
+                        leftObject = new FunUtil.ArrayHolder((Object[])leftObject);
+                    }
+
+                    if (right.contains(leftObject)) {
+                        if (all || !result.contains(leftObject)) {
+                            result.add(resultObject);
+                        }
+                    }
+                }
+                return result;
+            }
+        };
     }
 
     public Object evaluate(Evaluator evaluator, Exp[] args) {

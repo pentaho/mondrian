@@ -15,6 +15,9 @@ import mondrian.olap.*;
 import mondrian.olap.type.MemberType;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
+import mondrian.calc.*;
+import mondrian.calc.impl.AbstractMemberCalc;
+import mondrian.calc.impl.DimensionCurrentMemberCalc;
 
 /**
  * Definition of the <code>OpeningPeriod</code> and <code>ClosingPeriod</code>
@@ -42,30 +45,81 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
             Hierarchy hierarchy = validator.getQuery()
                     .getCube().getTimeDimension()
                     .getHierarchy();
-            return new MemberType(hierarchy, null, null);
+            return MemberType.forHierarchy(hierarchy);
         }
         return super.getResultType(validator, args);
     }
 
-    public boolean callDependsOn(FunCall call, Dimension dimension) {
-        switch (call.getArgCount()) {
+    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        final Exp[] args = call.getArgs();
+        final LevelCalc levelCalc;
+        final MemberCalc memberCalc;
+        switch (args.length) {
         case 0:
-            // OpeningPeriod() depends on [Time]
-            return dimension.getDimensionType() == DimensionType.TimeDimension;
+            memberCalc = new DimensionCurrentMemberCalc(
+                    compiler.getEvaluator().getCube().getTimeDimension());
+            levelCalc = null;
+            break;
         case 1:
-            // OpeningPeriod(<Level>)
-            // depends on Level's dimension even the expression does not.
-            if (super.callDependsOn(call, dimension)) {
-                return true;
-            }
-            return call.getArg(0).getTypeX().usesDimension(dimension);
-        case 2:
-            // OpeningPeriod(<Level>, <Member>)
-            // depends upon whatever its args depend on.
-            return super.callDependsOn(call, dimension);
+            levelCalc = compiler.compileLevel(call.getArg(0));
+            memberCalc = new DimensionCurrentMemberCalc(
+                    compiler.getEvaluator().getCube().getTimeDimension());
+            break;
         default:
-            throw Util.newInternal("bad arg count " + call.getArgCount());
+            levelCalc = compiler.compileLevel(call.getArg(0));
+            memberCalc = compiler.compileMember(call.getArg(1));
+            break;
         }
+
+        // Make sure the member and the level come from the same dimension.
+        //
+        final Dimension memberDimension = memberCalc.getType().getDimension();
+        final Dimension levelDimension;
+        if (levelCalc == null) {
+            levelDimension = memberDimension;
+        } else {
+            levelDimension = levelCalc.getType().getDimension();
+            if (!memberDimension.equals(levelDimension)) {
+                throw MondrianResource.instance().
+                        FunctionMbrAndLevelHierarchyMismatch.ex(
+                                opening ? "OpeningPeriod" : "ClosingPeriod",
+                                levelDimension.getUniqueName(),
+                                memberDimension.getUniqueName());
+            }
+        }
+        return new AbstractMemberCalc(call, new Calc[] {levelCalc, memberCalc}) {
+            public Member evaluateMember(Evaluator evaluator) {
+                Member member = memberCalc.evaluateMember(evaluator);
+
+                // If the level argument is present, use it. Otherwise use the
+                // level immediately after that of the member argument.
+                Level level;
+                if (levelCalc == null) {
+                    int targetDepth = member.getLevel().getDepth() + 1;
+                    Level[] levels = member.getHierarchy().getLevels();
+
+                    if (levels.length <= targetDepth) {
+                        return member.getHierarchy().getNullMember();
+                    }
+                    level = levels[targetDepth];
+                } else {
+                    level = levelCalc.evaluateLevel(evaluator);
+                }
+
+                // Shortcut if the level is above the member.
+                if (level.getDepth() < member.getLevel().getDepth()) {
+                    return member.getHierarchy().getNullMember();
+                }
+
+                // Shortcut if the level is the same as the member
+                if (level == member.getLevel()) {
+                    return member;
+                }
+
+                return getDescendant(evaluator.getSchemaReader(), member,
+                        level, opening);
+            }
+        };
     }
 
     public Object evaluate(Evaluator evaluator, Exp[] args) {

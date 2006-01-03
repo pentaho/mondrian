@@ -23,7 +23,6 @@ import org.apache.log4j.Logger;
  * @since 6 August, 2001
  */
 public abstract class OlapElementBase
-        extends ExpBase
         implements OlapElement {
 
     private String caption = null;
@@ -50,20 +49,10 @@ public abstract class OlapElementBase
         return k;
     }
 
-
     public String toString() {
         return getUniqueName();
     }
 
-    public Object evaluate(Evaluator evaluator) {
-        return evaluator.visit(this);
-    }
-
-    public Exp accept(Validator validator) {
-        return this;
-    }
-
-    // implement ExpBase
     public Object clone() {
         return this;
     }
@@ -85,14 +74,6 @@ public abstract class OlapElementBase
      */
     public void setCaption(String caption) {
         this.caption = caption;
-    }
-
-    public boolean dependsOn(Dimension dimension) {
-        // A catalog element is constant, and therefore will evaluate to the
-        // same result regardless of the current evaluation context. For
-        // example, the member [Gender].[M] does not 'depend on' the [Gender]
-        // dimension.
-        return false;
     }
 }
 

@@ -11,9 +11,14 @@
 */
 
 package mondrian.olap;
-import mondrian.olap.fun.*;
+import mondrian.calc.*;
+import mondrian.calc.impl.BetterExpCompiler;
+import mondrian.mdx.*;
+import mondrian.olap.fun.FunUtil;
+import mondrian.olap.fun.ParameterFunDef;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.*;
 
 import java.io.*;
 import java.util.*;
@@ -40,7 +45,7 @@ public class Query extends QueryPart {
     /**
      * public-private: This must be public because it is still accessed in rolap.RolapResult
      */
-    public Exp slicer;
+    public QueryAxis slicerAxis;
 
     /**
      * Definitions of all parameters used in this query.
@@ -58,6 +63,8 @@ public class Query extends QueryPart {
     private final Cube cube;
 
     private final Connection connection;
+    public Calc[] axisCalcs;
+    public Calc slicerCalc;
 
     /** Constructs a Query. */
     public Query(
@@ -92,52 +99,52 @@ public class Query extends QueryPart {
         this.formulas = formulas;
         this.axes = axes;
         normalizeAxes();
-        setSlicer(slicer);
+        this.slicerAxis = slicer == null ? null : new QueryAxis(false, slicer, AxisOrdinal.Slicer, QueryAxis.SubtotalVisibility.Undefined);
         this.cellProps = cellProps;
         this.parameters = parameters;
         resolve();
     }
 
     /**
-     * add a new formula specifying a set
-     *  to an existing query
+     * Adds a new formula specifying a set
+     * to an existing query.
      */
     public void addFormula(String[] names, Exp exp) {
         Formula newFormula = new Formula(names, exp);
-        int nFor = 0;
+        int formulaCount = 0;
         if (formulas.length > 0) {
-            nFor = formulas.length;
+            formulaCount = formulas.length;
         }
-        Formula[] newFormulas = new Formula[nFor + 1];
-        for (int i = 0; i < nFor; i++ ) {
+        Formula[] newFormulas = new Formula[formulaCount + 1];
+        for (int i = 0; i < formulaCount; i++ ) {
             newFormulas[i] = formulas[i];
         }
-        newFormulas[nFor] = newFormula;
+        newFormulas[formulaCount] = newFormula;
         formulas = newFormulas;
         resolve();
     }
 
     /**
-     * add a new formula specifying a member
-     *  to an existing query
+     * Adds a new formula specifying a member
+     * to an existing query.
      */
-    public void addFormula(String[] names,
-                           Exp exp,
-                           MemberProperty[] memberProperties) {
+    public void addFormula(
+            String[] names,
+            Exp exp,
+            MemberProperty[] memberProperties) {
         Formula newFormula = new Formula(names, exp, memberProperties);
-        int nFor = 0;
+        int formulaCount = 0;
         if (formulas.length > 0) {
-            nFor = formulas.length;
+            formulaCount = formulas.length;
         }
-        Formula[] newFormulas = new Formula[nFor + 1];
-        for (int i = 0; i < nFor; i++ ) {
+        Formula[] newFormulas = new Formula[formulaCount + 1];
+        for (int i = 0; i < formulaCount; i++ ) {
             newFormulas[i] = formulas[i];
         }
-        newFormulas[nFor] = newFormula;
+        newFormulas[formulaCount] = newFormula;
         formulas = newFormulas;
         resolve();
     }
-
 
     public Validator createValidator() {
         return new StackValidator(connection.getSchema().getFunTable());
@@ -148,7 +155,7 @@ public class Query extends QueryPart {
                 cube,
                 Formula.cloneArray(formulas),
                 QueryAxis.cloneArray(axes),
-                (slicer == null) ? null : (Exp) slicer.clone(),
+                (slicerAxis == null) ? null : (Exp) slicerAxis.clone(),
                 cellProps,
                 Parameter.cloneArray(parameters));
     }
@@ -202,7 +209,35 @@ public class Query extends QueryPart {
      * tree in any way.
      */
     public void resolve() {
-        resolve(createValidator()); // resolve self and children
+        final Validator validator = createValidator();
+        resolve(validator); // resolve self and children
+        // Create a dummy result so we can use its evaluator
+        final Evaluator evaluator = RolapUtil.createEvaluator(this);
+        ExpCompiler compiler = createCompiler(evaluator, validator);
+        compile(compiler);
+    }
+
+    /**
+     * Generates compiled forms of all expressions.
+     *
+     * @param compiler Compiler
+     */
+    private void compile(ExpCompiler compiler) {
+        if (formulas != null) {
+            for (int i = 0; i < formulas.length; i++) {
+                formulas[i].compile();
+            }
+        }
+
+        if (axes != null) {
+            axisCalcs = new Calc[axes.length];
+            for (int i = 0; i < axes.length; i++) {
+                axisCalcs[i] = axes[i].compile(compiler);
+            }
+        }
+        if (slicerAxis != null) {
+            slicerCalc = slicerAxis.compile(compiler);
+        }
     }
 
     /**
@@ -228,8 +263,8 @@ public class Query extends QueryPart {
                 validator.validate(axes[i]);
             }
         }
-        if (slicer != null) {
-            setSlicer(validator.validate(slicer, false));
+        if (slicerAxis != null) {
+            slicerAxis.validate(validator);
         }
 
         // Now that out Parameters have been created (from FunCall's to
@@ -245,16 +280,16 @@ public class Query extends QueryPart {
             Dimension dimension = dimensions[i];
             int useCount = 0;
             for (int j = -1; j < axes.length; j++) {
-                final Exp axisExp;
+                final QueryAxis axisExp;
                 if (j < 0) {
-                    if (slicer == null) {
+                    if (slicerAxis == null) {
                         continue;
                     }
-                    axisExp = slicer;
+                    axisExp = slicerAxis;
                 } else {
-                    axisExp = axes[j].set;
+                    axisExp = axes[j];
                 }
-                if (axisExp.getTypeX().usesDimension(dimension)) {
+                if (axisExp.exp.getType().usesDimension(dimension, false)) {
                     ++useCount;
                 }
             }
@@ -292,9 +327,9 @@ public class Query extends QueryPart {
         if (cube != null) {
             pw.println("from [" + cube.getName() + "]");
         }
-        if (slicer != null) {
+        if (slicerAxis != null) {
             pw.print("where ");
-            slicer.unparse(pw);
+            slicerAxis.unparse(pw);
             pw.println();
         }
     }
@@ -319,8 +354,8 @@ public class Query extends QueryPart {
         for (int i = 0; i < axes.length; i++) {
             list.add(axes[i]);
         }
-        if (slicer != null) {
-            list.add(slicer);
+        if (slicerAxis != null) {
+            list.add(slicerAxis);
         }
         for (int i = 0; i < formulas.length; i++) {
             list.add(formulas[i]);
@@ -347,7 +382,7 @@ public class Query extends QueryPart {
 
         i -= axes.length;
         if (i == 0) {
-            setSlicer((Exp) with); // replace slicer
+            slicerAxis = (QueryAxis) with; // replace slicer
             return;
         }
 
@@ -371,43 +406,8 @@ public class Query extends QueryPart {
                 axes.length + " axes, " + formulas.length + " formula)");
     }
 
-    /**
-     * Normalize slicer into a tuple of members. For example, '[Time]' becomes
-     * '([Time].DefaultMember)'.
-     *
-     * <p>todo: Make slicer an Axis, not an Exp, and
-     * put this code inside Axis.
-     */
-    public void setSlicer(Exp exp) {
-        slicer = exp;
-        if (slicer instanceof Level ||
-            slicer instanceof Hierarchy ||
-            slicer instanceof Dimension) {
-
-            slicer = new FunCall("DefaultMember",
-                                 Syntax.Property,
-                                 new Exp[] {slicer});
-        }
-        if (slicer == null) {
-            ;
-        } else if (slicer instanceof FunCall &&
-                   ((FunCall) slicer).isCallToTuple()) {
-            ;
-        } else {
-            slicer = new FunCall(
-                "()", Syntax.Parentheses, new Exp[] {slicer});
-        }
-    }
-
-    public Exp getSlicer() {
-        return slicer;
-    }
-
-    /** Returns an enumeration, each item of which is an Ob containing a
-     * dimension which does not appear in any Axis or in the slicer. */
-    public Iterator unusedDimensions() {
-        Dimension[] mdxDimensions = cube.getDimensions();
-        return Arrays.asList(mdxDimensions).iterator();
+    public QueryAxis getSlicerAxis() {
+        return slicerAxis;
     }
 
     /**
@@ -427,7 +427,7 @@ public class Query extends QueryPart {
      * Returns the hierarchies in an expression.
      */
     private Hierarchy[] collectHierarchies(Exp queryPart) {
-        Type type = queryPart.getTypeX();
+        Type type = queryPart.getType();
         if (type instanceof SetType) {
             type = ((SetType) type).getElementType();
         }
@@ -464,13 +464,13 @@ public class Query extends QueryPart {
      */
     public void swapAxes() {
         if (axes.length == 2) {
-            Exp e0 = axes[0].set;
+            Exp e0 = axes[0].exp;
             boolean nonEmpty0 = axes[0].nonEmpty;
-            Exp e1 = axes[1].set;
+            Exp e1 = axes[1].exp;
             boolean nonEmpty1 = axes[1].nonEmpty;
-            axes[1].set = e0;
+            axes[1].exp = e0;
             axes[1].nonEmpty = nonEmpty0;
-            axes[0].set = e1;
+            axes[0].exp = e1;
             axes[0].nonEmpty = nonEmpty1;
             // showSubtotals ???
         }
@@ -740,10 +740,33 @@ public class Query extends QueryPart {
             throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.ex(
                     new Integer(axis));
         }
-        return collectHierarchies(
-                (axis == AxisOrdinal.SlicerOrdinal) ?
-                slicer :
-                axes[axis].set);
+        QueryAxis queryAxis = (axis == AxisOrdinal.SlicerOrdinal) ?
+                slicerAxis :
+                axes[axis];
+        return collectHierarchies(queryAxis.exp);
+    }
+
+    public Calc compileExpression(Exp exp, boolean scalar) {
+        Evaluator evaluator = RolapEvaluator.create(this);
+        final Validator validator = createValidator();
+        final ExpCompiler compiler = createCompiler(evaluator, validator);
+        Calc calc;
+        if (scalar) {
+            calc = compiler.compileScalar(exp, false);
+        } else {
+            calc = exp.accept(compiler);
+        }
+        return calc;
+    }
+
+    private ExpCompiler createCompiler(
+            Evaluator evaluator, final Validator validator) {
+        ExpCompiler compiler = new BetterExpCompiler(evaluator, validator);
+        final int expDeps = MondrianProperties.instance().TestExpDependencies.get();
+        if (expDeps > 0) {
+            compiler = RolapUtil.createDependencyTestingCompiler(compiler);
+        }
+        return compiler;
     }
 
     /**
@@ -781,29 +804,39 @@ public class Query extends QueryPart {
         }
 
         public Exp validate(Exp exp, boolean scalar) {
-            Exp resolved = (Exp) resolvedNodes.get(exp);
-            if (resolved != null) {
-                // Expression has already been resolved.
-                return scalar ? convertToScalar(resolved) : resolved;
-            }
-            stack.push(exp);
+            Exp resolved;
             try {
-                // Put in a placeholder while we're resolving to prevent
-                // recursion.
-                resolvedNodes.put(exp, placeHolder);
-                resolved = exp.accept(this);
-                resolvedNodes.put(exp, resolved);
-                if (scalar) {
-                    resolved = convertToScalar(resolved);
-                }
-                return resolved;
-            } finally {
-                stack.pop();
+                resolved = (Exp) resolvedNodes.get(exp);
+            } catch (ClassCastException e) {
+                // A classcast exception will occur if there is a String
+                // placeholder in the map.
+                throw Util.newInternal(e,
+                        "Infinite recursion encountered while validating " +
+                        exp);
             }
-        }
+            if (resolved == null) {
+                try {
+                    stack.push(exp);
+                    // Put in a placeholder while we're resolving to prevent
+                    // recursion.
+                    resolvedNodes.put(exp, placeHolder);
+                    resolved = exp.accept(this);
+                    Util.assertTrue(resolved != null);
+                    resolvedNodes.put(exp, resolved);
+                } finally {
+                    stack.pop();
+                }
+            }
 
-        private Exp convertToScalar(Exp exp) {
-            return funTable.createValueFunCall(exp, this);
+            if (scalar) {
+                final Type type = resolved.getType();
+                if (!TypeUtil.canEvaluate(type)) {
+                    String exprString = Util.unparse(resolved);
+                    throw MondrianResource.instance().MdxMemberExpIsSet.ex(exprString);
+                }
+            }
+
+            return resolved;
         }
 
         public Parameter validate(Parameter parameter) {
@@ -811,8 +844,8 @@ public class Query extends QueryPart {
             if (resolved != null) {
                 return parameter; // already resolved
             }
-            stack.push(parameter);
             try {
+                stack.push(parameter);
                 resolvedNodes.put(parameter, placeHolder);
                 resolved = (Parameter) parameter.accept(this);
                 resolvedNodes.put(parameter, resolved);
@@ -823,36 +856,46 @@ public class Query extends QueryPart {
         }
 
         public void validate(MemberProperty memberProperty) {
-            if (resolvedNodes.put(memberProperty, placeHolder) != null) {
+            MemberProperty resolved =
+                    (MemberProperty) resolvedNodes.get(memberProperty);
+            if (resolved != null) {
                 return; // already resolved
             }
-            stack.push(memberProperty);
             try {
+                stack.push(memberProperty);
+                resolvedNodes.put(memberProperty, placeHolder);
                 memberProperty.resolve(this);
+                resolvedNodes.put(memberProperty, memberProperty);
             } finally {
                 stack.pop();
             }
         }
 
         public void validate(QueryAxis axis) {
-            if (resolvedNodes.put(axis, placeHolder) != null) {
+            final QueryAxis resolved = (QueryAxis) resolvedNodes.get(axis);
+            if (resolved != null) {
                 return; // already resolved
             }
-            stack.push(axis);
             try {
+                stack.push(axis);
+                resolvedNodes.put(axis, placeHolder);
                 axis.resolve(this);
+                resolvedNodes.put(axis, axis);
             } finally {
                 stack.pop();
             }
         }
 
         public void validate(Formula formula) {
-            if (resolvedNodes.put(formula, placeHolder) != null) {
+            final Formula resolved = (Formula) resolvedNodes.get(formula);
+            if (resolved != null) {
                 return; // already resolved
             }
-            stack.push(formula);
             try {
+                stack.push(formula);
+                resolvedNodes.put(formula, placeHolder);
                 formula.accept(this);
+                resolvedNodes.put(formula, formula);
             } finally {
                 stack.pop();
             }
@@ -860,10 +903,6 @@ public class Query extends QueryPart {
 
         public boolean canConvert(Exp fromExp, int to, int[] conversionCount) {
             return FunUtil.canConvert(fromExp, to, conversionCount);
-        }
-
-        public Exp convert(Exp fromExp, int to) {
-            return FunUtil.convert(fromExp, to, this);
         }
 
         public boolean requiresExpression() {
@@ -879,7 +918,24 @@ public class Query extends QueryPart {
                 return ((Formula) parent).isMember();
             } else if (parent instanceof FunCall) {
                 final FunCall funCall = (FunCall) parent;
-                if (funCall.isCallToTuple()) {
+                if (funCall.getFunDef().getSyntax() == Syntax.Parentheses) {
+                    return requiresExpression(n - 1);
+                } else {
+                    int k = whichArg(funCall, stack.get(n));
+                    if (k < 0) {
+                        // Arguments of call have mutated since call was placed
+                        // on stack. Presumably the call has already been
+                        // resolved correctly, so the answer we give here is
+                        // irrelevant.
+                        return false;
+                    }
+                    final FunDef funDef = funCall.getFunDef();
+                    final int[] parameterTypes = funDef.getParameterCategories();
+                    return parameterTypes[k] != Category.Set;
+                }
+            } else if (parent instanceof UnresolvedFunCall) {
+                final UnresolvedFunCall funCall = (UnresolvedFunCall) parent;
+                if (funCall.getSyntax() == Syntax.Parentheses) {
                     return requiresExpression(n - 1);
                 } else {
                     int k = whichArg(funCall, stack.get(n));
@@ -901,12 +957,13 @@ public class Query extends QueryPart {
             return funTable;
         }
 
-        public Parameter createOrLookupParam(FunCall funCall) {
-            Util.assertTrue(funCall.getArg(0) instanceof Literal,
+        public Parameter createOrLookupParam(
+                ParameterFunDef funDef,
+                Exp[] args) {
+            Util.assertTrue(args[0] instanceof Literal,
                 "The name of parameter must be a quoted string");
-            String name = (String) ((Literal) funCall.getArg(0)).getValue();
+            String name = (String) ((Literal) args[0]).getValue();
             Parameter param = lookupParam(name);
-            ParameterFunDef funDef = (ParameterFunDef) funCall.getFunDef();
             if (funDef.getName().equals("Parameter")) {
                 if (param != null) {
                     if (param.getDefineCount() > 0) {
@@ -917,26 +974,8 @@ public class Query extends QueryPart {
                         return param;
                     }
                 }
-                final Exp arg1 = funCall.getArg(1);
-                final Type type;
-                final int category = funCall.getCategory();
-                switch (category) {
-                case Category.Member:
-                    Dimension dimension = (Dimension) arg1;
-                    type = new MemberType(dimension.getHierarchy(), null, null);
-                    break;
-                case Category.String:
-                    type = new StringType();
-                    break;
-                case Category.Numeric:
-                    type = new NumericType();
-                    break;
-                case Category.Integer:
-                    type = new DecimalType(Integer.MAX_VALUE, 0);
-                    break;
-                default:
-                    throw Category.instance.badValue(category);
-                }
+                final int category = funDef.getReturnCategory();
+                final Type type = getParameterType(args[1], category);
                 param = new Parameter(
                         funDef.parameterName, category,
                         funDef.exp, funDef.parameterDescription, type);
@@ -968,6 +1007,25 @@ public class Query extends QueryPart {
             }
         }
 
+        private Type getParameterType(final Exp exp, int category) {
+            switch (category) {
+            case Category.Member:
+            case Category.Dimension:
+            case Category.Hierarchy:
+                assert exp instanceof DimensionExpr ||
+                        exp instanceof HierarchyExpr;
+                return TypeUtil.toMemberType(exp.getType());
+            case Category.String:
+                return new StringType();
+            case Category.Numeric:
+                return new NumericType();
+            case Category.Integer:
+                return new DecimalType(Integer.MAX_VALUE, 0);
+            default:
+                throw Category.instance.badValue(category);
+            }
+        }
+
         private void collectParameters() {
             final Walker walker = new Walker(Query.this);
             while (walker.hasMoreElements()) {
@@ -977,7 +1035,7 @@ public class Query extends QueryPart {
                     ;
                 } else if (o instanceof FunCall) {
                     final FunCall call = (FunCall) o;
-                    if (call.getFunName().equalsIgnoreCase("Parameter")) {
+                    if (call.getFunDef().getName().equalsIgnoreCase("Parameter")) {
                         // Parameter definition which has not been resolved
                         // yet. Resolve it and add it to the list of parameters.
                         // Because we're resolving out out of the proper order,
@@ -1041,14 +1099,27 @@ public class Query extends QueryPart {
             }
         }
 
+        public Member[] getLevelMembers(
+                Level level, boolean includeCalculated) {
+            Member[] members = super.getLevelMembers(level, false);
+            if (includeCalculated) {
+                members = Util.addLevelCalculatedMembers(this, level, members);
+            }
+            return members;
+        }
+
         public Member getCalculatedMember(String[] nameParts) {
             final String uniqueName = Util.implode(nameParts);
             return lookupMemberFromCache(uniqueName);
         }
 
         public List getCalculatedMembers(Hierarchy hierarchy) {
-            List definedMembers = getDefinedMembers();
             List result = new ArrayList();
+            // Add calculated members in the cube.
+            final List calculatedMembers = super.getCalculatedMembers(hierarchy);
+            result.addAll(calculatedMembers);
+            // Add calculated members defined in the query.
+            List definedMembers = getDefinedMembers();
             for (int i = 0; i < definedMembers.size(); i++) {
                 Member member = (Member) definedMembers.get(i);
                 if (member.getHierarchy().equals(hierarchy)) {
@@ -1059,10 +1130,10 @@ public class Query extends QueryPart {
         }
 
         public List getCalculatedMembers(Level level) {
-            List hierachyMembers = getCalculatedMembers(level.getHierarchy());
+            List hierarchyMembers = getCalculatedMembers(level.getHierarchy());
             List result = new ArrayList();
-            for (int i = 0; i < hierachyMembers.size(); i++) {
-                Member member = (Member) hierachyMembers.get(i);
+            for (int i = 0; i < hierarchyMembers.size(); i++) {
+                Member member = (Member) hierarchyMembers.get(i);
                 if (member.getLevel().equals(level)) {
                     result.add(member);
                 }

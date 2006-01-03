@@ -13,15 +13,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import mondrian.olap.EnumeratedValues;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Exp;
-import mondrian.olap.FunDef;
-import mondrian.olap.Level;
-import mondrian.olap.Member;
-import mondrian.olap.SchemaReader;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.olap.type.NumericType;
+import mondrian.calc.*;
+import mondrian.calc.impl.AbstractListCalc;
+import mondrian.resource.MondrianResource;
 
 /**
  * Definition of the <code>DESCENDANTS</code> MDX function.
@@ -44,6 +40,68 @@ class DescendantsFunDef extends FunDefBase {
         this.before = FunUtil.checkFlag(flag, Flags.BEFORE, true);
         this.leaves = FunUtil.checkFlag(flag, Flags.LEAVES, true);
         this.depthSpecified = depthSpecified;
+    }
+
+    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        final MemberCalc memberCalc = compiler.compileMember(call.getArg(0));
+        if (depthSpecified && leaves) {
+            final IntegerCalc depthCalc = call.getArgCount() > 1 ?
+                    compiler.compileInteger(call.getArg(1)) :
+                    null;
+            return new AbstractListCalc(call, new Calc[] {memberCalc, depthCalc}) {
+                public List evaluateList(Evaluator evaluator) {
+                    final Member member = memberCalc.evaluateMember(evaluator);
+                    List result = new ArrayList();
+                    int depth = depthCalc.evaluateInteger(evaluator);
+                    final SchemaReader schemaReader = evaluator.getSchemaReader();
+                    if (depth < 0) {
+                        depth = Integer.MAX_VALUE;
+                    }
+                    descendantsLeavesByDepth(
+                            member, result, schemaReader, depth);
+                    hierarchize(result, false);
+                    return result;
+                }
+            };
+        } else if (depthSpecified) {
+            final IntegerCalc depthCalc = call.getArgCount() > 1 ?
+                    compiler.compileInteger(call.getArg(1)) :
+                    null;
+            return new AbstractListCalc(call, new Calc[] {memberCalc, depthCalc}) {
+                public List evaluateList(Evaluator evaluator) {
+                    final Member member = memberCalc.evaluateMember(evaluator);
+                    List result = new ArrayList();
+                    final int depth = depthCalc.evaluateInteger(evaluator);
+                    final SchemaReader schemaReader = evaluator.getSchemaReader();
+                    descendantsByDepth(
+                            member, result, schemaReader,
+                            depth, before, self, after, evaluator);
+                    hierarchize(result, false);
+                    return result;
+                }
+            };
+        } else {
+            final LevelCalc levelCalc = call.getArgCount() > 1 ?
+                    compiler.compileLevel(call.getArg(1)) :
+                    null;
+            return new AbstractListCalc(call, new Calc[] {memberCalc, levelCalc}) {
+                public List evaluateList(Evaluator evaluator) {
+                    final Evaluator context =
+                            evaluator.isNonEmpty() ? evaluator : null;
+                    final Member member = memberCalc.evaluateMember(evaluator);
+                    List result = new ArrayList();
+                    final SchemaReader schemaReader = evaluator.getSchemaReader();
+                    final Level level = levelCalc != null ?
+                            levelCalc.evaluateLevel(evaluator) :
+                            member.getLevel();
+                    descendantsByLevel(
+                            schemaReader, member, level, result, before, self,
+                            after, leaves, context);
+                    hierarchize(result, false);
+                    return result;
+                }
+            };
+        }
     }
 
     public Object evaluate(Evaluator evaluator, Exp[] args) {
@@ -254,7 +312,7 @@ class DescendantsFunDef extends FunDefBase {
             while (members.length > 0);
         }
     }
-    
+
     /**
      * Enumeration of the flags allowed to the <code>DESCENDANTS</code>
      * function.
@@ -300,7 +358,7 @@ class DescendantsFunDef extends FunDefBase {
             }
             final boolean depthSpecified;
             if (args.length >= 2) {
-                depthSpecified = args[1].getTypeX() instanceof NumericType;
+                depthSpecified = args[1].getType() instanceof NumericType;
             } else {
                 depthSpecified = false;
             }

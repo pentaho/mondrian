@@ -560,6 +560,10 @@ public class RolapCube extends CubeBase {
             buf.append(",").append(Util.nl)
                     .append(name).append(" = ").append(expr);
         }
+        // Flag that the calc members are defined against a cube; will
+        // determine the value of Member.isCalculatedInQuery
+        buf.append(",").append(Util.nl)
+                .append(Property.MEMBER_SCOPE).append(" = 'CUBE'");
         buf.append(Util.nl);
     }
 
@@ -1639,7 +1643,7 @@ assert is not true.
 
     Member[] getMeasures() {
         Level measuresLevel = dimensions[0].getHierarchies()[0].getLevels()[0];
-        return getSchemaReader().getLevelMembers(measuresLevel);
+        return getSchemaReader().getLevelMembers(measuresLevel, true);
     }
 
     /**
@@ -1857,14 +1861,11 @@ assert is not true.
             assert role != null : "precondition: role != null";
         }
 
-        public Member[] getLevelMembers(Level level) {
-            Member[] members = super.getLevelMembers(level);
-            List calcMembers = getCalculatedMembers(level.getHierarchy());
-            for (int i = 0; i < calcMembers.size(); i++) {
-                Member member = (Member) calcMembers.get(i);
-                if (member.getLevel().equals(level)) {
-                    members = (Member[]) RolapUtil.addElement(members, member);
-                }
+        public Member[] getLevelMembers(
+                Level level, boolean includeCalculated) {
+            Member[] members = super.getLevelMembers(level, false);
+            if (includeCalculated) {
+                members = Util.addLevelCalculatedMembers(this, level, members);
             }
             return members;
         }

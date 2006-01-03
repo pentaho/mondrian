@@ -277,7 +277,7 @@ public class CmdRunner {
         }
     }
     public void loadParameter(Query query, Parameter param) {
-            int pType = param.getType();
+            int pType = param.getCategory();
             String name = param.getName();
             String value = (String) CmdRunner.paraNameValues.get(name);
             CmdRunner.debug("loadParameter: name=" +name+ ", value=" + value);
@@ -371,23 +371,23 @@ public class CmdRunner {
         // dont have to execute
         //this.connection.execute(query);
 
-        // assume member,dimension,hierarchy,level
-        Exp exp = Util.lookup(query, Util.explode(trimmed));
+        // assume member, dimension, hierarchy, level
+        OlapElement element = Util.lookup(query, Util.explode(trimmed));
 
         CmdRunner.debug("parseParameter. exp="
-            +((exp == null) ? "null" : exp.getClass().getName()));
+            +((element == null) ? "null" : element.getClass().getName()));
 
-        if (exp instanceof Member) {
-            Member member = (Member) exp;
+        if (element instanceof Member) {
+            Member member = (Member) element;
             return new Expr(member, Expr.MEMBER_TYPE);
-        } else if (exp instanceof mondrian.olap.Level) {
-            mondrian.olap.Level level = (mondrian.olap.Level) exp;
+        } else if (element instanceof mondrian.olap.Level) {
+            mondrian.olap.Level level = (mondrian.olap.Level) element;
             return new Expr(level, Expr.MEMBER_TYPE);
-        } else if (exp instanceof Hierarchy) {
-            Hierarchy hier = (Hierarchy) exp;
+        } else if (element instanceof Hierarchy) {
+            Hierarchy hier = (Hierarchy) element;
             return new Expr(hier, Expr.MEMBER_TYPE);
-        } else if (exp instanceof Dimension) {
-            Dimension dim = (Dimension) exp;
+        } else if (element instanceof Dimension) {
+            Dimension dim = (Dimension) element;
             return new Expr(dim, Expr.MEMBER_TYPE);
         }
         return null;
@@ -443,7 +443,6 @@ public class CmdRunner {
         return null;
     }
     public void listCubeName(StringBuffer buf) {
-        Connection conn = getConnection();
         Cube[] cubes = getCubes();
         for (int i = 0; i < cubes.length; i++) {
             Cube cube = cubes[i];
@@ -689,11 +688,11 @@ public class CmdRunner {
     protected static String getJdbcURLProperty() {
         return MondrianProperties.instance().TestJdbcURL.get();
     }
-    
+
     protected static String getJdbcUserProperty() {
         return MondrianProperties.instance().TestJdbcUser.get();
     }
-    
+
     protected static String getJdbcPasswordProperty() {
         return MondrianProperties.instance().TestJdbcPassword.get();
     }

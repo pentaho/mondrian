@@ -14,76 +14,74 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.olap.type.LevelType;
+import mondrian.olap.type.DimensionType;
+import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
 
 import java.io.PrintWriter;
 
 /**
- * <code>FunDefBase</code> is the default implementation of {@link FunDef}.
- * <p/>
+ * <code>FunDefBase</code> is the default implementation of {@link FunDef}.<p/>
+ *
  * <h3>Signatures</h3>
- * <p/>
- * A function is defined by the following:<ul>
- * <p/>
+ *
+ * A function is defined by the following:<p/>
+ *
  * <table border="1">
- * <p/>
  * <tr><th>Parameter</th><th>Meaning</th><th>Example</th></tr>
- * <p/>
  * <tr>
  * <td>name</td><td>Name of the function</td><td>"Members"</td>
  * </tr>
- * <p/>
  * <tr>
  * <td>signature</td>
  * <td>Signature of the function</td>
  * <td>"&lt;Dimension&gt;.Members"</td>
  * </tr>
- * <p/>
  * <tr>
  * <td>description</td>
  * <td>Description of the function</td>
  * <td>"Returns the set of all members in a dimension."</td>
  * </tr>
- * <p/>
  * <tr>
  * <td>flags</td>
  * <td>Encoding of the syntactic type, return type, and parameter
  * types of this operator. The encoding is described below.</td>
  * <td>"pxd"</tr>
  * </table>
- * <p/>
- * <p>The <code>flags</code> field is an string which encodes
+ *
+ * The <code>flags</code> field is an string which encodes
  * the syntactic type, return type, and parameter types of this operator.
  * <ul>
  * <li>The first character determines the syntactic type, as described by
  * {@link FunUtil#decodeSyntacticType(String)}.
  * <li>The second character determines the return type, as described by
- * {@link FunUtil#decodeReturnType(String)}.
+ * {@link FunUtil#decodeReturnCategory(String)}.
  * <li>The third and subsequence characters determine the types of the
  * arguments arguments, as described by
- * {@link FunUtil#decodeParameterTypes(String)}.
- * </ul>
- * <p/>
- * <p>For example,  <code>"pxd"</code> means "an operator with
+ * {@link FunUtil#decodeParameterCategories(String)}.
+ * </ul><p/>
+ *
+ * For example,  <code>"pxd"</code> means "an operator with
  * {@link Syntax#Property property} syntax (p) which returns a set
- * (x) and takes a dimension (d) as its argument".</p>
- * <p/>
- * <p>The arguments are always read from left to right, regardless of the
+ * (x) and takes a dimension (d) as its argument".<p/>
+ *
+ * The arguments are always read from left to right, regardless of the
  * syntactic type of the operator. For example, the
  * <code>"&lt;Set&gt;.Item(&lt;Index&gt;)"</code> operator
  * (signature <code>"mmxn"</code>) has the
  * syntax of a method-call, and takes two parameters:
- * a set (x) and a numeric (n).</p>
+ * a set (x) and a numeric (n).<p/>
  *
  * @author jhyde
  * @version $Id$
  * @since 26 February, 2002
  */
-public class FunDefBase extends FunUtil implements FunDef {
+public abstract class FunDefBase extends FunUtil implements FunDef {
     protected final int flags;
     private final String name;
     private final String description;
-    protected final int returnType;
-    protected final int[] parameterTypes;
+    protected final int returnCategory;
+    protected final int[] parameterCategories;
 
     /**
      * Creates an operator.
@@ -95,23 +93,24 @@ public class FunDefBase extends FunUtil implements FunDef {
      *                       "Returns the set of all members in a dimension."
      * @param syntax         Syntactic type of the operator (for example, function,
      *                       method, infix operator)
-     * @param returnType     The {@link Category} of the value returned by this
+     * @param returnCategory The {@link Category} of the value returned by this
      *                       operator.
-     * @param parameterTypes An array of {@link Category} codes, one for
+     * @param parameterCategories An array of {@link Category} codes, one for
      *                       each parameter.
      */
-    FunDefBase(String name,
+    FunDefBase(
+            String name,
             String signature,
             String description,
             Syntax syntax,
-            int returnType,
-            int[] parameterTypes) {
+            int returnCategory,
+            int[] parameterCategories) {
         this.name = name;
         Util.discard(signature);
         this.description = description;
         this.flags = syntax.ordinal;
-        this.returnType = returnType;
-        this.parameterTypes = parameterTypes;
+        this.returnCategory = returnCategory;
+        this.parameterCategories = parameterCategories;
     }
 
     /**
@@ -136,8 +135,8 @@ public class FunDefBase extends FunUtil implements FunDef {
                 signature,
                 description,
                 decodeSyntacticType(flags),
-                decodeReturnType(flags),
-                decodeParameterTypes(flags));
+                decodeReturnCategory(flags),
+                decodeParameterCategories(flags));
     }
 
     /**
@@ -158,7 +157,7 @@ public class FunDefBase extends FunUtil implements FunDef {
     FunDefBase(FunDef funDef) {
         this(funDef.getName(), funDef.getSignature(),
                 funDef.getDescription(), funDef.getSyntax(),
-                funDef.getReturnCategory(), funDef.getParameterTypes());
+                funDef.getReturnCategory(), funDef.getParameterCategories());
     }
 
     public String getName() {
@@ -174,26 +173,24 @@ public class FunDefBase extends FunUtil implements FunDef {
     }
 
     public int getReturnCategory() {
-        return returnType;
+        return returnCategory;
     }
 
-    public int[] getParameterTypes() {
-        return parameterTypes;
+    public int[] getParameterCategories() {
+        return parameterCategories;
     }
 
-    public Exp validateCall(Validator validator, FunCall call) {
-        int[] types = getParameterTypes();
-        final Exp[] args = call.getArgs();
+    public Exp createCall(Validator validator, Exp[] args) {
+        int[] types = getParameterCategories();
         Util.assertTrue(types.length == args.length);
         for (int i = 0; i < args.length; i++) {
-            args[i] = validateArg(validator, call, i, types[i]);
+            args[i] = validateArg(validator, args, i, types[i]);
         }
         final Type type = getResultType(validator, args);
         if (type == null) {
             throw Util.newInternal("could not derive type");
         }
-        call.setType(type);
-        return call;
+        return new FunCall(this, args, type);
     }
 
     /**
@@ -203,34 +200,33 @@ public class FunDefBase extends FunUtil implements FunDef {
      * conversion to the correct type. Derived classes may override.
      *
      * @param validator Validator
-     * @param call Call to this function
+     * @param args Arguments to this function
      * @param i Ordinal of argument
      * @param type Expected type of argument
      * @return Validated argument
      */
     protected Exp validateArg(
             Validator validator,
-            FunCall call,
+            Exp[] args,
             int i,
             int type) {
-        final Exp arg = call.getArgs()[i];
-        return validator.convert(arg, type);
+        return args[i];
     }
 
     /**
      * Returns a first approximation as to the type of a function call,
      * assuming that the return type is in some way related to the type of
-     * the first argument.
-     * <p/>
+     * the first argument.<p/>
+     *
      * So, this function serves as a good default implementation for
      * {@link #getResultType}. Methods whose arguments don't follow the
      * requirements of this implementation should use a different
-     * implementation.
-     * <p/>
+     * implementation.<p/>
+     *
      * If the function definition says it returns a literal type (numeric,
      * string, symbol) then it's a fair guess that the function call
-     * returns the same kind of value.
-     * <p/>
+     * returns the same kind of value.<p/>
+     *
      * If the function definition says it returns an object type (cube,
      * dimension, hierarchy, level, member) then we check the first
      * argument of the function. Suppose that the function definition says
@@ -259,38 +255,48 @@ public class FunDefBase extends FunUtil implements FunDef {
             break;
         case Category.Dimension:
             if (args.length > 0) {
-                final Type type = args[0].getTypeX();
-                final Hierarchy hierarchy = type.getHierarchy();
-                final Dimension dimension = hierarchy == null ? null :
-                        hierarchy.getDimension();
-                return new mondrian.olap.type.DimensionType(dimension);
+                final Type type = args[0].getType();
+                return DimensionType.forType(type);
             }
             break;
         case Category.Hierarchy:
             if (args.length > 0) {
-                final Type type = args[0].getTypeX();
-                final Hierarchy hierarchy = type.getHierarchy();
-                return new HierarchyType(hierarchy);
+                final Type type = args[0].getType();
+                return HierarchyType.forType(type);
             }
             break;
         case Category.Level:
-            if (args.length > 0 && args[0] instanceof Level) {
-                final Type type = args[0].getTypeX();
-                final Level level = TypeUtil.typeToLevel(type);
-                return new LevelType(level.getHierarchy(), level);
+            if (args.length > 0) {
+                final Type type = args[0].getType();
+                return LevelType.forType(type);
             }
             break;
         case Category.Member:
+            if (args.length > 0) {
+                final Type type = args[0].getType();
+                final MemberType memberType = TypeUtil.toMemberType(type);
+                if (memberType != null) {
+                    return memberType;
+                }
+            }
+            // Take a wild guess.
+            return MemberType.Unknown;
         case Category.Tuple:
             if (args.length > 0) {
-                final Type type = args[0].getTypeX();
-                return TypeUtil.toMemberType(type);
+                final Type type = args[0].getType();
+                final Type memberType = TypeUtil.toMemberOrTupleType(type);
+                if (memberType != null) {
+                    return memberType;
+                }
             }
             break;
         case Category.Set:
             if (args.length > 0) {
-                final Type type = args[0].getTypeX();
-                return new SetType(TypeUtil.toMemberType(type));
+                final Type type = args[0].getType();
+                final Type memberType = TypeUtil.toMemberOrTupleType(type);
+                if (memberType != null) {
+                    return new SetType(memberType);
+                }
             }
             break;
         default:
@@ -303,40 +309,29 @@ public class FunDefBase extends FunUtil implements FunDef {
     /**
      * Returns the type of a call to this function with a given set of
      * arguments.
-     **/
+     */
     public Type getResultType(Validator validator, Exp[] args) {
         return guessResultType(args, getReturnCategory(), this.name);
     }
 
     // implement FunDef
     public Object evaluate(Evaluator evaluator, Exp[] args) {
-        throw Util.newInternal("function '" + getSignature() + "' has not been implemented");
+        throw Util.newInternal("function '" + getSignature() +
+                "' has not been implemented");
+    }
+
+    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        throw Util.newInternal("function '" + getSignature() +
+                "' has not been implemented");
     }
 
     public String getSignature() {
         return getSyntax().getSignature(getName(), getReturnCategory(),
-                getParameterTypes());
+                getParameterCategories());
     }
 
     public void unparse(Exp[] args, PrintWriter pw) {
         getSyntax().unparse(getName(), args, pw);
-    }
-
-    /**
-     * Default implementation returns true if at least one
-     * of the arguments depends on <code>dimension</code>.
-     *
-     * @see FunUtil#callDependsOnSet(mondrian.olap.FunCall, mondrian.olap.Dimension)
-     */
-    public boolean callDependsOn(FunCall call, Dimension dimension) {
-        final Exp[] args = call.getArgs();
-        for (int i = 0; i < args.length; i++) {
-            Exp arg = args[i];
-            if (arg != null && arg.dependsOn(dimension)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
 

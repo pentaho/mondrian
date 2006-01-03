@@ -40,7 +40,7 @@ class RangeFunDef extends FunDefBase {
     public int getReturnCategory() {
         return Category.Set;
     }
-    public int[] getParameterTypes() {
+    public int[] getParameterCategories() {
         return new int[] {Category.Member, Category.Member};
     }
 }

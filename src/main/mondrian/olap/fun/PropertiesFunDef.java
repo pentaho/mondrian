@@ -10,6 +10,8 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+import mondrian.calc.*;
+import mondrian.calc.impl.GenericCalc;
 
 /**
  * Defines the <code>PROPERTIES</code> MDX function.
@@ -25,9 +27,29 @@ class PropertiesFunDef extends FunDefBase {
         super(name, signature, description, syntax, returnType, parameterTypes);
     }
 
+    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        final MemberCalc memberCalc = compiler.compileMember(call.getArg(0));
+        final StringCalc stringCalc = compiler.compileString(call.getArg(1));
+        return new GenericCalc(call) {
+            public Object evaluate(Evaluator evaluator) {
+                return properties(
+                        memberCalc.evaluateMember(evaluator),
+                        stringCalc.evaluateString(evaluator));
+            }
+
+            public Calc[] getCalcs() {
+                return new Calc[] {memberCalc, stringCalc};
+            }
+        };
+    }
+
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         Member member = getMemberArg(evaluator, args, 0, true);
         String s = getStringArg(evaluator, args, 1, null);
+        return properties(member, s);
+    }
+
+    static Object properties(Member member, String s) {
         Object o = member.getPropertyValue(s);
         if (o == null) {
             if (!Util.isValidProperty(member, s)) {
@@ -61,7 +83,7 @@ class PropertiesFunDef extends FunDefBase {
             int returnType;
             if (args[1] instanceof Literal) {
                 String propertyName = (String) ((Literal) args[1]).getValue();
-                Hierarchy hierarchy = args[0].getTypeX().getHierarchy();
+                Hierarchy hierarchy = args[0].getType().getHierarchy();
                 Level[] levels = hierarchy.getLevels();
                 Property property = lookupProperty(
                         levels[levels.length - 1], propertyName);

@@ -13,6 +13,7 @@
 package mondrian.olap;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
+import mondrian.mdx.MemberExpr;
 
 import java.io.PrintWriter;
 
@@ -25,7 +26,7 @@ public class Formula extends QueryPart {
     /** name of set or member **/
     private final String[] names;
     /** defining expression **/
-    private ExpBase exp;
+    private Exp exp;
     // properties/solve order of member
     private final MemberProperty[] memberProperties;
     /**
@@ -41,22 +42,21 @@ public class Formula extends QueryPart {
      * Constructs formula specifying a set.
      */
     public Formula(String[] names, Exp exp) {
-        this(false, names, (ExpBase) exp, new MemberProperty[0], null, null);
+        this(false, names, exp, new MemberProperty[0], null, null);
         createElement(null);
     }
 
     /**
      * Constructs a formula specifying a member.
      */
-    public Formula(
-            String[] names, Exp exp, MemberProperty[] memberProperties) {
-        this(true, names, (ExpBase) exp, memberProperties, null, null);
+    public Formula(String[] names, Exp exp, MemberProperty[] memberProperties) {
+        this(true, names, exp, memberProperties, null, null);
     }
 
     private Formula(
             boolean isMember,
             String[] names,
-            ExpBase exp,
+            Exp exp,
             MemberProperty[] memberProperties,
             Member mdxMember,
             NamedSet mdxSet) {
@@ -70,12 +70,11 @@ public class Formula extends QueryPart {
         assert !(isMember && mdxSet != null);
     }
 
-    public Object clone()
-    {
+    public Object clone() {
         return new Formula(
                 isMember,
                 names,
-                (ExpBase) exp.clone(),
+                (Exp) exp.clone(),
                 MemberProperty.cloneArray(memberProperties),
                 mdxMember,
                 mdxSet);
@@ -97,12 +96,12 @@ public class Formula extends QueryPart {
      */
     void accept(Validator validator) {
         final boolean scalar = isMember;
-        exp = (ExpBase) validator.validate(exp, scalar);
+        exp = validator.validate(exp, scalar);
         String id = Util.quoteMdxIdentifier(names);
-        final Type type = exp.getTypeX();
+        final Type type = exp.getType();
         if (isMember) {
             if (!TypeUtil.canEvaluate(type)) {
-                throw MondrianResource.instance().MdxMemberExpIsSet.ex(id);
+                throw MondrianResource.instance().MdxMemberExpIsSet.ex(exp.toString());
             }
         } else {
             if (!TypeUtil.isSet(type)) {
@@ -182,14 +181,14 @@ public class Formula extends QueryPart {
     public void replaceChild(int ordinal, QueryPart with)
     {
         Util.assertTrue(ordinal == 0);
-        exp = (ExpBase) with;
+        exp = (Exp) with;
     }
 
     public void unparse(PrintWriter pw)
     {
         if (isMember) {
             pw.print("member ");
-            mdxMember.unparse(pw);
+            pw.print(mdxMember.getUniqueName());
         } else {
             pw.print("set ");
             pw.print(Util.quoteMdxIdentifier(names));
@@ -290,7 +289,7 @@ public class Formula extends QueryPart {
     public int getSolveOrder() {
         Exp exp = getMemberProperty(Property.SOLVE_ORDER.name);
         if (exp != null) {
-            final Type type = exp.getTypeX();
+            final Type type = exp.getType();
             if (type instanceof NumericType) {
                 return ((Literal) exp).getIntValue();
             }
@@ -315,7 +314,7 @@ public class Formula extends QueryPart {
         }
         // Choose a format appropriate to the expression.
         // For now, only do it for integers.
-        final Type type = exp.getTypeX();
+        final Type type = exp.getType();
         if (type instanceof DecimalType) {
             int scale = ((DecimalType) type).getScale();
             String formatString = "#,##0";
@@ -330,11 +329,12 @@ public class Formula extends QueryPart {
         // Burrow into the expression. If we find a member, use its format
         // string.
         // TODO: Obsolete this code.
-        Walker walker = new Walker(exp);
+        Walker walker = new Walker((Walkable) exp);
         while (walker.hasMoreElements()) {
             final Object o = walker.nextElement();
-            if (o instanceof Member) {
-                Exp formatExp = (Exp) ((Member) o).getPropertyValue(
+            if (o instanceof MemberExpr) {
+                MemberExpr memberExpr = (MemberExpr) o;
+                Exp formatExp = (Exp) memberExpr.getMember().getPropertyValue(
                     Property.FORMAT_EXP.name);
                 if (formatExp != null) {
                     return formatExp;
@@ -342,6 +342,10 @@ public class Formula extends QueryPart {
             }
         }
         return null;
+    }
+
+    public void compile() {
+        // nothing to do
     }
 }
 

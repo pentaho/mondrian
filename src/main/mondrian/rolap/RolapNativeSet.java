@@ -12,12 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import mondrian.olap.Exp;
-import mondrian.olap.FunCall;
-import mondrian.olap.FunDef;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.NativeEvaluator;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.cache.HardSmartCache;
 import mondrian.rolap.cache.SmartCache;
@@ -25,15 +20,18 @@ import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.LevelExpr;
 
 import org.apache.log4j.Logger;
 
 /**
- * analyses set expressions and executes them in SQL if possible.
- * Supports crossjoin, member.children, level.members and member.descendants - all in
- * non empty mode, i.e. there is a join to the fact table.
- * <p>
- * TODO the order of the result is different from the order of the enumeration. Should sort.
+ * Analyses set expressions and executes them in SQL if possible.
+ * Supports crossjoin, member.children, level.members and member.descendants -
+ * all in non empty mode, i.e. there is a join to the fact table.<p/>
+ *
+ * TODO: the order of the result is different from the order of the
+ * enumeration. Should sort.
  *
  * @author av
  * @since Nov 12, 2005
@@ -103,11 +101,13 @@ public abstract class RolapNativeSet extends RolapNative {
 
     protected class SetEvaluator implements NativeEvaluator {
         private CrossJoinArg[] args;
-        private RolapSchemaReader schemaReader;
+        private SchemaReader schemaReader;
         private TupleConstraint constraint;
         private int maxRows = 0;
 
-        public SetEvaluator(CrossJoinArg[] args, RolapSchemaReader schemaReader,
+        public SetEvaluator(
+                CrossJoinArg[] args,
+                SchemaReader schemaReader,
                 TupleConstraint constraint) {
             this.args = args;
             this.schemaReader = schemaReader;
@@ -154,8 +154,8 @@ public abstract class RolapNativeSet extends RolapNative {
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {
             RolapLevel level = arg.getLevel();
-            Hierarchy hierarchy = level.getHierarchy();
-            MemberReader mr = schemaReader.getMemberReader(hierarchy);
+            RolapHierarchy hierarchy = (RolapHierarchy) level.getHierarchy();
+            MemberReader mr = hierarchy.getMemberReader(schemaReader.getRole());
             MemberBuilder mb = mr.getMemberBuilder();
             Util.assertTrue(mb != null, "MemberBuilder not found");
             tr.addLevelMembers(level, mb);
@@ -168,7 +168,6 @@ public abstract class RolapNativeSet extends RolapNative {
         void setMaxRows(int maxRows) {
             this.maxRows = maxRows;
         }
-
     }
 
     /**
@@ -219,11 +218,13 @@ public abstract class RolapNativeSet extends RolapNative {
         }
 
         public boolean equals(Object obj) {
-            if (!(obj instanceof DescendantsCrossJoinArg))
+            if (!(obj instanceof DescendantsCrossJoinArg)) {
                 return false;
+            }
             DescendantsCrossJoinArg that = (DescendantsCrossJoinArg) obj;
-            if (!equals(this.level, that.level))
+            if (!equals(this.level, that.level)) {
                 return false;
+            }
             return equals(this.member, that.member);
         }
 
@@ -243,42 +244,57 @@ public abstract class RolapNativeSet extends RolapNative {
     }
 
     /**
-     * represents an enumeration {member1, member2, ...}. All members belong
-     * to the same level.
+     * Represents an enumeration {member1, member2, ...}.
+     * All members must to the same level and are non-calculated.
+     *
      * @author av
      * @since Nov 14, 2005
      */
-    protected static class EnumCrossJoinArg implements CrossJoinArg {
+    protected static class MemberListCrossJoinArg implements CrossJoinArg {
         private RolapMember[] members;
         private RolapLevel level = null;
         private boolean strict;
 
-        private EnumCrossJoinArg(RolapLevel level, RolapMember[] members, boolean strict) {
+        private MemberListCrossJoinArg(RolapLevel level, RolapMember[] members, boolean strict) {
             this.level = level;
             this.members = members;
             this.strict = strict;
         }
 
-        static CrossJoinArg instance(Exp[] args, boolean strict) {
-            if (args.length == 0)
+        /**
+         * Creates an instance of CrossJoinArg, or returns null if the
+         * arguments are invalid.<p/>
+         *
+         * To be valid, the arguments must be non-calculated members of the
+         * same level.
+         */
+        static CrossJoinArg create(Exp[] args, boolean strict) {
+            if (args.length == 0) {
                 return null;
+            }
             RolapLevel level = null;
             for (int i = 0; i < args.length; i++) {
-                if (!(args[i] instanceof RolapMember))
+                if (!(args[i] instanceof MemberExpr)) {
                     return null;
-                RolapMember m = (RolapMember) args[i];
-                if (strict && m.isCalculated())
+                }
+                RolapMember m = (RolapMember) ((MemberExpr) args[i]).getMember();
+                if (strict && m.isCalculated()) {
                     return null;
-                if (i == 0)
+                }
+                if (i == 0) {
                     level = m.getRolapLevel();
-                else if (!level.equals(m.getLevel()))
+                } else if (!level.equals(m.getLevel())) {
                     return null;
+                }
             }
-            if (!isSimpleLevel(level))
+            if (!isSimpleLevel(level)) {
                 return null;
+            }
             RolapMember[] members = new RolapMember[args.length];
-            System.arraycopy(args, 0, members, 0, args.length);
-            return new EnumCrossJoinArg(level, members, strict);
+            for (int i = 0; i < members.length; i++) {
+                members[i] = (RolapMember) ((MemberExpr) args[i]).getMember();
+            }
+            return new MemberListCrossJoinArg(level, members, strict);
         }
 
         public RolapLevel getLevel() {
@@ -299,14 +315,18 @@ public abstract class RolapNativeSet extends RolapNative {
         }
 
         public boolean equals(Object obj) {
-            if (!(obj instanceof EnumCrossJoinArg))
+            if (!(obj instanceof MemberListCrossJoinArg)) {
                 return false;
-            EnumCrossJoinArg that = (EnumCrossJoinArg) obj;
-            if (this.strict != that.strict)
+            }
+            MemberListCrossJoinArg that = (MemberListCrossJoinArg) obj;
+            if (this.strict != that.strict) {
                 return false;
-            for (int i = 0; i < members.length; i++)
-                if (this.members[i] != that.members[i])
+            }
+            for (int i = 0; i < members.length; i++) {
+                if (this.members[i] != that.members[i]) {
                     return false;
+                }
+            }
             return true;
         }
 
@@ -325,59 +345,69 @@ public abstract class RolapNativeSet extends RolapNative {
     protected CrossJoinArg checkDescendants(FunDef fun, Exp[] args) {
         if (!"Descendants".equalsIgnoreCase(fun.getName()))
             return null;
-        if (args.length != 2)
+        if (args.length != 2) {
             return null;
-
-        if (!(args[0] instanceof RolapMember))
+        }
+        if (!(args[0] instanceof MemberExpr)) {
             return null;
-        RolapMember member = (RolapMember) args[0];
-        if (member.isCalculated())
+        }
+        RolapMember member = (RolapMember) ((MemberExpr) args[0]).getMember();
+        if (member.isCalculated()) {
             return null;
-
-        if (!(args[1] instanceof RolapLevel))
+        }
+        if (!(args[1] instanceof LevelExpr)) {
             return null;
-        RolapLevel level = (RolapLevel) args[1];
-        if (!isSimpleLevel(level))
+        }
+        RolapLevel level = (RolapLevel) ((LevelExpr) args[1]).getLevel();
+        if (!isSimpleLevel(level)) {
             return null;
+        }
         return new DescendantsCrossJoinArg(level, member);
     }
 
     /**
-     * Checks for &lt;Level&gt;.members.
+     * Checks for <code>&lt;Level&gt;.Members</code>.
      *
-     * @return an {@link CrossJoinArg} instance describing the Level.members function or null,
-     * if <code>fun</code> represents something else.
+     * @return an {@link CrossJoinArg} instance describing the Level.members
+     *   function, or null if <code>fun</code> represents something else.
      */
     protected CrossJoinArg checkLevelMembers(FunDef fun, Exp[] args) {
-        if (!"Members".equalsIgnoreCase(fun.getName()))
+        if (!"Members".equalsIgnoreCase(fun.getName())) {
             return null;
-        if (args.length != 1)
+        }
+        if (args.length != 1) {
             return null;
-        if (!(args[0] instanceof RolapLevel))
+        }
+        if (!(args[0] instanceof LevelExpr)) {
             return null;
-        RolapLevel level = (RolapLevel) args[0];
-        if (!isSimpleLevel(level))
+        }
+        RolapLevel level = (RolapLevel) ((LevelExpr) args[0]).getLevel();
+        if (!isSimpleLevel(level)) {
             return null;
+        }
         return new DescendantsCrossJoinArg(level, null);
     }
 
     /**
-     * Checks for &lt;Member&gt;.children.
+     * Checks for <code>&lt;Member&gt;.Children</code>.
      *
-     * @return an {@link CrossJoinArg} instance describing the member.children function or null,
-     * if <code>fun</code> represents something else.
+     * @return an {@link CrossJoinArg} instance describing the member.children
+     *   function, or null if <code>fun</code> represents something else.
      */
     protected CrossJoinArg checkMemberChildren(FunDef fun, Exp[] args) {
-        if (!"Children".equalsIgnoreCase(fun.getName()))
+        if (!"Children".equalsIgnoreCase(fun.getName())) {
             return null;
-        if (args.length != 1)
+        }
+        if (args.length != 1) {
             return null;
-        if (!(args[0] instanceof RolapMember))
+        }
+        if (!(args[0] instanceof MemberExpr)) {
             return null;
-        RolapMember member = (RolapMember) args[0];
-        if (member.isCalculated())
+        }
+        RolapMember member = (RolapMember) ((MemberExpr) args[0]).getMember();
+        if (member.isCalculated()) {
             return null;
-
+        }
         RolapLevel level = member.getRolapLevel();
         level = (RolapLevel) level.getChildLevel();
         if (level == null || !isSimpleLevel(level)) {
@@ -388,20 +418,23 @@ public abstract class RolapNativeSet extends RolapNative {
     }
 
     /**
-     * Checks for Enumeration {member1, member2, ...}
+     * Checks for a set constructor, <code>{member1, member2, ...}</code>.
      *
-     * @return an {@link CrossJoinArg} instance describing the enumeration or null,
-     * if <code>fun</code> represents something else.
+     * @return an {@link CrossJoinArg} instance describing the enumeration,
+     *    or null if <code>fun</code> represents something else.
      */
     protected CrossJoinArg checkEnumeration(FunDef fun, Exp[] args) {
-        if (!"{}".equalsIgnoreCase(fun.getName()))
+        if (!"{}".equalsIgnoreCase(fun.getName())) {
             return null;
-        return EnumCrossJoinArg.instance(args, isStrict());
+        }
+        return MemberListCrossJoinArg.create(args, isStrict());
     }
 
     /**
-     * checks for crossjoin(&lt;set1&gt;, &lt;set2&gt) where set1 and set2 are one of
-     * member.children, level.members or member.descendants.
+     * Checks for <code>CrossJoin(&lt;set1&gt;, &lt;set2&gt)</code>, where
+     * set1 and set2 are one of
+     * <code>member.children</code>, <code>level.members</code> or
+     * <code>member.descendants</code>.
      */
     protected CrossJoinArg[] checkCrossJoin(FunDef fun, Exp[] args) {
         // is this "CrossJoin([A].children, [B].children)"
@@ -422,36 +455,42 @@ public abstract class RolapNativeSet extends RolapNative {
     }
 
     /**
-     * scans for memberChildren, levelMembers, memberDescendants, crossJoin (recursive)
+     * Scans for memberChildren, levelMembers, memberDescendants, crossJoin.
      */
     protected CrossJoinArg[] checkCrossJoinArg(Exp exp) {
-        if (!(exp instanceof FunCall))
+        if (!(exp instanceof FunCall)) {
             return null;
+        }
         FunDef fun = ((FunCall) exp).getFunDef();
         Exp[] args = ((FunCall) exp).getArgs();
         return checkCrossJoinArg(fun, args);
     }
 
     /**
-     * scans for memberChildren, levelMembers, memberDescendants, crossJoin (recursive)
+     * Scans for memberChildren, levelMembers, memberDescendants, crossJoin (recursive)
      */
     protected CrossJoinArg[] checkCrossJoinArg(FunDef fun, Exp[] args) {
         CrossJoinArg arg = checkMemberChildren(fun, args);
-        if (arg == null) {
-            arg = checkLevelMembers(fun, args);
+        if (arg != null) {
+            return new CrossJoinArg[] {arg};
         }
-        if (arg == null) {
-            arg = checkDescendants(fun, args);
+        arg = checkLevelMembers(fun, args);
+        if (arg != null) {
+            return new CrossJoinArg[] {arg};
         }
-        if (arg == null) {
-            arg = checkEnumeration(fun, args);
+        arg = checkDescendants(fun, args);
+        if (arg != null) {
+            return new CrossJoinArg[] {arg};
         }
-        if (arg != null) { return new CrossJoinArg[] { arg}; }
+        arg = checkEnumeration(fun, args);
+        if (arg != null) {
+            return new CrossJoinArg[] {arg};
+        }
         return checkCrossJoin(fun, args);
     }
 
     /**
-     * ensures that level is not ragged and not a parent/child level.
+     * Ensures that level is not ragged and not a parent/child level.
      */
     protected static boolean isSimpleLevel(RolapLevel level) {
         RolapHierarchy hier = (RolapHierarchy) level.getHierarchy();
@@ -471,24 +510,27 @@ public abstract class RolapNativeSet extends RolapNative {
     }
 
     /**
-     * if all involved sets are already known, like in crossjoin({a,b}, {c,d}), then
-     * use the interpreter.
+     * If all involved sets are already known, like in crossjoin({a,b}, {c,d}),
+     * then use the interpreter.
      *
      * @return true if <em>all</em> args are prefer the interpreter
      */
     protected boolean isPreferInterpreter(CrossJoinArg[] args) {
-        for (int i = 0; i < args.length; i++)
-            if (!args[i].isPreferInterpreter())
+        for (int i = 0; i < args.length; i++) {
+            if (!args[i].isPreferInterpreter()) {
                 return false;
+            }
+        }
         return true;
     }
 
     /** disable garbage collection for test */
     void useHardCache(boolean hard) {
-        if (hard)
+        if (hard) {
             cache = new HardSmartCache();
-        else
+        } else {
             cache = new SoftSmartCache();
+        }
     }
 }
 

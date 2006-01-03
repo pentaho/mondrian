@@ -10,6 +10,8 @@
 
 package mondrian.olap;
 
+import mondrian.olap.type.Type;
+
 /**
  * A named set of members or tuples.
  *
@@ -22,8 +24,22 @@ package mondrian.olap;
  * @version $Id$
  **/
 public interface NamedSet extends OlapElement {
+    /**
+     * Sets the name of this named set.
+     */
     void setName(String newName);
-}
 
+    /**
+     * Returns the type of this named set.
+     */
+    Type getType();
+
+    /**
+     * Returns the expression used to derive this named set.
+     */
+    Exp getExp();
+
+    NamedSet validate(Validator validator);
+}
 
 // End NamedSet.java

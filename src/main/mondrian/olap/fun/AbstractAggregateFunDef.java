@@ -10,6 +10,7 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+import mondrian.mdx.UnresolvedFunCall;
 
 /**
  * Abstract base class for all aggregate functions (<code>Aggregate</code>,
@@ -24,29 +25,22 @@ class AbstractAggregateFunDef extends FunDefBase {
         super(dummyFunDef);
     }
 
-    public boolean callDependsOn(FunCall call, Dimension dimension) {
-        // Aggregate(<Set>, <Value Expression>) depends upon everything
-        // <Value Expression> depends upon, except the dimensions of <Set>.
-        return callDependsOnSet(call, dimension);
-    }
-
     protected Exp validateArg(
-            Validator validator, FunCall call, int i, int type) {
+            Validator validator, Exp[] args, int i, int type) {
         // If expression cache is enabled, wrap first expression (the set)
         // in a function which will use the expression cache.
         if (i == 0) {
             if (MondrianProperties.instance().EnableExpCache.get()) {
-                Exp arg = call.getArgs()[0];
-                final Exp cacheCall = new FunCall("$Cache",
+                Exp arg = args[0];
+                final Exp cacheCall = new UnresolvedFunCall(
+                        "$Cache",
                         Syntax.Internal,
                         new Exp[] {arg});
                 return validator.validate(cacheCall, false);
             }
         }
-        return super.validateArg(validator, call, i, type);
+        return super.validateArg(validator, args, i, type);
     }
-
-    final Exp valueFunCall = BuiltinFunTable.instance().createValueFunCall();
 }
 
 // End AbstractAggregateFunDef.java

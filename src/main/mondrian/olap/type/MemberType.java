@@ -20,20 +20,30 @@ import mondrian.olap.*;
  */
 public class MemberType implements Type {
     private final Hierarchy hierarchy;
+    private final Dimension dimension;
     private final Level level;
     private final Member member;
+    private final String digest;
+
+    public static final MemberType Unknown = new MemberType(null, null, null, null);
 
     /**
      * Creates a type representing a member.
      *
+     * @param dimension
      * @param hierarchy Hierarchy the member belongs to, or null if not known.
-     * @param level
-     * @param member
+     * @param level Level the member belongs to, or null if not known
+     * @param member The precise member, or null if not known
      */
-    public MemberType(Hierarchy hierarchy, Level level, Member member) {
+    public MemberType(
+            Dimension dimension,
+            Hierarchy hierarchy,
+            Level level,
+            Member member) {
+        this.dimension = dimension;
+        this.hierarchy = hierarchy;
         this.level = level;
         this.member = member;
-        this.hierarchy = hierarchy;
         if (member != null) {
             Util.assertPrecondition(level != null);
             Util.assertPrecondition(member.getLevel() == level);
@@ -42,6 +52,42 @@ public class MemberType implements Type {
             Util.assertPrecondition(hierarchy != null);
             Util.assertPrecondition(level.getHierarchy() == hierarchy);
         }
+        if (hierarchy != null) {
+            Util.assertPrecondition(dimension != null);
+            Util.assertPrecondition(hierarchy.getDimension() == dimension);
+        }
+        StringBuffer buf = new StringBuffer("MemberType<");
+        if (member != null) {
+            buf.append("member=").append(member.getUniqueName());
+        } else if (level != null) {
+            buf.append("level=").append(level.getUniqueName());
+        } else if (hierarchy != null) {
+            buf.append("hierarchy=").append(hierarchy.getUniqueName());
+        } else if (dimension != null) {
+            buf.append("dimension=").append(dimension.getUniqueName());
+        }
+        buf.append(">");
+        this.digest = buf.toString();
+    }
+
+    public static MemberType forDimension(Dimension dimension) {
+        return new MemberType(dimension, null, null, null);
+    }
+
+    public static MemberType forHierarchy(Hierarchy hierarchy) {
+        return new MemberType(hierarchy.getDimension(), hierarchy, null, null);
+    }
+
+    public static MemberType forLevel(Level level) {
+        return new MemberType(level.getDimension(), level.getHierarchy(), level, null);
+    }
+
+    public static MemberType forMember(Member member) {
+        return new MemberType(member.getDimension(), member.getHierarchy(), member.getLevel(), member);
+    }
+
+    public String toString() {
+        return digest;
     }
 
     public Hierarchy getHierarchy() {
@@ -52,9 +98,36 @@ public class MemberType implements Type {
         return level;
     }
 
-    public boolean usesDimension(Dimension dimension) {
-        return hierarchy != null && hierarchy.getDimension() == dimension;
+    public boolean usesDimension(Dimension dimension, boolean maybe) {
+        if (this.dimension == null) {
+            return maybe;
+        } else {
+            return this.dimension == dimension ||
+                    (maybe && this.dimension == null);
+        }
+    }
+
+    public Type getValueType() {
+        // todo: when members have more type information (double vs. integer
+        // vs. string), return better type if member != null.
+        return new ScalarType();
+    }
+
+    public Dimension getDimension() {
+        return dimension;
+    }
+
+    public static MemberType forType(Type type) {
+        if (type instanceof MemberType) {
+            return (MemberType) type;
+        } else {
+            return new MemberType(
+                    type.getDimension(),
+                    type.getHierarchy(),
+                    type.getLevel(),
+                    null);
+        }
     }
 }
 
-// End HierarchyType.java
+// End MemberType.java

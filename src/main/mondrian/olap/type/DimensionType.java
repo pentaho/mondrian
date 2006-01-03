@@ -23,6 +23,8 @@ import mondrian.olap.Level;
 public class DimensionType implements Type {
     private final Dimension dimension;
 
+    public static final DimensionType Unknown = new DimensionType(null);
+
     /**
      * Creates a type representing a dimension.
      *
@@ -33,13 +35,23 @@ public class DimensionType implements Type {
         this.dimension = dimension;
     }
 
-    public boolean usesDimension(Dimension dimension) {
-        return this.dimension == null ||
-                this.dimension == dimension;
+    public static DimensionType forDimension(Dimension dimension) {
+        return new DimensionType(dimension);
+    }
+
+    public static DimensionType forType(Type type) {
+        return new DimensionType(type.getDimension());
+    }
+
+    public boolean usesDimension(Dimension dimension, boolean maybe) {
+        return this.dimension == dimension ||
+                (maybe && this.dimension == null);
     }
 
     public Hierarchy getHierarchy() {
         return dimension == null ?
+                null :
+                dimension.getHierarchies().length > 1 ?
                 null :
                 dimension.getHierarchies()[0];
     }
@@ -47,6 +59,11 @@ public class DimensionType implements Type {
     public Level getLevel() {
         return null;
     }
+
+    public Dimension getDimension() {
+        return dimension;
+    }
+
 }
 
 // End DimensionType.java

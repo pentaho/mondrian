@@ -17,6 +17,8 @@ import junit.framework.Assert;
 import mondrian.olap.*;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.resource.MondrianResource;
+import mondrian.calc.Calc;
+import mondrian.calc.CalcWriter;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -52,7 +54,7 @@ public class TestContext {
     private Connection foodMartConnection;
 
     protected static final String nl = System.getProperty("line.separator");
-    private static final String lineBreak = "\" + nl + " + nl + "\"";
+    private static final String lineBreak = "\"," + nl + "\"";
     private static final Pattern LineBreakPattern =
         Pattern.compile("\r\n|\r|\n");
     private static final Pattern TabPattern = Pattern.compile("\t");
@@ -303,6 +305,44 @@ public class TestContext {
     }
 
     /**
+     * Compiles a scalar expression in the context of the default cube.
+     *
+     * @param expression The expression to evaluate
+     * @param scalar Whether the expression is scalar
+     * @return String form of the program
+     */
+    public String compileExpression(String expression, final boolean scalar) {
+        String cubeName = getDefaultCubeName();
+        if (cubeName.indexOf(' ') >= 0) {
+            cubeName = Util.quoteMdxIdentifier(cubeName);
+        }
+        final String queryString;
+        if (scalar) {
+            queryString = "with member [Measures].[Foo] as " +
+                    Util.singleQuoteString(expression) +
+                    " select {[Measures].[Foo]} on columns from " + cubeName;
+        } else {
+            queryString = "SELECT {" + expression + "} ON COLUMNS FROM " + cubeName;
+        }
+        Connection connection = getConnection();
+        Query query = connection.parseQuery(queryString);
+        final Exp exp;
+        if (scalar) {
+            exp = query.formulas[0].getExpression();
+        } else {
+            exp = query.axes[0].exp;
+        }
+        final Calc calc = query.compileExpression(exp, scalar);
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw);
+        final CalcWriter calcWriter = new CalcWriter(pw);
+        calc.accept(calcWriter);
+        pw.flush();
+        String calcString = sw.toString();
+        return calcString;
+    }
+
+    /**
      * Executes a set expression which is expected to return 0 or 1 members.
      * It is an error if the expression returns tuples (as opposed to members),
      * or if it returns two or more members.
@@ -400,7 +440,7 @@ public class TestContext {
 
     /**
      * Checks that an actual string matches an expected string.
-     * If they do not, throws a {@link ComparisonFailure} and prints the
+     * If they do not, throws a {@link junit.framework.ComparisonFailure} and prints the
      * difference, including the actual string as an easily pasted Java string
      * literal.
      */
@@ -408,13 +448,42 @@ public class TestContext {
         String expected,
         String actual)
     {
+        assertEqualsVerbose(expected, actual, true, null);
+    }
+
+    /**
+     * Checks that an actual string matches an expected string.
+     * If they do not, throws a {@link ComparisonFailure} and prints the
+     * difference, including the actual string as an easily pasted Java string
+     * literal.
+     */
+    public static void assertEqualsVerbose(
+            String expected,
+            String actual,
+            boolean java,
+            String message)
+    {
         if ((expected == null) && (actual == null)) {
             return;
         }
         if ((expected != null) && expected.equals(actual)) {
             return;
         }
-        String s = actual;
+        if (message == null) {
+            message = "";
+        } else {
+            message += nl;
+        }
+        message +=
+                "Expected:" + nl + expected + nl +
+                "Actual:" + nl + actual + nl;
+        if (java) {
+            message += "Actual java:" + nl + toJavaString(actual) + nl;
+        }
+        throw new ComparisonFailure(message, expected, actual);
+    }
+
+    private static String toJavaString(String s) {
 
         // Convert [string with "quotes" split
         // across lines]
@@ -425,15 +494,14 @@ public class TestContext {
         s = LineBreakPattern.matcher(s).replaceAll(lineBreak);
         s = TabPattern.matcher(s).replaceAll("\\\\t");
         s = "\"" + s + "\"";
-        final String spurious = " + " + nl + "\"\"";
-        if (s.endsWith(spurious)) {
-            s = s.substring(0, s.length() - spurious.length());
+//        private static final String spurious = "," + nl + "\"\"";
+//        if (s.endsWith(spurious)) {
+//            s = s.substring(0, s.length() - spurious.length());
+//        }
+        if (s.indexOf(lineBreak) >= 0) {
+            s = "fold(new String[] {" + nl + s + "})";
         }
-        String message =
-                "Expected:" + nl + expected + nl +
-                "Actual: " + nl + actual + nl +
-                "Actual java: " + nl + s + nl;
-        throw new ComparisonFailure(message, expected, actual);
+        return s;
     }
 
     /**

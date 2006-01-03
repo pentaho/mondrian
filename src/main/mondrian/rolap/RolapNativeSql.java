@@ -12,26 +12,23 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import mondrian.olap.Category;
-import mondrian.olap.Exp;
-import mondrian.olap.FunCall;
-import mondrian.olap.Literal;
-import mondrian.olap.fun.FunTableImpl.MemberScalarExp;
+import mondrian.olap.*;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.mdx.MemberExpr;
 
 /**
- * creates SQL from parse tree nodes. Currently it creates the SQL that accesses
- * a measure for the ORDER BY that is generated for a TopCount.
- * <p>
- *  
+ * Creates SQL from parse tree nodes. Currently it creates the SQL that
+ * accesses a measure for the ORDER BY that is generated for a TopCount.<p/>
+ *
  * @author av
  * @since Nov 17, 2005
+ * @version $Id$
  */
 public class RolapNativeSql {
 
     private SqlQuery sqlQuery;
     private SqlQuery.Dialect dialect;
-    
+
     CompositeSqlCompiler numericCompiler;
     CompositeSqlCompiler booleanCompiler;
 
@@ -63,8 +60,9 @@ public class RolapNativeSql {
             for (Iterator it = compilers.iterator(); it.hasNext();) {
                 SqlCompiler compiler = (SqlCompiler) it.next();
                 String s = compiler.compile(exp);
-                if (s != null)
+                if (s != null) {
                     return s;
+                }
             }
             return null;
         }
@@ -82,10 +80,12 @@ public class RolapNativeSql {
      */
     class NumberSqlCompiler implements SqlCompiler {
         public String compile(Exp exp) {
-            if (!(exp instanceof Literal))
+            if (!(exp instanceof Literal)) {
                 return null;
-            if ((exp.getCategory() & Category.Numeric) == 0)
+            }
+            if ((exp.getCategory() & Category.Numeric) == 0) {
                 return null;
+            }
             Literal literal = (Literal) exp;
             String expr = String.valueOf(literal.getValue());
             if (dialect.isDB2()) {
@@ -106,20 +106,13 @@ public class RolapNativeSql {
      */
     abstract class MemberSqlCompiler implements SqlCompiler {
         protected Exp unwind(Exp exp) {
-            if (exp instanceof MemberScalarExp) {
-                Object[] children = ((MemberScalarExp) exp).getChildren();
-                if (children.length != 1)
-                    return null;
-                Exp child = (Exp) children[0];
-                return unwind(child);
-            }
             return exp;
         }
     }
 
     /**
      * compiles a measure into SQL, the measure will be aggregated like <code>sum(measure)</code>
-     * 
+     *
      * @author av
      * @since Nov 23, 2005
      */
@@ -127,10 +120,17 @@ public class RolapNativeSql {
 
         public String compile(Exp exp) {
             exp = unwind(exp);
-            if (!(exp instanceof RolapStoredMeasure))
+            if (!(exp instanceof MemberExpr)) {
                 return null;
-            RolapStoredMeasure measure = (RolapStoredMeasure) exp;
-            if (measure.isCalculated()) { return null; } // ??
+            }
+            final Member member = ((MemberExpr) exp).getMember();
+            if (!(member instanceof RolapStoredMeasure)) {
+                return null;
+            }
+            RolapStoredMeasure measure = (RolapStoredMeasure) member;
+            if (measure.isCalculated()) {
+                return null; // ??
+            }
             String exprInner = measure.getMondrianDefExpression().getExpression(sqlQuery);
             String expr = measure.getAggregator().getExpression(exprInner);
             if (dialect.isDB2()) {
@@ -146,36 +146,41 @@ public class RolapNativeSql {
 
     /**
      * compiles the underlying expression of a calculated member
-     * 
+     *
      * @author av
      * @since Nov 23, 2005
      */
-    class CalcMemberSqlCompiler extends MemberSqlCompiler {
+    class CalculatedMemberSqlCompiler extends MemberSqlCompiler {
         SqlCompiler compiler;
 
-        CalcMemberSqlCompiler(SqlCompiler argumentCompiler) {
+        CalculatedMemberSqlCompiler(SqlCompiler argumentCompiler) {
             this.compiler = argumentCompiler;
         }
 
         public String compile(Exp exp) {
             exp = unwind(exp);
-            if (!(exp instanceof RolapCalculatedMember))
+            if (!(exp instanceof MemberExpr)) {
                 return null;
-            RolapCalculatedMember member = (RolapCalculatedMember) exp;
+            }
+            final Member member = ((MemberExpr) exp).getMember();
+            if (!(member instanceof RolapCalculatedMember)) {
+                return null;
+            }
             exp = member.getExpression();
-            if (exp == null)
+            if (exp == null) {
                 return null;
+            }
             return compiler.compile(exp);
         }
 
         public String toString() {
-            return "CalcMemberSqlCompiler";
+            return "CalculatedMemberSqlCompiler";
         }
     }
 
     /**
      * contains utility methods to compile FunCall expressions into SQL.
-     * 
+     *
      * @author av
      * @since Nov 23, 2005
      */
@@ -194,34 +199,40 @@ public class RolapNativeSql {
          * @return true if exp is a matching FunCall
          */
         protected boolean match(Exp exp) {
-            if ((exp.getCategory() & category) == 0)
+            if ((exp.getCategory() & category) == 0) {
                 return false;
-            if (!(exp instanceof FunCall))
+            }
+            if (!(exp instanceof FunCall)) {
                 return false;
+            }
             FunCall fc = (FunCall) exp;
-            if (!mdx.equalsIgnoreCase(fc.getFunName()))
+            if (!mdx.equalsIgnoreCase(fc.getFunDef().getName())) {
                 return false;
+            }
             Exp[] args = fc.getArgs();
-            if (args.length != argCount)
+            if (args.length != argCount) {
                 return false;
+            }
             return true;
         }
 
         /**
          * compiles the arguments of a FunCall
-         * 
+         *
          * @return array of expressions or null if either exp does not match or
          * any argument could not be compiled.
          */
         protected String[] compileArgs(Exp exp, SqlCompiler compiler) {
-            if (!match(exp))
+            if (!match(exp)) {
                 return null;
+            }
             Exp[] args = ((FunCall) exp).getArgs();
             String[] sqls = new String[args.length];
             for (int i = 0; i < args.length; i++) {
                 sqls[i] = compiler.compile(args[i]);
-                if (sqls[i] == null)
+                if (sqls[i] == null) {
                     return null;
+                }
             }
             return sqls;
         }
@@ -236,8 +247,8 @@ public class RolapNativeSql {
         SqlCompiler compiler;
         String sql;
 
-        protected FunCallSqlCompiler(int category, String mdx, String sql, int argCount,
-                SqlCompiler argumentCompiler) {
+        protected FunCallSqlCompiler(int category, String mdx, String sql,
+                int argCount, SqlCompiler argumentCompiler) {
             super(category, mdx, argCount);
             this.sql = sql;
             this.compiler = argumentCompiler;
@@ -245,14 +256,16 @@ public class RolapNativeSql {
 
         public String compile(Exp exp) {
             String[] args = compileArgs(exp, compiler);
-            if (args == null)
+            if (args == null) {
                 return null;
+            }
             StringBuffer sb = new StringBuffer();
             sb.append(sql);
             sb.append("(");
             for (int i = 0; i < args.length; i++) {
-                if (i > 0)
+                if (i > 0) {
                     sb.append(", ");
+                }
                 sb.append(args[i]);
             }
             sb.append(") ");
@@ -269,8 +282,8 @@ public class RolapNativeSql {
      * @author av
      * @since Nov 23, 2005
      */
-    class UnOpSqlCompiler extends FunCallSqlCompiler {
-        protected UnOpSqlCompiler(int category, String mdx, String sql, SqlCompiler argumentCompiler) {
+    class UnaryOpSqlCompiler extends FunCallSqlCompiler {
+        protected UnaryOpSqlCompiler(int category, String mdx, String sql, SqlCompiler argumentCompiler) {
             super(category, mdx, sql, 1, argumentCompiler);
         }
     }
@@ -292,15 +305,15 @@ public class RolapNativeSql {
 
     /**
      * compiles an infix operator like addition into SQL like <code>(a + b)</code>
-     * 
+     *
      * @author av
      * @since Nov 23, 2005
      */
-    class InfixSqlCompiler extends FunCallSqlCompilerBase {
-        String sql;
-        SqlCompiler compiler;
+    class InfixOpSqlCompiler extends FunCallSqlCompilerBase {
+        private final String sql;
+        private final SqlCompiler compiler;
 
-        protected InfixSqlCompiler(int category, String mdx, String sql,
+        protected InfixOpSqlCompiler(int category, String mdx, String sql,
                 SqlCompiler argumentCompiler) {
             super(category, mdx, 2);
             this.sql = sql;
@@ -309,8 +322,9 @@ public class RolapNativeSql {
 
         public String compile(Exp exp) {
             String[] args = compileArgs(exp, compiler);
-            if (args == null)
+            if (args == null) {
                 return null;
+            }
             return "(" + args[0] + " " + sql + " " + args[1] + ")";
         }
 
@@ -322,7 +336,7 @@ public class RolapNativeSql {
     /**
      * compiles an <code>IIF(cond, val1, val2)</code>
      * expression into SQL <code>CASE WHEN cond THEN val1 ELSE val2 END</code>
-     * 
+     *
      * @author av
      * @since Nov 23, 2005
      */
@@ -336,50 +350,52 @@ public class RolapNativeSql {
         }
 
         public String compile(Exp exp) {
-            if (!match(exp))
+            if (!match(exp)) {
                 return null;
+            }
             Exp[] args = ((FunCall) exp).getArgs();
             String cond = booleanCompiler.compile(args[0]);
             String val1 = valueCompiler.compile(args[1]);
             String val2 = valueCompiler.compile(args[2]);
-            if (cond == null || val1 == null || val2 == null)
+            if (cond == null || val1 == null || val2 == null) {
                 return null;
-            return sqlQuery.getDialect().caseWhenElse(cond , val1, val2);
+            }
+            return sqlQuery.getDialect().caseWhenElse(cond, val1, val2);
         }
 
     }
 
     /**
      * creates a new instance
-     * @param sqlQuery the query which is needed for differen SQL dialects - its not modified. 
+     * @param sqlQuery the query which is needed for differen SQL dialects - its not modified.
      */
     RolapNativeSql(SqlQuery sqlQuery) {
         this.sqlQuery = sqlQuery;
         this.dialect = sqlQuery.getDialect();
-        
+
         numericCompiler = new CompositeSqlCompiler();
         booleanCompiler = new CompositeSqlCompiler();
 
         numericCompiler.add(new NumberSqlCompiler());
         numericCompiler.add(new StoredMeasureSqlCompiler());
-        numericCompiler.add(new CalcMemberSqlCompiler(numericCompiler));
+        numericCompiler.add(new CalculatedMemberSqlCompiler(numericCompiler));
         numericCompiler.add(new ParenthesisSqlCompiler(Category.Numeric, numericCompiler));
-        numericCompiler.add(new InfixSqlCompiler(Category.Numeric, "+", "+", numericCompiler));
-        numericCompiler.add(new InfixSqlCompiler(Category.Numeric, "-", "-", numericCompiler));
-        numericCompiler.add(new InfixSqlCompiler(Category.Numeric, "/", "/", numericCompiler));
-        numericCompiler.add(new InfixSqlCompiler(Category.Numeric, "*", "*", numericCompiler));
+        numericCompiler.add(new InfixOpSqlCompiler(Category.Numeric, "+", "+", numericCompiler));
+        numericCompiler.add(new InfixOpSqlCompiler(Category.Numeric, "-", "-", numericCompiler));
+        numericCompiler.add(new InfixOpSqlCompiler(Category.Numeric, "/", "/", numericCompiler));
+        numericCompiler.add(new InfixOpSqlCompiler(Category.Numeric, "*", "*", numericCompiler));
         numericCompiler.add(new IifSqlCompiler(Category.Numeric, numericCompiler));
 
-        booleanCompiler.add(new InfixSqlCompiler(Category.Logical, "<", "<", numericCompiler));
-        booleanCompiler.add(new InfixSqlCompiler(Category.Logical, "<=", "<=", numericCompiler));
-        booleanCompiler.add(new InfixSqlCompiler(Category.Logical, ">", ">", numericCompiler));
-        booleanCompiler.add(new InfixSqlCompiler(Category.Logical, ">=", ">=", numericCompiler));
-        booleanCompiler.add(new InfixSqlCompiler(Category.Logical, "=", "=", numericCompiler));
-        booleanCompiler.add(new InfixSqlCompiler(Category.Logical, "<>", "<>", numericCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "<", "<", numericCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "<=", "<=", numericCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, ">", ">", numericCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, ">=", ">=", numericCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "=", "=", numericCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "<>", "<>", numericCompiler));
 
-        booleanCompiler.add(new InfixSqlCompiler(Category.Logical, "and", "AND", booleanCompiler));
-        booleanCompiler.add(new InfixSqlCompiler(Category.Logical, "or", "OR", booleanCompiler));
-        booleanCompiler.add(new UnOpSqlCompiler(Category.Logical, "not", "NOT", booleanCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "and", "AND", booleanCompiler));
+        booleanCompiler.add(new InfixOpSqlCompiler(Category.Logical, "or", "OR", booleanCompiler));
+        booleanCompiler.add(new UnaryOpSqlCompiler(Category.Logical, "not", "NOT", booleanCompiler));
         booleanCompiler.add(new ParenthesisSqlCompiler(Category.Logical, booleanCompiler));
         booleanCompiler.add(new IifSqlCompiler(Category.Logical, booleanCompiler));
     }
@@ -397,3 +413,5 @@ public class RolapNativeSql {
     }
 
 }
+
+// End RolapNativeSql.java

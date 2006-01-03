@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>WITH MEMBER [Store].[Other Cities] AS    '([Store].[All Stores], Measures.CURRENTMEMBER) -      SUM(TOPCOUNT([Store].[Store City].MEMBERS, 12, [Sales Count]), Measures.CURRENTMEMBER)' SELECT {Measures.MEMBERS} ON COLUMNS, {TOPCOUNT([Store].[Store City].MEMBERS, 12, [Sales Count]), [Store].[Other Cities]} ON ROWS FROM [Sales]</mdxQuery>
+    <mdxQuery>WITH MEMBER [Store].[Other Cities] AS    '([Store].[All Stores], Measures.CURRENTMEMBER) -      SUM(TOPCOUNT([Store].[Store City].MEMBERS, 12, [Sales Count]), Measures.CURRENTMEMBER)' SELECT {Measures.[Sales Count], Measures.[Store Cost], Measures.[Store Sales], Measures.[Unit Sales], Measures.[Customer Count]} ON COLUMNS, {TOPCOUNT([Store].[Store City].MEMBERS, 12, [Sales Count]), [Store].[Other Cities]} ON ROWS FROM [Sales]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>

@@ -12,19 +12,14 @@
 */
 
 package mondrian.rolap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import mondrian.olap.Util;
-import mondrian.olap.Evaluator;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
-import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
+import mondrian.rolap.sql.TupleConstraint;
+
+import java.util.*;
 
 /**
  * <code>SmartMemberReader</code> implements {@link MemberReader} by keeping a
@@ -32,11 +27,13 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
  * list of its children. It also caches the members of levels.
  *
  * <p>Synchronization: the MemberReader <code>source</code> must be called
- * from synchronized(this) context - it does not synchronize itself (probably it should).</p>
+ * from synchronized(this) context - it does not synchronize itself (probably
+ * it should).</p>
  *
- * <p>Constraints: Member.Children and Level.Members may be constrained by a SqlConstraint
- * object. In this case a subset of all members is returned. These subsets are cached too
- * and the SqlConstraint is part of the cache key. This is used in NON EMPTY context.</p>
+ * <p>Constraints: Member.Children and Level.Members may be constrained by a
+ * SqlConstraint object. In this case a subset of all members is returned.
+ * These subsets are cached too and the SqlConstraint is part of the cache key.
+ * This is used in NON EMPTY context.</p>
  *
  * <p>Uniqueness. We need to ensure that there is never more than one {@link
  * RolapMember} object representing the same member.</p>
@@ -145,38 +142,43 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         return members;
     }
 
-    private void getMembersInLevel(List result,
-                                   RolapLevel level,
-                                   int startOrdinal,
-                                   int endOrdinal) {
-        final List membersInLevel =
-            getMembersInLevel(level, startOrdinal, endOrdinal);
-        result.addAll(membersInLevel);
-    }
-
     public void getMemberChildren(RolapMember parentMember, List children) {
-        MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+        MemberChildrenConstraint constraint =
+                sqlConstraintFactory.getMemberChildrenConstraint(null);
         getMemberChildren(parentMember, children, constraint);
     }
 
-    public void getMemberChildren(RolapMember parentMember, List children, MemberChildrenConstraint constraint) {
+    public void getMemberChildren(
+            RolapMember parentMember,
+            List children,
+            MemberChildrenConstraint constraint) {
         List parentMembers = new ArrayList();
         parentMembers.add(parentMember);
         getMemberChildren(parentMembers, children, constraint);
     }
 
-    public synchronized void getMemberChildren(List parentMembers, List children) {
-        MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+    public synchronized void getMemberChildren(
+            List parentMembers,
+            List children) {
+        MemberChildrenConstraint constraint =
+                sqlConstraintFactory.getMemberChildrenConstraint(null);
         getMemberChildren(parentMembers, children, constraint);
     }
 
-    public synchronized void getMemberChildren(List parentMembers, List children, MemberChildrenConstraint constraint) {
+    public synchronized void getMemberChildren(
+            List parentMembers,
+            List children,
+            MemberChildrenConstraint constraint) {
         List missed = new ArrayList();
         for (Iterator it = parentMembers.iterator(); it.hasNext();) {
             RolapMember parent = (RolapMember) it.next();
             List list = (List) mapMemberToChildren.get(parent, constraint);
             if (list == null) {
-                missed.add(parent);
+                if (parent.isNull()) {
+                    // the null member has no children
+                } else {
+                    missed.add(parent);
+                }
             } else {
                 children.addAll(list);
             }
@@ -186,8 +188,9 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         }
     }
 
-    public RolapMember lookupMember(String[] uniqueNameParts,
-                                    boolean failIfNotFound) {
+    public RolapMember lookupMember(
+            String[] uniqueNameParts,
+            boolean failIfNotFound) {
         return RolapUtil.lookupMember(this, uniqueNameParts, failIfNotFound);
     }
 
@@ -197,9 +200,11 @@ public class SmartMemberReader implements MemberReader, MemberCache {
      *
      * @param result Children are written here, in order
      * @param members Members whose children to read
-     * @param constraint restricts the returned members if possible (optional optimization)
-     **/
-    private void readMemberChildren(List members, List result, MemberChildrenConstraint constraint) {
+     * @param constraint restricts the returned members if possible (optional
+     *             optimization)
+     */
+    private void readMemberChildren(
+            List members, List result, MemberChildrenConstraint constraint) {
         if (false) {
             // Pre-condition disabled. It makes sense to have the pre-
             // condition, because lists of parent members are typically

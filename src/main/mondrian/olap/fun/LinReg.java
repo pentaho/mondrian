@@ -12,6 +12,12 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+import mondrian.olap.type.TupleType;
+import mondrian.olap.type.SetType;
+import mondrian.calc.*;
+import mondrian.calc.impl.AbstractDoubleCalc;
+import mondrian.calc.impl.ValueCalc;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -19,11 +25,11 @@ import java.util.List;
 /**
  * Abstract base class for definitions of linear regression functions.
  *
- * @see Intercept
- * @see Point
- * @see R2
- * @see Slope
- * @see Variance
+ * @see InterceptFunDef
+ * @see PointFunDef
+ * @see R2FunDef
+ * @see SlopeFunDef
+ * @see VarianceFunDef
  *
  * <h2>Correlation coefficient</h2>
  * <p><i>Correlation coefficient</i></p>
@@ -98,9 +104,27 @@ import java.util.List;
  */
 
 
-public abstract class LinReg extends FunkBase {
-    /** Expression which yields the current member. */
-    final Exp valueFunCall;
+public abstract class LinReg extends FunDefBase {
+    /** Code for the specific function. */
+    final int regType;
+
+    public static final int Point = 0;
+    public static final int R2 = 1;
+    public static final int Intercept = 2;
+    public static final int Slope = 3;
+    public static final int Variance = 4;
+
+    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        final ListCalc listCalc = compiler.compileList(call.getArg(0));
+        final DoubleCalc yCalc = compiler.compileDouble(call.getArg(1));
+        final DoubleCalc xCalc = call.getArgCount() > 2 ?
+                compiler.compileDouble(call.getArg(2)) :
+                new ValueCalc(call);
+        final boolean isTuples =
+                ((SetType) listCalc.getType()).getElementType() instanceof
+                TupleType;
+        return new LinRegCalc(call, listCalc, yCalc, xCalc, isTuples, regType);
+    }
 
     /////////////////////////////////////////////////////////////////////////
     //
@@ -171,101 +195,180 @@ public abstract class LinReg extends FunkBase {
         }
     }
 
-
-    /////////////////////////////////////////////////////////////////////////
-    //
-    // Implementations of LinRegXXX
-    //
-    /////////////////////////////////////////////////////////////////////////
-    public static class Intercept extends LinReg {
-        public Intercept() {
-            super();
+    /**
+     * Definition of the <code>LinRegIntercept</code> MDX function.
+     *
+     * <p>Synopsis:
+     * <blockquote><code>LinRegIntercept(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric  Expression&gt;])</code></blockquote>
+     */
+    public static class InterceptFunDef extends LinReg {
+        InterceptFunDef(FunDef funDef) {
+            super(funDef, Intercept);
         }
-        // <Set>, <Numeric Expression>[, <Numeric  Expression>]
-        public Object evaluate(Evaluator evaluator, Exp[] args) {
-debug("LinReg.Intercept.evaluator","TOP");
-            LinReg.Value value = process(evaluator, args);
-            if (value == null) {
-                return Util.nullValue;
+
+        public static class Resolver extends MultiResolver {
+            Resolver() {
+                super(
+                        "LinRegIntercept",
+                        "LinRegIntercept(<Set>, <Numeric Expression>[, <Numeric Expression>])",
+                        "Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.",
+                        new String[]{"fnxn","fnxnn"});
             }
-// RME
-debug("LinReg.Intercept.evaluator","BOTTOM: " +value.getIntercept());
-            return new Double(value.getIntercept());
+
+            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+                return new InterceptFunDef(dummyFunDef);
+            }
         }
     }
-    public static class Point extends LinReg {
-        public Point() {
-            super();
+
+    /**
+     * Definition of the <code>LinRegPoint</code> MDX function.
+     *
+     * <p>Synopsis:
+     * <blockquote><code>LinRegPoint(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric  Expression&gt;])</code></blockquote>
+     */
+    public static class PointFunDef extends LinReg {
+        public PointFunDef(FunDef funDef) {
+            super(funDef, Point);
         }
-        // <Numeric Expression>,
-        // <Set>, <Numeric Expression>[, <Numeric  Expression>]
-        public Object evaluate(Evaluator evaluator, Exp[] args) {
-//debug("LinReg.Point.evaluator","TOP");
-            double x = getDoubleArg(evaluator, args, 0).doubleValue();
-debug("LinReg.Point.evaluator","x=" +x);
 
-debug("LinReg.Point.evaluator","args.length=" +args.length);
-            // remove first arg and pass the rest to init
-            Exp[] args2 = new Exp[args.length-1];
-            System.arraycopy(args, 1, args2, 0, args.length-1);
+        public Calc compileCall(FunCall call, ExpCompiler compiler) {
+            final DoubleCalc xPointCalc = compiler.compileDouble(call.getArg(0));
+            final ListCalc listCalc = compiler.compileList(call.getArg(1));
+            final DoubleCalc yCalc = compiler.compileDouble(call.getArg(2));
+            final DoubleCalc xCalc = call.getArgCount() > 3 ?
+                    compiler.compileDouble(call.getArg(3)) :
+                    new ValueCalc(call);
+            final boolean isTuples =
+                    ((SetType) listCalc.getType()).getElementType() instanceof
+                    TupleType;
+            return new PointCalc(call, xPointCalc, listCalc, yCalc, xCalc, isTuples);
+        }
 
-debug("LinReg.Point.evaluator","args2.length=" +args2.length);
-            // remember: pass in args2!!! NOT args
-            LinReg.Value value = process(evaluator, args2);
-            if (value == null) {
-                return Util.nullValue;
+        public static class Resolver extends MultiResolver {
+            Resolver() {
+                super(
+                "LinRegPoint",
+                "LinRegPoint(<Numeric Expression>, <Set>, <Numeric Expression>[, <Numeric Expression>])",
+                "Calculates the linear regression of a set and returns the value of y in the regression line y = ax + b.",
+                new String[]{"fnnxn","fnnxnn"});
             }
 
+            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+                return new PointFunDef(dummyFunDef);
+            }
+        }
+    }
+
+    private static class PointCalc extends AbstractDoubleCalc {
+        private final DoubleCalc xPointCalc;
+        private final ListCalc listCalc;
+        private final DoubleCalc yCalc;
+        private final DoubleCalc xCalc;
+        private final boolean tuples;
+
+        public PointCalc(
+                FunCall call,
+                DoubleCalc xPointCalc,
+                ListCalc listCalc,
+                DoubleCalc yCalc, DoubleCalc xCalc, boolean tuples) {
+            super(call, new Calc[]{xPointCalc, listCalc, yCalc, xCalc});
+            this.xPointCalc = xPointCalc;
+            this.listCalc = listCalc;
+            this.yCalc = yCalc;
+            this.xCalc = xCalc;
+            this.tuples = tuples;
+        }
+
+        public double evaluateDouble(Evaluator evaluator) {
+            double xPoint = xPointCalc.evaluateDouble(evaluator);
+            Value value =
+                    process(evaluator, listCalc, yCalc, xCalc, tuples);
+            if (value == null) {
+                return FunUtil.DoubleNull;
+            }
             // use first arg to generate y position
-            double y = x * value.getSlope() + value.getIntercept();
-debug("LinReg.Point.evaluator","y=" +y);
-            return new Double(y);
+            double yPoint = xPoint * value.getSlope() +
+                    value.getIntercept();
+            return yPoint;
         }
     }
-    public static class Slope extends LinReg {
-        public Slope() {
-            super();
+
+    /**
+     * Definition of the <code>LinRegSlope</code> MDX function.
+     *
+     * <p>Synopsis:
+     * <blockquote><code>LinRegSlope(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric  Expression&gt;])</code></blockquote>
+     */
+    public static class SlopeFunDef extends LinReg {
+        public SlopeFunDef(FunDef funDef) {
+            super(funDef, Slope);
         }
-        // <Set>, <Numeric Expression>[, <Numeric  Expression>]
-        public Object evaluate(Evaluator evaluator, Exp[] args) {
-debug("LinReg.Slope.evaluator","TOP");
-            LinReg.Value value = process(evaluator, args);
-            if (value == null) {
-                return Util.nullValue;
+
+        public static class Resolver extends MultiResolver {
+            Resolver() {
+                super(
+                        "LinRegSlope",
+                        "LinRegSlope(<Set>, <Numeric Expression>[, <Numeric Expression>])",
+                        "Calculates the linear regression of a set and returns the value of a in the regression line y = ax + b.",
+                        new String[]{"fnxn","fnxnn"});
             }
-            return new Double(value.getSlope());
+
+            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+                return new SlopeFunDef(dummyFunDef);
+            }
         }
     }
-    public static class R2 extends LinReg {
-        public R2() {
-            super();
+
+    /**
+     * Definition of the <code>LinRegR2</code> MDX function.
+     *
+     * <p>Synopsis:
+     * <blockquote><code>LinRegR2(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric  Expression&gt;])</code></blockquote>
+     */
+    public static class R2FunDef extends LinReg {
+        public R2FunDef(FunDef funDef) {
+            super(funDef, R2);
         }
 
-        // <Set>, <Numeric Expression>[, <Numeric  Expression>]
-        public Object evaluate(Evaluator evaluator, Exp[] args) {
-debug("LinReg.R2.evaluator","TOP");
-
-            LinReg.Value value = accuracy(evaluator, args);
-            if (value == null) {
-                return Util.nullValue;
+        public static class Resolver extends MultiResolver {
+            Resolver() {
+                super(
+                        "LinRegR2",
+                        "LinRegR2(<Set>, <Numeric Expression>[, <Numeric Expression>])",
+                        "Calculates the linear regression of a set and returns R2 (the coefficient of determination).",
+                        new String[]{"fnxn","fnxnn"});
             }
-            return new Double(value.getRSquared());
+
+            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+                return new R2FunDef(dummyFunDef);
+            }
         }
     }
-    public static class Variance extends LinReg {
-        public Variance() {
-            super();
+
+    /**
+     * Definition of the <code>LinRegVariance</code> MDX function.
+     *
+     * <p>Synopsis:
+     * <blockquote><code>LinRegVariance(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric  Expression&gt;])</code></blockquote>
+     */
+    public static class VarianceFunDef extends LinReg {
+        public VarianceFunDef(FunDef funDef) {
+            super(funDef, Variance);
         }
 
-        // <Set>, <Numeric Expression>[, <Numeric  Expression>]
-        public Object evaluate(Evaluator evaluator, Exp[] args) {
-debug("LinReg.Variance.evaluator","TOP");
-
-            LinReg.Value value = accuracy(evaluator, args);
-            if (value == null) {
-                return Util.nullValue;
+        public static class Resolver extends MultiResolver {
+            Resolver() {
+                super(
+                        "LinRegVariance",
+                        "LinRegVariance(<Set>, <Numeric Expression>[, <Numeric Expression>])",
+                        "Calculates the linear regression of a set and returns the variance associated with the regression line y = ax + b.",
+                        new String[]{"fnxn","fnxnn"});
             }
-            return new Double(value.getVariance());
+
+            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+                return new VarianceFunDef(dummyFunDef);
+            }
         }
     }
 
@@ -276,35 +379,23 @@ debug("LinReg.Variance.evaluator","TOP");
     }
 
 
-    protected LinReg() {
-        super();
-        valueFunCall = BuiltinFunTable.instance().createValueFunCall();
+    protected LinReg(FunDef funDef, int regType) {
+        super(funDef);
+        this.regType = regType;
     }
 
-    public abstract Object evaluate(Evaluator evaluator, Exp[] args);
-
-
-    // <Set>, <Numeric Expression>[, <Numeric  Expression>]
-    protected LinReg.Value accuracy(Evaluator evaluator, Exp[] args) {
-        LinReg.Value value = process(evaluator, args);
-        if (value == null) {
-            return null;
-        }
-
-        return accuracy(value);
-    }
-
-    // <Set>, <Numeric Expression>[, <Numeric  Expression>]
-    protected LinReg.Value process(Evaluator evaluator, Exp[] args) {
-        List members = (List) getArg(evaluator, args, 0);
-debug("LinReg.process","members.size=" +members.size());
-        ExpBase expY = (ExpBase) getArgNoEval(args, 1);
-        ExpBase expX = (ExpBase) getArgNoEval(args, 2, valueFunCall);
+    protected static LinReg.Value process(
+            Evaluator evaluator,
+            ListCalc listCalc,
+            DoubleCalc yCalc,
+            DoubleCalc xCalc,
+            boolean isTuples) {
+        List members = listCalc.evaluateList(evaluator);
 
         evaluator = evaluator.push();
 
-        SetWrapper[] sws = evaluateSet(evaluator, members,
-                new ExpBase[] {expY, expX});
+        SetWrapper[] sws = evaluateSet(
+                evaluator, members, new DoubleCalc[] {yCalc, xCalc}, isTuples);
         SetWrapper swY = sws[0];
         SetWrapper swX = sws[1];
 
@@ -318,7 +409,6 @@ debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
 
         return linearReg(swX.v, swY.v);
     }
-
 
     public static LinReg.Value accuracy(LinReg.Value value) {
         // for variance
@@ -412,7 +502,8 @@ debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
         int size = ylist.size();
         double sumX = 0.0;
         double sumY = 0.0;
-        double sumXX = 0.0;                                                             double sumXY = 0.0;
+        double sumXX = 0.0;
+        double sumXY = 0.0;
 
 debug("LinReg.linearReg","ylist.size()=" +ylist.size());
 debug("LinReg.linearReg","xlist.size()=" +xlist.size());
@@ -464,4 +555,50 @@ debug("LinReg.linearReg","value=" +value);
 
         return yfs;
     }
+
+    private static class LinRegCalc extends AbstractDoubleCalc {
+        private final ListCalc listCalc;
+        private final DoubleCalc yCalc;
+        private final DoubleCalc xCalc;
+        private final boolean tuples;
+        private final int regType;
+
+        public LinRegCalc(
+                FunCall call,
+                ListCalc listCalc,
+                DoubleCalc yCalc,
+                DoubleCalc xCalc,
+                boolean tuples,
+                int regType) {
+            super(call, new Calc[]{listCalc, yCalc, xCalc});
+            this.listCalc = listCalc;
+            this.yCalc = yCalc;
+            this.xCalc = xCalc;
+            this.tuples = tuples;
+            this.regType = regType;
+        }
+
+        public double evaluateDouble(Evaluator evaluator) {
+            Value value =
+                    process(evaluator, listCalc, yCalc, xCalc, tuples);
+            if (value == null) {
+                return FunUtil.DoubleNull;
+            }
+            switch (regType) {
+            case Intercept:
+                return value.getIntercept();
+            case Slope:
+                return value.getSlope();
+            case Variance:
+                return value.getVariance();
+            case R2:
+                return value.getRSquared();
+            default:
+            case Point:
+                throw Util.newInternal("unexpected value " + regType);
+            }
+        }
+    }
 }
+
+// End LinReg.java

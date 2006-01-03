@@ -11,26 +11,30 @@
 */
 
 package mondrian.olap;
-import java.io.PrintWriter;
 
 /**
- * An <code>OlapElement</code> is a catalog object (dimension, hierarchy, level,
- * member).  It is also a node in a parse tree.
- **/
-public interface OlapElement extends Exp {
+ * An <code>OlapElement</code> is a catalog object (dimension, hierarchy,
+ * level, member).
+ */
+public interface OlapElement {
     String getUniqueName();
     String getName();
     String getDescription();
-    void unparse(PrintWriter pw);
-    void accept(Visitor visitor);
-    void childrenAccept(Visitor visitor);
-    /** Looks up a child element, returning null if it does not exist. */
+
+    /**
+     * Looks up a child element, returning null if it does not exist.
+     */
     OlapElement lookupChild(SchemaReader schemaReader, String s);
-    /** Returns the name of this element qualified by its class, for example
-     * "hierarchy 'Customers'". **/
+
+    /**
+     * Returns the name of this element qualified by its class, for example
+     * "hierarchy 'Customers'".
+     */
     String getQualifiedName();
+
     String getCaption();
     Hierarchy getHierarchy();
+
     /**
      * Returns the dimension of a this expression, or null if no dimension is
      * defined. Applicable only to set expressions.
@@ -56,7 +60,7 @@ public interface OlapElement extends Exp {
      * </pre></blockquote>
      * has no dimension (well, actually it is [Product] x [Gender], but we
      * can't represent that, so we return null);</p>
-     **/
+     */
     Dimension getDimension();
 }
 

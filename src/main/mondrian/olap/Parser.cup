@@ -16,6 +16,7 @@
 import java_cup.runtime.*;
 import java.util.ArrayList;
 import mondrian.resource.MondrianResource;
+import mondrian.mdx.*;
 
 // Preliminaries to set up and use the scanner.
 // action code {: ... :};
@@ -590,47 +591,47 @@ cube_name ::= compound_id ;
 value_expression ::=
         term5
     |   value_expression:x OR term5:y {:
-            RESULT = new FunCall("OR", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall("OR", Syntax.Infix, new Exp[] {x, y});
         :}
     |   value_expression:x XOR term5:y {:
-            RESULT = new FunCall("XOR", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall("XOR", Syntax.Infix, new Exp[] {x, y});
         :}
     ;
 
 term5 ::=
         term4
     |   term5:x AND term4:y {:
-            RESULT = new FunCall("AND", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall("AND", Syntax.Infix, new Exp[] {x, y});
         :}
     ;
 
 term4 ::=
         term3
     |   NOT term4:p {:
-            RESULT = new FunCall("NOT", Syntax.Prefix, new Exp[] {p});
+            RESULT = new UnresolvedFunCall("NOT", Syntax.Prefix, new Exp[] {p});
         :}
     ;
 
 term3 ::=
         term2
     |   term3:p IS NULL {:
-            RESULT = new FunCall("IS NULL", Syntax.Property, new Exp[] {p});
+            RESULT = new UnresolvedFunCall("IS NULL", Syntax.Property, new Exp[] {p});
         :}
     |   term3:x comp_op:op term2:y {: // e.g. 1 < 5
-            RESULT = new FunCall(op, Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall(op, Syntax.Infix, new Exp[] {x, y});
         :}
     ;
 
 term2 ::=
         term
     |   term2:x PLUS term:y {:
-            RESULT = new FunCall("+", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall("+", Syntax.Infix, new Exp[] {x, y});
         :}
     |   term2:x MINUS term:y {:
-            RESULT = new FunCall("-", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall("-", Syntax.Infix, new Exp[] {x, y});
         :}
     |   term2:x CONCAT term:y {:
-            RESULT = new FunCall("||", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall("||", Syntax.Infix, new Exp[] {x, y});
         :}
     ;
 
@@ -639,10 +640,10 @@ term2 ::=
 term ::=
         factor
     |   term:x ASTERISK factor:y {:
-            RESULT = new FunCall("*", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall("*", Syntax.Infix, new Exp[] {x, y});
         :}
     |   term:x SOLIDUS factor:y {:
-            RESULT = new FunCall("/", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall("/", Syntax.Infix, new Exp[] {x, y});
         :}
     ;
 //
@@ -654,7 +655,7 @@ factor ::=
             RESULT = p;
         :}
     |   MINUS value_expression_primary:p {:
-            RESULT = new FunCall("-", Syntax.Prefix, new Exp[] {p});
+            RESULT = new UnresolvedFunCall("-", Syntax.Prefix, new Exp[] {p});
         :}
     ;
 // <sign> ::= + | -
@@ -694,14 +695,14 @@ value_expression_primary ::=
             if (i instanceof Id && !parser.isFunCall(j)) {
                 RESULT = ((Id) i).append(j, false);
             } else {
-                RESULT = new FunCall(j, Syntax.Property, new Exp[] {i});
+                RESULT = new UnresolvedFunCall(j, Syntax.Property, new Exp[] {i});
             }
         :}
     |   value_expression_primary:i DOT quoted_identifier:j {:
             if (i instanceof Id) {
                 RESULT = ((Id) i).append(j, false);
             } else {
-                RESULT = new FunCall(
+                RESULT = new UnresolvedFunCall(
                     j, Syntax.QuotedProperty, new Exp[] {i});
             }
         :}
@@ -709,26 +710,26 @@ value_expression_primary ::=
             if (i instanceof Id) {
                 RESULT = ((Id) i).append(j, true);
             } else {
-                RESULT = new FunCall(
+                RESULT = new UnresolvedFunCall(
                     j, Syntax.AmpersandQuotedProperty, new Exp[] {i});
             }
         :}
     |   value_expression_primary:i DOT identifier:j LPAREN exp_list_opt:lis RPAREN {:
             lis.add(0, i);
-            RESULT = new FunCall(j, Syntax.Method, (Exp[]) lis.toArray(new Exp[0]));
+            RESULT = new UnresolvedFunCall(j, Syntax.Method, (Exp[]) lis.toArray(new Exp[0]));
         :}
     |   identifier:i LPAREN exp_list_opt:lis RPAREN {:
-            RESULT = new FunCall(
+            RESULT = new UnresolvedFunCall(
                 i, Syntax.Function, (Exp[]) lis.toArray(new Exp[0]));
         :}
     |   LPAREN exp_list:lis RPAREN {:
             // Whereas ([Sales],[Time]) and () are tuples, ([Sales]) and (5)
             // are just expressions.
-            RESULT = new FunCall(
+            RESULT = new UnresolvedFunCall(
                 "()", Syntax.Parentheses, (Exp[]) lis.toArray(new Exp[0]));
         :}
     |   LBRACE exp_list_opt:lis RBRACE {: // set built from sets/tuples
-            RESULT = new FunCall(
+            RESULT = new UnresolvedFunCall(
                 "{}", Syntax.Braces, (Exp[]) lis.toArray(new Exp[0]));
         :}
     |   case_expression
@@ -753,10 +754,10 @@ case_expression ::=
                 v.add(z);
             }
             if (x == null) {
-                RESULT = new FunCall(
+                RESULT = new UnresolvedFunCall(
                     "_CaseTest", Syntax.Case, (Exp[]) v.toArray(new Exp[0]));
             } else {
-                RESULT = new FunCall(
+                RESULT = new UnresolvedFunCall(
                     "_CaseMatch", Syntax.Case, (Exp[]) v.toArray(new Exp[0]));
             }
         :}
@@ -1037,7 +1038,7 @@ comp_op ::=
 //                                              [, <member>]]])
 expression ::=
         expression:x COLON value_expression:y {: // range yields set
-            RESULT = new FunCall(":", Syntax.Infix, new Exp[] {x, y});
+            RESULT = new UnresolvedFunCall(":", Syntax.Infix, new Exp[] {x, y});
         :}
     |   value_expression
     ;

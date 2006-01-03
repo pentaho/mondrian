@@ -12,8 +12,6 @@
 
 package mondrian.olap;
 
-import mondrian.olap.type.Type;
-import mondrian.olap.type.CubeType;
 import mondrian.resource.MondrianResource;
 
 /**
@@ -80,23 +78,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return null;
     }
 
-    public Cube getCube() {
-        return this;
-    }
-
-    public int getCategory() {
-        return Category.Cube;
-    }
-
-    public Type getTypeX() {
-        return new CubeType(this);
-    }
-
     public Dimension[] getDimensions() {
-        return dimensions;
-    }
-
-    public Object[] getChildren() {
         return dimensions;
     }
 
@@ -151,11 +133,6 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return null;
     }
 
-    protected Object[] getAllowedChildren(CubeAccess cubeAccess) {
-        // cubeAccess sets permissions on hierarchies and members only
-        return dimensions;
-    }
-
     // ------------------------------------------------------------------------
 
     private Level getTimeLevel(LevelType levelType) {
@@ -194,20 +171,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return getTimeLevel(LevelType.TimeWeeks);
     }
 
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
-    }
-
-    public void childrenAccept(Visitor visitor) {
-        for (int i = 0; i < dimensions.length; i++) {
-            dimensions[i].accept(visitor);
-        }
-    }
-
-    public boolean dependsOn(Dimension dimension) {
-        throw new UnsupportedOperationException();
-    }
 }
 
 
-// End BaseCube.java
+// End CubeBase.java

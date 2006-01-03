@@ -12,6 +12,8 @@
 package mondrian.jolap;
 
 import mondrian.olap.*;
+import mondrian.mdx.DimensionExpr;
+import mondrian.mdx.UnresolvedFunCall;
 
 import javax.olap.OLAPException;
 import java.util.Iterator;
@@ -54,7 +56,7 @@ class Converter {
             if (exp == null) {
                 exp = exp2;
             } else {
-                exp = new FunCall("Union", new Exp[] {exp, exp2});
+                exp = new UnresolvedFunCall("Union", new Exp[] {exp, exp2});
             }
             Util.assertTrue(exp != null);
         }
@@ -78,7 +80,7 @@ class Converter {
                 if (exp == null) {
                     exp = exp2;
                 } else {
-                    exp = new FunCall("Crossjoin", new Exp[] {exp, exp2});
+                    exp = new UnresolvedFunCall("Crossjoin", new Exp[] {exp, exp2});
                 }
             }
         }
@@ -94,7 +96,7 @@ class Converter {
             if (exp == null) {
                 exp = exp2;
             } else {
-                exp = new FunCall("Crossjoin", new Exp[] {exp, exp2});
+                exp = new UnresolvedFunCall("Crossjoin", new Exp[] {exp, exp2});
             }
         }
         return exp;
@@ -129,7 +131,8 @@ class Converter {
     }
 
     Exp convert(MondrianJolapDimension dimension) {
-        return new FunCall("Members", Syntax.Property, new Exp[] {dimension.dimension});
+        return new UnresolvedFunCall("Members", Syntax.Property, new Exp[] {
+            new DimensionExpr(dimension.dimension)});
     }
 
 }

@@ -11,6 +11,7 @@ package mondrian.olap;
 
 import junit.framework.TestCase;
 import mondrian.olap.fun.BuiltinFunTable;
+import mondrian.mdx.UnresolvedFunCall;
 
 /**
  * Tests the MDX parser.
@@ -105,14 +106,14 @@ public class ParserTest extends TestCase {
         Exp colsSetExpr = axes[0].getSet();
         assertNotNull("Column tuples", colsSetExpr);
 
-        FunCall fun = (FunCall)colsSetExpr;
+        UnresolvedFunCall fun = (UnresolvedFunCall)colsSetExpr;
         String id = ((Id)(fun.getArgs()[0])).getElement(0);
         assertEquals("Correct member on axis", "axis0mbr", id);
 
         Exp rowsSetExpr = axes[1].getSet();
         assertNotNull("Row tuples", rowsSetExpr);
 
-        fun = (FunCall) rowsSetExpr;
+        fun = (UnresolvedFunCall ) rowsSetExpr;
         id = ((Id) (fun.getArgs()[0])).getElement(0);
         assertEquals("Correct member on axis", "axis1mbr", id);
     }

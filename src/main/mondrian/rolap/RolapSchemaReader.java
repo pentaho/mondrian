@@ -46,20 +46,19 @@ import org.apache.log4j.Logger;
  * @author jhyde
  * @since Feb 24, 2003
  * @version $Id$
- **/
+ */
 public abstract class RolapSchemaReader implements SchemaReader {
     private final Role role;
-    private final Map hierarchyReaders;
+    private final Map hierarchyReaders = new HashMap();
     private final RolapSchema schema;
-    private final SqlConstraintFactory sqlConstraintFactory = SqlConstraintFactory.instance();
+    private final SqlConstraintFactory sqlConstraintFactory =
+            SqlConstraintFactory.instance();
     private static final Logger LOGGER = Logger.getLogger(RolapSchemaReader.class);
 
     RolapSchemaReader(Role role, RolapSchema schema) {
         assert role != null : "precondition: role != null";
-
         this.role = role;
         this.schema = schema;
-        this.hierarchyReaders = new HashMap();
     }
 
     public Role getRole() {
@@ -77,7 +76,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
                 firstLevel = hierarchy.getLevels()[0];
             }
         }
-        return getLevelMembers(firstLevel);
+        return getLevelMembers(firstLevel, true);
     }
 
     synchronized MemberReader getMemberReader(Hierarchy hierarchy) {
@@ -147,14 +146,18 @@ public abstract class RolapSchemaReader implements SchemaReader {
     }
 
     public Member[] getMemberChildren(Member member, Evaluator context) {
-        MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(context);
+        MemberChildrenConstraint constraint =
+                sqlConstraintFactory.getMemberChildrenConstraint(context);
         return internalGetMemberChildren(member, constraint);
     }
-    private Member[] internalGetMemberChildren(Member member, MemberChildrenConstraint constraint) {
+
+    private Member[] internalGetMemberChildren(
+            Member member, MemberChildrenConstraint constraint) {
         List children = new ArrayList();
         final Hierarchy hierarchy = member.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
-        memberReader.getMemberChildren((RolapMember) member, children, constraint);
+        memberReader.getMemberChildren(
+                (RolapMember) member, children, constraint);
         return RolapUtil.toArray(children);
     }
 
@@ -200,11 +203,13 @@ public abstract class RolapSchemaReader implements SchemaReader {
         if (members.length == 0) {
             return RolapUtil.emptyMemberArray;
         } else {
-            MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(context);
+            MemberChildrenConstraint constraint =
+                    sqlConstraintFactory.getMemberChildrenConstraint(context);
             final Hierarchy hierarchy = members[0].getHierarchy();
             final MemberReader memberReader = getMemberReader(hierarchy);
             List children = new ArrayList();
-            memberReader.getMemberChildren(Arrays.asList(members), children, constraint);
+            memberReader.getMemberChildren(
+                    Arrays.asList(members), children, constraint);
             return RolapUtil.toArray(children);
         }
     }
@@ -271,18 +276,20 @@ public abstract class RolapSchemaReader implements SchemaReader {
     }
 
     public Member getLeadMember(Member member, int n) {
-        return getMemberReader(member.getHierarchy()).getLeadMember((RolapMember) member, n);
+        final MemberReader memberReader = getMemberReader(member.getHierarchy());
+        return memberReader.getLeadMember((RolapMember) member, n);
     }
 
-    public Member[] getLevelMembers(Level level) {
+    public Member[] getLevelMembers(Level level, boolean includeCalculated) {
         return getLevelMembers(level, null);
     }
 
     public Member[] getLevelMembers(Level level, Evaluator context) {
-        TupleConstraint constraint = sqlConstraintFactory.getLevelMembersConstraint(context);
+        TupleConstraint constraint =
+                sqlConstraintFactory.getLevelMembersConstraint(context);
         final MemberReader memberReader = getMemberReader(level.getHierarchy());
         final List membersInLevel = memberReader.getMembersInLevel(
-                    (RolapLevel) level, 0, Integer.MAX_VALUE, constraint);
+                (RolapLevel) level, 0, Integer.MAX_VALUE, constraint);
         return RolapUtil.toArray(membersInLevel);
     }
 
@@ -379,7 +386,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
         return schema.getNativeRegistry().createEvaluator(revaluator, fun, args);
     }
 
-    DataSource getDataSource() {
+    public DataSource getDataSource() {
         return schema.getInternalConnection().getDataSource();
     }
 

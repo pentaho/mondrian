@@ -74,17 +74,15 @@ class RolapDimension extends DimensionBase {
                    String name,
                    int globalOrdinal,
                    DimensionType dimensionType) {
-        super(name,
-            Util.makeFqName(name),
-            null,
-            globalOrdinal,
-            // todo: recognition of a time dimension should be improved
-            // allow multiple time dimensions
-            dimensionType);
+        super(
+                name,
+                globalOrdinal,
+                // todo: recognition of a time dimension should be improved
+                // allow multiple time dimensions
+                dimensionType);
 
         this.schema = schema;
         Util.assertTrue((globalOrdinal == 0) == name.equals(MEASURES_NAME));
-
         this.hierarchies = new RolapHierarchy[0];
     }
 
@@ -222,7 +220,7 @@ class RolapDimension extends DimensionBase {
     }
 
     /**
-     * See {@link #nextOrdinal}.
+     * Returns the ordinal of this dimension, unique within its schema.
      */
     int getGlobalOrdinal() {
         return globalOrdinal;
@@ -235,9 +233,10 @@ class RolapDimension extends DimensionBase {
      * @param name Name for the new dimension.
      * @param xmlCubeDimension
      */
-    public RolapDimension copy(RolapCube cube,
-                               String name,
-                               MondrianDef.CubeDimension xmlCubeDimension) {
+    public RolapDimension copy(
+            RolapCube cube,
+            String name,
+            MondrianDef.CubeDimension xmlCubeDimension) {
         RolapDimension dimension = new RolapDimension(
             schema,
             name,

@@ -9,10 +9,7 @@
 */
 package mondrian.olap.type;
 
-import mondrian.olap.Dimension;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 
 /**
  * Tuple type.
@@ -32,14 +29,18 @@ public class TupleType implements Type {
         this.elementTypes = (Type[]) elementTypes.clone();
     }
 
-    public boolean usesDimension(Dimension dimension) {
+    public boolean usesDimension(Dimension dimension, boolean maybe) {
         for (int i = 0; i < elementTypes.length; i++) {
             Type elementType = elementTypes[i];
-            if (elementType.usesDimension(dimension)) {
+            if (elementType.usesDimension(dimension, maybe)) {
                 return true;
             }
         }
         return false;
+    }
+
+    public Dimension getDimension() {
+        throw new UnsupportedOperationException();
     }
 
     public Hierarchy getHierarchy() {
@@ -49,6 +50,19 @@ public class TupleType implements Type {
     public Level getLevel() {
         throw new UnsupportedOperationException();
     }
+
+    public Type getValueType() {
+        for (int i = 0; i < elementTypes.length; i++) {
+            Type elementType = elementTypes[i];
+            if (elementType instanceof MemberType) {
+                MemberType memberType = (MemberType) elementType;
+                if (memberType.getDimension().isMeasures()) {
+                    return memberType.getValueType();
+                }
+            }
+        }
+        return new ScalarType();
+    }
 }
 
-// End SetType.java
+// End TupleType.java

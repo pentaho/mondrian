@@ -11,13 +11,11 @@
 */
 
 package mondrian.rolap;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FilterWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
+import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
+
+import org.apache.log4j.Logger;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -30,6 +28,7 @@ import java.util.StringTokenizer;
 
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
+import mondrian.calc.ExpCompiler;
 
 import org.apache.log4j.Logger;
 
@@ -53,8 +52,7 @@ public class RolapUtil {
     /**
      * Special cell value indicates that the value is not in cache yet.
      */
-    public static final RuntimeException valueNotReadyException =
-            new RuntimeException("value not ready");
+    public static final Object valueNotReadyException = new Double(0);
 
     /**
      * Special value represents a null key.
@@ -271,6 +269,17 @@ public class RolapUtil {
     }
 
     /**
+     * Creates a compiler which will generate programs which will test
+     * whether the dependencies declared via
+     * {@link mondrian.calc.Calc#dependsOn(mondrian.olap.Dimension)} are
+     * accurate.
+     */
+    public static ExpCompiler createDependencyTestingCompiler(
+            ExpCompiler compiler) {
+        return new RolapDependencyTestingEvaluator.DteCompiler(compiler);
+    }
+
+    /**
      * Writes to a string and also to an underlying writer.
      */
     public static class TeeWriter extends FilterWriter {
@@ -358,6 +367,14 @@ public class RolapUtil {
             querySemaphore = new Semaphore(queryCount);
         }
         return querySemaphore;
+    }
+
+    /**
+     * Creates a dummy evaluator.
+     */
+    public static Evaluator createEvaluator(Query query) {
+        final RolapResult result = new RolapResult(query, false);
+        return result.getRootEvaluator();
     }
 
     /**

@@ -48,7 +48,7 @@ public class Id
         return Category.Unknown;
     }
 
-    public Type getTypeX() {
+    public Type getType() {
         // Can't give the type until we have resolved.
         throw new UnsupportedOperationException();
     }
@@ -110,10 +110,6 @@ public class Id
     // implement Exp
     public Object evaluate(Evaluator evaluator) {
         return evaluator.visit(this);
-    }
-
-    public boolean dependsOn(Dimension dimension) {
-        throw new UnsupportedOperationException();
     }
 
 }

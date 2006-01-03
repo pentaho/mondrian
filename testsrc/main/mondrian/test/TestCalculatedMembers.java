@@ -329,7 +329,6 @@ public class TestCalculatedMembers extends FoodMartTestCase {
     }
 
     public void testCalcMemberIsSetFails() {
-        if (false) {
         // A member which is a set, and more important, cannot be converted to
         // a value, is an error.
         String queryString =
@@ -358,7 +357,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
         // Tuple can be converted.
         assertExprReturns("([Customers].[USA], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer])",
                 "1,683");
-        }
+
         // Set of tuples cannot be converted.
         assertExprThrows("{([Customers].[USA], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer])}",
                 "Member expression '{([Customers].[All Customers].[USA], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer])}' must not be a set");

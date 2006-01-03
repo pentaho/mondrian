@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT Measures.MEMBERS ON COLUMNS, TOPCOUNT({[Store].[Store City].MEMBERS}, 12, Measures.[Sales Count]) ON ROWS FROM [Sales] </mdxQuery>
+    <mdxQuery>SELECT {Measures.[Sales Count], Measures.[Store Cost], Measures.[Store Sales], Measures.[Unit Sales], Measures.[Customer Count]} ON COLUMNS, TOPCOUNT({[Store].[Store City].MEMBERS}, 12, Measures.[Sales Count]) ON ROWS FROM [Sales] </mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>

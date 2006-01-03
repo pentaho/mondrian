@@ -109,6 +109,14 @@ public class Property extends EnumeratedValues.BasicValue {
     public static final Property FORMULA =
             new Property("$formula", TYPE_OTHER, FORMULA_ORDINAL, true, false, false, null);
 
+    public static final int MEMBER_SCOPE_ORDINAL = 6;
+    /**
+     * Definition of the internal property which
+     * describes whether a calculated member belongs to a query or a cube.
+     */
+    public static final Property MEMBER_SCOPE =
+            new Property("$member_scope", TYPE_OTHER, MEMBER_SCOPE_ORDINAL, true, true, false, null);
+
     public static final int CATALOG_NAME_ORDINAL = 10;
     /**
      * Definition of the property which

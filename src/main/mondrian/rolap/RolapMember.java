@@ -12,7 +12,6 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
-import mondrian.olap.type.Type;
 
 import org.apache.log4j.Logger;
 import java.util.*;
@@ -103,9 +102,11 @@ public class RolapMember extends MemberBase {
     RolapLevel getRolapLevel() {
         return (RolapLevel) level;
     }
+
     RolapHierarchy getRolapHierarchy() {
         return (RolapHierarchy) getHierarchy();
     }
+
     void makeUniqueName(HierarchyUsage hierarchyUsage) {
         if (parentMember == null && key != null) {
             String n = hierarchyUsage.getName();
@@ -144,8 +145,10 @@ public class RolapMember extends MemberBase {
     public void setName(String name) {
         throw new Error("unsupported");
     }
+
     /**
      * Sets a property of this member to a given value.
+     *
      * <p>WARNING: Setting system properties such as "$name" may have nasty
      * side-effects.
      */
@@ -263,15 +266,9 @@ public class RolapMember extends MemberBase {
             return mapPropertyNameToValue.get(name);
         }
     }
+
     public Property[] getProperties() {
         return level.getInheritedProperties();
-    }
-    // implement Exp
-    public Object evaluateScalar(Evaluator evaluator) {
-        Member old = evaluator.setContext(this);
-        Object value = evaluator.evaluateCurrent();
-        evaluator.setContext(old);
-        return value;
     }
 
     String quoteKeyForSql() {
@@ -281,34 +278,14 @@ public class RolapMember extends MemberBase {
     }
 
 
-    /**
-     * Returns whether this member is calculated using an expression.
-     * (<code>member.{@link #isCalculated}()</code> is equivalent to
-     * <code>member.{@link #getExpression}() != null</code>.)
-    public boolean isCalculated() {
-        return false;
-    }
-     */
-
-    /**
-     * Returns the expression by which this member is calculated. The expression
-     * is not null if and only if the member is not calculated.
-     *
-     * @post (return != null) == (isCalculated())
-    public Exp getExpression() {
-        return null;
-    }
-     */
-
-    /**
-     * Returns the ordinal of the Rolap Member
-     */
     public int getOrdinal() {
         return ordinal;
     }
+
     void setOrdinal(int ordinal) {
         this.ordinal = ordinal;
     }
+
     Object getKey() {
         return this.key;
     }
@@ -390,10 +367,6 @@ public class RolapMember extends MemberBase {
 
     public Object getSqlKey() {
         return key;
-    }
-
-    public Type getTypeX() {
-        return ((RolapHierarchy) getHierarchy()).memberType;
     }
 
     /**

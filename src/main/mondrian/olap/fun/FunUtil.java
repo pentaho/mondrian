@@ -12,9 +12,10 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.TypeUtil;
+import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
+import mondrian.calc.Calc;
+import mondrian.calc.DoubleCalc;
 
 import org.apache.log4j.Logger;
 
@@ -32,6 +33,25 @@ public class FunUtil extends Util {
 
     static final String[] emptyStringArray = new String[0];
     private static final boolean debug = false;
+    public static final NullMember NullMember = new NullMember();
+
+    /**
+     * Special value which indicates that a <code>double</code> computation
+     * has returned the MDX null value. See {@link DoubleCalc}.
+     */
+    public static final double DoubleNull = 0.000000012345;
+
+    /**
+     * Special value which indicates that an <code>int</code> computation
+     * has returned the MDX null value. See {@link mondrian.calc.IntegerCalc}.
+     */
+    public static final int IntegerNull = Integer.MIN_VALUE + 1;
+
+    /**
+     * Null value in three-valued boolean logic.
+     * Actually, a placeholder until we actually implement 3VL.
+     */
+    public static final boolean BooleanNull = false;
 
     /**
      * Creates an exception which indicates that an error has occurred while
@@ -42,6 +62,14 @@ public class FunUtil extends Util {
             String message) {
         Util.discard(funDef); // TODO: use this
         return new MondrianEvaluationException(message);
+    }
+
+    /**
+     * Creates an exception which indicates that an error has occurred while
+     * executing a given function.
+     */
+    public static RuntimeException newEvalException(Throwable throwable) {
+        return new MondrianEvaluationException(throwable.getMessage());
     }
 
     static Exp getArgNoEval(Exp[] args, int index) {
@@ -204,14 +232,11 @@ public class FunUtil extends Util {
         }
     }
 
-
-    private static final Double nullValue = new Double(0);
-
     protected static Double getDoubleArg(
             Evaluator evaluator,
             Exp[] args,
             int index) {
-        return getDoubleArg(evaluator, args, index, nullValue);
+        return getDoubleArg(evaluator, args, index, (Double) Util.nullValue);
     }
 
     static Double getDoubleArg(
@@ -343,20 +368,7 @@ public class FunUtil extends Util {
         }
         Exp arg = args[index];
         Object o = arg.evaluate(evaluator);
-        if (true) {
-            return (Hierarchy) o;
-        }
-        if (o instanceof Member) {
-            return ((Member) o).getHierarchy();
-        } else if (o instanceof Level) {
-            return ((Level) o).getHierarchy();
-        } else if (o instanceof Hierarchy) {
-            return (Hierarchy) o;
-        } else if (o instanceof Dimension) {
-            return ((Dimension) o).getHierarchies()[0];
-        } else {
-            throw newInternal("expecting a hierarchy, got " + o);
-        }
+        return (Hierarchy) o;
     }
 
     static Dimension getDimensionArg(
@@ -373,20 +385,7 @@ public class FunUtil extends Util {
         }
         Exp arg = args[index];
         Object o = arg.evaluate(evaluator);
-        if (true) {
-            return (Dimension) o;
-        }
-        if (o instanceof Member) {
-            return ((Member) o).getDimension();
-        } else if (o instanceof Level) {
-            return ((Level) o).getDimension();
-        } else if (o instanceof Hierarchy) {
-            return ((Hierarchy) o).getDimension();
-        } else if (o instanceof Dimension) {
-            return (Dimension) o;
-        } else {
-            throw newInternal("expecting a dimension, got " + o);
-        }
+        return (Dimension) o;
     }
 
     /**
@@ -397,8 +396,8 @@ public class FunUtil extends Util {
      *     hierarchy
      */
     static void checkCompatible(Exp left, Exp right, FunDef funDef) {
-        final Type leftType = TypeUtil.stripSetType(left.getTypeX());
-        final Type rightType = TypeUtil.stripSetType(right.getTypeX());
+        final Type leftType = TypeUtil.stripSetType(left.getType());
+        final Type rightType = TypeUtil.stripSetType(right.getType());
         if (!TypeUtil.isUnionCompatible(leftType, rightType)) {
             throw newEvalException(funDef, "Expressions must have the same hierarchy");
         }
@@ -424,7 +423,9 @@ public class FunUtil extends Util {
      * to both <code>set</code> and <code>left</code>.
      **/
     static void addUnique(List left, List right, Set set) {
-        if (right == null) {
+        assert left != null;
+        assert right != null;
+        if (right.isEmpty()) {
             return;
         }
         for (int i = 0, n = right.size(); i < n; i++) {
@@ -455,7 +456,7 @@ public class FunUtil extends Util {
             SchemaReader schemaReader,
             List members,
             Level level) {
-        Member[] levelMembers = schemaReader.getLevelMembers(level);
+        Member[] levelMembers = schemaReader.getLevelMembers(level, true);
         addAll(members, levelMembers);
         return members;
     }
@@ -497,31 +498,33 @@ public class FunUtil extends Util {
     }
 
     /**
+     * For each member in a list, evaluate an expression and create a map
+     * from members to values.
+     *
+     * @param evaluator Evaluation context
+     * @param exp Expression to evaluate
+     * @param members List of members
+     * @param parentsToo If true, evaluate the expression for all ancestors
+     *            of the members as well
+     *
      * @pre exp != null
+     * @pre exp.getType() instanceof ScalarType
      */
-    static Map evaluateMembers(Evaluator evaluator,
-                               ExpBase exp,
-                               List members,
-                               boolean parentsToo) {
-        Member[] constantTuple = exp.isConstantTuple();
-        return (constantTuple == null)
-            ? _evaluateMembers(evaluator.push(), exp, members, parentsToo)
-            // exp is constant -- add it to the context before the loop, rather
-            // than at every step
-            : evaluateMembers(evaluator.push(constantTuple),
-                members, parentsToo);
-    }
-
-    private static Map _evaluateMembers(Evaluator evaluator,
-                                        ExpBase exp,
-                                        List members,
-                                        boolean parentsToo) {
+    static Map evaluateMembers(
+            Evaluator evaluator,
+            Calc exp,
+            List members,
+            boolean parentsToo) {
+        assert exp.getType() instanceof ScalarType;
         Map mapMemberToValue = new HashMap();
         for (int i = 0, count = members.size(); i < count; i++) {
             Member member = (Member) members.get(i);
             while (true) {
                 evaluator.setContext(member);
-                Object result = exp.evaluateScalar(evaluator);
+                Object result = exp.evaluate(evaluator);
+                if (result == null) {
+                    result = Util.nullValue;
+                }
                 mapMemberToValue.put(member, result);
                 if (!parentsToo) {
                     break;
@@ -571,7 +574,7 @@ public class FunUtil extends Util {
     static void sort(
             Evaluator evaluator,
             List members,
-            ExpBase exp,
+            Calc exp,
             boolean desc,
             boolean brk) {
         if (members.isEmpty()) {
@@ -731,12 +734,13 @@ public class FunUtil extends Util {
      * evaluating members, sorting appropriately, and returning a
      * truncated list of members
      */
-    static Object topOrBottom(Evaluator evaluator,
-                              List members,
-                              ExpBase exp,
-                              boolean isTop,
-                              boolean isPercent,
-                              double target) {
+    static List topOrBottom(
+            Evaluator evaluator,
+            List members,
+            Calc exp,
+            boolean isTop,
+            boolean isPercent,
+            double target) {
         Map mapMemberToValue = evaluateMembers(evaluator, exp, members, false);
         Comparator comparator = new BreakMemberComparator(mapMemberToValue, isTop);
         Collections.sort(members, comparator);
@@ -752,12 +756,12 @@ public class FunUtil extends Util {
                 break;
             }
             Object o = mapMemberToValue.get(members.get(i));
-            if (o instanceof Number) {
+            if (o == Util.nullValue) {
+                nullCount++;
+            } else if (o instanceof Number) {
                 runningTotal += ((Number) o).doubleValue();
             } else if (o instanceof Exception) {
                 // ignore the error
-            } else if (o instanceof Util.NullCellValue) {
-                nullCount++;
             } else {
                 throw Util.newInternal("got " + o + " when expecting Number");
             }
@@ -818,12 +822,12 @@ public class FunUtil extends Util {
      *
      * @return An array {@link Category} codes.
      */
-    public static int decodeReturnType(String flags) {
-        final int returnType = decodeType(flags, 1);
-        if ((returnType & Category.Mask) != returnType) {
+    public static int decodeReturnCategory(String flags) {
+        final int returnCategory = decodeCategory(flags, 1);
+        if ((returnCategory & Category.Mask) != returnCategory) {
             throw newInternal("bad return code flag in flags '" + flags + "'");
         }
-        return returnType;
+        return returnCategory;
     }
 
     /**
@@ -867,7 +871,7 @@ public class FunUtil extends Util {
      * @param offset 0-based offset of character within string
      * @return A {@link Category}
      */
-    public static int decodeType(String flags, int offset) {
+    public static int decodeCategory(String flags, int offset) {
         char c = flags.charAt(offset);
         switch (c) {
         case 'a':
@@ -911,7 +915,7 @@ public class FunUtil extends Util {
     /**
      * Decodes a string of parameter types into an array of type codes.
      *
-     * <p>Each character is decoded using {@link #decodeType(String, int)}.
+     * <p>Each character is decoded using {@link #decodeCategory(String, int)}.
      * For example, <code>decodeParameterTypes("nx")</code> returns
      * <code>{{@link Category#Numeric}, {@link Category#Set}}</code>.
      *
@@ -921,12 +925,12 @@ public class FunUtil extends Util {
      *
      * @return An array {@link Category} codes.
      */
-    public static int[] decodeParameterTypes(String flags) {
-        int[] parameterTypes = new int[flags.length() - 2];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            parameterTypes[i] = decodeType(flags, i + 2);
+    public static int[] decodeParameterCategories(String flags) {
+        int[] parameterCategories = new int[flags.length() - 2];
+        for (int i = 0; i < parameterCategories.length; i++) {
+            parameterCategories[i] = decodeCategory(flags, i + 2);
         }
-        return parameterTypes;
+        return parameterCategories;
     }
 
     /**
@@ -950,7 +954,7 @@ public class FunUtil extends Util {
      * @param exp
      * @return
      */
-    static Object median(Evaluator evaluator, List members, ExpBase exp) {
+    static Object median(Evaluator evaluator, List members, Calc exp) {
         SetWrapper sw = evaluateSet(evaluator, members, exp);
         if (sw.errorCount > 0) {
             return new Double(Double.NaN);
@@ -993,17 +997,18 @@ public class FunUtil extends Util {
      *
      * @pre range >= 1 && range <= 3
      */
-    static Object quartile(Evaluator evaluator,
-                           List members,
-                           ExpBase exp,
-                           int range) {
+    static double quartile(
+            Evaluator evaluator,
+            List members,
+            Calc exp,
+            int range) {
         Util.assertPrecondition(range >= 1 && range <= 3, "range >= 1 && range <= 3");
 
         SetWrapper sw = evaluateSet(evaluator, members, exp);
         if (sw.errorCount > 0) {
-            return new Double(Double.NaN);
+            return Double.NaN;
         } else if (sw.v.size() == 0) {
-            return Util.nullValue;
+            return DoubleNull;
         }
 
         double[] asArray = new double[sw.v.size()];
@@ -1015,14 +1020,13 @@ public class FunUtil extends Util {
         // get a quartile, median is a second q
         double dm = (asArray.length * range) / 4;
         int median = (int) Math.floor(dm);
-        return ((dm == median) && (median < asArray.length - 1))
-            //have more elements
-            ? new Double((asArray[median] + asArray[median+1])/2)
-            : new Double(asArray[median]);
+        return dm == median && median < asArray.length - 1 ?
+                (asArray[median] + asArray[median + 1]) / 2 :
+                asArray[median];
     }
 
-    public static Object min(Evaluator evaluator, List members, Exp exp) {
-        SetWrapper sw = evaluateSet(evaluator, members, (ExpBase) exp);
+    public static Object min(Evaluator evaluator, List members, Calc calc) {
+        SetWrapper sw = evaluateSet(evaluator, members, calc);
         if (sw.errorCount > 0) {
             return new Double(Double.NaN);
         } else if (sw.v.size() == 0) {
@@ -1039,8 +1043,8 @@ public class FunUtil extends Util {
         }
     }
 
-    public static Object max(Evaluator evaluator, List members, Exp exp) {
-        SetWrapper sw = evaluateSet(evaluator, members, (ExpBase) exp);
+    public static Object max(Evaluator evaluator, List members, Calc exp) {
+        SetWrapper sw = evaluateSet(evaluator, members, exp);
         if (sw.errorCount > 0) {
             return new Double(Double.NaN);
         } else if (sw.v.size() == 0) {
@@ -1057,10 +1061,11 @@ public class FunUtil extends Util {
         }
     }
 
-    static Object var(Evaluator evaluator,
-                      List members,
-                      ExpBase exp,
-                      boolean biased) {
+    static Object var(
+            Evaluator evaluator,
+            List members,
+            Calc exp,
+            boolean biased) {
         SetWrapper sw = evaluateSet(evaluator, members, exp);
         return _var(sw, biased);
     }
@@ -1084,27 +1089,29 @@ public class FunUtil extends Util {
         }
     }
 
-    static Object correlation(Evaluator evaluator,
-                              List members,
-                              ExpBase exp1,
-                              ExpBase exp2) {
-        SetWrapper sw1 = evaluateSet(evaluator, members, exp1);
-        SetWrapper sw2 = evaluateSet(evaluator, members, exp2);
+    static double correlation(
+            Evaluator evaluator,
+            List memberList,
+            Calc exp1,
+            Calc exp2) {
+        SetWrapper sw1 = evaluateSet(evaluator, memberList, exp1);
+        SetWrapper sw2 = evaluateSet(evaluator, memberList, exp2);
         Object covar = _covariance(sw1, sw2, false);
         Object var1 = _var(sw1, false); //this should be false, yes?
         Object var2 = _var(sw2, false);
         if ((covar instanceof Double) &&
             (var1 instanceof Double) &&
             (var2 instanceof Double)) {
-            return new Double(((Double) covar).doubleValue() /
-                Math.sqrt(((Double) var1).doubleValue() *
-                          ((Double) var2).doubleValue()));
+            return ((Double) covar).doubleValue() /
+                    Math.sqrt(((Double) var1).doubleValue() *
+                    ((Double) var2).doubleValue());
         } else {
-            return Util.nullValue;
+            return DoubleNull;
         }
     }
 
-    static Object covariance(Evaluator evaluator, List members, ExpBase exp1, ExpBase exp2, boolean biased) {
+    static Object covariance(Evaluator evaluator, List members,
+            Calc exp1, Calc exp2, boolean biased) {
         SetWrapper sw1 = evaluateSet(evaluator.push(), members, exp1);
         SetWrapper sw2 = evaluateSet(evaluator.push(), members, exp2);
         // todo: because evaluateSet does not add nulls to the SetWrapper, this
@@ -1136,23 +1143,24 @@ public class FunUtil extends Util {
         return new Double(covar / (double) n);
     }
 
-    static Object stdev(Evaluator evaluator,
-                        List members,
-                        ExpBase exp,
-                        boolean biased) {
+    static Object stdev(
+            Evaluator evaluator,
+            List members,
+            Calc exp,
+            boolean biased) {
         Object o = var(evaluator, members, exp, biased);
         return (o instanceof Double)
             ? new Double(Math.sqrt(((Double) o).doubleValue()))
             : o;
     }
 
-    public static Object avg(Evaluator evaluator, List members, Exp exp) {
-        SetWrapper sw = evaluateSet(evaluator, members, (ExpBase) exp);
-        return (sw.errorCount > 0)
-            ? new Double(Double.NaN)
-            : (sw.v.size() == 0)
-                ? Util.nullValue
-                : new Double(_avg(sw));
+    public static Object avg(Evaluator evaluator, List members, Calc calc) {
+        SetWrapper sw = evaluateSet(evaluator, members, calc);
+        return (sw.errorCount > 0) ?
+                new Double(Double.NaN) :
+                (sw.v.size() == 0) ?
+                Util.nullValue :
+                new Double(_avg(sw));
     }
 
     //todo: parameterize inclusion of nulls
@@ -1166,33 +1174,35 @@ public class FunUtil extends Util {
         return sum / (double) sw.v.size();
     }
 
-    public static Object sum(Evaluator evaluator, List members, Exp exp) {
-        SetWrapper sw = evaluateSet(evaluator, members, (ExpBase) exp);
+    public static Object sum(Evaluator evaluator, List members, Calc exp) {
+        double d = sumDouble(evaluator, members, exp);
+        return d == DoubleNull ? Util.nullValue : new Double(d);
+    }
+
+    public static double sumDouble(Evaluator evaluator, List members, Calc exp) {
+        SetWrapper sw = evaluateSet(evaluator, members, exp);
         if (sw.errorCount > 0) {
-            if (false) {
-                return new MondrianEvaluationException(
-                        sw.errorCount + " error(s) while computing sum");
-            }
-            return new Double(Double.NaN);
+            return Double.NaN;
         } else if (sw.v.size() == 0) {
-            return Util.nullValue;
+            return DoubleNull;
         } else {
             double sum = 0.0;
             for (int i = 0; i < sw.v.size(); i++) {
                 sum += ((Double) sw.v.get(i)).doubleValue();
             }
-            return new Double(sum);
+            return sum;
         }
     }
 
-    public static Object count(Evaluator evaluator,
-                               List members,
-                               boolean includeEmpty) {
+    public static int count(
+            Evaluator evaluator,
+            List members,
+            boolean includeEmpty) {
         if (members == null) {
-            return new Double(0);
+            return 0;
         }
         if (includeEmpty) {
-            return new Double(members.size());
+            return members.size();
         } else {
             int retval = 0;
             for (int i = 0; i < members.size(); i++) {
@@ -1207,7 +1217,7 @@ public class FunUtil extends Util {
                     retval++;
                 }
             }
-            return new Double(retval);
+            return retval;
         }
     }
 
@@ -1219,10 +1229,13 @@ public class FunUtil extends Util {
      *
      * @pre exp != null
      */
-    static SetWrapper evaluateSet(Evaluator evaluator,
-                                  List members,
-                                  ExpBase exp) {
-        Util.assertPrecondition(exp != null, "exp != null");
+    static SetWrapper evaluateSet(
+            Evaluator evaluator,
+            List members,
+            Calc calc) {
+        Util.assertPrecondition(members != null, "members != null");
+        Util.assertPrecondition(calc != null, "calc != null");
+        Util.assertPrecondition(calc.getType() instanceof ScalarType);
 
         // todo: treat constant exps as evaluateMembers() does
         SetWrapper retval = new SetWrapper();
@@ -1233,7 +1246,7 @@ public class FunUtil extends Util {
             } else {
                 evaluator.setContext((Member)obj);
             }
-            Object o = exp.evaluateScalar(evaluator);
+            Object o = calc.evaluate(evaluator);
             if (o == null || o == Util.nullValue) {
                 retval.nullCount++;
             } else if (o instanceof Throwable) {
@@ -1250,6 +1263,60 @@ public class FunUtil extends Util {
             }
         }
         return retval;
+    }
+
+    /**
+     * This evaluates one or more ExpBases against the member list returning
+     * a SetWrapper array. Where this differs very significantly from the
+     * above evaluateSet methods is how it count null values and Throwables;
+     * this method adds nulls to the SetWrapper Vector rather than not adding
+     * anything - as the above method does. The impact of this is that if, for
+     * example, one was creating a list of x,y values then each list will have
+     * the same number of values (though some might be null) - this allows
+     * higher level code to determine how to handle the lack of data rather than
+     * having a non-equal number (if one is plotting x,y values it helps to
+     * have the same number and know where a potential gap is the data is.
+     *
+     * @param evaluator
+     * @param members
+     * @param calcs
+     * @return
+     */
+    static SetWrapper[] evaluateSet(
+            Evaluator evaluator,
+            List members,
+            DoubleCalc[] calcs,
+            boolean isTuples) {
+        Util.assertPrecondition(calcs != null, "calcs != null");
+
+        // todo: treat constant exps as evaluateMembers() does
+        SetWrapper[] retvals = new SetWrapper[calcs.length];
+        for (int i = 0; i < calcs.length; i++) {
+            retvals[i] = new SetWrapper();
+        }
+        for (int j = 0; j < members.size(); j++) {
+            if (isTuples) {
+                evaluator.setContext((Member[]) members.get(j));
+            } else {
+                evaluator.setContext((Member) members.get(j));
+            }
+            for (int i = 0; i < calcs.length; i++) {
+                DoubleCalc calc = calcs[i];
+                SetWrapper retval = retvals[i];
+                double o = calc.evaluateDouble(evaluator);
+                if (o == FunUtil.DoubleNull) {
+                    retval.nullCount++;
+                    retval.v.add(null);
+                } else {
+                    retval.v.add(new Double(o));
+                }
+                // TODO: If the expression yielded an error, carry on
+                // summing, so that if we are running in a
+                // BatchingCellReader, we find out all the dependent cells
+                // we need
+            }
+        }
+        return retvals;
     }
 
     /**
@@ -1517,9 +1584,10 @@ public class FunUtil extends Util {
      *   0 if m1 equals m2,
      *   1 if m1 collates after m2
      */
-    public static int compareHierarchically(Member m1,
-                                            Member m2,
-                                            boolean post) {
+    public static int compareHierarchically(
+            Member m1,
+            Member m2,
+            boolean post) {
         if (equals(m1, m2)) {
             return 0;
         }
@@ -1567,248 +1635,25 @@ public class FunUtil extends Util {
      *   0 if m1 == m2.
      */
     static int compareSiblingMembers(Member m1, Member m2) {
+        // calculated members collate after non-calculated
+        final boolean calculated1 = m1.isCalculatedInQuery();
+        final boolean calculated2 = m2.isCalculatedInQuery();
+        if (calculated1) {
+            if (!calculated2) {
+                return 1;
+            }
+        } else {
+            if (calculated2) {
+                return -1;
+            }
+        }
         final int ordinal1 = m1.getOrdinal();
         final int ordinal2 = m2.getOrdinal();
-        return (ordinal1 == ordinal2)
-            ? m1.compareTo(m2)
-            : (ordinal1 < ordinal2)
-                ? -1
-                : 1;
-/*
-        if (ordinal1 == ordinal2) {
-            ;
-        } else if (ordinal1 < ordinal2) {
-            return -1;
-        } else if (ordinal1 > ordinal2) {
-            return 1;
-        }
-        return m1.compareTo(m2);
-*/
-    }
-
-
-    /**
-     * Helper function for {@link mondrian.olap.FunDef#callDependsOn(mondrian.olap.FunCall,
-     * mondrian.olap.Dimension)} for calls which have a set as the first
-     * argument and an expression as the second. The call depends upon
-     * everything <Value Expression> depends upon, except the dimensions of
-     * <Set>.
-     *
-     * @param call Function call
-     * @param dimension Dimension
-     * @return Whether call is dependent upon dimension
-     */
-    public static boolean callDependsOnSet(FunCall call, Dimension dimension) {
-        final Exp[] args = call.getArgs();
-        if (args[0].dependsOn(dimension)) {
-            return true;
-        }
-        if (args[0].getTypeX().usesDimension(dimension)) {
-            return false;
-        }
-        // If there is no value expression, the value expression is implicit,
-        // and depends upon all dimensions.
-        if (args.length == 1) {
-            return true;
-        }
-        for (int i = 1; i < args.length; i++) {
-            Exp exp = args[i];
-            if (exp.dependsOn(dimension)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Converts an argument to a parameter type.
-     */
-    public static Exp convert(Exp fromExp, int to, Validator validator) {
-        Exp exp = convert_(fromExp, to, validator);
-        if (exp == null) {
-            throw newInternal("cannot convert " + fromExp + " to " + to);
-        }
-        return validator.validate(exp, false);
-    }
-
-    private static Exp convert_(Exp fromExp, int to, Validator validator) {
-        int from = fromExp.getCategory();
-        if (from == to) {
-            return fromExp;
-        }
-        switch (from) {
-        case Category.Array:
-            return null;
-        case Category.Dimension:
-            // Seems funny that you can 'downcast' from a dimension, doesn't
-            // it? But we add an implicit 'CurrentMember', for example,
-            // '[Time].PrevMember' actually means
-            // '[Time].CurrentMember.PrevMember'.
-            switch (to) {
-            case Category.Hierarchy:
-                // "<Dimension>.CurrentMember.Hierarchy"
-                return new FunCall(
-                        "Hierarchy", Syntax.Property, new Exp[]{
-                        new FunCall(
-                                "CurrentMember",
-                                Syntax.Property, new Exp[]{fromExp}
-                        )}
-                );
-            case Category.Level:
-                // "<Dimension>.CurrentMember.Level"
-                return new FunCall(
-                        "Level", Syntax.Property, new Exp[]{
-                        new FunCall(
-                                "CurrentMember",
-                                Syntax.Property, new Exp[]{fromExp}
-                        )}
-                );
-            case Category.Member:
-            case Category.Tuple:
-                // "<Dimension>.CurrentMember"
-                return new FunCall(
-                        "CurrentMember",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            default:
-                return null;
-            }
-        case Category.Hierarchy:
-            switch (to) {
-            case Category.Dimension:
-                // "<Hierarchy>.Dimension"
-                return new FunCall(
-                        "Dimension",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            default:
-                return null;
-            }
-        case Category.Level:
-            switch (to) {
-            case Category.Dimension:
-                // "<Level>.Dimension"
-                return new FunCall(
-                        "Dimension",
-                        Syntax.Property,
-                        new Exp[] {fromExp});
-            case Category.Hierarchy:
-                // "<Level>.Hierarchy"
-                return new FunCall(
-                        "Hierarchy",
-                        Syntax.Property,
-                        new Exp[] {fromExp});
-            default:
-                return null;
-            }
-        case Category.Logical:
-            return null;
-        case Category.Member:
-            switch (to) {
-            case Category.Dimension:
-                // "<Member>.Dimension"
-                return new FunCall(
-                        "Dimension",
-                        Syntax.Property,
-                        new Exp[] {fromExp});
-            case Category.Hierarchy:
-                // "<Member>.Hierarchy"
-                return new FunCall(
-                        "Hierarchy",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            case Category.Level:
-                // "<Member>.Level"
-                return new FunCall(
-                        "Level",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            case Category.Tuple:
-                // Conversion to tuple is trivial: a member is a
-                // one-dimensional tuple already.
-                return fromExp;
-            case Category.Numeric | Category.Constant:
-            case Category.String | Category.Constant: //todo: assert is a string member
-                // "<Member>.Value"
-                return new FunCall(
-                        "Value",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            case Category.Value:
-            case Category.Numeric:
-            case Category.String:
-                return validator.getFunTable().createValueFunCall(fromExp, validator);
-            default:
-                return null;
-            }
-        case Category.Numeric | Category.Constant:
-        case Category.Integer | Category.Constant:
-            switch (to) {
-            case Category.Value:
-            case Category.Integer:
-            case Category.Numeric:
-                return fromExp;
-            default:
-                return null;
-            }
-        case Category.Integer:
-            switch (to) {
-            case Category.Value:
-            case Category.Numeric:
-                return fromExp;
-            case Category.Numeric | Category.Constant:
-            case Category.Integer | Category.Constant:
-                return validator.getFunTable().createValueFunCall(fromExp, validator);
-            default:
-                return null;
-            }
-        case Category.Numeric:
-            switch (to) {
-            case Category.Value:
-            case Category.Integer:
-                return fromExp;
-            case Category.Numeric | Category.Constant:
-            case Category.Integer | Category.Constant:
-                return validator.getFunTable().createValueFunCall(fromExp, validator);
-            default:
-                return null;
-            }
-        case Category.Set:
-            return null;
-        case Category.String | Category.Constant:
-            switch (to) {
-            case Category.Value:
-            case Category.String:
-                return fromExp;
-            default:
-                return null;
-            }
-        case Category.String:
-            switch (to) {
-            case Category.Value:
-                return fromExp;
-            case Category.String | Category.Constant:
-                return validator.getFunTable().createValueFunCall(fromExp, validator);
-            default:
-                return null;
-            }
-        case Category.Tuple:
-            switch (to) {
-            case Category.Value:
-//                return fromExp;
-            case Category.Numeric:
-            case Category.String:
-                return validator.getFunTable().createValueFunCall(fromExp, validator);
-            default:
-                return null;
-            }
-        case Category.Value:
-            return null;
-        case Category.Symbol:
-            return null;
-        default:
-            throw newInternal("unknown category " + from);
-        }
+        return (ordinal1 == ordinal2) ?
+                m1.compareTo(m2) :
+                (ordinal1 < ordinal2) ?
+                -1 :
+                1;
     }
 
     /**
@@ -1818,8 +1663,6 @@ public class FunUtil extends Util {
      * @param conversionCount in/out count of number of conversions performed;
      *             is incremented if the conversion is non-trivial (for
      *             example, converting a member to a level).
-     *
-     * @see #convert
      */
     public static boolean canConvert(
             Exp fromExp,
@@ -1838,11 +1681,15 @@ public class FunUtil extends Util {
             // '[Time].PrevMember' actually means
             // '[Time].CurrentMember.PrevMember'.
             switch (to) {
-            case Category.Hierarchy:
-            case Category.Level:
             case Category.Member:
             case Category.Tuple:
+                // It's easier to convert dimension to member than dimension
+                // to hierarchy or level.
                 conversionCount[0]++;
+                return true;
+            case Category.Hierarchy:
+            case Category.Level:
+                conversionCount[0] += 2;
                 return true;
             default:
                 return false;
@@ -1924,6 +1771,37 @@ public class FunUtil extends Util {
         default:
             throw newInternal("unknown category " + from);
         }
+    }
+
+    /**
+     * Returns whether one of the members in a tuple is null.
+     */
+    static boolean tupleContainsNullMember(Member[] tuple) {
+        for (int i = 0; i < tuple.length; i++) {
+            Member member = tuple[i];
+            if (member.isNull()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static Member[] makeNullTuple(final TupleType tupleType) {
+        Member[] members = new Member[tupleType.elementTypes.length];
+        for (int i = 0; i < tupleType.elementTypes.length; i++) {
+            MemberType type = (MemberType) tupleType.elementTypes[i];
+            members[i] = makeNullMember(type);
+        }
+        return members;
+    }
+
+    static Member makeNullMember(
+            MemberType memberType) {
+        Hierarchy hierarchy = memberType.getHierarchy();
+        if (hierarchy == null) {
+            return NullMember;
+        }
+        return hierarchy.getNullMember();
     }
 
     // Inner classes
@@ -2072,9 +1950,9 @@ public class FunUtil extends Util {
     private static abstract class ArrayExpComparator
             extends ArrayComparator {
         Evaluator evaluator;
-        final Exp exp;
+        final Calc exp;
 
-        ArrayExpComparator(Evaluator evaluator, Exp exp, int arity) {
+        ArrayExpComparator(Evaluator evaluator, Calc exp, int arity) {
             super(arity);
             this.evaluator = evaluator;
             this.exp = exp;
@@ -2087,7 +1965,7 @@ public class FunUtil extends Util {
         private final boolean desc;
 
         HierarchicalArrayComparator(
-                Evaluator evaluator, Exp exp, int arity, boolean desc) {
+                Evaluator evaluator, Calc exp, int arity, boolean desc) {
             super(evaluator, exp, arity);
             this.desc = desc;
         }
@@ -2147,9 +2025,9 @@ public class FunUtil extends Util {
         private int compareByValue(Member m1, Member m2) {
             int c;
             Member old = evaluator.setContext(m1);
-            Object v1 = exp.evaluateScalar(evaluator);
+            Object v1 = exp.evaluate(evaluator);
             evaluator.setContext(m2);
-            Object v2 = exp.evaluateScalar(evaluator);
+            Object v2 = exp.evaluate(evaluator);
             // important to restore the evaluator state -- and this is faster
             // than calling evaluator.push()
             evaluator.setContext(old);
@@ -2159,15 +2037,15 @@ public class FunUtil extends Util {
     }
 
     private static class BreakArrayComparator extends ArrayExpComparator {
-        BreakArrayComparator(Evaluator evaluator, Exp exp, int arity) {
+        BreakArrayComparator(Evaluator evaluator, Calc exp, int arity) {
             super(evaluator, exp, arity);
         }
 
         protected int compare(Member[] a1, Member[] a2) {
             evaluator.setContext(a1);
-            Object v1 = exp.evaluateScalar(evaluator);
+            Object v1 = exp.evaluate(evaluator);
             evaluator.setContext(a2);
-            Object v2 = exp.evaluateScalar(evaluator);
+            Object v2 = exp.evaluate(evaluator);
             return FunUtil.compareValues(v1, v2);
         }
     }
@@ -2305,6 +2183,135 @@ public class FunUtil extends Util {
 
         public int compare(Object o1, Object o2) {
             return - compareValues(o1, o2);
+        }
+    }
+
+    /**
+     * Null member of unknown hierarchy.
+     */
+    private static class NullMember implements Member {
+        public Member getParentMember() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Level getLevel() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Hierarchy getHierarchy() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getParentUniqueName() {
+            throw new UnsupportedOperationException();
+        }
+
+        public int getMemberType() {
+            throw new UnsupportedOperationException();
+        }
+
+        public void setName(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean isAll() {
+            return false;
+        }
+
+        public boolean isMeasure() {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean isNull() {
+            return true;
+        }
+
+        public boolean isChildOrEqualTo(Member member) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean isCalculated() {
+            throw new UnsupportedOperationException();
+        }
+
+        public int getSolveOrder() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Exp getExpression() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Member[] getAncestorMembers() {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean isCalculatedInQuery() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Object getPropertyValue(String propertyName) {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getPropertyFormattedValue(String propertyName) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void setProperty(String name, Object value) {
+            throw new UnsupportedOperationException();
+        }
+
+        public Property[] getProperties() {
+            throw new UnsupportedOperationException();
+        }
+
+        public int getOrdinal() {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean isHidden() {
+            throw new UnsupportedOperationException();
+        }
+
+        public int getDepth() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Member getDataMember() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getUniqueName() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getName() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getDescription() {
+            throw new UnsupportedOperationException();
+        }
+
+        public OlapElement lookupChild(SchemaReader schemaReader, String s) {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getQualifiedName() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getCaption() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Dimension getDimension() {
+            throw new UnsupportedOperationException();
+        }
+
+        public int compareTo(Object o) {
+            throw new UnsupportedOperationException();
         }
     }
 }

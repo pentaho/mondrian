@@ -12,9 +12,7 @@
 
 package mondrian.rolap;
 
-import mondrian.olap.Exp;
-import mondrian.olap.Formula;
-import mondrian.olap.Property;
+import mondrian.olap.*;
 
 /**
  * A <code>RolapCalculatedMember</code> is a member based upon a
@@ -59,7 +57,10 @@ class RolapCalculatedMember extends RolapMember {
     }
 
     public boolean isCalculatedInQuery() {
-        return true;
+        final String memberScope =
+                (String) getPropertyValue(Property.MEMBER_SCOPE.name);
+        return memberScope == null ||
+                memberScope.equals("QUERY");
     }
 
     public Exp getExpression() {

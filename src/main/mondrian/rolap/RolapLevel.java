@@ -408,20 +408,18 @@ public class RolapLevel extends LevelBase {
     }
 
     public OlapElement lookupChild(SchemaReader schemaReader, String name) {
-        Member[] levelMembers = schemaReader.getLevelMembers(this);
-
-        for (int idx = 0; idx < levelMembers.length; idx++) {
-            if (levelMembers[idx].getName().equals(name)) {
-                return levelMembers[idx];
+        Member[] levelMembers = schemaReader.getLevelMembers(this, true);
+        for (int i = 0; i < levelMembers.length; i++) {
+            if (levelMembers[i].getName().equals(name)) {
+                return levelMembers[i];
             }
         }
-
         return null;
     }
 
-
-    /** true when the level is part of a parent/child hierarchy and has an equivalent
-     * closed level
+    /**
+     * Returns true when the level is part of a parent/child hierarchy and has
+     * an equivalent closed level.
      */
     boolean hasClosedPeer() {
         return (parentExp != null) && (closedPeer != null);

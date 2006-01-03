@@ -13,11 +13,18 @@
 package mondrian.olap;
 
 import mondrian.olap.type.Type;
+import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
+
 import java.io.PrintWriter;
 
 /**
  * An <code>Exp</code> is an MDX expression.
- **/
+ *
+ * @author jhyde
+ * @since 1.0
+ * @version $Id$
+ */
 public interface Exp {
 
     Object clone();
@@ -29,19 +36,16 @@ public interface Exp {
     int getCategory();
 
     /**
-     * @deprecated Use {@link #getCategory()}
-     **/
-    int getType();
-
-    /**
      * Returns the type of this expression. Never null.
      */
-    Type getTypeX();
+    Type getType();
 
-    boolean isElement();
-
-    boolean isEmptySet();
-
+    /**
+     * Writes the MDX representation of this expression to a print writer.
+     * Sub-expressions are invoked recursively.
+     *
+     * @param pw PrintWriter
+     */
     void unparse(PrintWriter pw);
 
     /**
@@ -58,25 +62,13 @@ public interface Exp {
     Exp accept(Validator validator);
 
     /**
-     * true means that the result of this expression will be different
-     * for different members of <code>dimension</code> in the evaluation
-     * context.
-     * <p>
-     * For example, the expression
-     * <code>[Measures].[Unit Sales]</code> depends on all dimensions
-     * except Measures. The boolean expression
-     * <code>([Measures].[Unit Sales], [Time].[1997]) &gt; 1000</code>
-     * depends on all dimensions except Measures and Time.
+     * Converts this expression into an a tree of expressions which can be
+     * efficiently evaluated.
+     *
+     * @param compiler
+     * @return A compiled expression
      */
-    boolean dependsOn(Dimension dimension);
-
-    /**
-     * Adds 'exp' as the right child of the CrossJoin whose left child has
-     * 'iPosition' hierarchies (hence 'iPosition' - 1 CrossJoins) under it.  If
-     * added successfully, returns -1, else returns the number of hierarchies
-     * under this node.
-     **/
-    int addAtPosition(Exp e, int iPosition);
+    Calc accept(ExpCompiler compiler);
 
     Object evaluate(Evaluator evaluator);
 

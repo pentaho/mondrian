@@ -12,7 +12,6 @@
 
 package mondrian.olap;
 
-import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 
 /**
@@ -34,10 +33,11 @@ public abstract class LevelBase
     protected final LevelType levelType;
     protected MemberFormatter memberFormatter;
 
-    protected LevelBase(Hierarchy hierarchy,
-                        String name,
-                        int depth,
-                        LevelType levelType) {
+    protected LevelBase(
+            Hierarchy hierarchy,
+            String name,
+            int depth,
+            LevelType levelType) {
         this.hierarchy = hierarchy;
         this.name = name;
         this.uniqueName = Util.makeFqName(hierarchy, name);
@@ -48,14 +48,6 @@ public abstract class LevelBase
     // from Element
     public String getQualifiedName() {
         return MondrianResource.instance().MdxLevelName.str(getUniqueName());
-    }
-
-    public int getCategory() {
-        return Category.Level;
-    }
-
-    public Type getTypeX() {
-        return new mondrian.olap.type.LevelType(hierarchy, this);
     }
 
     public LevelType getLevelType() {
@@ -112,14 +104,6 @@ public abstract class LevelBase
         return areMembersUnique()
             ? Util.lookupHierarchyRootMember(schemaReader, hierarchy, s)
             : null;
-    }
-
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
-    }
-
-    public void childrenAccept(Visitor visitor) {
-        // we don't generally visit child members
     }
 
     /**

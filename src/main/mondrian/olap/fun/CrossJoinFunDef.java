@@ -14,6 +14,8 @@ import mondrian.olap.type.Type;
 import mondrian.olap.type.TupleType;
 import mondrian.olap.type.SetType;
 import mondrian.resource.MondrianResource;
+import mondrian.calc.*;
+import mondrian.calc.impl.AbstractListCalc;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,10 +32,10 @@ class CrossJoinFunDef extends FunDefBase {
 
     public Type getResultType(Validator validator, Exp[] args) {
         // CROSSJOIN(<Set1>,<Set2>) has type [Hie1] x [Hie2].
-        ArrayList list = new ArrayList();
+        List list = new ArrayList();
         for (int i = 0; i < args.length; i++) {
             Exp arg = args[i];
-            final Type type = arg.getTypeX();
+            final Type type = arg.getType();
             if (type instanceof SetType) {
                 SetType setType = (SetType) type;
                 addTypes(setType.getElementType(), list);
@@ -54,7 +56,7 @@ class CrossJoinFunDef extends FunDefBase {
      * Adds a type to a list of types. If type is a {@link TupleType}, does so
      * recursively.
      */
-    private static void addTypes(final Type type, ArrayList list) {
+    private static void addTypes(final Type type, List list) {
         if (type instanceof TupleType) {
                 TupleType tupleType = (TupleType) type;
             for (int i = 0; i < tupleType.elementTypes.length; i++) {
@@ -65,36 +67,84 @@ class CrossJoinFunDef extends FunDefBase {
         }
     }
 
+    public Calc compileCall(final FunCall call, ExpCompiler compiler) {
+        final ListCalc listCalc1 = toList(compiler, call.getArg(0));
+        final ListCalc listCalc2 = toList(compiler, call.getArg(1));
+        return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
+            public List evaluateList(Evaluator evaluator) {
+                SchemaReader schemaReader = evaluator.getSchemaReader();
+                NativeEvaluator nativeEvaluator = schemaReader.getNativeSetEvaluator(call.getFunDef(), evaluator, call.getArgs());
+                if (nativeEvaluator != null) {
+                    return (List) nativeEvaluator.execute();
+                }
+
+                Evaluator oldEval = null;
+                assert (oldEval = evaluator.push()) != null;
+                final List list1 = listCalc1.evaluateList(evaluator);
+                assert oldEval.equals(evaluator) : "listCalc1 changed context";
+                if (list1.isEmpty()) {
+                    return Collections.EMPTY_LIST;
+                }
+                final List list2 = listCalc2.evaluateList(evaluator.push());
+                assert oldEval.equals(evaluator) : "listCalc2 changed context";
+                return crossJoin(list1, list2, evaluator);
+            }
+        };
+    }
+
+    private ListCalc toList(ExpCompiler compiler, final Exp exp) {
+        final Type type = exp.getType();
+        if (type instanceof SetType) {
+            return compiler.compileList(exp);
+        } else {
+            return new SetFunDef.SetCalc(
+                    new DummyExp(new SetType(type)),
+                    new Exp[] {exp},
+                    compiler);
+        }
+    }
+
     public Object evaluate(Evaluator evaluator, Exp[] args) {
-        
         SchemaReader schemaReader = evaluator.getSchemaReader();
         NativeEvaluator nativeEvaluator = schemaReader.getNativeSetEvaluator(this, evaluator, args);
-        if (nativeEvaluator != null)
+        if (nativeEvaluator != null) {
             return nativeEvaluator.execute();
-        
-        int resultLimit = MondrianProperties.instance().ResultLimit.get();
-        
+        }
+
         List set0 = getArgAsList(evaluator, args, 0);
-        if (set0.isEmpty())
+        if (set0.isEmpty()) {
             return Collections.EMPTY_LIST;
-
+        }
         List set1 = getNonEmptyArgAsList(set0, evaluator, args, 1);
-        if (set1.isEmpty())
-            return Collections.EMPTY_LIST;
+        return crossJoin(set0, set1, evaluator);
+    }
 
-        long size = (long)set0.size() * (long)set1.size();
+    List crossJoin(List list1, List list2, Evaluator evaluator) {
+        if (list1.isEmpty() || list2.isEmpty()) {
+            return Collections.EMPTY_LIST;
+        }
+        // Optimize nonempty(crossjoin(a,b)) ==
+        //  nonempty(crossjoin(nonempty(a),nonempty(b))
+        long size = (long)list1.size() * (long)list2.size();
+        int resultLimit = MondrianProperties.instance().ResultLimit.get();
         //if (resultLimit > 0 && size > resultLimit && evaluator.isNonEmpty()) {
         if (size > 1000 && evaluator.isNonEmpty()) {
             // instead of overflow exception try to further
             // optimize nonempty(crossjoin(a,b)) ==
             // nonempty(crossjoin(nonempty(a),nonempty(b))
-            set0 = nonEmptyList(evaluator, set0);
-            set1 = nonEmptyList(evaluator, set1);
-            size = (long)set0.size() * (long)set1.size();
-        }
-
-        if (set0.isEmpty() || set1.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            final int missCount = evaluator.getMissCount();
+            list1 = nonEmptyList(evaluator, list1);
+            list2 = nonEmptyList(evaluator, list2);
+            size = (long)list1.size() * (long)list2.size();
+            final int missCount2 = evaluator.getMissCount();
+            if (missCount2 > missCount && size > 1000) {
+                // We've hit some cells which are not in the cache. They
+                // registered as non-empty, but we won't really know until
+                // we've populated the cache. The cartesian product is still
+                // huge, so let's quit now, and try again after the cache has
+                // been loaded.
+                return Collections.EMPTY_LIST;
+            }
         }
 
         // throw an exeption, if the crossjoin gets too large
@@ -107,21 +157,21 @@ class CrossJoinFunDef extends FunDefBase {
         boolean neitherSideIsTuple = true;
         int arity0 = 1;
         int arity1 = 1;
-        if (set0.get(0) instanceof Member[]) {
-            arity0 = ((Member[]) set0.get(0)).length;
+        if (list1.get(0) instanceof Member[]) {
+            arity0 = ((Member[]) list1.get(0)).length;
             neitherSideIsTuple = false;
         }
-        if (set1.get(0) instanceof Member[]) {
-            arity1 = ((Member[]) set1.get(0)).length;
+        if (list2.get(0) instanceof Member[]) {
+            arity1 = ((Member[]) list2.get(0)).length;
             neitherSideIsTuple = false;
         }
         List result = new ArrayList();
         if (neitherSideIsTuple) {
             // Simpler routine if we know neither side contains tuples.
-            for (int i = 0, m = set0.size(); i < m; i++) {
-                Member o0 = (Member) set0.get(i);
-                for (int j = 0, n = set1.size(); j < n; j++) {
-                    Member o1 = (Member) set1.get(j);
+            for (int i = 0, m = list1.size(); i < m; i++) {
+                Member o0 = (Member) list1.get(i);
+                for (int j = 0, n = list2.size(); j < n; j++) {
+                    Member o1 = (Member) list2.get(j);
                     result.add(new Member[]{o0, o1});
                 }
             }
@@ -129,9 +179,9 @@ class CrossJoinFunDef extends FunDefBase {
             // More complex routine if one or both sides are arrays
             // (probably the product of nested CrossJoins).
             Member[] row = new Member[arity0 + arity1];
-            for (int i = 0, m = set0.size(); i < m; i++) {
+            for (int i = 0, m = list1.size(); i < m; i++) {
                 int x = 0;
-                Object o0 = set0.get(i);
+                Object o0 = list1.get(i);
                 if (o0 instanceof Member) {
                     row[x++] = (Member) o0;
                 } else {
@@ -141,8 +191,8 @@ class CrossJoinFunDef extends FunDefBase {
                         row[x++] = members[k];
                     }
                 }
-                for (int j = 0, n = set1.size(); j < n; j++) {
-                    Object o1 = set1.get(j);
+                for (int j = 0, n = list2.size(); j < n; j++) {
+                    Object o1 = list2.get(j);
                     if (o1 instanceof Member) {
                         row[x++] = (Member) o1;
                     } else {
@@ -199,7 +249,7 @@ class CrossJoinFunDef extends FunDefBase {
                 Member[] m = (Member[]) it.next();
                 evaluator.setContext(m);
                 Object value = evaluator.evaluateCurrent();
-                if (value != Util.nullValue && !(value instanceof Throwable)) {
+                if (value != null && !(value instanceof Throwable)) {
                     result.add(m);
                 }
             }
@@ -208,7 +258,7 @@ class CrossJoinFunDef extends FunDefBase {
                 Member m = (Member) it.next();
                 evaluator.setContext(m);
                 Object value = evaluator.evaluateCurrent();
-                if (value != Util.nullValue && !(value instanceof Throwable)) {
+                if (value != null && !(value instanceof Throwable)) {
                     result.add(m);
                 }
             }

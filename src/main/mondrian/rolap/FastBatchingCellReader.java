@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.agg.ColumnConstraint;
+import mondrian.rolap.aggmatcher.AggGen;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.*;
@@ -97,6 +98,10 @@ public class FastBatchingCellReader implements CellReader {
         // return 'error'
         recordCellRequest(request);
         return RolapUtil.valueNotReadyException;
+    }
+
+    public int getMissCount() {
+        return requestCount;
     }
 
     void recordCellRequest(CellRequest request) {
@@ -207,8 +212,7 @@ public class FastBatchingCellReader implements CellReader {
                     BATCH_LOGGER.error(buf.toString());
 
                 } else {
-                    mondrian.rolap.aggmatcher.AggGen aggGen =
-                        new mondrian.rolap.aggmatcher.AggGen(
+                    AggGen aggGen = new AggGen(
                             FastBatchingCellReader.this.cube.getStar(), columns);
                     if (aggGen.isReady()) {
                         // PRINT TO STDOUT - DO NOT USE BATCH_LOGGER

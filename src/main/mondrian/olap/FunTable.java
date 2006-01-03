@@ -10,6 +10,8 @@
 // jhyde, 3 March, 2002
  */
 package mondrian.olap;
+import mondrian.mdx.UnresolvedFunCall;
+
 import java.util.*;
 
 /**
@@ -25,7 +27,8 @@ public interface FunTable {
      * overloaded, returns as precise a match to the argument types as
      * possible.
      **/
-    FunDef getDef(FunCall call, Validator validator);
+    FunDef getDef(
+            Exp[] args, Validator validator, String funName, Syntax syntax);
 
     /**
      * Returns whether a string is a reserved word.
@@ -44,7 +47,7 @@ public interface FunTable {
      * has to be an expression.
      */
     boolean requiresExpression(
-            FunCall funCall,
+            UnresolvedFunCall funCall,
             int k,
             Validator validator);
 
@@ -64,11 +67,6 @@ public interface FunTable {
      */
     List getFunInfoList();
 
-    /**
-     * Creates an expression which will yield the scalar value of a given
-     * expression.
-     */
-    Exp createValueFunCall(Exp exp, Validator validator);
 }
 
 // End FunTable.java

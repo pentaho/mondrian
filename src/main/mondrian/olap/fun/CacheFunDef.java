@@ -13,6 +13,8 @@ package mondrian.olap.fun;
 
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
+import mondrian.calc.*;
+import mondrian.calc.impl.GenericCalc;
 
 import java.io.PrintWriter;
 
@@ -48,7 +50,21 @@ public class CacheFunDef extends FunDefBase {
         args[0].unparse(pw);
     }
 
-    // implement FunDef
+    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        final Exp exp = call.getArg(0);
+        final ExpCacheDescriptor cacheDescriptor =
+                new ExpCacheDescriptor(exp, compiler);
+        return new GenericCalc(call) {
+            public Object evaluate(Evaluator evaluator) {
+                return evaluator.getCachedResult(cacheDescriptor);
+            }
+
+            public Calc[] getCalcs() {
+                return new Calc[] {cacheDescriptor.getCalc()};
+            }
+        };
+    }
+
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         if (cacheDescriptor == null) {
             // First call, setup the cache descriptor. (An expensive process,
@@ -73,7 +89,7 @@ public class CacheFunDef extends FunDefBase {
             }
             final Exp exp = args[0];
             final int category = exp.getCategory();
-            final Type type = exp.getTypeX();
+            final Type type = exp.getType();
             return new CacheFunDef(NAME, SIGNATURE, DESCRIPTION, SYNTAX,
                     category, type);
         }

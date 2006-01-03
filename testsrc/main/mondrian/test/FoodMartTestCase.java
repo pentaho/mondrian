@@ -160,10 +160,14 @@ public class FoodMartTestCase extends TestCase {
     }
 
     /**
-     * Executes an expression which returns a boolean result.
+     * Executes an expression which yields a boolean result, and asserts that
+     * the result is the expected one.
      */
-    public String executeBooleanExpr(String expression) {
-        return executeExpr("Iif(" + expression + ",\"true\",\"false\")");
+    public void assertBooleanExprReturns(String expression, boolean expected) {
+        final String iifExpression = "Iif(" + expression + ",\"true\",\"false\")";
+        final String actual = executeExpr(iifExpression);
+        final String expectedString = expected ? "true" : "false";
+        assertEquals(actual, expectedString);
     }
 
     /**

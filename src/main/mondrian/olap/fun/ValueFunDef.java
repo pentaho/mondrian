@@ -43,7 +43,7 @@ class ValueFunDef extends FunDefBase {
         return Category.Tuple;
     }
 
-    public int[] getParameterTypes() {
+    public int[] getParameterCategories() {
         return argTypes;
     }
 

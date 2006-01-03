@@ -13,6 +13,8 @@ package mondrian.olap.fun;
 
 import mondrian.olap.*;
 import mondrian.olap.type.*;
+import mondrian.mdx.HierarchyExpr;
+import mondrian.mdx.DimensionExpr;
 
 /**
  * A <code>ParameterFunDef</code> is a pseudo-function describing calls to
@@ -41,7 +43,7 @@ public class ParameterFunDef extends FunDefBase {
                 funDef.getDescription(),
                 funDef.getSyntax(),
                 returnType,
-                funDef.getParameterTypes());
+                funDef.getParameterCategories());
         assertPrecondition(getName().equals("Parameter") ||
                 getName().equals("ParamRef"));
         this.parameterName = parameterName;
@@ -50,13 +52,13 @@ public class ParameterFunDef extends FunDefBase {
         this.parameterDescription = description;
     }
 
-    public Exp validateCall(Validator validator, FunCall call) {
-        Parameter param = validator.createOrLookupParam(call);
+    public Exp createCall(Validator validator, Exp[] args) {
+        Parameter param = validator.createOrLookupParam(this, args);
         return validator.validate(param);
     }
 
     public Type getResultType(Validator validator, Exp[] args) {
-        switch (returnType) {
+        switch (returnCategory) {
         case Category.String:
             return new StringType();
         case Category.Numeric:
@@ -64,18 +66,18 @@ public class ParameterFunDef extends FunDefBase {
         case Category.Numeric | Category.Integer:
             return new DecimalType(Integer.MAX_VALUE, 0);
         case Category.Member:
-            return new MemberType(hierarchy, null, null);
+            return MemberType.forHierarchy(hierarchy);
         default:
-            throw Category.instance.badValue(returnType);
+            throw Category.instance.badValue(returnCategory);
         }
     }
 
     private static boolean isConstantHierarchy(Exp typeArg) {
-        if (typeArg instanceof Hierarchy) {
+        if (typeArg instanceof HierarchyExpr) {
             // e.g. "[Time].[By Week]"
             return true;
         }
-        if (typeArg instanceof Dimension) {
+        if (typeArg instanceof DimensionExpr) {
             // e.g. "[Time]"
             return true;
         }
@@ -83,13 +85,13 @@ public class ParameterFunDef extends FunDefBase {
             // e.g. "[Time].CurrentMember.Hierarchy". They probably wrote
             // "[Time]", and the automatic type conversion did the rest.
             FunCall hierarchyCall = (FunCall) typeArg;
-            if (hierarchyCall.getFunName().equals("Hierarchy") &&
+            if (hierarchyCall.getFunDef().getName().equals("Hierarchy") &&
                     hierarchyCall.getArgCount() > 0 &&
                     hierarchyCall.getArg(0) instanceof FunCall) {
                 FunCall currentMemberCall = (FunCall) hierarchyCall.getArg(0);
-                if (currentMemberCall.getFunName().equals("CurrentMember") &&
+                if (currentMemberCall.getFunDef().getName().equals("CurrentMember") &&
                         currentMemberCall.getArgCount() > 0 &&
-                        currentMemberCall.getArg(0) instanceof Dimension) {
+                        currentMemberCall.getArg(0) instanceof DimensionExpr) {
                     return true;
                 }
             }
@@ -131,7 +133,7 @@ public class ParameterFunDef extends FunDefBase {
             switch (typeArg.getCategory()) {
             case Category.Hierarchy:
             case Category.Dimension:
-                hierarchy = typeArg.getTypeX().getHierarchy();
+                hierarchy = typeArg.getType().getHierarchy();
                 if (hierarchy == null || !isConstantHierarchy(typeArg)) {
                     throw newEvalException(dummyFunDef, "Invalid hierarchy for parameter '" + parameterName + "'");
                 }
@@ -160,7 +162,7 @@ public class ParameterFunDef extends FunDefBase {
                 throw newEvalException(dummyFunDef, "Default value of parameter '" + parameterName + "' is inconsistent with its type, " + typeName);
             }
             if (type == Category.Member) {
-                Hierarchy expHierarchy = exp.getTypeX().getHierarchy();
+                Hierarchy expHierarchy = exp.getType().getHierarchy();
                 if (expHierarchy != hierarchy) {
                     throw newEvalException(dummyFunDef, "Default value of parameter '" + parameterName + "' must belong to the hierarchy " + hierarchy);
                 }

@@ -9,6 +9,8 @@
 */
 package mondrian.olap;
 
+import mondrian.calc.Calc;
+
 import java.util.List;
 
 /**
@@ -30,8 +32,12 @@ public interface Aggregator {
     /**
      * Applies this aggregator to an expression over a set of members and
      * returns the result.
+     *
+     * @param evaluator Evaluation context
+     * @param members List of members, not null
+     * @param calc Expression to evaluate
      */
-    Object aggregate(Evaluator evaluator, List members, Exp exp);
+    Object aggregate(Evaluator evaluator, List members, Calc calc);
 }
 
 // End Aggregator.java

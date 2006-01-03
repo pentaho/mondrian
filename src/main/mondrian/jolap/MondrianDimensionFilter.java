@@ -12,9 +12,10 @@
 package mondrian.jolap;
 
 import mondrian.olap.Exp;
-import mondrian.olap.FunCall;
 import mondrian.olap.Literal;
 import mondrian.olap.Util;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.UnresolvedFunCall;
 
 import javax.olap.OLAPException;
 import javax.olap.metadata.Member;
@@ -47,20 +48,20 @@ abstract class MondrianDimensionFilter extends MondrianDimensionStep
 
     protected Exp combine(Exp previousExp, Exp exp) {
         if (setAction == SetActionTypeEnum.APPEND) {
-            return new FunCall("Union", new Exp[] {previousExp, exp});
+            return new UnresolvedFunCall("Union", new Exp[] {previousExp, exp});
         } else if (setAction == SetActionTypeEnum.DIFFERENCE) {
-            return new FunCall("Minus", new Exp[] {previousExp, exp});
+            return new UnresolvedFunCall("Minus", new Exp[] {previousExp, exp});
         } else if (setAction == SetActionTypeEnum.INITIAL) {
 //          Util.assertTrue(previousExp == null);
             return exp;
         } else if (setAction == SetActionTypeEnum.INSERT) {
             // todo: Implement "Insert(<set>,<set>,<number>|<member>)" and
-            return new FunCall("Insert", new Exp[] {
+            return new UnresolvedFunCall("Insert", new Exp[] {
                 previousExp, exp, dimensionInsertOffset.convert()});
         } else if (setAction == SetActionTypeEnum.INTERSECTION) {
-            return new FunCall("Intersect", new Exp[] {previousExp, exp});
+            return new UnresolvedFunCall("Intersect", new Exp[] {previousExp, exp});
         } else if (setAction == SetActionTypeEnum.PREPEND) {
-            return new FunCall("Union", new Exp[] {exp, previousExp});
+            return new UnresolvedFunCall("Union", new Exp[] {exp, previousExp});
         } else {
             throw Util.newInternal("Unknown SetAction " + setAction);
         }
@@ -166,7 +167,7 @@ class MondrianMemberInsertOffset extends MondrianInsertOffset
     }
 
     Exp convert() {
-        return ((MondrianJolapMember) member).member;
+        return new MemberExpr(((MondrianJolapMember) member).member);
     }
 
     public Member getMember() throws OLAPException {

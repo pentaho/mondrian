@@ -251,7 +251,9 @@ fullname
       name="Profit last Period"
       dimension="Measures"
       formula="COALESCEEMPTY((Measures.[Profit], [Time].PREVMEMBER),    Measures.[Profit])"
-      visible="false"/>
+      visible="false">
+    <CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
+  </CalculatedMember>
   <CalculatedMember
       name="Profit Growth"
       dimension="Measures"

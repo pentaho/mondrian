@@ -12,8 +12,6 @@
 
 package mondrian.olap;
 
-import mondrian.olap.type.Type;
-import mondrian.olap.type.HierarchyType;
 import mondrian.resource.MondrianResource;
 
 /**
@@ -73,6 +71,7 @@ public abstract class HierarchyBase
     public String getUniqueName() {
         return uniqueName;
     }
+
     public String getName() {
         return name;
     }
@@ -97,15 +96,6 @@ public abstract class HierarchyBase
         return this;
     }
 
-    public int getCategory() {
-        return Category.Hierarchy;
-    }
-
-    public Type getTypeX() {
-        return new HierarchyType(this);
-    }
-
-
     public boolean hasAll() {
         return hasAll;
     }
@@ -116,7 +106,6 @@ public abstract class HierarchyBase
         return (this == mdxElement);
     }
 
-    /** find a child object */
     public OlapElement lookupChild(SchemaReader schemaReader, String s) {
         OlapElement oe = Util.lookupHierarchyLevel(this, s);
         if (oe == null) {
@@ -137,29 +126,6 @@ public abstract class HierarchyBase
             getLogger().debug(buf.toString());
         }
         return oe;
-    }
-
-    public Object[] getChildren() {
-        return getLevels();
-    }
-
-    protected Object[] getAllowedChildren(CubeAccess cubeAccess) {
-        // cubeAccess sets permissions on hierarchies and members only
-        return getLevels();
-    }
-
-//      /** find a named member in this hierarchy */
-//      public abstract Member lookupMember(NameResolver st, String s);
-
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
-    }
-
-    public void childrenAccept(Visitor visitor) {
-        Level[] levels = getLevels();
-        for (int i = 0; i < levels.length; i++) {
-            levels[i].accept(visitor);
-        }
     }
 
     public String getAllMemberName() {

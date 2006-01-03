@@ -11,7 +11,6 @@ package mondrian.olap.type;
 
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Util;
-import mondrian.olap.Level;
 
 /**
  * Utility methods relating to types.
@@ -35,14 +34,6 @@ public class TypeUtil {
         }
     }
 
-    public static Level typeToLevel(Type type) {
-        if (type instanceof LevelType) {
-            return ((LevelType) type).getLevel();
-        } else {
-            throw Util.newInternal("not an mdx object");
-        }
-    }
-
     /**
      * Given a set type, returns the element type. Or its element type, if it
      * is a set type. And so on.
@@ -55,26 +46,36 @@ public class TypeUtil {
     }
 
     /**
-     * Converts a type to a member (or tuple) type. If it is a set, strips
-     * the set. If it is a dimension, hierarchy or level type, converts it to
-     * a member.
+     * Converts a type to a member or tuple type.
+     * If it cannot, returns null.
      */
-    public static Type toMemberType(Type type) {
+    public static Type toMemberOrTupleType(Type type) {
         type = stripSetType(type);
-        if (type instanceof DimensionType) {
-            DimensionType dimensionType = (DimensionType) type;
-            return new MemberType(dimensionType.getHierarchy(),
-                    dimensionType.getLevel(), null);
-        } else if (type instanceof HierarchyType) {
-            HierarchyType hierarchyType = (HierarchyType) type;
-            return new MemberType(hierarchyType.getHierarchy(),
-                    hierarchyType.getLevel(), null);
-        } else if (type instanceof LevelType) {
-            LevelType levelType = (LevelType) type;
-            return new MemberType(levelType.getHierarchy(),
-                    levelType.getLevel(), null);
+        if (type instanceof TupleType) {
+            return (TupleType) type;
         } else {
-            return type;
+            return toMemberType(type);
+        }
+    }
+
+    /**
+     * Converts a type to a member type.
+     * If it is a set, strips the set.
+     * If it is a member type, returns the type unchanged.
+     * If it is a dimension, hierarchy or level type, converts it to
+     * a member type.
+     * If it is a tuple, number, string, or boolean, returns null.
+     */
+    public static MemberType toMemberType(Type type) {
+        type = stripSetType(type);
+        if (type instanceof MemberType) {
+            return (MemberType) type;
+        } else if (type instanceof DimensionType ||
+                type instanceof HierarchyType ||
+                type instanceof LevelType) {
+            return MemberType.forType(type);
+        } else {
+            return null;
         }
     }
 
@@ -84,22 +85,7 @@ public class TypeUtil {
      * dimensionality.
      */
     public static boolean isUnionCompatible(Type type1, Type type2) {
-        if (type1 instanceof MemberType) {
-            MemberType memberType1 = (MemberType) type1;
-            if (type2 instanceof MemberType) {
-                MemberType memberType2 = (MemberType) type2;
-                final Hierarchy hierarchy1 = memberType1.getHierarchy();
-                final Hierarchy hierarchy2 = memberType2.getHierarchy();
-                if (hierarchy1 == null ||
-                        hierarchy2 == null ||
-                        hierarchy2.getUniqueName().equals(
-                                hierarchy1.getUniqueName())) {
-                    // They are compatible.
-                    return true;
-                }
-            }
-            return false;
-        } else if (type1 instanceof TupleType) {
+        if (type1 instanceof TupleType) {
             TupleType tupleType1 = (TupleType) type1;
             if (type2 instanceof TupleType) {
                 TupleType tupleType2 = (TupleType) type2;
@@ -116,6 +102,29 @@ public class TypeUtil {
                 }
             }
             return false;
+        } else {
+            final MemberType memberType1 = toMemberType(type1);
+            if (memberType1 == null) {
+                return false;
+            }
+            final MemberType memberType2 = toMemberType(type2);
+            if (memberType2 == null) {
+                return false;
+            }
+            final Hierarchy hierarchy1 = memberType1.getHierarchy();
+            final Hierarchy hierarchy2 = memberType2.getHierarchy();
+            return equal(hierarchy1, hierarchy2);
+        }
+    }
+
+    private static boolean equal(
+            final Hierarchy hierarchy1, final Hierarchy hierarchy2) {
+        if (hierarchy1 == null ||
+                hierarchy2 == null ||
+                hierarchy2.getUniqueName().equals(
+                        hierarchy1.getUniqueName())) {
+            // They are compatible.
+            return true;
         } else {
             return false;
         }
@@ -154,6 +163,12 @@ public class TypeUtil {
      */
     public static boolean isSet(Type type) {
         return type instanceof SetType;
+    }
+
+    public static boolean couldBeMember(Type type) {
+        return type instanceof MemberType ||
+                type instanceof HierarchyType ||
+                type instanceof DimensionType;
     }
 }
 

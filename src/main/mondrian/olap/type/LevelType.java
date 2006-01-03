@@ -22,18 +22,20 @@ import mondrian.olap.Util;
  * @version $Id$
  */
 public class LevelType implements Type {
+    private final Dimension dimension;
     private final Hierarchy hierarchy;
     private final Level level;
 
     /**
      * Creates a type representing a level.
      *
+     * @param dimension
      * @param hierarchy Hierarchy which values of this type must belong to, or
      *   null if not known
      * @param level Level which values of this type must belong to, or null if
-     *   not known
      */
-    public LevelType(Hierarchy hierarchy, Level level) {
+    public LevelType(Dimension dimension, Hierarchy hierarchy, Level level) {
+        this.dimension = dimension;
         this.hierarchy = hierarchy;
         this.level = level;
         if (level != null) {
@@ -43,8 +45,29 @@ public class LevelType implements Type {
         }
     }
 
-    public boolean usesDimension(Dimension dimension) {
-        return hierarchy != null && hierarchy.getDimension() == dimension;
+    public static LevelType forType(Type type) {
+        return new LevelType(
+                type.getDimension(),
+                type.getHierarchy(),
+                type.getLevel());
+
+    }
+
+    public static LevelType forLevel(Level level) {
+        return new LevelType(
+                level.getDimension(),
+                level.getHierarchy(),
+                level);
+    }
+
+    public boolean usesDimension(Dimension dimension, boolean maybe) {
+        if (hierarchy == null) {
+            return maybe;
+        } else {
+            final Dimension hierarchyDimension = hierarchy.getDimension();
+            return hierarchyDimension == dimension ||
+                    (maybe && hierarchyDimension == null);
+        }
     }
 
     public Hierarchy getHierarchy() {
@@ -55,6 +78,10 @@ public class LevelType implements Type {
         return level;
     }
 
+    public Dimension getDimension() {
+        return hierarchy == null ? null :
+                hierarchy.getDimension();
+    }
 }
 
 // End LevelType.java

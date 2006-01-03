@@ -9,11 +9,8 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.MondrianDef;
-import mondrian.olap.Aggregator;
-import mondrian.olap.EnumeratedValues;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Exp;
+import mondrian.calc.Calc;
+import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 
 import java.util.List;
@@ -21,8 +18,8 @@ import java.util.List;
 /**
  * Describes an aggregation operator, such as "sum" or "count".
  *
- * @author jhyde$
- * @since Jul 9, 2003$
+ * @author jhyde
+ * @since Jul 9, 2003
  * @version $Id$
  */
 public abstract class RolapAggregator
@@ -33,7 +30,7 @@ public abstract class RolapAggregator
 
     public static final RolapAggregator Sum =
     new RolapAggregator("sum", index++, false) {
-        public Object aggregate(Evaluator evaluator, List members, Exp exp) {
+        public Object aggregate(Evaluator evaluator, List members, Calc exp) {
             return FunUtil.sum(evaluator, members, exp);
         }
     };
@@ -42,19 +39,19 @@ public abstract class RolapAggregator
         public Aggregator getRollup() {
             return Sum;
         }
-        public Object aggregate(Evaluator evaluator, List members, Exp exp) {
-            return FunUtil.count(evaluator, members, false);
+        public Object aggregate(Evaluator evaluator, List members, Calc exp) {
+            return new Integer(FunUtil.count(evaluator, members, false));
         }
     };
     public static final RolapAggregator Min =
     new RolapAggregator("min", index++, false) {
-        public Object aggregate(Evaluator evaluator, List members, Exp exp) {
+        public Object aggregate(Evaluator evaluator, List members, Calc exp) {
             return FunUtil.min(evaluator, members, exp);
         }
     };
     public static final RolapAggregator Max =
     new RolapAggregator("max", index++, false) {
-        public Object aggregate(Evaluator evaluator, List members, Exp exp) {
+        public Object aggregate(Evaluator evaluator, List members, Calc exp) {
             return FunUtil.max(evaluator, members, exp);
         }
     };
@@ -63,7 +60,7 @@ public abstract class RolapAggregator
         public Aggregator getRollup() {
             return null;
         }
-        public Object aggregate(Evaluator evaluator, List members, Exp exp) {
+        public Object aggregate(Evaluator evaluator, List members, Calc exp) {
             return FunUtil.avg(evaluator, members, exp);
         }
     };
@@ -72,7 +69,7 @@ public abstract class RolapAggregator
         public RolapAggregator getNonDistinctAggregator() {
             return Count;
         }
-        public Object aggregate(Evaluator evaluator, List members, Exp exp) {
+        public Object aggregate(Evaluator evaluator, List members, Calc exp) {
             throw new UnsupportedOperationException();
         }
 
@@ -104,7 +101,7 @@ public abstract class RolapAggregator
             super(name, index++, false);
             this.factCountExpr = factCountExpr;
         }
-        public Object aggregate(Evaluator evaluator, List members, Exp exp) {
+        public Object aggregate(Evaluator evaluator, List members, Calc exp) {
             throw new UnsupportedOperationException();
         }
     }

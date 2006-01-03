@@ -10,12 +10,10 @@
 
 package mondrian.olap.fun;
 
-import junit.framework.TestCase;
 import mondrian.olap.*;
-import mondrian.olap.Validator;
 import mondrian.olap.type.Type;
 
-import java.io.PrintWriter;
+import junit.framework.TestCase;
 
 /**
  * <code>MemberHelperTest</code> tests {@link MemberHelper}.
@@ -182,14 +180,6 @@ public class MemberHelperTest extends TestCase {
 
         }
 
-        public void accept(Visitor visitor) {
-
-        }
-
-        public void childrenAccept(Visitor visitor) {
-
-        }
-
         public String getDescription() {
             return null;
         }
@@ -210,55 +200,11 @@ public class MemberHelperTest extends TestCase {
             return null;
         }
 
-        public void unparse(PrintWriter pw) {
-
-        }
-
-        public int addAtPosition(Exp e, int iPosition) {
-            return 0;
-        }
-
         public Object clone() {
             return null;
         }
 
-        public boolean dependsOn(Dimension dimension) {
-            return false;
-        }
-
-        public Object evaluate(Evaluator evaluator) {
-            return null;
-        }
-
-        public Object evaluateScalar(Evaluator evaluator) {
-            return null;
-        }
-
         public Dimension getDimension() {
-            return null;
-        }
-
-        public int getType() {
-            return getCategory();
-        }
-
-        public int getCategory() {
-            return Category.Unknown;
-        }
-
-        public Type getTypeX() {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean isElement() {
-            return false;
-        }
-
-        public boolean isEmptySet() {
-            return false;
-        }
-
-        public Exp accept(Validator validator) {
             return null;
         }
 
@@ -281,12 +227,13 @@ public class MemberHelperTest extends TestCase {
         public Member getDataMember() {
             return null;
         }
+
         public Exp getExpression() {
             return null;
         }
+
         public int getSolveOrder() {
             return -1;
         }
-
     }
 }

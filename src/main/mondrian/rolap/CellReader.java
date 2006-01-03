@@ -38,9 +38,19 @@ import mondrian.olap.Util;
 interface CellReader {
     /**
      * Returns the value of the cell which has the context described by the
-     * evaluator.
+     * evaluator.<p/>
+     *
+     * If no aggregation contains the required cell, returns null.<p/>
+     *
+     * If the value is null, returns {@link Util#nullValue}.
      */
     Object get(Evaluator evaluator);
+
+    /**
+     * Returns the number of times this cell reader has told a lie because the
+     * required cell value is not in the cache.
+     */
+    int getMissCount();
 }
 
 // End CellReader.java

@@ -11,6 +11,7 @@
 */
 package mondrian.olap;
 
+import javax.sql.DataSource;
 import java.util.List;
 
 /**
@@ -196,9 +197,18 @@ public interface SchemaReader {
     OlapElement getElementChild(OlapElement parent, String name);
 
     /**
-     * Returns the members of <code>level</code>.
+     * Returns the members of a level, optionally including calculated members.
      */
-    Member[] getLevelMembers(Level level);
+    Member[] getLevelMembers(Level level, boolean includeCalculated);
+
+    /**
+     * Returns the members of a level, optionally filtering out members which
+     * are empty.
+     *
+     * @param level Level
+     * @param context Context for filtering
+     * @return Members of this level
+     */
     Member[] getLevelMembers(Level level, Evaluator context);
 
     /**
@@ -258,6 +268,7 @@ public interface SchemaReader {
      */
     NativeEvaluator getNativeSetEvaluator(FunDef fun, Evaluator evaluator, Exp[] args);
 
+    DataSource getDataSource();
 }
 
 // End SchemaReader.java

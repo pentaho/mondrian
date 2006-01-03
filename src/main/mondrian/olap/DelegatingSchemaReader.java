@@ -12,6 +12,7 @@
 */
 package mondrian.olap;
 
+import javax.sql.DataSource;
 import java.util.List;
 
 /**
@@ -98,8 +99,8 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getElementChild(parent, name);
     }
 
-    public Member[] getLevelMembers(Level level) {
-        return schemaReader.getLevelMembers(level);
+    public Member[] getLevelMembers(Level level, boolean includeCalculated) {
+        return schemaReader.getLevelMembers(level, includeCalculated);
     }
 
     public Level[] getHierarchyLevels(Hierarchy hierarchy) {
@@ -162,7 +163,9 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getNativeSetEvaluator(fun, evaluator, args);
     }
 
-
+    public DataSource getDataSource() {
+        return schemaReader.getDataSource();
+    }
 }
 
 // End DelegatingSchemaReader.java

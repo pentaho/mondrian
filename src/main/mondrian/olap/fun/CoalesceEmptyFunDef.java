@@ -10,6 +10,8 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+import mondrian.calc.*;
+import mondrian.calc.impl.GenericCalc;
 
 /**
  * The <code>CoalesceEmptyFunDef</code> class implements the CoalesceEmpty(...)
@@ -23,12 +25,32 @@ public class CoalesceEmptyFunDef extends FunDefBase {
         super(resolverBase,  type, types);
     }
 
-    /**
-     * @param evaluator The evaluation context.
-     * @param args The arguments to <code>CoalesceEmpty</code>
-     * @return The first non-null argument, or null if all arguments are null.
-     */
+    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        final Exp[] args = call.getArgs();
+        final Calc[] calcs = new Calc[args.length];
+        for (int i = 0; i < args.length; i++) {
+            calcs[i] = compiler.compileScalar(args[i], true);
+        }
+        return new GenericCalc(call) {
+            public Object evaluate(Evaluator evaluator) {
+                for (int i = 0; i < calcs.length; i++) {
+                    Calc calc = calcs[i];
+                    final Object o = calc.evaluate(evaluator);
+                    if (o != null) {
+                        return o;
+                    }
+                }
+                return null;
+            }
+
+            public Calc[] getCalcs() {
+                return calcs;
+            }
+        };
+    }
+
     public Object evaluate(Evaluator evaluator, Exp[] args) {
+        // Returns non-null argument, or null if all arguments are null.
         for (int idx = 0; idx < args.length; idx++) {
             Object argument = getScalarArg(evaluator, args, idx);
 //            Evaluator current = evaluator.push();

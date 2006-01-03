@@ -10,6 +10,9 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+import mondrian.calc.*;
+import mondrian.calc.impl.AbstractCalc;
+import mondrian.calc.impl.ValueCalc;
 
 import java.util.List;
 
@@ -25,21 +28,35 @@ class AggregateFunDef extends AbstractAggregateFunDef {
         super(dummyFunDef);
     }
 
-    public Object evaluate(Evaluator evaluator, Exp[] args) {
-        List members = (List) getArg(evaluator, args, 0);
+    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        final ListCalc listCalc = compiler.compileList(call.getArg(0));
+        final Calc calc = call.getArgCount() > 1 ?
+                compiler.compileScalar(call.getArg(1), true) :
+                new ValueCalc(call);
+        return new AbstractCalc(call) {
+            public Object evaluate(Evaluator evaluator) {
+                Aggregator aggregator =
+                        (Aggregator) evaluator.getProperty(
+                                Property.AGGREGATION_TYPE.name, null);
+                if (aggregator == null) {
+                    throw newEvalException(null, "Could not find an aggregator in the current evaluation context");
+                }
+                Aggregator rollup = aggregator.getRollup();
+                if (rollup == null) {
+                    throw newEvalException(null, "Don't know how to rollup aggregator '" + aggregator + "'");
+                }
+                final List list = listCalc.evaluateList(evaluator);
+                return rollup.aggregate(evaluator.push(), list, calc);
+            }
 
-        ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
-        Aggregator aggregator =
-                (Aggregator) evaluator.getProperty(
-                        Property.AGGREGATION_TYPE.name, null);
-        if (aggregator == null) {
-            throw newEvalException(null, "Could not find an aggregator in the current evaluation context");
-        }
-        Aggregator rollup = aggregator.getRollup();
-        if (rollup == null) {
-            throw newEvalException(null, "Don't know how to rollup aggregator '" + aggregator + "'");
-        }
-        return rollup.aggregate(evaluator.push(), members, exp);
+            public Calc[] getCalcs() {
+                return new Calc[] {listCalc, calc};
+            }
+
+            public boolean dependsOn(Dimension dimension) {
+                return anyDependsButFirst(getCalcs(), dimension);
+            }
+        };
     }
 
     MultiResolver newResolver() {

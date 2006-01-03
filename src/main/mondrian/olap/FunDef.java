@@ -12,6 +12,9 @@
 
 package mondrian.olap;
 
+import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
+
 import java.io.PrintWriter;
 
 /**
@@ -36,55 +39,50 @@ public interface FunDef {
     /**
      * Returns the {@link Category} code of the value returned by this
      * function.
-     **/
+     */
     int getReturnCategory();
 
     /**
      * Returns the types of the arguments of this function. Values are the same
-     * as those returned by {@link Exp#getType}. The 0<sup>th</sup>
+     * as those returned by {@link Exp#getCategory()}. The 0<sup>th</sup>
      * argument of methods and properties are the object they are applied
      * to. Infix operators have two arguments, and prefix operators have one
      * argument.
-     **/
-    int[] getParameterTypes();
+     */
+    int[] getParameterCategories();
 
     /**
-     * Validates a call to this function.
-     * <p/>
-     * If it returns the <code>call</code> argument (which is the usual case)
-     * it must call {@link FunCall#setType(mondrian.olap.type.Type)}.
+     * Creates an expression which represents a call to this function with
+     * a given set of arguments. The result is usually a {@link FunCall} but
+     * not always.
      */
-    Exp validateCall(Validator validator, FunCall call);
+    Exp createCall(Validator validator, Exp[] args);
 
     /**
      * Returns an English description of the signature of the function, for
      * example "&lt;Numeric Expression&gt; / &lt;Numeric Expression&gt;".
-     **/
+     */
     String getSignature();
 
     /**
-     * Converts a function call into source code.
-     **/
+     * Converts a function call into MDX source code.
+     */
     void unparse(Exp[] args, PrintWriter pw);
+
+    /**
+     * Converts a call to this function into executable objects.
+     *
+     * <p>The result must implement the appropriate interface for the result
+     * type. For example, a function which returns an integer must return
+     * an object which implements {@link mondrian.calc.IntegerCalc}.
+     */
+    Calc compileCall(FunCall call, ExpCompiler compiler);
 
     /**
      * Applies this function to a set of arguments in the context provided
      * by an evaluator, and returns the result.
-     **/
-    Object evaluate(Evaluator evaluator, Exp[] args);
-
-    /**
-     * Computes how the result of the function depends on members
-     * of the dimension. For example, the add operation "+" has two
-     * arguments. If one argument depends on Customers and the other
-     * depends on Products, the result will depend on both (union of
-     * dependencies).
-     * <p>
-     * For <code>Tuple</code>, <code>Filter</code> and some other functions
-     * this is not true. They must compute the intersection. TopCount has to
-     * omit its Count argument etc.
      */
-    boolean callDependsOn(FunCall call, Dimension dimension);
+    Object evaluate(Evaluator evaluator, Exp[] args);
 }
 
 // End FunDef.java

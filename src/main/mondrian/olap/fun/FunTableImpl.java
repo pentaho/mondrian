@@ -9,13 +9,11 @@
 */
 package mondrian.olap.fun;
 
+import mondrian.mdx.UnresolvedFunCall;
 import mondrian.olap.*;
-import mondrian.olap.type.*;
-import mondrian.olap.type.DimensionType;
 import mondrian.resource.MondrianResource;
 
 import java.util.*;
-import java.io.PrintWriter;
 
 /**
  * Abstract implementation of {@link FunTable}.
@@ -35,7 +33,7 @@ public abstract class FunTableImpl implements FunTable {
     private final HashSet propertyWords = new HashSet();
     protected static final Resolver[] emptyResolverArray = new Resolver[0];
     /** used during initialization **/
-    protected final List resolvers = new ArrayList();
+    protected final List resolverList = new ArrayList();
     protected final List funInfoList = new ArrayList();
 
     protected FunTableImpl() {
@@ -62,7 +60,7 @@ public abstract class FunTableImpl implements FunTable {
         if (resolver.getSyntax() == Syntax.Property) {
             defineProperty(resolver.getName());
         }
-        resolvers.add(resolver);
+        resolverList.add(resolver);
         final String[] reservedWords = resolver.getReservedWords();
         for (int i = 0; i < reservedWords.length; i++) {
             String reservedWord = reservedWords[i];
@@ -74,55 +72,16 @@ public abstract class FunTableImpl implements FunTable {
         this.funInfoList.add(FunInfo.make(resolver));
     }
 
-    public Exp createValueFunCall(Exp exp, Validator validator) {
-        final Type type = exp.getTypeX();
-        if (type instanceof ScalarType) {
-            return exp;
-        }
-        if (!TypeUtil.canEvaluate(type)) {
-            String exprString = Util.unparse(exp);
-            throw MondrianResource.instance().MdxMemberExpIsSet.ex(exprString);
-        }
-        if (type instanceof MemberType) {
-            return new MemberScalarExp(exp);
-        } else if (type instanceof DimensionType ||
-                type instanceof HierarchyType) {
-            exp = new FunCall(
-                    "CurrentMember",
-                    Syntax.Property,
-                    new Exp[]{exp});
-            exp = exp.accept(validator);
-            return new MemberScalarExp(exp);
-        } else if (type instanceof TupleType) {
-            if (exp instanceof FunCall) {
-                FunCall call = (FunCall) exp;
-                if (call.getFunDef() instanceof TupleFunDef) {
-                    return new MemberListScalarExp(call.getArgs());
-                }
-            }
-            return new TupleScalarExp(exp);
-        } else {
-            throw Util.newInternal("Unknown type " + type);
-        }
-    }
-
-    /**
-     * Creates an expression which will yield the current value of the current
-     * measure.
-     */
-    static Exp createValueFunCall() {
-        return new ScalarExp();
-    }
-
-    public FunDef getDef(FunCall call, Validator validator) {
-        String key = makeResolverKey(call.getFunName(), call.getSyntax());
+    public FunDef getDef(
+            Exp[] args, Validator validator, String funName, Syntax syntax) {
+        String key = makeResolverKey(funName, syntax);
 
         // Resolve function by its upper-case name first.  If there is only one
         // function with that name, stop immediately.  If there is more than
         // function, use some custom method, which generally involves looking
         // at the type of one of its arguments.
-        String signature = call.getSyntax().getSignature(call.getFunName(),
-                Category.Unknown, ExpBase.getTypes(call.getArgs()));
+        String signature = syntax.getSignature(funName,
+                Category.Unknown, ExpBase.getTypes(args));
         Resolver[] resolvers = (Resolver[]) mapNameToResolvers.get(key);
         if (resolvers == null) {
             resolvers = emptyResolverArray;
@@ -134,8 +93,7 @@ public abstract class FunTableImpl implements FunTable {
         FunDef matchDef = null;
         for (int i = 0; i < resolvers.length; i++) {
             conversionCount[0] = 0;
-            FunDef def = resolvers[i].resolve(
-                    call.getArgs(), validator, conversionCount);
+            FunDef def = resolvers[i].resolve(args, validator, conversionCount);
             if (def != null) {
                 int conversions = conversionCount[0];
                 if (conversions < minConversions) {
@@ -165,14 +123,9 @@ public abstract class FunTableImpl implements FunTable {
     }
 
     public boolean requiresExpression(
-            FunCall call,
+            UnresolvedFunCall call,
             int k,
             Validator validator) {
-        final FunDef funDef = call.getFunDef();
-        if (funDef != null) {
-            final int[] parameterTypes = funDef.getParameterTypes();
-            return parameterTypes[k] != Category.Set;
-        }
         // The function call has not been resolved yet. In fact, this method
         // may have been invoked while resolving the child. Consider this:
         //   CrossJoin([Measures].[Unit Sales] * [Measures].[Store Sales])
@@ -247,8 +200,8 @@ public abstract class FunTableImpl implements FunTable {
     protected void organizeFunctions() {
         Collections.sort(funInfoList);
         // Map upper-case function names to resolvers.
-        for (int i = 0, n = resolvers.size(); i < n; i++) {
-            Resolver resolver = (Resolver) resolvers.get(i);
+        for (int i = 0, n = resolverList.size(); i < n; i++) {
+            Resolver resolver = (Resolver) resolverList.get(i);
             String key = makeResolverKey(resolver.getName(), resolver.getSyntax());
             final Object value = mapNameToResolvers.get(key);
             if (value instanceof Resolver[]) {
@@ -283,250 +236,6 @@ public abstract class FunTableImpl implements FunTable {
      * <p>Derived class can override this method to add more functions.
      **/
     protected abstract void defineFunctions();
-
-    /**
-     * Wrapper which evaluates an expression to a tuple, sets the current
-     * context from that tuple, and converts it to a scalar expression.
-     */
-    public static class TupleScalarExp extends ExpBase {
-        private final Exp exp;
-
-        public TupleScalarExp(Exp exp) {
-            this.exp = exp;
-            assert exp.getTypeX() instanceof TupleType;
-        }
-
-        public Object[] getChildren() {
-            return new Object[] {exp};
-        }
-
-        public void unparse(PrintWriter pw) {
-            exp.unparse(pw);
-        }
-
-        public Object clone() {
-            return this;
-        }
-
-        public int getCategory() {
-            return exp.getCategory();
-        }
-
-        public Type getTypeX() {
-            return new ScalarType();
-        }
-
-        public Exp accept(Validator validator) {
-            final Exp exp2 = validator.validate(exp, false);
-            if (exp2 == exp) {
-                //return this;
-            }
-            final FunTable funTable = validator.getFunTable();
-            return funTable.createValueFunCall(exp2, validator);
-        }
-
-        public boolean dependsOn(Dimension dimension) {
-            // The value at the current context by definition depends upon
-            // all dimensions.
-            return true;
-        }
-
-        public Object evaluate(Evaluator evaluator) {
-            return exp.evaluateScalar(evaluator);
-        }
-    }
-
-    /**
-     * Wrapper which evaluates an expression to a dimensional context and
-     * converts it to a scalar expression.
-     */
-    public static class MemberScalarExp extends ExpBase {
-        private final Exp exp;
-
-        public MemberScalarExp(Exp exp) {
-            this.exp = exp;
-        }
-
-        public Object[] getChildren() {
-            return new Object[] {exp};
-        }
-
-        public void unparse(PrintWriter pw) {
-            exp.unparse(pw);
-        }
-
-        public Object clone() {
-            return this;
-        }
-
-        public int getCategory() {
-            return exp.getCategory();
-        }
-
-        public Type getTypeX() {
-            return new ScalarType();
-        }
-
-        public Exp accept(Validator validator) {
-            final Exp exp2 = validator.validate(exp, false);
-            if (exp2 == exp) {
-                return this;
-            }
-            final FunTable funTable = validator.getFunTable();
-            return funTable.createValueFunCall(exp2, validator);
-        }
-
-        public boolean dependsOn(Dimension dimension) {
-            // If the expression has type dimension
-            // but does not depend on dimension
-            // then this expression does not dimension on dimension.
-            // Otherwise it depends on everything.
-            final Type type = exp.getTypeX();
-            if (type.usesDimension(dimension)) {
-                return exp.dependsOn(dimension);
-            } else {
-                return true;
-            }
-        }
-
-        public Object evaluate(Evaluator evaluator) {
-            final Member member = (Member) exp.evaluate(evaluator);
-            if (member == null ||
-                    member.isNull()) {
-                return null;
-            }
-            Member old = evaluator.setContext(member);
-            Object value = evaluator.evaluateCurrent();
-            evaluator.setContext(old);
-            return value;
-        }
-    }
-
-    /**
-     * An expression which yields the current value of the current member.
-     */
-    public static class ScalarExp extends ExpBase {
-
-        public ScalarExp() {
-        }
-
-        public void unparse(PrintWriter pw) {
-            pw.print("$Value()");
-        }
-
-        public Object clone() {
-            return this;
-        }
-
-        public int getCategory() {
-            return Category.Numeric;
-        }
-
-        public Type getTypeX() {
-            return new NumericType();
-        }
-
-        public Exp accept(Validator validator) {
-            return this;
-        }
-
-        public boolean dependsOn(Dimension dimension) {
-            // The value at the current context by definition depends upon
-            // all dimensions.
-            return true;
-        }
-
-        public Object evaluate(Evaluator evaluator) {
-            return evaluator.evaluateCurrent();
-        }
-    }
-
-    /**
-     * An expression which evaluates a list of members, sets the context to
-     * these members, then evaluates the current measure as a scalar
-     * expression.
-     *
-     * <p>A typical expression which would be evaluated in this way is:
-     * <blockquote><code>WITH MEMBER [Measures].[Female Sales] AS
-     * ' ( [Measures].[Unit Sales], [Gender].[F] ) '</code></blockquote>
-     *
-     * @see TupleScalarExp
-     */
-    public static class MemberListScalarExp extends ExpBase {
-        private final Exp[] exps;
-
-        public MemberListScalarExp(Exp[] exps) {
-            this.exps = exps;
-            for (int i = 0; i < exps.length; i++) {
-                assert exps[i].getTypeX() instanceof MemberType;
-            }
-        }
-
-        public void unparse(PrintWriter pw) {
-            unparseList(pw, exps, "(", ", ", ")");
-        }
-
-        public Object[] getChildren() {
-            return exps;
-        }
-
-        public Object clone() {
-            return this;
-        }
-
-        public int getCategory() {
-            return Category.Numeric;
-        }
-
-        public Type getTypeX() {
-            return new NumericType();
-        }
-
-        public Exp accept(Validator validator) {
-            return this;
-        }
-
-        public boolean dependsOn(Dimension dimension) {
-            // This expression depends upon dimension
-            // if none of the sub-expressions returns a member of dimension
-            // or if one of the sub-expressions is dependent upon dimension.
-            //
-            // Examples:
-            //
-            //   ( [Gender].[M], [Marital Status].CurrentMember )
-            //
-            // does not depend upon [Gender], because one of the members is
-            // of the [Gender] dimension, yet none of the expressions depends
-            // upon [Gender].
-            //
-            //   ( [Store].[USA], [Marital Status].CurrentMember )
-            //
-            // depends upon [Gender], because none of the members is of
-            // the [Gender] dimension.
-            boolean uses = false;
-            for (int i = 0; i < exps.length; i++) {
-                Exp exp = exps[i];
-                if (exp.dependsOn(dimension)) {
-                    return true;
-                }
-                final Type type = exp.getTypeX();
-                if (type.usesDimension(dimension)) {
-                    uses = true;
-                }
-            }
-            return !uses;
-        }
-
-        public Object evaluate(Evaluator evaluator) {
-            Evaluator evaluator2 = evaluator.push();
-            for (int i = 0; i < exps.length; i++) {
-                Exp exp = exps[i];
-                final Member member = (Member) exp.evaluate(evaluator);
-                evaluator2.setContext(member);
-            }
-            return evaluator2.evaluateCurrent();
-        }
-    }
 }
 
 // End FunTableImpl.java

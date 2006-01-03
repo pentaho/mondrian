@@ -18,6 +18,8 @@ import mondrian.olap.type.Type;
 import mondrian.olap.type.MemberType;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
+import mondrian.mdx.HierarchyExpr;
+import mondrian.mdx.UnresolvedFunCall;
 
 import org.apache.log4j.Logger;
 import java.util.List;
@@ -66,7 +68,7 @@ class RolapHierarchy extends HierarchyBase {
     /**
      * Type for members of this hierarchy. Set once to avoid excessive newing.
      */
-    final Type memberType = new MemberType(this, null, null);
+    final Type memberType = MemberType.forHierarchy(this);
 
     RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll) {
         super(dimension, subName, hasAll);
@@ -419,10 +421,10 @@ class RolapHierarchy extends HierarchyBase {
      */
     synchronized Exp getAggregateChildrenExpression() {
         if (aggregateChildrenExpression == null) {
-            FunCall fc = new FunCall(
+            UnresolvedFunCall fc = new UnresolvedFunCall(
                 "$AggregateChildren",
                 Syntax.Internal,
-                new Exp[] {this});
+                new Exp[] {new HierarchyExpr(this)});
             Validator validator =
                     Util.createSimpleValidator(BuiltinFunTable.instance());
             aggregateChildrenExpression = fc.accept(validator);
@@ -529,7 +531,7 @@ class RolapHierarchy extends HierarchyBase {
 
         RolapLevel level = new RolapLevel(peerHier, index++,
             "Closure",
-            keyExp, null, null, null, 
+            keyExp, null, null, null,
             null, null,  // no longer a parent-child hierarchy
             null, RolapProperty.emptyArray, flags,
             src.getHideMemberCondition(), src.getLevelType());

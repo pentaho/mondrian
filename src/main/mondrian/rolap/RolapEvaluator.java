@@ -11,12 +11,14 @@
 */
 
 package mondrian.rolap;
+import mondrian.calc.Calc;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
-import mondrian.util.Format;
 import mondrian.resource.MondrianResource;
+import mondrian.util.Format;
 
 import org.apache.log4j.Logger;
+
 import java.util.*;
 
 /**
@@ -34,7 +36,7 @@ import java.util.*;
  * @since 10 August, 2001
  * @version $Id$
  */
-class RolapEvaluator implements Evaluator {
+public class RolapEvaluator implements Evaluator {
     private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
 
     /**
@@ -68,7 +70,7 @@ class RolapEvaluator implements Evaluator {
           this.depth = parent.depth + 1;
           this.nonEmpty = parent.nonEmpty;
         }
-        
+
         this.cellReader = cellReader;
         if (currentMembers == null) {
             this.currentMembers = new Member[root.cube.getDimensions().length];
@@ -82,7 +84,7 @@ class RolapEvaluator implements Evaluator {
      *
      * @param root Shared context between this evaluator and its children
      */
-    RolapEvaluator(RolapEvaluatorRoot root) {
+    public RolapEvaluator(RolapEvaluatorRoot root) {
         this(root, null, null, null);
 
         // we expect client to set CellReader
@@ -108,20 +110,63 @@ class RolapEvaluator implements Evaluator {
 
             currentMembers[ordinal] = member;
         }
+
+        root.init(this);        
+    }
+
+    /**
+     * Creates an evaluator.
+     */
+    public static Evaluator create(Query query) {
+        final RolapEvaluatorRoot root = new RolapEvaluatorRoot(query);
+        return new RolapEvaluator(root);
     }
 
     protected static class RolapEvaluatorRoot {
-        final RolapResult result;
         final Map expResultCache = new HashMap();
         final RolapCube cube;
         final RolapConnection connection;
         final SchemaReader schemaReader;
+        final Map compiledExps = new HashMap();
+        final private Query query;
 
-        RolapEvaluatorRoot(RolapResult result) {
-            this.result = result;
-            this.cube = (RolapCube) result.getQuery().getCube();
-            this.connection = (RolapConnection) result.getQuery().getConnection();
-            this.schemaReader = cube.getSchemaReader(connection.role);
+
+        public RolapEvaluatorRoot(Query query) {
+            this.query = query;
+            this.cube = (RolapCube) query.getCube();
+            this.connection = (RolapConnection) query.getConnection();
+            this.schemaReader = query.getSchemaReader(true);
+        }
+
+        /**
+         * Implements a cheap-and-cheerful mapping from expressions to compiled
+         * expressions.
+         *
+         * <p>TODO: Save compiled expressions somewhere better.
+         */
+        Calc getCompiled(Exp exp, boolean scalar) {
+            Calc calc = (Calc) compiledExps.get(exp);
+            if (calc == null) {
+                calc = query.compileExpression(exp, scalar);
+                compiledExps.put(exp, calc);
+            }
+            return calc;
+        }
+
+        /**
+         * Evaluates a named set.<p/>
+         *
+         * The default implementation throws
+         * {@link UnsupportedOperationException}.
+         */
+        protected Object evaluateNamedSet(String name, Exp exp) {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * First evaluator calls this method on construction.
+         */
+        protected void init(Evaluator evaluator) {
         }
     }
 
@@ -142,7 +187,7 @@ class RolapEvaluator implements Evaluator {
     }
 
     public Query getQuery() {
-        return root.result.getQuery();
+        return root.query;
     }
 
     public int getDepth() {
@@ -189,6 +234,18 @@ class RolapEvaluator implements Evaluator {
         return parent;
     }
 
+    /**
+     * Returns true if the other object is a {@link RolapEvaluator} with
+     * identical context.
+     */
+    public boolean equals(Object obj) {
+        if (!(obj instanceof RolapEvaluator)) {
+            return false;
+        }
+        RolapEvaluator that = (RolapEvaluator) obj;
+        return Arrays.equals(this.currentMembers, that.currentMembers);
+    }
+
     public Object visit(Literal literal) {
         return literal.getValue();
     }
@@ -223,6 +280,7 @@ class RolapEvaluator implements Evaluator {
             Member member = members[i];
 
             // more than one usage
+            assert member != null;
             if (member == null) {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug(
@@ -242,20 +300,23 @@ class RolapEvaluator implements Evaluator {
 
     public Object evaluateCurrent() {
         Member maxSolveMember = getMaxSolveMember();
-        if (maxSolveMember != null) {
-            // There is at least one calculated member. Expand the first one
-            // with the highest solve order.
-            RolapMember defaultMember = (RolapMember)
-                    maxSolveMember.getHierarchy().getDefaultMember();
-            Util.assertTrue(
-                    defaultMember != maxSolveMember,
-                    "default member must not be calculated");
-            RolapEvaluator evaluator = (RolapEvaluator) push(defaultMember);
-            evaluator.setExpanding(maxSolveMember);
-            //((RolapEvaluator) evaluator).cellReader = new CachingCellReader(cellReader);
-            return maxSolveMember.getExpression().evaluateScalar(evaluator);
+        if (maxSolveMember == null) {
+            Object o = cellReader.get(this);
+            if (o == Util.nullValue) {
+                o = null;
+            }
+            return o;
         }
-        return cellReader.get(this);
+        RolapMember defaultMember = (RolapMember)
+                maxSolveMember.getHierarchy().getDefaultMember();
+        Util.assertTrue(
+                defaultMember != maxSolveMember,
+                "default member must not be calculated");
+        RolapEvaluator evaluator = (RolapEvaluator) push(defaultMember);
+        evaluator.setExpanding(maxSolveMember);
+        final Exp exp = maxSolveMember.getExpression();
+        Calc calc = root.getCompiled(exp, true);
+        return calc.evaluate(evaluator);
     }
 
     /**
@@ -424,7 +485,8 @@ class RolapEvaluator implements Evaluator {
         if (formatExp == null) {
             return "Standard";
         }
-        Object o = formatExp.evaluate(this);
+        Calc formatCalc = root.getCompiled(formatExp, true);
+        Object o = formatCalc.evaluate(this);
         return o.toString();
     }
 
@@ -487,7 +549,7 @@ class RolapEvaluator implements Evaluator {
         Object key = getExpResultCacheKey(cacheDescriptor);
         Object result = root.expResultCache.get(key);
         if (result == null) {
-            result = cacheDescriptor.getExp().evaluate(this);
+            result = cacheDescriptor.evaluate(this);
             root.expResultCache.put(key, result == null ? nullResult : result);
         } else if (result == nullResult) {
             result = null;
@@ -512,11 +574,15 @@ class RolapEvaluator implements Evaluator {
     }
 
     public Object evaluateNamedSet(String name, Exp exp) {
-        return root.result.evaluateNamedSet(name, exp);
+        return root.evaluateNamedSet(name, exp);
     }
 
     public Member[] getMembers() {
         return currentMembers;
+    }
+
+    public int getMissCount() {
+        return cellReader.getMissCount();
     }
 }
 

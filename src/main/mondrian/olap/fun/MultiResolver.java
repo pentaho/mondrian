@@ -65,7 +65,7 @@ abstract class MultiResolver extends FunUtil implements Resolver {
             Exp[] args, Validator validator, int[] conversionCount) {
 outer:
         for (int j = 0; j < signatures.length; j++) {
-            int[] parameterTypes = decodeParameterTypes(signatures[j]);
+            int[] parameterTypes = decodeParameterCategories(signatures[j]);
             if (parameterTypes.length != args.length) {
                 continue;
             }
@@ -76,8 +76,8 @@ outer:
                 }
             }
             final String signature = signatures[j];
-            int returnType = decodeReturnType(signature);
-            FunDef dummy = new FunDefBase(this, returnType, parameterTypes);
+            int returnType = decodeReturnCategory(signature);
+            FunDef dummy = new FunDefBase(this, returnType, parameterTypes) {};
             return createFunDef(args, dummy);
         }
         return null;
@@ -85,7 +85,7 @@ outer:
 
     public boolean requiresExpression(int k) {
         for (int j = 0; j < signatures.length; j++) {
-            int[] parameterTypes = decodeParameterTypes(signatures[j]);
+            int[] parameterTypes = decodeParameterCategories(signatures[j]);
             if ((k < parameterTypes.length) &&
                     parameterTypes[k] == Category.Set) {
                 return false;

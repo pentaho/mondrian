@@ -70,15 +70,22 @@ public interface Evaluator {
 
     Member getContext(Dimension dimension);
 
+    /**
+     * @see Util#deprecated(String)
+     */ 
     Object evaluateCurrent();
 
     /**
      * Visits a literal and returns its value.
+     *
+     * @see Util#deprecated(String)
      */
     Object visit(Literal literal);
 
     /**
      * Visits a function call and returns its value.
+     *
+     * @see Util#deprecated(String)
      */
     Object visit(FunCall funCall);
 
@@ -138,7 +145,7 @@ public interface Evaluator {
      * context that <code>exp</code> depends on. Members of
      * independent dimensions are not part of the key.
      *
-     * @see Exp#dependsOn
+     * @see mondrian.calc.Calc#dependsOn
      */
     Object getCachedResult(ExpCacheDescriptor key);
 
@@ -177,6 +184,12 @@ public interface Evaluator {
      * Returns an array of the members which make up the current context.
      */
     Member[] getMembers();
+
+    /**
+     * Returns the number of times that this evaluator has told a lie when
+     * retrieving cell values.
+     */
+    int getMissCount();
 }
 
 // End Evaluator.java

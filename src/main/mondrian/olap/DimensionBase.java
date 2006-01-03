@@ -12,11 +12,7 @@
 
 package mondrian.olap;
 
-import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
-
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Abstract implementation for a {@link Dimension}.
@@ -37,11 +33,9 @@ public abstract class DimensionBase
     protected DimensionType dimensionType;
 
     protected DimensionBase(
-        String name,
-        String uniqueName,
-        String description,
-        int globalOrdinal,
-        DimensionType dimensionType)
+            String name,
+            int globalOrdinal,
+            DimensionType dimensionType)
     {
         this.name = name;
         this.uniqueName = Util.makeFqName(name);
@@ -72,14 +66,6 @@ public abstract class DimensionBase
 
     public Dimension getDimension() {
         return this;
-    }
-
-    public int getCategory() {
-        return Category.Dimension;
-    }
-
-    public Type getTypeX() {
-        return new mondrian.olap.type.DimensionType(this);
     }
 
     public DimensionType getDimensionType() {
@@ -126,7 +112,6 @@ public abstract class DimensionBase
             getLogger().debug(buf.toString());
         }
 
-
         return oe;
     }
 
@@ -136,51 +121,6 @@ public abstract class DimensionBase
                 return hierarchies[i];
         }
         return null;
-    }
-
-//      public Level lookupLevel(NameResolver st, String s)
-//      {
-//          Hierarchy[] mdxHierarchies = getHierarchies();
-//          for (int i = 0; i < mdxHierarchies.length; i++) {
-//              Level mdxLevel = mdxHierarchies[i].lookupLevel(st, s);
-//              if (mdxLevel != null)
-//                  return mdxLevel;
-//          }
-//          return null;
-//      }
-
-//      public Member lookupMember(NameResolver st, String s)
-//      {
-//          Hierarchy[] mdxHierarchies = getHierarchies();
-//          for (int i = 0; i < mdxHierarchies.length; i++) {
-//              Member mdxMember = mdxHierarchies[i].lookupMember(st, s);
-//              if (mdxMember != null)
-//                  return mdxMember;
-//          }
-//          return null;
-//      }
-
-    public Object[] getChildren() {return getHierarchies();}
-
-    protected Object[] getAllowedChildren(CubeAccess cubeAccess) {
-        List hierarchyList = new ArrayList();
-        Hierarchy[] mdxHierarchies = getHierarchies();
-        for (int i = 0; i < mdxHierarchies.length; i++) {
-            if (cubeAccess.isHierarchyAllowed(mdxHierarchies[i])) {
-                hierarchyList.add(mdxHierarchies[i]);
-            }
-        }
-        return hierarchyList.toArray(new Hierarchy[hierarchyList.size()]);
-    }
-
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
-    }
-    public void childrenAccept(Visitor visitor) {
-        Hierarchy[] hierarchies = getHierarchies();
-        for (int i = 0; i < hierarchies.length; i++) {
-            hierarchies[i].accept(visitor);
-        }
     }
 }
 

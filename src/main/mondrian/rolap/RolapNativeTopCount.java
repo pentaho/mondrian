@@ -15,21 +15,17 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import mondrian.olap.Exp;
-import mondrian.olap.FunDef;
-import mondrian.olap.Literal;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.NativeEvaluator;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.SqlQuery.Dialect;
 
 /**
- * computes a TopCount in SQL
- * 
+ * Computes a TopCount in SQL.
+ *
  * @author av
  * @since Nov 21, 2005
+ * @version $Id$
  */
 public class RolapNativeTopCount extends RolapNativeSet {
 
@@ -88,30 +84,33 @@ public class RolapNativeTopCount extends RolapNativeSet {
             return null;
         // is this "TopCount(<set>, <count>, [<numeric expr>])"
         String funName = fun.getName();
-        if ("TopCount".equalsIgnoreCase(funName))
+        if ("TopCount".equalsIgnoreCase(funName)) {
             ascending = false;
-        else if ("BottomCount".equalsIgnoreCase(funName))
+        } else if ("BottomCount".equalsIgnoreCase(funName)) {
             ascending = true;
-        else
+        } else {
             return null;
-
-        if (args.length < 2 || args.length > 3)
+        }
+        if (args.length < 2 || args.length > 3) {
             return null;
-
+        }
         // extract the set expression
         CrossJoinArg[] cargs = checkCrossJoinArg(args[0]);
-        if (cargs == null)
+        if (cargs == null) {
             return null;
-        if (isPreferInterpreter(cargs))
+        }
+        if (isPreferInterpreter(cargs)) {
             return null;
+        }
 
         // extract count
-        if (!(args[1] instanceof Literal))
+        if (!(args[1] instanceof Literal)) {
             return null;
+        }
         int count = ((Literal) args[1]).getIntValue();
 
         // extract "order by" expression
-        RolapSchemaReader schemaReader = (RolapSchemaReader) evaluator.getSchemaReader();
+        SchemaReader schemaReader = evaluator.getSchemaReader();
         DataSource ds = schemaReader.getDataSource();
         Connection con = null;
         try {
@@ -123,10 +122,10 @@ public class RolapNativeTopCount extends RolapNativeSet {
             String orderByExpr = null;
             if (args.length == 3) {
                 orderByExpr = sql.generateTopCountOrderBy(args[2]);
-                if (orderByExpr == null)
+                if (orderByExpr == null) {
                     return null;
+                }
             }
-
             LOGGER.info("using native topcount");
 
             TupleConstraint constraint = new TopCountConstraint(cargs, evaluator, orderByExpr);
@@ -147,3 +146,5 @@ public class RolapNativeTopCount extends RolapNativeSet {
     }
 
 }
+
+// End RolapNativeTopCount.java

@@ -11,8 +11,6 @@
 */
 
 package mondrian.olap;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.MemberType;
 import mondrian.resource.MondrianResource;
 
 import java.util.List;
@@ -46,17 +44,8 @@ public abstract class MemberBase
         this.flags = flags;
     }
 
-    // implement Exp, OlapElement, Member
     public String getQualifiedName() {
         return MondrianResource.instance().MdxMemberName.str(uniqueName);
-    }
-
-    public final int getCategory() {
-        return Category.Member;
-    }
-
-    public Type getTypeX() {
-        return new MemberType(getHierarchy(), null, null);
     }
 
     public abstract String getName();
@@ -145,10 +134,10 @@ public abstract class MemberBase
     }
 
    /**
-    * Return whether this <code>Member</code>'s unique name is equal to, a
+    * Returns whether this <code>Member</code>'s unique name is equal to, a
     * child of, or a descendent of a member whose unique name is
     * <code>uniqueName</code>.
-    **/
+    */
     public boolean isChildOrEqualTo(String uniqueName) {
         if (uniqueName == null) {
             return false;
@@ -182,6 +171,7 @@ public abstract class MemberBase
     public int getSolveOrder() {
         return -1;
     }
+
     /**
      * Returns the expression by which this member is calculated. The expression
      * is not null if and only if the member is not calculated.
@@ -190,10 +180,6 @@ public abstract class MemberBase
      */
     public Exp getExpression() {
         return null;
-    }
-
-    public Exp accept(Validator validator) {
-        return this;
     }
 
     // implement Member
@@ -207,17 +193,9 @@ public abstract class MemberBase
         return (Member[]) list.toArray(new Member[list.size()]);
     }
 
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
-    }
-
-    public void childrenAccept(Visitor visitor) {
-        // don't generally traverse to children -- we could implement, if
-        // necessary
-    }
-
     /**
-     * Default implementation returns -1.
+     * Returns the ordinal of this member within its hierarchy.
+     * The default implementation returns -1.
      */
     public int getOrdinal() {
         return -1;
@@ -234,7 +212,6 @@ public abstract class MemberBase
     public String getPropertyFormattedValue(String propertyName){
         return getPropertyValue(propertyName).toString();
     }
-
 }
 
 // End MemberBase.java

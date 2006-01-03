@@ -4803,6 +4803,21 @@ public class BasicQueryTest extends FoodMartTestCase {
                            "{[Store Size in SQFT].[All Store Size in SQFT].[null]}" + nl +
                            "Row #0: 33,307.69" + nl);
     }
+
+    public void _testFoo() {
+//        System.setProperty("mondrian.expCache.enable", "false");
+//        System.setProperty("mondrian.native.topcount.enable", "false");
+        System.setProperty("mondrian.native.filter.enable", "false");
+//        System.setProperty("mondrian.native.nonempty.enable", "false");
+//        System.setProperty("mondrian.native.crossjoin.enable", "false");
+        assertQueryReturns(
+                "with member [Measures].[Qualified Count] as 'Count(Filter(Descendants([Customers].[All Customers].[USA].[CA], [Customers].[City]), (([Measures].[Store Sales] > 6000.0) OR ([Measures].[Unit Sales] > 3000.0))))'\n" +
+                "  member [Measures].[Qualified Sales] as 'Sum(Filter(Descendants([Customers].[All Customers].[USA].[CA], [Customers].[City]), (([Measures].[Store Sales] > 6000.0) OR ([Measures].[Unit Sales] > 3000.0))), [Measures].[Store Sales])'\n" +
+                "select {[Measures].[Store Sales], [Measures].[Unit Sales], [Measures].[Qualified Count], [Measures].[Qualified Sales]} ON COLUMNS,\n" +
+                "  {Filter(Descendants([Customers].[All Customers].[USA].[CA], [Customers].[City]), (([Measures].[Store Sales] > 6000.0) OR ([Measures].[Unit Sales] > 3000.0)))} ON ROWS\n" +
+                "from [Sales]",
+                "x");
+    }
 }
 
 // End BasicQueryTest.java

@@ -10,6 +10,8 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+import mondrian.calc.*;
+import mondrian.calc.impl.AbstractListCalc;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -93,11 +95,28 @@ class DrilldownMemberFunDef extends FunDefBase {
         }
     }
 
+    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        final ListCalc listCalc1 = compiler.compileList(call.getArg(0));
+        final ListCalc listCalc2 = compiler.compileList(call.getArg(1));
+        return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
+            public List evaluateList(Evaluator evaluator) {
+                final List list1 = listCalc1.evaluateList(evaluator);
+                final List list2 = listCalc2.evaluateList(evaluator);
+                return drilldownMember(list1, list2, evaluator);
+            }
+        };
+    }
+
     public Object evaluate(Evaluator evaluator, Exp[] args)  {
         // List of members=Set of members, List of member arrays=set of tuples
         List v0 = (List) getArg(evaluator, args, 0);
         List v1 = (List) getArg(evaluator, args, 1);
 
+        return drilldownMember(v0, v1, evaluator);
+
+    }
+
+    private List drilldownMember(List v0, List v1, Evaluator evaluator) {
         if (null == v0 ||
             v0.isEmpty() ||
             null == v1 ||

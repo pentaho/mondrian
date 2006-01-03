@@ -12,6 +12,9 @@
 package mondrian.jolap;
 
 import mondrian.olap.*;
+import mondrian.mdx.DimensionExpr;
+import mondrian.mdx.UnresolvedFunCall;
+
 import org.omg.java.cwm.objectmodel.core.Attribute;
 
 import javax.olap.OLAPException;
@@ -39,17 +42,18 @@ class MondrianAttributeFilter extends MondrianDimensionFilter
     Exp convert(Exp exp) throws OLAPException {
         return combine(
                 exp,
-                new FunCall("Filter", new Exp[] {exp, getCondition()}));
+                new UnresolvedFunCall("Filter", new Exp[] {exp, getCondition()}));
     }
 
     Exp getCondition() throws OLAPException {
         MondrianJolapDimension dimension = (MondrianJolapDimension)
                 getDimensionStepManager().getDimensionView().getDimension();
-        return new FunCall(
+        return new UnresolvedFunCall(
                 getFunName(getOp()),
                 getFunSyntacticType(getOp()), new Exp[] {
-                    new FunCall("CurrentMember",
-                            Syntax.Property, new Exp[] {dimension.dimension}
+                    new UnresolvedFunCall("CurrentMember",
+                            Syntax.Property, new Exp[] {
+                                new DimensionExpr(dimension.dimension)}
                     ),
                     getExp(rhs)}
         );

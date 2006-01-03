@@ -25,7 +25,7 @@ import mondrian.olap.Level;
  * @version $Id$
  */
 public class ScalarType implements Type {
-    public boolean usesDimension(Dimension dimension) {
+    public boolean usesDimension(Dimension dimension, boolean maybe) {
         return false;
     }
 
@@ -37,6 +37,9 @@ public class ScalarType implements Type {
         return null;
     }
 
+    public Dimension getDimension() {
+        return null;
+    }
 }
 
 // End ScalarType.java

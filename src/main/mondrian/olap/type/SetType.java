@@ -41,9 +41,16 @@ public class SetType implements Type {
         return elementType;
     }
 
-    public boolean usesDimension(Dimension dimension) {
-        return elementType != null &&
-                elementType.usesDimension(dimension);
+    public boolean usesDimension(Dimension dimension, boolean maybe) {
+        if (elementType == null) {
+            return maybe;
+        }
+        return elementType.usesDimension(dimension, maybe);
+    }
+
+    public Dimension getDimension() {
+        return elementType == null ? null :
+                elementType.getDimension();
     }
 
     public Hierarchy getHierarchy() {

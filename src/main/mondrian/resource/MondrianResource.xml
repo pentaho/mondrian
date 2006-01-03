@@ -319,6 +319,10 @@
     <text>Tuple contains more than one member of dimension ''{0}''.</text>
 </exception>
 
+<exception id="350560" name="NullMemberProperty">
+    <text>Illegal access to ''{0}'' property of null member.</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Catalog errors -->
 

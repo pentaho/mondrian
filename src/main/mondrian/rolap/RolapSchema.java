@@ -532,7 +532,6 @@ public class RolapSchema implements Schema {
          *
          * @param value String to create one way hash upon.
          * @return MD5 hash.
-         * @throws NoSuchAlgorithmException
          */
         public static String encodeMD5(final String value) {
             md.reset();
@@ -1366,16 +1365,18 @@ public class RolapSchema implements Schema {
     }
 
     final RolapNativeRegistry nativeRegistry = new RolapNativeRegistry();
+    
     RolapNativeRegistry getNativeRegistry() {
         return nativeRegistry;
     }
- 
-    /** Generator for {@link #globalOrdinal}. * */
+
+    /** Generator for {@link RolapDimension#globalOrdinal}. */
     private int nextDimensionOrdinal = 1; // 0 is reserved for [Measures]
+
     public synchronized int getNextDimensionOrdinal() {
         return nextDimensionOrdinal++;
     }
-    
+
 }
 
 // End RolapSchema.java

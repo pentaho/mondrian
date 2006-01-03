@@ -12,6 +12,9 @@
 
 package mondrian.olap;
 import mondrian.olap.type.*;
+import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
+import mondrian.mdx.MemberExpr;
 
 import java.io.PrintWriter;
 
@@ -23,7 +26,7 @@ public abstract class ExpBase
     implements Exp {
 
 
-    static Exp[] cloneArray(Exp[] a) {
+    protected static Exp[] cloneArray(Exp[] a) {
         Exp[] a2 = new Exp[a.length];
         for (int i = 0; i < a.length; i++) {
             a2[i] = (Exp) a[i].clone();
@@ -36,60 +39,34 @@ public abstract class ExpBase
 
     public abstract Object clone();
 
-    public final boolean isElement() {
-        int category = getCategory();
-        return (category == Category.Member) ||
-            (category == Category.Hierarchy) ||
-            (category == Category.Level) ||
-            (category == Category.Dimension);
-    }
-
-    public final boolean isEmptySet()
-    {
-        if (this instanceof FunCall) {
-            FunCall f = (FunCall) this;
-            return (f.getSyntax() == Syntax.Braces) &&
-                   (f.getArgCount() == 0);
-        } else {
-            return false;
-        }
-    }
-
     /**
      * Returns an array of {@link Member}s if this is a member or a tuple,
      * null otherwise.
      **/
     public final Member[] isConstantTuple()
     {
-        if (this instanceof Member) {
-            return new Member[] {(Member) this};
+        if (this instanceof MemberExpr) {
+            return new Member[] {((MemberExpr) this).getMember()};
         }
         if (!(this instanceof FunCall)) {
             return null;
         }
         FunCall f = (FunCall) this;
-        if (!f.isCallToTuple()) {
+        if (f.getFunDef().getSyntax() != Syntax.Parentheses) {
             return null;
         }
-        // Make sure all of the Exp are Members
-        int len = f.getArgCount();
-        for (int i = 0; i < len; i++) {
-            if (!(f.getArg(i) instanceof Member)) {
+        // Make sure every Exp is a MemberExpr.
+        final Exp[] args = f.getArgs();
+        for (int i = 0; i < args.length; i++) {
+            if (!(args[i] instanceof MemberExpr)) {
                 return null;
             }
         }
-        Member[] members = new Member[len];
-        // non-type checking copy
-        System.arraycopy(f.getArgs(), 0, members, 0, len);
+        Member[] members = new Member[args.length];
+        for (int i = 0; i < members.length; i++) {
+            members[i] = ((MemberExpr) args[i]).getMember();
+        }
         return members;
-    }
-
-    public int addAtPosition(Exp e, int iPosition) {
-        // Since this method has not been overridden for this type of
-        // expression, we presume that the expression has a dimensionality of
-        // 1.  We therefore return 1 to indicate that we could not add the
-        // expression, and that this expression has a dimensionality of 1.
-        return 1;
     }
 
     public Object evaluate(Evaluator evaluator) {
@@ -129,24 +106,9 @@ public abstract class ExpBase
         return types;
     }
 
-    /**
-     * A simple and incomplete default implementation for
-     * {@link Exp#dependsOn(Dimension)}.
-     * It assumes that a dimension, that is used somewhere in the expression
-     * makes the whole expression independent of that dimension.
-     */
-    public boolean dependsOn(Dimension dimension) {
-        final Type type = getTypeX();
-        return !type.usesDimension(dimension);
-    }
-
-    /**
-     * @deprecated Use {@link #getCategory()}
-     **/
-    public int getType() {
-        return getCategory();
+    public Calc accept(ExpCompiler compiler) {
+        throw new UnsupportedOperationException(this.toString());
     }
 }
 
-
-// End Exp.java
+// End ExpBase.java

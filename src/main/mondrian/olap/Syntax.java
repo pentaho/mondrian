@@ -29,7 +29,8 @@ public class Syntax extends EnumeratedValues.BasicValue {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             if (fun.equals("_Value")) {
                 // pseudo function evaluting a tuple value
-                if (args[0] instanceof FunCall && ((FunCall)args[0]).isCallToTuple()) {
+                if (args[0] instanceof FunCall &&
+                        ((FunCall)args[0]).getFunDef().getSyntax() == Syntax.Parentheses) {
                     ((FunCall)args[0]).unparse(pw);
                     return;
                 }
@@ -218,7 +219,7 @@ public class Syntax extends EnumeratedValues.BasicValue {
     private static boolean needParen(Exp[] args) {
         return !(args.length == 1 &&
                 args[0] instanceof FunCall &&
-                ((FunCall) args[0]).getSyntax() == Syntax.Parentheses);
+                ((FunCall) args[0]).getFunDef().getSyntax() == Syntax.Parentheses);
     }
 
     private static String getTypeDescription(int type) {

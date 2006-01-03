@@ -12,8 +12,11 @@
 package mondrian.olap.fun;
 
 import java.util.List;
+import java.util.Collections;
 
 import mondrian.olap.*;
+import mondrian.calc.*;
+import mondrian.calc.impl.AbstractListCalc;
 
 
 /**
@@ -25,22 +28,43 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
         super(dummyFunDef);
     }
 
-    public boolean callDependsOn(FunCall call, Dimension dimension) {
-        // First, evaluate the arguments, drawing from the context.
-        if (super.callDependsOn(call, dimension)) {
-            return true;
-        }
-        // The arguments, once evaluated, set the context, so if there is an
-        // arg of dimension D the function will not depend on D
-        for (int i = 0; i < call.getArgs().length; i++) {
-            Exp exp = call.getArgs()[i];
-            if (exp.getTypeX().usesDimension(dimension)) {
-                return false;
+    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        final ListCalc listCalc1 = compiler.compileList(call.getArg(0));
+        final ListCalc listCalc2 = compiler.compileList(call.getArg(1));
+        return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
+            public List evaluateList(Evaluator evaluator) {
+                final List list1 = listCalc1.evaluateList(evaluator);
+                if (list1.isEmpty()) {
+                    return Collections.EMPTY_LIST;
+                }
+                final List list2 = listCalc2.evaluateList(evaluator);
+                // evaluate the arguments in non empty mode
+                evaluator = evaluator.push();
+                evaluator.setNonEmpty(true);
+                List result = crossJoin(list1, list2, evaluator);
+
+                // remove any remaining empty crossings from the result
+                result = nonEmptyList(evaluator, result);
+                return result;
             }
-        }
-        // We depend on every other dimension in the context, because we
-        // effectively evaluate the measure for every cell.
-        return true;
+
+            public boolean dependsOn(Dimension dimension) {
+                if (super.dependsOn(dimension)) {
+                    return true;
+                }
+                // Member calculations generate members, which mask the actual
+                // expression from the inherited context.
+                if (listCalc1.getType().usesDimension(dimension, true)) {
+                    return false;
+                }
+                if (listCalc2.getType().usesDimension(dimension, true)) {
+                    return false;
+                }
+                // The implicit value expression, executed to figure out
+                // whether a given tuple is empty, depends upon all dimensions.
+                return true;
+            }
+        };
     }
 
     public Object evaluate(Evaluator evaluator, Exp[] args) {

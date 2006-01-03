@@ -58,9 +58,9 @@ public class LastNonEmptyUdf implements UserDefinedFunction {
     public Type[] getParameterTypes() {
         return new Type[] {
             // The first argument must be a set of members (of any hierarchy).
-            new SetType(new MemberType(null, null, null)),
+            new SetType(MemberType.Unknown),
             // The second argument must be a member.
-            new MemberType(null, null, null)
+            MemberType.Unknown,
         };
     }
 
@@ -88,7 +88,7 @@ public class LastNonEmptyUdf implements UserDefinedFunction {
             return member;
         }
         // Not found. Return the hierarchy's 'null member'.
-        final Hierarchy hierarchy = memberListExp.getTypeX().getHierarchy();
+        final Hierarchy hierarchy = memberListExp.getType().getHierarchy();
         return hierarchy.getNullMember();
     }
 
