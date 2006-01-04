@@ -46,18 +46,21 @@ import org.xml.sax.SAXException;
 public class DefaultXmlaServlet extends XmlaServlet {
 
     private static final Logger LOGGER = Logger.getLogger(DefaultXmlaServlet.class);
-    private static final String EOL = System.getProperty("line.separator", "\n");
+    protected static final String EOL = System.getProperty("line.separator", "\n");
 
     private DocumentBuilderFactory domFactory = null;
 
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
+        domFactory = getDocumentBuilderFactory();
+    }
 
-        // init: domFactory
-        domFactory = DocumentBuilderFactory.newInstance();
-        domFactory.setIgnoringComments(true);
-        domFactory.setIgnoringElementContentWhitespace(true);
-        domFactory.setNamespaceAware(true);
+    protected DocumentBuilderFactory getDocumentBuilderFactory() {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setIgnoringComments(true);
+        factory.setIgnoringElementContentWhitespace(true);
+        factory.setNamespaceAware(true);
+        return factory;
     }
 
     protected Element[] unmarshallSoapMessage(InputStream inputStream) throws Exception {
