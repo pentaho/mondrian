@@ -31,7 +31,7 @@ database which is exploded in the class path of the WAR.
 
   <context-param>
     <param-name>connectString</param-name>
-    <param-value>Provider=mondrian;Jdbc='jdbc:derby:classpath:/foodmart';Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;RoleXX='California manager';JdbcUser=APP;JdbcPassword=APP</param-value>
+    <param-value>Provider=mondrian;Jdbc='jdbc:derby:classpath:/foodmart';Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;JdbcUser=APP;JdbcPassword=APP;PoolNeeded=false;</param-value>
   </context-param>
 
   <filter>
@@ -39,7 +39,7 @@ database which is exploded in the class path of the WAR.
     <filter-class>com.tonbeller.wcf.controller.RequestFilter</filter-class>
     <init-param>
       <param-name>indexJSP</param-name>
-      <param-value>/index.jsp</param-value>
+      <param-value>/index.html</param-value>
       <description>forward to this page if session is new</description>
     </init-param>
     <init-param>
@@ -81,13 +81,13 @@ database which is exploded in the class path of the WAR.
     <servlet-class>mondrian.web.servlet.MDXQueryServlet</servlet-class>
     <init-param>
       <param-name>connectString</param-name>
-      <param-value>Provider=mondrian;Jdbc='jdbc:derby:classpath:/foodmart';Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;RoleXX='California manager';JdbcUser=APP;JdbcPassword=APP</param-value>
+      <param-value>Provider=mondrian;Jdbc='jdbc:derby:classpath:/foodmart';Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;JdbcUser=APP;JdbcPassword=APP;PoolNeeded=false;</param-value>
     </init-param>
   </servlet>
 
   <servlet>
     <servlet-name>MondrianXmlaServlet</servlet-name>
-    <servlet-class>mondrian.xmla.XmlaServlet</servlet-class>
+    <servlet-class>mondrian.xmla.impl.DefaultXmlaServlet</servlet-class>
     <init-param>
       <param-name>DataSourcesConfig</param-name>
       <param-value>datasources.xml</param-value>
@@ -138,7 +138,7 @@ database which is exploded in the class path of the WAR.
   </servlet-mapping>
 
   <welcome-file-list>
-    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>index.html</welcome-file>
   </welcome-file-list>
 
   <taglib>

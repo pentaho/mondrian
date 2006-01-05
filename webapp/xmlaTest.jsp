@@ -1,11 +1,13 @@
-<%@ page import="mondrian.xmla.XmlaMediator,
-                 mondrian.olap.Util,
+<%@ page import="mondrian.olap.Util,
+		 org.w3c.dom.Element,
                  org.eigenbase.xom.XMLUtil,
                  java.io.PrintWriter,
                  java.io.StringWriter,
+                 mondrian.xmla.test.XmlaTestContext,
                  mondrian.xmla.XmlaUtil,
                  java.util.Map,
-                 java.util.Arrays"%>
+                 java.util.Arrays,
+                 org.apache.log4j.Logger"%>
 <%@ page language="java" %>
 <%--
 // $Id$
@@ -19,6 +21,9 @@
 // Julian Hyde, 3 June, 2003
 --%>
 <%!
+
+    private static final Logger LOGGER = Logger.getLogger("mondrian.jsp.xmlaTest");
+
     /**
      * XML-encodes a string.
      */
@@ -29,8 +34,6 @@
         pw.flush();
         return sw.toString();
     }
-
-    private static final Map requestMap = XmlaUtil.getRequestMap();
 %>
 <html>
 <head>
@@ -70,23 +73,27 @@ text-align:right;
 </head>
 <body>
 
-<a href="index.jsp">back to index</a><p/>
+<a href=".">back to index</a><p/>
 
 <%
-    String[] requestKeys = (String[]) requestMap.keySet().toArray(new String[0]);
-    Arrays.sort(requestKeys);
-    String defaultRequest = (String) requestMap.get("testCubes");
+    
+    XmlaTestContext context = new XmlaTestContext(application);
+    
+    Object[] requestResponses = context.defaultRequestResponsePairs();
+
     int whichRequest = 0;
     if (request.getParameter("whichrequest") != null) {
         whichRequest = Integer.valueOf(request.getParameter("whichrequest")).intValue();
     }
-    if (whichRequest >= requestKeys.length) {
-        whichRequest = requestKeys.length - 1;
+    if (whichRequest >= requestResponses.length) {
+        whichRequest = requestResponses.length - 1;
     }
-    defaultRequest = (String) requestMap.get(requestKeys[whichRequest]);
+    Object[] defaultRequestResponse = (Object[]) requestResponses[whichRequest];
+    Element requestElem = (Element) defaultRequestResponse[1];
+    String defaultRequest = XmlaUtil.element2Text(requestElem);
     String postURL = request.getParameter("postURL");
     if (postURL == null) {
-        postURL = "xmla";
+        postURL = "xmla.jsp";
     }
 %>
 
@@ -97,11 +104,12 @@ text-align:right;
       <td>
         <select name="whichrequest"><%
 
-    for (int i = 0; i < requestKeys.length; i++) {
-
+    for (int i = 0; i < requestResponses.length; i++) {
+	  Object[] thisRequestResponse = (Object[]) requestResponses[i];
+	  String fileName = (String) thisRequestResponse[0];
       %>
       <option <%= whichRequest == i ? " selected" : "" %>
-      value="<%= i%>"><%= i %>. <%= requestKeys[i].substring(4) %>
+      value="<%= i%>"><%= i %>. <%= fileName.substring(0,fileName.length() - 4) %>
       </option>
       <%
     }
@@ -132,13 +140,6 @@ text-align:right;
       </td>
     </tr>
     <tr>
-      <td>Method</td>
-      <td>
-        <input type="radio" name="SOAPAction" value="urn:schemas-microsoft-com:xml-analysis:Discover" checked="true"/>Discover
-        <input type="radio" name="SOAPAction" value="urn:schemas-microsoft-com:xml-analysis:Execute"/>Execute
-      </td>
-    </tr>
-    <tr>
       <td>&nbsp;</td>
       <td><input type='submit' value='Run'/></td>
     </tr>
@@ -162,7 +163,7 @@ text-align:right;
   </table>
 </form>
 
-<a href="index.jsp">back to index</a><p/>
+<a href=".">back to index</a><p/>
 
 </body>
 </html>

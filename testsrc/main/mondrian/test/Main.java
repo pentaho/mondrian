@@ -145,7 +145,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(AccessControlTest.class);
             suite.addTestSuite(ParserTest.class);
             suite.addTestSuite(ParentChildHierarchyTest.class);
-            suite.addTestSuite(XmlaTest.class);
+            suite.addTest(XmlaTest.suite());
             if (isRunOnce()) suite.addTestSuite(TestCalculatedMembers.class);
             suite.addTestSuite(RaggedHierarchyTest.class);
             suite.addTestSuite(CompatibilityTest.class);

@@ -9,7 +9,7 @@
 -->
 <jp:xmlaQuery id="query01"
     uri="http://localhost:8080/mondrian/xmla"
-    dataSource="MondrianFoodMart"
+    dataSource="Provider=Mondrian;DataSource=MondrianFoodMart;"
   	catalog="FoodMart">
 select
   {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns,

@@ -17,7 +17,7 @@
 </head>
 <body>
 
-<a href="index.jsp">back to index</a><p/>
+<a href=".">back to index</a><p/>
 
 
 <mdx:query name="query1" resultCache="true">
@@ -122,7 +122,7 @@ text. For example, the Store Sales were <b>
 in 1997 for TV promoted products.
 <p>
 
-<a href="index.jsp">back to index</a><p/>
+<a href=".">back to index</a><p/>
 
 </body>
 </head>

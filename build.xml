@@ -172,6 +172,7 @@ demo/access/MondrianFoodMart.mdb"/>
           <fileset dir="${testclasses.dir}" includes="**/*.class,**/*.properties"/>
           <fileset dir="." includes="${generated.java.files},${generated.lib.files}"/>
           <fileset dir="demo/derby/foodmart"/>
+	      <fileset dir="${build.dir}" />
       </delete>
   </target>
 
@@ -280,6 +281,10 @@ unzip-FoodMartAccessDB"/>
       <include name="javax/**/*.java"/>
       <include name="org/**/*.java"/>
     </javac>
+    <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml" 
+        todir="${classes.dir}"/>
+    <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml" 
+        todir="${classes.dir}"/>
   </target>
 
   <target name="compile.tests" depends="info,compile.java">
@@ -697,10 +702,6 @@ doc/**/*.xml"
 
   <target name="jar" depends="compile,compile.tests">
     <mkdir dir="${lib.dir}" />
-    <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml" 
-        todir="${classes.dir}"/>
-    <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml" 
-        todir="${classes.dir}"/>
     <zip
         zipfile="${jar.file}"
         update="true">
@@ -788,7 +789,7 @@ You should set scp.user, scp.password and scp.path in build.properties">
        </copy>
     </target>
 
-  <target name="war" depends="copy-jars,jar,compile.tests" description="
+  <target name="war" depends="jar,compile.tests" description="
 Creates mondrian.war based upon jpivot.war.
 Assumes that mondrian.jar exists (use 'jar' target)">
     <filter filtersfile="mondrian.properties"/>
@@ -798,20 +799,19 @@ Assumes that mondrian.jar exists (use 'jar' target)">
     <delete file="${lib.dir}/web.xml"/>
     <copy file="${webapp.dir}/WEB-INF/web-jpivot.xml"
         filtering="true" tofile="${lib.dir}/web.xml"/>
-    <!-- always replace jpivot's index.jsp -->
-    <copy overwrite="yes" file="${webapp.dir}/index.jsp" tofile="${lib.dir}/index.jsp"/>
-
+ 
     <war warfile="${war.file}"
         update="yes"
         webxml="${lib.dir}/web.xml">
       <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml,web-jpivot.xml"/>
       <!-- our FoodMart.xml may be newer than jpivot's -->
       <webinf dir="${demo.dir}" prefix="WEB-INF/queries" includes="FoodMart.xml"/>
-      <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
-      <fileset dir="${lib.dir}" includes="index.jsp"/>
+      <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*,index.jsp"/>
       <lib dir="${lib.dir}" includes="${name}.jar"/>
       <lib dir="${lib.dir}" includes="eigenbase-*.jar"/>
-      <classes dir="${testclasses.dir}" includes="mondrian/xmla/*.*"/>
+      <lib dir="${testlib.dir}" includes="xmlunit*.jar"/>
+      <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
+      <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
     </war>
   </target>
@@ -823,27 +823,34 @@ Assumes that mondrian.jar exists (use 'jar' target)">
   <target name="derby-war" depends="jar,compile.tests,unzip-FoodMartDerbyDB" description="
 Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded database.">
     <filter filtersfile="mondrian.properties"/>
-    <mkdir dir="${lib.dir}" />
+    <delete dir="${build.dir}/mondrian-embedded" />
+    <mkdir dir="${build.dir}/mondrian-embedded" />
     <delete file="${war.embeddedDb.file}"/>
-    <copy file="${lib.dir}/jpivot.war" tofile="${war.embeddedDb.file}"/>
-    <delete file="${lib.dir}/web.xml"/>
-    <!-- always replace jpivot's index.jsp -->
-    <copy overwrite="yes" file="${webapp.dir}/index.jsp" tofile="${lib.dir}/index.jsp"/>
+    <unzip src="${lib.dir}/jpivot.war" dest="${build.dir}/mondrian-embedded"/>
+    
+	<delete>
+      <fileset dir="${build.dir}/mondrian-embedded" includes="index.jsp,xmla.jsp"/>
+      <fileset dir="${build.dir}/mondrian-embedded/WEB-INF" includes="datasources.xml,mondrian.properties"/>
+      <fileset dir="${build.dir}/mondrian-embedded/WEB-INF/queries" includes="*.jsp,*.xml"/>
+      <fileset dir="${build.dir}/mondrian-embedded/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,*.xml"/>
+	</delete>
 
     <war warfile="${war.embeddedDb.file}"
-        update="yes"
         webxml="${demo.dir}/derby/web.xml">
-      <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml,web-jpivot.xml"/>
+      <!-- We pick up the libs from JPivot here -->  
+      <webinf dir="${build.dir}/mondrian-embedded/WEB-INF" excludes="web.xml,web-jpivot.xml"/>
+      <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml,web-jpivot.xml,datasources.xml"/>
       <webinf dir="${demo.dir}/derby" includes="queries/*.jsp,datasources.xml"/>
       <!-- our FoodMart.xml may be newer than jpivot's -->
       <webinf dir="${demo.dir}" prefix="WEB-INF/queries" includes="FoodMart.xml"/>
-      <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
-      <fileset dir="${lib.dir}" includes="index.jsp"/>
+      <fileset dir="${build.dir}/mondrian-embedded" excludes="WEB-INF/**/*"/>
+      <fileset dir="${webapp.dir}" excludes="index.jsp,busy.jsp,error.jsp,WEB-INF/**/*"/>
       <lib dir="${lib.dir}" includes="${name}.jar"/>
       <lib dir="${lib.dir}" includes="eigenbase-*.jar"/>
-      <lib dir="${testlib.dir}" includes="derby.jar"/>
+      <lib dir="${testlib.dir}" includes="xmlunit*.jar,derby.jar"/>
       <classes dir="${demo.dir}/derby" includes="foodmart/**/*.*"/>
-      <classes dir="${testclasses.dir}" includes="mondrian/xmla/*.*"/>
+      <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
+      <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
     </war>
   </target>

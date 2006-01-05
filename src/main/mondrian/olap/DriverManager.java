@@ -12,6 +12,7 @@
 
 package mondrian.olap;
 import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapConnectionProperties;
 import mondrian.spi.impl.ServletContextCatalogLocator;
 
 import javax.servlet.ServletContext;
@@ -55,13 +56,13 @@ public class DriverManager {
     private static void fixup(
             Util.PropertyList connectionProperties,
             ServletContext servletContext) {
-        String catalog = connectionProperties.get("catalog");
+        String catalog = connectionProperties.get(RolapConnectionProperties.Catalog);
         if (servletContext != null) {
             final ServletContextCatalogLocator locator =
                     new ServletContextCatalogLocator(servletContext);
             final String newCatalog = locator.locate(catalog);
             if (!newCatalog.equals(catalog)) {
-                connectionProperties.put("catalog", catalog);
+                connectionProperties.put(RolapConnectionProperties.Catalog, newCatalog);
             }
         }
     }

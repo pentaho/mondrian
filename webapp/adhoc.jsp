@@ -219,7 +219,7 @@ text-align:right;
 </head>
 <body>
 
-<a href="index.jsp">back to index</a><p/>
+<a href=".">back to index</a><p/>
 
     <form action="adhoc.jsp" method="post">
     <table>
@@ -296,7 +296,7 @@ text-align:right;
     </table>
     </form>
 
-<a href="index.jsp">back to index</a><p/>
+<a href=".">back to index</a><p/>
 
 </body>
 </html>

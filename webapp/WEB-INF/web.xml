@@ -62,6 +62,6 @@ You must accept the terms of that agreement to use this software.
   </session-config>
 
   <welcome-file-list>
-    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>index.html</welcome-file>
   </welcome-file-list>
 </web-app>
