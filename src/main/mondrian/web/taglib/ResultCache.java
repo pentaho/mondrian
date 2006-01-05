@@ -62,8 +62,12 @@ public class ResultCache implements HttpSessionBindingListener {
     }
 
     public void parse(String mdx) {
-        query = connection.parseQuery(mdx);
-        setDirty();
+    	if (connection != null) {
+	        query = connection.parseQuery(mdx);
+	        setDirty();
+    	} else {
+    		LOGGER.error("null connection");
+    	}
     }
 
     public Result getResult() {
@@ -84,7 +88,7 @@ public class ResultCache implements HttpSessionBindingListener {
             }
             return document;
         } catch (ParserConfigurationException e) {
-            e.printStackTrace();
+            LOGGER.error(e);
             throw new RuntimeException(e.toString());
         }
     }
@@ -118,15 +122,21 @@ public class ResultCache implements HttpSessionBindingListener {
     public void valueBound(HttpSessionBindingEvent ev) {
         String connectString =
             servletContext.getInitParameter("connectString");
+        LOGGER.debug("connectString: " + connectString);
         this.connection =
             DriverManager.getConnection(connectString, servletContext, false);
+        if (this.connection == null) {
+        	throw new RuntimeException("No ROLAP connection from connectString: " + connectString);
+        }
     }
 
     /**
      * close connection
      */
     public void valueUnbound(HttpSessionBindingEvent ev) {
-        connection.close();
+    	if (connection != null) {
+    		connection.close();
+    	}
     }
 
 

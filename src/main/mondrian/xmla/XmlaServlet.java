@@ -143,7 +143,7 @@ public abstract class XmlaServlet extends HttpServlet
             // check request's content type
             String contentType = request.getContentType();
             if (contentType == null || contentType.indexOf("text/xml") == -1) {
-                throw new IllegalArgumentException("Only accepts content type 'text/xml'");
+                throw new IllegalArgumentException("Only accepts content type 'text/xml', not '" + contentType + "'");
             }
 
             Element[] soapParts = unmarshallSoapMessage(request.getInputStream());

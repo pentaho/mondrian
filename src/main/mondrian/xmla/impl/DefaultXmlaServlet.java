@@ -71,16 +71,17 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
         /* Check SOAP message */
         Element envElem = soapDoc.getDocumentElement();
-        if (!(NS_SOAP.equals(envElem.getNamespaceURI()) &&
-                "Envelope".equals(envElem.getLocalName()))) {
-            throw new SAXException("Invalid SOAP message");
-        }
 
         if (LOGGER.isDebugEnabled()) {
             StringBuffer buf = new StringBuffer();
             buf.append("XML/A request content").append(EOL);
             buf.append(XmlaUtil.element2Text(envElem));
             LOGGER.debug(buf.toString());
+        }
+
+        if (!(NS_SOAP.equals(envElem.getNamespaceURI()) &&
+                "Envelope".equals(envElem.getLocalName()))) {
+            throw new SAXException("Invalid SOAP message");
         }
 
         Element[] childs;
