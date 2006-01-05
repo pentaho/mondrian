@@ -726,7 +726,7 @@ public class NonEmptyTest extends FoodMartTestCase {
 
         CachePool.instance().flush();
         try {
-            logger.info("*** Native: " + mdx);
+            logger.debug("*** Native: " + mdx);
             Connection con = getConnection(true);
             RolapNativeRegistry reg = getRegistry(con);
             reg.useHardCache(true);
@@ -750,7 +750,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             }
             con.close();
 
-            logger.info("*** Interpreter: " + mdx);
+            logger.debug("*** Interpreter: " + mdx);
             CachePool.instance().flush();
             con = getConnection(true);
             reg = getRegistry(con);

@@ -104,7 +104,7 @@ public class RolapNativeFilter extends RolapNativeSet {
             if (filterExpr == null) {
                 return null;
             }
-            LOGGER.info("using native filter");
+            LOGGER.debug("using native filter");
 
             TupleConstraint constraint = new FilterConstraint(cargs, evaluator, filterExpr);
             return new SetEvaluator(cargs, schemaReader, constraint);

@@ -76,7 +76,7 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         if (isPreferInterpreter(cargs))
             return null;
 
-        LOGGER.info("using native crossjoin");
+        LOGGER.debug("using native crossjoin");
 
         TupleConstraint constraint = new NonEmptyCrossJoinConstraint(cargs, evaluator);
         SchemaReader schemaReader = evaluator.getSchemaReader();

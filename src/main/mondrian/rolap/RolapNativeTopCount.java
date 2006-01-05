@@ -126,7 +126,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
                     return null;
                 }
             }
-            LOGGER.info("using native topcount");
+            LOGGER.debug("using native topcount");
 
             TupleConstraint constraint = new TopCountConstraint(cargs, evaluator, orderByExpr);
             SetEvaluator sev = new SetEvaluator(cargs, schemaReader, constraint);

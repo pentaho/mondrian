@@ -480,12 +480,12 @@ public class AggTableManager {
                 }
 
                 // warn if it has not been identified
-                if (! factColumn.hasUsage()) {
+                if (! factColumn.hasUsage() && getLogger().isDebugEnabled()) {
                     String msg = mres.UnknownFactTableColumn.str(
                         msgRecorder.getContext(),
                         dbFactTable.getName(),
                         factColumn.getName());
-                    msgRecorder.reportInfo(msg);
+                    getLogger().debug(msg);
                 }
             }
         } finally {

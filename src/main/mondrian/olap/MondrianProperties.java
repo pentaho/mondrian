@@ -250,13 +250,13 @@ public class MondrianProperties extends TriggerableProperties {
             load(source.openStream());
             if (populateCount == 0) {
                 LOGGER.info("Mondrian: properties loaded from '"
-                    + source
+                    + source.getDescription()
                     + "'");
             }
         } catch (IOException e) {
             LOGGER.error("Mondrian: error while loading properties "
                 + "from '"
-                + source
+                + source.getDescription()
                 + "' ("
                 + e
                 + ")");
