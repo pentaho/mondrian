@@ -77,6 +77,14 @@ public class RolapEvaluator implements Evaluator {
         } else {
             this.currentMembers = currentMembers;
         }
+        calcMembers = new Member[this.currentMembers.length];
+        calcMemberCount = 0;
+        for (int i = 0; i < this.currentMembers.length; i++) {
+            Member member = this.currentMembers[i];
+            if (member != null && member.isCalculated()) {
+                addCalcMember(member);
+            }
+        }
     }
 
     /**
@@ -109,6 +117,9 @@ public class RolapEvaluator implements Evaluator {
             }
 
             currentMembers[ordinal] = member;
+            if (member.isCalculated()) {
+                addCalcMember(member);
+            }
         }
 
         root.init(this);        
@@ -271,7 +282,13 @@ public class RolapEvaluator implements Evaluator {
         RolapMember m = (RolapMember) member;
         int ordinal = m.getDimension().getOrdinal(root.cube);
         Member previous = currentMembers[ordinal];
+        if (previous.isCalculated()) {
+            removeCalcMember(previous);
+        }
         currentMembers[ordinal] = m;
+        if (m.isCalculated()) {
+            addCalcMember(m);
+        }
         return previous;
     }
 
@@ -299,7 +316,10 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public Object evaluateCurrent() {
-        Member maxSolveMember = getMaxSolveMember();
+        // Get the member in the current context which is (a) calculated, and
+        // (b) has the highest solve order; returns null if there are no
+        // calculated members.
+        Member maxSolveMember = peekCalcMember();
         if (maxSolveMember == null) {
             Object o = cellReader.get(this);
             if (o == Util.nullValue) {
@@ -317,38 +337,6 @@ public class RolapEvaluator implements Evaluator {
         final Exp exp = maxSolveMember.getExpression();
         Calc calc = root.getCompiled(exp, true);
         return calc.evaluate(evaluator);
-    }
-
-    /**
-     * Returns the member in the current context which is (a) calculated, and
-     * (b) has the highest solve order; returns null if there are no calculated
-     * members.
-     */
-    private Member getMaxSolveMember() {
-        int maxSolve = Integer.MIN_VALUE;
-        Member maxSolveMember = null;
-        for (int i = 0, count = currentMembers.length; i < count; i++) {
-            final Member currentMember = currentMembers[i];
-
-            // more than one usage
-            if (currentMember == null) {
-                if (getLogger().isDebugEnabled()) {
-                    getLogger().debug(
-                        "RolapEvaluator.getMinSolveMember: member == null "
-                         + " , count=" + i);
-                }
-                continue;
-            }
-
-            if (currentMember.isCalculated()) {
-                int solve = currentMember.getSolveOrder();
-                if (solve > maxSolve) {
-                    maxSolve = solve;
-                    maxSolveMember = currentMember;
-                }
-            }
-        }
-        return maxSolveMember;
     }
 
     private void setExpanding(Member member) {
@@ -583,6 +571,58 @@ public class RolapEvaluator implements Evaluator {
 
     public int getMissCount() {
         return cellReader.getMissCount();
+    }
+
+    private final Member[] calcMembers;
+    private int calcMemberCount;
+
+    void addCalcMember(Member member) {
+        assert member != null;
+        assert member.isCalculated();
+        calcMembers[calcMemberCount++] = member;
+    }
+
+    private Member peekCalcMember() {
+        switch (calcMemberCount) {
+        case 0:
+            return null;
+
+        case 1:
+            return calcMembers[0];
+
+        default:
+            // Find member with the highest solve order.
+            Member maxSolveMember = calcMembers[0];
+            int maxSolve = maxSolveMember.getSolveOrder();
+            for (int i = 1; i < calcMemberCount; i++) {
+                Member member = calcMembers[i];
+                int solve = member.getSolveOrder();
+                if (solve >= maxSolve) {
+                    // If solve orders tie, the dimension with the lower
+                    // ordinal wins.
+                    if (solve > maxSolve ||
+                            member.getDimension().getOrdinal(root.cube) <
+                            maxSolveMember.getDimension().getOrdinal(
+                                    root.cube)) {
+                        maxSolve = solve;
+                        maxSolveMember = member;
+                    }
+                }
+            }
+            return maxSolveMember;
+        }
+    }
+
+    private void removeCalcMember(Member previous) {
+        for (int i = 0; i < calcMemberCount; i++) {
+            Member calcMember = calcMembers[i];
+            if (calcMember == previous) {
+                // overwrite this member with the end member
+                --calcMemberCount;
+                calcMembers[i] = calcMembers[calcMemberCount];
+                calcMembers[calcMemberCount] = null; // to allow gc
+            }
+        }
     }
 }
 
