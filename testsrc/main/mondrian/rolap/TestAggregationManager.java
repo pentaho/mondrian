@@ -368,7 +368,13 @@ public class TestAggregationManager extends TestCase {
             star.setDataSource(oldDataSource);
         }
         assertTrue(bomb != null);
-        assertEquals(sql, bomb.sql);
+        assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
+    }
+
+    private static String replaceQuotes(String s) {
+      s = s.replace('`', '\"');
+      s = s.replace('\'', '\"');
+      return s;
     }
 
     private CellRequest createRequest(final String cube, final String measure,
@@ -466,11 +472,20 @@ public class TestAggregationManager extends TestCase {
             }
 
             public ResultSet executeQuery(String sql) throws SQLException {
-                if (trigger == null || sql.startsWith(trigger)) {
+                if (matchTrigger(sql)) {
                     throw new Bomb(sql);
                 } else {
                     return statement.executeQuery(sql);
                 }
+            }
+
+            // different versions of mysql drivers use different quoting, so ignore quotes
+            private boolean matchTrigger(String sql) {
+                if (trigger == null)
+                    return true;
+                String s = replaceQuotes(sql);
+                String t = replaceQuotes(trigger);
+                return s.startsWith(t);
             }
         }
     }
