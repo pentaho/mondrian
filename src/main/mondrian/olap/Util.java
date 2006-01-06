@@ -329,6 +329,9 @@ public class Util extends XOMUtil {
     }
 
     public static String[] explode(String s) {
+        if (!s.startsWith("[")) {
+            return new String[]{s};
+        }
         List list = new ArrayList();
         int i = 0;
         while (i < s.length()) {

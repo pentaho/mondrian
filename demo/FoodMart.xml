@@ -155,13 +155,13 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
   <DimensionUsage name="Time" source="Time" foreignKey="time_id"/>
   <DimensionUsage name="Product" source="Product" foreignKey="product_id"/>
   <Dimension name="Promotion Media" foreignKey="promotion_id">
-    <Hierarchy hasAll="true" allMemberName="All Media" primaryKey="promotion_id">
+    <Hierarchy hasAll="true" allMemberName="All Media" primaryKey="promotion_id" defaultMember="All Media">
       <Table name="promotion"/>
       <Level name="Media Type" column="media_type" uniqueMembers="true"/>
     </Hierarchy>
   </Dimension>
   <Dimension name="Promotions" foreignKey="promotion_id">
-    <Hierarchy hasAll="true" allMemberName="All Promotions" primaryKey="promotion_id">
+    <Hierarchy hasAll="true" allMemberName="All Promotions" primaryKey="promotion_id" defaultMember="[All Promotions]">
       <Table name="promotion"/>
       <Level name="Promotion Name" column="promotion_name" uniqueMembers="true"/>
     </Hierarchy>
