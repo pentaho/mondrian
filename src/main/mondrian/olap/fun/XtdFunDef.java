@@ -91,13 +91,6 @@ class XtdFunDef extends FunDefBase {
         }
     }
 
-    public Object evaluate(Evaluator evaluator, Exp[] args) {
-        return periodsToDate(
-                evaluator,
-                getLevel(evaluator),
-                getMemberArg(evaluator, args, 0, false));
-    }
-
     public static class Resolver extends MultiResolver {
         private final LevelType levelType;
 

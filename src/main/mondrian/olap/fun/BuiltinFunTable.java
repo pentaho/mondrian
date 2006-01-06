@@ -85,11 +85,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         dimension);
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Dimension dimension = getDimensionArg(evaluator, args, 0, true);
-                return dimension;
-            }
-
         });
 
         define(new FunDefBase(
@@ -107,10 +102,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Level level = getLevelArg(evaluator, args, 0, true);
-                return level.getDimension();
-            }
         });
 
         define(new FunDefBase(
@@ -127,10 +118,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return member.getDimension();
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                return member.getDimension();
             }
         });
 
@@ -152,11 +139,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return nthDimension(evaluator, n);
                     }
                 };
-            }
-
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                int n = getIntArg(evaluator, args, 0);
-                return nthDimension(evaluator, n);
             }
 
             Dimension nthDimension(Evaluator evaluator, int n) {
@@ -188,12 +170,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return findDimension(dimensionName, evaluator);
                     }
                 };
-            }
-
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                String defValue = "Default Value";
-                String s = getStringArg(evaluator, args, 0, defValue);
-                return findDimension(s, evaluator);
             }
 
             Dimension findDimension(String s, Evaluator evaluator) {
@@ -249,13 +225,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Hierarchy hierarchy = getHierarchyArg(evaluator, args, 0, true);
-                int n = getIntArg(evaluator, args, 1);
-                return nthLevel(hierarchy, n);
-
-            }
-
             Level nthLevel(Hierarchy hierarchy, int n) {
                 Level[] levels = hierarchy.getLevels();
 
@@ -286,12 +255,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return findLevel(evaluator, levelName);
                     }
                 };
-            }
-
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                String s = getStringArg(evaluator, args, 0, null);
-                return findLevel(evaluator, s);
-
             }
 
             Level findLevel(Evaluator evaluator, String s) {
@@ -335,10 +298,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         };
                     }
 
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        Object o = getScalarArg(evaluator, args, 0);
-                        return Boolean.valueOf(o == Util.nullValue);
-                    }
                 };
             }
         });
@@ -359,10 +318,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                return Boolean.valueOf(member.isNull());
-            }
         });
 
         define(new MultiResolver(
@@ -384,11 +339,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         };
                     }
 
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        Object arg0 = getArg(evaluator, args, 0);
-                        Object arg1 = getArg(evaluator, args, 1);
-                        return Boolean.valueOf(arg0 == arg1);
-                    }
                 };
             }
         });
@@ -430,21 +380,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         }
                     }
 
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        Member member = getMemberArg(evaluator, args, 0, false);
-                        Object arg2 = getArg(evaluator, args, 1);
-
-                        Level level = null;
-                        int distance;
-                        if (arg2 instanceof Level) {
-                            level = (Level) arg2;
-                            distance = member.getLevel().getDepth() - level.getDepth();
-                        } else {
-                            distance = ((Number)arg2).intValue();
-                        }
-
-                        return ancestor(evaluator, member, distance, level);
-                    }
                 };
             }
         });
@@ -471,15 +406,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                Member ancestorMember = getMemberArg(evaluator, args, 1, true);
-                Member cousin = cousin(
-                        evaluator.getSchemaReader(),
-                        member,
-                        ancestorMember);
-                return cousin;
-            }
         });
 
         define(new DimensionCurrentMemberFunDef());
@@ -502,10 +428,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                return member.getDataMember();
-            }
         });
 
         define(new FunDefBase(
@@ -526,11 +448,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Dimension dimension = getDimensionArg(evaluator, args, 0, true);
-                return evaluator.getSchemaReader().getHierarchyDefaultMember(
-                        dimension.getHierarchy());
-            }
         });
 
         define(new FunDefBase(
@@ -547,10 +464,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return firstChild(evaluator, member);
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                return firstChild(evaluator, member);
             }
 
             Member firstChild(Evaluator evaluator, Member member) {
@@ -576,10 +489,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return firstSibling(member, evaluator);
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                return firstSibling(member, evaluator);
             }
 
             Member firstSibling(Member member, Evaluator evaluator) {
@@ -618,11 +527,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         };
                     }
 
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        Member member = getMemberArg(evaluator, args, 0, true);
-                        int n = getIntArg(evaluator, args, 1);
-                        return evaluator.getSchemaReader().getLeadMember(member, -n);
-                    }
                 };
             }
         });
@@ -642,10 +546,7 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                return lastChild(evaluator, member);
-            }
+
             Member lastChild(Evaluator evaluator, Member member) {
                 Member[] children =
                         evaluator.getSchemaReader().getMemberChildren(member);
@@ -670,10 +571,7 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                return firstSibling(member, evaluator);
-            }
+
             Member firstSibling(Member member, Evaluator evaluator) {
                 Member parent = member.getParentMember();
                 Member[] children;
@@ -711,11 +609,6 @@ public class BuiltinFunTable extends FunTableImpl {
                             }
                         };
                     }
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        Member member = getMemberArg(evaluator, args, 0, true);
-                        int n = getIntArg(evaluator, args, 1);
-                        return evaluator.getSchemaReader().getLeadMember(member, n);
-                    }
                 };
             }});
 
@@ -745,10 +638,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                return evaluator.getSchemaReader().getLeadMember(member, +1);
-            }
         });
 
         define(OpeningClosingPeriodFunDef.createResolver(true));
@@ -834,36 +723,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         };
                     }
 
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        // Member defaults to [Time].currentmember
-                        Member member = (args.length == 3)
-                            ? getMemberArg(evaluator, args, 2, true)
-                            : evaluator.getContext(
-                                evaluator.getCube().getTimeDimension());
-
-                        // Numeric Expression defaults to 1.
-                        int lagValue = (args.length >= 2)
-                            ? getIntArg(evaluator, args, 1)
-                            : 1;
-
-                        Level ancestorLevel;
-                        if (args.length >= 1) {
-                            ancestorLevel = getLevelArg(evaluator, args, 0, true);
-                        } else {
-                            Member parent = member.getParentMember();
-
-                            if (parent == null) {
-                                // This is a root member,
-                                // so there is no parallelperiod.
-                                return member.getHierarchy().getNullMember();
-                            }
-
-                            ancestorLevel = parent.getLevel();
-                        }
-
-                        return parallelPeriod(member, ancestorLevel, evaluator, lagValue);
-                    }
-
                     Member parallelPeriod(
                             Member member,
                             Level ancestorLevel,
@@ -908,11 +767,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                return memberParent(evaluator, member);
-            }
-
             Member memberParent(Evaluator evaluator, Member member) {
                 Member parent = evaluator.getSchemaReader().getMemberParent(member);
                 if (parent == null) {
@@ -938,10 +792,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                return evaluator.getSchemaReader().getLeadMember(member, -1);
-            }
         });
 
         define(new FunDefBase(
@@ -959,11 +809,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return strToMember(evaluator, memberName);
                     }
                 };
-            }
-
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                String memberName = getStringArg(evaluator, args, 0, null);
-                return strToMember(evaluator, memberName);
             }
 
             Member strToMember(Evaluator evaluator, String memberName) {
@@ -1150,12 +995,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         };
                     }
 
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        List members = (List) getArg(evaluator, args, 0);
-                        String empties = getLiteralArg(args, 1, "INCLUDEEMPTY", resWords, null);
-                        final boolean includeEmpty = empties.equals("INCLUDEEMPTY");
-                        return new Double(count(evaluator, members, includeEmpty));
-                    }
                 };
             }
             public String[] getReservedWords() {
@@ -1180,10 +1019,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                List members = (List) getArg(evaluator, args, 0);
-                return new Double(count(evaluator, members, true));
-            }
         });
 
         define(new MultiResolver(
@@ -1272,21 +1107,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Boolean b = getBooleanArg(evaluator, args, 0);
-                if (b == null) {
-                    // The result of the logical expression is not known,
-                    // probably because some necessary value is not in the
-                    // cache yet. Evaluate both expressions so that the cache
-                    // gets populated as soon as possible.
-                    getStringArg(evaluator, args, 1, null);
-                    getStringArg(evaluator, args, 2, null);
-                    return null;
-                }
-                return b.booleanValue() ?
-                        getStringArg(evaluator, args, 1, null) :
-                        getStringArg(evaluator, args, 2, null);
-            }
         });
 
         define(new FunDefBase(
@@ -1313,21 +1133,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Boolean b = getBooleanArg(evaluator, args, 0);
-                if (b == null) {
-                    // The result of the logical expression is not known,
-                    // probably because some necessary value is not in the
-                    // cache yet. Evaluate both expressions so that the cache
-                    // gets populated as soon as possible.
-                    getDoubleArg(evaluator, args, 1, null);
-                    getDoubleArg(evaluator, args, 2, null);
-                    return new Double(Double.NaN);
-                }
-                return b.booleanValue() ?
-                        getDoubleArg(evaluator, args, 1, null) :
-                        getDoubleArg(evaluator, args, 2, null);
-            }
         });
 
         define(new LinReg.InterceptFunDef.Resolver());
@@ -1452,11 +1257,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Level level = getLevelArg(evaluator, args, 0, false);
-
-                return new Double(level.getDepth());
-            }
         });
 
         define(RankFunDef.createResolver());
@@ -1612,13 +1412,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                Member old = evaluator.setContext(member);
-                Object value = evaluator.evaluateCurrent();
-                evaluator.setContext(old);
-                return value;
-            }
         });
 
         final MultiResolver varResolver = new MultiResolver(
@@ -1728,14 +1521,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                List memberList = (List) getArg(evaluator, args, 0);
-                if (memberList != null) {
-                    memberList = addCalculatedMembers(memberList, evaluator);
-                }
-                return memberList;
-            }
-
             private List addCalculatedMembers(List memberList, Evaluator evaluator) {
                 // Determine unique levels in the set
                 Map levelMap = new HashMap();
@@ -1791,11 +1576,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return ascendants(member);
                     }
                 };
-            }
-
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, false);
-                return ascendants(member);
             }
 
             List ascendants(Member member) {
@@ -1922,11 +1702,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                Member[] children = getNonEmptyMemberChildren(evaluator, member);
-                return Arrays.asList(children);
-            }
         });
 
         define(new MultiResolver(
@@ -1989,11 +1764,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                List list = (List) getArg(evaluator, args, 0);
-                return distinct(list);
-            }
-
             List distinct(List list) {
                 HashSet hashSet = new HashSet(list.size());
                 Iterator iter = list.iterator();
@@ -2039,24 +1809,6 @@ public class BuiltinFunTable extends FunTableImpl {
                                 return drill(searchDepth, list, evaluator);
                             }
                         };
-                    }
-
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        //todo add fssl functionality
-                        List list = (List) getArg(evaluator, args, 0);
-
-                        if (list.size() == 0) {
-                            return list;
-                        }
-
-                        int searchDepth = -1;
-                        Level level = getLevelArg(evaluator, args, 1, false);
-                        if (level != null) {
-                            searchDepth = level.getDepth();
-                        }
-
-                        return drill(searchDepth, list, evaluator);
-
                     }
 
                     List drill(int searchDepth, List list, Evaluator evaluator) {
@@ -2187,13 +1939,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         };
                     }
 
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        // todo: implement ALL
-                        final List list0 = (List) getArg(evaluator, args, 0);
-                        final List list1 = (List) getArg(evaluator, args, 1);
-                        return except(list0, list1);
-                    }
-
                     List except(final List list0, final List list1) {
                         HashSet set = new HashSet(list1);
                         List result = new ArrayList();
@@ -2286,34 +2031,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 }
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                SchemaReader schemaReader = evaluator.getSchemaReader();
-                NativeEvaluator nativeEvaluator = schemaReader.getNativeSetEvaluator(this, evaluator, args);
-                if (nativeEvaluator != null) {
-                    return nativeEvaluator.execute();
-                }
-
-                List members = (List) getArg(evaluator, args, 0);
-                Exp exp = args[1];
-                List result = new ArrayList();
-                Evaluator evaluator2 = evaluator.push();
-                for (int i = 0, count = members.size(); i < count; i++) {
-                    Object o = members.get(i);
-                    if (o instanceof Member) {
-                        evaluator2.setContext((Member) o);
-                    } else if (o instanceof Member[]) {
-                        evaluator2.setContext((Member[]) o);
-                    } else {
-                        throw Util.newInternal(
-                                "unexpected type in set: " + o.getClass());
-                    }
-                    Boolean b = (Boolean) exp.evaluateScalar(evaluator2);
-                    if (b != null && b.booleanValue()) {
-                        result.add(o);
-                    }
-                }
-                return result;
-            }
         });
 
         define(new MultiResolver(
@@ -2403,13 +2120,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         };
                     }
 
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        List members = (List) getArg(evaluator, args, 0);
-                        final int count = args.length < 2 ? 1 :
-                                getIntArg(evaluator, args, 1);
-                        return head(count, members);
-                    }
-
                     List head(final int count, List members) {
                         assert members != null;
                         if (count >= members.size()) {
@@ -2444,11 +2154,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         };
                     }
 
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        List list = (List) getArg(evaluator, args, 0);
-                        hierarchize(list, post);
-                        return list;
-                    }
                 };
             }
 
@@ -2495,10 +2200,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Dimension dimension = (Dimension) getArg(evaluator, args, 0);
-                return dimensionMembers(dimension, evaluator, false);
-            }
         });
 
         define(new FunDefBase(
@@ -2518,10 +2219,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Dimension dimension = (Dimension) getArg(evaluator, args, 0);
-                return dimensionMembers(dimension, evaluator, true);
-            }
         });
 
         define(new FunDefBase(
@@ -2541,10 +2238,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Hierarchy hierarchy = (Hierarchy) getArg(evaluator, args, 0);
-                return hierarchyMembers(hierarchy, evaluator, false);
-            }
         });
 
         define(new FunDefBase(
@@ -2563,10 +2256,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Hierarchy hierarchy = (Hierarchy) getArg(evaluator, args, 0);
-                return hierarchyMembers(hierarchy, evaluator, true);
-            }
         });
 
         define(new FunDefBase(
@@ -2584,10 +2273,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Level level = (Level) getArg(evaluator, args, 0);
-                return levelMembers(level, evaluator, false);
-            }
         });
 
         define(new FunDefBase(
@@ -2604,10 +2289,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return levelMembers(level, evaluator, true);
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Level level = (Level) getArg(evaluator, args, 0);
-                return levelMembers(level, evaluator, true);
             }
         });
 
@@ -2691,19 +2372,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         };
                     }
 
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        Level level;
-                        Member member;
-                        if (args.length == 0) {
-                            member = evaluator.getContext(
-                                    evaluator.getCube().getTimeDimension());
-                            level = member.getLevel().getParentLevel();
-                        } else {
-                            level = getLevelArg(evaluator, args, 0, false);
-                            member = getMemberArg(evaluator, args, 1, false);
-                        }
-                        return periodsToDate(evaluator, level, member);
-                    }
                 };
             }
         });
@@ -2734,13 +2402,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                List memberList = (List) getArg(evaluator, args, 0);
-                if (memberList != null) {
-                    removeCalculatedMembers(memberList);
-                }
-                return memberList;
-            }
         });
 
         define(new FunDefBase(
@@ -2758,11 +2419,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return memberSiblings(member, evaluator);
                     }
                 };
-            }
-
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                return memberSiblings(member, evaluator);
             }
 
             List memberSiblings(Member member, Evaluator evaluator) {
@@ -2830,31 +2486,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         };
                     }
 
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        List members = (List) getArg(evaluator, args, 0);
-                        int start = getIntArg(evaluator, args, 1);
-                        int end;
-                        if (args.length < 3) {
-                            end = members.size();
-                        } else {
-                            final int count = getIntArg(evaluator, args, 2);
-                            end = start + count;
-                        }
-                        if (end > members.size()) {
-                            end = members.size();
-                        }
-                        if (start >= end || start < 0) {
-                            return Collections.EMPTY_LIST;
-                        }
-                        assert 0 <= start;
-                        assert start < end;
-                        assert end <= members.size();
-                        if (start == 0 && end == members.size()) {
-                            return members;
-                        } else {
-                            return members.subList(start, end);
-                        }
-                    }
                 };
             }
         });
@@ -2880,13 +2511,6 @@ public class BuiltinFunTable extends FunTableImpl {
                                 return tail(count, list);
                             }
                         };
-                    }
-
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        List members = (List) getArg(evaluator, args, 0);
-                        final int count = args.length < 2 ? 1 :
-                                getIntArg(evaluator, args, 1);
-                        return tail(count, members);
                     }
 
                     List tail(final int count, List members) {
@@ -2926,15 +2550,6 @@ public class BuiltinFunTable extends FunTableImpl {
                                 return toggleDrillState(evaluator, list0, list1);
                             }
                         };
-                    }
-
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        List v0 = (List) getArg(evaluator, args, 0),
-                                v1 = (List) getArg(evaluator, args, 1);
-                        if (args.length > 2) {
-                            throw MondrianResource.instance().ToggleDrillStateRecursiveNotSupported.ex();
-                        }
-                        return toggleDrillState(evaluator, v0, v1);
                     }
 
                     List toggleDrillState(Evaluator evaluator, List v0, List list1) {
@@ -3146,12 +2761,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         };
                     }
 
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        List list0 = (List) getArg(evaluator, args, 0);
-                        List list1 = (List) getArg(evaluator, args, 1);
-                        return union(list0, list1, all);
-                    }
-
                     List union(List list0, List list1, final boolean all) {
                         assert list0 != null;
                         assert list1 != null;
@@ -3214,13 +2823,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return colon(member0, member1, evaluator);
                     }
                 };
-            }
-
-            // implement FunDef
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                final Member member0 = getMemberArg(evaluator, args, 0, true);
-                final Member member1 = getMemberArg(evaluator, args, 1, true);
-                return colon(member0, member1, evaluator);
             }
 
             List colon(
@@ -3293,10 +2895,6 @@ public class BuiltinFunTable extends FunTableImpl {
                             };
                         }
 
-                        public Object evaluate(Evaluator evaluator, Exp[] args) {
-                            Double o = getDoubleArg(evaluator, args, 0);
-                            return format.format(o);
-                        }
                     };
                 } else {
                     // Variable string expression
@@ -3318,12 +2916,6 @@ public class BuiltinFunTable extends FunTableImpl {
                             };
                         }
 
-                        public Object evaluate(Evaluator evaluator, Exp[] args) {
-                            Double o = getDoubleArg(evaluator, args, 0);
-                            String formatString = getStringArg(evaluator, args, 1, null);
-                            final Format format = new Format(formatString, locale);
-                            return format.format(o);
-                        }
                     };
                 }
             }
@@ -3346,10 +2938,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Dimension dimension = getDimensionArg(evaluator, args, 0, true);
-                return dimension.getCaption();
-            }
         });
 
         define(new FunDefBase(
@@ -3369,10 +2957,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Hierarchy hierarchy = getHierarchyArg(evaluator, args, 0, true);
-                return hierarchy.getCaption();
-            }
         });
 
         define(new FunDefBase(
@@ -3389,10 +2973,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return level.getCaption();
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Level level = getLevelArg(evaluator, args, 0, true);
-                return level.getCaption();
             }
         });
 
@@ -3412,10 +2992,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                return member.getCaption();
-            }
         });
 
         define(new FunDefBase(
@@ -3433,10 +3009,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return dimension.getName();
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Dimension dimension = getDimensionArg(evaluator, args, 0, true);
-                return dimension.getName();
             }
         });
 
@@ -3456,10 +3028,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Hierarchy hierarchy = getHierarchyArg(evaluator, args, 0, true);
-                return hierarchy.getName();
-            }
         });
 
         define(new FunDefBase(
@@ -3476,10 +3044,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return level.getName();
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Level level = getLevelArg(evaluator, args, 0, true);
-                return level.getName();
             }
         });
 
@@ -3499,10 +3063,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                return member.getName();
-            }
         });
 
         define(new FunDefBase(
@@ -3519,11 +3079,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return strToSet(list);
                     }
                 };
-            }
-
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                List list = (List) getArg(evaluator, args, 0);
-                return strToSet(list);
             }
 
             String strToSet(List list) {
@@ -3580,13 +3135,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 }
             }
 
-            // implement FunDef
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Object o = getArg(evaluator, args, 0);
-                StringBuffer buf = new StringBuffer();
-                appendMemberOrTuple(buf, o);
-                return buf.toString();
-            }
         });
 
         define(new FunDefBase(
@@ -3604,10 +3152,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return dimension.getUniqueName();
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Dimension dimension = getDimensionArg(evaluator, args, 0, true);
-                return dimension.getUniqueName();
             }
         });
 
@@ -3627,10 +3171,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Hierarchy hierarchy = getHierarchyArg(evaluator, args, 0, true);
-                return hierarchy.getUniqueName();
-            }
         });
 
         define(new FunDefBase(
@@ -3647,10 +3187,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return level.getUniqueName();
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Level level = getLevelArg(evaluator, args, 0, true);
-                return level.getUniqueName();
             }
         });
 
@@ -3669,10 +3205,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return member.getUniqueName();
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Member member = getMemberArg(evaluator, args, 0, true);
-                return member.getUniqueName();
             }
         });
 
@@ -3747,48 +3279,6 @@ public class BuiltinFunTable extends FunTableImpl {
                             }
                         }
                     };
-                }
-            }
-
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Object arg0 = getArg(evaluator, args, 0);
-                int index = getIntArg(evaluator, args, 1);
-
-                if (arg0 == null) {
-                    // List is empty, therefore every index it out of
-                    // bounds.
-                    return makeNullMember(evaluator, args);
-                } else if (arg0 instanceof List) {
-                    List theSet = (List)arg0;
-
-                    int setSize = theSet.size();
-                    if (index >= setSize || index < 0) {
-                        return makeNullMember(evaluator, args);
-                    } else {
-                        return theSet.get(index);
-                    }
-                } else {
-                    //
-                    // You'll get a member in the following case:
-                    // {[member]}.item(0).item(0), even though the first invocation of
-                    // item returned a tuple.
-                    //
-                    assert ((arg0 instanceof Member[]) || (arg0 instanceof Member));
-
-                    if (arg0 instanceof Member) {
-                        if (index == 0) {
-                            return arg0;
-                        }
-                        return makeNullMember(evaluator, args);
-                    } else {
-                        Member[] tuple = (Member[]) arg0;
-
-                        if (index < tuple.length && index >= 0) {
-                            return tuple[index];
-                        }
-
-                        return makeNullMember(evaluator, args);
-                    }
                 }
             }
 
@@ -3870,37 +3360,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 }
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Object arg0 = getArg(evaluator, args, 0);
-                int index = getIntArg(evaluator, args, 1);
-
-                if (arg0 == null) {
-                    // List is empty, therefore every index it out of
-                    // bounds.
-                    return null;
-                } else {
-                    // {[member]}.item(0).item(0), even though the first invocation of
-                    // item returned a tuple.
-                    //
-                    assert ((arg0 instanceof Member[]) || (arg0 instanceof Member));
-
-                    if (arg0 instanceof Member) {
-                        if (index == 0) {
-                            return arg0;
-                        }
-                        return null;
-                    } else {
-                        Member[] tuple = (Member[]) arg0;
-
-                        if (index >= tuple.length || index < 0) {
-                            return null;
-                        }
-                        return tuple[index];
-
-                    }
-                }
-
-            }
         });
 
         define(new FunDefBase(
@@ -4091,31 +3550,11 @@ public class BuiltinFunTable extends FunTableImpl {
                         };
                     }
 
-                    // implement FunDef
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        return evaluateCaseTest(evaluator, args);
-                    }
                 };
             }
 
             public boolean requiresExpression(int k) {
                 return true;
-            }
-
-            Object evaluateCaseTest(Evaluator evaluator, Exp[] args) {
-                int clauseCount = args.length / 2;
-                int j = 0;
-                for (int i = 0; i < clauseCount; i++) {
-                    boolean logical = getBooleanArg(evaluator, args, j++, false);
-                    if (logical) {
-                        return getArg(evaluator, args, j);
-                    } else {
-                        j++;
-                    }
-                }
-                return (j < args.length)
-                    ? getArg(evaluator,  args, j)
-                    : null;
             }
         });
 
@@ -4199,31 +3638,11 @@ public class BuiltinFunTable extends FunTableImpl {
                         };
                     }
 
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        return evaluateCaseMatch(evaluator, args);
-                    }
                 };
             }
 
             public boolean requiresExpression(int k) {
                 return true;
-            }
-
-            Object evaluateCaseMatch(Evaluator evaluator, Exp[] args) {
-                int clauseCount = (args.length - 1)/ 2;
-                int j = 0;
-                Object value = getArg(evaluator, args, j++);
-                for (int i = 0; i < clauseCount; i++) {
-                    Object match = getArg(evaluator, args, j++);
-                    if (match.equals(value)) {
-                        return getArg(evaluator, args, j);
-                    } else {
-                        j++;
-                    }
-                }
-                return (j < args.length)
-                    ? getArg(evaluator, args, j)
-                    : null;
             }
         });
 
@@ -4266,25 +3685,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Double o0 = getDoubleArg(evaluator, args, 0, null);
-                Double o1 = getDoubleArg(evaluator, args, 1, null);
-                // Plus and minus return null if BOTH args are null. A single
-                // null arg acts like zero.
-                if (o0 == null) {
-                    if (o1 == null) {
-                        return null;
-                    } else {
-                        return o1;
-                    }
-                } else {
-                    if (o1 == null) {
-                        return o0;
-                    } else {
-                        return new Double(o0.doubleValue() + o1.doubleValue());
-                    }
-                }
-            }
         });
 
         define(new FunDefBase(
@@ -4315,25 +3715,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Double o0 = getDoubleArg(evaluator, args, 0, null);
-                Double o1 = getDoubleArg(evaluator, args, 1, null);
-                // Plus and minus return null if BOTH args are null. A single
-                // null arg acts like zero.
-                if (o0 == null) {
-                    if (o1 == null) {
-                        return null;
-                    } else {
-                        return new Double(- o1.doubleValue());
-                    }
-                } else {
-                    if (o1 == null) {
-                        return o0;
-                    } else {
-                        return new Double(o0.doubleValue() - o1.doubleValue());
-                    }
-                }
-            }
         });
 
         define(new FunDefBase(
@@ -4356,16 +3737,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         }
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Double o0 = getDoubleArg(evaluator, args, 0, null);
-                Double o1 = getDoubleArg(evaluator, args, 1, null);
-                // Multiply and divide return null if EITHER arg is null.
-                if (o0 == null || o1 == null) {
-                    return null;
-                } else {
-                    return new Double(o0.doubleValue() * o1.doubleValue());
-                }
             }
         });
 
@@ -4390,16 +3761,7 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Double o0 = getDoubleArg(evaluator, args, 0, null);
-                Double o1 = getDoubleArg(evaluator, args, 1, null);
-                // Multiply and divide return null if EITHER arg is null.
-                if (o0 == null || o1 == null) {
-                    return null;
-                } else {
-                    return new Double(o0.doubleValue() / o1.doubleValue());
-                }
-            }
+
             // todo: use this, via reflection
             public double evaluate(double d1, double d2) {
                 return d1 / d2;
@@ -4424,13 +3786,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Double o0 = getDoubleArg(evaluator, args, 0, null);
-                if (o0 == null) {
-                    return null;
-                }
-                return new Double(- o0.doubleValue());
-            }
         });
 
         define(new FunDefBase(
@@ -4450,11 +3805,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                String o0 = getStringArg(evaluator, args, 0, null);
-                String o1 = getStringArg(evaluator, args, 1, null);
-                return o0 + o1;
-            }
         });
 
         define(new FunDefBase(
@@ -4473,21 +3823,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return calc1.evaluateBoolean(evaluator);
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                // if the first arg is known and false, we dont evaluate the second
-                Boolean b1 = getBooleanArg(evaluator, args, 0);
-                if ((b1 != null) && !b1.booleanValue()) {
-                    return Boolean.FALSE;
-                }
-                Boolean b2 = getBooleanArg(evaluator, args, 1);
-                if ((b2 != null) && !b2.booleanValue()) {
-                    return Boolean.FALSE;
-                }
-                if (b1 == null || b2 == null) {
-                    return null;
-                }
-                return Boolean.valueOf(b1.booleanValue() && b2.booleanValue());
             }
         });
 
@@ -4508,21 +3843,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                // if the first arg is known and true, we dont evaluate the second
-                Boolean b1 = getBooleanArg(evaluator, args, 0);
-                if ((b1 != null) && b1.booleanValue()) {
-                    return Boolean.TRUE;
-                }
-                Boolean b2 = getBooleanArg(evaluator, args, 1);
-                if ((b2 != null) && b2.booleanValue()) {
-                    return Boolean.TRUE;
-                }
-                if (b1 == null || b2 == null) {
-                    return null;
-                }
-                return Boolean.valueOf(b1.booleanValue() || b2.booleanValue());
-            }
         });
 
         define(new FunDefBase(
@@ -4541,14 +3861,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Boolean b1 = getBooleanArg(evaluator, args, 0);
-                Boolean b2 = getBooleanArg(evaluator, args, 1);
-                if (b1 == null || b2 == null) {
-                    return null;
-                }
-                return Boolean.valueOf(b1.booleanValue() != b2.booleanValue());
-            }
         });
 
         define(new FunDefBase(
@@ -4563,14 +3875,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return !calc.evaluateBoolean(evaluator);
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Boolean b = getBooleanArg(evaluator, args, 0);
-                return (b == null) ?
-                        null :
-                        b.booleanValue() ?
-                        Boolean.FALSE :
-                        Boolean.TRUE;
             }
         });
 
@@ -4593,14 +3897,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                String o0 = getStringArg(evaluator, args, 0, null);
-                String o1 = getStringArg(evaluator, args, 1, null);
-                if (o0 == null || o1 == null) {
-                    return null;
-                }
-                return Boolean.valueOf(o0.equals(o1));
-            }
         });
 
         define(new FunDefBase(
@@ -4621,14 +3917,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return v0 == v1;
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Double o0 = getDoubleArg(evaluator, args, 0);
-                Double o1 = getDoubleArg(evaluator, args, 1);
-                if (o0.isNaN() || o1.isNaN()) {
-                    return null;
-                }
-                return Boolean.valueOf(o0.equals(o1));
             }
         });
 
@@ -4651,16 +3939,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                String o0 = getStringArg(evaluator, args, 0, null);
-                String o1 = getStringArg(evaluator, args, 1, null);
-                if (o0 == null || o1 == null) {
-                    return null;
-                }
-                return o0.equals(o1) ?
-                        Boolean.FALSE :
-                        Boolean.TRUE;
-            }
         });
 
         define(new FunDefBase(
@@ -4681,16 +3959,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return v0 != v1;
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Double o0 = getDoubleArg(evaluator, args, 0);
-                Double o1 = getDoubleArg(evaluator, args, 1);
-                if (o0.isNaN() || o1.isNaN()) {
-                    return null;
-                }
-                return o0.equals(o1) ?
-                        Boolean.FALSE :
-                        Boolean.TRUE;
             }
         });
 
@@ -4713,14 +3981,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Double o0 = getDoubleArg(evaluator, args, 0);
-                Double o1 = getDoubleArg(evaluator, args, 1);
-                if (o0.isNaN() || o1.isNaN()) {
-                    return null;
-                }
-                return Boolean.valueOf(o0.compareTo(o1) < 0);
-            }
         });
 
         define(new FunDefBase(
@@ -4741,14 +4001,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return b0.compareTo(b1) < 0;
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                String o0 = getStringArg(evaluator, args, 0, null);
-                String o1 = getStringArg(evaluator, args, 1, null);
-                if (o0 == null || o1 == null) {
-                    return null;
-                }
-                return Boolean.valueOf(o0.compareTo(o1) < 0);
             }
         });
 
@@ -4771,14 +4023,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Double o0 = getDoubleArg(evaluator, args, 0);
-                Double o1 = getDoubleArg(evaluator, args, 1);
-                if (o0.isNaN() || o1.isNaN()) {
-                    return null;
-                }
-                return Boolean.valueOf(o0.compareTo(o1) <= 0);
-            }
         });
 
         define(new FunDefBase(
@@ -4799,14 +4043,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return b0.compareTo(b1) <= 0;
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                String o0 = getStringArg(evaluator, args, 0, null);
-                String o1 = getStringArg(evaluator, args, 1, null);
-                if (o0 == null || o1 == null) {
-                    return null;
-                }
-                return Boolean.valueOf(o0.compareTo(o1) <= 0);
             }
         });
 
@@ -4829,14 +4065,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Double o0 = getDoubleArg(evaluator, args, 0);
-                Double o1 = getDoubleArg(evaluator, args, 1);
-                if (o0.isNaN() || o1.isNaN()) {
-                    return null;
-                }
-                return Boolean.valueOf(o0.compareTo(o1) > 0);
-            }
         });
 
         define(new FunDefBase(
@@ -4857,14 +4085,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return b0.compareTo(b1) > 0;
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                String o0 = getStringArg(evaluator, args, 0, null);
-                String o1 = getStringArg(evaluator, args, 1, null);
-                if (o0 == null || o1 == null) {
-                    return null;
-                }
-                return Boolean.valueOf(o0.compareTo(o1) > 0);
             }
         });
 
@@ -4887,14 +4107,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                Double o0 = getDoubleArg(evaluator, args, 0);
-                Double o1 = getDoubleArg(evaluator, args, 1);
-                if (o0.isNaN() || o1.isNaN()) {
-                    return null;
-                }
-                return Boolean.valueOf(o0.compareTo(o1) >= 0);
-            }
         });
 
         define(new FunDefBase(
@@ -4915,14 +4127,6 @@ public class BuiltinFunTable extends FunTableImpl {
                         return b0.compareTo(b1) >= 0;
                     }
                 };
-            }
-            public Object evaluate(Evaluator evaluator, Exp[] args) {
-                String o0 = getStringArg(evaluator, args, 0, null);
-                String o1 = getStringArg(evaluator, args, 1, null);
-                if (o0 == null || o1 == null) {
-                    return null;
-                }
-                return Boolean.valueOf(o0.compareTo(o1) >= 0);
             }
         });
 
@@ -5208,11 +4412,6 @@ public class BuiltinFunTable extends FunTableImpl {
             return new CalcImpl(call, dimensionCalc);
         }
 
-        public Object evaluate(Evaluator evaluator, Exp[] args) {
-            Dimension dimension = getDimensionArg(evaluator, args, 0, true);
-            return evaluator.getContext(dimension);
-        }
-
         public static class CalcImpl extends AbstractMemberCalc {
             private final DimensionCalc dimensionCalc;
 
@@ -5248,11 +4447,6 @@ public class BuiltinFunTable extends FunTableImpl {
             final HierarchyCalc hierarchyCalc =
                     compiler.compileHierarchy(call.getArg(0));
             return new CalcImpl(call, hierarchyCalc);
-        }
-
-        public Object evaluate(Evaluator evaluator, Exp[] args) {
-            Hierarchy hierarchy = getHierarchyArg(evaluator, args, 0, true);
-            return evaluator.getContext(hierarchy.getDimension());
         }
 
         public static class CalcImpl extends AbstractMemberCalc {
@@ -5304,11 +4498,6 @@ public class BuiltinFunTable extends FunTableImpl {
             return new CalcImpl(call, hierarchyCalc);
         }
 
-        public Object evaluate(Evaluator evaluator, Exp[] args) {
-            Hierarchy hierarchy = getHierarchyArg(evaluator, args, 0, true);
-            return hierarchy.getDimension();
-        }
-
         public static class CalcImpl extends AbstractDimensionCalc {
             private final HierarchyCalc hierarchyCalc;
 
@@ -5335,11 +4524,6 @@ public class BuiltinFunTable extends FunTableImpl {
             final MemberCalc memberCalc =
                     compiler.compileMember(call.getArg(0));
             return new CalcImpl(call, memberCalc);
-        }
-
-        public Object evaluate(Evaluator evaluator, Exp[] args) {
-            Member member = getMemberArg(evaluator, args, 0, true);
-            return member.getHierarchy();
         }
 
         public static class CalcImpl extends AbstractHierarchyCalc {
@@ -5373,11 +4557,6 @@ public class BuiltinFunTable extends FunTableImpl {
             return new CalcImpl(call, memberCalc);
         }
 
-        public Object evaluate(Evaluator evaluator, Exp[] args) {
-            Member member = getMemberArg(evaluator, args, 0, true);
-            return member.getLevel();
-        }
-
         public static class CalcImpl extends AbstractLevelCalc {
             private final MemberCalc memberCalc;
 
@@ -5403,11 +4582,6 @@ public class BuiltinFunTable extends FunTableImpl {
             final LevelCalc levelCalc =
                     compiler.compileLevel(call.getArg(0));
             return new CalcImpl(call, levelCalc);
-        }
-
-        public Object evaluate(Evaluator evaluator, Exp[] args) {
-            Level level = getLevelArg(evaluator, args, 0, true);
-            return level.getHierarchy();
         }
 
         public static class CalcImpl extends AbstractHierarchyCalc {

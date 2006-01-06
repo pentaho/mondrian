@@ -65,18 +65,6 @@ public class CacheFunDef extends FunDefBase {
         };
     }
 
-    public Object evaluate(Evaluator evaluator, Exp[] args) {
-        if (cacheDescriptor == null) {
-            // First call, setup the cache descriptor. (An expensive process,
-            // so we only want to do it once.)
-            cacheDescriptor = new ExpCacheDescriptor(args[0], evaluator);
-        } else {
-            assert args[0] == cacheDescriptor.getExp();
-        }
-        Object o = evaluator.getCachedResult(cacheDescriptor);
-        return o;
-    }
-
     public static class CacheFunResolver extends ResolverBase {
         CacheFunResolver() {
             super(NAME, SIGNATURE, DESCRIPTION, SYNTAX);

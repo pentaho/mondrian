@@ -55,14 +55,6 @@ class ValueFunDef extends FunDefBase {
         return null;
     }
 
-    public Object evaluate(Evaluator evaluator, Exp[] args) {
-        Member[] members = new Member[args.length];
-        for (int i = 0; i < args.length; i++) {
-            members[i] = getMemberArg(evaluator, args, i, true);
-        }
-        Evaluator evaluator2 = evaluator.push(members);
-        return evaluator2.evaluateCurrent();
-    }
 }
 
 // End ValueFunDef.java

@@ -280,7 +280,7 @@ public class UdfTest extends FoodMartTestCase {
             return new Type[] {new NumericType()};
         }
 
-        public Object execute(Evaluator evaluator, Exp[] arguments) {
+        public Object execute(Evaluator evaluator, Argument[] arguments) {
             final Object argValue = arguments[0].evaluateScalar(evaluator);
             if (argValue instanceof Number) {
                 return new Double(((Number) argValue).doubleValue() + 1);

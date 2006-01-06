@@ -65,11 +65,6 @@ public class MemberExpr extends ExpBase implements Exp {
         return this;
     }
 
-    public Object evaluate(Evaluator evaluator) {
-        Util.deprecated("remove Exp.evaluate");
-        return member;
-    }
-
     public Calc accept(ExpCompiler compiler) {
         return ConstantCalc.constantMember(member);
     }

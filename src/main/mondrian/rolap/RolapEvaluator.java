@@ -257,27 +257,6 @@ public class RolapEvaluator implements Evaluator {
         return Arrays.equals(this.currentMembers, that.currentMembers);
     }
 
-    public Object visit(Literal literal) {
-        return literal.getValue();
-    }
-
-    public Object visit(Parameter parameter) {
-        return parameter.getExp().evaluate(this);
-    }
-
-    public Object visit(FunCall funCall) {
-        FunDef funDef = funCall.getFunDef();
-        return funDef.evaluate(this, funCall.getArgs());
-    }
-
-    public Object visit(Id id) {
-        throw new Error("unsupported");
-    }
-
-    public Object visit(OlapElement mdxElement) {
-        return mdxElement;
-    }
-
     public Member setContext(Member member) {
         RolapMember m = (RolapMember) member;
         int ordinal = m.getDimension().getOrdinal(root.cube);
@@ -388,7 +367,6 @@ public class RolapEvaluator implements Evaluator {
                     }
                     continue;
                 }
-
 
                 Member parentMember = eval.getContext(member.getDimension());
                 if (member != parentMember) {

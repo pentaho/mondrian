@@ -11,7 +11,6 @@
 */
 
 package mondrian.olap;
-import mondrian.olap.type.*;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.mdx.MemberExpr;
@@ -67,23 +66,6 @@ public abstract class ExpBase
             members[i] = ((MemberExpr) args[i]).getMember();
         }
         return members;
-    }
-
-    public Object evaluate(Evaluator evaluator) {
-        throw new Error("unsupported");
-    }
-
-    public Object evaluateScalar(Evaluator evaluator) {
-        Object o = evaluate(evaluator);
-        if (o instanceof Member) {
-            evaluator = evaluator.push((Member) o);
-            return evaluator.evaluateCurrent();
-        } else if (o instanceof Member[]) {
-            evaluator = evaluator.push((Member[]) o);
-            return evaluator.evaluateCurrent();
-        } else {
-            return o;
-        }
     }
 
     public static void unparseList(PrintWriter pw, Exp[] exps, String start,

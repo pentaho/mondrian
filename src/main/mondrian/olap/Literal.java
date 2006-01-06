@@ -134,14 +134,6 @@ public class Literal extends ExpBase {
         return this;
     }
 
-    public Object evaluate(Evaluator evaluator) {
-        return evaluator.visit(this);
-    }
-
-    public Object evaluateScalar(Evaluator evaluator) {
-        return o;
-    }
-
     public Calc accept(ExpCompiler compiler) {
         return new ConstantCalc(getType(), o);
     }

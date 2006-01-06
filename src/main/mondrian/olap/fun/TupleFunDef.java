@@ -81,20 +81,6 @@ public class TupleFunDef extends FunDefBase {
         return new CalcImpl(call, memberCalcs);
     }
 
-    public Object evaluate(Evaluator evaluator, Exp[] args) {
-        Member[] members = new Member[args.length];
-        for (int i = 0; i < args.length; i++) {
-            Member member = getMemberArg(evaluator, args, i, true);
-            if (member == null ||
-                    member.isNull()) {
-                return null;
-            }
-            members[i] = member;
-        }
-        checkDimensions(members);
-        return members;
-    }
-
     private void checkDimensions(MemberType[] memberTypes) {
         for (int i = 0; i < memberTypes.length; i++) {
             MemberType memberType = memberTypes[i];

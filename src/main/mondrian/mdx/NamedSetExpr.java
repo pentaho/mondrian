@@ -86,13 +86,6 @@ public class NamedSetExpr extends ExpBase implements Exp {
         };
     }
 
-    public Object evaluate(Evaluator evaluator) {
-        Util.deprecated("remove Exp.evaluate");
-        final String name = namedSet.getName();
-        final Exp exp = namedSet.getExp();
-        return evaluator.evaluateNamedSet(name, exp);
-    }
-
     public Type getType() {
         return namedSet.getType();
     }

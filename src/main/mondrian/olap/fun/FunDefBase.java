@@ -314,12 +314,6 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
         return guessResultType(args, getReturnCategory(), this.name);
     }
 
-    // implement FunDef
-    public Object evaluate(Evaluator evaluator, Exp[] args) {
-        throw Util.newInternal("function '" + getSignature() +
-                "' has not been implemented");
-    }
-
     public Calc compileCall(FunCall call, ExpCompiler compiler) {
         throw Util.newInternal("function '" + getSignature() +
                 "' has not been implemented");

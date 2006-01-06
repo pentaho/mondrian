@@ -65,10 +65,6 @@ public class HierarchyExpr extends ExpBase implements Exp {
         return this;
     }
 
-    public Object evaluate(Evaluator evaluator) {
-        return hierarchy;
-    }
-
     public Calc accept(ExpCompiler compiler) {
         return ConstantCalc.constantHierarchy(hierarchy);
     }

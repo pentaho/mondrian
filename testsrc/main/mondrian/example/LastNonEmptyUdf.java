@@ -64,10 +64,10 @@ public class LastNonEmptyUdf implements UserDefinedFunction {
         };
     }
 
-    public Object execute(Evaluator evaluator, Exp[] arguments) {
-        final Exp memberListExp = arguments[0];
+    public Object execute(Evaluator evaluator, Argument[] arguments) {
+        final Argument memberListExp = arguments[0];
         final List memberList = (List) memberListExp.evaluate(evaluator);
-        final Exp exp = arguments[1];
+        final Argument exp = arguments[1];
         for (int i = memberList.size() - 1; i >= 0; --i) {
             Member member = (Member) memberList.get(i);
             // Create an evaluator with the member as its context.

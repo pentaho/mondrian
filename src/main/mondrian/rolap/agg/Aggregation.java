@@ -21,9 +21,6 @@ import mondrian.rolap.BitKey;
 import mondrian.rolap.sql.SqlQuery;
 
 import java.lang.ref.SoftReference;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -56,12 +53,6 @@ import java.util.*;
  * <p>The space required for a segment depends upon the dimensionality (d),
  * cell count (c) and the value count (v). We don't count the space
  * required for the actual values, which is the same in any scheme.</p>
- *
- * <b>Note to developers</b>: {@link Segment} implements
- * {@link CachePool.Cacheable}, and must adhere to the contract that imposes.
- * For this class, that means that references to segments must be made using
- * soft references (see {@link CachePool.SoftCacheableReference}) so that they
- * can be garbage-collected.
  *
  * @author jhyde
  * @since 28 August, 2001
@@ -355,9 +346,9 @@ public class Aggregation {
                 }
             } else {
                 // avoid to call wouldContain - its slow
-                if (pinSet != null 
-                        && !pinSet.contains(segment) 
-                        && segment.wouldContain(keys)) 
+                if (pinSet != null
+                        && !pinSet.contains(segment)
+                        && segment.wouldContain(keys))
                 {
                     pinSet.add(segment);
                 }
@@ -366,19 +357,19 @@ public class Aggregation {
         return null;
     }
 
-    /** 
+    /**
      * This is called during Sql generation.
-     * 
-     * @return 
+     *
+     * @return
      */
     RolapStar.Column[] getColumns() {
         return columns;
     }
 
-    /** 
+    /**
      * This is called during Sql generation.
-     * 
-     * @return 
+     *
+     * @return
      */
     RolapStar getStar() {
         return star;
@@ -396,7 +387,7 @@ public class Aggregation {
 
         // actual keys retrieved
         private Object[] keys;
-        
+
         private Set valueSet;
 
         Axis(RolapStar.Column column,
@@ -447,12 +438,6 @@ public class Aggregation {
                 return true;
             }
             return valueSet.contains(key);
-        }
-
-        double getBytes() {
-            return (keys == null)
-                ? 0
-                : 16 + 8 * keys.length;
         }
     }
 

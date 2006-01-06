@@ -71,39 +71,9 @@ public interface Evaluator {
     Member getContext(Dimension dimension);
 
     /**
-     * @see Util#deprecated(String)
-     */ 
+     * Calculates and returns the value of the cell at the current context.
+     */
     Object evaluateCurrent();
-
-    /**
-     * Visits a literal and returns its value.
-     *
-     * @see Util#deprecated(String)
-     */
-    Object visit(Literal literal);
-
-    /**
-     * Visits a function call and returns its value.
-     *
-     * @see Util#deprecated(String)
-     */
-    Object visit(FunCall funCall);
-
-    /**
-     * Visits an identifier and returns its value.
-     */
-    Object visit(Id id);
-
-    /**
-     * Visits a catalog element, such as a dimension or member, and returns its
-     * value.
-     */
-    Object visit(OlapElement mdxElement);
-
-    /**
-     * Visits a parameter and returns its value.
-     */
-    Object visit(Parameter parameter);
 
     /**
      * Formats a value as a string according to the current context's

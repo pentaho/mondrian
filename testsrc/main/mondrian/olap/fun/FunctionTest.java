@@ -1754,7 +1754,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #2: 4,511.68",
                     "Row #2: 6,630.91",
                     "Row #2: 419.51",
-                    "Row #2: 2,169.48" + nl}));
+                    "Row #2: 2,169.48",
+                    ""}));
     }
 
     public void testMin() {

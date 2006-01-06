@@ -11,13 +11,12 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
-import mondrian.olap.type.*;
-import mondrian.resource.MondrianResource;
-import mondrian.mdx.MemberExpr;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.calc.impl.AbstractVoidCalc;
+import mondrian.olap.*;
+import mondrian.olap.type.*;
+import mondrian.resource.MondrianResource;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -68,53 +67,6 @@ class SetFunDef extends FunDefBase {
     public Calc compileCall(FunCall call, ExpCompiler compiler) {
         final Exp[] args = call.getArgs();
         return new SetCalc(call, args, compiler);
-    }
-
-    public Object evaluate(Evaluator evaluator, Exp[] args) {
-        List list = null;
-        for (int i = 0; i < args.length; i++) {
-            ExpBase arg = (ExpBase) args[i];
-            Object o;
-            if (arg instanceof MemberExpr) {
-                o = ((MemberExpr) arg).getMember();
-            } else {
-                Member[] members = arg.isConstantTuple();
-                if (members != null) {
-                    o = members;
-                } else {
-                    o = arg.evaluate(evaluator);
-                }
-            }
-            if (o == null) {
-                // This is a null tuple, so skip it.
-                // (We have a repesentation for null members, but null tuples
-                // are represented by the Java null value.)
-                continue;
-            }
-            if (o instanceof List) {
-                List list2 = (List) o;
-                if (list == null) {
-                    list = makeMutable(list2);
-                } else {
-                    for (int j = 0, count = list2.size(); j < count; j++) {
-                        Object o2 = list2.get(j);
-                        if (o2 instanceof Member && ((Member) o2).isNull()) {
-                            continue;
-                        }
-                        list.add(o2);
-                    }
-                }
-            } else {
-                if (o instanceof Member && ((Member) o).isNull()) {
-                    continue;
-                }
-                if (list == null) {
-                    list = new ArrayList();
-                }
-                list.add(o);
-            }
-        }
-        return list;
     }
 
     /**

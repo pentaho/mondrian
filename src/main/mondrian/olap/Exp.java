@@ -31,8 +31,9 @@ public interface Exp {
 
     /**
      * Returns the {@link Category} of the expression.
+     *
      * @post Category.instance().isValid(return)
-     **/
+     */
     int getCategory();
 
     /**
@@ -69,10 +70,6 @@ public interface Exp {
      * @return A compiled expression
      */
     Calc accept(ExpCompiler compiler);
-
-    Object evaluate(Evaluator evaluator);
-
-    Object evaluateScalar(Evaluator evaluator);
 }
 
 // End Exp.java

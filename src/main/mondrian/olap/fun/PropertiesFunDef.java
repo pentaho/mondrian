@@ -43,12 +43,6 @@ class PropertiesFunDef extends FunDefBase {
         };
     }
 
-    public Object evaluate(Evaluator evaluator, Exp[] args) {
-        Member member = getMemberArg(evaluator, args, 0, true);
-        String s = getStringArg(evaluator, args, 1, null);
-        return properties(member, s);
-    }
-
     static Object properties(Member member, String s) {
         Object o = member.getPropertyValue(s);
         if (o == null) {

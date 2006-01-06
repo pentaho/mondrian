@@ -12,6 +12,9 @@ package mondrian.spi;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
 
+import org.apache.log4j.*;
+import org.apache.log4j.Category;
+
 /**
  * Definition of a user-defined function.
  *
@@ -67,7 +70,7 @@ public interface UserDefinedFunction {
      *   arguments; this technique is called <dfn>lazy evaluation</dfn>.
      * @return The result value.
      */
-    public Object execute(Evaluator evaluator, Exp[] arguments);
+    public Object execute(Evaluator evaluator, Argument[] arguments);
 
     /**
      * Returns a list of reserved words used by this function.
@@ -75,6 +78,15 @@ public interface UserDefinedFunction {
      * any reserved words.
      */
     public String[] getReservedWords();
+
+    interface Argument {
+
+        Object evaluateScalar(Evaluator evaluator);
+
+        Object evaluate(Evaluator evaluator);
+
+        Type getType();
+    }
 }
 
 // UserDefinedFunction.java

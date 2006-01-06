@@ -257,9 +257,6 @@ public class Parameter extends ExpBase {
             that.exp.equals(this.exp);
     }
 
-    public Object evaluate(Evaluator evaluator) {
-        return evaluator.visit(this);
-    }
 }
 
 

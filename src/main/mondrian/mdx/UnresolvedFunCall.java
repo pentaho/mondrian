@@ -90,14 +90,6 @@ public class UnresolvedFunCall extends ExpBase implements Exp {
         throw new UnsupportedOperationException();
     }
 
-    public Object evaluate(Evaluator evaluator) {
-        throw new UnsupportedOperationException();
-    }
-
-    public Object evaluateScalar(Evaluator evaluator) {
-        throw new UnsupportedOperationException();
-    }
-
     /**
      * Returns the function name.
      *

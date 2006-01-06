@@ -98,53 +98,6 @@ public abstract class RankFunDef extends FunDefBase {
             }
         }
 
-        public Object evaluate(Evaluator evaluator, Exp[] args) {
-            // Get member or tuple.
-            // If the member is null (or the tuple contains a null member)
-            // the result is null (even if the list is null).
-            Exp arg = args[0];
-            Object o = arg.evaluate(evaluator);
-            if (o == null ||
-                    o instanceof Member &&
-                    ((Member) o).isNull() ||
-                    o instanceof Member[] &&
-                    tupleContainsNullMember((Member[]) o)) {
-                return null;
-            }
-            // Get the set of members/tuples.
-            // If the list is empty, MSAS cannot figure out the type of the
-            // list, so returns an error "Formula error - dimension count is
-            // not valid - in the Rank function". We will naturally return 0,
-            // which I think is better.
-            RankedList rankedList = (RankedList) getArg(evaluator, args, 1);
-            if (rankedList == null) {
-                return new Double(0);
-            }
-
-            if (o instanceof Member[]) {
-                Member[] tuple = (Member[]) o;
-                if (tupleContainsNullMember(tuple)) {
-                    return null;
-                }
-                // Find position of member in list. -1 signifies not found.
-                final int i = rankedList.indexOf(tuple);
-                // Return 1-based rank. 0 signifies not found.
-                return new Double(i + 1);
-            } else if (o instanceof Member) {
-                Member member = (Member) o;
-                if (member.isNull()) {
-                    return null;
-                }
-
-                // Find position of member in list. -1 signifies not found.
-                final int i = rankedList.indexOf(member);
-                // Return 1-based rank. 0 signifies not found.
-                return new Double(i + 1);
-            } else {
-                throw Util.newInternal("Expected tuple or member, got " + o);
-            }
-        }
-
         private static class Rank2TupleCalc extends AbstractDoubleCalc {
             private final TupleCalc tupleCalc;
             private final Calc listCalc;
@@ -225,7 +178,6 @@ public abstract class RankFunDef extends FunDefBase {
      * <code>Rank({Tuple}, {Set}, {Calc Expression})</code>
      */
     private static class Rank3FunDef extends RankFunDef {
-        private ExpCacheDescriptor cacheDescriptor;
         private static final boolean debug = false;
 
         public Rank3FunDef(FunDef dummyFunDef) {
@@ -389,86 +341,6 @@ public abstract class RankFunDef extends FunDefBase {
                 }
                 return j + 1; // 1-based
             }
-        }
-    }
-
-    /**
-     * Expression which evaluates an expression to form a list of tuples,
-     * evaluates a scalar expression at each tuple, then sorts the list of
-     * values. The result is a value of type {@link SortResult}, and can be
-     * used to implement the <code>Rank</code> function efficiently.
-     */
-    private static class SortExp extends ExpBase {
-        private final Exp listExp;
-        private final Exp sortExp;
-
-        public SortExp(Exp listExp, Exp sortExp) {
-            this.listExp = listExp;
-            this.sortExp = sortExp;
-        }
-
-        public Object clone() {
-            return this;
-        }
-
-        public int getCategory() {
-            throw new UnsupportedOperationException();
-        }
-
-        public Type getType() {
-            // white lie -- the answer is not important
-            return new NumericType();
-        }
-
-        public Exp accept(Validator validator) {
-            return this;
-        }
-
-        public Object evaluate(Evaluator evaluator) {
-            // Create a new evaluator so we don't corrupt the given one.
-            final Evaluator evaluator2 = evaluator.push();
-            // Construct an array containing the value of the expression
-            // for each member.
-            List members = (List) listExp.evaluate(evaluator2);
-            if (members == null) {
-                return new SortResult(true, null);
-            }
-            RuntimeException exception = null;
-            Object[] values = new Object[members.size()];
-            int j = 0;
-            for (int i = 0; i < members.size(); i++) {
-                final Object o = members.get(i);
-                if (o instanceof Member) {
-                    Member member = (Member) o;
-                    evaluator2.setContext(member);
-                } else {
-                    evaluator2.setContext((Member[]) o);
-                }
-                final Object value = sortExp.evaluateScalar(evaluator2);
-                if (value instanceof RuntimeException) {
-                    if (exception == null) {
-                        exception = (RuntimeException) value;
-                    }
-                } else if (value == Util.nullValue) {
-                    ;
-                } else {
-                    values[j++] = value;
-                }
-            }
-            // If there were exceptions, quit now... we'll be back.
-            if (exception != null) {
-                return exception;
-            }
-            // If the array is shorter than we expected (because of null
-            // values) truncate it.
-            if (j < members.size()) {
-                final Object[] oldValues = values;
-                values = new Object[j];
-                System.arraycopy(oldValues, 0, values, 0, j);
-            }
-            // Sort the array.
-            FunUtil.sortValuesDesc(values);
-            return new SortResult(false, values);
         }
     }
 

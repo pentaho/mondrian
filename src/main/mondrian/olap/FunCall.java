@@ -123,10 +123,6 @@ public class FunCall extends ExpBase {
         funDef.unparse(args, pw);
     }
 
-    public Object evaluate(Evaluator evaluator) {
-        return evaluator.visit(this);
-    }
-
     public Calc accept(ExpCompiler compiler) {
         return funDef.compileCall(this, compiler);
     }

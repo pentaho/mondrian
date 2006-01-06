@@ -53,10 +53,6 @@ class ParenthesesFunDef extends FunDefBase {
         return args[0].getType();
     }
 
-    public Object evaluate(Evaluator evaluator, Exp[] args) {
-        return args[0].evaluate(evaluator);
-    }
-
     public Calc compileCall(FunCall call, ExpCompiler compiler) {
         return compiler.compile(call.getArg(0));
     }

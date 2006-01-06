@@ -78,11 +78,6 @@ public interface FunDef {
      */
     Calc compileCall(FunCall call, ExpCompiler compiler);
 
-    /**
-     * Applies this function to a set of arguments in the context provided
-     * by an evaluator, and returns the result.
-     */
-    Object evaluate(Evaluator evaluator, Exp[] args);
 }
 
 // End FunDef.java

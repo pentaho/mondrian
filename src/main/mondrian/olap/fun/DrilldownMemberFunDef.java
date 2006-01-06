@@ -107,15 +107,6 @@ class DrilldownMemberFunDef extends FunDefBase {
         };
     }
 
-    public Object evaluate(Evaluator evaluator, Exp[] args)  {
-        // List of members=Set of members, List of member arrays=set of tuples
-        List v0 = (List) getArg(evaluator, args, 0);
-        List v1 = (List) getArg(evaluator, args, 1);
-
-        return drilldownMember(v0, v1, evaluator);
-
-    }
-
     private List drilldownMember(List v0, List v1, Evaluator evaluator) {
         if (null == v0 ||
             v0.isEmpty() ||

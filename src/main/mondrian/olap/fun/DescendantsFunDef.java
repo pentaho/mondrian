@@ -104,38 +104,6 @@ class DescendantsFunDef extends FunDefBase {
         }
     }
 
-    public Object evaluate(Evaluator evaluator, Exp[] args) {
-        Member member = getMemberArg(evaluator, args, 0, true);
-        List result = new ArrayList();
-        final SchemaReader schemaReader = evaluator.getSchemaReader();
-        final Evaluator context = evaluator.isNonEmpty() ? evaluator : null;
-        if (depthSpecified) {
-            int depthLimit = getIntArg(evaluator, args, 1);
-            if (leaves) {
-                if (depthLimit < 0) {
-                    depthLimit = Integer.MAX_VALUE;
-                }
-                descendantsLeavesByDepth(
-                        member, result, schemaReader, depthLimit);
-            } else {
-                descendantsByDepth(
-                        member, result, schemaReader,
-                        depthLimit, before, self, after, context);
-            }
-        } else {
-            final Level level = args.length > 1
-                ?  getLevelArg(evaluator, args, 1, true)
-                : member.getLevel();
-                descendantsByLevel(
-                    schemaReader,
-                    member, level, result, before, self, after, leaves, context);
-        }
-
-        hierarchize(result, false);
-
-        return result;
-    }
-
     private static void descendantsByDepth(
             Member member,
             List result,

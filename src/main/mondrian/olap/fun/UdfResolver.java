@@ -17,8 +17,6 @@ import mondrian.spi.UserDefinedFunction;
 import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
 
-import java.io.PrintWriter;
-
 /**
  * Resolver for user-defined functions.
  *
@@ -118,15 +116,11 @@ public class UdfResolver implements Resolver {
             super(UdfResolver.this, returnCategory, parameterCategories);
         }
 
-        // implement FunDef
-        public Object evaluate(Evaluator evaluator, Exp[] args) {
-            return udf.execute(evaluator, args);
-        }
-
         public Calc compileCall(FunCall call, ExpCompiler compiler) {
             final Exp[] args = call.getArgs();
             Calc[] calcs = new Calc[args.length];
-            Exp[] expCalcs = new Exp[args.length];
+            UserDefinedFunction.Argument[] expCalcs =
+                    new UserDefinedFunction.Argument[args.length];
             for (int i = 0; i < args.length; i++) {
                 Exp arg = args[i];
                 final Calc calc = compiler.compile(arg);
@@ -143,13 +137,13 @@ public class UdfResolver implements Resolver {
     private static class CalcImpl extends GenericCalc {
         private final Calc[] calcs;
         private final UserDefinedFunction udf;
-        private final Exp[] args;
+        private final UserDefinedFunction.Argument[] args;
 
         public CalcImpl(
                 FunCall call,
                 Calc[] calcs,
                 UserDefinedFunction udf,
-                Exp[] args) {
+                UserDefinedFunction.Argument[] args) {
             super(call);
             this.calcs = calcs;
             this.udf = udf;
@@ -176,7 +170,7 @@ public class UdfResolver implements Resolver {
      * and {@link #evaluateScalar(mondrian.olap.Evaluator)} methods are
      * supported.
      */
-    private static class CalcExp implements Exp {
+    private static class CalcExp implements UserDefinedFunction.Argument {
         private final Calc calc;
         private final Calc scalarCalc;
 
@@ -185,28 +179,8 @@ public class UdfResolver implements Resolver {
             this.scalarCalc = scalarCalc;
         }
 
-        public Object clone() {
-            throw new UnsupportedOperationException();
-        }
-
-        public int getCategory() {
-            throw new UnsupportedOperationException();
-        }
-
         public Type getType() {
-            throw new UnsupportedOperationException();
-        }
-
-        public void unparse(PrintWriter pw) {
-            throw new UnsupportedOperationException();
-        }
-
-        public Exp accept(Validator validator) {
-            throw new UnsupportedOperationException();
-        }
-
-        public Calc accept(ExpCompiler compiler) {
-            throw new UnsupportedOperationException();
+            return calc.getType();
         }
 
         public Object evaluate(Evaluator evaluator) {

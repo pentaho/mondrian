@@ -19,8 +19,6 @@ import mondrian.calc.DoubleCalc;
 
 import org.apache.log4j.Logger;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.Set;
 import java.io.PrintWriter;
@@ -28,7 +26,11 @@ import java.io.PrintWriter;
 /**
  * <code>FunUtil</code> contains a set of methods useful within the
  * <code>mondrian.olap.fun</code> package.
- **/
+ *
+ * @author jhyde
+ * @version $Id$
+ * @since 1.0
+ */
 public class FunUtil extends Util {
 
     static final String[] emptyStringArray = new String[0];
@@ -72,47 +74,9 @@ public class FunUtil extends Util {
         return new MondrianEvaluationException(throwable.getMessage());
     }
 
-    static Exp getArgNoEval(Exp[] args, int index) {
-        return getArgNoEval(args, index, null);
-    }
-
-    static Exp getArgNoEval(
-            Exp[] args,
-            int index,
-            Exp defaultValue) {
-        return (index >= args.length)
-            ? defaultValue
-            : args[index];
-    }
-
-    static Object getArg(
-            Evaluator evaluator,
-            Exp[] args,
-            int index) {
-        return getArg(evaluator, args, index, null);
-    }
-
-    static Object getArg(
-            Evaluator evaluator,
-            Exp[] args,
-            int index,
-            Object defaultValue) {
-        return (index >= args.length)
-            ? defaultValue
-            : args[index].evaluate(evaluator);
-    }
-
-    static String getStringArg(
-            Evaluator evaluator,
-            Exp[] args,
-            int index,
-            String defaultValue) {
-        return (String) getArg(evaluator, args, index, defaultValue);
-    }
-
-    /** Returns an argument whose value is a literal. Unlike the other
-     * <code>get<i>Xxx</i>Arg</code> methods, an evalutor is not required,
-     * and hence this can be called at resolve-time. */
+    /**
+     * Returns an argument whose value is a literal.
+     */
     static String getLiteralArg(
             Exp[] args,
             int i,
@@ -165,227 +129,6 @@ public class FunUtil extends Util {
         return (literal == null)
             ? -1
             : allowedValues.getOrdinal(literal);
-    }
-
-    /**
-     * returns defaultValue, if the expression can not be evaluated because
-     * some required operands have not been loaded from the database yet.
-     */
-    static boolean getBooleanArg(
-            Evaluator evaluator,
-            Exp[] args,
-            int index,
-            boolean defaultValue) {
-        Object o = getArg(evaluator, args, index);
-        return (o == null)
-            ? defaultValue
-            : ((Boolean) o).booleanValue();
-    }
-
-    /**
-     * returns null, if the expression can not be evaluated because
-     * some required operands have not been loaded from the database yet.
-     */
-    static Boolean getBooleanArg(Evaluator evaluator, Exp[] args, int index) {
-        Object o = getArg(evaluator, args, index);
-        return (Boolean) o;
-    }
-
-    static int getIntArg(
-            Evaluator evaluator,
-            Exp[] args,
-            int index) {
-        Object o = getScalarArg(evaluator, args, index);
-        if (o instanceof Number) {
-            return ((Number) o).intValue();
-        } else if (o instanceof RuntimeException) {
-            return 0;
-        } else {
-            // we need to handle String("5.0")
-            String s = o.toString();
-            double d = Double.valueOf(s).doubleValue();
-            return (int) d;
-        }
-    }
-
-    static Object getScalarArg(
-            Evaluator evaluator,
-            Exp[] args,
-            int index) {
-        return args[index].evaluateScalar(evaluator);
-    }
-
-    static BigDecimal getDecimalArg(
-            Evaluator evaluator,
-            Exp[] args,
-            int index) {
-        Object o = getScalarArg(evaluator, args, index);
-        if (o instanceof BigDecimal) {
-            return (BigDecimal) o;
-        } else if (o instanceof BigInteger) {
-            return new BigDecimal((BigInteger) o);
-        } else if (o instanceof Number) {
-            return new BigDecimal(((Number) o).doubleValue());
-        } else {
-            throw Util.newInternal(
-                    "arg " + o + " cannot be converted to BigDecimal");
-        }
-    }
-
-    protected static Double getDoubleArg(
-            Evaluator evaluator,
-            Exp[] args,
-            int index) {
-        return getDoubleArg(evaluator, args, index, (Double) Util.nullValue);
-    }
-
-    static Double getDoubleArg(
-            Evaluator evaluator,
-            Exp[] args,
-            int index,
-            Double nullValue) {
-        Object o = getScalarArg(evaluator, args, index);
-        if (o instanceof Double) {
-            return (Double) o;
-        } else if (o instanceof Number) {
-            return new Double(((Number) o).doubleValue());
-        } else if (o instanceof Throwable) {
-            return new Double(Double.NaN);
-        } else if (o == null || o == Util.nullValue) {
-            return nullValue;
-        } else {
-            throw Util.newInternal("arg " + o + " cannot be converted to Double");
-        }
-    }
-
-    static Member getMemberArg(
-            Evaluator evaluator,
-            Exp[] args,
-            int index,
-            boolean fail) {
-        if (index >= args.length) {
-            if (fail) {
-                throw newInternal("missing member argument");
-            } else {
-                return null;
-            }
-        }
-        Exp arg = args[index];
-        Object o = arg.evaluate(evaluator);
-        if (o instanceof Member) {
-            return (Member) o;
-        } else if (o instanceof Hierarchy) {
-            return evaluator.getContext(((Hierarchy) o).getDimension());
-        } else if (o instanceof Dimension) {
-            return evaluator.getContext((Dimension) o);
-        } else {
-            throw newInternal("expecting a member, got " + o);
-        }
-    }
-
-    /**
-     * Evaluates and returns the <code>index</code>th argument, which must
-     * be a tuple.
-     *
-     * @see #getTupleOrMemberArg
-     *
-     * @param evaluator Evaluation context
-     * @param args The arguments to the function call
-     * @param index Ordinal of the argument we are seeking
-     * @return A tuple, represented as usual by an array of {@link Member}
-     *   objects.
-     */
-    public static Member[] getTupleArg(
-            Evaluator evaluator,
-            Exp[] args,
-            int index) {
-        Exp arg = args[index];
-        Object o = arg.evaluate(evaluator);
-        return (Member[]) o;
-    }
-
-    /**
-     * Evaluates and returns the <code>index</code>th argument, which we
-     * expect to be either a member or a tuple, as a tuple.
-     * If the argument is a member, converts it into a tuple with one member.
-     * If the argument is the null tuple, returns null.
-     *
-     * @see #getTupleArg
-     *
-     * @param evaluator Evaluation context
-     * @param args The arguments to the function call
-     * @param index Ordinal of the argument we are seeking
-     * @return A tuple, represented as usual by an array of {@link Member}
-     *   objects, or null if the tuple is null
-     *
-     * @throws ArrayIndexOutOfBoundsException if <code>index</code> is out of
-     *   range
-     */
-    public static Member[] getTupleOrMemberArg(
-            Evaluator evaluator,
-            Exp[] args,
-            int index) {
-        Exp arg = args[index];
-        Object o0 = arg.evaluate(evaluator);
-        if (o0 == null) {
-            return null;
-        } else if (o0 instanceof Member[]) {
-            return (Member[]) o0;
-        } else if (o0 instanceof Member) {
-            return new Member[] { (Member)o0 };
-        } else {
-            throw Util.newInternal("Expected tuple or member, got " + o0);
-        }
-    }
-
-    static Level getLevelArg(Evaluator evaluator,
-                             Exp[] args,
-                             int index,
-                             boolean fail) {
-        if (index >= args.length) {
-            if (fail) {
-                throw newInternal("missing level argument");
-            } else {
-                return null;
-            }
-        }
-        Exp arg = args[index];
-        Object o = arg.evaluate(evaluator);
-        return (Level) o;
-    }
-
-    static Hierarchy getHierarchyArg(
-            Evaluator evaluator,
-            Exp[] args,
-            int index,
-            boolean fail) {
-        if (index >= args.length) {
-            if (fail) {
-                throw newInternal("missing hierarchy argument");
-            } else {
-                return null;
-            }
-        }
-        Exp arg = args[index];
-        Object o = arg.evaluate(evaluator);
-        return (Hierarchy) o;
-    }
-
-    static Dimension getDimensionArg(
-            Evaluator evaluator,
-            Exp[] args,
-            int index,
-            boolean fail) {
-        if (index >= args.length) {
-            if (fail) {
-                throw newInternal("missing dimension argument");
-            } else {
-                return null;
-            }
-        }
-        Exp arg = args[index];
-        Object o = arg.evaluate(evaluator);
-        return (Dimension) o;
     }
 
     /**
@@ -541,9 +284,10 @@ public class FunUtil extends Util {
         return mapMemberToValue;
     }
 
-    static Map evaluateMembers(Evaluator evaluator,
-                               List members,
-                               boolean parentsToo) {
+    static Map evaluateMembers(
+            Evaluator evaluator,
+            List members,
+            boolean parentsToo) {
         Map mapMemberToValue = new HashMap();
         for (int i = 0, count = members.size(); i < count; i++) {
             Member member = (Member) members.get(i);
@@ -1319,66 +1063,6 @@ public class FunUtil extends Util {
         return retvals;
     }
 
-    /**
-     * This evaluates one or more ExpBases against the member list returning
-     * a SetWrapper array. Where this differs very significantly from the
-     * above evaluateSet methods is how it count null values and Throwables;
-     * this method adds nulls to the SetWrapper Vector rather than not adding
-     * anything - as the above method does. The impact of this is that if, for
-     * example, one was creating a list of x,y values then each list will have
-     * the same number of values (though some might be null) - this allows
-     * higher level code to determine how to handle the lack of data rather than
-     * having a non-equal number (if one is plotting x,y values it helps to
-     * have the same number and know where a potential gap is the data is.
-     *
-     * @param evaluator
-     * @param members
-     * @param exps
-     * @return
-     */
-    static SetWrapper[] evaluateSet(Evaluator evaluator,
-                                    List members,
-                                    ExpBase[] exps) {
-        Util.assertPrecondition(exps != null, "exps != null");
-
-        // todo: treat constant exps as evaluateMembers() does
-        SetWrapper[] retvals = new SetWrapper[exps.length];
-        for (int i = 0; i < exps.length; i++) {
-            retvals[i] = new SetWrapper();
-        }
-        for (Iterator it = members.iterator(); it.hasNext();) {
-            Object obj = it.next();
-            if (obj instanceof Member[]) {
-                evaluator.setContext((Member[])obj);
-            } else {
-                evaluator.setContext((Member)obj);
-            }
-            for (int i = 0; i < exps.length; i++) {
-                ExpBase exp = exps[i];
-                SetWrapper retval = retvals[i];
-                Object o = exp.evaluateScalar(evaluator);
-                if (o == null || o == Util.nullValue) {
-                    retval.nullCount++;
-                    retval.v.add(null);
-                } else if (o instanceof Throwable) {
-                    // Carry on summing, so that if we are running in a
-                    // BatchingCellReader, we find out all the dependent cells
-                    // we
-                    // need
-                    retval.errorCount++;
-                    retval.v.add(null);
-                } else if (o instanceof Double) {
-                    retval.v.add(o);
-                } else if (o instanceof Number) {
-                    retval.v.add(new Double(((Number) o).doubleValue()));
-                } else {
-                    retval.v.add(o);
-                }
-            }
-        }
-        return retvals;
-    }
-
     static List periodsToDate(
             Evaluator evaluator,
             Level level,
@@ -1950,12 +1634,12 @@ public class FunUtil extends Util {
     private static abstract class ArrayExpComparator
             extends ArrayComparator {
         Evaluator evaluator;
-        final Calc exp;
+        final Calc calc;
 
-        ArrayExpComparator(Evaluator evaluator, Calc exp, int arity) {
+        ArrayExpComparator(Evaluator evaluator, Calc calc, int arity) {
             super(arity);
             this.evaluator = evaluator;
-            this.exp = exp;
+            this.calc = calc;
         }
 
     }
@@ -1965,8 +1649,8 @@ public class FunUtil extends Util {
         private final boolean desc;
 
         HierarchicalArrayComparator(
-                Evaluator evaluator, Calc exp, int arity, boolean desc) {
-            super(evaluator, exp, arity);
+                Evaluator evaluator, Calc calc, int arity, boolean desc) {
+            super(evaluator, calc, arity);
             this.desc = desc;
         }
 
@@ -2025,9 +1709,9 @@ public class FunUtil extends Util {
         private int compareByValue(Member m1, Member m2) {
             int c;
             Member old = evaluator.setContext(m1);
-            Object v1 = exp.evaluate(evaluator);
+            Object v1 = calc.evaluate(evaluator);
             evaluator.setContext(m2);
-            Object v2 = exp.evaluate(evaluator);
+            Object v2 = calc.evaluate(evaluator);
             // important to restore the evaluator state -- and this is faster
             // than calling evaluator.push()
             evaluator.setContext(old);
@@ -2037,15 +1721,15 @@ public class FunUtil extends Util {
     }
 
     private static class BreakArrayComparator extends ArrayExpComparator {
-        BreakArrayComparator(Evaluator evaluator, Calc exp, int arity) {
-            super(evaluator, exp, arity);
+        BreakArrayComparator(Evaluator evaluator, Calc calc, int arity) {
+            super(evaluator, calc, arity);
         }
 
         protected int compare(Member[] a1, Member[] a2) {
             evaluator.setContext(a1);
-            Object v1 = exp.evaluate(evaluator);
+            Object v1 = calc.evaluate(evaluator);
             evaluator.setContext(a2);
-            Object v2 = exp.evaluate(evaluator);
+            Object v2 = calc.evaluate(evaluator);
             return FunUtil.compareValues(v1, v2);
         }
     }

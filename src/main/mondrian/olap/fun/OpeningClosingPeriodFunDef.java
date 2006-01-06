@@ -122,64 +122,6 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
         };
     }
 
-    public Object evaluate(Evaluator evaluator, Exp[] args) {
-        Member member;
-        Level level;
-
-        //
-        // If the member argument is present, use it. Otherwise default
-        // to the time dimension's current member.
-        //
-        if (args.length == 2) {
-            member = getMemberArg(evaluator, args, 1, false);
-        } else {
-            member = evaluator.getContext(evaluator.getCube().getTimeDimension());
-        }
-
-        //
-        // If the level argument is present, use it. Otherwise use the level
-        // immediately after that of the member argument.
-        //
-        if (args.length >= 1) {
-            level = getLevelArg(evaluator,  args, 0, false);
-        } else {
-            int targetDepth = member.getLevel().getDepth() + 1;
-            Level[] levels = member.getHierarchy().getLevels();
-
-            if (levels.length <= targetDepth) {
-                return member.getHierarchy().getNullMember();
-            }
-            level = levels[targetDepth];
-        }
-
-        //
-        // Make sure the member and the level come from the same hierarchy.
-        //
-        if (!member.getHierarchy().equals(level.getHierarchy())) {
-            throw MondrianResource.instance().FunctionMbrAndLevelHierarchyMismatch.ex(
-                    opening ? "OpeningPeriod" : "ClosingPeriod",
-                    level.getHierarchy().getUniqueName(),
-                    member.getHierarchy().getUniqueName());
-        }
-
-        //
-        // Shortcut if the level is above the member.
-        //
-        if (level.getDepth() < member.getLevel().getDepth()) {
-            return member.getHierarchy().getNullMember();
-        }
-
-        //
-        // Shortcut if the level is the same as the member
-        //
-        if (level == member.getLevel()) {
-            return member;
-        }
-
-        return getDescendant(evaluator.getSchemaReader(), member, level,
-            opening);
-    }
-
     /**
      * Returns the first or last descendant of the member at the target level.
      * This method is the implementation of both OpeningPeriod and ClosingPeriod.

@@ -104,21 +104,6 @@ class CrossJoinFunDef extends FunDefBase {
         }
     }
 
-    public Object evaluate(Evaluator evaluator, Exp[] args) {
-        SchemaReader schemaReader = evaluator.getSchemaReader();
-        NativeEvaluator nativeEvaluator = schemaReader.getNativeSetEvaluator(this, evaluator, args);
-        if (nativeEvaluator != null) {
-            return nativeEvaluator.execute();
-        }
-
-        List set0 = getArgAsList(evaluator, args, 0);
-        if (set0.isEmpty()) {
-            return Collections.EMPTY_LIST;
-        }
-        List set1 = getNonEmptyArgAsList(set0, evaluator, args, 1);
-        return crossJoin(set0, set1, evaluator);
-    }
-
     List crossJoin(List list1, List list2, Evaluator evaluator) {
         if (list1.isEmpty() || list2.isEmpty()) {
             return Collections.EMPTY_LIST;
@@ -208,34 +193,6 @@ class CrossJoinFunDef extends FunDefBase {
             }
         }
         return result;
-    }
-
-    /**
-     * if the first argument of crossjoin is a single member and we are in NON EMPTY mode,
-     * then we push the single member into the evaluator context. So the second argument
-     * is evaluated in the new context and possibly will return less members.
-     */
-    private List getNonEmptyArgAsList(List left, Evaluator evaluator, Exp[] args, int index) {
-        if (left.size() == 1 && evaluator.isNonEmpty()) {
-            Object obj = left.get(0);
-            if (obj instanceof Member)  // could be Member[]
-                evaluator = evaluator.push((Member)obj);
-        }
-        return getArgAsList(evaluator, args, index);
-    }
-
-    private static List getArgAsList(Evaluator evaluator, Exp[] args,
-            int index) {
-        final Object arg = getArg(evaluator, args, index);
-        if (arg == null) {
-            return Collections.EMPTY_LIST;
-        } else if (arg instanceof List) {
-            return (List) arg;
-        } else {
-            List list = new ArrayList();
-            list.add(arg);
-            return list;
-        }
     }
 
     protected static List nonEmptyList(Evaluator evaluator, List list) {

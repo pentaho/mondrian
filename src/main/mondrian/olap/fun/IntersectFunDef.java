@@ -64,36 +64,6 @@ class IntersectFunDef extends FunDefBase
         };
     }
 
-    public Object evaluate(Evaluator evaluator, Exp[] args) {
-        List left = (List) getArg(evaluator, args, 0);
-        if (left == null) {
-            left = Collections.EMPTY_LIST;
-        }
-        Collection right = (List) getArg(evaluator, args, 1);
-        if (right == null) {
-            right = Collections.EMPTY_LIST;
-        } else {
-            right = buildSearchableCollection(right);
-        }
-        List result = new ArrayList();
-
-        for (Iterator i = left.iterator(); i.hasNext();) {
-            Object leftObject = i.next();
-            Object resultObject = leftObject;
-
-            if (leftObject instanceof Object[]) {
-                leftObject = new FunUtil.ArrayHolder((Object[])leftObject);
-            }
-
-            if (right.contains(leftObject)) {
-                if (all || !result.contains(leftObject)) {
-                    result.add(resultObject);
-                }
-            }
-        }
-        return result;
-    }
-
     private static Collection buildSearchableCollection(Collection right) {
         Iterator iter = right.iterator();
         Set result = new HashSet(right.size(), 1);

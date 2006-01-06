@@ -65,11 +65,6 @@ public class LevelExpr extends ExpBase implements Exp {
         return this;
     }
 
-    public Object evaluate(Evaluator evaluator) {
-        Util.deprecated("remove Exp.evaluate");
-        return level;
-    }
-
     public Calc accept(ExpCompiler compiler) {
         return ConstantCalc.constantLevel(level);
     }

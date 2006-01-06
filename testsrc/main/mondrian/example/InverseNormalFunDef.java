@@ -15,7 +15,6 @@ import org.apache.commons.math.distribution.NormalDistribution;
 import org.apache.log4j.Logger;
 
 import mondrian.olap.Evaluator;
-import mondrian.olap.Exp;
 import mondrian.olap.Syntax;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.olap.type.NumericType;
@@ -68,7 +67,7 @@ public class InverseNormalFunDef implements UserDefinedFunction {
         return new Type[] {new NumericType()};
     }
 
-    public Object execute(Evaluator evaluator, Exp[] args) {
+    public Object execute(Evaluator evaluator, Argument[] args) {
         final Object argValue = args[0].evaluateScalar(evaluator);
         LOGGER.debug("Inverse Normal argument was : " + argValue);
         if (!(argValue instanceof Number)) {

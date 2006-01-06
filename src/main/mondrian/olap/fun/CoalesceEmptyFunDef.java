@@ -49,18 +49,4 @@ public class CoalesceEmptyFunDef extends FunDefBase {
         };
     }
 
-    public Object evaluate(Evaluator evaluator, Exp[] args) {
-        // Returns non-null argument, or null if all arguments are null.
-        for (int idx = 0; idx < args.length; idx++) {
-            Object argument = getScalarArg(evaluator, args, idx);
-//            Evaluator current = evaluator.push();
-//            Object argument = getScalarArg(current, args, idx);
-
-            if (argument != null && argument != Util.nullValue) {
-                return argument;
-            }
-        }
-
-        return null;
-    }
 }
