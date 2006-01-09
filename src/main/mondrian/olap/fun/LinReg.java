@@ -433,8 +433,17 @@ debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
         Iterator ityf = yfs.iterator();
         while (ity.hasNext()) {
             // Get next data point
-            double y = ((Double) ity.next()).doubleValue();
-            double yf = ((Double) ityf.next()).doubleValue();
+            Double dy = (Double) ity.next();
+            if (dy == null) {
+                continue;
+            }
+            Double dyf = (Double) ityf.next();
+            if (dyf == null) {
+                continue;
+            }
+
+            double y = dy.doubleValue();
+            double yf = dyf.doubleValue();
 
             // Calculate error in forecast, and update sums appropriately
 
@@ -480,8 +489,17 @@ debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
         ityf = yfs.iterator();
         while (ity.hasNext()) {
             // Get next data point
-            double y = ((Double) ity.next()).doubleValue();
-            double yf = ((Double) ityf.next()).doubleValue();
+            Double dy = (Double) ity.next();
+            if (dy == null) {
+                continue;
+            }
+            Double dyf = (Double) ityf.next();
+            if (dyf == null) {
+                continue;
+            }
+
+            double y = dy.doubleValue();
+            double yf = dyf.doubleValue();
 
             double error = yf - y;
             SSE += (error - MSE)*(error - MSE);
@@ -549,9 +567,17 @@ debug("LinReg.linearReg","value=" +value);
 
         Iterator it = value.xs.iterator();
         while (it.hasNext()) {
-            double x = ((Double) it.next()).doubleValue();
-            double yf = value.intercept + value.slope * x;
-            yfs.add(new Double(yf));
+            Double d = (Double) it.next();
+            // If the value is missing we still must put a place
+            // holder in the y axis, otherwise there is a discontinuity
+            // between the data and the fit.
+            if (d == null) {
+                yfs.add(null);
+            } else {
+                double x = d.doubleValue();
+                double yf = value.intercept + value.slope * x;
+                yfs.add(new Double(yf));
+            }
         }
 
         return yfs;
