@@ -55,7 +55,8 @@
       <Level name="Month" column="month_of_year" uniqueMembers="false" type="Numeric"
           levelType="TimeMonths"/>
     </Hierarchy>
-    <Hierarchy hasAll="true" name="Weekly" primaryKey="time_id">
+    <Hierarchy hasAll="true" name="Weekly" primaryKey="time_id"
+          defaultMember="[Time.Weekly].[All Time.Weeklys].[1997]">
       <Table name="time_by_day"/>
       <Level name="Year" column="the_year" type="Numeric" uniqueMembers="true"
           levelType="TimeYears"/>

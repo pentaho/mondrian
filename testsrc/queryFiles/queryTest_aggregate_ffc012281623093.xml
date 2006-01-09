@@ -63,7 +63,7 @@ FROM [Sales]</mdxQuery>
                     <member>[Store Size in SQFT].[Less Than 23000]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[null]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs].[#null]</member>
                 </tuple>
                 <tuple>
                     <member>[Store Size in SQFT].[All Store Size in SQFTs].[20319]</member>

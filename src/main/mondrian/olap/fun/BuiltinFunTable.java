@@ -444,7 +444,26 @@ public class BuiltinFunTable extends FunTableImpl {
                                 dimensionCalc.evaluateDimension(evaluator);
                         return evaluator.getSchemaReader()
                                 .getHierarchyDefaultMember(
-                                        dimension.getHierarchy());
+                                        dimension.getHierarchies()[0]);
+                    }
+                };
+            }
+        });
+
+        define(new FunDefBase(
+                "DefaultMember",
+                "<Hierarchy>.DefaultMember",
+                "Returns the default member of a hierarchy.",
+                "pmh") {
+            public Calc compileCall(FunCall call, ExpCompiler compiler) {
+                final HierarchyCalc hierarchyCalc =
+                        compiler.compileHierarchy(call.getArg(0));
+                return new AbstractMemberCalc(call, new Calc[] {hierarchyCalc}) {
+                    public Member evaluateMember(Evaluator evaluator) {
+                        Hierarchy hierarchy =
+                                hierarchyCalc.evaluateHierarchy(evaluator);
+                        return evaluator.getSchemaReader()
+                                .getHierarchyDefaultMember(hierarchy);
                     }
                 };
             }

@@ -23,7 +23,7 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
 
     public void testWeekly() {
         assertAxisReturns("{[Time].CurrentMember}", "[Time].[1997]");
-        assertAxisReturns("{[Time.Weekly].CurrentMember}", "[Time.Weekly].[All Time.Weeklys]");
+        assertAxisReturns("{[Time.Weekly].CurrentMember}", "[Time.Weekly].[All Time.Weeklys].[1997]");
     }
 
     public void testWeekly2() {
@@ -51,16 +51,16 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
                     "{[Time].[1997].[Q3]}",
                     "{[Time].[1997].[Q4]}",
                     "Row #0: 66,291",
-                    "Row #0: [Time.Weekly].[All Time.Weeklys]",
+                    "Row #0: [Time.Weekly].[All Time.Weeklys].[1997]",
                     "Row #0: [Time].[1997].[Q1]",
                     "Row #1: 62,610",
-                    "Row #1: [Time.Weekly].[All Time.Weeklys]",
+                    "Row #1: [Time.Weekly].[All Time.Weeklys].[1997]",
                     "Row #1: [Time].[1997].[Q2]",
                     "Row #2: 65,848",
-                    "Row #2: [Time.Weekly].[All Time.Weeklys]",
+                    "Row #2: [Time.Weekly].[All Time.Weeklys].[1997]",
                     "Row #2: [Time].[1997].[Q3]",
                     "Row #3: 72,024",
-                    "Row #3: [Time.Weekly].[All Time.Weeklys]",
+                    "Row #3: [Time.Weekly].[All Time.Weeklys].[1997]",
                     "Row #3: [Time].[1997].[Q4]",
                     ""}));
     }

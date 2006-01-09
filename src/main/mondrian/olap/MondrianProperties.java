@@ -643,6 +643,19 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public final BooleanProperty EnableNativeNonEmpty = new BooleanProperty(
         this, "mondrian.native.nonempty.enable", true);
+
+    /**
+     * If enabled, first row in result rowset will be filled with the total
+     * count of rows in underlying database.
+     */
+    public final BooleanProperty EnableTotalCount = new BooleanProperty(
+        this, "mondrian.xmla.drillthroughTotalCount.enable", true);
+
+    /**
+     * Number of rows returned by drill through operation.
+     */
+    public final IntegerProperty MaxRows = new IntegerProperty(
+        this, "mondrian.xmla.drillthroughMaxRows", 1000);
 }
 
 // End MondrianProperties.java

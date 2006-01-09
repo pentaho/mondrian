@@ -92,7 +92,7 @@
           <HIERARCHY_UNIQUE_NAME>[Time.Weekly]</HIERARCHY_UNIQUE_NAME>
           <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
           <DIMENSION_TYPE>1</DIMENSION_TYPE>
-          <DEFAULT_MEMBER>[Time.Weekly].[All Time.Weeklys]</DEFAULT_MEMBER>
+          <DEFAULT_MEMBER>[Time.Weekly].[All Time.Weeklys].[1997]</DEFAULT_MEMBER>
           <ALL_MEMBER>[Time.Weekly].[All Time.Weeklys]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
 	</row>

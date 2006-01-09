@@ -1070,6 +1070,15 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertEquals("1997", result.getCell(new int[]{0}).getValue());
     }
 
+    public void testDefaultMember() {
+        Result result = executeQuery(
+            fold(new String[] {
+                 "select {[Time.Weekly].DefaultMember} on columns",
+                 "from Sales"
+            }));
+        Assert.assertEquals("1997", result.getAxes()[0].positions[0].members[0].getName());
+    }
+
     public void testCurrentMemberFromAxis() {
         Result result = executeQuery(
                 fold(new String[] {

@@ -320,15 +320,18 @@ public abstract class RolapSchemaReader implements SchemaReader {
 
     public Member getHierarchyDefaultMember(Hierarchy hierarchy) {
         Util.assertPrecondition(hierarchy != null, "hierarchy != null");
-        // if we have no access to this hierarchy at all, we return
-        // the unrestricted default member (e.g. All member)
-        if (role.getAccess(hierarchy) == Access.NONE) {
-            return hierarchy.getDefaultMember();
+        Member defaultMember = hierarchy.getDefaultMember();
+        // If the whole hierarchy is inaccessible, return the intrinsic default member.
+        // This is important to construct a evaluator.
+        if (role.getAccess(hierarchy) != Access.NONE) {
+            // If there's not an accessible intrinsic default member,
+            // lookup the top accessible level's first accessible member.
+            if (defaultMember == null || (!role.canAccess(defaultMember))) {
+                Member[] rootMembers = this.getHierarchyRootMembers(hierarchy);
+                defaultMember = (rootMembers.length > 0) ? rootMembers[0] : null;
+            }
         }
-        Member[] rootMembers = this.getHierarchyRootMembers(hierarchy);
-        return (rootMembers.length > 0)
-            ? rootMembers[0]
-            : null;
+        return defaultMember;
     }
 
     public boolean isDrillable(Member member) {

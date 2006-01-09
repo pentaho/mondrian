@@ -38,7 +38,7 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
             value = value.toUpperCase();
         }
         value = query.quote(level.isNumeric(), value);
-        query.addWhere(column, "=", value);
+        query.addWhere(column, RolapUtil.sqlNullLiteral.equals(value) ? " is " : " = ", value);
     }
 
     public String toString() {

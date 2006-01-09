@@ -194,8 +194,9 @@ class RolapHierarchy extends HierarchyBase {
             // We strip off the parent dimension name if the defaultMemberName
             // is the full unique name, [Time].[2004] rather than simply
             // [2004].
-            Dimension dim = getDimension();
-            if (dim.getName().equals(uniqueNameParts[0])) {
+            //Dimension dim = getDimension();
+            // What we should strip off is hierarchy name
+            if (this.name.equals(uniqueNameParts[0])) {
                 String[] tmp = new String[uniqueNameParts.length-1];
                 System.arraycopy(uniqueNameParts, 1, tmp, 0,
                                 uniqueNameParts.length-1);

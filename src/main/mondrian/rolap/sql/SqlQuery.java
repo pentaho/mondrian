@@ -23,6 +23,7 @@ import java.util.List;
 import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.rolap.RolapUtil;
 
 import org.eigenbase.util.property.Property;
 import org.eigenbase.util.property.Trigger;
@@ -925,15 +926,17 @@ public class SqlQuery
      */
     public String quote(boolean numeric, Object value) throws NumberFormatException {
         String string = String.valueOf(value);
-        if (numeric) {
-            if (value instanceof Number) {
+        if (RolapUtil.mdxNullLiteral.equals(string)) { // for member key is RolapUtil.sqlNullValue
+            return RolapUtil.sqlNullLiteral;
+        } else {
+            if (numeric) {
+                if (value instanceof Number) return string;
+                // make sure it can be parsed
+                Double.valueOf(string);
                 return string;
             }
-            // make sure it can be parsed as a Number
-            Double.valueOf(string);
-            return string;
+            return Util.singleQuoteString(string);
         }
-        return Util.singleQuoteString(string);
     }
 }
 

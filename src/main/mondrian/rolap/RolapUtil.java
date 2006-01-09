@@ -65,9 +65,10 @@ public class RolapUtil {
             return super.hashCode();
         }
         public String toString() {
-            return "null";
+            return "#null";
         }
     };
+    public static final String mdxNullLiteral = "#null";
     public static final String sqlNullLiteral = "null";
 
     /**

@@ -2860,7 +2860,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         // instances.
 
         // RolapConnection conn = (RolapConnection) getConnection();
-*/        boolean nullsSortHigh = true;
+*/        boolean nullsSortHigh = false;
 
         // This did not seem to work consistently across drivers, so don't use it
         // boolean nullsSortedAtEnd = false;
@@ -2896,7 +2896,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
                         // null is at the start in order under DBMSs that sort null low
 
-                        (!nullsSortHigh ? "{[Store Size in SQFT].[All Store Size in SQFTs].[null]}" + nl : "") +
+                        (!nullsSortHigh ? "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}" + nl : "") +
                         "{[Store Size in SQFT].[All Store Size in SQFTs].[20319]}" + nl +
                         "{[Store Size in SQFT].[All Store Size in SQFTs].[21215]}" + nl +
                         "{[Store Size in SQFT].[All Store Size in SQFTs].[22478]}" + nl +
@@ -2920,7 +2920,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
                         // null is at the end in order for DBMSs that sort nulls high
 
-                        (nullsSortHigh ? "{[Store Size in SQFT].[All Store Size in SQFTs].[null]}" + nl : "") +
+                        (nullsSortHigh ? "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}" + nl : "") +
                         "Row #" + row++ + ": 266,773" + nl +
                         (!nullsSortHigh ? "Row #" + row++ + ": 39,329" + nl : "" ) +
                         "Row #" + row++ + ": 26,079" + nl +
@@ -4792,7 +4792,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     public void testNullMember() {
         assertQueryReturns("SELECT " + nl +
                            "{[Measures].[Store Cost]} ON columns, " + nl +
-                           "{[Store Size in SQFT].[All Store Size in SQFT].[null]} ON rows " + nl +
+                           "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]} ON rows " + nl +
                            "FROM [Sales] " + nl +
                            "WHERE [Time].[1997]",
                            "Axis #0:" + nl +
@@ -4800,7 +4800,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                            "Axis #1:" + nl +
                            "{[Measures].[Store Cost]}" + nl +
                            "Axis #2:" + nl +
-                           "{[Store Size in SQFT].[All Store Size in SQFT].[null]}" + nl +
+                           "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}" + nl +
                            "Row #0: 33,307.69" + nl);
     }
 
