@@ -18,6 +18,7 @@ import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractMemberCalc;
 import mondrian.calc.impl.DimensionCurrentMemberCalc;
+import mondrian.mdx.ResolvedFunCall;
 
 /**
  * Definition of the <code>OpeningPeriod</code> and <code>ClosingPeriod</code>
@@ -50,7 +51,7 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
         return super.getResultType(validator, args);
     }
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final Exp[] args = call.getArgs();
         final LevelCalc levelCalc;
         final MemberCalc memberCalc;

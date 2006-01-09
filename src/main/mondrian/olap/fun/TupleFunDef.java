@@ -15,6 +15,7 @@ import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractTupleCalc;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.io.PrintWriter;
 
@@ -72,7 +73,7 @@ public class TupleFunDef extends FunDefBase {
         }
     }
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final Exp[] args = call.getArgs();
         final MemberCalc[] memberCalcs = new MemberCalc[args.length];
         for (int i = 0; i < args.length; i++) {
@@ -112,7 +113,7 @@ public class TupleFunDef extends FunDefBase {
     public static class CalcImpl extends AbstractTupleCalc {
         private final MemberCalc[] memberCalcs;
 
-        public CalcImpl(FunCall call, MemberCalc[] memberCalcs) {
+        public CalcImpl(ResolvedFunCall call, MemberCalc[] memberCalcs) {
             super(call, memberCalcs);
             this.memberCalcs = memberCalcs;
         }

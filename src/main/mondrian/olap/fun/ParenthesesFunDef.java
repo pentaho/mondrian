@@ -14,6 +14,7 @@ import mondrian.olap.*;
 import mondrian.olap.type.Type;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.io.PrintWriter;
 
@@ -53,7 +54,7 @@ class ParenthesesFunDef extends FunDefBase {
         return args[0].getType();
     }
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         return compiler.compile(call.getArg(0));
     }
 }

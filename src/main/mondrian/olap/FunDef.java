@@ -14,6 +14,7 @@ package mondrian.olap;
 
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.io.PrintWriter;
 
@@ -23,17 +24,18 @@ import java.io.PrintWriter;
  **/
 public interface FunDef {
     /**
-     * Returns the syntactic type of the function. */
+     * Returns the syntactic type of the function.
+     */
     Syntax getSyntax();
 
     /**
      * Returns the name of this function.
-     **/
+     */
     String getName();
 
     /**
      * Returns the description of this function.
-     **/
+     */
     String getDescription();
 
     /**
@@ -53,7 +55,7 @@ public interface FunDef {
 
     /**
      * Creates an expression which represents a call to this function with
-     * a given set of arguments. The result is usually a {@link FunCall} but
+     * a given set of arguments. The result is usually a {@link ResolvedFunCall} but
      * not always.
      */
     Exp createCall(Validator validator, Exp[] args);
@@ -76,7 +78,7 @@ public interface FunDef {
      * type. For example, a function which returns an integer must return
      * an object which implements {@link mondrian.calc.IntegerCalc}.
      */
-    Calc compileCall(FunCall call, ExpCompiler compiler);
+    Calc compileCall(ResolvedFunCall call, ExpCompiler compiler);
 
 }
 

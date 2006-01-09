@@ -12,6 +12,7 @@ package mondrian.olap;
 import junit.framework.TestCase;
 import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.mdx.UnresolvedFunCall;
+import mondrian.test.TestContext;
 
 /**
  * Tests the MDX parser.
@@ -65,6 +66,31 @@ public class ParserTest extends TestCase {
         checkFails(p, "select [member] on axes(0) from sales", "Syntax error at line");
         checkFails(p, "select [member] on 0.5 from sales", "The axis number must be an integer");
         checkFails(p, "select [member] on 555 from sales", "The axis number must be an integer");
+    }
+
+    public void testUnparse() {
+        checkUnparse(
+                TestContext.fold(new String[] {
+                    "with member [Measures].[Foo] as ' 123 '",
+                    "select {[Measures].members} on columns,",
+                    " CrossJoin([Product].members, {[Gender].Children}) on rows",
+                    "from [Sales]",
+                    "where [Marital Status].[S]"}),
+                TestContext.fold(new String[] {
+                    "with member [Measures].[Foo] as '123.0'",
+                    "select {[Measures].Members} ON COLUMNS,",
+                    "  Crossjoin([Product].Members, {[Gender].Children}) ON ROWS",
+                    "from [Sales]",
+                    "where [Marital Status].[All Marital Status].[S]",
+                    ""}));
+    }
+
+    private void checkUnparse(String queryString, final String expected) {
+        final TestContext testContext = TestContext.instance();
+
+        final Query query = testContext.getConnection().parseQuery(queryString);
+        String unparsedQueryString = query.toMdx();
+        TestContext.assertEqualsVerbose(expected, unparsedQueryString);
     }
 
     private void checkFails(Parser p, String query, String expected) {

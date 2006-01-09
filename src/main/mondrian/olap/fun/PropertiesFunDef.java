@@ -12,6 +12,7 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
+import mondrian.mdx.ResolvedFunCall;
 
 /**
  * Defines the <code>PROPERTIES</code> MDX function.
@@ -27,7 +28,7 @@ class PropertiesFunDef extends FunDefBase {
         super(name, signature, description, syntax, returnType, parameterTypes);
     }
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final MemberCalc memberCalc = compiler.compileMember(call.getArg(0));
         final StringCalc stringCalc = compiler.compileString(call.getArg(1));
         return new GenericCalc(call) {

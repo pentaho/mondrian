@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractCalc;
 import mondrian.calc.impl.ValueCalc;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ class AggregateFunDef extends AbstractAggregateFunDef {
         super(dummyFunDef);
     }
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc = compiler.compileList(call.getArg(0));
         final Calc calc = call.getArgCount() > 1 ?
                 compiler.compileScalar(call.getArg(1), true) :

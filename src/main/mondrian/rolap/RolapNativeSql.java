@@ -206,7 +206,7 @@ public class RolapNativeSql {
                 return false;
             }
             FunCall fc = (FunCall) exp;
-            if (!mdx.equalsIgnoreCase(fc.getFunDef().getName())) {
+            if (!mdx.equalsIgnoreCase(fc.getFunName())) {
                 return false;
             }
             Exp[] args = fc.getArgs();

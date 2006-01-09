@@ -25,7 +25,7 @@ import java.io.PrintWriter;
  * @version $Id$
  * @since Sep 28, 2005
  */
-public class UnresolvedFunCall extends ExpBase implements Exp {
+public class UnresolvedFunCall extends ExpBase implements FunCall {
     private final String name;
     private final Syntax syntax;
     private final Exp[] args;

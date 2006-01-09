@@ -17,6 +17,7 @@ import java.util.Collections;
 import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
+import mondrian.mdx.ResolvedFunCall;
 
 
 /**
@@ -28,7 +29,7 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
         super(dummyFunDef);
     }
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc1 = compiler.compileList(call.getArg(0));
         final ListCalc listCalc2 = compiler.compileList(call.getArg(1));
         return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {

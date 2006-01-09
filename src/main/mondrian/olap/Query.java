@@ -410,6 +410,10 @@ public class Query extends QueryPart {
         return slicerAxis;
     }
 
+    public void setSlicerAxis(QueryAxis axis) {
+        this.slicerAxis = axis;
+    }
+
     /**
      * Adds a level to an axis expression.
      *
@@ -916,8 +920,8 @@ public class Query extends QueryPart {
             final Object parent = stack.get(n - 1);
             if (parent instanceof Formula) {
                 return ((Formula) parent).isMember();
-            } else if (parent instanceof FunCall) {
-                final FunCall funCall = (FunCall) parent;
+            } else if (parent instanceof ResolvedFunCall) {
+                final ResolvedFunCall funCall = (ResolvedFunCall) parent;
                 if (funCall.getFunDef().getSyntax() == Syntax.Parentheses) {
                     return requiresExpression(n - 1);
                 } else {
@@ -1035,7 +1039,7 @@ public class Query extends QueryPart {
                     ;
                 } else if (o instanceof FunCall) {
                     final FunCall call = (FunCall) o;
-                    if (call.getFunDef().getName().equalsIgnoreCase("Parameter")) {
+                    if (call.getFunName().equalsIgnoreCase("Parameter")) {
                         // Parameter definition which has not been resolved
                         // yet. Resolve it and add it to the list of parameters.
                         // Because we're resolving out out of the proper order,

@@ -18,6 +18,7 @@ import mondrian.olap.type.NumericType;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.resource.MondrianResource;
+import mondrian.mdx.ResolvedFunCall;
 
 /**
  * Definition of the <code>DESCENDANTS</code> MDX function.
@@ -42,7 +43,7 @@ class DescendantsFunDef extends FunDefBase {
         this.depthSpecified = depthSpecified;
     }
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final MemberCalc memberCalc = compiler.compileMember(call.getArg(0));
         if (depthSpecified && leaves) {
             final IntegerCalc depthCalc = call.getArgCount() > 1 ?

@@ -20,8 +20,7 @@ import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
-import mondrian.mdx.MemberExpr;
-import mondrian.mdx.LevelExpr;
+import mondrian.mdx.*;
 
 import org.apache.log4j.Logger;
 
@@ -458,19 +457,15 @@ public abstract class RolapNativeSet extends RolapNative {
      * Scans for memberChildren, levelMembers, memberDescendants, crossJoin.
      */
     protected CrossJoinArg[] checkCrossJoinArg(Exp exp) {
-        if (!(exp instanceof FunCall)) {
+        if (!(exp instanceof ResolvedFunCall)) {
             return null;
         }
-        FunDef fun = ((FunCall) exp).getFunDef();
-        Exp[] args = ((FunCall) exp).getArgs();
-        return checkCrossJoinArg(fun, args);
-    }
+        final ResolvedFunCall funCall = (ResolvedFunCall) exp;
+        FunDef fun = funCall.getFunDef();
+        Exp[] args = funCall.getArgs();
 
-    /**
-     * Scans for memberChildren, levelMembers, memberDescendants, crossJoin (recursive)
-     */
-    protected CrossJoinArg[] checkCrossJoinArg(FunDef fun, Exp[] args) {
-        CrossJoinArg arg = checkMemberChildren(fun, args);
+        CrossJoinArg arg;
+        arg = checkMemberChildren(fun, args);
         if (arg != null) {
             return new CrossJoinArg[] {arg};
         }

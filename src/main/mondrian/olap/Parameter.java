@@ -135,8 +135,8 @@ public class Parameter extends ExpBase {
         case Category.Numeric:
             // exp can be a unary minus FunCall
             if (exp instanceof FunCall) {
-                FunCall f = (FunCall)exp;
-                if (f.getFunDef().getName().equals("-")) {
+                FunCall f = (FunCall) exp;
+                if (f.getFunName().equals("-")) {
                     Literal lit = (Literal)f.getArg(0);
                     Object o = lit.getValue();
                     if (o instanceof Double) {

@@ -92,7 +92,7 @@ public class QueryAxis extends QueryPart {
         if (slicer == null) {
             ;
         } else if (slicer instanceof FunCall &&
-                   ((FunCall) slicer).getFunDef().getSyntax() == Syntax.Parentheses) {
+                   ((FunCall) slicer).getSyntax() == Syntax.Parentheses) {
             slicer = new UnresolvedFunCall(
                     "{}", Syntax.Braces, new Exp[] {
                         slicer});
@@ -172,7 +172,9 @@ public class QueryAxis extends QueryPart {
         if (exp != null) {
             exp.unparse(pw);
         }
-        pw.print(" ON " + axisOrdinal);
+        if (axisOrdinal != AxisOrdinal.Slicer) {
+            pw.print(" ON " + axisOrdinal);
+        }
     }
 
     public void addLevel(Level level) {

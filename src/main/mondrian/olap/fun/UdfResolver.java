@@ -16,6 +16,7 @@ import mondrian.olap.type.LevelType;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
+import mondrian.mdx.ResolvedFunCall;
 
 /**
  * Resolver for user-defined functions.
@@ -116,7 +117,7 @@ public class UdfResolver implements Resolver {
             super(UdfResolver.this, returnCategory, parameterCategories);
         }
 
-        public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
             final Exp[] args = call.getArgs();
             Calc[] calcs = new Calc[args.length];
             UserDefinedFunction.Argument[] expCalcs =
@@ -140,7 +141,7 @@ public class UdfResolver implements Resolver {
         private final UserDefinedFunction.Argument[] args;
 
         public CalcImpl(
-                FunCall call,
+                ResolvedFunCall call,
                 Calc[] calcs,
                 UserDefinedFunction udf,
                 UserDefinedFunction.Argument[] args) {

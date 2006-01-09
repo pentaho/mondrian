@@ -16,6 +16,7 @@ import mondrian.olap.type.MemberType;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.util.List;
 
@@ -65,7 +66,7 @@ class XtdFunDef extends FunDefBase {
         }
     }
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final Level level = getLevel(compiler.getEvaluator());
         switch (call.getArgCount()) {
         case 0:

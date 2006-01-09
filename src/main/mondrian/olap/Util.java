@@ -569,7 +569,7 @@ public class Util extends XOMUtil {
      * <p>If <code>allowProp</code> is true, also allows property references
      * from valid members, for example
      * <code>[Measures].[Unit Sales].FORMATTED_VALUE</code>.
-     * In this case, the result will be a {@link FunCall}.
+     * In this case, the result will be a {@link ResolvedFunCall}.
      *
      * @param q Query expression belongs to
      * @param nameParts Parts of the identifier

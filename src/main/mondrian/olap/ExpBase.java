@@ -13,13 +13,12 @@
 package mondrian.olap;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
-import mondrian.mdx.MemberExpr;
 
 import java.io.PrintWriter;
 
 /**
  * Skeleton implementation of {@link Exp} interface.
- **/
+ */
 public abstract class ExpBase
     extends QueryPart
     implements Exp {
@@ -37,36 +36,6 @@ public abstract class ExpBase
     }
 
     public abstract Object clone();
-
-    /**
-     * Returns an array of {@link Member}s if this is a member or a tuple,
-     * null otherwise.
-     **/
-    public final Member[] isConstantTuple()
-    {
-        if (this instanceof MemberExpr) {
-            return new Member[] {((MemberExpr) this).getMember()};
-        }
-        if (!(this instanceof FunCall)) {
-            return null;
-        }
-        FunCall f = (FunCall) this;
-        if (f.getFunDef().getSyntax() != Syntax.Parentheses) {
-            return null;
-        }
-        // Make sure every Exp is a MemberExpr.
-        final Exp[] args = f.getArgs();
-        for (int i = 0; i < args.length; i++) {
-            if (!(args[i] instanceof MemberExpr)) {
-                return null;
-            }
-        }
-        Member[] members = new Member[args.length];
-        for (int i = 0; i < members.length; i++) {
-            members[i] = ((MemberExpr) args[i]).getMember();
-        }
-        return members;
-    }
 
     public static void unparseList(PrintWriter pw, Exp[] exps, String start,
             String mid, String end) {

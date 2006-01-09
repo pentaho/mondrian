@@ -12,6 +12,7 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
+import mondrian.mdx.ResolvedFunCall;
 
 /**
  * The <code>CoalesceEmptyFunDef</code> class implements the CoalesceEmpty(...)
@@ -25,7 +26,7 @@ public class CoalesceEmptyFunDef extends FunDefBase {
         super(resolverBase,  type, types);
     }
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final Exp[] args = call.getArgs();
         final Calc[] calcs = new Calc[args.length];
         for (int i = 0; i < args.length; i++) {

@@ -12,6 +12,7 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.util.*;
 
@@ -28,7 +29,7 @@ class IntersectFunDef extends FunDefBase
         this.all = all;
     }
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc1 = compiler.compileList(call.getArg(0));
         final ListCalc listCalc2 = compiler.compileList(call.getArg(1));
         // todo: optimize for member lists vs. tuple lists

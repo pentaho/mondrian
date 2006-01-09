@@ -15,6 +15,7 @@ import mondrian.olap.*;
 import mondrian.olap.type.Type;
 import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.io.PrintWriter;
 
@@ -50,7 +51,7 @@ public class CacheFunDef extends FunDefBase {
         args[0].unparse(pw);
     }
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final Exp exp = call.getArg(0);
         final ExpCacheDescriptor cacheDescriptor =
                 new ExpCacheDescriptor(exp, compiler);

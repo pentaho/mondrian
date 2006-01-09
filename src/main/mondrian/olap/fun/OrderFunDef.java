@@ -13,6 +13,7 @@ import mondrian.calc.*;
 import mondrian.calc.impl.*;
 import mondrian.olap.*;
 import mondrian.olap.type.MemberType;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.util.*;
 
@@ -29,7 +30,7 @@ class OrderFunDef extends FunDefBase {
         this.brk = brk;
     }
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc = compiler.compileList(call.getArg(0));
         final Calc expCalc = compiler.compileScalar(call.getArg(1), true);
         if (expCalc instanceof MemberValueCalc) {
@@ -123,7 +124,7 @@ class OrderFunDef extends FunDefBase {
         private final ListCalc listCalc;
         private final Calc expCalc;
 
-        public CalcImpl(FunCall call, ListCalc listCalc, Calc expCalc) {
+        public CalcImpl(ResolvedFunCall call, ListCalc listCalc, Calc expCalc) {
             super(call, new Calc[]{listCalc, expCalc});
             this.listCalc = listCalc;
             this.expCalc = expCalc;

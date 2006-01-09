@@ -17,6 +17,7 @@ import mondrian.olap.type.LevelType;
 import mondrian.olap.type.DimensionType;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.io.PrintWriter;
 
@@ -190,7 +191,7 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
         if (type == null) {
             throw Util.newInternal("could not derive type");
         }
-        return new FunCall(this, args, type);
+        return new ResolvedFunCall(this, args, type);
     }
 
     /**
@@ -314,7 +315,7 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
         return guessResultType(args, getReturnCategory(), this.name);
     }
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         throw Util.newInternal("function '" + getSignature() +
                 "' has not been implemented");
     }

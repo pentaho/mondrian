@@ -15,6 +15,7 @@ import mondrian.olap.type.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.*;
 import mondrian.rolap.RolapUtil;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.util.*;
 import java.io.PrintWriter;
@@ -75,7 +76,7 @@ public abstract class RankFunDef extends FunDefBase {
             super(dummyFunDef);
         }
 
-        public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
             final Exp listExp = call.getArg(1);
             ListCalc listCalc0 = compiler.compileList(listExp);
             Calc listCalc1 = new RankedListCalc(listCalc0);
@@ -102,7 +103,7 @@ public abstract class RankFunDef extends FunDefBase {
             private final TupleCalc tupleCalc;
             private final Calc listCalc;
 
-            public Rank2TupleCalc(FunCall call, TupleCalc tupleCalc, Calc listCalc) {
+            public Rank2TupleCalc(ResolvedFunCall call, TupleCalc tupleCalc, Calc listCalc) {
                 super(call, new Calc[] {tupleCalc, listCalc});
                 this.tupleCalc = tupleCalc;
                 this.listCalc = listCalc;
@@ -139,7 +140,7 @@ public abstract class RankFunDef extends FunDefBase {
             private final MemberCalc memberCalc;
             private final Calc listCalc;
 
-            public Rank2MemberCalc(FunCall call, MemberCalc memberCalc, Calc listCalc) {
+            public Rank2MemberCalc(ResolvedFunCall call, MemberCalc memberCalc, Calc listCalc) {
                 super(call, new Calc[] {memberCalc, listCalc});
                 this.memberCalc = memberCalc;
                 this.listCalc = listCalc;
@@ -184,7 +185,7 @@ public abstract class RankFunDef extends FunDefBase {
             super(dummyFunDef);
         }
 
-        public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
             final Type type0 = call.getArg(0).getType();
             if (type0 instanceof TupleType) {
                 final TupleCalc tupleCalc =
@@ -219,7 +220,7 @@ public abstract class RankFunDef extends FunDefBase {
             private final ExpCacheDescriptor cacheDescriptor;
 
             public Rank3TupleCalc(
-                    FunCall call,
+                    ResolvedFunCall call,
                     TupleCalc tupleCalc,
                     Calc sortCalc,
                     ExpCacheDescriptor cacheDescriptor) {
@@ -285,7 +286,7 @@ public abstract class RankFunDef extends FunDefBase {
             private final ExpCacheDescriptor cacheDescriptor;
 
             public Rank3MemberCalc(
-                    FunCall call,
+                    ResolvedFunCall call,
                     MemberCalc memberCalc,
                     Calc sortCalc,
                     ExpCacheDescriptor cacheDescriptor) {

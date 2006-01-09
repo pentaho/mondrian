@@ -13,8 +13,7 @@ package mondrian.olap.fun;
 
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.mdx.HierarchyExpr;
-import mondrian.mdx.DimensionExpr;
+import mondrian.mdx.*;
 
 /**
  * A <code>ParameterFunDef</code> is a pseudo-function describing calls to
@@ -85,11 +84,11 @@ public class ParameterFunDef extends FunDefBase {
             // e.g. "[Time].CurrentMember.Hierarchy". They probably wrote
             // "[Time]", and the automatic type conversion did the rest.
             FunCall hierarchyCall = (FunCall) typeArg;
-            if (hierarchyCall.getFunDef().getName().equals("Hierarchy") &&
+            if (hierarchyCall.getFunName().equals("Hierarchy") &&
                     hierarchyCall.getArgCount() > 0 &&
                     hierarchyCall.getArg(0) instanceof FunCall) {
                 FunCall currentMemberCall = (FunCall) hierarchyCall.getArg(0);
-                if (currentMemberCall.getFunDef().getName().equals("CurrentMember") &&
+                if (currentMemberCall.getFunName().equals("CurrentMember") &&
                         currentMemberCall.getArgCount() > 0 &&
                         currentMemberCall.getArg(0) instanceof DimensionExpr) {
                     return true;

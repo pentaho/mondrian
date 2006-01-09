@@ -17,6 +17,7 @@ import mondrian.olap.type.SetType;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.calc.impl.ValueCalc;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -114,7 +115,7 @@ public abstract class LinReg extends FunDefBase {
     public static final int Slope = 3;
     public static final int Variance = 4;
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc = compiler.compileList(call.getArg(0));
         final DoubleCalc yCalc = compiler.compileDouble(call.getArg(1));
         final DoubleCalc xCalc = call.getArgCount() > 2 ?
@@ -232,7 +233,7 @@ public abstract class LinReg extends FunDefBase {
             super(funDef, Point);
         }
 
-        public Calc compileCall(FunCall call, ExpCompiler compiler) {
+        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
             final DoubleCalc xPointCalc = compiler.compileDouble(call.getArg(0));
             final ListCalc listCalc = compiler.compileList(call.getArg(1));
             final DoubleCalc yCalc = compiler.compileDouble(call.getArg(2));
@@ -268,7 +269,7 @@ public abstract class LinReg extends FunDefBase {
         private final boolean tuples;
 
         public PointCalc(
-                FunCall call,
+                ResolvedFunCall call,
                 DoubleCalc xPointCalc,
                 ListCalc listCalc,
                 DoubleCalc yCalc, DoubleCalc xCalc, boolean tuples) {
@@ -564,7 +565,7 @@ debug("LinReg.linearReg","value=" +value);
         private final int regType;
 
         public LinRegCalc(
-                FunCall call,
+                ResolvedFunCall call,
                 ListCalc listCalc,
                 DoubleCalc yCalc,
                 DoubleCalc xCalc,

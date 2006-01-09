@@ -17,6 +17,7 @@ import mondrian.calc.impl.AbstractVoidCalc;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -64,7 +65,7 @@ class SetFunDef extends FunDefBase {
         return new SetType(type0);
     }
 
-    public Calc compileCall(FunCall call, ExpCompiler compiler) {
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final Exp[] args = call.getArgs();
         return new SetCalc(call, args, compiler);
     }

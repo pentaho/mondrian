@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.olap.type.Type;
 import mondrian.calc.Calc;
 import mondrian.calc.CalcWriter;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.io.PrintWriter;
 import java.util.List;
@@ -75,8 +76,8 @@ public abstract class AbstractCalc implements Calc {
      */
     protected String getName() {
         String name;
-        if (exp instanceof FunCall) {
-            FunCall funCall = (FunCall) exp;
+        if (exp instanceof ResolvedFunCall) {
+            ResolvedFunCall funCall = (ResolvedFunCall) exp;
             name = funCall.getFunDef().getName();
         } else {
             name = getClass().getName();
