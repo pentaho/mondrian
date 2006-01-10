@@ -361,6 +361,27 @@ public class SmartMemberReader implements MemberReader, MemberCache {
             // including case where both parents are null
             if (siblingsAreEqual) {
                 return 0;
+            } else if (m1.getParentMember() == null) {
+                // at this point we know that both parent members are null.
+                int pos1 = -1, pos2 = -1;
+                List siblingList = getRootMembers();
+                for (int i = 0, n = siblingList.size(); i < n; i++) {
+                    RolapMember child = (RolapMember) siblingList.get(i);
+                    if (child == m1) {
+                        pos1 = i;
+                    }
+                    if (child == m2) {
+                        pos2 = i;
+                    }
+                }
+                if (pos1 == -1) {
+                    throw Util.newInternal(m1 + " not found among siblings");
+                }
+                if (pos2 == -1) {
+                    throw Util.newInternal(m2 + " not found among siblings");
+                }
+                Util.assertTrue(pos1 != pos2);
+                return pos1 < pos2 ? -1 : 1;
             } else {
                 List children = new ArrayList();
                 getMemberChildren((RolapMember) m1.getParentMember(), children);
