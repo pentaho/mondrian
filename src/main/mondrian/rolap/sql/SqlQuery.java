@@ -397,23 +397,11 @@ public class SqlQuery
     }
 
     /**
-     * @deprecated - does not work for derby and cloudscape, use {@link #addOrderBy(String, boolean)} instead
-     */
-    public void addOrderBy(final String expression)
-    {
-        if (dialect.isDerby() || dialect.isCloudscape()) {
-            orderBy.add(dialect.quoteIdentifier("c" + (select.size() - 1)));
-        } else {
-            orderBy.add(expression);
-        }
-    }
-
-    /**
      * Adds an item to the ORDER BY clause.
      *
      * @param expr the expr to order by
      * @param ascending sort direction
-     * @param prepend true = prepend to the current list of order by elements.
+     * @param prepend whether to prepend to the current list of items
      */
     public void addOrderBy(String expr, boolean ascending, boolean prepend) {
         if (ascending) {
@@ -660,6 +648,8 @@ public class SqlQuery
                 best = "db2";
             } else if (isFirebird()) {
                 best = "firebird";
+            } else if (isInterbase()) {
+                best = "interbase";
             } else {
                 best = "generic";
             }
@@ -832,29 +822,40 @@ public class SqlQuery
         public boolean isMSSQL() {
             return productName.toUpperCase().indexOf("SQL SERVER") >= 0;
         }
+
         /**
          * Returns whether the underlying database is Oracle.
          */
         public boolean isOracle() {
             return productName.equals("Oracle");
         }
+
         /**
          * Returns whether the underlying database is Postgres.
          */
         public boolean isPostgres() {
             return productName.toUpperCase().indexOf("POSTGRE") >= 0;
         }
+
         /**
          * Returns whether the underlying database is MySQL.
          */
         public boolean isMySQL() {
             return productName.toUpperCase().equals("MYSQL");
         }
+
         /**
          * Returns whether the underlying database is Sybase.
          */
         public boolean isSybase() {
             return productName.toUpperCase().indexOf("SYBASE") >= 0;
+        }
+
+        /**
+         * Returns whether the underlying database is Interbase.
+         */
+        public boolean isInterbase() {
+            return productName.equals("Interbase");
         }
 
         // -- behaviors --
@@ -867,7 +868,8 @@ public class SqlQuery
          * If so, "SELECT * FROM t AS alias" is a valid query.
          */
         protected boolean allowsAs() {
-            return !isOracle() && !isSybase() && !isFirebird();
+            return !isOracle() && !isSybase() && !isFirebird() &&
+                !isInterbase();
         }
 
         /**
@@ -875,7 +877,8 @@ public class SqlQuery
          */
         public boolean allowsFromQuery() {
             // older versions of AS400 do not allow FROM subqueries
-            return !isMySQL() && !isOldAS400() && !isInformix() && !isSybase();
+            return !isMySQL() && !isOldAS400() && !isInformix() &&
+                !isSybase() && !isInterbase();
         }
 
         /**
