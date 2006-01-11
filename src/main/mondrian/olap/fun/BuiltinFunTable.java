@@ -454,7 +454,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "<Hierarchy>.DefaultMember",
                 "Returns the default member of a hierarchy.",
                 "pmh") {
-            public Calc compileCall(FunCall call, ExpCompiler compiler) {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final HierarchyCalc hierarchyCalc =
                         compiler.compileHierarchy(call.getArg(0));
                 return new AbstractMemberCalc(call, new Calc[] {hierarchyCalc}) {
