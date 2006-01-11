@@ -170,21 +170,24 @@ public class XmlaHandler implements XmlaConstants {
             conn = ((RolapConnection) connection).getDataSource().getConnection();
             stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
                                         ResultSet.CONCUR_READ_ONLY);
-
-            String temp = dtSql.toUpperCase();
-            int selOff = temp.indexOf("SELECT");
-            int fromOff = temp.indexOf("FROM");
-            StringBuffer buf = new StringBuffer();
-            buf.append("select count(*) ");
-            buf.append(dtSql.substring(fromOff));
-
-            String countSql = buf.toString();
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("drill through counting sql: " + countSql);
+            
+            int count = -1;
+            if (MondrianProperties.instance().EnableTotalCount.booleanValue()) {
+                String temp = dtSql.toUpperCase();
+                int fromOff = temp.indexOf("FROM");
+                StringBuffer buf = new StringBuffer();
+                buf.append("select count(*) ");
+                buf.append(dtSql.substring(fromOff));
+    
+                String countSql = buf.toString();
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("drill through counting sql: " + countSql);
+                }
+                rs = stmt.executeQuery(countSql);
+                rs.next();
+                count = rs.getInt(1);
+                rs.close();
             }
-            rs = stmt.executeQuery(countSql);
-            rs.next();
-            int count = rs.getInt(1);
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("drill through sql: " + dtSql);
@@ -232,20 +235,19 @@ public class XmlaHandler implements XmlaConstants {
                 header[i] = md.getColumnName(i + 1);
             }
 
-            // skip to first row
-            rs.absolute(firstRowset < 0 ? 1 : firstRowset);
+            // skip to first rowset specified in request
+            rs.absolute(firstRowset <= 0 ? 1 : firstRowset);
 
             // populate data
             rows = new ArrayList();
-            maxRows = (maxRows < 0 ? Integer.MAX_VALUE : maxRows);
-            while (rs.next() && maxRows > 0) {
+            maxRows = (maxRows <= 0 ? Integer.MAX_VALUE : maxRows);
+            do {
                 Object[] row = new Object[columnCount];
                 for (int i = 0; i < columnCount; i++) {
                     row[i] = rs.getObject(i + 1);
                 }
                 rows.add(row);
-                maxRows--;
-            }
+            } while (rs.next() && --maxRows > 0);
         }
 
         public void unparse(SaxWriter writer) throws SAXException {
@@ -256,14 +258,17 @@ public class XmlaHandler implements XmlaConstants {
                 encodedHeader[i] = XmlaUtil.encodeElementName(header[i]);
             }
 
-            String countStr = Integer.toString(totalCount);
-            writer.startElement("row");
-            for (int i = 0; i < encodedHeader.length; i++) {
-                writer.startElement(encodedHeader[i]);
-                writer.characters(countStr);
-                writer.endElement();
+            // write total count row if enabled
+            if (totalCount >= 0) {
+                String countStr = Integer.toString(totalCount);
+                writer.startElement("row");
+                for (int i = 0; i < encodedHeader.length; i++) {
+                    writer.startElement(encodedHeader[i]);
+                    writer.characters(countStr);
+                    writer.endElement();
+                }
+                writer.endElement(); // row
             }
-            writer.endElement(); // row
 
             for (Iterator it = rows.iterator(); it.hasNext();) {
                 Object[] row = (Object[]) it.next();

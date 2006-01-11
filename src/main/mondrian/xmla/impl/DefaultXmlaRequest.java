@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.xmla.XmlaConstants;
 import mondrian.xmla.XmlaRequest;
@@ -35,6 +36,8 @@ public class DefaultXmlaRequest implements XmlaRequest,
 
     private static final String MSG_INVALID_XMLA = "Invalid XML/A message";
     private static final String MSG_INVALID_DRILLTHROUGH = "Invalid DRILLTHROUGH statement";
+    private static final String MSG_INVALID_MAXROWS = "MAXROWS isn't positive integer";
+    private static final String MSG_INVALID_FIRSTROWSET = "FIRSTROWSET isn't positive integer";
 
     /* common content */
     private int method;
@@ -265,15 +268,25 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 try {
                     if (mrOffset > dtOffset && mrOffset < slOffset) {
                         maxRows = parseIntValue(statement.substring(mrOffset, slOffset));
+                        if (maxRows <= 0) {
+                            new IllegalArgumentException(MSG_INVALID_MAXROWS);
+                        }
                     }
                     if (frOffset > dtOffset && frOffset > mrOffset && frOffset < slOffset) {
                         firstRowset = parseIntValue(statement.substring(frOffset, slOffset));
+                        if (firstRowset <= 0) {
+                            new IllegalArgumentException(MSG_INVALID_FIRSTROWSET);
+                        }
                     }
-
                 } catch (Exception e) {
-                    throw Util.newError(MSG_INVALID_DRILLTHROUGH);
+                    throw Util.newError(e, MSG_INVALID_DRILLTHROUGH);
                 }
 
+                int configMaxRows = MondrianProperties.instance().MaxRows.get();
+                if (configMaxRows > 0 && maxRows > configMaxRows) {
+                    maxRows = configMaxRows;
+                }
+                
                 StringBuffer dtStmtBuf = new StringBuffer();
                 dtStmtBuf.append(statement.substring(0, dtOffset)); // formulas
                 dtStmtBuf.append(statement.substring(slOffset)); // select to end
