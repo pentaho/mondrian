@@ -769,6 +769,7 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
+
         define(new FunDefBase(
                 "Parent",
                 "<Member>.Parent",
@@ -2191,13 +2192,107 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        if (false) define(new FunDefBase(
+        define(new MultiResolver(
                 "LastPeriods",
-                "LastPeriods(<Index>[, <Member>])",
+                "LastPeriods(<Index> [, <Member>])",
                 "Returns a set of members prior to and including a specified member.",
-                "fx*") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                throw new UnsupportedOperationException();
+                new String[] {"fxn", "fxnm"}) {
+            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+                return new FunDefBase(dummyFunDef) {
+                    public Type getResultType(Validator validator, Exp[] args) {
+                        if (args.length == 1) {
+                            // If Member is not specified, 
+                            // it is Time.CurrentMember.
+                            Hierarchy hierarchy = validator.getQuery()
+                                    .getCube().getTimeDimension()
+                                    .getHierarchy();
+                            return new SetType(MemberType.forHierarchy(hierarchy));
+                        } else {
+                            Type type = args[1].getType();
+                            Type memberType = 
+                            TypeUtil.toMemberOrTupleType(type);
+                            return new SetType(memberType);
+                        }
+                    }
+
+                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+                        // Member defaults to [Time].currentmember
+                        Exp[] args = call.getArgs();
+                        final MemberCalc memberCalc;
+                        if (args.length == 1) {
+                            Dimension timeDimension =
+                                    compiler.getEvaluator().getCube()
+                                    .getTimeDimension();
+                            memberCalc = new DimensionCurrentMemberCalc(
+                                    timeDimension);
+                        } else {
+                            memberCalc = compiler.compileMember(args[1]);
+                        }
+
+                        // Numeric Expression.
+                        final IntegerCalc indexValueCalc =
+                                compiler.compileInteger(args[0]);
+
+                        return new AbstractListCalc(call, new Calc[] {memberCalc, indexValueCalc}) {
+                            public List evaluateList(Evaluator evaluator) {
+                                Member member = memberCalc.evaluateMember(
+                                        evaluator);
+                                int indexValue = indexValueCalc.evaluateInteger(
+                                        evaluator);
+
+                                return lastPeriods(member, 
+                                        evaluator, indexValue);
+                            }
+                        };
+                    }
+
+                    /*
+                        If Index is positive, returns the set of Index 
+                        members ending with Member and starting with the 
+                        member lagging Index - 1 from Member.
+
+                        If Index is negative, returns the set of (- Index) 
+                        members starting with Member and ending with the 
+                        member leading (- Index - 1) from Member.
+
+                        If Index is zero, the empty set is returned. 
+                    */
+                    List lastPeriods(
+                            Member member,
+                            Evaluator evaluator,
+                            int indexValue) {
+                        // empty set
+                        if (indexValue == 0) {
+                            return Collections.EMPTY_LIST;
+                        } 
+                        List list = new ArrayList();
+
+                        // set with just member
+                        if ((indexValue == 1) || (indexValue == -1)) {
+                            list.add(member);
+                            return list;
+                        }
+
+                        Member startMember;
+                        Member endMember;
+                        if (indexValue > 0) {
+                            startMember = evaluator.getSchemaReader()
+                                .getLeadMember(member, -(indexValue-1));
+                            endMember = member;
+                        } else {
+                            startMember = member;
+                            endMember = evaluator.getSchemaReader()
+                                .getLeadMember(member, -(indexValue+1));
+                        }
+
+                        evaluator.getSchemaReader().
+                            getMemberRange(member.getLevel(),
+                               startMember,
+                               endMember,
+                               list);
+                        return list;
+                    }
+                };
             }
         });
 

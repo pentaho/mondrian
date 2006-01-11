@@ -131,6 +131,12 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprDependsOn("1.5", "{}");
     }
 
+    public FunctionTest() {
+    }
+    public FunctionTest(String s) {
+        super(s);
+    }
+
     public void testStringLiteral() {
         // single-quoted string
         if (false) {
@@ -3246,6 +3252,88 @@ public class FunctionTest extends FoodMartTestCase {
                 + "the member was from '[Time]'.");
     }
 
+    public void testLastPeriods() throws Exception {
+        assertAxisReturns("LastPeriods(0, [Time].[1998])",
+                "");
+        assertAxisReturns("LastPeriods(1, [Time].[1998])",
+                "[Time].[1998]");
+        assertAxisReturns("LastPeriods(-1, [Time].[1998])",
+                "[Time].[1998]");
+        assertAxisReturns("LastPeriods(2, [Time].[1998])",
+                fold(new String[] {
+                    "[Time].[1997]",
+                    "[Time].[1998]"
+                }));
+        assertAxisReturns("LastPeriods(-2, [Time].[1997])",
+                fold(new String[] {
+                    "[Time].[1997]",
+                    "[Time].[1998]"
+                }));
+        assertAxisReturns("LastPeriods(2, [Time].[1998].[Q2])",
+                fold(new String[] {
+                    "[Time].[1998].[Q1]",
+                    "[Time].[1998].[Q2]"
+                }));
+        assertAxisReturns("LastPeriods(4, [Time].[1998].[Q2])",
+                fold(new String[] {
+                    "[Time].[1997].[Q3]",
+                    "[Time].[1997].[Q4]",
+                    "[Time].[1998].[Q1]",
+                    "[Time].[1998].[Q2]"
+                }));
+        assertAxisReturns("LastPeriods(-2, [Time].[1997].[Q2])",
+                fold(new String[] {
+                    "[Time].[1997].[Q2]",
+                    "[Time].[1997].[Q3]"
+                }));
+        assertAxisReturns("LastPeriods(-4, [Time].[1997].[Q2])",
+                fold(new String[] {
+                    "[Time].[1997].[Q2]",
+                    "[Time].[1997].[Q3]",
+                    "[Time].[1997].[Q4]",
+                    "[Time].[1998].[Q1]"
+                }));
+        assertAxisReturns("LastPeriods(2, [Time].[1998].[Q2].[5])",
+                fold(new String[] {
+                    "[Time].[1998].[Q2].[4]",
+                    "[Time].[1998].[Q2].[5]"
+                }));
+        assertAxisReturns("LastPeriods(12, [Time].[1998].[Q2].[5])",
+                fold(new String[] {
+                    "[Time].[1997].[Q2].[6]",
+                    "[Time].[1997].[Q3].[7]",
+                    "[Time].[1997].[Q3].[8]",
+                    "[Time].[1997].[Q3].[9]",
+                    "[Time].[1997].[Q4].[10]",
+                    "[Time].[1997].[Q4].[11]",
+                    "[Time].[1997].[Q4].[12]",
+                    "[Time].[1998].[Q1].[1]",
+                    "[Time].[1998].[Q1].[2]",
+                    "[Time].[1998].[Q1].[3]",
+                    "[Time].[1998].[Q2].[4]",
+                    "[Time].[1998].[Q2].[5]"
+                }));
+        assertAxisReturns("LastPeriods(-2, [Time].[1998].[Q2].[4])",
+                fold(new String[] {
+                    "[Time].[1998].[Q2].[4]",
+                    "[Time].[1998].[Q2].[5]"
+                }));
+        assertAxisReturns("LastPeriods(-12, [Time].[1997].[Q2].[6])",
+                fold(new String[] {
+                    "[Time].[1997].[Q2].[6]",
+                    "[Time].[1997].[Q3].[7]",
+                    "[Time].[1997].[Q3].[8]",
+                    "[Time].[1997].[Q3].[9]",
+                    "[Time].[1997].[Q4].[10]",
+                    "[Time].[1997].[Q4].[11]",
+                    "[Time].[1997].[Q4].[12]",
+                    "[Time].[1998].[Q1].[1]",
+                    "[Time].[1998].[Q1].[2]",
+                    "[Time].[1998].[Q1].[3]",
+                    "[Time].[1998].[Q2].[4]",
+                    "[Time].[1998].[Q2].[5]"
+                }));
+    }
     public void testParallelPeriod() throws Exception {
         assertAxisReturns("parallelperiod([Time].[Quarter], 1, [Time].[1998].[Q1])",
                 "[Time].[1997].[Q4]");
