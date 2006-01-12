@@ -3269,6 +3269,16 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Time].[1997]",
                     "[Time].[1998]"
                 }));
+        assertAxisReturns("LastPeriods(5000, [Time].[1998])",
+                fold(new String[] {
+                    "[Time].[1997]",
+                    "[Time].[1998]"
+                }));
+        assertAxisReturns("LastPeriods(-5000, [Time].[1997])",
+                fold(new String[] {
+                    "[Time].[1997]",
+                    "[Time].[1998]"
+                }));
         assertAxisReturns("LastPeriods(2, [Time].[1998].[Q2])",
                 fold(new String[] {
                     "[Time].[1998].[Q1]",
@@ -3293,6 +3303,22 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Time].[1997].[Q4]",
                     "[Time].[1998].[Q1]"
                 }));
+        assertAxisReturns("LastPeriods(5000, [Time].[1998].[Q2])",
+                fold(new String[] {
+                    "[Time].[1997].[Q1]",
+                    "[Time].[1997].[Q2]",
+                    "[Time].[1997].[Q3]",
+                    "[Time].[1997].[Q4]",
+                    "[Time].[1998].[Q1]",
+                    "[Time].[1998].[Q2]"
+                }));
+        assertAxisReturns("LastPeriods(-5000, [Time].[1998].[Q2])",
+                fold(new String[] {
+                    "[Time].[1998].[Q2]",
+                    "[Time].[1998].[Q3]",
+                    "[Time].[1998].[Q4]"
+                }));
+
         assertAxisReturns("LastPeriods(2, [Time].[1998].[Q2].[5])",
                 fold(new String[] {
                     "[Time].[1998].[Q2].[4]",
@@ -3333,6 +3359,22 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Time].[1998].[Q2].[4]",
                     "[Time].[1998].[Q2].[5]"
                 }));
+        assertAxisReturns("LastPeriods(2, [Gender].[M])",
+                fold(new String[] {
+                    "[Gender].[All Gender].[F]",
+                    "[Gender].[All Gender].[M]"
+                }));
+        assertAxisReturns("LastPeriods(-2, [Gender].[F])",
+                fold(new String[] {
+                    "[Gender].[All Gender].[F]",
+                    "[Gender].[All Gender].[M]"
+                }));
+        assertAxisReturns("LastPeriods(2, [Gender])",
+                fold(new String[] {
+                    "[Gender].[All Gender]"
+                }));
+        assertAxisReturns("LastPeriods(2, [Gender].Parent)",
+                "");
     }
     public void testParallelPeriod() throws Exception {
         assertAxisReturns("parallelperiod([Time].[Quarter], 1, [Time].[1998].[Q1])",

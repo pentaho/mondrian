@@ -2262,7 +2262,7 @@ public class BuiltinFunTable extends FunTableImpl {
                             Evaluator evaluator,
                             int indexValue) {
                         // empty set
-                        if (indexValue == 0) {
+                        if ((indexValue == 0) || member.isNull()) {
                             return Collections.EMPTY_LIST;
                         } 
                         List list = new ArrayList();
@@ -2273,16 +2273,29 @@ public class BuiltinFunTable extends FunTableImpl {
                             return list;
                         }
 
+                        // When null is found, getting the first/last
+                        // member at a given level is not particularly
+                        // fast.
                         Member startMember;
                         Member endMember;
                         if (indexValue > 0) {
                             startMember = evaluator.getSchemaReader()
                                 .getLeadMember(member, -(indexValue-1));
                             endMember = member;
+                            if (startMember.isNull()) {
+                                Member[] members = evaluator.getSchemaReader()
+                                    .getLevelMembers(member.getLevel(), false);
+                                startMember = members[0];
+                            }
                         } else {
                             startMember = member;
                             endMember = evaluator.getSchemaReader()
                                 .getLeadMember(member, -(indexValue+1));
+                            if (endMember.isNull()) {
+                                Member[] members = evaluator.getSchemaReader()
+                                    .getLevelMembers(member.getLevel(), false);
+                                endMember = members[members.length - 1];
+                            }
                         }
 
                         evaluator.getSchemaReader().
