@@ -38,8 +38,7 @@ class CrossJoinFunDef extends FunDefBase {
             Exp arg = args[i];
             final Type type = arg.getType();
             if (type instanceof SetType) {
-                SetType setType = (SetType) type;
-                addTypes(setType.getElementType(), list);
+                addTypes(type, list);
             } else if (getName().equals("*")) {
                 // The "*" form of CrossJoin is lenient: args can be either
                 // members/tuples or sets.
@@ -58,8 +57,11 @@ class CrossJoinFunDef extends FunDefBase {
      * recursively.
      */
     private static void addTypes(final Type type, List list) {
-        if (type instanceof TupleType) {
-                TupleType tupleType = (TupleType) type;
+        if (type instanceof SetType) {
+            SetType setType = (SetType) type;
+            addTypes(setType.getElementType(), list);
+        } else if (type instanceof TupleType) {
+            TupleType tupleType = (TupleType) type;
             for (int i = 0; i < tupleType.elementTypes.length; i++) {
                 addTypes(tupleType.elementTypes[i], list);
             }

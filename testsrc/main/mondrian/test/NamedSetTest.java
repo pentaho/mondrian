@@ -804,6 +804,42 @@ public class NamedSetTest extends FoodMartTestCase {
                     ""}));
     }
 
+    public void testNamedSetAndUnion() {
+        assertQueryReturns(
+                fold(new String[] {
+                    "with set [Set Education Level] as",
+                    "   '{([Education Level].[All Education Levels].[Bachelors Degree]),",
+                    "     ([Education Level].[All Education Levels].[Graduate Degree])}'",
+                    "select",
+                    "   {[Measures].[Unit Sales],",
+                    "    [Measures].[Store Cost],",
+                    "    [Measures].[Store Sales]} ON COLUMNS,",
+                    "   UNION(",
+                    "      CROSSJOIN(",
+                    "         {[Time].[1997].[Q1]},",
+                    "          [Set Education Level]), ",
+                    "      {([Time].[1997].[Q1],",
+                    "        [Education Level].[All Education Levels].[Graduate Degree])}) ON ROWS",
+                    "from [Sales]"}),
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Unit Sales]}",
+                    "{[Measures].[Store Cost]}",
+                    "{[Measures].[Store Sales]}",
+                    "Axis #2:",
+                    "{[Time].[1997].[Q1], [Education Level].[All Education Levels].[Bachelors Degree]}",
+                    "{[Time].[1997].[Q1], [Education Level].[All Education Levels].[Graduate Degree]}",
+                    "Row #0: 17,066",
+                    "Row #0: 14,234.10",
+                    "Row #0: 35,699.43",
+                    "Row #1: 3,637",
+                    "Row #1: 3,030.82",
+                    "Row #1: 7,583.71",
+                    ""}));
+    }
+    
     /**
      * Dynamic schema processor which adds two named sets to a the first cube
      * in a schema.
