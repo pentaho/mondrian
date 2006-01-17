@@ -26,7 +26,7 @@ class AbstractAggregateFunDef extends FunDefBase {
     }
 
     protected Exp validateArg(
-            Validator validator, Exp[] args, int i, int type) {
+            Validator validator, Exp[] args, int i, int category) {
         // If expression cache is enabled, wrap first expression (the set)
         // in a function which will use the expression cache.
         if (i == 0) {
@@ -39,7 +39,7 @@ class AbstractAggregateFunDef extends FunDefBase {
                 return validator.validate(cacheCall, false);
             }
         }
-        return super.validateArg(validator, args, i, type);
+        return super.validateArg(validator, args, i, category);
     }
 }
 

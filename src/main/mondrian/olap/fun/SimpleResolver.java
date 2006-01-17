@@ -26,15 +26,21 @@ class SimpleResolver implements Resolver {
     SimpleResolver(FunDef funDef) {
         this.funDef = funDef;
     }
+
     public FunDef getFunDef() {
         return funDef;
     }
+
     public String getName() {
         return funDef.getName();
     }
 
     public String getDescription() {
         return funDef.getDescription();
+    }
+
+    public String getSignature() {
+        return funDef.getSignature();
     }
 
     public Syntax getSyntax() {
@@ -65,10 +71,6 @@ class SimpleResolver implements Resolver {
         return ((k >= parameterTypes.length) ||
                (parameterTypes[k] != Category.Set));
     }
-
-//  public void addTests(TestSuite suite, Pattern pattern) {
-//      funDef.addTests(suite, pattern);
-//  }
 }
 
 // End SimpleResolver.java

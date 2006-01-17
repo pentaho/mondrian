@@ -27,8 +27,8 @@ abstract class ResolverBase extends FunUtil implements Resolver {
     private final String description;
     private final Syntax syntax;
 
-    ResolverBase(String name, 
-                 String signature, 
+    ResolverBase(String name,
+                 String signature,
                  String description,
                  Syntax syntax) {
         this.name = name;
@@ -40,7 +40,8 @@ abstract class ResolverBase extends FunUtil implements Resolver {
     public String getName() {
         return name;
     }
-    public String getSignature () {
+
+    public String getSignature() {
         return signature;
     }
 

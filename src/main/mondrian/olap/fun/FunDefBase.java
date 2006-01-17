@@ -182,10 +182,10 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
     }
 
     public Exp createCall(Validator validator, Exp[] args) {
-        int[] types = getParameterCategories();
-        Util.assertTrue(types.length == args.length);
+        int[] categories = getParameterCategories();
+        Util.assertTrue(categories.length == args.length);
         for (int i = 0; i < args.length; i++) {
-            args[i] = validateArg(validator, args, i, types[i]);
+            args[i] = validateArg(validator, args, i, categories[i]);
         }
         final Type type = getResultType(validator, args);
         if (type == null) {
@@ -203,14 +203,14 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
      * @param validator Validator
      * @param args Arguments to this function
      * @param i Ordinal of argument
-     * @param type Expected type of argument
+     * @param category Expected {@link Category category} of argument
      * @return Validated argument
      */
     protected Exp validateArg(
             Validator validator,
             Exp[] args,
             int i,
-            int type) {
+            int category) {
         return args[i];
     }
 

@@ -159,11 +159,20 @@ FROM [Sales]</code></blockquote>
 </tr>
 <tr>
   <td valign=top>$Cache</td>
-  <td>Evaluates and returns its sole argument, applying statement-level caching  </td>
+  <td>Evaluates and returns its sole argument, applying statement-level caching    <p><b>Syntax</b></p>
+    <code>$Cache(&lt;&lt;Exp&gt;&gt;)</code><br/>
+  </td>
 </tr>
 <tr>
   <td valign=top>()</td>
-  <td>  </td>
+  <td>    <p><b>Syntax</b></p>
+  </td>
+</tr>
+<tr>
+  <td valign=top>*</td>
+  <td>Multiplies two numbers.    <p><b>Syntax</b></p>
+    <code>&lt;Numeric Expression&gt; * &lt;Numeric Expression&gt;</code><br/>
+  </td>
 </tr>
 <tr>
   <td valign=top>*</td>
@@ -172,12 +181,6 @@ FROM [Sales]</code></blockquote>
     <code>&lt;Member&gt; * &lt;Set&gt;</code><br/>
     <code>&lt;Set&gt; * &lt;Member&gt;</code><br/>
     <code>&lt;Member&gt; * &lt;Member&gt;</code><br/>
-  </td>
-</tr>
-<tr>
-  <td valign=top>*</td>
-  <td>Multiplies two numbers.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; * &lt;Numeric Expression&gt;</code><br/>
   </td>
 </tr>
 <tr>
@@ -237,25 +240,25 @@ FROM [Sales]</code></blockquote>
 <tr>
   <td valign=top>&lt;&gt;</td>
   <td>Returns whether two expressions are not equal.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; &lt;&gt; &lt;String&gt;</code><br/>
+    <code>&lt;Numeric Expression&gt; &lt;&gt; &lt;Numeric Expression&gt;</code><br/>
   </td>
 </tr>
 <tr>
   <td valign=top>&lt;&gt;</td>
   <td>Returns whether two expressions are not equal.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; &lt;&gt; &lt;Numeric Expression&gt;</code><br/>
-  </td>
-</tr>
-<tr>
-  <td valign=top>=</td>
-  <td>Returns whether two expressions are equal.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; = &lt;String&gt;</code><br/>
+    <code>&lt;String&gt; &lt;&gt; &lt;String&gt;</code><br/>
   </td>
 </tr>
 <tr>
   <td valign=top>=</td>
   <td>Returns whether two expressions are equal.    <p><b>Syntax</b></p>
     <code>&lt;Numeric Expression&gt; = &lt;Numeric Expression&gt;</code><br/>
+  </td>
+</tr>
+<tr>
+  <td valign=top>=</td>
+  <td>Returns whether two expressions are equal.    <p><b>Syntax</b></p>
+    <code>&lt;String&gt; = &lt;String&gt;</code><br/>
   </td>
 </tr>
 <tr>
@@ -399,7 +402,9 @@ FROM [Sales]</code></blockquote>
 </tr>
 <tr>
   <td valign=top>CoalesceEmpty</td>
-  <td>Coalesces an empty cell value to a different value. All of the expressions must be of the same type (number or string).  </td>
+  <td>Coalesces an empty cell value to a different value. All of the expressions must be of the same type (number or string).    <p><b>Syntax</b></p>
+    <code>CoalesceEmpty(&lt;Value Expression&gt;[, &lt;Value Expression&gt;...])</code><br/>
+  </td>
 </tr>
 <tr>
   <td valign=top>Correlation</td>
@@ -448,12 +453,6 @@ FROM [Sales]</code></blockquote>
   </td>
 </tr>
 <tr>
-  <td valign=top>Current</td>
-  <td>Returns the current tuple from a set during an iteration.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt;.Current</code><br/>
-  </td>
-</tr>
-<tr>
   <td valign=top>CurrentMember</td>
   <td>Returns the current member along a dimension during an iteration.    <p><b>Syntax</b></p>
     <code>&lt;Dimension&gt;.CurrentMember</code><br/>
@@ -478,6 +477,12 @@ FROM [Sales]</code></blockquote>
   </td>
 </tr>
 <tr>
+  <td valign=top>DefaultMember</td>
+  <td>Returns the default member of a hierarchy.    <p><b>Syntax</b></p>
+    <code>&lt;Hierarchy&gt;.DefaultMember</code><br/>
+  </td>
+</tr>
+<tr>
   <td valign=top>Descendants</td>
   <td>Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.    <p><b>Syntax</b></p>
     <code>&lt;Set&gt; Descendants(&lt;Member&gt;)</code><br/>
@@ -490,13 +495,13 @@ FROM [Sales]</code></blockquote>
 <tr>
   <td valign=top>Dimension</td>
   <td>Returns the dimension that contains a specified hierarchy.    <p><b>Syntax</b></p>
-    <code>&lt;Hierarchy&gt;.Dimension</code><br/>
+    <code>&lt;Dimension&gt;.Dimension</code><br/>
   </td>
 </tr>
 <tr>
   <td valign=top>Dimension</td>
   <td>Returns the dimension that contains a specified hierarchy.    <p><b>Syntax</b></p>
-    <code>&lt;Dimension&gt;.Dimension</code><br/>
+    <code>&lt;Hierarchy&gt;.Dimension</code><br/>
   </td>
 </tr>
 <tr>
@@ -658,14 +663,14 @@ FROM [Sales]</code></blockquote>
 </tr>
 <tr>
   <td valign=top>Item</td>
-  <td>Returns a tuple from the set specified in &#171;Set&#187;. The tuple to be returned is specified by the zero-based position of the tuple in the set in &#171;Index&#187;.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; &lt;Set&gt;.Item(&lt;Numeric Expression&gt;)</code><br/>
+  <td>Returns a member from the tuple specified in &lt;Tuple&gt;. The member to be returned is specified by the zero-based position of the member in the set in &lt;Index&gt;.    <p><b>Syntax</b></p>
+    <code>&lt;Member&gt; &lt;Tuple&gt;.Item(&lt;Numeric Expression&gt;)</code><br/>
   </td>
 </tr>
 <tr>
   <td valign=top>Item</td>
-  <td>Returns a member from the tuple specified in &#171;Tuple&#187;. The member to be returned is specified by the zero-based position of the member in the set in &#171;Index&#187;.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; &lt;Tuple&gt;.Item(&lt;Numeric Expression&gt;)</code><br/>
+  <td>Returns a tuple from the set specified in &lt;Set&gt;. The tuple to be returned is specified by the zero-based position of the tuple in the set in &lt;Index&gt;.    <p><b>Syntax</b></p>
+    <code>&lt;Member&gt; &lt;Set&gt;.Item(&lt;Numeric Expression&gt;)</code><br/>
   </td>
 </tr>
 <tr>
@@ -678,6 +683,13 @@ FROM [Sales]</code></blockquote>
   <td valign=top>LastChild</td>
   <td>Returns the last child of a member.    <p><b>Syntax</b></p>
     <code>&lt;Member&gt;.LastChild</code><br/>
+  </td>
+</tr>
+<tr>
+  <td valign=top>LastPeriods</td>
+  <td>Returns a set of members prior to and including a specified member.    <p><b>Syntax</b></p>
+    <code>&lt;Set&gt; LastPeriods(&lt;Numeric Expression&gt;)</code><br/>
+    <code>&lt;Set&gt; LastPeriods(&lt;Numeric Expression&gt;, &lt;Member&gt;)</code><br/>
   </td>
 </tr>
 <tr>
@@ -761,12 +773,6 @@ FROM [Sales]</code></blockquote>
 </tr>
 <tr>
   <td valign=top>Members</td>
-  <td>Returns the member whose name is specified by a string expression.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; Members(&lt;String&gt;)</code><br/>
-  </td>
-</tr>
-<tr>
-  <td valign=top>Members</td>
   <td>Returns the set of members in a dimension.    <p><b>Syntax</b></p>
     <code>&lt;Dimension&gt;.Members</code><br/>
   </td>
@@ -781,6 +787,12 @@ FROM [Sales]</code></blockquote>
   <td valign=top>Members</td>
   <td>Returns the set of members in a level.    <p><b>Syntax</b></p>
     <code>&lt;Level&gt;.Members</code><br/>
+  </td>
+</tr>
+<tr>
+  <td valign=top>Members</td>
+  <td>Returns the member whose name is specified by a string expression.    <p><b>Syntax</b></p>
+    <code>&lt;Member&gt; Members(&lt;String&gt;)</code><br/>
   </td>
 </tr>
 <tr>
@@ -914,7 +926,9 @@ FROM [Sales]</code></blockquote>
 </tr>
 <tr>
   <td valign=top>Properties</td>
-  <td>Returns the value of a member property.  </td>
+  <td>Returns the value of a member property.    <p><b>Syntax</b></p>
+    <code>&lt;Member&gt;.Properties(&lt;String Expression&gt;)</code><br/>
+  </td>
 </tr>
 <tr>
   <td valign=top>Qtd</td>
@@ -981,7 +995,7 @@ FROM [Sales]</code></blockquote>
 <tr>
   <td valign=top>StrToSet</td>
   <td>Constructs a set from a string expression.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; StrToSet(&lt;String&gt;)</code><br/>
+    <code>StrToSet(&lt;String Expression&gt;)</code><br/>
   </td>
 </tr>
 <tr>
@@ -1122,6 +1136,13 @@ FROM [Sales]</code></blockquote>
   </td>
 </tr>
 <tr>
+  <td valign=top>VisualTotals</td>
+  <td>Dynamically totals child members specified in a set using a pattern for the total label in the result set.    <p><b>Syntax</b></p>
+    <code>&lt;Set&gt; VisualTotals(&lt;Set&gt;)</code><br/>
+    <code>&lt;Set&gt; VisualTotals(&lt;Set&gt;, &lt;String&gt;)</code><br/>
+  </td>
+</tr>
+<tr>
   <td valign=top>Wtd</td>
   <td>A shortcut function for the PeriodsToDate function that specifies the level to be Week.    <p><b>Syntax</b></p>
     <code>&lt;Set&gt; Wtd()</code><br/>
@@ -1143,27 +1164,21 @@ FROM [Sales]</code></blockquote>
 </tr>
 <tr>
   <td valign=top>_CaseMatch</td>
-  <td>Evaluates various expressions, and returns the corresponding expression for the first which matches a particular value.  </td>
-</tr>
-<tr>
-  <td valign=top>_CaseTest</td>
-  <td>Evaluates various conditions, and returns the corresponding expression for the first which evaluates to true.  </td>
-</tr>
-<tr>
-  <td valign=top>_Value</td>
-  <td>Returns the value of the current measure within the context of a tuple.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; _Value(&lt;Tuple&gt;)</code><br/>
+  <td>Evaluates various expressions, and returns the corresponding expression for the first which matches a particular value.    <p><b>Syntax</b></p>
+    <code>Case &lt;Expression&gt; When &lt;Expression&gt; Then &lt;Expression&gt; [...] [Else &lt;Expression&gt;] End</code><br/>
   </td>
 </tr>
 <tr>
-  <td valign=top>_Value</td>
-  <td>Returns the value of the current measure.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; _Value()</code><br/>
+  <td valign=top>_CaseTest</td>
+  <td>Evaluates various conditions, and returns the corresponding expression for the first which evaluates to true.    <p><b>Syntax</b></p>
+    <code>Case When &lt;Logical Expression&gt; Then &lt;Expression&gt; [...] [Else &lt;Expression&gt;] End</code><br/>
   </td>
 </tr>
 <tr>
   <td valign=top>{}</td>
-  <td>Brace operator constructs a set.  </td>
+  <td>Brace operator constructs a set.    <p><b>Syntax</b></p>
+    <code>{&lt;Member&gt; [, &lt;Member&gt;...]}</code><br/>
+  </td>
 </tr>
 <tr>
   <td valign=top>||</td>

@@ -69,11 +69,12 @@ public class RolapMember extends MemberBase {
      * @param name Name of this member
      * @param flags Flags describing this member (see {@link #flags}
      */
-    RolapMember(Member parentMember,
-                RolapLevel level,
-                Object key,
-                String name,
-                int flags) {
+    protected RolapMember(
+            Member parentMember,
+            RolapLevel level,
+            Object key,
+            String name,
+            int flags) {
         super(parentMember, level, flags);
 
         this.key = key;

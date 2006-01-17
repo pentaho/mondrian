@@ -40,6 +40,10 @@ public class UdfResolver implements Resolver {
         return udf.getDescription();
     }
 
+    public String getSignature() {
+        return null;
+    }
+
     public Syntax getSyntax() {
         return udf.getSyntax();
     }

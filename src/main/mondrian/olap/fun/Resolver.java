@@ -76,7 +76,12 @@ public interface Resolver {
      * @return An array of the names of the symbolic constants
      */
     String[] getReservedWords();
-}
 
+    /**
+     * Returns a string describing the syntax of this function, for example
+     * <pre><code>StrToSet(<String Expression>)</code></pre>
+     */
+    String getSignature();
+}
 
 // End Resolver.java

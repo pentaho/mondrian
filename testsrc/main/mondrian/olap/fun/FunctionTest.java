@@ -5884,6 +5884,237 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
                 "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
     }
 
+    public void testVisualTotalsBasic() {
+        assertQueryReturns(
+                "select {[Measures].[Unit Sales]} on columns, " +
+                "{VisualTotals(" +
+                "    {[Product].[All Products].[Food].[Baked Goods].[Bread]," +
+                "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]," +
+                "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}," +
+                "     \"**Subtotal - *\")} on rows " +
+                "from [Sales]",
+
+                // note that Subtotal - Bread only includes 2 displayed children
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Unit Sales]}",
+                    "Axis #2:",
+                    "{[Product].[All Products].[Food].[Baked Goods].[*Subtotal - Bread]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}",
+                    "Row #0: 4,312",
+                    "Row #1: 815",
+                    "Row #2: 3,497",
+                    ""}));
+    }
+
+    public void testVisualTotalsConsecutively() {
+        assertQueryReturns(
+                "select {[Measures].[Unit Sales]} on columns, " +
+                "{VisualTotals(" +
+                "    {[Product].[All Products].[Food].[Baked Goods].[Bread]," +
+                "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]," +
+                "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]," +
+                "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels].[Colony]," +
+                "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]," +
+                "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}," +
+                "     \"**Subtotal - *\")} on rows " +
+                "from [Sales]",
+
+                // Note that [Bagels] occurs 3 times, but only once does it
+                // become a subtotal. Note that the subtotal does not include
+                // the following [Bagels] member.
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Unit Sales]}",
+                    "Axis #2:",
+                    "{[Product].[All Products].[Food].[Baked Goods].[*Subtotal - Bread]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[Bread].[*Subtotal - Bagels]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels].[Colony]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}",
+                    "Row #0: 5,290",
+                    "Row #1: 815",
+                    "Row #2: 163",
+                    "Row #3: 163",
+                    "Row #4: 815",
+                    "Row #5: 3,497",
+                    ""}));
+    }
+
+    public void testVisualTotalsNoPattern() {
+        assertAxisReturns(
+                "VisualTotals(" +
+                "    {[Product].[All Products].[Food].[Baked Goods].[Bread]," +
+                "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]," +
+                "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]})",
+
+                // Note that the [Bread] visual member is just called [Bread].
+                fold(new String[] {
+                    "[Product].[All Products].[Food].[Baked Goods].[Bread]",
+                    "[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]",
+                    "[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]"}));
+    }
+
+    public void testVisualTotalsWithFilter() {
+        assertQueryReturns(
+                "select {[Measures].[Unit Sales]} on columns, " +
+                "{Filter(" +
+                "    VisualTotals(" +
+                "        {[Product].[All Products].[Food].[Baked Goods].[Bread]," +
+                "         [Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]," +
+                "         [Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}," +
+                "        \"**Subtotal - *\")," +
+                "[Measures].[Unit Sales] > 3400)} on rows " +
+                "from [Sales]",
+
+                // Note that [*Subtotal - Bread] still contains the
+                // contribution of [Bagels] 815, which was filtered out.
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Unit Sales]}",
+                    "Axis #2:",
+                    "{[Product].[All Products].[Food].[Baked Goods].[*Subtotal - Bread]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}",
+                    "Row #0: 4,312",
+                    "Row #1: 3,497",
+                    ""}));
+    }
+
+    public void testVisualTotalsNested() {
+        assertQueryReturns(
+                "select {[Measures].[Unit Sales]} on columns, " +
+                "{VisualTotals(" +
+                "    Filter(" +
+                "        VisualTotals(" +
+                "            {[Product].[All Products].[Food].[Baked Goods].[Bread]," +
+                "             [Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]," +
+                "             [Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}," +
+                "            \"**Subtotal - *\")," +
+                "    [Measures].[Unit Sales] > 3400)," +
+                "    \"Second total - *\")} on rows " +
+                "from [Sales]",
+
+                // Yields the same -- no extra total.
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Unit Sales]}",
+                    "Axis #2:",
+                    "{[Product].[All Products].[Food].[Baked Goods].[*Subtotal - Bread]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}",
+                    "Row #0: 4,312",
+                    "Row #1: 3,497",
+                    ""}));
+    }
+
+    public void testVisualTotalsFilterInside() {
+        assertQueryReturns(
+                "select {[Measures].[Unit Sales]} on columns, " +
+                "{VisualTotals(" +
+                "    Filter(" +
+                "        {[Product].[All Products].[Food].[Baked Goods].[Bread]," +
+                "         [Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]," +
+                "         [Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}," +
+                "        [Measures].[Unit Sales] > 3400)," +
+                "    \"**Subtotal - *\")} on rows " +
+                "from [Sales]",
+
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Unit Sales]}",
+                    "Axis #2:",
+                    "{[Product].[All Products].[Food].[Baked Goods].[*Subtotal - Bread]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}",
+                    "Row #0: 3,497",
+                    "Row #1: 3,497",
+                    ""}));
+    }
+
+    public void testVisualTotalsOutOfOrder() {
+        assertQueryReturns(
+                "select {[Measures].[Unit Sales]} on columns, " +
+                "{VisualTotals(" +
+                "    {[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]," +
+                "     [Product].[All Products].[Food].[Baked Goods].[Bread]," +
+                "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}," +
+                "    \"**Subtotal - *\")} on rows " +
+                "from [Sales]",
+
+                // Note that [*Subtotal - Bread] 3497 does not include 815 for
+                // bagels.
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Unit Sales]}",
+                    "Axis #2:",
+                    "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[*Subtotal - Bread]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}",
+                    "Row #0: 815",
+                    "Row #1: 3,497",
+                    "Row #2: 3,497",
+                    ""}));
+    }
+
+    public void testVisualTotalsGrandparentsAndOutOfOrder() {
+        assertQueryReturns(
+                "select {[Measures].[Unit Sales]} on columns, " +
+                "{VisualTotals(" +
+                "    {[Product].[All Products].[Food]," +
+                "     [Product].[All Products].[Food].[Baked Goods].[Bread]," +
+                "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]," +
+                "     [Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods]," +
+                "     [Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Pancake Mix].[Golden]," +
+                "     [Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Pancake Mix].[Big Time]," +
+                "     [Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}," +
+                "    \"**Subtotal - *\")} on rows " +
+                "from [Sales]",
+
+                // Note:
+                // [*Subtotal - Food]  = 4513 = 815 + 311 + 3497
+                // [*Subtotal - Bread] = 815, does not include muffins
+                // [*Subtotal - Breakfast Foods] = 311 = 110 + 201, includes grandchildren
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Unit Sales]}",
+                    "Axis #2:",
+                    "{[Product].[All Products].[*Subtotal - Food]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[*Subtotal - Bread]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels]}",
+                    "{[Product].[All Products].[Food].[Frozen Foods].[*Subtotal - Breakfast Foods]}",
+                    "{[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Pancake Mix].[Golden]}",
+                    "{[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Pancake Mix].[Big Time]}",
+                    "{[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins]}",
+                    "Row #0: 4,623",
+                    "Row #1: 815",
+                    "Row #2: 815",
+                    "Row #3: 311",
+                    "Row #4: 110",
+                    "Row #5: 201",
+                    "Row #6: 3,497",
+                    ""}));
+    }
+
+    public void testVisualTotalsCrossjoin() {
+        assertAxisThrows("VisualTotals(Crossjoin([Gender].Members, [Store].children))",
+                "Argument to 'VisualTotals' function must be a set of members; got set of tuples.");
+    }
+
+
     /**
      * Tests {@link mondrian.olap.FunTable#getFunInfoList()}, but more
      * importantly, generates an HTML table of all implemented functions into

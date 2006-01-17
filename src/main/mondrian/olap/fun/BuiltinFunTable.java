@@ -2201,7 +2201,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 return new FunDefBase(dummyFunDef) {
                     public Type getResultType(Validator validator, Exp[] args) {
                         if (args.length == 1) {
-                            // If Member is not specified, 
+                            // If Member is not specified,
                             // it is Time.CurrentMember.
                             Hierarchy hierarchy = validator.getQuery()
                                     .getCube().getTimeDimension()
@@ -2209,7 +2209,7 @@ public class BuiltinFunTable extends FunTableImpl {
                             return new SetType(MemberType.forHierarchy(hierarchy));
                         } else {
                             Type type = args[1].getType();
-                            Type memberType = 
+                            Type memberType =
                             TypeUtil.toMemberOrTupleType(type);
                             return new SetType(memberType);
                         }
@@ -2240,22 +2240,22 @@ public class BuiltinFunTable extends FunTableImpl {
                                 int indexValue = indexValueCalc.evaluateInteger(
                                         evaluator);
 
-                                return lastPeriods(member, 
+                                return lastPeriods(member,
                                         evaluator, indexValue);
                             }
                         };
                     }
 
                     /*
-                        If Index is positive, returns the set of Index 
-                        members ending with Member and starting with the 
+                        If Index is positive, returns the set of Index
+                        members ending with Member and starting with the
                         member lagging Index - 1 from Member.
 
-                        If Index is negative, returns the set of (- Index) 
-                        members starting with Member and ending with the 
+                        If Index is negative, returns the set of (- Index)
+                        members starting with Member and ending with the
                         member leading (- Index - 1) from Member.
 
-                        If Index is zero, the empty set is returned. 
+                        If Index is zero, the empty set is returned.
                     */
                     List lastPeriods(
                             Member member,
@@ -2264,7 +2264,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         // empty set
                         if ((indexValue == 0) || member.isNull()) {
                             return Collections.EMPTY_LIST;
-                        } 
+                        }
                         List list = new ArrayList();
 
                         // set with just member
@@ -2908,15 +2908,7 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        if (false) define(new FunDefBase(
-                "VisualTotals",
-                "VisualTotals(<Set>, <Pattern>)",
-                "Dynamically totals child members specified in a set using a pattern for the total label in the result set.",
-                "fx*") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                throw new UnsupportedOperationException();
-            }
-        });
+        define(new VisualTotalsFunDef.Resolver());
 
         define(new XtdFunDef.Resolver(
                 "Wtd",
@@ -2966,7 +2958,7 @@ public class BuiltinFunTable extends FunTableImpl {
         // special resolver for the "{...}" operator
         define(new ResolverBase(
                 "{}",
-                "{<Member> [, <Member>]...}",
+                "{<Member> [, <Member>...]}",
                 "Brace operator constructs a set.",
                 Syntax.Braces) {
             public FunDef resolve(
@@ -3573,7 +3565,7 @@ public class BuiltinFunTable extends FunTableImpl {
         // GENERIC VALUE FUNCTIONS
         define(new ResolverBase(
                 "CoalesceEmpty",
-                "CoalesceEmpty(<Value Expression>[, <Value Expression>]...)",
+                "CoalesceEmpty(<Value Expression>[, <Value Expression>...])",
                 "Coalesces an empty cell value to a different value. All of the expressions must be of the same type (number or string).",
                 Syntax.Function) {
             public FunDef resolve(
@@ -4392,7 +4384,7 @@ public class BuiltinFunTable extends FunTableImpl {
 
     static class StrToSetFunDef extends FunDefBase {
         public StrToSetFunDef(int[] parameterTypes) {
-            super("StrToSet", "StrToSet(<String Expression>)",
+            super("StrToSet", "<Set> StrToSet(<String>[, <Dimension>...])",
                     "Constructs a set from a string expression.",
                     Syntax.Function, Category.Set, parameterTypes);
         }

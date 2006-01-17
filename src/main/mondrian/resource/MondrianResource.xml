@@ -323,6 +323,11 @@
     <text>Illegal access to ''{0}'' property of null member.</text>
 </exception>
 
+<exception id="350570" name="VisualTotalsAppliedToTuples">
+    <text>Argument to ''VisualTotals'' function must be a set of members; got set of tuples.</text>
+</exception>
+
+
 <!-- ====================================================================== -->
 <!-- Catalog errors -->
 

@@ -24,15 +24,18 @@ import mondrian.olap.*;
  **/
 abstract class MultiResolver extends FunUtil implements Resolver {
     private final String name;
+    private final String signature;
     private final String description;
     private final String[] signatures;
     private final Syntax syntax;
 
-    MultiResolver(String name,
-                  String signature,
-                  String description,
-                  String[] signatures) {
+    MultiResolver(
+            String name,
+            String signature,
+            String description,
+            String[] signatures) {
         this.name = name;
+        this.signature = signature;
         this.description = description;
         this.signatures = signatures;
         Util.assertTrue(signatures.length > 0);
@@ -50,6 +53,10 @@ abstract class MultiResolver extends FunUtil implements Resolver {
         return description;
     }
 
+    public String getSignature() {
+        return signature;
+    }
+
     public Syntax getSyntax() {
         return syntax;
     }
@@ -57,6 +64,7 @@ abstract class MultiResolver extends FunUtil implements Resolver {
     public String[] getReservedWords() {
         return emptyStringArray;
     }
+
     public String[] getSignatures() {
         return signatures;
     }
