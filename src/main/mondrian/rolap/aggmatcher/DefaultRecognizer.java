@@ -3,11 +3,9 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2005 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 12 August, 2001
 */
 
 package mondrian.rolap.aggmatcher;
@@ -25,8 +23,8 @@ import java.util.Iterator;
  * This is the default Recognizer. It uses the rules found in the file
  * DefaultRules.xml to find aggregate tables and there columns.
  *
- * @author <a>Richard M. Emberson</a>
- * @version
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 class DefaultRecognizer extends Recognizer {
 
@@ -45,8 +43,6 @@ class DefaultRecognizer extends Recognizer {
 
     /**
      * Get the DefaultRules instance associated with this object.
-     *
-     * @return
      */
     DefaultRules getRules() {
         return aggDefault;
@@ -54,8 +50,6 @@ class DefaultRecognizer extends Recognizer {
 
     /**
      * Get the Matcher to be used to match columns to be ignored.
-     *
-     * @return
      */
     protected Recognizer.Matcher getIgnoreMatcher() {
         return new Recognizer.Matcher() {
@@ -68,8 +62,6 @@ class DefaultRecognizer extends Recognizer {
     /**
      * Get the Matcher to be used to match the column which is the fact count
      * column.
-     *
-     * @return
      */
     protected Recognizer.Matcher getFactCountMatcher() {
         return getRules().getFactCountMatcher();
@@ -77,9 +69,6 @@ class DefaultRecognizer extends Recognizer {
 
     /**
      * Get the Match used to identify columns that are measures.
-     *
-     * @param factUsage
-     * @return
      */
     protected Recognizer.Matcher getMeasureMatcher(
             JdbcSchema.Table.Column.Usage factUsage) {
@@ -164,15 +153,11 @@ class DefaultRecognizer extends Recognizer {
 
     /**
      * This creates a foreign key usage.
-     * <p>
-     * Using the foreign key Matcher with the fact usage's column name the
-     * aggregate table's columns are searched for one that matches.
-     * For each that matches a foreign key usage is created (thought if more
-     * than one is created its is an error which is handled in the calling code.
-     * <p>
      *
-     * @param factUsage
-     * @return
+     * <p>Using the foreign key Matcher with the fact usage's column name the
+     * aggregate table's columns are searched for one that matches.  For each
+     * that matches a foreign key usage is created (thought if more than one is
+     * created its is an error which is handled in the calling code.
      */
     protected int matchForeignKey(JdbcSchema.Table.Column.Usage factUsage) {
         JdbcSchema.Table.Column factColumn = factUsage.getColumn();
@@ -201,21 +186,17 @@ class DefaultRecognizer extends Recognizer {
 
     /**
      * Create level usages.
-     * <p>
-     * A Matcher is created using the Hierarchy's name, the RolapLevel name,
-     * and the column name associated with the RolapLevel's key expression.
-     * The aggregate table columns are search for the first match and, if found,
-     * a level usage is created for that column and true is returned.
-     * <p>
      *
-     * @param hierarchy
-     * @param hierarchyUsage
-     * @param level
-     * @return
+     * <p> A Matcher is created using the Hierarchy's name, the RolapLevel
+     * name, and the column name associated with the RolapLevel's key
+     * expression.  The aggregate table columns are search for the first match
+     * and, if found, a level usage is created for that column and true is
+     * returned.
      */
-    protected boolean matchLevel(final Hierarchy hierarchy,
-                                 final HierarchyUsage hierarchyUsage,
-                                 final RolapLevel level) {
+    protected boolean matchLevel(
+            final Hierarchy hierarchy,
+            final HierarchyUsage hierarchyUsage,
+            final RolapLevel level) {
 
         msgRecorder.pushContextName("DefaultRecognizer.matchLevel");
         try {
@@ -249,3 +230,5 @@ class DefaultRecognizer extends Recognizer {
         }
     }
 }
+
+// End DefaultRecognizer.java

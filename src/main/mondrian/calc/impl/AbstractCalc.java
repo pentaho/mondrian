@@ -69,9 +69,9 @@ public abstract class AbstractCalc implements Calc {
 
     /**
      * Returns the name of this expression type, used when serializing an
-     * expression to a string.<p/>
+     * expression to a string.
      *
-     * The default implementation tries to extract a name from a function call,
+     * <p>The default implementation tries to extract a name from a function call,
      * if any, then prints the last part of the class name.
      */
     protected String getName() {
@@ -116,9 +116,9 @@ public abstract class AbstractCalc implements Calc {
     /**
      * Returns true if calc[0] depends on dimension,
      * else false if calc[0] returns dimension,
-     * else true if any of the other calcs depend on dimension.<p/>
+     * else true if any of the other calcs depend on dimension.
      *
-     * Typical application: <code>Aggregate({Set}, {Value Expression})</code>
+     * <p>Typical application: <code>Aggregate({Set}, {Value Expression})</code>
      * depends upon everything {Value Expression} depends upon, except the
      * dimensions of {Set}.
      */

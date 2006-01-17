@@ -437,7 +437,8 @@ class RolapHierarchy extends HierarchyBase {
      * Builds a dimension which maps onto a table holding the transitive
      * closure of the relationship for this parent-child level.
      *
-     * <p>This method is triggered by the {@link MondrianDef.Closure} element
+     * <p>This method is triggered by the
+     * {@link mondrian.olap.MondrianDef.Closure} element
      * in a schema, and is only meaningful for a parent-child hierarchy.
      *
      * <p>When a Schema contains a parent-child Hierarchy that has an

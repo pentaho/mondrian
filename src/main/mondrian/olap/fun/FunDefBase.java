@@ -22,11 +22,11 @@ import mondrian.mdx.ResolvedFunCall;
 import java.io.PrintWriter;
 
 /**
- * <code>FunDefBase</code> is the default implementation of {@link FunDef}.<p/>
+ * <code>FunDefBase</code> is the default implementation of {@link FunDef}.
  *
  * <h3>Signatures</h3>
  *
- * A function is defined by the following:<p/>
+ * <p>A function is defined by the following:</p>
  *
  * <table border="1">
  * <tr><th>Parameter</th><th>Meaning</th><th>Example</th></tr>

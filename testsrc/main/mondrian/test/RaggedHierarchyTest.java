@@ -185,7 +185,9 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
     }
 
     /**
-     * Make sure that the numbers are right! The Vatican is the tricky case,
+     * Make sure that the numbers are right! 
+     *
+     * <p>The Vatican is the tricky case,
      * because one of the columns is null, so the SQL generator might get
      * confused.
      */

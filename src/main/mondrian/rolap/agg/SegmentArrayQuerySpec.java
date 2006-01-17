@@ -9,8 +9,9 @@ import mondrian.rolap.sql.SqlQuery;
  * Provides the information necessary to generate a SQL statement to
  * retrieve a list of segments.
  *
- * @author jhyde <a>Richard M. Emberson</a>
- * @version
+ * @author jhyde
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 class SegmentArrayQuerySpec extends AbstractQuerySpec {
     private final Segment[] segments;

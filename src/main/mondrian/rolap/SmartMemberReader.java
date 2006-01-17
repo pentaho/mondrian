@@ -41,9 +41,10 @@ import java.util.*;
  * @author jhyde
  * @since 21 December, 2001
  * @version $Id$
- **/
+ */
 public class SmartMemberReader implements MemberReader, MemberCache {
-    private final SqlConstraintFactory sqlConstraintFactory = SqlConstraintFactory.instance();
+    private final SqlConstraintFactory sqlConstraintFactory =
+            SqlConstraintFactory.instance();
 
     /** access to <code>source</code> must be synchronized(this) */
     private final MemberReader source;
@@ -120,20 +121,21 @@ public class SmartMemberReader implements MemberReader, MemberCache {
     }
 
 
-    /**
-     * @synchronization modifies mapLevelToMembers
-     */
-    public synchronized List getMembersInLevel(RolapLevel level,
-                                               int startOrdinal,
-                                               int endOrdinal) {
-        TupleConstraint constraint = sqlConstraintFactory.getLevelMembersConstraint(null);
+    // Synchronization: modifies mapLevelToMembers
+    public synchronized List getMembersInLevel(
+            RolapLevel level,
+            int startOrdinal,
+            int endOrdinal) {
+        TupleConstraint constraint =
+                sqlConstraintFactory.getLevelMembersConstraint(null);
         return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
     }
 
-    public synchronized List getMembersInLevel(RolapLevel level,
-                                                int startOrdinal,
-                                                int endOrdinal,
-                                                TupleConstraint constraint) {
+    public synchronized List getMembersInLevel(
+            RolapLevel level,
+            int startOrdinal,
+            int endOrdinal,
+            TupleConstraint constraint) {
         List members = (List) mapLevelToMembers.get(level, constraint);
         if (members != null)
             return members;
@@ -270,21 +272,31 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         return true;
     }
 
-    public synchronized List getChildrenFromCache(RolapMember member, MemberChildrenConstraint constraint) {
-        if (constraint == null)
+    public synchronized List getChildrenFromCache(
+            RolapMember member,
+            MemberChildrenConstraint constraint) {
+        if (constraint == null) {
             constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+        }
         return (List) mapMemberToChildren.get(member, constraint);
     }
 
-    public synchronized List getLevelMembersFromCache(RolapLevel level, TupleConstraint constraint) {
-        if (constraint == null)
+    public synchronized List getLevelMembersFromCache(
+            RolapLevel level,
+            TupleConstraint constraint) {
+        if (constraint == null) {
             constraint = sqlConstraintFactory.getLevelMembersConstraint(null);
+        }
         return (List) mapLevelToMembers.get(level, constraint);
     }
 
-    public synchronized void putChildren(RolapMember member, MemberChildrenConstraint constraint, List children) {
-        if (constraint == null)
+    public synchronized void putChildren(
+            RolapMember member,
+            MemberChildrenConstraint constraint,
+            List children) {
+        if (constraint == null) {
             constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+        }
         mapMemberToChildren.put(member, constraint, children);
     }
 

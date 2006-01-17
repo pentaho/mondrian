@@ -295,7 +295,8 @@ public class EnumeratedValues implements Cloneable {
     }
 
     /**
-     * <code>BasicValue</code> is an obvious implementation of {@link Value}.
+     * <code>BasicValue</code> is an obvious implementation of {@link
+     * EnumeratedValues.Value}.
      */
     public static class BasicValue implements Value {
         public final String name;

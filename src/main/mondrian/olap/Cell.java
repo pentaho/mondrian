@@ -26,8 +26,7 @@ public interface Cell {
      * processing, such as plotting a chart.
      *
      * <p> The value is never null. It may have various types:<ul>
-     *   <li>if the cell is null, the value is an instance of
-     *       {@link Util.NullCellValue};</li>
+     *   <li>if the cell is null, the value is  {@link Util#nullValue};</li>
      *   <li>if the cell contains an error, the value is an instance of
      *       {@link Throwable};</li>
      *   <li>otherwise, the type of this value depends upon the type of
@@ -40,6 +39,7 @@ public interface Cell {
      * @post (return instanceof Util.NullCellValue) == isNull()
      */
     Object getValue();
+
     /**
      * Returns the cell's value formatted according to the current format
      * string, and locale-specific settings such as currency symbol. The
@@ -47,10 +47,12 @@ public interface Cell {
      * information about format strings, see {@link mondrian.util.Format}.
      */
     String getFormattedValue();
+
     /**
      * Returns whether the cell's value is null.
      */
     boolean isNull();
+
     /**
      * Returns whether the cell's calculation returned an error.
      */

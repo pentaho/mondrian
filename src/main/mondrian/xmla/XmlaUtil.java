@@ -187,10 +187,8 @@ public class XmlaUtil {
     }
 
     /**
-     * Find root MondrianException in exception chain if exists,
-     * otherwise the input throwable
-     * @param throwable
-     * @return
+     * Finds root MondrianException in exception chain if exists,
+     * otherwise the input throwable.
      */
     public static Throwable rootThrowable(Throwable throwable) {
         Throwable rootThrowable = throwable.getCause();

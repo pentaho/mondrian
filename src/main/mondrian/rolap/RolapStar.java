@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2005 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -138,8 +138,6 @@ public class RolapStar {
     /**
      * The the RolapStar's column count. After a star has been created with all
      * of its columns, this is the number of columns in the star.
-     *
-     * @return
      */
     public int getColumnCount() {
         return columnCount;
@@ -148,8 +146,6 @@ public class RolapStar {
     /**
      * This is used by the {@link Column} constructor to get a unique id (per
      * its parent {@link RolapStar}).
-     *
-     * @return
      */
     private int nextColumnCount() {
         return columnCount++;
@@ -158,8 +154,6 @@ public class RolapStar {
     /**
      * This is used to decrement the column counter and is used if a newly
      * created column is found to already exist.
-     *
-     * @return
      */
     private int decrementColumnCount() {
         return columnCount--;
@@ -177,8 +171,6 @@ public class RolapStar {
     /**
      * Internally the AggStars are added in sort order, smallest row count
      * to biggest where ties do not matter.
-     *
-     * @param aggStar
      */
     public void addAggStar(AggStar aggStar) {
         if (aggStars == Collections.EMPTY_LIST) {
@@ -224,11 +216,8 @@ public class RolapStar {
     }
 
     /** 
-     * Get the AggStar whose BitKey is a super set of the bitKey parameter.  
-     * Return null is none is found.
-     * 
-     * @param bitKey 
-     * @return 
+     * Gets the AggStar whose BitKey is a super set of the bitKey parameter.  
+     * Returns null is none is found.
      */
     public AggStar superSetMatch(BitKey bitKey) {
         for (Iterator it = getAggStars(); it.hasNext(); ){
@@ -241,13 +230,9 @@ public class RolapStar {
     }
 
     /** 
-     * Get the AggStar whose foreign key BitMap equals the fkBK parameter and
+     * Gets the AggStar whose foreign key BitMap equals the fkBK parameter and
      * whose measure BitKey is a super set of the measureBK parameter.
-     * Return null is none is found.
-     * 
-     * @param fkBK 
-     * @param measureBK 
-     * @return 
+     * Returnss null is none is found.
      */
     public AggStar select(BitKey fkBK, BitKey measureBK) {
         for (Iterator it = getAggStars(); it.hasNext(); ){
@@ -261,8 +246,6 @@ public class RolapStar {
 
     /**
      * Get Iterator of this RolapStar's aggregate table AggStars.
-     *
-     * @return
      */
     public Iterator getAggStars() {
         return aggStars.iterator();
@@ -274,8 +257,6 @@ public class RolapStar {
     /**
      * Clone an existing SqlQuery to create a new one (this cloning creates one
      * with an empty sql query).
-     *
-     * @return
      */
     public SqlQuery getSqlQuery() {
         return new SqlQuery(getSqlQueryDialect());
@@ -283,8 +264,6 @@ public class RolapStar {
 
     /**
      * Get this RolapStar's RolapSchema's Sql Dialect.
-     *
-     * @return
      */
     public SqlQuery.Dialect getSqlQueryDialect() {
         return sqlQueryDialect;
@@ -292,8 +271,6 @@ public class RolapStar {
 
     /**
      * Make an SqlQuery from a jdbc connection.
-     *
-     * @return
      */
     private SqlQuery.Dialect makeSqlQueryDialect() {
         Connection conn = getJdbcConnection();
@@ -317,7 +294,6 @@ public class RolapStar {
      * share the same star.
      *
      * @param cube
-     * @return
      */
     Map getMapLevelToColumn(RolapCube cube) {
         Map mapLevelToColumn = (Map) this.mapCubeToMapLevelToColumn.get(cube);
@@ -345,8 +321,6 @@ public class RolapStar {
 
     /**
      * Does the RolapStar cache aggregates.
-     *
-     * @return
      */
     boolean isCacheAggregations() {
         return this.cacheAggregations;
@@ -364,10 +338,7 @@ public class RolapStar {
 
     /**
      * Looks up an aggregation or creates one if it does not exist in an
-     * atomic (synchronized) operation
-     *
-     * @param bitKey
-     * @return
+     * atomic (synchronized) operation.
      */
     public Aggregation lookupOrCreateAggregation(final BitKey bitKey) {
         synchronized(aggregations) {
@@ -383,10 +354,8 @@ public class RolapStar {
     /**
      * Looks for an existing aggregation over a given set of columns, or
      * returns <code>null</code> if there is none.
-     * <p>Must be called from synchronized context.
      *
-     * @param bitKey
-     * @return
+     * <p>Must be called from synchronized context.
      */
     public Aggregation lookupAggregation(BitKey bitKey) {
         synchronized(aggregations) {
@@ -442,11 +411,7 @@ public class RolapStar {
     }
 
     /**
-     * This is used by TestAggregationManager only
-     *
-     * @param tableAlias
-     * @param columnName
-     * @return
+     * This is used by TestAggregationManager only.
      */
     public Column lookupColumn(String tableAlias, String columnName) {
         final Table table = factTable.findDescendant(tableAlias);
@@ -947,8 +912,8 @@ public class RolapStar {
     /**
      * Definition of a table in a star schema.
      *
-     * <p>A 'table' is defined by a {@link MondrianDef.Relation} so may, in
-     * fact, be a view.
+     * <p>A 'table' is defined by a
+     * {@link mondrian.olap.MondrianDef.Relation} so may, in fact, be a view.
      *
      * <p>Every table in the star schema except the fact table has a parent
      * table, and a condition which specifies how it is joined to its parent.
@@ -1044,9 +1009,6 @@ public class RolapStar {
         /**
          * Given a MondrianDef.Expression return a column with that expression
          * or null.
-         *
-         * @param xmlExpr
-         * @return
          */
         public Column lookupColumnByExpression(MondrianDef.Expression xmlExpr) {
             for (Iterator it = getColumns(); it.hasNext(); ) {
@@ -1070,9 +1032,6 @@ public class RolapStar {
         /**
          * Look up a RolapStar.Measure by its name returning null if none are
          * found.
-         *
-         * @param name
-         * @return
          */
         public Measure lookupMeasureByName(String name) {
             for (Iterator it = getColumns(); it.hasNext(); ) {
@@ -1118,8 +1077,6 @@ public class RolapStar {
         /**
          * Sometimes one need to get to the "real" name when the table has
          * been given an alias.
-         *
-         * @return
          */
         public String getTableName() {
             if (relation instanceof MondrianDef.Table) {
@@ -1404,28 +1361,22 @@ public class RolapStar {
 
         /**
          * Return an Iterator over all child tables.
-         *
-         * @return
          */
         public Iterator getChildren() {
             return children.iterator();
         }
+
         /**
          * Return an Iterator over all of the table's columns.
-         *
-         * @return
          */
         public Iterator getColumns() {
             return columnList.iterator();
         }
 
         /**
-         * Find the child table of the fact table with the given columnname
-         * used in its left join condition. This is used by the
-         * AggTableManager while characterizing the fact table columns.
-         *
-         * @param columnName
-         * @return
+         * Finds the child table of the fact table with the given columnName
+         * used in its left join condition. This is used by the AggTableManager
+         * while characterizing the fact table columns.
          */
         public RolapStar.Table findTableWithLeftJoinCondition(
                 final String columnName) {
@@ -1450,9 +1401,6 @@ public class RolapStar {
          * This is used during aggregate table validation to make sure that the
          * mapping from for the aggregate join condition is valid. It returns
          * the child table with the matching left join condition.
-         *
-         * @param left
-         * @return
          */
         public RolapStar.Table findTableWithLeftCondition(
                 final MondrianDef.Expression left) {
@@ -1475,8 +1423,6 @@ public class RolapStar {
 
         /**
          * Note: I do not think that this is ever true.
-         *
-         * @return
          */
         public boolean isFunky() {
             return (relation == null);
@@ -1538,10 +1484,7 @@ public class RolapStar {
         }
 
         /**
-         * Does this table have a column with the given name.
-         *
-         * @param columnName
-         * @return
+         * Returns whether this table has a column with the given name.
          */
         public boolean containsColumn(String columnName) {
             if (relation instanceof MondrianDef.Table) {

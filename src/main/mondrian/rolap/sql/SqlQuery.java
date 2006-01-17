@@ -540,7 +540,7 @@ public class SqlQuery
         }
 
         /**
-         * Creates a {@link Dialect} from a {@link DatabaseMetaData}.
+         * Creates a {@link SqlQuery.Dialect} from a {@link DatabaseMetaData}.
          */
         public static Dialect create(final DatabaseMetaData databaseMetaData) {
             String productName;

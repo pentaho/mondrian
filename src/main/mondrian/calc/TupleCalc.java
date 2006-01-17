@@ -26,10 +26,10 @@ import mondrian.olap.Evaluator;
  */
 public interface TupleCalc extends Calc {
     /**
-     * Evaluates this expression to yield a tuple.<p/>
+     * Evaluates this expression to yield a tuple.
      *
-     * A tuple cannot contain any null members. If any of the members is null,
-     * this method must return a null.
+     * <p>A tuple cannot contain any null members. If any of the members is
+     * null, this method must return a null.
      *
      * @post result == null || !tupleContainsNullMember(result)
      *

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2005 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -1137,12 +1137,6 @@ assert is not true.
      * Adds a column to the appropriate table in the {@link RolapStar}.
      * Note that if the RolapLevel has a table attribute, then the associated
      * column needs to be associated with that table.
-     *
-     * @param table
-     * @param level
-     * @param parentColumn
-     * @param usagePrefix
-     * @return
      */
     protected RolapStar.Column makeColumns(
             RolapStar.Table table,
@@ -1648,7 +1642,6 @@ assert is not true.
 
     /**
      * Returns this cube's fact table, null if the cube is virtual.
-     * @return
      */
     MondrianDef.Relation getFact() {
         return fact;
@@ -1657,7 +1650,7 @@ assert is not true.
     /**
      * Returns whether this cube is virtual. We use the fact that virtual cubes
      * do not have fact tables.
-     **/
+     */
     public boolean isVirtual() {
         return (fact == null);
     }

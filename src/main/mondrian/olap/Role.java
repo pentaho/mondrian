@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright 2002-2005 (C) Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -28,8 +28,6 @@ import java.util.Map;
  * <p>Mondrian does not have any notion of a 'user'. It is the client
  * application's responsibility to create a role appropriate for the user who
  * is establishing the connection.
- *
- * @testcase {@link mondrian.test.AccessControlTest}
  *
  * @author jhyde
  * @since Oct 5, 2002
@@ -174,10 +172,11 @@ public class Role {
          *
          * @pre Access.instance().isValid(access)
          */
-        HierarchyAccess(Hierarchy hierarchy,
-                        int access,
-                        Level topLevel,
-                        Level bottomLevel) {
+        HierarchyAccess(
+                Hierarchy hierarchy,
+                int access,
+                Level topLevel,
+                Level bottomLevel) {
             this.hierarchy = hierarchy;
             this.access = access;
             this.topLevel = topLevel;
@@ -316,10 +315,10 @@ public class Role {
      * @param access An {@link Access access code}
      * @param topLevel Top-most level which can be accessed, or null if the
      *     highest level. May only be specified if <code>access</code> is
-     *    {@link Access#CUSTOM}.
+     *    {@link mondrian.olap.Access#CUSTOM}.
      * @param bottomLevel Bottom-most level which can be accessed, or null if
      *     the lowest level. May only be specified if <code>access</code> is
-     *    {@link Access#CUSTOM}.
+     *    {@link mondrian.olap.Access#CUSTOM}.
      *
      * @pre hierarchy != null
      * @pre Access.instance().isValid(access)
@@ -328,10 +327,11 @@ public class Role {
      * @pre bottomLevel == null || bottomLevel.getHierarchy() == hierarchy
      * @pre isMutable()
      */
-    public void grant(Hierarchy hierarchy,
-                      int access,
-                      Level topLevel,
-                      Level bottomLevel) {
+    public void grant(
+            Hierarchy hierarchy,
+            int access,
+            Level topLevel,
+            Level bottomLevel) {
         Util.assertPrecondition(hierarchy != null, "hierarchy != null");
         Util.assertPrecondition(Access.instance().isValid(access));
         Util.assertPrecondition((access == Access.CUSTOM) || (topLevel == null && bottomLevel == null), "access == Access.CUSTOM) || (topLevel == null && bottomLevel == null)");

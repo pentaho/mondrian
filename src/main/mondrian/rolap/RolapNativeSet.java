@@ -261,10 +261,10 @@ public abstract class RolapNativeSet extends RolapNative {
         }
 
         /**
-         * Creates an instance of CrossJoinArg, or returns null if the
-         * arguments are invalid.<p/>
+         * Creates an instance of {@link RolapNativeSet.CrossJoinArg},
+         * or returns null if the arguments are invalid.
          *
-         * To be valid, the arguments must be non-calculated members of the
+         * <p>To be valid, the arguments must be non-calculated members of the
          * same level.
          */
         static CrossJoinArg create(Exp[] args, boolean strict) {
@@ -417,7 +417,8 @@ public abstract class RolapNativeSet extends RolapNative {
     }
 
     /**
-     * Checks for a set constructor, <code>{member1, member2, ...}</code>.
+     * Checks for a set constructor, <code>{member1, member2,
+     * &#46;&#46;&#46;}</code>.
      *
      * @return an {@link CrossJoinArg} instance describing the enumeration,
      *    or null if <code>fun</code> represents something else.

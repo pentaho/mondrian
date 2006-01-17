@@ -43,6 +43,11 @@ public class LevelType implements Type {
             Util.assertPrecondition(level.getHierarchy() == hierarchy,
                     "level.getHierarchy() == hierarchy");
         }
+        if (hierarchy != null) {
+            Util.assertPrecondition(dimension != null, "dimension != null");
+            Util.assertPrecondition(hierarchy.getDimension() == dimension,
+                    "hierarchy.getDimension() == dimension");
+        }
     }
 
     public static LevelType forType(Type type) {
@@ -61,13 +66,15 @@ public class LevelType implements Type {
     }
 
     public boolean usesDimension(Dimension dimension, boolean maybe) {
-        if (hierarchy == null) {
+        if (this.dimension == null) {
             return maybe;
         } else {
-            final Dimension hierarchyDimension = hierarchy.getDimension();
-            return hierarchyDimension == dimension ||
-                    (maybe && hierarchyDimension == null);
+            return this.dimension == dimension;
         }
+    }
+
+    public Dimension getDimension() {
+        return dimension;
     }
 
     public Hierarchy getHierarchy() {
@@ -76,11 +83,6 @@ public class LevelType implements Type {
 
     public Level getLevel() {
         return level;
-    }
-
-    public Dimension getDimension() {
-        return hierarchy == null ? null :
-                hierarchy.getDimension();
     }
 }
 

@@ -30,8 +30,13 @@ public abstract class MemberBase
     protected Member parentMember;
     protected final Level level;
     protected String uniqueName;
-    /** Combines member type and whether is hidden, according to the following
-     * relation: <code>flags == (isHidden ? 8 : 0) | memberType</code>. */
+
+    /** 
+     * Combines member type and whether is hidden. 
+     *
+     * <p>The lowest 3 bits are member type;
+     * bit 4 is set if the member is hidden.
+     */
     protected final int flags;
     protected final String parentUniqueName;
 

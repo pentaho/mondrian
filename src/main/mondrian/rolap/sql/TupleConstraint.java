@@ -1,22 +1,27 @@
 /*
-//This software is subject to the terms of the Common Public License
-//Agreement, available at the following URL:
-//http://www.opensource.org/licenses/cpl.html.
-//Copyright (C) 2004-2005 TONBELLER AG
-//All Rights Reserved.
-//You must accept the terms of that agreement to use this software.
- */
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2004-2005 TONBELLER AG
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.rolap.sql;
 
 import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapMember;
 
 /**
- * Restricts the SQL result of {@link TupleReader}. This is also used by
- * {@link mondrian.rolap.SqlMemberSource#getMembersInLevel(RolapLevel, int, int, TupleConstraint)
+ * Restricts the SQL result of {@link mondrian.rolap.TupleReader}. This is also
+ * used by
+ * {@link mondrian.rolap.SqlMemberSource#getMembersInLevel(RolapLevel, int, int, TupleConstraint)}.
  *
  * @see mondrian.rolap.TupleReader
  * @see mondrian.rolap.SqlMemberSource
+ *
+ * @author av
+ * @version $Id$
  */
 public interface TupleConstraint extends SqlConstraint {
     /**
@@ -26,11 +31,13 @@ public interface TupleConstraint extends SqlConstraint {
     public void addConstraint(SqlQuery sqlQuery);
 
     /**
-     * will be called multiple times for every "group by" level in Level.Members query, i.e.
-     * the level that contains the members and all parent levels except All.
+     * Will be called multiple times for every "group by" level in
+     * Level.Members query, i.e. the level that contains the members and all
+     * parent levels except All.
      * If the condition requires so,
      * it may join the levels table to the fact table.
-     * @param sqlQuery the query to modify
+     *
+     * @param query the query to modify
      * @param level the level which is accessed in the Level.Members query
      */
     public void addLevelConstraint(SqlQuery query, RolapLevel level);

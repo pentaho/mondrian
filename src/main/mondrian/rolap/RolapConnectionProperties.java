@@ -29,40 +29,40 @@ public class RolapConnectionProperties extends EnumeratedValues {
     }
 
     /**
-     * @{value} must equal <code>"Mondrian"</code>.
+     * The "Provider" property must have the value <code>"Mondrian"</code>.
      */
     public static final String Provider = "Provider";
 
     /**
-     * @{value} is the URL of the JDBC database where the data is stored.
-     * You must specify either {@link #DataSource} or {@link #Jdbc}.
+     * The "Jdbc" property is the URL of the JDBC database where the data is
+     * stored. You must specify either {@link #DataSource} or {@link #Jdbc}.
      */
     public static final String Jdbc = "Jdbc";
 
     /**
-     * @{value} is a comma-separated list of JDBC driver classes, for
-     * example,
+     * The "JdbcDrivers" property is a comma-separated list of JDBC driver
+     * classes, for example,
      * <code>"sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver"</code>.
      */
     public static final String JdbcDrivers = "JdbcDrivers";
 
     /**
-     * @{value} is the name of the user to log on to the JDBC database. (You
-     * don't need to specify this parameter if it is already specified in
-     * the JDBC URL.)
+     * The "JdbcUser" property is the name of the user to log on to the JDBC
+     * database. (You don't need to specify this parameter if it is already
+     * specified in the JDBC URL.)
      */
     public static final String JdbcUser = "JdbcUser";
 
     /**
-     * @{value} is the password to log on to the JDBC database. (You
-     * don't need to specify this parameter if it is already specified in
-     * the JDBC URL.)
+     * The "JdbcPassword" property is the password to log on to the JDBC
+     * database. (You don't need to specify this parameter if it is already
+     * specified in the JDBC URL.)
      */
     public static final String JdbcPassword = "JdbcPassword";
 
     /**
-     * @{value} is the URL of the catalog, an XML file which describes
-     * the schema: cubes, hierarchies, and so forth. Catalogs are
+     * The "Catalog" property is the URL of the catalog, an XML file which
+     * describes the schema: cubes, hierarchies, and so forth. Catalogs are
      * described <a target="_top"
      * href="http://mondrian.sourceforge.net/schema.html">here</a>.
      * See also {@link #CatalogContent}.
@@ -70,8 +70,8 @@ public class RolapConnectionProperties extends EnumeratedValues {
     public static final String Catalog = "Catalog";
 
     /**
-     * @{value} is an XML string representing the schema: cubes,
-     * hierarchies, and so forth. Catalogs are described <a
+     * The "CatalogContent" property is an XML string representing the schema:
+     * cubes, hierarchies, and so forth. Catalogs are described <a
      * target="_top"
      * href="http://mondrian.sourceforge.net/schema.html">here</a>.
      * See also {@link #Catalog}.
@@ -79,21 +79,22 @@ public class RolapConnectionProperties extends EnumeratedValues {
     public static final String CatalogContent = "CatalogContent";
 
     /**
-     * @{value} is not used. If, in future, we support multiple catalogs,
-     * this property will specify which catalog to use.
+     * The "CatalogName" property is not used. If, in future, we support
+     * multiple catalogs, this property will specify which catalog to use.
      * See also {@link #Catalog}.
      */
     public static final String CatalogName = "CatalogName";
 
     /**
-     * @{value} is the name of a data source class. It must implement
-     * {@link javax.sql.DataSource}.
+     * The "DataSource" property is the name of a data source class. It must
+     * implement the {@link javax.sql.DataSource} interface.
      * You must specify either {@link #DataSource} or {@link #Jdbc}.
      */
     public static final String DataSource = "DataSource";
 
     /**
-     * @{value} tells Mondrian whether to add a layer of connection pooling.
+     * The "PoolNeeded" property tells Mondrian whether to add a layer of
+     * connection pooling.
      *
      * <p>If no value is specified, we assume that:<ul>
      * <li>connections created via the {@link #Jdbc} property are not pooled,
@@ -104,9 +105,9 @@ public class RolapConnectionProperties extends EnumeratedValues {
     public static final String PoolNeeded = "PoolNeeded";
 
     /**
-     * {@value} is the name of the {@link mondrian.olap.Role role} to adopt. If
-     * not specified, the connection uses a role which has access to every
-     * object in the schema.
+     * The "Role" property is the name of the {@link mondrian.olap.Role role}
+     * to adopt. If not specified, the connection uses a role which has access
+     * to every object in the schema.
      */
     public static final String Role = "Role";
 
@@ -125,7 +126,7 @@ public class RolapConnectionProperties extends EnumeratedValues {
     public static final String DynamicSchemaProcessor = "DynamicSchemaProcessor";
 
     /**
-     * {@value} is the requested Locale for the
+     * The "Locale" property is the requested Locale for the
      * LocalizingDynamicSchemaProcessor.  Example values are "en",
      * "en_US", "hu". If Locale is not specified, then the name of system's
      * default will be used, as per {@link java.util.Locale#getDefault()}.

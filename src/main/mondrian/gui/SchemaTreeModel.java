@@ -17,9 +17,6 @@ import java.util.Vector;
  * @author  sean
  */
 public class SchemaTreeModel extends DefaultTreeModel {
-    /**
-     * @param arg0
-     */
     public SchemaTreeModel() {
         super(null);
         // TODO Auto-generated constructor stub

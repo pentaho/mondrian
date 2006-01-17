@@ -12,13 +12,13 @@
 package mondrian.olap;
 
 /**
- * <code>Category</code> enumerates the possible expression types.<p/>
+ * <code>Category</code> enumerates the possible expression types.
  *
- * Values of this enumeration are returned by {@link Exp#getCategory()},
+ * <p>Values of this enumeration are returned by {@link Exp#getCategory()},
  * {@link FunDef#getParameterCategories()}, and
- * {@link FunDef#getReturnCategory()}.<p/>
+ * {@link FunDef#getReturnCategory()}.
  *
- * For modern code, the more descriptive type system
+ * <p>For modern code, the more descriptive type system
  * ({@link mondrian.olap.type.Type}) is preferred.
  *
  * @author jhyde

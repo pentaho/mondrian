@@ -10,9 +10,9 @@
 package mondrian.olap;
 
 /**
- * A <code>FunCall</code> is a function applied to a list of operands.<p/>
+ * A <code>FunCall</code> is a function applied to a list of operands.
  *
- * The parser creates function calls as an
+ * <p>The parser creates function calls as an
  * {@link mondrian.mdx.UnresolvedFunCall unresolved  function call}.
  * The validator converts it to a
  * {@link  mondrian.mdx.ResolvedFunCall resolved function call},
@@ -27,8 +27,8 @@ public interface FunCall extends Exp {
      * Returns the <code>index</code><sup>th</sup> argument to this function
      * call.
      *
-     * @param index
-     * @return
+     * @param index Ordinal of the argument
+     * @return <code>index</code><sup>th</sup> argument to this function call
      */
     Exp getArg(int index);
 

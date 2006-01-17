@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2005 Julian Hyde
+// (C) Copyright 2002-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -46,7 +46,7 @@ import java.util.TimeZone;
  * @author jhyde
  * @since May 7, 2002
  * @version $Id$
- **/
+ */
 public class Schedule {
 
     // members
@@ -158,7 +158,7 @@ public class Schedule {
      * Creates a calendar which fires on particular days each week.
      *
      * @param tz timezone
-     * @param daysOfMonthBitmap a bitmap of day values, for example
+     * @param daysOfWeekBitmap a bitmap of day values, for example
      *     <code>(1 << {@link Calendar#TUESDAY}) |
      *           (1 << {@link Calendar#THURSDAY})</code> to fire on Tuesdays
      *     and Thursdays
@@ -244,7 +244,7 @@ public class Schedule {
      * @param begin open lower bound, may be null
      * @param end closed upper bound, may be null
      * @param tz timezone
-     * @param daysOfMonthBitmap a bitmap of day values, for example
+     * @param daysOfWeekBitmap a bitmap of day values, for example
      *     <code>(1 << Calendar.TUESDAY) | (1 << Calendar.THURSDAY)</code>
      * @param weeksOfMonthBitmap a bitmap of week values (may include
      *     {@link #LAST_WEEK_OF_MONTH}

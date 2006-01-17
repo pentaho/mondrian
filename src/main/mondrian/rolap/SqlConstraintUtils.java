@@ -1,10 +1,11 @@
 /*
- //This software is subject to the terms of the Common Public License
- //Agreement, available at the following URL:
- //http://www.opensource.org/licenses/cpl.html.
- //Copyright (C) 2004-2005 TONBELLER AG
- //All Rights Reserved.
- //You must accept the terms of that agreement to use this software.
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2004-2005 TONBELLER AG
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
  */
 package mondrian.rolap;
 
@@ -29,6 +30,7 @@ import mondrian.rolap.sql.SqlQuery;
  *  
  * @author av
  * @since Nov 21, 2005
+ * @version $Id$
  */
 public class SqlConstraintUtils {
 
@@ -37,15 +39,14 @@ public class SqlConstraintUtils {
     }
 
     /**
-     * for every restricting member in the current context an WHERE condition
-     * and a join to the fact table is generated.
+     * For every restricting member in the current context, generates
+     * a WHERE condition and a join to the fact table.
      * 
      * @param sqlQuery the query to modify
-     * @param parent the list of parent members
-     * @param strict defines the behaviour if the current context contains 
-     * calculated members. 
-     * If true, an exception is thrown,
-     * otherwise calculated members are silently ignored.
+     * @param strict defines the behavior if the current context contains 
+     *   calculated members.
+     *   If true, an exception is thrown,
+     *   otherwise calculated members are silently ignored.
      */
     public static void addContextConstraint(SqlQuery sqlQuery, Evaluator e, boolean strict) {
         
@@ -104,7 +105,7 @@ public class SqlConstraintUtils {
      * creates a WHERE parent = value
      * @param sqlQuery the query to modify
      * @param parent the list of parent members
-     * @param strict defines the behaviour if <code>parent</code> 
+     * @param strict defines the behavior if <code>parent</code> 
      * is a calculated member. 
      * If true, an exception is thrown,
      * otherwise calculated members are silently ignored.
@@ -116,15 +117,15 @@ public class SqlConstraintUtils {
     }
 
     /**
-     * creates a "WHERE exp IN (...)" condition containing the values
+     * Creates a "WHERE exp IN (...)" condition containing the values
      * of all parents. All parents must belong to the same level.
      * 
      * @param sqlQuery the query to modify
-     * @param parent the list of parent members
-     * @param strict defines the behaviour if <code>parents</code> 
-     * contains calculated members. 
-     * If true, an exception is thrown,
-     * otherwise calculated members are silently ignored.
+     * @param parents the list of parent members
+     * @param strict defines the behavior if <code>parents</code> 
+     *   contains calculated members. 
+     *   If true, an exception is thrown,
+     *   otherwise calculated members are silently ignored.
      */
     public static void addMemberConstraint(SqlQuery sqlQuery, List parents, boolean strict) {
         if (parents.size() == 0)

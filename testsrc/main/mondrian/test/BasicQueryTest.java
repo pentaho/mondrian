@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde
+// (C) Copyright 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -4269,7 +4269,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * This resulted in {@link OutOfMemoryException} when the
+     * This resulted in {@link OutOfMemoryError} when the
      * BatchingCellReader did not know the values for the tuples that
      * were used in filters.
      */
@@ -4291,13 +4291,13 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]," + nl +
                 "  [Time].[1997].[Q1].[1]" + nl +
                 ")" + nl);
-        // ok if no OutOfMemoryException occurs
+        // ok if no OutOfMemoryError occurs
         Axis a = result.getAxes()[1];
         assertEquals(12, a.positions.length);
     }
 
     /**
-     * This resulted in an OutOfMemoryException
+     * This resulted in an OutOfMemoryError
      */
     public void testNonEmptyCrossJoin() {
         CachePool.instance().flush();
@@ -4311,7 +4311,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]," + nl +
                 "  [Time].[1997].[Q1].[1]" + nl +
                 ")" + nl);
-        // ok if no OutOfMemoryException occurs
+        // ok if no OutOfMemoryError occurs
         Axis a = result.getAxes()[1];
         assertEquals(67, a.positions.length);
     }

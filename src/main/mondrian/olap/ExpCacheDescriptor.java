@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  * Holds information necessary to add an expression to the expression result
- * cache (see {@link Evaluator#getCachedResult(ExpCacheDescriptor}).
+ * cache (see {@link Evaluator#getCachedResult(ExpCacheDescriptor)}).
  *
  * @author jhyde
  * @since Aug 16, 2005

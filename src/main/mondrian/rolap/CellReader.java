@@ -11,7 +11,6 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.CubeBase;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Util;
 
@@ -21,7 +20,7 @@ import mondrian.olap.Util;
  *
  * <p>It returns:<ul>
  * <li><code>null</code> if the source is unable to evaluate the cell (for
- *   example, {@link RolapResult.AggregatingCellReader} does not have the cell
+ *   example, <code>AggregatingCellReader</code> does not have the cell
  *   in its cache). This value should only be returned if the caller is
  *   expecting it.</li>
  * <li>{@link Util#nullValue} if the cell evaluates to null</li>
@@ -34,15 +33,15 @@ import mondrian.olap.Util;
  * @author jhyde
  * @since 10 August, 2001
  * @version $Id$
- **/
+ */
 interface CellReader {
     /**
      * Returns the value of the cell which has the context described by the
-     * evaluator.<p/>
+     * evaluator.
      *
-     * If no aggregation contains the required cell, returns null.<p/>
+     * <p>If no aggregation contains the required cell, returns null.
      *
-     * If the value is null, returns {@link Util#nullValue}.
+     * <p>If the value is null, returns {@link Util#nullValue}.
      */
     Object get(Evaluator evaluator);
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2005 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -692,12 +692,6 @@ public class FunUtil extends Util {
                 values, value, DescendingValueComparator.instance);
     }
 
-    /**
-     * @param evaluator
-     * @param members
-     * @param exp
-     * @return
-     */
     static Object median(Evaluator evaluator, List members, Calc exp) {
         SetWrapper sw = evaluateSet(evaluator, members, exp);
         if (sw.errorCount > 0) {
@@ -1010,7 +1004,7 @@ public class FunUtil extends Util {
     }
 
     /**
-     * This evaluates one or more ExpBases against the member list returning
+     * Evaluates one or more expressions against the member list returning
      * a SetWrapper array. Where this differs very significantly from the
      * above evaluateSet methods is how it count null values and Throwables;
      * this method adds nulls to the SetWrapper Vector rather than not adding
@@ -1020,11 +1014,6 @@ public class FunUtil extends Util {
      * higher level code to determine how to handle the lack of data rather than
      * having a non-equal number (if one is plotting x,y values it helps to
      * have the same number and know where a potential gap is the data is.
-     *
-     * @param evaluator
-     * @param members
-     * @param calcs
-     * @return
      */
     static SetWrapper[] evaluateSet(
             Evaluator evaluator,

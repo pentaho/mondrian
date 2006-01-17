@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2005 Julian Hyde and others
+// (C) Copyright 2004-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -293,8 +293,6 @@ public class FastBatchingCellReader implements CellReader {
         /**
          * Returns the first measure based upon a distinct aggregation, or null if
          * there is none.
-         * @param measuresList
-         * @return
          */
         RolapStar.Measure getFirstDistinctMeasure(List measuresList) {
             for (int i = 0; i < measuresList.size(); i++) {

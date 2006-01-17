@@ -13,9 +13,9 @@ import mondrian.olap.Dimension;
 import mondrian.olap.Evaluator;
 
 /**
- * Expression which yields a {@link mondrian.olap.Dimension}.<p/>
+ * Expression which yields a {@link mondrian.olap.Dimension}.
  *
- * When implementing this interface, it is convenient to extend
+ * <p>When implementing this interface, it is convenient to extend
  * {@link mondrian.calc.impl.AbstractDimensionCalc}, but it is not required.
  *
  * @author jhyde
@@ -24,9 +24,9 @@ import mondrian.olap.Evaluator;
  */
 public interface DimensionCalc extends Calc {
     /**
-     * Evaluates this expression to yield a dimension.<p/>
+     * Evaluates this expression to yield a dimension.
      *
-     * Never returns null.
+     * <p>Never returns null.
      *
      * @param evaluator Evaluation context
      * @return a dimension

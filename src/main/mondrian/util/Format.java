@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2000-2005 Kana Software, Inc. and others.
+// (C) Copyright 2000-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -55,7 +55,10 @@ import java.util.*;
  * <li>Use client's timezone for printing times.</li>
  *
  * </ul>
- **/
+ *
+ * @author jhyde
+ * @version $Id$
+ */
 public class Format {
     private String formatString;
     private BasicFormat format;
@@ -93,8 +96,8 @@ public class Format {
     static final char intlCurrencySymbol = '\u08a4';
 
     /**
-     * Maps strings representing locales (for example, "en_US_Boston",
-     * "en_US", "en", or "" for the default) to a {@link FormatLocale}.
+     * Maps strings representing locales (for example, "en_US_Boston", "en_US",
+     * "en", or "" for the default) to a {@link Format.FormatLocale}.
      */
     static final Map mapLocaleToFormatLocale = new HashMap();
 
@@ -348,10 +351,12 @@ public class Format {
     }
 
     /**
-     * Formats an object using a format string, according to a given locale. If
-     * you need to format many objects using the same format string, use {@link
-     * #Format(Object,String,Locale)}.
-     **/
+     * Formats an object using a format string, according to a given locale.
+     *
+     * <p>If you need to format many objects using the same format string,
+     * create a formatter object using
+     * {@link mondrian.util.Format#Format(String, java.util.Locale)}.
+     */
     static String format(Object o, String formatString, Locale locale)
     {
         Format format = new Format(formatString, locale);
@@ -486,7 +491,7 @@ public class Format {
     };
 
     /**
-     * AlternateFormat is an implementation of {@link BasicFormat} which
+     * AlternateFormat is an implementation of {@link Format.BasicFormat} which
      * allows a different format to be used for different kinds of values.  If
      * there are 4 formats, purposes are as follows:<ol>
      * <li>positive numbers</li>
@@ -566,8 +571,8 @@ public class Format {
     };
 
     /**
-     * LiteralFormat is an implementation of {@link BasicFormat} which prints
-     * a constant value, regardless of the value to be formatted.
+     * LiteralFormat is an implementation of {@link Format.BasicFormat} which
+     * prints a constant value, regardless of the value to be formatted.
      *
      * @see CompoundFormat
      */
@@ -608,8 +613,8 @@ public class Format {
     };
 
     /**
-     * CompoundFormat is an implementation of {@link BasicFormat} where each
-     * value is formatted by applying a sequence of format elements.  Each
+     * CompoundFormat is an implementation of {@link Format.BasicFormat} where
+     * each value is formatted by applying a sequence of format elements.  Each
      * format element is itself a format.
      *
      * @see AlternateFormat
@@ -656,8 +661,8 @@ public class Format {
     };
 
     /**
-     * JavaFormat is an implementation of {@link BasicFormat} which prints
-     * values using Java's default formatting for their type.
+     * JavaFormat is an implementation of {@link Format.BasicFormat} which
+     * prints values using Java's default formatting for their type.
      * <code>null</code> values appear as an empty string.
      */
     static class JavaFormat extends BasicFormat
@@ -715,8 +720,8 @@ public class Format {
     };
 
     /**
-     * NumericFormat is an implementation of {@link BasicFormat} which prints
-     * numbers with a given number of decimal places, leading zeroes, in
+     * NumericFormat is an implementation of {@link Format.BasicFormat} which
+     * prints numbers with a given number of decimal places, leading zeroes, in
      * exponential notation, etc.
      *
      * <p>It is implemented using {@link FloatingDecimal}, which is a
@@ -732,8 +737,11 @@ public class Format {
         int digitsRightOfExp;
         int zeroesRightOfExp;
 
-        /** Number of decimal places to shift the number left before formatting
-         * it.  2 means multiply by 100; -3 means divide by 1000. */
+        /**
+         * Number of decimal places to shift the number left before
+         * formatting it: 2 means multiply by 100; -3 means divide by
+         * 1000.
+         */
         int decimalShift;
         char expChar;
         boolean expSign;
@@ -828,16 +836,16 @@ public class Format {
     };
 
     /**
-     * DateFormat is an element of a {@link CompoundFormat} which has a value
-     * when applied to a {@link Calendar} object.  (Values of type {@link Date}
-     * are automatically converted into {@link Calendar}s when you call {@link
-     * BasicFormat#format(Date, PrintWriter)} calls to format other kinds of
-     * values give a runtime error.)
+     * DateFormat is an element of a {@link Format.CompoundFormat} which has a
+     * value when applied to a {@link Calendar} object.  (Values of type {@link
+     * Date} are automatically converted into {@link Calendar}s when you call
+     * {@link Format.BasicFormat#format(Date, PrintWriter)} calls to format
+     * other kinds of values give a runtime error.)
      *
-     * In a typical use of this class, a format string such as "m/d/yy" is
+     * <p>In a typical use of this class, a format string such as "m/d/yy" is
      * parsed into DateFormat objects for "m", "d", and "yy", and {@link
-     * LiteralFormat} objects for "/".  A {@link CompoundFormat} object is
-     * created to bind them together.
+     * LiteralFormat} objects for "/".  A {@link Format.CompoundFormat} object
+     * is created to bind them together.
      */
     static class DateFormat extends FallbackFormat
     {
@@ -1269,7 +1277,7 @@ public class Format {
      * during parsing. */
     private static final int SPECIAL = 8;
 
-    /** Values for {@link BasicFormat#code}. */
+    /** Values for {@link Format.BasicFormat#code}. */
     private static final int FORMAT_NULL = 0;
     private static final int FORMAT_C = 3;
     private static final int FORMAT_D = 4;
@@ -1446,17 +1454,6 @@ public class Format {
     };
 
     /**
-     * Constructs a <code>Format</code> in the default locale.
-     *
-     * @deprecated use {@link Format#Format(String, Format.FormatLocale)} for
-     *   locale-specific behavior.
-     */
-    public Format(String formatString)
-    {
-        this(formatString, getBestFormatLocale(null));
-    }
-
-    /**
      * Constructs a <code>Format</code> in a specific locale.
      *
      * @param formatString the format string; see
@@ -1510,10 +1507,9 @@ public class Format {
      * Constructs a <code>Format</code> in a specific locale, or retrieves
      * one from the cache if one already exists.
      *
-     *   * @param formatString the format string; see
+     * @param formatString the format string; see
      *   <a href="http://www.apostate.com/programming/vb-format.html">this
      *   description</a> for more details
-
      */
     public static Format get(String formatString, Locale locale) {
         String key = formatString + "@@@" + locale;
@@ -2115,7 +2111,7 @@ loop:
     }
 
     /**
-     * Locates a {@link FormatLocale} for a given locale.
+     * Locates a {@link Format.FormatLocale} for a given locale.
      */
     public interface LocaleFormatFactory {
         FormatLocale get(Locale locale);

@@ -15,7 +15,8 @@ import javax.olap.OLAPException;
 import javax.olap.query.enumerations.EdgeFilterType;
 
 /**
- * Implementation of {@link EdgeFilter}, and also a factory for these.
+ * Implementation of {@link javax.olap.query.querycoremodel.EdgeFilter}, and
+ * also a factory for these.
  *
  * @author jhyde
  * @since Dec 26, 2002

@@ -1,11 +1,12 @@
 /*
-//This software is subject to the terms of the Common Public License
-//Agreement, available at the following URL:
-//http://www.opensource.org/licenses/cpl.html.
-//Copyright (C) 2004-2005 TONBELLER AG
-//All Rights Reserved.
-//You must accept the terms of that agreement to use this software.
- */
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2004-2005 TONBELLER AG
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.rolap.sql;
 
 import java.util.List;
@@ -14,11 +15,13 @@ import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapMember;
 
 /**
- * restricts the SQL result of a MembersChildren query in SqlMemberSource.
+ * Restricts the SQL result of a MembersChildren query in SqlMemberSource.
+ *
  * @see mondrian.rolap.SqlMemberSource
  *
  * @author av
  * @since Nov 2, 2005
+ * @version $Id$
  */
 public interface MemberChildrenConstraint extends SqlConstraint {
     
@@ -41,12 +44,15 @@ public interface MemberChildrenConstraint extends SqlConstraint {
     public void addMemberConstraint(SqlQuery sqlQuery, List parents);
     
     /**
-     * will be called once for the level that contains the
+     * Will be called once for the level that contains the
      * children of a Member.Children query. If the condition requires so,
      * it may join the levels table to the fact table.
-     * @param sqlQuery the query to modify
+     *
+     * @param query the query to modify
      * @param level the level that contains the children
      */
     public void addLevelConstraint(SqlQuery query, RolapLevel level);
 
 }
+
+// End MemberChildrenConstraint.java

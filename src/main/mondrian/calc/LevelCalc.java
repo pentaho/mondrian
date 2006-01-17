@@ -24,9 +24,9 @@ import mondrian.olap.Level;
  */
 public interface LevelCalc extends Calc {
     /**
-     * Evaluates this expression to yield a level.<p/>
+     * Evaluates this expression to yield a level.
      *
-     * Never returns null.
+     * <p>Never returns null.
      *
      * @param evaluator Evaluation context
      * @return a level

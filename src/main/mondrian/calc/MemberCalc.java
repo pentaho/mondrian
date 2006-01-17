@@ -24,9 +24,9 @@ import mondrian.olap.Member;
  */
 public interface MemberCalc extends Calc {
     /**
-     * Evaluates this expression to yield a member.<p/>
+     * Evaluates this expression to yield a member.
      *
-     * May return the null member (see
+     * <p>May return the null member (see
      * {@link mondrian.olap.Hierarchy#getNullMember()}) but never null.
      *
      * @param evaluator Evaluation context

@@ -27,15 +27,16 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
  **/
 interface MemberCache {
     /**
-     * Creates a key with which to {@link #get} or {@link #put} the {@link
-     * RolapMember} with a given parent and key.
-     **/
+     * Creates a key with which to {@link #getMember(Object)} or
+     * {@link #putMember(Object, RolapMember)} the
+     * {@link RolapMember} with a given parent and key.
+     */
     Object makeKey(RolapMember parent, Object key);
 
     /**
-     * Retrieves the {@link RolapMember} with a given key (created by {@link
-     * #makeKey}).
-     **/
+     * Retrieves the {@link RolapMember} with a given key (created by
+     * {@link #makeKey}).
+     */
     RolapMember getMember(Object key);
 
     /**

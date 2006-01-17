@@ -14,7 +14,7 @@ import mondrian.olap.Dimension;
 import mondrian.olap.type.Type;
 
 /**
- * <code>Calc</code> is the base class for all calculable expressions.<p/>
+ * <code>Calc</code> is the base class for all calculable expressions.
  *
  * <h3>Logical and physical expression languages</h3>
  *
@@ -79,9 +79,9 @@ public interface Calc {
     Object evaluate(Evaluator evaluator);
 
     /**
-     * Returns whether this expression depends upon a given dimension.<p/>
+     * Returns whether this expression depends upon a given dimension.
      *
-     * If it does not depend on the dimension, then re-evaluating the
+     * <p>If it does not depend on the dimension, then re-evaluating the
      * expression with a different member of this context must produce the
      * same answer.<p/>
      *

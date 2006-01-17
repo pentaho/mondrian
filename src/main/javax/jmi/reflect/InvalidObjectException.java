@@ -7,7 +7,7 @@ public class InvalidObjectException extends JmiException {
 
     /**
      * Constructs an <code>InvalidObjectException</code> without detail message.
-     * @elementInError element in error.
+     * @param elementInError element in error.
      */
     public InvalidObjectException(RefObject elementInError) {
         super(elementInError);
@@ -15,7 +15,7 @@ public class InvalidObjectException extends JmiException {
 
     /**
      * Constructs an <code>InvalidObjectException</code> with the specified detail message.
-     * @elementInError element in error.
+     * @param elementInError element in error.
      * @param msg the detail message.
      */
     public InvalidObjectException(RefObject elementInError, String msg) {

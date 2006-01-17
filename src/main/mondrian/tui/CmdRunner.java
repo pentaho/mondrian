@@ -72,15 +72,19 @@ public class CmdRunner {
     public void setTimeQueries(boolean timeQueries) {
         this.timeQueries = timeQueries;
     }
+
     public boolean getTimeQueries() {
         return timeQueries;
     }
+
     public long getQueryTime() {
         return queryTime;
     }
+
     public long getTotalQueryTime() {
         return totalQueryTime;
     }
+
     public void noCubeCaching() {
         Cube[] cubes = getCubes();
         for (int i = 0; i < cubes.length; i++) {
@@ -93,6 +97,7 @@ public class CmdRunner {
     void setError(String s) {
         this.error = s;
     }
+
     void setError(Throwable t) {
         this.error = formatError(t);
         StringWriter sw = new StringWriter();
@@ -276,6 +281,7 @@ public class CmdRunner {
             this.type = type;
         }
     }
+
     public void loadParameter(Query query, Parameter param) {
             int pType = param.getCategory();
             String name = param.getName();
@@ -403,14 +409,17 @@ public class CmdRunner {
             buf.append(nl);
         }
     }
+
     public static void listParam(String name, StringBuffer buf) {
         String v = (String) CmdRunner.paraNameValues.get(name);
         buf.append(v);
     }
+
     public static boolean isParam(String name) {
         String v = (String) CmdRunner.paraNameValues.get(name);
         return (v != null);
     }
+
     public static void setParameter(String name, String value) {
         if (name == null) {
             CmdRunner.paraNameValues.clear();
@@ -432,6 +441,7 @@ public class CmdRunner {
         Cube[] cubes = conn.getSchemaReader().getCubes();
         return cubes;
     }
+
     public Cube getCube(String name) {
         Cube[] cubes = getCubes();
         for (int i = 0; i < cubes.length; i++) {
@@ -442,6 +452,7 @@ public class CmdRunner {
         }
         return null;
     }
+
     public void listCubeName(StringBuffer buf) {
         Cube[] cubes = getCubes();
         for (int i = 0; i < cubes.length; i++) {
@@ -450,6 +461,7 @@ public class CmdRunner {
             buf.append(nl);
         }
     }
+
     public void listCubeAttribues(String name, StringBuffer buf) {
         Cube cube = getCube(name);
         if (cube == null) {
@@ -466,9 +478,11 @@ public class CmdRunner {
             buf.append(nl);
         }
     }
-    public void executeCubeCommand(String cubename,
-                                   String command,
-                                   StringBuffer buf) {
+
+    public void executeCubeCommand(
+            String cubename,
+            String command,
+            StringBuffer buf) {
         Cube cube = getCube(cubename);
         if (cube == null) {
             buf.append("No cube found with name \"");
@@ -487,10 +501,12 @@ public class CmdRunner {
             }
         }
     }
-    public void setCubeAttribute(String cubename,
-                                 String name,
-                                 String value,
-                                 StringBuffer buf) {
+
+    public void setCubeAttribute(
+            String cubename,
+            String name,
+            String value,
+            StringBuffer buf) {
         Cube cube = getCube(cubename);
         if (cube == null) {
             buf.append("No cube found with name \"");
@@ -879,13 +895,9 @@ public class CmdRunner {
      * including EOL characters.
      * If an escape character is seen '\\', then it and the next character
      * is added to the line regardless of what the next character is.
-     *
-     * @param reader
-     * @return
-     * @throws IOException
      */
     protected static String readLine(Reader reader, boolean inMDXCmd)
-                    throws IOException {
+        throws IOException {
         StringBuffer buf = null;
 
         int i = reader.read();

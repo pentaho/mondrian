@@ -1,10 +1,11 @@
 /*
-//This software is subject to the terms of the Common Public License
-//Agreement, available at the following URL:
-//http://www.opensource.org/licenses/cpl.html.
-//Copyright (C) 2004-2005 TONBELLER AG
-//All Rights Reserved.
-//You must accept the terms of that agreement to use this software.
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2004-2005 TONBELLER AG
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
@@ -37,10 +38,12 @@ import mondrian.rolap.sql.SqlConstraint;
  * key for the cache entry is the Level that the members belong to <em>plus</em> the
  * costraint that restricted the amount of members fetched. For Level.Members the key
  * consists of the Level and the cacheKey of the {@link mondrian.rolap.sql.SqlConstraint}
- * @see @link mondrian.rolap.sql.SqlConstraint#getCacheKey() 
+ *
+ * @see mondrian.rolap.sql.SqlConstraint#getCacheKey
  * 
  * @author av
  * @since Nov 21, 2005
+ * @version $Id$
  */
 public class SmartMemberListCache {
     SmartCache cache;

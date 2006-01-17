@@ -24,9 +24,9 @@ import mondrian.olap.Hierarchy;
  */
 public interface HierarchyCalc extends Calc {
     /**
-     * Evaluates this expression to yield a hierarchy.<p/>
+     * Evaluates this expression to yield a hierarchy.
      *
-     * Never returns null.
+     * <p>Never returns null.
      *
      * @param evaluator Evaluation context
      * @return a hierarchy
@@ -34,4 +34,4 @@ public interface HierarchyCalc extends Calc {
     Hierarchy evaluateHierarchy(Evaluator evaluator);
 }
 
-// End hierarchyCalc.java
+// End HierarchyCalc.java

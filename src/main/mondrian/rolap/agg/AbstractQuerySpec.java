@@ -3,11 +3,9 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2005 Kana Software, Inc. and others.
+// Copyright (C) 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 30 August, 2001
 */
 
 package mondrian.rolap.agg;
@@ -19,9 +17,11 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 /**
- * Base class for QuerySpec implementations.
+ * Base class for {@link QuerySpec} implementations.
  *
- * @author jhyde <a>Richard M. Emberson</a>
+ * @author jhyde
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 public abstract class AbstractQuerySpec implements QuerySpec {
     private final RolapStar star;

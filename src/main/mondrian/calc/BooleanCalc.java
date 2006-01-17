@@ -12,9 +12,9 @@ package mondrian.calc;
 import mondrian.olap.Evaluator;
 
 /**
- * Compiled expression whose result is a <code>boolean</code>.<p/>
+ * Compiled expression whose result is a <code>boolean</code>.
  *
- * When implementing this interface, it is convenient to extend
+ * <p>When implementing this interface, it is convenient to extend
  * {@link mondrian.calc.impl.AbstractBooleanCalc}, but it is not required.
  *
  * @author jhyde

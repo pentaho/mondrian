@@ -15,11 +15,13 @@ import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 /**
- * The <code>CoalesceEmptyFunDef</code> class implements the CoalesceEmpty(...)
- * MDX function. It evaluates each of the arguments to the function, returning the
+ * Definition of the <code>CoalesceEmpty</code> MDX function.
+ *
+ * <p>It evaluates each of the arguments to the function, returning the
  * first such argument that does not return a null value.
  *
  * @author gjohnson
+ * @version $Id$
  */
 public class CoalesceEmptyFunDef extends FunDefBase {
     public CoalesceEmptyFunDef(ResolverBase resolverBase, int type, int[] types) {
@@ -51,3 +53,5 @@ public class CoalesceEmptyFunDef extends FunDefBase {
     }
 
 }
+
+// End CoalesceEmptyFunDef.java

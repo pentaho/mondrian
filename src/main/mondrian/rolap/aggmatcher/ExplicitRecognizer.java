@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2005 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -22,25 +22,24 @@ import java.util.Iterator;
  * This is the Recognizer for the aggregate table descriptions that appear in
  * the catalog schema files; the user explicitly defines the aggregate.
  *
- * @author <a>Richard M. Emberson</a>
- * @version
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 class ExplicitRecognizer extends Recognizer {
     private ExplicitRules.TableDef tableDef;
 
-    ExplicitRecognizer(final ExplicitRules.TableDef tableDef,
-                       final RolapStar star,
-                       final JdbcSchema.Table dbFactTable,
-                       final JdbcSchema.Table aggTable,
-                       final MessageRecorder msgRecorder) {
+    ExplicitRecognizer(
+            final ExplicitRules.TableDef tableDef,
+            final RolapStar star,
+            final JdbcSchema.Table dbFactTable,
+            final JdbcSchema.Table aggTable,
+            final MessageRecorder msgRecorder) {
         super(star, dbFactTable, aggTable, msgRecorder);
         this.tableDef = tableDef;
     }
 
     /**
      * Get the ExplicitRules.TableDef associated with this instance.
-     *
-     * @return
      */
     protected ExplicitRules.TableDef getTableDef() {
         return tableDef;
@@ -48,8 +47,6 @@ class ExplicitRecognizer extends Recognizer {
 
     /**
      * Get the Matcher to be used to match columns to be ignored.
-     *
-     * @return
      */
     protected Recognizer.Matcher getIgnoreMatcher() {
         return getTableDef().getIgnoreMatcher();
@@ -58,8 +55,6 @@ class ExplicitRecognizer extends Recognizer {
     /**
      * Get the Matcher to be used to match the column which is the fact count
      * column.
-     *
-     * @return
      */
     protected Recognizer.Matcher getFactCountMatcher() {
         return getTableDef().getFactCountMatcher();
@@ -162,8 +157,9 @@ class ExplicitRecognizer extends Recognizer {
      * @param measure
      * @param aggColumn
      */
-    protected void makeMeasure(final ExplicitRules.TableDef.Measure measure,
-                               final JdbcSchema.Table.Column aggColumn) {
+    protected void makeMeasure(
+            final ExplicitRules.TableDef.Measure measure,
+            final JdbcSchema.Table.Column aggColumn) {
         RolapStar.Measure rm = measure.getRolapStarMeasure();
 
         JdbcSchema.Table.Column.Usage aggUsage =
@@ -177,18 +173,15 @@ class ExplicitRecognizer extends Recognizer {
 
     /**
      * This creates a foreign key usage.
-     * <p>
-     * First the column name of the fact usage which is a foreign key is used to
+     *
+     * <p> First the column name of the fact usage which is a foreign key is used to
      * search for a foreign key definition in the ExplicitRules.tableDef.
      * If not found, thats ok, it is just a lost dimension.
      * If found, look for a column in the aggregate table with that name and
      * make a foreign key usage.
-     * <p>
-     *
-     * @param factUsage
-     * @return
      */
-    protected int matchForeignKey(final JdbcSchema.Table.Column.Usage factUsage) {
+    protected int matchForeignKey(
+            final JdbcSchema.Table.Column.Usage factUsage) {
         JdbcSchema.Table.Column factColumn = factUsage.getColumn();
         String aggFK = getTableDef().getAggregateFK(factColumn.getName());
 
@@ -219,22 +212,18 @@ class ExplicitRecognizer extends Recognizer {
     /**
      * This creates a level usage. A level usage is a column that is used in a
      * collapsed dimension aggregate table.
-     * <p>
-     * First, iterate through the ExplicitRules.TableDef's level definitions for
-     * one with a name equal to the RolapLevel unique name, i.e.,
-     * [Time].[Quarter].  Now, using the level's column name, search through the
-     * aggregate table's columns for one with that name and make a level usage
-     * for the column.  Return true if the aggregate table's column was found.
-     * <p>
      *
-     * @param hierarchy
-     * @param hierarchyUsage
-     * @param rlevel
-     * @return
+     * <p> First, iterate through the ExplicitRules.TableDef's level
+     * definitions for one with a name equal to the RolapLevel unique name,
+     * i.e., [Time].[Quarter].  Now, using the level's column name, search
+     * through the aggregate table's columns for one with that name and make a
+     * level usage for the column.  Return true if the aggregate table's column
+     * was found.
      */
-    protected boolean matchLevel(final Hierarchy hierarchy,
-                                 final HierarchyUsage hierarchyUsage,
-                                 final RolapLevel rlevel) {
+    protected boolean matchLevel(
+            final Hierarchy hierarchy,
+            final HierarchyUsage hierarchyUsage,
+            final RolapLevel rlevel) {
         msgRecorder.pushContextName("ExplicitRecognizer.matchLevel");
         try {
 
@@ -274,3 +263,5 @@ class ExplicitRecognizer extends Recognizer {
         }
     }
 }
+
+// End ExplicitRecognizer.java

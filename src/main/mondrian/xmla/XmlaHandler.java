@@ -607,9 +607,6 @@ public class XmlaHandler implements XmlaConstants {
     /**
      * Returns a Mondrian connection as specified by a set of properties
      * (especially the "Connect string" property).
-     *
-     * @param request
-     * @return
      */
     Connection getConnection(XmlaRequest request) {
         Map properties = request.getProperties();

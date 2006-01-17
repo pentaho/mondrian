@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2005 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -33,18 +33,19 @@ import org.apache.log4j.Logger;
  * Abstract Recognizer class used to determine if a candidate aggregate table
  * has the column categories: "fact_count" column, measure columns, foreign key
  * and level columns.
- * Derived classes use either the default or explicit column descriptions in
+ *
+ * <p>Derived classes use either the default or explicit column descriptions in
  * matching column categories. The basic matching algorithm is in this class
  * while some specific column category matching and column building must be
  * specified in derived classes.
- * <p>
- * A Recognizer is created per candidate aggregate table. The tables columns are
- * then categorized. All errors and warnings are added to a MessageRecorder.
- * <p>
- * This class is less about defining a type and more about code sharing.
  *
- * @author <a>Richard M. Emberson</a>
- * @version
+ * <p>A Recognizer is created per candidate aggregate table. The tables columns are
+ * then categorized. All errors and warnings are added to a MessageRecorder.
+ *
+ * <p>This class is less about defining a type and more about code sharing.
+ *
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 abstract class Recognizer {
 
@@ -57,9 +58,6 @@ abstract class Recognizer {
 
         /**
          * Return true it the name matches and false otherwise.
-         *
-         * @param name
-         * @return
          */
         boolean matches(String name);
     }
@@ -99,9 +97,7 @@ abstract class Recognizer {
      * Now the levels are checked. This is in two parts. First, foreign keys are
      * checked followed by level columns (for collapsed dimension aggregates).
      * <p>
-     * If eveything checks out, then true is returned.
-     *
-     * @return
+     * If eveything checks out, returns true.
      */
     public boolean check() {
         checkIgnores();
@@ -128,8 +124,6 @@ abstract class Recognizer {
 
     /**
      * Return the ignore column Matcher.
-     *
-     * @return
      */
     protected abstract Matcher getIgnoreMatcher();
 
@@ -163,8 +157,6 @@ abstract class Recognizer {
 
     /**
      * Return the fact count column Matcher.
-     *
-     * @return
      */
     protected abstract Matcher getFactCountMatcher();
 
@@ -231,8 +223,6 @@ abstract class Recognizer {
 
     /**
      * Check all measure columns returning the number of measure columns.
-     *
-     * @return
      */
     protected abstract int checkMeasures();
 
@@ -383,9 +373,6 @@ abstract class Recognizer {
      * This method determine how may aggregate table column's match the fact
      * table foreign key column return in the number matched. For each matching
      * column a foreign key usage is created.
-     *
-     * @param factUsage
-     * @return
      */
     protected abstract int matchForeignKey(JdbcSchema.Table.Column.Usage factUsage);
 
@@ -556,10 +543,6 @@ abstract class Recognizer {
     /**
      * Return true if the foreignKey column name is in the list of not seen
      * foreign keys.
-     *
-     * @param foreignKey
-     * @param notSeenForeignKeys
-     * @return
      */
     boolean inNotSeenForeignKeys(String foreignKey, List notSeenForeignKeys) {
         for (Iterator it = notSeenForeignKeys.iterator(); it.hasNext(); ) {
@@ -614,38 +597,28 @@ abstract class Recognizer {
     /**
      * Match a aggregate table column given the hierarchy, hierarchy usage, and
      * rolap level returning true if a match is found.
-     *
-     * @param hierarchy
-     * @param hierarchyUsage
-     * @param level
-     * @return
      */
-    protected abstract boolean matchLevel(final Hierarchy hierarchy,
-                                          final HierarchyUsage hierarchyUsage,
-                                          final RolapLevel level);
+    protected abstract boolean matchLevel(
+            final Hierarchy hierarchy,
+            final HierarchyUsage hierarchyUsage,
+            final RolapLevel level);
 
     /**
      * Make a level column usage.
-     * <p>
-     * Note there is a check in this code. If a given aggregate table column has
-     * already has a level usage, then that usage must all refer to the same
-     * hierarchy usage join table and column name as the one that calling this
-     * method was to create. If there is an existing level usage for the
-     * column and it matches something else, then it is an error.
      *
-     * @param aggColumn
-     * @param hierarchy
-     * @param hierarchyUsage
-     * @param factColumnName
-     * @param levelColumnName
-     * @param symbolicName
+     * <p> Note there is a check in this code. If a given aggregate table
+     * column has already has a level usage, then that usage must all refer to
+     * the same hierarchy usage join table and column name as the one that
+     * calling this method was to create. If there is an existing level usage
+     * for the column and it matches something else, then it is an error.
      */
-    protected void makeLevel(final JdbcSchema.Table.Column aggColumn,
-                             final Hierarchy hierarchy,
-                             final HierarchyUsage hierarchyUsage,
-                             final String factColumnName,
-                             final String levelColumnName,
-                             final String symbolicName) {
+    protected void makeLevel(
+            final JdbcSchema.Table.Column aggColumn,
+            final Hierarchy hierarchy,
+            final HierarchyUsage hierarchyUsage,
+            final String factColumnName,
+            final String levelColumnName,
+            final String symbolicName) {
 
         msgRecorder.pushContextName("Recognizer.makeLevel");
 
@@ -930,9 +903,7 @@ abstract class Recognizer {
     }
 
     /**
-     * Find all cubes that use this fact table.
-     *
-     * @return
+     * Finds all cubes that use this fact table.
      */
     protected Iterator findCubes() {
         String name = dbFactTable.getName();
@@ -954,14 +925,13 @@ abstract class Recognizer {
     }
 
     /**
-     * Given a MondrianDef.Expression, get the associated column name.
-     * <p>
-     * Note: if the MondrianDef.Expression is not a MondrianDef.Column or
-     * MondrianDef.KeyExpression, then null is returned. This will result in
-     * an error.
+     * Given a {@link mondrian.olap.MondrianDef.Expression}, returns
+     * the associated column name.
      *
-     * @param expr
-     * @return
+     * <p>Note: if the {@link mondrian.olap.MondrianDef.Expression} is
+     * not a {@link mondrian.olap.MondrianDef.Column} or {@link
+     * mondrian.olap.MondrianDef.KeyExpression}, returns null. This
+     * will result in an error.
      */
     protected String getColumnName(MondrianDef.Expression expr) {
         msgRecorder.pushContextName("Recognizer.getColumnName");
@@ -986,3 +956,5 @@ abstract class Recognizer {
         }
     }
 }
+
+// End Recognizer.java

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Kana Software, Inc. and others.
+// (C) Copyright 2005-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -38,8 +38,8 @@ import java.sql.SQLException;
  * <li>For each aggregate table, it creates an {@link AggStar} and calls
  *     {@link RolapStar#addAggStar(AggStar)}.
  *
- * @author <a>Richard M. Emberson</a>
- * @version
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 public class AggTableManager {
     private static final Logger LOGGER =
@@ -61,8 +61,6 @@ public class AggTableManager {
 
     /**
      * Get the Logger.
-     *
-     * @return
      */
     public Logger getLogger() {
         return LOGGER;
@@ -493,3 +491,5 @@ public class AggTableManager {
         }
     }
 }
+
+// End AggTableManager.java

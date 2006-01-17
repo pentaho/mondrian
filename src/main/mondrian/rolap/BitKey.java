@@ -31,8 +31,8 @@ package mondrian.rolap;
  * objects is large, then this representation might be sparse and therefore
  * not efficient.
  *
- * @author <a>Richard M. Emberson</a>
- * @version
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 public interface BitKey {
     void setByPos(int pos, boolean value);
@@ -124,7 +124,8 @@ public interface BitKey {
 
         /**
          * Returns the number of chunks required for a given number of bits.
-         * 0 bits requires 0 chunks; 1 - 64 bits requires 1 chunk; etc.
+         *
+         * <p>0 bits requires 0 chunks; 1 - 64 bits requires 1 chunk; etc.
          */
         protected static int chunkCount(int size) {
             return (size + 63) >> ChunkBitCount;

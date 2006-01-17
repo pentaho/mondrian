@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2005 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -42,8 +42,8 @@ import java.util.*;
  * Each inner class is non-static meaning that instances have implied references
  * to the enclosing object.
  *
- * @author <a>Richard M. Emberson</a>
- * @version
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 public class AggStar {
     private static final Logger LOGGER = Logger.getLogger(AggStar.class);
@@ -57,15 +57,11 @@ public class AggStar {
     /**
      * Creates an AggStar and all of its {@link Table}, {@link Table.Column}s,
      * etc.
-     *
-     * @param star
-     * @param dbTable
-     * @param msgRecorder
-     * @return
      */
-    public static AggStar makeAggStar(final RolapStar star,
-                                      final JdbcSchema.Table dbTable,
-                                      final MessageRecorder msgRecorder) {
+    public static AggStar makeAggStar(
+            final RolapStar star,
+            final JdbcSchema.Table dbTable,
+            final MessageRecorder msgRecorder) {
 
         AggStar aggStar = new AggStar(star, dbTable);
         AggStar.FactTable aggStarFactTable = aggStar.getFactTable();
@@ -158,25 +154,21 @@ public class AggStar {
     }
 
 
-    /** 
+    /**
      * Is this AggStar's BitKey a super set (proper or not) of the BitKey
      * parameter.
-     * 
-     * @param bitKey 
-     * @return true if its a super set.
+     *
+     * @param bitKey
+     * @return true if it is a super set
      */
     public boolean superSetMatch(final BitKey bitKey) {
         return getBitKey().isSuperSetOf(bitKey);
     }
 
-    /** 
+    /**
      * Return true if this AggStar's foreign key BitKey equals the fkBK
      * parameter and if this AggStar's measure BitKey is a super set
      * (proper or not) of the measureBK parameter.
-     * 
-     * @param fkBK 
-     * @param measureBK 
-     * @return 
      */
     public boolean select(final BitKey fkBK, final BitKey measureBK) {
         return getFKBitKey().equals(fkBK)
@@ -185,44 +177,34 @@ public class AggStar {
 
     /**
      * Get this AggStar's RolapStar.
-     *
-     * @return
      */
     public RolapStar getStar() {
         return star;
     }
 
-    /** 
-     * Return true if AggStar has measures 
-     * 
-     * @return 
+    /**
+     * Return true if AggStar has measures
      */
     public boolean hasMeasures() {
         return getFactTable().hasMeasures();
     }
 
-    /** 
-     * Return true if AggStar has levels 
-     * 
-     * @return 
+    /**
+     * Return true if AggStar has levels
      */
     public boolean hasLevels() {
         return getFactTable().hasLevels();
     }
-    
-    /** 
-     * Return true if AggStar has foreign keys. 
-     * 
-     * @return 
+
+    /**
+     * Returns whether this AggStar has foreign keys.
      */
     public boolean hasForeignKeys() {
         return getFactTable().hasChildren();
     }
 
     /**
-     * Get the BitKey.
-     *
-     * @return
+     * Returns the BitKey.
      */
     public BitKey getBitKey() {
         return bitKey;
@@ -230,8 +212,6 @@ public class AggStar {
 
     /**
      * Get the foreign-key/level BitKey.
-     *
-     * @return
      */
     public BitKey getFKBitKey() {
         return fkBitKey;
@@ -239,8 +219,6 @@ public class AggStar {
 
     /**
      * Get the measure BitKey.
-     *
-     * @return
      */
     public BitKey getMeasureBitKey() {
         return measureBitKey;
@@ -248,8 +226,6 @@ public class AggStar {
 
     /**
      * Get an SqlQuery instance.
-     *
-     * @return
      */
     private SqlQuery getSqlQuery() {
         return getStar().getSqlQuery();
@@ -257,8 +233,6 @@ public class AggStar {
 
     /**
      * Get a java.sql.Connection.
-     *
-     * @return
      */
     public Connection getJdbcConnection() {
         return getStar().getJdbcConnection();
@@ -299,9 +273,6 @@ public class AggStar {
      * Get the Column at the bit position.
      * Note that there is no check that the bit position is within the range of
      * the array of columns.
-     *
-     * @param bitPos
-     * @return
      */
     public AggStar.Table.Column lookupColumn(final int bitPos) {
         return columns[bitPos];
@@ -316,7 +287,7 @@ public class AggStar {
         columns[column.getBitPosition()] = column;
     }
 
-    private static final Logger JOIN_CONDITION_LOGGER = 
+    private static final Logger JOIN_CONDITION_LOGGER =
                     Logger.getLogger(AggStar.Table.JoinCondition.class);
     /**
      * Base Table class for the FactTable and DimTable classes.
@@ -347,8 +318,6 @@ public class AggStar {
 
             /**
              * Get the enclosing AggStar.Table.
-             *
-             * @return
              */
             public Table getTable() {
                 return AggStar.Table.this;
@@ -356,9 +325,6 @@ public class AggStar {
 
             /**
              * This is used to create part of a SQL where clause.
-             *
-             * @param query
-             * @return
              */
             String toString(final SqlQuery query) {
                 StringBuffer buf = new StringBuffer(64);
@@ -433,8 +399,6 @@ public class AggStar {
 
             /**
              * Get the name of the column (this is the name in the database).
-             *
-             * @return
              */
             public String getName() {
                 return name;
@@ -442,8 +406,6 @@ public class AggStar {
 
             /**
              * Get the enclosing AggStar.Table.
-             *
-             * @return
              */
             public AggStar.Table getTable() {
                 return AggStar.Table.this;
@@ -452,8 +414,6 @@ public class AggStar {
             /**
              * Get the bit possition associted with this column. This has the
              * same value as this column's RolapStar.Column.
-             *
-             * @return
              */
             public int getBitPosition() {
                 return bitPosition;
@@ -461,15 +421,15 @@ public class AggStar {
 
             /**
              * Return true if this is a numeric column.
-             *
-             * @return
              */
             public boolean isNumeric() {
                 return isNumeric;
             }
+
             public SqlQuery getSqlQuery() {
                 return getTable().getAggStar().getSqlQuery();
             }
+
             public MondrianDef.Expression getExpression() {
                 return expression;
             }
@@ -477,9 +437,6 @@ public class AggStar {
             /**
              * This is used to create, generally, an SQL query segment of the
              * form: tablename.columnname.
-             *
-             * @param query
-             * @return
              */
             public String getExpression(final SqlQuery query) {
                 return getExpression().getExpression(query);
@@ -548,8 +505,6 @@ public class AggStar {
 
         /**
          * Return the name of the table in the database.
-         *
-         * @return
          */
         public String getName() {
             return name;
@@ -558,23 +513,17 @@ public class AggStar {
         /**
          * Return true if this table has a parent table (FactTable instances
          * do not have parent tables, all other do).
-         *
-         * @return
          */
         public abstract boolean hasParent();
 
         /**
          * Get the parent table (returns null if this table is a FactTable).
-         *
-         * @return
          */
         public abstract Table getParent();
 
         /**
          * Return true if this table has a join condition (only DimTables have
          * join conditions, FactTable instances do not).
-         *
-         * @return
          */
         public abstract boolean hasJoinCondition();
         public abstract Table.JoinCondition getJoinCondition();
@@ -585,8 +534,6 @@ public class AggStar {
 
         /**
          * Get this table's enclosing AggStar.
-         *
-         * @return
          */
         protected AggStar getAggStar() {
             return AggStar.this;
@@ -594,8 +541,6 @@ public class AggStar {
 
         /**
          * Get a SqlQuery object.
-         *
-         * @return
          */
         protected SqlQuery getSqlQuery() {
             return getAggStar().getSqlQuery();
@@ -603,8 +548,6 @@ public class AggStar {
 
         /**
          * Get a java.sql.Connection.
-         *
-         * @return
          */
         public Connection getJdbcConnection() {
             return getAggStar().getJdbcConnection();
@@ -621,17 +564,13 @@ public class AggStar {
 
         /**
          * Get all Level columns.
-         *
-         * @return
          */
         public Iterator getLevels() {
             return levels.iterator();
         }
-        
-        /** 
-         * Return true if table has levels. 
-         * 
-         * @return 
+
+        /**
+         * Return true if table has levels.
          */
         public boolean hasLevels() {
             return ! levels.isEmpty();
@@ -651,35 +590,29 @@ public class AggStar {
 
         /**
          * Get all child tables.
-         *
-         * @return
          */
         public Iterator getChildren() {
             return children.iterator();
         }
-        
-        /** 
-         * Return true if this table has one or more child tables. 
-         * 
-         * @return 
+
+        /**
+         * Return true if this table has one or more child tables.
          */
         public boolean hasChildren() {
             return ! children.isEmpty();
         }
 
         /**
-         * Convert a RolapStar.Table into a AggStar.DimTable as well as
-         * converting all columns and child tables. If the
-         * rightJoinConditionColumnName parameter is null, then the table's namd
-         * and the rTable parameter's condition left condition's column name
-         * are used to form the join condition's left expression.
-         *
-         * @param rTable
-         * @param rightJoinConditionColumnName
-         * @return
+         * Converts a {@link mondrian.rolap.RolapStar.Table} into a
+         * {@link AggStar.DimTable} as well as converting all columns and
+         * child tables. If the rightJoinConditionColumnName parameter
+         * is null, then the table's namd and the rTable parameter's
+         * condition left condition's column name are used to form the
+         * join condition's left expression.
          */
-        protected AggStar.DimTable convertTable(final RolapStar.Table rTable,
-                                  final String rightJoinConditionColumnName) {
+        protected AggStar.DimTable convertTable(
+                final RolapStar.Table rTable,
+                final String rightJoinConditionColumnName) {
             String tableName = rTable.getAlias();
             MondrianDef.Relation relation = rTable.getRelation();
             RolapStar.Condition rjoinCondition = rTable.getCondition();
@@ -810,8 +743,6 @@ public class AggStar {
 
             /**
              * Get this Measure's RolapAggregator.
-             *
-             * @return
              */
             public RolapAggregator getAggregator() {
                 return aggregator;
@@ -819,9 +750,6 @@ public class AggStar {
 
             /**
              * Get this Measure's sql expression which is an aggregator.
-             *
-             * @param query
-             * @return
              */
             public String getExpression(final SqlQuery query) {
                 String expr = getExpression().getExpression(query);
@@ -867,8 +795,6 @@ public class AggStar {
 
         /**
          * Get the volume of the table (now of rows * size of a row).
-         *
-         * @return
          */
         public int getVolume() {
             return getTotalColumnSize() * getNumberOfRows();
@@ -876,8 +802,6 @@ public class AggStar {
 
         /**
          * Get the total size of all columns in a row.
-         *
-         * @return
          */
         public int getTotalColumnSize() {
             return totalColumnSize;
@@ -885,8 +809,6 @@ public class AggStar {
 
         /**
          * Get the number of rows in this aggregate table.
-         *
-         * @return
          */
         public int getNumberOfRows() {
             if (numberOfRows == -1) {
@@ -913,10 +835,8 @@ public class AggStar {
             return measures.iterator();
         }
 
-        /** 
-         * Return true it table has measures 
-         * 
-         * @return 
+        /**
+         * Return true it table has measures
          */
         public boolean hasMeasures() {
             return ! measures.isEmpty();
@@ -965,17 +885,15 @@ public class AggStar {
                 boolean isNumeric = column.isNumeric();
                 RolapStar.Column rColumn = usage.rColumn;
                 if (rColumn == null) {
-                    String msg = "loadForeignKey: for column " + 
+                    String msg = "loadForeignKey: for column " +
                         name +
                         ", rColumn == null";
                     getLogger().warn(msg);
                 } else {
                     int bitPosition = rColumn.getBitPosition();
 // RME Note: this should be a Level Object, not a Column
-                    ForeignKey c = new ForeignKey(symbolicName,
-                                                  expression,
-                                                  isNumeric,
-                                                  bitPosition);
+                    ForeignKey c = new ForeignKey(
+                            symbolicName, expression, isNumeric, bitPosition);
                 }
             }
         }
@@ -1256,3 +1174,5 @@ public class AggStar {
         aggTable.print(pw, subprefix);
     }
 }
+
+// End AggStar.java
