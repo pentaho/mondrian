@@ -3184,12 +3184,12 @@ public class BasicQueryTest extends FoodMartTestCase {
      * string comparison and manipulation functions, for example, for finding
      * substrings in strings or for supporting case-insensitive string
      * comparisons. However, since MDX can take advantage of external function
-     * libraries, this question is easily resolved using string manipulation and
-     * comparison functions from the Microsoft Visual Basic® for Applications
-     * (VBA) external function library.
+     * libraries, this question is easily resolved using string manipulation
+     * and comparison functions from the Microsoft Visual Basic for
+     * Applications (VBA) external function library.
      *
      * <p>For example, you want to report the unit sales of all fruit-based
-     * products—not only the sales of fruit, but canned fruit, fruit snacks,
+     * products -- not only the sales of fruit, but canned fruit, fruit snacks,
      * fruit juices, and so on. By using the LCase and InStr VBA functions, the
      * following results are easily accomplished in a single MDX query, without
      * complex set construction or explicit member names within the query.
@@ -3296,15 +3296,16 @@ public class BasicQueryTest extends FoodMartTestCase {
      * tuples to retrieve from the set of reordered members using the Head
      * function. Finally, the retrieved members are then added together using
      * the Sum function to obtain a cumulative sum. The following MDX query
-     * demonstrates how all of this works in concert to provide cumulative sums.
+     * demonstrates how all of this works in concert to provide cumulative
+     * sums.
      *
      * <p>As an aside, a named set cannot be used in this situation to replace
-     * the duplicate Order function calls. Named sets are evaluated once, when a
-     * query is parsed—since the set can change based on the fact that the set
-     * can be different for each store member because the set is evaluated for
-     * the children of multiple parents, the set does not change with respect to
-     * its use in the Sum function. Since the named set is only evaluated once,
-     * it would not satisfy the needs of this query.
+     * the duplicate Order function calls. Named sets are evaluated once, when
+     * a query is parsed -- since the set can change based on the fact that the
+     * set can be different for each store member because the set is evaluated
+     * for the children of multiple parents, the set does not change with
+     * respect to its use in the Sum function. Since the named set is only
+     * evaluated once, it would not satisfy the needs of this query.
      */
     public void _testCumlativeSums() {
         assertQueryReturns( // todo: "[Store].[USA].[CA]" should be "Store.CA"; implement "AS"
@@ -3445,7 +3446,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      *
      * <p>Member properties are a good way of adding secondary business
      * information to members in a dimension. However, getting that information
-     * out can be confusing—member properties are not readily apparent in a
+     * out can be confusing -- member properties are not readily apparent in a
      * typical MDX query.
      *
      * <p>Member properties can be retrieved in one of two ways. The easiest
@@ -4003,7 +4004,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * forecast of warehouse sales, from the Warehouse cube in the FoodMart 2000
      * database, for drink products. The standard forecast is double the
      * warehouse sales of the previous year, while the dynamic forecast varies
-     * from month to month—the forecast for January is 120 percent of previous
+     * from month to month -- the forecast for January is 120 percent of previous
      * sales, while the forecast for July is 260 percent of previous sales.
      *
      * <p>The most flexible way of handling this type of report is the use of
