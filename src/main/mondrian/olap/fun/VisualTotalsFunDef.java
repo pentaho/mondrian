@@ -150,52 +150,6 @@ public class VisualTotalsFunDef extends FunDefBase {
             return i;
         }
 
-        /**
-         * Substitutes a name into a pattern.<p/>
-         *
-         * Asterisks are replaced with the name,
-         * double-asterisks are replaced with a single asterisk.
-         * For example,
-         * <blockquote><code>substitute("** Subtotal - *", "Dairy")</code></blockquote>
-         * returns
-         * <blockquote><code>"* Subtotal - Dairy"</code></blockquote>
-         *
-         * @param namePattern Pattern
-         * @param name Name to substitute into pattern
-         * @return Substituted pattern
-         */
-        private String substitute(String namePattern, String name) {
-            final StringBuffer buf = new StringBuffer();
-            int star = 0;
-            while (true) {
-                int nextStar = namePattern.indexOf('*', star);
-                if (nextStar == -1) {
-                    // append the rest of namePattern
-                    buf.append(namePattern.substring(star, namePattern.length() - star));
-                    break;
-                }
-                ++nextStar;
-                if (nextStar >= namePattern.length()) {
-                    // star is the last character, so cannot be double.
-                    // Append the previous input, the name, and we're done.
-                    buf.append(namePattern.substring(star, namePattern.length() - star + 1));
-                    buf.append(name);
-                    break;
-                }
-                if (namePattern.charAt(nextStar) == '*') {
-                    // Two consecutive stars. Append the previous input, and
-                    // one of the stars.
-                    buf.append(namePattern.substring(star, nextStar));
-                    star = nextStar + 1;
-                    continue;
-                }
-                // Append name.
-                buf.append(name);
-                star = nextStar;
-            }
-            return buf.toString();
-        }
-
         private Exp makeExpr(final List childMemberList) {
             Exp[] memberExprs = new Exp[childMemberList.size()];
             for (int i = 0; i < childMemberList.size(); i++) {
@@ -282,6 +236,51 @@ public class VisualTotalsFunDef extends FunDefBase {
             return new VisualTotalsFunDef(dummyFunDef);
         }
     }
+    
+    /**
+     * Substitutes a name into a pattern.<p/>
+     *
+     * Asterisks are replaced with the name,
+     * double-asterisks are replaced with a single asterisk.
+     * For example,
+     * <blockquote><code>substitute("** Subtotal - *", "Dairy")</code></blockquote>
+     * returns
+     * <blockquote><code>"* Subtotal - Dairy"</code></blockquote>
+     *
+     * @param namePattern Pattern
+     * @param name Name to substitute into pattern
+     * @return Substituted pattern
+     */
+    static String substitute(String namePattern, String name) {
+        final StringBuffer buf = new StringBuffer(256);
+        final int namePatternLen = namePattern.length();
+        int startIndex = 0;
+        
+        while (true) {
+            int endIndex = namePattern.indexOf('*', startIndex);
+            
+            if (endIndex == -1) { // No '*' left
+                // append the rest of namePattern from startIndex onwards
+                buf.append(namePattern.substring(startIndex));
+                break;
+            }
+
+            // endIndex now points to the '*'; check for '**'
+            ++endIndex;
+            if (endIndex < namePatternLen && namePattern.charAt(endIndex) == '*') { // Found '**', replace with '*'
+                buf.append(namePattern.substring(startIndex, endIndex)); // Include first '*'
+                ++endIndex; // Skip over 2nd '*'
+            } else { // Found single '*' - substitute (omitting the '*')
+                buf.append(namePattern.substring(startIndex, endIndex - 1)); // Exclude '*'
+                buf.append(name);
+            }
+            
+            startIndex = endIndex;
+        }
+
+        return buf.toString();
+    }
+
 }
 
 // End VisualTotalsFunDef.java
