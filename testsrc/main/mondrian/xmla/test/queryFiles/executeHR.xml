@@ -117,7 +117,7 @@
             </Tuples>
           </Axis>
 	</Axes>
-	<CellData>
+	<CellData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           <Cell CellOrdinal="0">
             <Value xsi:type="xsd:double">39431.6712</Value>
             <FmtValue>$39,431.67</FmtValue>

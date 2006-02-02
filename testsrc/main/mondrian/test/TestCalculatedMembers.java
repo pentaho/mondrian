@@ -439,6 +439,22 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "Row #1: $1,352,150.00",
                 ""}));
     }
+
+    public void testPropertyReferencesCalcMember() {
+        assertQueryReturns(
+                "with member [Measures].[Foo] as ' [Measures].[Unit Sales] * 2 '," +
+                " FORMAT_STRING=IIf([Measures].[Foo] < 600000, \"|#,##0|style=red\",\"#,##0\")  " +
+                "select {[Measures].[Foo]} on columns " +
+                "from [Sales]",
+
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Foo]}",
+                    "Row #0: |533,546|style=red",
+                    ""}));
+    }
 }
 
 // End CalculatedMembersTestCase.java
