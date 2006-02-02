@@ -170,7 +170,7 @@ public class XmlaHandler implements XmlaConstants {
             conn = ((RolapConnection) connection).getDataSource().getConnection();
             stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
                                         ResultSet.CONCUR_READ_ONLY);
-            
+
             int count = -1;
             if (MondrianProperties.instance().EnableTotalCount.booleanValue()) {
                 String temp = dtSql.toUpperCase();
@@ -178,7 +178,7 @@ public class XmlaHandler implements XmlaConstants {
                 StringBuffer buf = new StringBuffer();
                 buf.append("select count(*) ");
                 buf.append(dtSql.substring(fromOff));
-    
+
                 String countSql = buf.toString();
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("drill through counting sql: " + countSql);
@@ -391,7 +391,7 @@ public class XmlaHandler implements XmlaConstants {
                     "name", hierarchies[j].getName()});
                 for (int k = 0; k < props.length; k++) {
                     writer.element(props[k], new String[] {
-                        "name", hierarchies[j].getUniqueName() + ".[" + 
+                        "name", hierarchies[j].getUniqueName() + ".[" +
                                 propLongs[k] + "]"});
                 }
                 writer.endElement(); // HierarchyInfo
@@ -453,7 +453,7 @@ public class XmlaHandler implements XmlaConstants {
         private int calculateDisplayInfo(Position prevPosition, Position nextPosition,
                 Member currentMember, int memberOrdinal, int childrenCount) {
             int displayInfo = 0xffff & childrenCount;
-            
+
             if (nextPosition != null) {
                 String currentUName = currentMember.getUniqueName();
                 String nextParentUName = nextPosition.members[memberOrdinal].getParentUniqueName();
@@ -468,7 +468,7 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         private void cellData(SaxWriter writer) throws SAXException {
-            writer.startElement("CellData");
+            writer.startElement("CellData", new String[] {"xmlns:xsi", NS_XSI});
             final int axisCount = result.getAxes().length;
             int[] pos = new int[axisCount];
             int[] cellOrdinal = new int[] {0};
