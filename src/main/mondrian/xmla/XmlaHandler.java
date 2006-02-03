@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2005 Julian Hyde
+// (C) Copyright 2003-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -170,12 +170,13 @@ public class XmlaHandler implements XmlaConstants {
             "targetNamespace", XmlaConstants.NS_XMLA_MDDATASET,
             "xmlns:xsi", XmlaConstants.NS_XSI,
             "xmlns:sql", NS_SQL,
-            "elementFormDefault", "qualified"});
+            "elementFormDefault", "qualified"
+        });
 
         // MemberType
 
         writer.startElement("xsd:complexType", new String[] {
-            "name", "MemberTypxe"
+            "name", "MemberType"
         });
         writer.element("xsd:attribute", new String[] {
             "name", "Hierarchy",
