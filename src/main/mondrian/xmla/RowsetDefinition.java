@@ -105,6 +105,62 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         return null;
     }
 
+    /**
+     * Generates an XML schema description to the writer.
+     *
+     * @param writer SAX writer
+     * @see XmlaHandler#writeDatasetXmlSchema(SaxWriter)
+     */
+    void writeRowsetXmlSchema(SaxWriter writer) {
+        writer.startElement("xsd:schema", new String[] {
+            "xmlns:xsd", XmlaConstants.NS_XSD,
+            "targetNamespace", XmlaConstants.NS_XMLA_ROWSET,
+            "xmlns:xsi", XmlaConstants.NS_XSI,
+            "xmlns:sql", "urn:schemas-microsoft-com:xml-sql",
+            "elementFormDefault", "qualified"
+        });
+
+        writer.startElement("xsd:element", new String[] {
+            "name", "root"
+        });
+        writer.startElement("xsd:complexType");
+        writer.startElement("xsd:sequence", new String[] {
+            "minOccurs", "0",
+            "maxOccurs", "unbounded"
+        });
+        writer.element("xsd:element", new String[] {
+            "name", "row",
+            "type", "row"
+        });
+        writer.endElement(); // xsd:sequence
+        writer.endElement(); // xsd:complexType
+        writer.endElement(); // xsd:element
+
+        writer.startElement("xsd:complexType", new String[] {
+            "name", "row"
+        });
+        writer.startElement("xsd:sequence");
+        for (int i = 0; i < columnDefinitions.length; i++) {
+            RowsetDefinition.Column column = columnDefinitions[i];
+            final String name = XmlaUtil.encodeElementName(column.name);
+            final String xsdType = "xsd:" + column.type.columnType;
+            writer.element("xsd:element", column.nullable ?
+                    new String[] {
+                        "sql:field", column.name,
+                        "name", name,
+                        "type", xsdType,
+                        "minOccurs", "0"} :
+                    new String[] {
+                        "sql:field", column.name,
+                        "name", name,
+                        "type", xsdType
+                    });
+        }
+        writer.endElement(); // xsd:sequence
+        writer.endElement(); // xsd:complexType
+        writer.endElement(); // xsd:schema
+    }
+
     static class Type extends EnumeratedValues.BasicValue {
         public static final int String_ORDINAL = 0;
         public static final Type String = new Type("string", String_ORDINAL, "string");
@@ -1155,13 +1211,13 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 final Dimension measuresDimension = cube.getDimensions()[0];
                 final Hierarchy measuresHierarchy = measuresDimension.getHierarchies()[0];
                 final Level measuresLevel = measuresHierarchy.getLevels()[0];
-                
+
                 Member[] storedMembers =
                         schemaReader.getLevelMembers(measuresLevel, false);
                 for (int j = 0; j < storedMembers.length; j++) {
                     emitMember(response, connection, storedMembers[j], cube);
                 }
-                
+
                 List calMembers = schemaReader.getCalculatedMembers(measuresHierarchy);
                 for (Iterator it = calMembers.iterator(); it.hasNext();) {
                     emitMember(response, connection, (Member) it.next(), cube);

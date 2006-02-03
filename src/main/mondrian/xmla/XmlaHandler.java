@@ -14,6 +14,7 @@ import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
 import mondrian.rolap.RolapConnection;
 import mondrian.spi.CatalogLocator;
+import mondrian.xmla.impl.DefaultSaxWriter;
 
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
@@ -21,6 +22,8 @@ import org.xml.sax.SAXException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 
 
 /**
@@ -36,20 +39,31 @@ public class XmlaHandler implements XmlaConstants {
     private final Map dataSourcesMap;
     private CatalogLocator catalogLocator = null;
 
+    private static final String DatasetXmlSchema = computeRowsetXsd();
+
+    private static String computeRowsetXsd() {
+        final StringWriter sw = new StringWriter();
+        SaxWriter writer = new DefaultSaxWriter(new PrintWriter(sw), 3);
+        writeDatasetXmlSchema(writer);
+        writer.flush();
+        return sw.toString();
+    }
+
     private static interface QueryResult {
         public void unparse(SaxWriter res) throws SAXException;
     }
 
-
-    public XmlaHandler(DataSourcesConfig.DataSources dataSources,
-                       CatalogLocator catalogLocator) {
+    public XmlaHandler(
+            DataSourcesConfig.DataSources dataSources,
+            CatalogLocator catalogLocator) {
         this.catalogLocator = catalogLocator;
         Map map = new HashMap();
         for (int i = 0; i < dataSources.dataSources.length; i++) {
             DataSourcesConfig.DataSource ds = dataSources.dataSources[i];
             if (map.containsKey(ds.getDataSourceName())) {
-                throw Util.newError("duplicated data source name '" +
-                                    ds.getDataSourceName() + "'");
+                throw Util.newError(
+                        "duplicated data source name '" +
+                        ds.getDataSourceName() + "'");
             }
             map.put(ds.getDataSourceName(), ds);
         }
@@ -106,9 +120,8 @@ public class XmlaHandler implements XmlaConstants {
                 }
             }
         } catch (Error e) {
-            throw new UnsupportedOperationException("Property <" +
-                                                    propertyName +
-                                                    "> must be provided");
+            throw new UnsupportedOperationException(
+                    "Property <" + propertyName + "> must be provided");
         }
 
         // Handle execute
@@ -122,16 +135,14 @@ public class XmlaHandler implements XmlaConstants {
         SaxWriter writer = response.getWriter();
         writer.startDocument();
 
-        writer.startElement("ExecuteResponse", new String[] {"xmlns", NS_XMLA});
-        writer.startElement("return", new String[] {"xmlns:xsi", NS_XSI,
-                                                    "xmlns:xsd", NS_XSD,});
-        writer.startElement("root",
-                            new String[] {"xmlns",
-                                          request.isDrillThrough() ? NS_XMLA_ROWSET :
-                                                                     NS_XMLA_MDDATASET});
-        writer.startElement("xsd:schema", new String[] {"xmlns:xsd", NS_XSD});
-        //TODO: schema definition
-        writer.endElement();
+        writer.startElement("ExecuteResponse", new String[] {
+            "xmlns", NS_XMLA});
+        writer.startElement("return", new String[] {
+            "xmlns:xsi", NS_XSI,
+            "xmlns:xsd", NS_XSD,});
+        writer.startElement("root", new String[] {
+            "xmlns", request.isDrillThrough() ? NS_XMLA_ROWSET : NS_XMLA_MDDATASET});
+        writer.verbatim(DatasetXmlSchema);
 
         try {
             result.unparse(writer);
@@ -145,6 +156,458 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         writer.endDocument();
+    }
+
+    /**
+     * Computes the XML Schema for a dataset.
+     *
+     * @param writer SAX writer
+     * @see RowsetDefinition#writeRowsetXmlSchema(SaxWriter)
+     */
+    static void writeDatasetXmlSchema(SaxWriter writer) {
+        writer.startElement("xsd:schema", new String[] {
+            "xmlns:xsd", XmlaConstants.NS_XSD,
+            "targetNamespace", XmlaConstants.NS_XMLA_MDDATASET,
+            "xmlns:xsi", XmlaConstants.NS_XSI,
+            "xmlns:sql", NS_SQL,
+            "elementFormDefault", "qualified"});
+
+        // MemberType
+
+        writer.startElement("xsd:complexType", new String[] {
+            "name", "MemberTypxe"
+        });
+        writer.element("xsd:attribute", new String[] {
+            "name", "Hierarchy",
+            "type", "xsd:string",
+        });
+        writer.startElement("xsd:sequence");
+        writer.element("xsd:element", new String[] {
+            "name", "UName",
+            "type", "xsd:string",
+        });
+        writer.element("xsd:element", new String[] {
+            "name", "Caption",
+            "type", "xsd:string",
+        });
+        writer.element("xsd:element", new String[] {
+            "name", "LName",
+            "type", "xsd:string",
+        });
+        writer.element("xsd:element", new String[] {
+            "name", "LNum",
+            "type", "xsd:unsignedInt",
+        });
+        writer.element("xsd:element", new String[] {
+            "name", "DisplayInfo",
+            "type", "xsd:unsignedInt",
+        });
+        writer.startElement("xsd:sequence", new String[] {
+            "maxOccurs", "unbounded",
+            "minOccurs", "0",
+        });
+        writer.element("xsd:any", new String[] {
+            "processContents", "lax",
+            "maxOccurs", "unbounded",
+        });
+        writer.endElement(); // xsd:sequence
+        writer.endElement(); // xsd:sequence
+        writer.endElement(); // xsd:complexType name="MemberType"
+
+        // PropType
+
+        writer.startElement("xsd:complexType", new String[] {
+            "name", "PropType",
+        });
+        writer.element("xsd:attribute", new String[] {
+            "name", "name",
+            "type", "xsd:string",
+        });
+        writer.endElement(); // xsd:complexType name="PropType"
+
+        // TupleType
+
+        writer.startElement("xsd:complexType", new String[] {
+            "name", "TupleType"
+        });
+        writer.startElement("xsd:sequence", new String[] {
+            "maxOccurs", "unbounded"
+        });
+        writer.element("xsd:element", new String[] {
+            "name", "Member",
+            "type", "MemberType",
+        });
+        writer.endElement(); // xsd:sequence
+        writer.endElement(); // xsd:complexType name="TupleType"
+
+        // MembersType
+
+        writer.startElement("xsd:complexType", new String[] {
+            "name", "MembersType"
+        });
+        writer.element("xsd:attribute", new String[] {
+            "name", "Hierarchy",
+            "type", "xsd:string",
+        });
+        writer.startElement("xsd:sequence", new String[] {
+            "maxOccurs", "unbounded",
+        });
+        writer.element("xsd:element", new String[] {
+            "name", "Member",
+            "type", "MemberType",
+        });
+        writer.endElement(); // xsd:sequence
+        writer.endElement(); // xsd:complexType
+
+        // TuplesType
+
+        writer.startElement("xsd:complexType", new String[] {
+            "name", "TuplesType"
+        });
+        writer.startElement("xsd:sequence", new String[] {
+            "maxOccurs", "unbounded",
+        });
+        writer.element("xsd:element", new String[] {
+            "name", "Tuple",
+            "type", "TupleType",
+        });
+        writer.endElement(); // xsd:sequence
+        writer.endElement(); // xsd:complexType
+
+        // CrossProductType
+
+        writer.startElement("xsd:complexType", new String[] {
+            "name", "CrossProductType",
+        });
+        writer.startElement("xsd:choice", new String[] {
+            "minOccurs", "0",
+            "maxOccurs", "unbounded",
+        });
+        writer.element("xsd:element", new String[] {
+            "name", "Members",
+            "type", "MembersType"
+        });
+        writer.element("xsd:element", new String[] {
+            "name", "Tuples",
+            "type", "TuplesType"
+        });
+        writer.endElement(); // xsd:choice
+        writer.endElement(); // xsd:complexType
+
+        // OlapInfo
+
+        writer.startElement("xsd:complexType", new String[] {
+            "name", "OlapInfo",
+        });
+        writer.startElement("xsd:sequence", new String[] {
+            "maxOccurs", "unbounded"
+        });
+
+        { // <AxesInfo>
+            writer.startElement("xsd:element", new String[] {
+                "name", "AxesInfo"
+            });
+            writer.startElement("xsd:complexType");
+            writer.startElement("xsd:sequence", new String[] {
+                "maxOccurs", "unbounded"
+            });
+            { // <AxisInfo>
+                writer.startElement("xsd:element", new String[] {
+                    "name", "AxisInfo"
+                });
+                writer.startElement("xsd:complexType");
+                writer.element("xsd:attribute", new String[] {
+                    "name", "name",
+                    "type", "xsd:string"
+                });
+                writer.startElement("xsd:sequence", new String[] {
+                    "maxOccurs", "unbounded"
+                });
+                { // <HierarchyInfo>
+                    writer.startElement("xsd:element", new String[] {
+                        "name", "HierarchyInfo"
+                    });
+                    writer.startElement("xsd:complexType");
+                    writer.element("xsd:attribute", new String[] {
+                        "name", "name",
+                        "type", "xsd:string"
+                    });
+                    writer.startElement("xsd:sequence");
+                    writer.startElement("xsd:sequence", new String[] {
+                        "maxOccurs", "unbounded"
+                    });
+                    writer.element("xsd:element", new String[] {
+                        "name", "UName",
+                        "type", "PropType"
+                    });
+                    writer.element("xsd:element", new String[] {
+                        "name", "Caption",
+                        "type", "PropType"
+                    });
+                    writer.element("xsd:element", new String[] {
+                        "name", "LName",
+                        "type", "PropType"
+                    });
+                    writer.element("xsd:element", new String[] {
+                        "name", "LNum",
+                        "type", "PropType"
+                    });
+                    writer.element("xsd:element", new String[] {
+                        "name", "DisplayInfo",
+                        "type", "PropType"
+                    });
+                    writer.endElement(); // xsd:sequence
+                    writer.startElement("xsd:sequence", new String[] {
+                        "maxOccurs", "unbounded",
+                        "minOccurs", "0"
+                    });
+                    writer.element("xsd:any", new String[] {
+                        "processContents", "lax",
+                        "maxOccurs", "unbounded"
+                    });
+                    writer.endElement(); // xsd:sequence
+                    writer.endElement(); // xsd:sequence
+                    writer.endElement(); // xsd:complexType
+                    writer.endElement(); // xsd:element name=HierarchyInfo
+                }
+                writer.endElement(); // xsd:sequence
+                writer.endElement(); // xsd:complexType
+                writer.endElement(); // xsd:element name=AxisInfo
+            }
+            writer.endElement(); // xsd:sequence
+            writer.endElement(); // xsd:complexType
+            writer.endElement(); // xsd:element name=AxesInfo
+        }
+
+        // CellInfo
+
+        { // <CellInfo>
+            writer.startElement("xsd:element", new String[] {
+                "name", "CellInfo"
+            });
+            writer.startElement("xsd:complexType");
+            writer.startElement("xsd:sequence");
+            writer.startElement("xsd:sequence", new String[] {
+                "maxOccurs", "unbounded"
+            });
+            writer.startElement("xsd:choice");
+            writer.element("xsd:element", new String[] {
+                "name", "Value",
+                "type", "PropType"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "FmtValue",
+                "type", "PropType"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "BackColor",
+                "type", "PropType"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "ForeColor",
+                "type", "PropType"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "FontName",
+                "type", "PropType"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "FontSize",
+                "type", "PropType"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "FontFlags",
+                "type", "PropType"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "FormatString",
+                "type", "PropType"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "NonEmptyBehavior",
+                "type", "PropType"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "SolveOrder",
+                "type", "PropType"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "Updateable",
+                "type", "PropType"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "Visible",
+                "type", "PropType"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "Expression",
+                "type", "PropType"
+            });
+            writer.endElement(); // xsd:choice
+            writer.endElement(); // xsd:sequence
+            writer.startElement("xsd:sequence", new String[] {
+                "maxOccurs", "unbounded",
+                "minOccurs", "0"
+            });
+            writer.element("xsd:any", new String[] {
+                "processContents", "lax",
+                "maxOccurs", "unbounded"
+            });
+            writer.endElement(); // xsd:sequence
+            writer.endElement(); // xsd:sequence
+            writer.endElement(); // xsd:complexType
+            writer.endElement(); // xsd:element name=CellInfo
+        }
+
+        writer.endElement(); // xsd:sequence
+        writer.endElement(); // xsd:complexType
+
+        // Axes
+
+        writer.startElement("xsd:complexType", new String[] {
+            "name", "Axes"
+        });
+        writer.startElement("xsd:sequence", new String[] {
+            "maxOccurs", "unbounded"
+        });
+        { // <Axis>
+            writer.startElement("xsd:element", new String[] {
+                "name", "Axis"
+            });
+            writer.startElement("xsd:complexType");
+            writer.element("xsd:attribute", new String[] {
+                "name", "name",
+                "type", "xsd:string"
+            });
+            writer.startElement("xsd:choice", new String[] {
+                "minOccurs", "0",
+                "maxOccurs", "unbounded"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "CrossProduct",
+                "type", "CrossProductType"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "Tuples",
+                "type", "TuplesType"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "Members",
+                "type", "MembersType"
+            });
+            writer.endElement(); // xsd:choice
+            writer.endElement(); // xsd:complexType
+        }
+        writer.endElement(); // xsd:element
+        writer.endElement(); // xsd:sequence
+        writer.endElement(); // xsd:complexType
+
+        // CellData
+
+        writer.startElement("xsd:complexType", new String[] {
+            "name", "CellData"
+        });
+        writer.startElement("xsd:sequence", new String[] {
+            "maxOccurs", "unbounded"
+        });
+        { // <Cell>
+            writer.startElement("xsd:element", new String[] {
+                "name", "Cell"
+            });
+            writer.startElement("xsd:complexType");
+            writer.element("xsd:attribute", new String[] {
+                "name", "CellOrdinal",
+                "type", "xsd:unsignedInt"
+            });
+            writer.startElement("xsd:sequence", new String[] {
+                "maxOccurs", "unbounded"
+            });
+            writer.startElement("xsd:choice");
+            writer.element("xsd:element", new String[] {
+                "name", "Value"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "FmtValue",
+                "type", "xsd:string"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "BackColor",
+                "type", "xsd:unsignedInt"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "ForeColor",
+                "type", "xsd:unsignedInt"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "FontName",
+                "type", "xsd:string"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "FontSize",
+                "type", "xsd:unsignedShort"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "FontFlags",
+                "type", "xsd:unsignedInt"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "FormatString",
+                "type", "xsd:string"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "NonEmptyBehavior",
+                "type", "xsd:unsignedShort"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "SolveOrder",
+                "type", "xsd:unsignedInt"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "Updateable",
+                "type", "xsd:unsignedInt"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "Visible",
+                "type", "xsd:unsignedInt"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "Expression",
+                "type", "xsd:string"
+            });
+            writer.endElement(); // xsd:choice
+            writer.endElement(); // xsd:sequence
+            writer.endElement(); // xsd:complexType
+            writer.endElement(); // xsd:element name=Cell
+        }
+        writer.endElement(); // xsd:sequence
+        writer.endElement(); // xsd:complexType
+
+        { // <root>
+            writer.startElement("xsd:element", new String[] {
+                "name", "root"
+            });
+            writer.startElement("xsd:complexType");
+            writer.startElement("xsd:sequence", new String[] {
+                "maxOccurs", "unbounded"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "OlapInfo",
+                "type", "OlapInfo"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "Axes",
+                "type", "Axes"
+            });
+            writer.element("xsd:element", new String[] {
+                "name", "CellData",
+                "type", "CellData"
+            });
+            writer.endElement(); // xsd:sequence
+            writer.endElement(); // xsd:complexType
+            writer.endElement(); // xsd:element name=root
+        }
+
+        writer.endElement(); // xsd:schema
     }
 
     private QueryResult executeDrillThroughQuery(XmlaRequest request) {
@@ -498,8 +961,10 @@ public class XmlaHandler implements XmlaConstants {
 
 
         private void emitCell(SaxWriter writer, Cell cell, int ordinal) {
-            if (cell.isNull()) // Ignore null cell like MS AS
+            if (cell.isNull()) {
+                // Ignore null cell like MS AS
                 return;
+            }
 
             writer.startElement("Cell", new String[] {
                 "CellOrdinal", Integer.toString(ordinal)});
@@ -580,14 +1045,7 @@ public class XmlaHandler implements XmlaConstants {
         writer.startElement("return");
         writer.startElement("root", new String[] {
             "xmlns", NS_XMLA_ROWSET});
-        writer.startElement("xsd:schema", new String[] {
-            "xmlns:xsd", NS_XSD,
-            "targetNamespace", NS_XMLA_ROWSET,
-            "xmlns:xsi", NS_XSI,
-            "xmlns:sql", "urn:schemas-microsoft-com:xml-sql",
-            "elementFormDefault", "qualified"});
-        //TODO: add schema
-        writer.endElement();
+        rowset.rowsetDefinition.writeRowsetXmlSchema(writer);
         try {
             rowset.unparse(response);
         } catch (Throwable t) { // MondrianException is subclass of RuntimeException
@@ -601,7 +1059,6 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         writer.endDocument();
-
     }
 
     /**

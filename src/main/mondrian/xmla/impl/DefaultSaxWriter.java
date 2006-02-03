@@ -64,15 +64,17 @@ public class DefaultSaxWriter implements SaxWriter {
      * {@link #DefaultSaxWriter(java.io.OutputStream)} is preferred.
      */
     public DefaultSaxWriter(Writer writer) {
-        this(new PrintWriter(writer));
+        this(new PrintWriter(writer), 0);
     }
 
     /**
      * Creates a <code>SAXWriter</code> writing to a {@link java.io.PrintWriter}.
      * @param writer
+     * @param initialIndent
      */
-    public DefaultSaxWriter(PrintWriter writer) {
+    public DefaultSaxWriter(PrintWriter writer, int initialIndent) {
         this.writer = writer;
+        this.indent = initialIndent;
     }
 
     private void _startElement(
@@ -197,6 +199,14 @@ public class DefaultSaxWriter implements SaxWriter {
         }
     }
 
+    public void verbatim(String text) {
+        _checkTag();
+        writer.print(text);
+    }
+
+    public void flush() {
+        writer.flush();
+    }
 
     static private final Attributes EmptyAttributes = new Attributes() {
         public int getLength() {

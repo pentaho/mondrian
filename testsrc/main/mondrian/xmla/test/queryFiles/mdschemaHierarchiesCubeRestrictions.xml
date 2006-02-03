@@ -4,23 +4,46 @@
     <RequestType>MDSCHEMA_HIERARCHIES</RequestType>
     <Restrictions>
       <RestrictionList>
-	<CATALOG_NAME>${catalog}</CATALOG_NAME>
-	<CUBE_NAME>Sales</CUBE_NAME>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
       </RestrictionList>
     </Restrictions>
     <Properties>
       <PropertyList>
-	<DataSourceInfo>${datasource}</DataSourceInfo>
-	<Catalog>${catalog}</Catalog>
-	<Format>Tabular</Format>
+        <DataSourceInfo>${datasource}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>Tabular</Format>
       </PropertyList>
     </Properties>
   </Discover>
   <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
     <return>
       <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset">
-	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified"/>
-	<row>
+        <xsd:schema xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset">
+          <xsd:element name="root">
+            <xsd:complexType>
+              <xsd:sequence maxOccurs="unbounded" minOccurs="0">
+                <xsd:element name="row" type="row"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:complexType name="row">
+            <xsd:sequence>
+              <xsd:element name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+              <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+              <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+              <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+              <xsd:element name="HIERARCHY_NAME" sql:field="HIERARCHY_NAME" type="xsd:string"/>
+              <xsd:element name="HIERARCHY_UNIQUE_NAME" sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+              <xsd:element name="HIERARCHY_CAPTION" sql:field="HIERARCHY_CAPTION" type="xsd:string"/>
+              <xsd:element name="DIMENSION_TYPE" sql:field="DIMENSION_TYPE" type="xsd:integer"/>
+              <xsd:element minOccurs="0" name="DEFAULT_MEMBER" sql:field="DEFAULT_MEMBER" type="xsd:string"/>
+              <xsd:element minOccurs="0" name="ALL_MEMBER" sql:field="ALL_MEMBER" type="xsd:string"/>
+              <xsd:element name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:schema>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -31,8 +54,8 @@
           <DIMENSION_TYPE>2</DIMENSION_TYPE>
           <DEFAULT_MEMBER>[Measures].[Unit Sales]</DEFAULT_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -44,8 +67,8 @@
           <DEFAULT_MEMBER>[Store].[All Stores]</DEFAULT_MEMBER>
           <ALL_MEMBER>[Store].[All Stores]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -57,8 +80,8 @@
           <DEFAULT_MEMBER>[Store Size in SQFT].[All Store Size in SQFTs]</DEFAULT_MEMBER>
           <ALL_MEMBER>[Store Size in SQFT].[All Store Size in SQFTs]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -70,8 +93,8 @@
           <DEFAULT_MEMBER>[Store Type].[All Store Types]</DEFAULT_MEMBER>
           <ALL_MEMBER>[Store Type].[All Store Types]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -82,8 +105,8 @@
           <DIMENSION_TYPE>1</DIMENSION_TYPE>
           <DEFAULT_MEMBER>[Time].[1997]</DEFAULT_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -95,8 +118,8 @@
           <DEFAULT_MEMBER>[Time.Weekly].[All Time.Weeklys].[1997]</DEFAULT_MEMBER>
           <ALL_MEMBER>[Time.Weekly].[All Time.Weeklys]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -108,8 +131,8 @@
           <DEFAULT_MEMBER>[Product].[All Products]</DEFAULT_MEMBER>
           <ALL_MEMBER>[Product].[All Products]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -121,8 +144,8 @@
           <DEFAULT_MEMBER>[Promotion Media].[All Media]</DEFAULT_MEMBER>
           <ALL_MEMBER>[Promotion Media].[All Media]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -134,8 +157,8 @@
           <DEFAULT_MEMBER>[Promotions].[All Promotions]</DEFAULT_MEMBER>
           <ALL_MEMBER>[Promotions].[All Promotions]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -147,8 +170,8 @@
           <DEFAULT_MEMBER>[Customers].[All Customers]</DEFAULT_MEMBER>
           <ALL_MEMBER>[Customers].[All Customers]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -160,8 +183,8 @@
           <DEFAULT_MEMBER>[Education Level].[All Education Levels]</DEFAULT_MEMBER>
           <ALL_MEMBER>[Education Level].[All Education Levels]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -173,8 +196,8 @@
           <DEFAULT_MEMBER>[Gender].[All Gender]</DEFAULT_MEMBER>
           <ALL_MEMBER>[Gender].[All Gender]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -186,8 +209,8 @@
           <DEFAULT_MEMBER>[Marital Status].[All Marital Status]</DEFAULT_MEMBER>
           <ALL_MEMBER>[Marital Status].[All Marital Status]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -199,7 +222,7 @@
           <DEFAULT_MEMBER>[Yearly Income].[All Yearly Incomes]</DEFAULT_MEMBER>
           <ALL_MEMBER>[Yearly Income].[All Yearly Incomes]</ALL_MEMBER>
           <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
+        </row>
       </root>
     </return>
   </DiscoverResponse>

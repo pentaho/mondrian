@@ -4,27 +4,43 @@
     <RequestType>MDSCHEMA_DIMENSIONS</RequestType>
     <Restrictions>
       <RestrictionList>
-	<CATALOG_NAME>${catalog}</CATALOG_NAME>
-	<CUBE_NAME>Sales</CUBE_NAME>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
       </RestrictionList>
     </Restrictions>
     <Properties>
       <PropertyList>
-	<DataSourceInfo>${datasource}</DataSourceInfo>
-	<Catalog>${catalog}</Catalog>
-	<Format>Tabular</Format>
+        <DataSourceInfo>${datasource}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>Tabular</Format>
       </PropertyList>
     </Properties>
   </Discover>
   <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
     <return>
       <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset">
-	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-		    targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
-		    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		    xmlns:sql="urn:schemas-microsoft-com:xml-sql"
-		    elementFormDefault="qualified"/>
-	<row>
+        <xsd:schema xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset">
+          <xsd:element name="root">
+            <xsd:complexType>
+              <xsd:sequence maxOccurs="unbounded" minOccurs="0">
+                <xsd:element name="row" type="row"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:complexType name="row">
+            <xsd:sequence>
+              <xsd:element name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+              <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+              <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+              <xsd:element name="DIMENSION_NAME" sql:field="DIMENSION_NAME" type="xsd:string"/>
+              <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+              <xsd:element name="DIMENSION_CAPTION" sql:field="DIMENSION_CAPTION" type="xsd:string"/>
+              <xsd:element name="DIMENSION_ORDINAL" sql:field="DIMENSION_ORDINAL" type="xsd:integer"/>
+              <xsd:element name="DIMENSION_TYPE" sql:field="DIMENSION_TYPE" type="xsd:integer"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:schema>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -33,8 +49,8 @@
           <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
           <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
           <DIMENSION_TYPE>2</DIMENSION_TYPE>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -43,8 +59,8 @@
           <DIMENSION_CAPTION>Store</DIMENSION_CAPTION>
           <DIMENSION_ORDINAL>1</DIMENSION_ORDINAL>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -53,8 +69,8 @@
           <DIMENSION_CAPTION>Store Size in SQFT</DIMENSION_CAPTION>
           <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -63,8 +79,8 @@
           <DIMENSION_CAPTION>Store Type</DIMENSION_CAPTION>
           <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -73,8 +89,8 @@
           <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
           <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
           <DIMENSION_TYPE>1</DIMENSION_TYPE>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -83,8 +99,8 @@
           <DIMENSION_CAPTION>Product</DIMENSION_CAPTION>
           <DIMENSION_ORDINAL>5</DIMENSION_ORDINAL>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -93,8 +109,8 @@
           <DIMENSION_CAPTION>Promotion Media</DIMENSION_CAPTION>
           <DIMENSION_ORDINAL>6</DIMENSION_ORDINAL>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -103,8 +119,8 @@
           <DIMENSION_CAPTION>Promotions</DIMENSION_CAPTION>
           <DIMENSION_ORDINAL>7</DIMENSION_ORDINAL>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -113,8 +129,8 @@
           <DIMENSION_CAPTION>Customers</DIMENSION_CAPTION>
           <DIMENSION_ORDINAL>8</DIMENSION_ORDINAL>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -123,8 +139,8 @@
           <DIMENSION_CAPTION>Education Level</DIMENSION_CAPTION>
           <DIMENSION_ORDINAL>9</DIMENSION_ORDINAL>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -133,8 +149,8 @@
           <DIMENSION_CAPTION>Gender</DIMENSION_CAPTION>
           <DIMENSION_ORDINAL>10</DIMENSION_ORDINAL>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -143,8 +159,8 @@
           <DIMENSION_CAPTION>Marital Status</DIMENSION_CAPTION>
           <DIMENSION_ORDINAL>11</DIMENSION_ORDINAL>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-	</row>
-	<row>
+        </row>
+        <row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
           <CUBE_NAME>Sales</CUBE_NAME>
@@ -153,7 +169,7 @@
           <DIMENSION_CAPTION>Yearly Income</DIMENSION_CAPTION>
           <DIMENSION_ORDINAL>12</DIMENSION_ORDINAL>
           <DIMENSION_TYPE>3</DIMENSION_TYPE>
-	</row>
+        </row>
       </root>
     </return>
   </DiscoverResponse>

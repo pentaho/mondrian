@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
 abstract class Rowset {
     private static final Logger LOGGER = Logger.getLogger(Rowset.class);
 
-    private final RowsetDefinition rowsetDefinition;
+    protected final RowsetDefinition rowsetDefinition;
     protected final Map restrictions;
     protected final Map properties;
     protected final XmlaRequest request;
@@ -106,7 +106,7 @@ abstract class Rowset {
     /**
      * Sets a property for this rowset. Called by the constructor for each
      * supplied property.<p/>
-     * 
+     *
      * A derived class should override this method and intercept each
      * property it supports. Any property it does not support, it should forward
      * to the base class method, which will probably throw an error.<p/>
@@ -307,7 +307,6 @@ abstract class Rowset {
     protected boolean isRestricted(RowsetDefinition.Column column) {
         return restrictions.get(column.name) != null;
     }
-
 
     /**
      * A set of name/value pairs, which can be output using

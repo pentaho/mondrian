@@ -26,8 +26,11 @@ public interface XmlaConstants {
     static final String NS_XMLA = "urn:schemas-microsoft-com:xml-analysis";
     static final String NS_XMLA_MDDATASET = "urn:schemas-microsoft-com:xml-analysis:mddataset";
     static final String NS_XMLA_ROWSET = "urn:schemas-microsoft-com:xml-analysis:rowset";
+    static final String NS_SQL = "urn:schemas-microsoft-com:xml-sql";
 
     /* XMLA protocol constants */
     static final int METHOD_DISCOVER = 1;
     static final int METHOD_EXECUTE = 2;
 }
+
+// End XmlaConstants.java

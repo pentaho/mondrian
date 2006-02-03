@@ -83,6 +83,21 @@ public class XmlaUtil {
      * This function is mainly for encode element names in result of Drill Through
      * execute, because its element names come from database, we cannot make sure
      * they are valid XML contents.
+     *
+     * <p>Quoth the <a href="http://xmla.org">XML/A specification</a>, version
+     * 1.1:
+     * <blockquote>
+     * XML does not allow certain characters as element and attribute names.
+     * XML for Analysis supports encoding as defined by SQL Server 2000 to
+     * address this XML constraint. For column names that contain invalid XML
+     * name characters (according to the XML 1.0 specification), the nonvalid
+     * Unicode characters are encoded using the corresponding hexadecimal
+     * values. These are escaped as _x<i>HHHH_</i> where <i>HHHH</i> stands for
+     * the four-digit hexadecimal UCS-2 code for the character in
+     * most-significant bit first order. For example, the name "Order Details"
+     * is encoded as Order_<i>x0020</i>_Details, where the space character is
+     * replaced by the corresponding hexadecimal code.
+     * </blockquote>
      */
     public static String encodeElementName(String name) {
         StringBuffer buf = new StringBuffer();
@@ -90,10 +105,11 @@ public class XmlaUtil {
         for (int i = 0; i < nameChars.length; i++) {
             char ch = nameChars[i];
             String encodedStr = (ch >= CHAR_TABLE.length ? null : CHAR_TABLE[ch]);
-            if (encodedStr == null)
+            if (encodedStr == null) {
                 buf.append(ch);
-            else
+            } else {
                 buf.append(encodedStr);
+            }
         }
         return buf.toString();
     }

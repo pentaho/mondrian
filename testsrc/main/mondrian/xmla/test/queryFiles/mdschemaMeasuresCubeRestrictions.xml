@@ -19,7 +19,25 @@
 <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
   <return>
     <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset">
-      <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified"/>
+      <xsd:schema xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence maxOccurs="unbounded" minOccurs="0">
+              <xsd:element name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="MEASURE_NAME" sql:field="MEASURE_NAME" type="xsd:string"/>
+            <xsd:element name="MEASURE_UNIQUE_NAME" sql:field="MEASURE_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="MEASURE_CAPTION" sql:field="MEASURE_CAPTION" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
       <row>
         <CATALOG_NAME>${catalog}</CATALOG_NAME>
         <SCHEMA_NAME>${catalog}</SCHEMA_NAME>

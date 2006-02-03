@@ -4,50 +4,72 @@
     <RequestType>MDSCHEMA_HIERARCHIES</RequestType>
     <Restrictions>
       <RestrictionList>
-	<CATALOG_NAME>${catalog}</CATALOG_NAME>
-	<CUBE_NAME>Sales</CUBE_NAME>
-	<DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
       </RestrictionList>
     </Restrictions>
     <Properties>
       <PropertyList>
-	<DataSourceInfo>${datasource}</DataSourceInfo>
-	<Catalog>${catalog}</Catalog>
-	<Format>Tabular</Format>
+        <DataSourceInfo>${datasource}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>Tabular</Format>
       </PropertyList>
     </Properties>
   </Discover>
   <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
     <return>
       <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset">
-	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified"/>
-	<row>
-          <CATALOG_NAME>${catalog}</CATALOG_NAME>
-          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
-          <CUBE_NAME>Sales</CUBE_NAME>
-          <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-          <HIERARCHY_NAME>Time</HIERARCHY_NAME>
-          <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
-          <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
-          <DIMENSION_TYPE>1</DIMENSION_TYPE>
-          <DEFAULT_MEMBER>[Time].[1997]</DEFAULT_MEMBER>
-          <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
-	<row>
-          <CATALOG_NAME>${catalog}</CATALOG_NAME>
-          <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
-          <CUBE_NAME>Sales</CUBE_NAME>
-          <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-          <HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>
-          <HIERARCHY_UNIQUE_NAME>[Time.Weekly]</HIERARCHY_UNIQUE_NAME>
-          <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
-          <DIMENSION_TYPE>1</DIMENSION_TYPE>
-          <DEFAULT_MEMBER>[Time.Weekly].[All Time.Weeklys].[1997]</DEFAULT_MEMBER>
-          <ALL_MEMBER>[Time.Weekly].[All Time.Weeklys]</ALL_MEMBER>
-          <PARENT_CHILD>false</PARENT_CHILD>
-	</row>
+      <xsd:schema xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence maxOccurs="unbounded" minOccurs="0">
+              <xsd:element name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="HIERARCHY_NAME" sql:field="HIERARCHY_NAME" type="xsd:string"/>
+            <xsd:element name="HIERARCHY_UNIQUE_NAME" sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="HIERARCHY_CAPTION" sql:field="HIERARCHY_CAPTION" type="xsd:string"/>
+            <xsd:element name="DIMENSION_TYPE" sql:field="DIMENSION_TYPE" type="xsd:integer"/>
+            <xsd:element minOccurs="0" name="DEFAULT_MEMBER" sql:field="DEFAULT_MEMBER" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="ALL_MEMBER" sql:field="ALL_MEMBER" type="xsd:string"/>
+            <xsd:element name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Time</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>1</DIMENSION_TYPE>
+        <DEFAULT_MEMBER>[Time].[1997]</DEFAULT_MEMBER>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time.Weekly]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>1</DIMENSION_TYPE>
+        <DEFAULT_MEMBER>[Time.Weekly].[All Time.Weeklys].[1997]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Time.Weekly].[All Time.Weeklys]</ALL_MEMBER>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
       </root>
     </return>
   </DiscoverResponse>
 </xmlacycle>
-  

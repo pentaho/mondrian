@@ -9,8 +9,6 @@
 */
 package mondrian.xmla;
 
-import org.xml.sax.ContentHandler;
-
 /**
  * <code>SaxWriter</code> is similar to a SAX {@link org.xml.sax.ContentHandler}
  * which, perversely, converts its events into an output document.
@@ -37,6 +35,17 @@ public interface SaxWriter {
     public void characters(String data);
 
     public void completeBeforeElement(String tagName);
+
+    /**
+     * Sends a piece of text verbatim through the writer. It must be a piece
+     * of well-formed XML.
+     */
+    public void verbatim(String text);
+
+    /**
+     * Flushes any unwritten output.
+     */
+    public void flush();
 }
 
 // End SaxWriter.java

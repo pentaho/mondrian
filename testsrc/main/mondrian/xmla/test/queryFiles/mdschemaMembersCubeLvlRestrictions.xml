@@ -20,11 +20,36 @@
   <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
     <return>
       <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset">
-	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-		    targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
-		    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		    xmlns:sql="urn:schemas-microsoft-com:xml-sql"
-		    elementFormDefault="qualified"/>
+        <xsd:schema xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset">
+          <xsd:element name="root">
+            <xsd:complexType>
+              <xsd:sequence maxOccurs="unbounded" minOccurs="0">
+                <xsd:element name="row" type="row"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:complexType name="row">
+            <xsd:sequence>
+              <xsd:element name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+              <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+              <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+              <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+              <xsd:element name="HIERARCHY_UNIQUE_NAME" sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+              <xsd:element name="LEVEL_UNIQUE_NAME" sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
+              <xsd:element name="LEVEL_NUMBER" sql:field="LEVEL_NUMBER" type="xsd:unsignedInteger"/>
+              <xsd:element name="MEMBER_NAME" sql:field="MEMBER_NAME" type="xsd:string"/>
+              <xsd:element name="MEMBER_ORDINAL" sql:field="MEMBER_ORDINAL" type="xsd:integer"/>
+              <xsd:element name="MEMBER_UNIQUE_NAME" sql:field="MEMBER_UNIQUE_NAME" type="xsd:string"/>
+              <xsd:element name="MEMBER_TYPE" sql:field="MEMBER_TYPE" type="xsd:integer"/>
+              <xsd:element name="MEMBER_CAPTION" sql:field="MEMBER_CAPTION" type="xsd:string"/>
+              <xsd:element name="CHILDREN_CARDINALITY" sql:field="CHILDREN_CARDINALITY" type="xsd:integer"/>
+              <xsd:element name="PARENT_LEVEL" sql:field="PARENT_LEVEL" type="xsd:integer"/>
+              <xsd:element minOccurs="0" name="PARENT_UNIQUE_NAME" sql:field="PARENT_UNIQUE_NAME" type="xsd:string"/>
+              <xsd:element minOccurs="0" name="TREE_OP" sql:field="TREE_OP" type="xsd:string"/>
+              <xsd:element name="DEPTH" sql:field="DEPTH" type="xsd:integer"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:schema>
 	<row>
           <CATALOG_NAME>${catalog}</CATALOG_NAME>
           <SCHEMA_NAME>${catalog}</SCHEMA_NAME>
