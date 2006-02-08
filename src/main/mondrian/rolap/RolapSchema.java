@@ -1316,13 +1316,13 @@ public class RolapSchema implements Schema {
         }
 
         protected void defineFunctions() {
-            final FunTable builtinFunTable = BuiltinFunTable.instance();
-            final List reservedWords = builtinFunTable.getReservedWords();
+            final FunTable globalFunTable = GlobalFunTable.instance();
+            final List reservedWords = globalFunTable.getReservedWords();
             for (int i = 0; i < reservedWords.size(); i++) {
                 String reservedWord = (String) reservedWords.get(i);
                 defineReserved(reservedWord);
             }
-            final List resolvers = builtinFunTable.getResolvers();
+            final List resolvers = globalFunTable.getResolvers();
             for (int i = 0; i < resolvers.size(); i++) {
                 Resolver resolver = (Resolver) resolvers.get(i);
                 define(resolver);

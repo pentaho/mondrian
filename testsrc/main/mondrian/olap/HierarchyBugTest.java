@@ -15,11 +15,11 @@ package mondrian.olap;
 import mondrian.test.FoodMartTestCase;
 import mondrian.olap.*;
 
-public class HierarchyBug extends FoodMartTestCase {
-    public HierarchyBug(String name) {
+public class HierarchyBugTest extends FoodMartTestCase {
+    public HierarchyBugTest(String name) {
         super(name);
     }
-    public HierarchyBug() {
+    public HierarchyBugTest() {
         super();
     }
 

@@ -79,6 +79,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${lib.dir}/jsp-api.jar"/>
     <pathelement location="${lib.dir}/commons-dbcp.jar"/>
     <pathelement location="${lib.dir}/commons-collections.jar"/>
+    <pathelement location="${lib.dir}/commons-math-1.0.jar"/>
     <pathelement location="${lib.dir}/commons-pool.jar"/>
     <pathelement location="${lib.dir}/eigenbase-properties.jar"/>
     <pathelement location="${lib.dir}/eigenbase-resgen.jar"/>
@@ -285,6 +286,12 @@ unzip-FoodMartAccessDB"/>
         todir="${classes.dir}"/>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml" 
         todir="${classes.dir}"/>
+    <copy todir="${classes.dir}">
+      <fileset
+          dir="${java.dir}"
+          includes="
+META-INF/**"/>
+    </copy>
   </target>
 
   <target name="compile.tests" depends="info,compile.java">
@@ -725,6 +732,10 @@ mondrian/test/loader/insert.sql"/>
 LICENSE.html,
 README.txt,
 VERSION.txt"/>
+      <fileset
+          dir="${java.dir}"
+          includes="
+META-INF/**"/>
     </zip>
   </target>
 

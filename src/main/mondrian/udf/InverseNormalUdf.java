@@ -7,7 +7,7 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-package mondrian.example;
+package mondrian.udf;
 
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.DistributionFactory;
@@ -41,8 +41,8 @@ import mondrian.spi.UserDefinedFunction;
  *         FORMAT_STRING = "0.0000"
  * </pre></code></blockquote>
  */
-public class InverseNormalFunDef implements UserDefinedFunction {
-    private static final Logger LOGGER = Logger.getLogger(InverseNormalFunDef.class);
+public class InverseNormalUdf implements UserDefinedFunction {
+    private static final Logger LOGGER = Logger.getLogger(InverseNormalUdf.class);
 
     private static DistributionFactory distributionFactory = DistributionFactory.newInstance();
     private static NormalDistribution nd = distributionFactory.createNormalDistribution();

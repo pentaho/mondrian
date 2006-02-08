@@ -7,7 +7,7 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-package mondrian.example;
+package mondrian.udf;
 
 import mondrian.olap.*;
 import mondrian.olap.type.*;
@@ -23,17 +23,9 @@ import java.util.List;
  * @version $Id$
  */
 public class LastNonEmptyUdf implements UserDefinedFunction {
-    private final String name;
-
-    /**
-     * Creates a function definition with a given name.
-     */
-    public LastNonEmptyUdf(String name) {
-        this.name = name;
-    }
 
     public String getName() {
-        return name;
+        return "LastNonEmpty";
     }
 
     public String getDescription() {

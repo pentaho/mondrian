@@ -9,9 +9,6 @@
 */
 package mondrian.test;
 
-
-import mondrian.example.InverseNormalFunDef;
-import mondrian.example.LastNonEmptyUdf;
 import mondrian.olap.*;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
@@ -233,10 +230,6 @@ public class UdfTest extends FoodMartTestCase {
                     "</Schema>",
                     "<UserDefinedFunction name=\"PlusOne\" className=\"" +
                     PlusOneUdf.class.getName() + "\"/>" + nl +
-                    "<UserDefinedFunction name=\"LastNonEmpty\" className=\"" +
-                    LastNonEmptyUdf.class.getName() + "\"/>" + nl +
-                    "<UserDefinedFunction name=\"InverseNormal\" className=\"" +
-                    InverseNormalFunDef.class.getName() + "\"/>" + nl +
                     "</Schema>");
         }
     }
