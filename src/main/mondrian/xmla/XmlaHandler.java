@@ -168,7 +168,6 @@ public class XmlaHandler implements XmlaConstants {
         writer.startElement("xsd:schema", new String[] {
             "xmlns:xsd", XmlaConstants.NS_XSD,
             "targetNamespace", XmlaConstants.NS_XMLA_MDDATASET,
-            "xmlns:xsi", XmlaConstants.NS_XSI,
             "xmlns:sql", NS_SQL,
             "elementFormDefault", "qualified"
         });
@@ -932,7 +931,7 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         private void cellData(SaxWriter writer) throws SAXException {
-            writer.startElement("CellData", new String[] {"xmlns:xsi", NS_XSI});
+            writer.startElement("CellData");
             final int axisCount = result.getAxes().length;
             int[] pos = new int[axisCount];
             int[] cellOrdinal = new int[] {0};
