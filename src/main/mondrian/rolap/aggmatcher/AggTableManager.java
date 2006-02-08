@@ -252,7 +252,14 @@ public class AggTableManager {
                     AggStar aggStar = AggStar.makeAggStar(star,
                                                           dbTable,
                                                           msgRecorder);
-                    star.addAggStar(aggStar);
+                    if (aggStar.getSize() > 0) {
+                        star.addAggStar(aggStar);
+                    } else {
+                        String msg = mres.AggTableZeroSize.str(
+                            aggStar.getFactTable().getName(),
+                            factTableName);
+                        getLogger().warn(msg);
+                    }
                 }
                 // Note: if the dbTable name matches but the columnsOK does
                 // not, then this is an error and the aggregate tables

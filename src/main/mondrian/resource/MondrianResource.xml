@@ -735,6 +735,11 @@
         Could not get a column name from a level key expression: ''{0}''.
     </text>
 </message>
+<message id="7000420" name="AggTableZeroSize">
+    <text>
+        Zero size Aggregate table ''{0}'' for Fact Table ''{1}''.
+    </text>
+</message>
 <!-- Aggregate tables: end -->
 
 <!-- Resources related to format specifications ========================= -->
