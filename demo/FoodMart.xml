@@ -324,8 +324,10 @@ fullname
           levelType="TimeYears"/>
       <Level name="Quarter" column="quarter" uniqueMembers="false"
           levelType="TimeQuarters"/>
-      <Level name="Month" column="month_of_year" uniqueMembers="false"
-          type="Numeric" levelType="TimeMonths"/>
+      <!-- Use the_month as source for the name, so members look like
+           [Time].[1997].[Q1].[Jan] rather than [Time].[1997].[Q1].[1]. -->
+      <Level name="Month" column="month_of_year" nameColumn="the_month"
+          uniqueMembers="false" type="Numeric" levelType="TimeMonths"/>
     </Hierarchy>
   </Dimension>
 

@@ -606,6 +606,18 @@ public class NonEmptyTest extends FoodMartTestCase {
         c.run();
     }
 
+    public void testMemberChildrenNameCol() {
+        // Bug 1379068 causes no children of [Time].[1997].[Q2] to be
+        // found, because it incorrectly constrains on the level's key column
+        // rather than name column.
+        TestCase c = new TestCase(3, 1,
+                "select " +
+                " {[Measures].[Count]} ON columns," +
+                " {[Time].[1997].[Q2].[April]} on rows " +
+                "from [HR]");
+        c.run();
+    }
+
     /**
      * When a member is expanded in JPivot with mulitple hierarchies visible it
      * generates a
