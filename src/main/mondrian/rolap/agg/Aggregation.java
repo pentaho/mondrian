@@ -14,6 +14,7 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.Level;
 import mondrian.olap.Member;
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapStar;
@@ -59,10 +60,6 @@ import java.util.*;
  * @version $Id$
  **/
 public class Aggregation {
-    private static final int MAX_CONSTRAINTS_ORACLE = 1000;
-    private static final int MAX_CONSTRAINTS_MSSQL = 10000;
-    private static final int MAX_CONSTRAINTS_DB2 = 2500;
-    private static final int MAX_CONSTRAINTS_DEFAULT = 10000;
     private int maxConstraints;
 
     private final RolapStar star;
@@ -89,16 +86,8 @@ public class Aggregation {
         this.star = star;
         this.bitKey = bitKey;
         this.segmentRefs = new ArrayList();
-
-        SqlQuery.Dialect dialect = star.getSqlQueryDialect();
-        if (dialect.isOracle())
-            maxConstraints = MAX_CONSTRAINTS_ORACLE;
-        else if (dialect.isMSSQL())
-            maxConstraints = MAX_CONSTRAINTS_MSSQL;
-        else if (dialect.isDB2())
-            maxConstraints = MAX_CONSTRAINTS_DB2;
-        else
-            maxConstraints = MAX_CONSTRAINTS_DEFAULT;
+        this.maxConstraints =
+            MondrianProperties.instance().MaxConstraints.get();
     }
 
     /**

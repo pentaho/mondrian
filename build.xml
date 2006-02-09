@@ -717,7 +717,8 @@ doc/**/*.xml"
           includes="
 **/*.class,
 **/*.properties,
-**/*.xml"/>
+**/*.xml,
+META-INF/**"/>
       <zipfileset
           dir="${testclasses.dir}"
           includes="
@@ -824,6 +825,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
+      <classes dir="${basedir}" includes="mondrian.properties"/>
     </war>
   </target>
 

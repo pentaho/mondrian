@@ -14,7 +14,6 @@ package mondrian.olap;
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.*;
 
-import javax.servlet.ServletContext;
 import java.io.*;
 import java.net.*;
 import java.util.Enumeration;
@@ -37,8 +36,6 @@ public class MondrianProperties extends TriggerableProperties {
 
     private final FilePropertySource mondrianDotPropertiesSource =
             new FilePropertySource(new File(mondrianDotProperties));
-    private final FilePropertySource buildDotPropertiesSource =
-            new FilePropertySource(new File(buildDotProperties));
     private int populateCount;
 
     private static final Logger LOGGER =
@@ -50,9 +47,6 @@ public class MondrianProperties extends TriggerableProperties {
      */
     private static MondrianProperties instance;
     private static final String mondrianDotProperties = "mondrian.properties";
-    private static final String buildDotProperties = "build.properties";
-    private static final String servletPath =
-            "/WEB-INF/" + mondrianDotProperties;
 
 
     /**
@@ -61,7 +55,7 @@ public class MondrianProperties extends TriggerableProperties {
     public static synchronized MondrianProperties instance() {
         if (instance == null) {
             instance = new MondrianProperties();
-            instance.populate(null);
+            instance.populate();
         }
         return instance;
     }
@@ -172,36 +166,38 @@ public class MondrianProperties extends TriggerableProperties {
     }
 
     /**
-     * Loads this property set from: the file "mondrian.properties" (if it
-     * exists); the "mondrian.properties" in the JAR (if we're in a servlet);
-     * and from the system properties.
-     *
-     * @param servletContext May be null
+     * Loads this property set from: the file "$PWD/mondrian.properties" (if it
+     * exists); the "mondrian.properties" in the CLASSPATH; and from the system 
+     * properties.
      */
-    public void populate(ServletContext servletContext) {
+    public void populate() {
         // Read properties file "mondrian.properties", if it exists. If we have
         // read the file before, only read it if it is newer.
         loadIfStale(mondrianDotPropertiesSource);
 
-        // For file-based installations (i.e. testing), load any overrides from
-        // "build.properties".
-        loadIfStale(buildDotPropertiesSource);
-
-        // If we're in a servlet, read "mondrian.properties" from WEB-INF
-        // directory.
-        if (servletContext != null) {
+		URL url = null;
+        File file = new File(mondrianDotProperties);
+        if (file.exists() && file.isFile()) {
+            // Read properties file "mondrian.properties" from PWD, if it exists.
             try {
-                final URL resourceUrl = servletContext.getResource(servletPath);
-                if (resourceUrl != null) {
-                    final UrlPropertySource source =
-                            new UrlPropertySource(resourceUrl);
-                    loadIfStale(source);
-                }
+                url = file.toURL();
             } catch (MalformedURLException e) {
-                LOGGER.error("Mondrian: could not load servlet resource '" +
-                        servletPath + "'", e);
+                LOGGER.warn("Mondrian: file '"
+                    + file.getAbsolutePath()
+                    + "' could not be loaded" , e);
             }
+        } else {
+            // Then try load it from classloader
+            url = MondrianProperties.class.getClassLoader().getResource(mondrianDotProperties);
         }
+
+        if (url != null) {
+            load(new UrlPropertySource(url));
+        } else {
+            LOGGER.warn("mondrian.proeprties can't be found under '"
+                    + new File(".").getAbsolutePath() + "' or classloader");
+        }
+
         // copy in all system properties which start with "mondrian."
         int count = 0;
         for (Enumeration keys = System.getProperties().keys();
@@ -656,6 +652,13 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public final IntegerProperty MaxRows = new IntegerProperty(
         this, "mondrian.xmla.drillthroughMaxRows", 1000);
+
+    /**
+     * Max number of constraints in a single `IN' SQL clause. This value may be
+     * variant among database prodcuts and their runtime settings.
+     */
+    public final IntegerProperty MaxConstraints = new IntegerProperty(
+        this, "mondrian.rolap.maxConstraints", 2500);
 }
 
 // End MondrianProperties.java
