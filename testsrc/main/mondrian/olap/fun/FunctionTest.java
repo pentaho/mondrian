@@ -163,9 +163,13 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDimensionsNumeric() {
-        assertExprDependsOn("Dimensions(3).Name", "{}");
-        assertMemberExprDependsOn("Dimensions(4).CurrentMember", allDims());
-        assertExprReturns("Dimensions(2).Name", "Store");
+        assertExprDependsOn("Dimensions(2).Name", "{}");
+        assertMemberExprDependsOn("Dimensions(3).CurrentMember", allDims());
+        assertExprReturns("Dimensions(2).Name", "Store Size in SQFT");
+        // bug 1426134 -- Dimensions(0) throws 'Index '0' out of bounds'
+        assertExprReturns("Dimensions(0).Name", "Measures");
+        assertExprThrows("Dimensions(-1).Name", "Index '-1' out of bounds");
+        assertExprThrows("Dimensions(100).Name", "Index '100' out of bounds");
     }
 
     public void testDimensionsString() {
@@ -222,6 +226,8 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testLevelsNumeric() {
         assertExprReturns("[Time].Levels(2).Name", "Month");
+        assertExprReturns("[Time].Levels(0).Name", "Year");
+        assertExprReturns("[Product].Levels(0).Name", "(All)");
     }
 
     public void testLevelsTooSmall() {

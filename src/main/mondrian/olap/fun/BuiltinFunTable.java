@@ -143,11 +143,11 @@ public class BuiltinFunTable extends FunTableImpl {
             Dimension nthDimension(Evaluator evaluator, int n) {
                 Cube cube = evaluator.getCube();
                 Dimension[] dimensions = cube.getDimensions();
-                if ((n > dimensions.length) || (n < 1)) {
+                if (n >= dimensions.length || n < 0) {
                     throw newEvalException(
                             this, "Index '" + n + "' out of bounds");
                 }
-                return dimensions[n - 1];
+                return dimensions[n];
             }
         });
         define(new FunDefBase(
@@ -227,7 +227,7 @@ public class BuiltinFunTable extends FunTableImpl {
             Level nthLevel(Hierarchy hierarchy, int n) {
                 Level[] levels = hierarchy.getLevels();
 
-                if ((n >= levels.length) || (n < 0)) {
+                if (n >= levels.length || n < 0) {
                     throw newEvalException(
                             this, "Index '" + n + "' out of bounds");
                 }
