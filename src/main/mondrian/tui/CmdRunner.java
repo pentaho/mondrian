@@ -283,63 +283,59 @@ public class CmdRunner {
     }
 
     public void loadParameter(Query query, Parameter param) {
-            int pType = param.getCategory();
-            String name = param.getName();
-            String value = (String) CmdRunner.paraNameValues.get(name);
-            CmdRunner.debug("loadParameter: name=" +name+ ", value=" + value);
-            if (value == null) {
-                return;
-            }
-            Expr expr = parseParameter(value);
-            if  (expr == null) {
-                return;
-            }
-            int type = expr.type;
-            // found the parameter with the given name in the query
-            switch (pType) {
-            case Category.Numeric :
-                if (type != Expr.NUMERIC_TYPE) {
-                    String msg = "For parameter named \""
+        int category = param.getCategory();
+        String name = param.getName();
+        String value = (String) CmdRunner.paraNameValues.get(name);
+        CmdRunner.debug("loadParameter: name=" +name+ ", value=" + value);
+        if (value == null) {
+            return;
+        }
+        Expr expr = parseParameter(value);
+        if  (expr == null) {
+            return;
+        }
+        int type = expr.type;
+        // found the parameter with the given name in the query
+        switch (category) {
+        case Category.Numeric:
+            if (type != Expr.NUMERIC_TYPE) {
+                String msg = "For parameter named \""
                         + name
                         + "\" of Catetory.Numeric, "
                         + "the value was type \""
                         + Expr.typeName(type)
                         + "\"";
-                    throw new IllegalArgumentException(msg);
-                }
-                if (expr.value instanceof Double) {
-                    param.setValue(expr.value);
-                } else {
-                    Number n = (Number) expr.value;
-                    param.setValue(new Double(n.doubleValue()));
-                }
-                break;
-            case Category.String :
-                if (type != Expr.STRING_TYPE) {
-                    String msg = "For parameter named \""
+                throw new IllegalArgumentException(msg);
+            }
+            break;
+        case Category.String:
+            if (type != Expr.STRING_TYPE) {
+                String msg = "For parameter named \""
                         + name
                         + "\" of Catetory.String, "
                         + "the value was type \""
                         + Expr.typeName(type)
                         + "\"";
-                    throw new IllegalArgumentException(msg);
-                }
-                param.setValue(value);
-                break;
+                throw new IllegalArgumentException(msg);
+            }
+            break;
 
-            case Category.Member :
-                if (type != Expr.MEMBER_TYPE) {
-                    String msg = "For parameter named \""
+        case Category.Member:
+            if (type != Expr.MEMBER_TYPE) {
+                String msg = "For parameter named \""
                         + name
                         + "\" of Catetory.Member, "
                         + "the value was type \""
                         + Expr.typeName(type)
                         + "\"";
-                    throw new IllegalArgumentException(msg);
-                }
-                param.setValue(expr.value);
-                break;
+                throw new IllegalArgumentException(msg);
             }
+            break;
+
+        default:
+            throw Util.newInternal("unexpected category " + category);
+        }
+        query.setParameter(param.getName(), String.valueOf(expr.value));
     }
 
     static NumberFormat nf = NumberFormat.getInstance();

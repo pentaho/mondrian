@@ -27,26 +27,27 @@ import mondrian.mdx.*;
  */
 public class ParameterFunDef extends FunDefBase {
     public final String parameterName;
-    private final Hierarchy hierarchy;
+    private final Type type;
     public final Exp exp;
     public final String parameterDescription;
 
-    ParameterFunDef(FunDef funDef,
+    ParameterFunDef(
+            FunDef funDef,
             String parameterName,
-            Hierarchy hierarchy,
-            int returnType,
+            Type type,
+            int returnCategory,
             Exp exp,
             String description) {
         super(funDef.getName(),
                 funDef.getSignature(),
                 funDef.getDescription(),
                 funDef.getSyntax(),
-                returnType,
+                returnCategory,
                 funDef.getParameterCategories());
         assertPrecondition(getName().equals("Parameter") ||
                 getName().equals("ParamRef"));
         this.parameterName = parameterName;
-        this.hierarchy = hierarchy;
+        this.type = type;
         this.exp = exp;
         this.parameterDescription = description;
     }
@@ -57,21 +58,14 @@ public class ParameterFunDef extends FunDefBase {
     }
 
     public Type getResultType(Validator validator, Exp[] args) {
-        switch (returnCategory) {
-        case Category.String:
-            return new StringType();
-        case Category.Numeric:
-            return new NumericType();
-        case Category.Numeric | Category.Integer:
-            return new DecimalType(Integer.MAX_VALUE, 0);
-        case Category.Member:
-            return MemberType.forHierarchy(hierarchy);
-        default:
-            throw Category.instance.badValue(returnCategory);
-        }
+        return type;
     }
 
-    private static boolean isConstantHierarchy(Exp typeArg) {
+    private static boolean isConstant(Exp typeArg) {
+        if (typeArg instanceof LevelExpr) {
+            // e.g. "[Time].[Quarter]"
+            return true;
+        }
         if (typeArg instanceof HierarchyExpr) {
             // e.g. "[Time].[By Week]"
             return true;
@@ -102,11 +96,15 @@ public class ParameterFunDef extends FunDefBase {
      * Resolves calls to the <code>Parameter</code> MDX function.
      */
     public static class ParameterResolver extends MultiResolver {
-        private static final String[] SIGNATURES = new String[]{
-                        "fS#yS#", "fS#yS", // Parameter(string const, symbol, string[, string const]): string
-                        "fn#yn#", "fn#yn", // Parameter(string const, symbol, numeric[, string const]): numeric
-                        "fm#hm#", "fm#hm", // Parameter(string const, hierarchy constant, member[, string const]): member
-                    };
+        private static final String[] SIGNATURES =
+                new String[]{
+                    // Parameter(string const, symbol, string[, string const]): string
+                    "fS#yS#", "fS#yS",
+                    // Parameter(string const, symbol, numeric[, string const]): numeric
+                    "fn#yn#", "fn#yn",
+                    // Parameter(string const, hierarchy constant, member[, string const]): member
+                    "fm#hm#", "fm#hm",
+                };
 
         public ParameterResolver() {
             super("Parameter",
@@ -124,59 +122,97 @@ public class ParameterFunDef extends FunDefBase {
                     args[0].getCategory() == Category.String) {
                 parameterName = (String) ((Literal) args[0]).getValue();
             } else {
-                throw newEvalException(dummyFunDef, "Parameter name must be a string constant");
+                throw newEvalException(
+                        dummyFunDef,
+                        "Parameter name must be a string constant");
             }
             Exp typeArg = args[1];
-            Hierarchy hierarchy;
-            int type;
+            int category;
+            Type type = typeArg.getType();
             switch (typeArg.getCategory()) {
-            case Category.Hierarchy:
             case Category.Dimension:
-                hierarchy = typeArg.getType().getHierarchy();
-                if (hierarchy == null || !isConstantHierarchy(typeArg)) {
-                    throw newEvalException(dummyFunDef, "Invalid hierarchy for parameter '" + parameterName + "'");
+            case Category.Hierarchy:
+            case Category.Level:
+                Dimension dimension = type.getDimension();
+                if (!isConstant(typeArg)) {
+                    throw newEvalException(
+                            dummyFunDef,
+                            "Invalid parameter '" + parameterName +
+                            "'. Type must be a NUMERIC, STRING, or a dimension, hierarchy or level");
                 }
-                type = Category.Member;
+                if (dimension == null) {
+                    throw newEvalException(
+                            dummyFunDef,
+                            "Invalid dimension for parameter '" +
+                            parameterName + "'");
+                }
+                type = new MemberType(
+                        type.getDimension(),
+                        type.getHierarchy(),
+                        type.getLevel(),
+                        null);
+                category = Category.Member;
                 break;
+
             case Category.Symbol:
-                hierarchy = null;
                 String s = (String) ((Literal) typeArg).getValue();
                 if (s.equalsIgnoreCase("NUMERIC")) {
-                    type = Category.Numeric;
+                    category = Category.Numeric;
                     break;
                 } else if (s.equalsIgnoreCase("STRING")) {
-                    type = Category.String;
+                    category = Category.String;
                     break;
                 }
                 // fall through and throw error
             default:
                 // Error is internal because the function call has already been
                 // type-checked.
-                throw newEvalException(dummyFunDef,
-                        "Invalid type for parameter '" + parameterName + "'; expecting NUMERIC, STRING or a hierarchy");
+                throw newEvalException(
+                        dummyFunDef,
+                        "Invalid type for parameter '" + parameterName +
+                        "'; expecting NUMERIC, STRING or a hierarchy");
             }
             Exp exp = args[2];
-            if (exp.getCategory() != type) {
-                String typeName = Category.instance.getName(type).toUpperCase();
-                throw newEvalException(dummyFunDef, "Default value of parameter '" + parameterName + "' is inconsistent with its type, " + typeName);
+            if (exp.getCategory() != category) {
+                String typeName =
+                        Category.instance.getName(category).toUpperCase();
+                throw newEvalException(
+                        dummyFunDef,
+                        "Default value of parameter '" + parameterName +
+                        "' is inconsistent with its type, " + typeName);
             }
-            if (type == Category.Member) {
-                Hierarchy expHierarchy = exp.getType().getHierarchy();
-                if (expHierarchy != hierarchy) {
-                    throw newEvalException(dummyFunDef, "Default value of parameter '" + parameterName + "' must belong to the hierarchy " + hierarchy);
+            if (category == Category.Member) {
+                final Type expType = exp.getType();
+                if (type.getDimension() != null &&
+                        expType.getDimension() != type.getDimension() ||
+                        type.getHierarchy() != null &&
+                        expType.getHierarchy() != type.getHierarchy() ||
+                        type.getLevel() != null &&
+                        expType.getLevel() != type.getLevel()) {
+                    throw newEvalException(
+                            dummyFunDef,
+                            "Default value of parameter '" + parameterName +
+                            "' is not consistent with the parameter type '" +
+                            type);
                 }
             }
             String parameterDescription = null;
             if (args.length > 3) {
                 if (args[3] instanceof Literal &&
                         args[3].getCategory() == Category.String) {
-                    parameterDescription = (String) ((Literal) args[3]).getValue();
+                    parameterDescription =
+                            (String) ((Literal) args[3]).getValue();
                 } else {
-                    throw newEvalException(dummyFunDef, "Description of parameter '" + parameterName + "' must be a string constant");
+                    throw newEvalException(
+                            dummyFunDef,
+                            "Description of parameter '" + parameterName +
+                            "' must be a string constant");
                 }
             }
 
-            return new ParameterFunDef(dummyFunDef, parameterName, hierarchy, type, exp, parameterDescription);
+            return new ParameterFunDef(
+                    dummyFunDef, parameterName, type, category,
+                    exp, parameterDescription);
         }
     }
 
@@ -185,7 +221,11 @@ public class ParameterFunDef extends FunDefBase {
      */
     public static class ParamRefResolver extends MultiResolver {
         public ParamRefResolver() {
-            super("ParamRef", "ParamRef(<Name>)", "Returns the current value of this parameter. If it is null, returns the default value.", new String[]{"fv#"});
+            super(
+                    "ParamRef",
+                    "ParamRef(<Name>)",
+                    "Returns the current value of this parameter. If it is null, returns the default value.",
+                    new String[]{"fv#"});
         }
 
         protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
@@ -194,9 +234,13 @@ public class ParameterFunDef extends FunDefBase {
                     args[0].getCategory() == Category.String) {
                 parameterName = (String) ((Literal) args[0]).getValue();
             } else {
-                throw newEvalException(dummyFunDef, "Parameter name must be a string constant");
+                throw newEvalException(
+                        dummyFunDef,
+                        "Parameter name must be a string constant");
             }
-            return new ParameterFunDef(dummyFunDef, parameterName, null, Category.Unknown, null, null);
+            return new ParameterFunDef(
+                    dummyFunDef, parameterName, null, Category.Unknown, null,
+                    null);
         }
     }
 }

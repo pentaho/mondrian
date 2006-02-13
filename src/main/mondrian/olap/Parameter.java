@@ -14,8 +14,8 @@ package mondrian.olap;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.mdx.MemberExpr;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
+import mondrian.calc.*;
+import mondrian.calc.impl.GenericCalc;
 
 import java.io.PrintWriter;
 
@@ -25,19 +25,20 @@ public class Parameter extends ExpBase {
     // Category.String, Category.Numeric, or Category.Member
     private final int category;
     private final String description;
-    private Exp exp;
+    private final Exp defaultExp;
     private int defineCount;
     private final Type type;
+    private Object value;
 
     Parameter(
             String name,
             int category,
-            Exp exp,
+            Exp defaultExp,
             String description,
             Type type) {
         this.name = name;
         this.category = category;
-        this.exp = exp;
+        this.defaultExp = defaultExp;
         this.defineCount = 1;
         this.description = description;
         this.type = type;
@@ -62,8 +63,8 @@ public class Parameter extends ExpBase {
         return type;
     }
 
-    public Exp getExp() {
-        return exp;
+    public Exp getDefaultExp() {
+        return defaultExp;
     }
 
     void incrementDefineCount() {
@@ -96,34 +97,24 @@ public class Parameter extends ExpBase {
     }
 
     public Calc accept(ExpCompiler compiler) {
-        // delegate to underlying expression
-        return compiler.compile(exp);
+        final Calc defaultCalc = defaultExp.accept(compiler);
+        return new GenericCalc(new DummyExp(type)) {
+            public Calc[] getCalcs() {
+                return new Calc[] {defaultCalc};
+            }
+
+            public Object evaluate(Evaluator evaluator) {
+                if (value != null) {
+                    return value;
+                } else {
+                    return defaultCalc.evaluate(evaluator);
+                }
+            }
+        };
     }
 
     public String getName() {
         return name;
-    }
-
-    /**
-     * @deprecated Call {@link Connection#parseExpression} then
-     *   {@link #setValue(Object)}
-     */
-    public void setValue(String value, Query query) {
-        this.exp = quickParse(value, query);
-    }
-
-    Exp quickParse(String value, Query query) {
-        switch (category) {
-        case Category.Numeric:
-            return Literal.create(new Double(value));
-        case Category.String:
-            return Literal.createString(value);
-        case Category.Member:
-            Member member = (Member) Util.lookup(query, Util.explode(value));
-            return new MemberExpr(member);
-        default:
-            throw Category.instance.badValue(category);
-        }
     }
 
     /**
@@ -134,8 +125,8 @@ public class Parameter extends ExpBase {
         switch (category) {
         case Category.Numeric:
             // exp can be a unary minus FunCall
-            if (exp instanceof FunCall) {
-                FunCall f = (FunCall) exp;
+            if (defaultExp instanceof FunCall) {
+                FunCall f = (FunCall) defaultExp;
                 if (f.getFunName().equals("-")) {
                     Literal lit = (Literal)f.getArg(0);
                     Object o = lit.getValue();
@@ -153,30 +144,28 @@ public class Parameter extends ExpBase {
                     throw Util.newInternal("bad FunCall " + f);
                 }
             }
-            return ((Literal)exp).getValue();
+            return ((Literal)defaultExp).getValue();
         case Category.String:
-            return ((Literal)exp).getValue();
+            return ((Literal)defaultExp).getValue();
         default:
-            return (Member)exp;
+            return (Member)defaultExp;
         }
     }
 
 
     /**
      * Sets the value of this parameter.
+     *
      * @param value Value of the parameter; must be a {@link String},
      *   a {@link Double}, or a {@link Member}
      */
     public void setValue(Object value) {
-        switch (category) {
-        case Category.Numeric:
-            exp = Literal.create((Double)value);
-            break;
-        case Category.String:
-            exp = Literal.createString((String)value);
-            break;
-        default:
-            exp = new MemberExpr((Member) value);
+        if (value instanceof MemberExpr) {
+            this.value = ((MemberExpr) value).getMember();
+        } else if (value instanceof Literal) {
+            this.value = ((Literal) value).getValue();
+        } else {
+            this.value = value;
         }
     }
 
@@ -201,13 +190,13 @@ public class Parameter extends ExpBase {
             throw MondrianResource.instance().MdxParamMultipleDef.ex(name,
                 new Integer(defineCount));
         }
-        if (exp == null) {
+        if (defaultExp == null) {
             throw MondrianResource.instance().MdxParamValueNotFound.ex(name);
         }
     }
 
     public Object clone() {
-        return new Parameter(name, category, exp, description, type);
+        return new Parameter(name, category, defaultExp, description, type);
     }
 
     public void unparse(PrintWriter pw) {
@@ -223,13 +212,26 @@ public class Parameter extends ExpBase {
                 pw.print(getParameterType());
                 break;
             case Category.Member:
-                pw.print(type.getHierarchy().getUniqueName());
+                String name =
+                        type.getLevel() != null ?
+                        type.getLevel().getUniqueName() :
+                        type.getHierarchy() != null ?
+                        type.getHierarchy().getUniqueName() :
+                        type.getDimension().getUniqueName();
+                pw.print(name);
                 break;
             default:
                 throw Category.instance.badValue(category);
             }
             pw.print(", ");
-            exp.unparse(pw);
+            if (value == null) {
+                defaultExp.unparse(pw);
+            } else if (value instanceof String) {
+                String s = (String) value;
+                pw.print(Util.quoteForMdx(s));
+            } else {
+                pw.print(value);
+            }
             if (description != null) {
                 pw.print(", " + Util.quoteForMdx(description));
             }
@@ -245,8 +247,10 @@ public class Parameter extends ExpBase {
         return null;
     }
 
-    /** Returns whether this parameter is equal to another, based upon name,
-     * type and value */
+    /**
+     * Returns whether this parameter is equal to another, based upon name,
+     * type and value
+     */
     public boolean equals(Object other) {
         if (!(other instanceof Parameter)) {
             return false;
@@ -254,11 +258,9 @@ public class Parameter extends ExpBase {
         Parameter that = (Parameter) other;
         return that.getName().equals(this.getName()) &&
             (that.getCategory() == this.getCategory()) &&
-            that.exp.equals(this.exp);
+            that.defaultExp.equals(this.defaultExp);
     }
-
 }
-
 
 // End Parameter.java
 

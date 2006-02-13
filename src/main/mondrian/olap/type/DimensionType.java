@@ -22,6 +22,7 @@ import mondrian.olap.Level;
  */
 public class DimensionType implements Type {
     private final Dimension dimension;
+    private final String digest;
 
     public static final DimensionType Unknown = new DimensionType(null);
 
@@ -33,6 +34,12 @@ public class DimensionType implements Type {
      */
     public DimensionType(Dimension dimension) {
         this.dimension = dimension;
+        StringBuffer buf = new StringBuffer("DimensionType<");
+        if (dimension != null) {
+            buf.append("dimension=").append(dimension.getUniqueName());
+        }
+        buf.append(">");
+        this.digest = buf.toString();
     }
 
     public static DimensionType forDimension(Dimension dimension) {
@@ -64,6 +71,9 @@ public class DimensionType implements Type {
         return dimension;
     }
 
+    public String toString() {
+        return digest;
+    }
 }
 
 // End DimensionType.java

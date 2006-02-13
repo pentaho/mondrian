@@ -97,7 +97,7 @@ public class DriverManager {
             boolean fresh) {
         return getConnection(properties, servletContext, null, fresh);
     }
-    
+
     /**
      * Creates a connection to a Mondrian OLAP Server.
      *
@@ -123,7 +123,7 @@ public class DriverManager {
             throw Util.newError("Provider not recognized: " + provider);
         }
         if (servletContext != null) {
-            MondrianProperties.instance().populate(servletContext);
+            MondrianProperties.instance().populate();
             fixup(properties, servletContext);
         }
         return new RolapConnection(properties, dataSource);

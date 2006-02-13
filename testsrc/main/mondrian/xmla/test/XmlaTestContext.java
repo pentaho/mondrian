@@ -30,7 +30,7 @@ import org.w3c.dom.Element;
 /**
  * Common utilities for XML/A testing, used in test suite and
  * example XML/A web pages. Refactored from XmlaTest.
- *  
+ *
  * @author Sherman Wood
  * @version $Id$
  *
@@ -55,37 +55,37 @@ public class XmlaTestContext {
     public static final String[] REQUEST_ELEMENT_NAMES = new String[]{
             "Discover", "Execute"
     };
-    
+
     private Object[] DEFAULT_REQUEST_RESPONSE_PAIRS = null;
 
     private ServletContext servletContext;
     private String connectString;
-    
+
     public XmlaTestContext() {
     	super();
     }
-    
+
     public XmlaTestContext(ServletContext context) {
     	super();
     	this.servletContext = context;
     }
-    
+
     public String getConnectString() {
     	if (connectString != null) {
     		return connectString;
     	}
-    	
+
     	if (servletContext != null) {
-    		MondrianProperties.instance().populate(servletContext);
+    		MondrianProperties.instance().populate();
     	}
     	connectString = TestContext.getConnectString();
-    	
+
         //connectString = MondrianProperties.instance().TestConnectString.stringValue();
         //connectString = connectString.replaceAll("&", "&amp;");
         return connectString;
-	
+
     }
-    
+
     public DataSourcesConfig.DataSources dataSources() {
     	if (DATASOURCES != null) {
     		return DATASOURCES;
@@ -109,9 +109,9 @@ public class XmlaTestContext {
 	        final DOMWrapper def = xmlParser.parse(dsConfigReader);
 	        DATASOURCES = new DataSourcesConfig.DataSources(def);
         } catch (Exception e) {
-        	
+
         }
-        
+
 		return DATASOURCES;
     }
 
@@ -215,7 +215,7 @@ public class XmlaTestContext {
 
         return pairs;
     }
-    
+
     public Object[] defaultRequestResponsePairs() {
     	if (DEFAULT_REQUEST_RESPONSE_PAIRS == null) {
     		DEFAULT_REQUEST_RESPONSE_PAIRS = fileRequestResponsePairs(ENV);

@@ -25,6 +25,7 @@ public class LevelType implements Type {
     private final Dimension dimension;
     private final Hierarchy hierarchy;
     private final Level level;
+    private final String digest;
 
     /**
      * Creates a type representing a level.
@@ -48,6 +49,16 @@ public class LevelType implements Type {
             Util.assertPrecondition(hierarchy.getDimension() == dimension,
                     "hierarchy.getDimension() == dimension");
         }
+        StringBuffer buf = new StringBuffer("LevelType<");
+        if (level != null) {
+            buf.append("level=").append(level.getUniqueName());
+        } else if (hierarchy != null) {
+            buf.append("hierarchy=").append(hierarchy.getUniqueName());
+        } else if (dimension != null) {
+            buf.append("dimension=").append(dimension.getUniqueName());
+        }
+        buf.append(">");
+        this.digest = buf.toString();
     }
 
     public static LevelType forType(Type type) {
@@ -83,6 +94,10 @@ public class LevelType implements Type {
 
     public Level getLevel() {
         return level;
+    }
+
+    public String toString() {
+        return digest;
     }
 }
 

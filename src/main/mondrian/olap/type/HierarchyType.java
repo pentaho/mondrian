@@ -23,6 +23,7 @@ import mondrian.olap.Level;
 public class HierarchyType implements Type {
     private final Dimension dimension;
     private final Hierarchy hierarchy;
+    private final String digest;
 
     /**
      * Creates a type representing a hierarchy.
@@ -30,6 +31,15 @@ public class HierarchyType implements Type {
     public HierarchyType(Dimension dimension, Hierarchy hierarchy) {
         this.dimension = dimension;
         this.hierarchy = hierarchy;
+        StringBuffer buf = new StringBuffer("HierarchyType<");
+        if (hierarchy != null) {
+            buf.append("hierarchy=").append(hierarchy.getUniqueName());
+        } else if (dimension != null) {
+            buf.append("dimension=").append(dimension.getUniqueName());
+        }
+        buf.append(">");
+        this.digest = buf.toString();
+
     }
 
     public static HierarchyType forHierarchy(Hierarchy hierarchy) {
@@ -56,6 +66,10 @@ public class HierarchyType implements Type {
 
     public Level getLevel() {
         return null;
+    }
+
+    public String toString() {
+        return digest;
     }
 }
 

@@ -99,7 +99,14 @@ public class Query extends QueryPart {
         this.formulas = formulas;
         this.axes = axes;
         normalizeAxes();
-        this.slicerAxis = slicer == null ? null : new QueryAxis(false, slicer, AxisOrdinal.Slicer, QueryAxis.SubtotalVisibility.Undefined);
+        if (slicer == null) {
+            this.slicerAxis = null;
+        } else {
+            this.slicerAxis =
+                    new QueryAxis(
+                            false, slicer, AxisOrdinal.Slicer,
+                            QueryAxis.SubtotalVisibility.Undefined);
+        }
         this.cellProps = cellProps;
         this.parameters = parameters;
         resolve();
@@ -458,10 +465,24 @@ public class Query extends QueryPart {
         if (param == null) {
             throw MondrianResource.instance().MdxParamNotFound.ex(parameterName);
         }
-        final Exp exp = param.quickParse(value, this);
+        final Exp exp = quickParse(param.getCategory(), value, this);
         param.setValue(exp);
     }
 
+    private static Exp quickParse(int category, String value, Query query) {
+        switch (category) {
+        case Category.Numeric:
+            return Literal.create(new Double(value));
+        case Category.String:
+            return Literal.createString(value);
+        case Category.Member:
+            Member member = (Member) Util.lookup(query, Util.explode(value));
+            return new MemberExpr(member);
+        default:
+            throw Category.instance.badValue(category);
+        }
+    }
+    
     /**
      * Swaps the x- and y- axes.
      * Does nothing if the number of axes != 2.
@@ -719,8 +740,11 @@ public class Query extends QueryPart {
     List getDefinedMembers() {
         List definedMembers = new ArrayList();
         for (int i = 0; i < formulas.length; i++) {
-            if (formulas[i].isMember() && formulas[i].getElement() != null && getConnection().getRole().canAccess(formulas[i].getElement())) {
-                definedMembers.add(formulas[i].getElement());
+            final Formula formula = formulas[i];
+            if (formula.isMember() &&
+                    formula.getElement() != null &&
+                    getConnection().getRole().canAccess(formula.getElement())) {
+                definedMembers.add(formula.getElement());
             }
         }
         return definedMembers;
