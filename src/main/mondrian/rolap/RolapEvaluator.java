@@ -453,6 +453,9 @@ public class RolapEvaluator implements Evaluator {
         }
         Calc formatCalc = root.getCompiled(formatExp, true);
         Object o = formatCalc.evaluate(this);
+        if (o == null) {
+            return "Standard";
+        }
         return o.toString();
     }
 

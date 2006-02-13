@@ -389,6 +389,41 @@ public class TestCalculatedMembers extends FoodMartTestCase {
     }
 
     /**
+     * Tests that IIf works OK even if its argument returns the NULL
+     * value. (Bug 1418689.)
+     */
+    public void testNpeInIif() {
+        assertQueryReturns(
+                fold(new String[] {
+                    "WITH MEMBER [Measures].[Foo] AS ' 1 / [Measures].[Unit Sales] ',",
+                    "  FORMAT_STRING=IIf([Measures].[Foo] < .3, \"|0.0|style=red\",\"0.0\")",
+                    "SELECT {[Store].[USA].[WA].children} on columns",
+                    "FROM Sales",
+                    "WHERE ( [Time].[1997].[Q4].[12],",
+                    " [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],",
+                    " [Measures].[Foo])"}),
+                fold(new String[] {
+                    "Axis #0:",
+                    "{[Time].[1997].[Q4].[12], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer], [Measures].[Foo]}",
+                    "Axis #1:",
+                    "{[Store].[All Stores].[USA].[WA].[Bellingham]}",
+                    "{[Store].[All Stores].[USA].[WA].[Bremerton]}",
+                    "{[Store].[All Stores].[USA].[WA].[Seattle]}",
+                    "{[Store].[All Stores].[USA].[WA].[Spokane]}",
+                    "{[Store].[All Stores].[USA].[WA].[Tacoma]}",
+                    "{[Store].[All Stores].[USA].[WA].[Walla Walla]}",
+                    "{[Store].[All Stores].[USA].[WA].[Yakima]}",
+                    "Row #0: (null)",
+                    "Row #0: (null)",
+                    "Row #0: 0.5",
+                    "Row #0: (null)",
+                    "Row #0: |0.1|style=red",
+                    "Row #0: (null)",
+                    "Row #0: |0.2|style=red",
+                    ""}));
+    }
+
+    /**
      * Tests that calculated members defined in the schema can have brackets in
      * their names. (Bug 1251683.)
      */
