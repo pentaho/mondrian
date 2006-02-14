@@ -821,6 +821,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*,index.jsp"/>
       <lib dir="${lib.dir}" includes="${name}.jar"/>
       <lib dir="${lib.dir}" includes="eigenbase-*.jar"/>
+      <lib dir="${lib.dir}" includes="commons-math-1.0.jar"/>
       <lib dir="${testlib.dir}" includes="xmlunit*.jar"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
