@@ -11,12 +11,13 @@
 */
 
 package mondrian.olap;
-import mondrian.rolap.RolapConnection;
-import mondrian.rolap.RolapConnectionProperties;
-import mondrian.spi.impl.ServletContextCatalogLocator;
-
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
+
+import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapConnectionProperties;
+import mondrian.spi.CatalogLocator;
+import mondrian.spi.impl.CatalogLocatorImpl;
 
 /**
  * The basic service for managing a set of OLAP drivers.
@@ -38,8 +39,9 @@ public class DriverManager {
      *   See {@link Util#parseConnectString} for more details of the format.
      *   See {@link mondrian.rolap.RolapConnectionProperties} for a list of
      *   allowed properties.
-     * @param servletContext If not null, the <code>catalog</code> is read
-     *   relative to the WAR file of this servlet.
+     * @param locator Use to locate real catalog url by a customized 
+     *   configuration value. If <code>null</code>, leave the catalog url 
+     *   unchanged. 
      * @param fresh If <code>true</code>, a new connection is created;
      *   if <code>false</code>, the connection may come from a connection pool.
      * @return A {@link Connection}
@@ -47,24 +49,10 @@ public class DriverManager {
      */
     public static Connection getConnection(
             String connectString,
-            ServletContext servletContext,
+            CatalogLocator locator,
             boolean fresh) {
         Util.PropertyList properties = Util.parseConnectString(connectString);
-        return getConnection(properties, servletContext, fresh);
-    }
-
-    private static void fixup(
-            Util.PropertyList connectionProperties,
-            ServletContext servletContext) {
-        String catalog = connectionProperties.get(RolapConnectionProperties.Catalog);
-        if (servletContext != null) {
-            final ServletContextCatalogLocator locator =
-                    new ServletContextCatalogLocator(servletContext);
-            final String newCatalog = locator.locate(catalog);
-            if (!newCatalog.equals(catalog)) {
-                connectionProperties.put(RolapConnectionProperties.Catalog, newCatalog);
-            }
-        }
+        return getConnection(properties, locator, fresh);
     }
 
     /**
@@ -75,7 +63,7 @@ public class DriverManager {
     public static Connection getConnection(
             Util.PropertyList properties,
             boolean fresh) {
-        return getConnection(properties, null, fresh);
+        return getConnection(properties, CatalogLocatorImpl.INSTANCE, fresh);
     }
 
     /**
@@ -84,8 +72,9 @@ public class DriverManager {
      * @param properties Collection of properties which define the location
      *   of the connection.
      *   See {@link RolapConnection} for a list of allowed properties.
-     * @param servletContext If not null, the <code>catalog</code> is read
-     *   relative to the WAR file of this servlet.
+     * @param locator Use to locate real catalog url by a customized 
+     *   configuration value. If <code>null</code>, leave the catalog url 
+     *   unchanged.
      * @param fresh If <code>true</code>, a new connection is created;
      *   if <code>false</code>, the connection may come from a connection pool.
      * @return A {@link Connection}
@@ -93,19 +82,20 @@ public class DriverManager {
      */
     public static Connection getConnection(
             Util.PropertyList properties,
-            ServletContext servletContext,
+            CatalogLocator locator,
             boolean fresh) {
-        return getConnection(properties, servletContext, null, fresh);
+        return getConnection(properties, locator, null, fresh);
     }
-
+    
     /**
      * Creates a connection to a Mondrian OLAP Server.
      *
      * @param properties Collection of properties which define the location
      *   of the connection.
      *   See {@link RolapConnection} for a list of allowed properties.
-     * @param servletContext If not null, the <code>catalog</code> is read
-     *   relative to the WAR file of this servlet.
+     * @param locator Use to locate real catalog url by a customized 
+     *   configuration value. If <code>null</code>, leave the catalog url 
+     *   unchanged.
      * @param dataSource - if not null an external DataSource to be used
      *        by Mondrian
      * @param fresh If <code>true</code>, a new connection is created;
@@ -115,19 +105,21 @@ public class DriverManager {
      */
     public static Connection getConnection(
             Util.PropertyList properties,
-            ServletContext servletContext,
+            CatalogLocator locator,
             DataSource dataSource,
             boolean fresh) {
         String provider = properties.get("PROVIDER");
         if (!provider.equalsIgnoreCase("mondrian")) {
             throw Util.newError("Provider not recognized: " + provider);
         }
-        if (servletContext != null) {
-            MondrianProperties.instance().populate();
-            fixup(properties, servletContext);
+        if (locator != null) {
+            String catalog = properties.get(RolapConnectionProperties.Catalog);
+            properties.put(RolapConnectionProperties.Catalog,
+                           locator.locate(catalog));
         }
         return new RolapConnection(properties, dataSource);
     }
 }
+
 
 // End DriverManager.java

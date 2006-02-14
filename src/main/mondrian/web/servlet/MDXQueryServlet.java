@@ -12,15 +12,21 @@
 
 package mondrian.web.servlet;
 
-import mondrian.olap.*;
-import mondrian.web.taglib.ResultCache;
-import org.eigenbase.xom.StringEscaper;
+import java.io.IOException;
+import java.util.Enumeration;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.*;
-import java.io.IOException;
-import java.util.Enumeration;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import mondrian.olap.*;
+import mondrian.spi.CatalogLocator;
+import mondrian.spi.impl.ServletContextCatalogLocator;
+import mondrian.web.taglib.ResultCache;
+
+import org.eigenbase.xom.StringEscaper;
 
 /**
  * <code>MDXQueryServlet</code> is a servlet which receives MDX queries,
@@ -32,6 +38,7 @@ import java.util.Enumeration;
  */
 public class MDXQueryServlet extends HttpServlet {
     private String connectString;
+    private CatalogLocator locator;
 
     /** Initializes the servlet.
      */
@@ -44,6 +51,7 @@ public class MDXQueryServlet extends HttpServlet {
             String value = config.getInitParameter(name);
             MondrianProperties.instance().setProperty(name, value);
         }
+        locator = new ServletContextCatalogLocator(config.getServletContext());
     }
 
     /** Destroys the servlet.
@@ -71,7 +79,7 @@ public class MDXQueryServlet extends HttpServlet {
 
         //execute the query
         try {
-            mdxConnection = DriverManager.getConnection(connectString, getServletContext(), false);
+            mdxConnection = DriverManager.getConnection(connectString, locator, false);
             Query q = mdxConnection.parseQuery(queryString);
             Result result = mdxConnection.execute(q);
             Position slicers[] = result.getSlicerAxis().positions;

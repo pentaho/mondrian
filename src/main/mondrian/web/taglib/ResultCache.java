@@ -15,6 +15,7 @@ import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
 import mondrian.olap.Query;
 import mondrian.olap.Result;
+import mondrian.spi.impl.ServletContextCatalogLocator;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -124,7 +125,7 @@ public class ResultCache implements HttpSessionBindingListener {
             servletContext.getInitParameter("connectString");
         LOGGER.debug("connectString: " + connectString);
         this.connection =
-            DriverManager.getConnection(connectString, servletContext, false);
+            DriverManager.getConnection(connectString, new ServletContextCatalogLocator(servletContext), false);
         if (this.connection == null) {
         	throw new RuntimeException("No ROLAP connection from connectString: " + connectString);
         }
