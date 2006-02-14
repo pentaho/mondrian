@@ -137,11 +137,11 @@ public class XmlaHandler implements XmlaConstants {
 
         writer.startElement("ExecuteResponse", new String[] {
             "xmlns", NS_XMLA});
-        writer.startElement("return", new String[] {
+        writer.startElement("return");
+        writer.startElement("root", new String[] {
+            "xmlns", request.isDrillThrough() ? NS_XMLA_ROWSET : NS_XMLA_MDDATASET,
             "xmlns:xsi", NS_XSI,
             "xmlns:xsd", NS_XSD,});
-        writer.startElement("root", new String[] {
-            "xmlns", request.isDrillThrough() ? NS_XMLA_ROWSET : NS_XMLA_MDDATASET});
         writer.verbatim(DatasetXmlSchema);
 
         try {

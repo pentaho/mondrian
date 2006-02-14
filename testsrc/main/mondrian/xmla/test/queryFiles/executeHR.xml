@@ -16,8 +16,8 @@
   </Properties>
 </Execute>
 <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
-  <return xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <root xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset">
+  <return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <xsd:schema targetNamespace="urn:schemas-microsoft-com:xml-analysis:mddataset" elementFormDefault="qualified" xmlns:sql="urn:schemas-microsoft-com:xml-sql">
         <xsd:complexType name="MemberType">
           <xsd:attribute name="Hierarchy" type="xsd:string"/>
