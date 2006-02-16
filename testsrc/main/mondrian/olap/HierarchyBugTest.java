@@ -52,22 +52,16 @@ public class HierarchyBugTest extends FoodMartTestCase {
 
         String failStr = null;
         int len = query.axes.length;
-        System.out.println("HierarchyBugTest.testNoHierarchy: len=" +len);
         for (int i = 0; i < len; i++) {
             Hierarchy[] hs = query.getMdxHierarchiesOnAxis(i);
             if (hs == null) {
-                System.out.println("HierarchyBugTest.testNoHierarchy: got null i=" +i);
             } else {
                 for (int j = 0; j < hs.length; j++) {
                     Hierarchy h = hs[j];
-                    System.out.print("HierarchyBugTest.testNoHierarchy: j=" +j);
                     // This should NEVER be null, but it is.
                     if (h == null) {
-                        System.out.println(": got null");
                         failStr = "Got a null Hierarchy, " + 
                             "Should be Time Hierarchy";
-                    } else {
-                        System.out.println(": h=" +h.getName());
                     }
                 }
             }
