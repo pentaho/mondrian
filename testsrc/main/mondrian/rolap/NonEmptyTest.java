@@ -696,6 +696,26 @@ public class NonEmptyTest extends FoodMartTestCase {
         }
     }
 
+    public void testBug1412384() {
+        // Bug 1412384 causes a NPE in SqlConstraintUtils.
+        assertQueryReturns("select NON EMPTY {[Time].[1997]} ON COLUMNS,\n" +
+                "NON EMPTY Hierarchize(Union({[Customers].[All Customers]},\n" +
+                "[Customers].[All Customers].Children)) ON ROWS\n" +
+                "from [Sales]\n" +
+                "where [Measures].[Profit]",
+                fold(new String[] {
+                    "Axis #0:",
+                    "{[Measures].[Profit]}",
+                    "Axis #1:",
+                    "{[Time].[1997]}",
+                    "Axis #2:",
+                    "{[Customers].[All Customers]}",
+                    "{[Customers].[All Customers].[USA]}",
+                    "Row #0: $339,610.90",
+                    "Row #1: $339,610.90",
+                    ""}));
+    }
+
     /**
      * make sure the following is not run natively
      */

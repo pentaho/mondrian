@@ -47,8 +47,9 @@ public abstract class RolapAggregationManager implements CellReader {
      * query for levels below each current member. This additional context
      * makes the drill-through queries easier for humans to understand.
      **/
-    static CellRequest makeRequest(Member[] members,
-                                   boolean extendedContext) {
+    static CellRequest makeRequest(
+            Member[] members,
+            boolean extendedContext) {
         boolean showNames = extendedContext;
         if (!(members[0] instanceof RolapStoredMeasure)) {
             return null;

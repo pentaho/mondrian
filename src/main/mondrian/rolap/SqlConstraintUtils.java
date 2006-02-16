@@ -27,7 +27,7 @@ import mondrian.rolap.sql.SqlQuery;
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},
  * used to generate constraints into {@link mondrian.rolap.sql.SqlQuery}.
- *  
+ *
  * @author av
  * @since Nov 21, 2005
  * @version $Id$
@@ -41,24 +41,33 @@ public class SqlConstraintUtils {
     /**
      * For every restricting member in the current context, generates
      * a WHERE condition and a join to the fact table.
-     * 
+     *
      * @param sqlQuery the query to modify
-     * @param strict defines the behavior if the current context contains 
+     * @param strict defines the behavior if the current context contains
      *   calculated members.
      *   If true, an exception is thrown,
      *   otherwise calculated members are silently ignored.
      */
-    public static void addContextConstraint(SqlQuery sqlQuery, Evaluator e, boolean strict) {
-        
+    public static void addContextConstraint(
+            SqlQuery sqlQuery,
+            Evaluator e,
+            boolean strict) {
+
         Member[] members = e.getMembers();
         if (strict) {
-            assert !containsCalculatedMember(members) : "addContextConstraint: can not restrict SQL to calculated Members";
-        }
-        else {
+            assert !containsCalculatedMember(members) :
+                    "can not restrict SQL to calculated Members";
+        } else {
             members = removeCalculatedMembers(members);
         }
-            
-        CellRequest request = RolapAggregationManager.makeRequest(members, false);
+
+        CellRequest request =
+                RolapAggregationManager.makeRequest(members, false);
+        if (request == null) {
+            // One or more of the members was null or calculated, so the
+            // request is impossible to satisfy.
+            return;
+        }
         RolapStar.Column[] columns = request.getColumns();
         Object[] values = request.getSingleValues();
         int arity = columns.length;
@@ -70,27 +79,33 @@ public class SqlConstraintUtils {
 
             String expr = column.getExpression(sqlQuery);
             String value = sqlQuery.quote(column.isNumeric(), values[i]);
-            sqlQuery.addWhere(expr, RolapUtil.sqlNullLiteral.equals(value) ? " is " : " = ", value);
+            sqlQuery.addWhere(expr,
+                    RolapUtil.sqlNullLiteral.equals(value) ? " is " : " = ",
+                    value);
         }
     }
 
     private static Member[] removeCalculatedMembers(Member[] members) {
         List result = new ArrayList();
-        for (int i = 0; i < members.length; i++)
-            if (!members[i].isCalculated())
+        for (int i = 0; i < members.length; i++) {
+            if (!members[i].isCalculated()) {
                 result.add(members[i]);
+            }
+        }
         return (Member[]) result.toArray(new Member[result.size()]);
     }
-    
+
     private static boolean containsCalculatedMember(Member[] members) {
-        for (int i = 0; i < members.length; i++)
-            if (members[i].isCalculated())
+        for (int i = 0; i < members.length; i++) {
+            if (members[i].isCalculated()) {
                 return true;
+            }
+        }
         return false;
     }
 
     /**
-     * ensures that the table of <code>level</code> is joined to the fact table
+     * Ensures that the table of <code>level</code> is joined to the fact table
      */
     public static void joinLevelTableToFactTable(SqlQuery sqlQuery, RolapCube cube,
             RolapLevel level) {
@@ -105,8 +120,8 @@ public class SqlConstraintUtils {
      * creates a WHERE parent = value
      * @param sqlQuery the query to modify
      * @param parent the list of parent members
-     * @param strict defines the behavior if <code>parent</code> 
-     * is a calculated member. 
+     * @param strict defines the behavior if <code>parent</code>
+     * is a calculated member.
      * If true, an exception is thrown,
      * otherwise calculated members are silently ignored.
      */
@@ -119,11 +134,11 @@ public class SqlConstraintUtils {
     /**
      * Creates a "WHERE exp IN (...)" condition containing the values
      * of all parents. All parents must belong to the same level.
-     * 
+     *
      * @param sqlQuery the query to modify
      * @param parents the list of parent members
-     * @param strict defines the behavior if <code>parents</code> 
-     *   contains calculated members. 
+     * @param strict defines the behavior if <code>parents</code>
+     *   contains calculated members.
      *   If true, an exception is thrown,
      *   otherwise calculated members are silently ignored.
      */
@@ -175,3 +190,5 @@ public class SqlConstraintUtils {
         return set;
     }
 }
+
+// End SqlConstraintUtils.java
