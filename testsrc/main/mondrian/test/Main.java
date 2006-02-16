@@ -26,6 +26,7 @@ import mondrian.olap.ParserTest;
 import mondrian.olap.Util;
 import mondrian.olap.UtilTestCase;
 import mondrian.olap.fun.FunctionTest;
+import mondrian.olap.HierarchyBugTest;
 import mondrian.rolap.NonEmptyTest;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.TestAggregationManager;
@@ -138,6 +139,7 @@ public class Main extends TestSuite {
             suite.addTest(ResultComparatorTest.suite());
             suite.addTestSuite(BasicQueryTest.class);
             suite.addTestSuite(FunctionTest.class);
+            suite.addTestSuite(HierarchyBugTest.class);
             suite.addTestSuite(ScheduleTest.class);
             suite.addTestSuite(UtilTestCase.class);
             if (isRunOnce()) suite.addTestSuite(TestAggregationManager.class);

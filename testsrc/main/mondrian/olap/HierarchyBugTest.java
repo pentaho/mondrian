@@ -35,7 +35,7 @@ public class HierarchyBugTest extends FoodMartTestCase {
         If the Time hierarchy is miss named in the query string, then
         the parse ought to pick it up.
      */
-    public void noHierarchyTest() {
+    public void testNoHierarchy() {
         String queryString = 
             "select NON EMPTY " +
             "Crossjoin(Hierarchize(Union({[Time].LastSibling}, " +
@@ -52,15 +52,16 @@ public class HierarchyBugTest extends FoodMartTestCase {
 
         String failStr = null;
         int len = query.axes.length;
-        System.out.println("HierarchyBug.noHierarchyTest: len=" +len);
+        System.out.println("HierarchyBugTest.testNoHierarchy: len=" +len);
         for (int i = 0; i < len; i++) {
             Hierarchy[] hs = query.getMdxHierarchiesOnAxis(i);
             if (hs == null) {
-                System.out.println("HierarchyBug.noHierarchyTest: got null i=" +i);
+                System.out.println("HierarchyBugTest.testNoHierarchy: got null i=" +i);
             } else {
                 for (int j = 0; j < hs.length; j++) {
                     Hierarchy h = hs[j];
-                    System.out.print("HierarchyBug.noHierarchyTest: j=" +j);
+                    System.out.print("HierarchyBugTest.testNoHierarchy: j=" +j);
+                    // This should NEVER be null, but it is.
                     if (h == null) {
                         System.out.println(": got null");
                         failStr = "Got a null Hierarchy, " + 
