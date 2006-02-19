@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT {crossjoin({Dimensions(1)},{Dimensions(2)})} on Axis(0), {crossjoin({Dimensions("Customers")},{Dimensions("Gender")})} on Axis(1) from [Sales] </mdxQuery>
+    <mdxQuery>SELECT {crossjoin({Dimensions(0)},{Dimensions(1)})} on Axis(0), {crossjoin({Dimensions("Customers")},{Dimensions("Gender")})} on Axis(1) from [Sales] </mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
