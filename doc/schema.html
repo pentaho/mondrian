@@ -2,35 +2,26 @@
 <html>
 <head>
 <!--
-
   == $Id$
-
   == This software is subject to the terms of the Common Public License
-
   == Agreement, available at the following URL:
-
   == http://www.opensource.org/licenses/cpl.html.
-
-  == Copyright (C) 2001-2005 Kana Software, Inc. and others.
-
+  == Copyright (C) 2001-2002 Kana Software, Inc.
+  == Copyright (C) 2002-2006 Julian Hyde
   == All Rights Reserved.
-
   == You must accept the terms of that agreement to use this software.
-
   == jhyde, 24 September, 2002
-
   -->
   <meta http-equiv="Content-Language" content="en-us">
   <meta name="GENERATOR" content="Microsoft FrontPage 6.0">
   <meta name="ProgId" content="FrontPage.Editor.Document">
-  <meta http-equiv="Content-Type"
- content="text/html; charset=windows-1252">
+  <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
   <title>How to design a mondrian schema</title>
   <link rel="stylesheet" href="stylesheet.css" type="text/css">
 </head>
 <body>
 <h1>How to Design a Mondrian Schema</h1>
-<p>By Julian Hyde and others; last updated December, 2005.</p>
+<p>By Julian Hyde and others; last updated February, 2006.</p>
 <hr color="#000000" noshade="noshade" size="1">
 <h2>Contents</h2>
 <ol>
@@ -46,12 +37,15 @@ Hierarchies, Levels</a></li>
         <li><a href="#Mapping_Hierarchies">Mapping dimensions and
 hierarchies on to tables</a><br>
         </li>
-        <li><a href="#The_all_member">The All member</a></li>
-        <li><a href="#Time_hierarchies">Time dimensions</a></li>
+        <li><a href="#The_all_member">The 'All' member</a></li>
+        <li><a href="#Time_dimensions">Time dimensions</a></li>
         <li><a href="#Level_Order_and_Display">Order and Display of
 Levels</a><br>
         </li>
-        <li><a href="#Multiple_hierarchies">Multiple hierarchies</a><br>
+        <li><a href="#Multiple_hierarchies">Multiple hierarchies</a></li>
+        <li><a href="#Degenerate_dimensions">Degenerate dimensions</a></li>
+        <li><a href="#Member_properties_and_formatters">Member properties and 
+        formatters</a><br>
         </li>
       </ol>
     </ol>
@@ -402,27 +396,80 @@ level; for example, in a Time hierarchy, it will be the first year in
 the hierarchy. Changing the default member can be confusing, so you
 should generally use <code>
 hasAll="true"</code>.</p>
-<h4><a name="Time_hierarchies"></a>Time dimensions</h4>
+<h4><a name="Time_dimensions">Time dimensions</a></h4>
 <p>Time dimensions based on year/month/week/day are coded differently
-in the Mondrian schema due to the MDX time related functions such as:<span
- style="font-family: monospace;"><br>
-</span></p>
+in the Mondrian schema due to the MDX time related functions such as:</p>
 <ul>
-  <li>ParallelPeriod([level[, index[, member]]])</li>
-  <li>PeriodsToDate([level[, member]])</li>
-  <li>WTD([member])</li>
-  <li>MTD([member])</li>
-  <li>QTD([member])</li>
-  <li>YTD([member])</li>
-  <li>LastPeriod(index[, member])</li>
+  <li><code>ParallelPeriod([level[, index[, member]]])</code></li>
+  <li><code>PeriodsToDate([level[, member]])</code></li>
+  <li><code>WTD([member])</code></li>
+  <li><code>MTD([member])</code></li>
+  <li><code>QTD([member])</code></li>
+  <li><code>YTD([member])</code></li>
+  <li><code>LastPeriod(index[, member])</code></li>
 </ul>
-<p>Note the type="TimeDimension" and the
-levelType="TimeYears|TimeQuarters|TimeMonths|TimeDays".<br>
+<p>Time dimensions have <code>type="TimeDimension"</code>. The role of a level 
+in a time dimension is indicated by the level's <code>levelType</code> attribute, 
+whose allowable values are as follows:</p>
+<blockquote>
+<table style="border-collapse: collapse;" border="2"
+ bordercolor="#111111" cellpadding="2" cellspacing="0">
+  <tr>
+    <th><code>levelType</code> value</th>
+    <th>Meaning</th>
+  </tr>
+  <tr>
+    <td>TimeYears</td>
+    <td>Level is a year</td>
+  </tr>
+  <tr>
+    <td>TimeQuarters</td>
+    <td>Level is a quarter</td>
+  </tr>
+  <tr>
+    <td>TimeMonths</td>
+    <td>Level is a month</td>
+  </tr>
+  <tr>
+    <td>TimeDays</td>
+    <td>Level represents days</td>
+  </tr>
+</table>
+</blockquote>
+
+<p>Here is an example of a time dimension:</p>
+
+<blockquote>
+  <p><code>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Time&quot; type=&quot;TimeDimension&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All 
+  Periods&quot; primaryKey=&quot;dateid&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name=&quot;datehierarchy&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Year&quot; column=&quot;year&quot; 
+  uniqueMembers=&quot;true&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; levelType=&quot;TimeYears&quot; 
+  type=&quot;Numeric&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Quarter&quot; 
+  column=&quot;quarter&quot; uniqueMembers=&quot;false&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; levelType=&quot;TimeQuarters&quot; /&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Month&quot; column=&quot;month&quot; 
+  uniqueMembers=&quot;false&quot; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ordinalColumn=&quot;month&quot; nameColumn=&quot;month_name&quot;
+  <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; levelType=&quot;TimeMonths&quot; 
+  type=&quot;Numeric&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Week&quot; column=&quot;week_in_month&quot; 
+  uniqueMembers=&quot;false&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; levelType=&quot;TimeWeeks&quot; /&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Day&quot; column=&quot;day_in_month&quot; 
+  uniqueMembers=&quot;false&quot; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ordinalColumn=&quot;day_in_month&quot; 
+  nameColumn=&quot;day_name&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; levelType=&quot;TimeDays&quot; type=&quot;Numeric&quot;/&gt;<br>
+&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a></a>&gt;<br>
+  &lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code><br>
 </p>
-<p><span style="font-family: monospace;"> </span></p>
-<p><span style="font-family: monospace;"></span></p>
-<pre>&lt;Dimension name="Time" type="TimeDimension"&gt;<br>  &lt;Hierarchy hasAll="true" allMemberName="All Periods" primaryKey="dateid"&gt;<br>    &lt;Table name="datehierarchy"/&gt;<br>    &lt;Level name="Year" column="year" uniqueMembers="true" <br>	levelType="TimeYears" type="Numeric"/&gt;<br>    &lt;Level name="Quarter" column="quarter" uniqueMembers="false"<br>	levelType="TimeQuarters" /&gt;<br>    &lt;Level name="Month" column="month" uniqueMembers="false" <br>	ordinalColumn="month" nameColumn="month_name" levelType="TimeMonths" type="Numeric"/&gt;<br>    &lt;Level name="Week" column="week_in_month" uniqueMembers="false"<br>	levelType="TimeWeeks" /&gt;<br>    &lt;Level name="Day" column="day_in_month" uniqueMembers="false" <br>	ordinalColumn="day_in_month" nameColumn="day_name" levelType="TimeDays" type="Numeric"/&gt;<br>  &lt;/Hierarchy&gt;<br>&lt;/Dimension&gt;<br><br></pre>
-<h4><a name="Level_Order_and_Display"></a>Order and display of levels</h4>
+</blockquote>
+<h4><a name="Level_Order_and_Display">Order and display of levels</a></h4>
 <p>Notice that in the time hierarchy example above the ordinalColumn
 and nameColumn attributes on the Level tag. These effect how levels are
 displsyed in a result. The ordinalColumn specifies a column in the
@@ -437,23 +484,33 @@ column, so valid member specifications will be of the form:
 When Month Levels display, they will be in month order, and show as
 January, February etc.<br>
 </p>
-<h4><a name="Multiple_hierarchies"></a>Multiple hierarchies</h4>
+<h4><a name="Multiple_hierarchies">Multiple hierarchies</a></h4>
 <p>A dimension can contain more than one hierarchy:</p>
+
 <blockquote>
-  <pre>&lt;<a href="#XML_Dimension">Dimension</a> name="Time" foreignKey="time_id"&gt;<br>  &lt;<a
- href="#XML_Hierarchy">Hierarchy</a> hasAll="false" primaryKey="time_id"&gt;<br>    &lt;<a
- href="#XML_Table">Table</a> name="time_by_day"/&gt;<br>    &lt;<a
- href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric"<br>        uniqueMembers="true"/&gt;<br>    &lt;<a
- href="#XML_Level">Level</a> name="Quarter" column="quarter"<br>        uniqueMembers="false"/&gt;<br>    &lt;<a
- href="#XML_Level">Level</a> name="Month" column="month_of_year" type="Numeric"<br>        uniqueMembers="false"/&gt;<br>  &lt;/<a
- href="#XML_Hierarchy">Hierarchy</a>&gt;<br>  &lt;<a
- href="#XML_Hierarchy">Hierarchy</a> name="Time Weekly" hasAll="false" primaryKey="time_id"&gt;<br>    &lt;<a
- href="#XML_Table">Table</a> name="time_by_week"/&gt;<br>    &lt;<a
- href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric"<br>        uniqueMembers="true"/&gt;<br>    &lt;<a
- href="#XML_Level">Level</a> name="Week" column="week"<br>        uniqueMembers="false"/&gt;<br>    &lt;<a
- href="#XML_Level">Level</a> name="Day" column="day_of_week" type="String"<br>        uniqueMembers="false"/&gt;<br>  &lt;/<a
+  <p><code>&lt;<a href="#XML_Dimension">Dimension</a> name="Time" foreignKey="time_id"&gt;<br>&nbsp;  &lt;<a
+ href="#XML_Hierarchy">Hierarchy</a> hasAll="false" primaryKey="time_id"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a></a> name="time_by_day"/&gt;<br>&nbsp;&nbsp;&nbsp;    &lt;<a
+ href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric" uniqueMembers="true"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a
+ href="#XML_Level">Level</a> name="Quarter" column="quarter" uniqueMembers="false"/&gt;<br>
+&nbsp;&nbsp;&nbsp;    &lt;<a
+ href="#XML_Level">Level</a> name="Month" column="month_of_year" type="Numeric" uniqueMembers="false"/&gt;<br>
+&nbsp; &lt;/<a
+ href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
+&nbsp;  &lt;<a
+ href="#XML_Hierarchy">Hierarchy</a> name="Time Weekly" hasAll="false" primaryKey="time_id"&gt;<br>
+&nbsp;&nbsp;&nbsp;    &lt;<a
+ href="#XML_Table">Table</a> name="time_by_week"/&gt;<br>
+&nbsp;&nbsp;&nbsp;    &lt;<a
+ href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric" uniqueMembers="true"/&gt;<br>
+  &nbsp;&nbsp;&nbsp; &lt;<a
+ href="#XML_Level">Level</a> name="Week" column="week" uniqueMembers="false"/&gt;<br>
+  &nbsp;&nbsp;&nbsp;    &lt;<a
+ href="#XML_Level">Level</a> name="Day" column="day_of_week" type="String" uniqueMembers="false"/&gt;<br>
+&nbsp; &lt;/<a
  href="#XML_Hierarchy">Hierarchy</a>&gt;<br>&lt;/<a
- href="#XML_Dimension">Dimension</a>&gt;</pre>
+ href="#XML_Dimension">Dimension</a>&gt;</code></p>
 </blockquote>
 <p>Notice that the first hierarchy doesn't have a name. By default, a
 hierarchy
@@ -474,7 +531,114 @@ the MDX
 language enforces common sense, and does not allow you to use them both
 in the
 same query.</p>
-<h4>Member properties and formatters</h4>
+
+<h3><a name="Degenerate_dimensions">Degenerate dimensions</a></h3>
+
+<p>A <dfn><font face="Verdana">degenerate dimension</font></dfn> is a dimension 
+which is so simple that it isn't worth creating its own dimension table. For 
+example, consider following the fact table:</p>
+
+<blockquote>
+  <table border="2" id="table5" style="border-collapse: collapse" cellpadding="2">
+    <tr>
+      <th>product_id</th>
+      <th>time_id</th>
+      <th>payment_type</th>
+      <th>customer_id</th>
+      <th>store_id</th>
+      <th>item_count</th>
+      <th>dollars</th>
+    </tr>
+    <tr>
+      <td align="right">55</td>
+      <td align="right">20040106</td>
+      <td>Credit</td>
+      <td align="right">123</td>
+      <td align="right">22</td>
+      <td align="right">3</td>
+      <td align="right">$3.54</td>
+    </tr>
+    <tr>
+      <td align="right">78</td>
+      <td align="right">20040106</td>
+      <td>Cash</td>
+      <td align="right">89</td>
+      <td align="right">22</td>
+      <td align="right">1</td>
+      <td align="right">$20.00</td>
+    </tr>
+    <tr>
+      <td align="right">199</td>
+      <td align="right">20040107</td>
+      <td>ATM</td>
+      <td align="right">3</td>
+      <td align="right">22</td>
+      <td align="right">2</td>
+      <td align="right">$2.99</td>
+    </tr>
+    <tr>
+      <td align="right">55</td>
+      <td align="right">20040106</td>
+      <td>Cash</td>
+      <td align="right">122</td>
+      <td align="right">22</td>
+      <td align="right">1</td>
+      <td align="right">$1.18</td>
+    </tr>
+  </table>
+</blockquote>
+
+<p>and suppose we created a dimension table for the values in the <code>payment_type</code> 
+column:</p>
+
+<blockquote>
+  <table border="2" id="table6" style="border-collapse: collapse">
+    <tr>
+      <th>payment_type</th>
+    </tr>
+    <tr>
+      <td>Credit</td>
+    </tr>
+    <tr>
+      <td>Cash</td>
+    </tr>
+    <tr>
+      <td>ATM</td>
+    </tr>
+  </table>
+</blockquote>
+
+<p>This dimension table is fairly pointless. It only has 3 values, adds no 
+additional information, and incurs the cost of an extra join.</p>
+
+<p>Instead, you can create a degenerate dimension. To do this, declare a dimension without a table, and Mondrian 
+will assume that the columns come from the fact table. </p>
+
+<blockquote>
+
+  <p><code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Checkout&quot;&gt;<br>
+&nbsp; &lt;!-- The fact table is always necessary. --&gt;<br>
+&nbsp; &lt;<a href="#XML_Table">Table</a> name=&quot;checkout&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Payment type&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a
+ href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- No table element here. Fact table is 
+  assumed. --&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a
+ href="#XML_Level">Level</a> name=&quot;Payment type&quot; column=&quot;payment_type&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/<a
+ href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
+&nbsp; &lt;/<a href="#XML_Dimension">Dimension</a>&gt;<br>
+  <br>
+&nbsp; &lt;!-- other dimensions and measures --&gt;<br>
+  &lt;/<a href="#XML_Cube">Cube</a>&gt;</code></p>
+</blockquote>
+
+<p>Note that because there is no join, the <code>foreignKey</code> attribute of
+<code>Dimension</code>, and the <code>primaryKey</code> attribute of <code>
+Hierarchy</code> are not necessary.</p>
+
+<h4><a name="Member_properties_and_formatters">Member properties and formatters</a></h4>
 <p>As we shall see later, a level definition can also define
 <a href="#Member_properties">member properties</a> and a
 <a href="#Member_formatter">member formatter</a>.</p>
@@ -489,17 +653,31 @@ star schema</dfn>.</p>
 there is
 a well-defined path to join these tables to the fact table. This kind
 of
-dimension is known as a snowflake, and is defined using the <code>&lt;Join&gt;</code>
+dimension is known as a snowflake, and is defined using the <code>&lt;<a href="#XML_Join">Join</a>&gt;</code>
 operator. For example:</p>
 <blockquote>
-  <pre>&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;<br>  ...<br>  &lt;<a
- href="#XML_Dimension">Dimension</a> name="Product" foreignKey="product_id"&gt;<br>    &lt;<a
- href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="product_id" primaryKeyTable="product"&gt;<br>      &lt;Join leftKey="product_class_id" rightAlias="product_class" rightKey="product_class_id"&gt;<br>        &lt;<a
- href="#XML_Table">Table</a> name="product"/&gt;<br>        &lt;Join leftKey="product_type_id" rightKey="product_type_id"&gt;<br>          &lt;<a
- href="#XML_Table">Table</a> name="product_class"/&gt;<br>          &lt;<a
- href="#XML_Table">Table</a> name="product_type"/&gt;<br>        &lt;/Join&gt;<br>      &lt;/Join&gt;<br>      ...<br>    &lt;/<a
- href="#XML_Hierarchy">Hierarchy</a>&gt;<br>  &lt;/<a
- href="#XML_Dimension">Dimension</a>&gt;<br>&lt;/<a href="#XML_Cube">Cube</a>&gt;</pre>
+  
+  <p><code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;<br>
+&nbsp; ...<br>
+&nbsp; &lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Product&quot; foreignKey=&quot;product_id&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; 
+  primaryKey=&quot;product_id&quot; primaryKeyTable=&quot;product&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Join">Join</a> leftKey=&quot;product_class_key&quot; 
+  rightAlias=&quot;product_class&quot; rightKey=&quot;product_class_id&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> 
+  name=&quot;product&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Join">Join</a> leftKey=&quot;product_type_id&quot; 
+  rightKey=&quot;product_type_id&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> 
+  name=&quot;product_class&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> 
+  name=&quot;product_type&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Join">Join</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Join">Join</a>&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;!-- Level declarations ... -&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
+&nbsp; &lt;/<a href="#XML_Dimension">Dimension</a>&gt;<br>
+  &lt;/<a href="#XML_Cube">Cube</a>&gt;</code></p>
 </blockquote>
 <p>This defines a <code>"Product"</code> dimension consisting of three
 tables.
