@@ -853,14 +853,15 @@ Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded data
         webxml="${demo.dir}/derby/web.xml">
       <!-- We pick up the libs from JPivot here -->  
       <webinf dir="${build.dir}/mondrian-embedded/WEB-INF" excludes="web.xml,web-jpivot.xml"/>
-      <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml,web-jpivot.xml,datasources.xml"/>
-      <webinf dir="${demo.dir}/derby" includes="queries/*.jsp,datasources.xml"/>
+      <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml,web-jpivot.xml,datasources.xml,queries/*.*,mondrian.properties"/>
+      <webinf dir="${demo.dir}/derby" includes="queries/*.jsp,datasources.xml,mondrian.properties"/>
       <!-- our FoodMart.xml may be newer than jpivot's -->
       <webinf dir="${demo.dir}" prefix="WEB-INF/queries" includes="FoodMart.xml"/>
       <fileset dir="${build.dir}/mondrian-embedded" excludes="WEB-INF/**/*"/>
-      <fileset dir="${webapp.dir}" excludes="index.jsp,busy.jsp,error.jsp,WEB-INF/**/*"/>
+      <fileset dir="${webapp.dir}" excludes="index.jsp,testpage.jsp,WEB-INF/**/*"/>
       <lib dir="${lib.dir}" includes="${name}.jar"/>
       <lib dir="${lib.dir}" includes="eigenbase-*.jar"/>
+      <lib dir="${lib.dir}" includes="commons-math-1.0.jar"/>
       <lib dir="${testlib.dir}" includes="xmlunit*.jar,derby.jar"/>
       <classes dir="${demo.dir}/derby" includes="foodmart/**/*.*"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
