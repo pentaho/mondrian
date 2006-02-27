@@ -44,7 +44,7 @@ Levels</a><br>
         </li>
         <li><a href="#Multiple_hierarchies">Multiple hierarchies</a></li>
         <li><a href="#Degenerate_dimensions">Degenerate dimensions</a></li>
-        <li><a href="#Member_properties_and_formatters">Member properties and 
+        <li><a href="#Member_properties_and_formatters">Member properties and
         formatters</a><br>
         </li>
       </ol>
@@ -408,8 +408,8 @@ in the Mondrian schema due to the MDX time related functions such as:</p>
   <li><code>YTD([member])</code></li>
   <li><code>LastPeriod(index[, member])</code></li>
 </ul>
-<p>Time dimensions have <code>type="TimeDimension"</code>. The role of a level 
-in a time dimension is indicated by the level's <code>levelType</code> attribute, 
+<p>Time dimensions have <code>type="TimeDimension"</code>. The role of a level
+in a time dimension is indicated by the level's <code>levelType</code> attribute,
 whose allowable values are as follows:</p>
 <blockquote>
 <table style="border-collapse: collapse;" border="2"
@@ -441,28 +441,28 @@ whose allowable values are as follows:</p>
 
 <blockquote>
   <p><code>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Time&quot; type=&quot;TimeDimension&quot;&gt;<br>
-&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All 
+&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All
   Periods&quot; primaryKey=&quot;dateid&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name=&quot;datehierarchy&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Year&quot; column=&quot;year&quot; 
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Year&quot; column=&quot;year&quot;
   uniqueMembers=&quot;true&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; levelType=&quot;TimeYears&quot; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; levelType=&quot;TimeYears&quot;
   type=&quot;Numeric&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Quarter&quot; 
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Quarter&quot;
   column=&quot;quarter&quot; uniqueMembers=&quot;false&quot;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; levelType=&quot;TimeQuarters&quot; /&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Month&quot; column=&quot;month&quot; 
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Month&quot; column=&quot;month&quot;
   uniqueMembers=&quot;false&quot; <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ordinalColumn=&quot;month&quot; nameColumn=&quot;month_name&quot;
   <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; levelType=&quot;TimeMonths&quot; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; levelType=&quot;TimeMonths&quot;
   type=&quot;Numeric&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Week&quot; column=&quot;week_in_month&quot; 
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Week&quot; column=&quot;week_in_month&quot;
   uniqueMembers=&quot;false&quot;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; levelType=&quot;TimeWeeks&quot; /&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Day&quot; column=&quot;day_in_month&quot; 
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Day&quot; column=&quot;day_in_month&quot;
   uniqueMembers=&quot;false&quot; <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ordinalColumn=&quot;day_in_month&quot; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ordinalColumn=&quot;day_in_month&quot;
   nameColumn=&quot;day_name&quot;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; levelType=&quot;TimeDays&quot; type=&quot;Numeric&quot;/&gt;<br>
 &nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a></a>&gt;<br>
@@ -534,8 +534,8 @@ same query.</p>
 
 <h3><a name="Degenerate_dimensions">Degenerate dimensions</a></h3>
 
-<p>A <dfn><font face="Verdana">degenerate dimension</font></dfn> is a dimension 
-which is so simple that it isn't worth creating its own dimension table. For 
+<p>A <dfn><font face="Verdana">degenerate dimension</font></dfn> is a dimension
+which is so simple that it isn't worth creating its own dimension table. For
 example, consider following the fact table:</p>
 
 <blockquote>
@@ -588,7 +588,7 @@ example, consider following the fact table:</p>
   </table>
 </blockquote>
 
-<p>and suppose we created a dimension table for the values in the <code>payment_type</code> 
+<p>and suppose we created a dimension table for the values in the <code>payment_type</code>
 column:</p>
 
 <blockquote>
@@ -608,10 +608,10 @@ column:</p>
   </table>
 </blockquote>
 
-<p>This dimension table is fairly pointless. It only has 3 values, adds no 
+<p>This dimension table is fairly pointless. It only has 3 values, adds no
 additional information, and incurs the cost of an extra join.</p>
 
-<p>Instead, you can create a degenerate dimension. To do this, declare a dimension without a table, and Mondrian 
+<p>Instead, you can create a degenerate dimension. To do this, declare a dimension without a table, and Mondrian
 will assume that the columns come from the fact table. </p>
 
 <blockquote>
@@ -622,7 +622,7 @@ will assume that the columns come from the fact table. </p>
 &nbsp; &lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Payment type&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a
  href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- No table element here. Fact table is 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- No table element here. Fact table is
   assumed. --&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a
  href="#XML_Level">Level</a> name=&quot;Payment type&quot; column=&quot;payment_type&quot;/&gt;<br>
@@ -656,21 +656,21 @@ of
 dimension is known as a snowflake, and is defined using the <code>&lt;<a href="#XML_Join">Join</a>&gt;</code>
 operator. For example:</p>
 <blockquote>
-  
+
   <p><code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;<br>
 &nbsp; ...<br>
 &nbsp; &lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Product&quot; foreignKey=&quot;product_id&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; 
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot;
   primaryKey=&quot;product_id&quot; primaryKeyTable=&quot;product&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Join">Join</a> leftKey=&quot;product_class_key&quot; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Join">Join</a> leftKey=&quot;product_class_key&quot;
   rightAlias=&quot;product_class&quot; rightKey=&quot;product_class_id&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a>
   name=&quot;product&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Join">Join</a> leftKey=&quot;product_type_id&quot; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Join">Join</a> leftKey=&quot;product_type_id&quot;
   rightKey=&quot;product_type_id&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a>
   name=&quot;product_class&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a>
   name=&quot;product_type&quot;/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Join">Join</a>&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Join">Join</a>&gt;<br>
@@ -1520,6 +1520,17 @@ name="PlusOne" class="com.acme.PlusOrMinusOneUdf"&gt;<br>
 name="MinusOne" class="com.acme.PlusOrMinusOneUdf"&gt;<br>
 &lt;/<a href="#XML_Schema">Schema</a>&gt;</code></p>
 </blockquote>
+<p>If you're tired of writing duplicated User-defined Function declarations in schema files,
+you can pack your User-defined Function implemention classes into a jar file with a embedded
+resource file META-INF/services/mondrian.spi.UserDefinedFunction. This resource file contains
+class names of implementations of interface mondrian.spi.UserDefinedFunction, one name per line.
+For more details, you may look into src/main/META-INF/services/mondrian.spi.UserDefinedFunction
+in source ball and
+<a href="http://java.sun.com/j2se/1.5.0/docs/guide/jar/jar.html#Service%20Provider">Service
+Provider</a>.
+User-defined Functions declared by this means are available to all mondrian schema in one JVM.</p>
+<p>Caution: you can't define more
+than one User-defined Function implementations in one class when you declare User-defined Functions in this way.</p>
 <h3><a name="Member_reader">Member reader</a></h3>
 <p>A <dfn>member reader</dfn> is a means of
 accessing members. Hierarchies are usually based upon a dimension table

@@ -20,25 +20,25 @@ import org.apache.log4j.Logger;
 
 /**
  * Global function table contains builtin functions and global user-defined functions.
- * 
+ *
  * @author Gang Chen
  * @version $Id$
  */
 public class GlobalFunTable extends FunTableImpl {
 
     private static Logger logger = Logger.getLogger(GlobalFunTable.class);
-    
+
     private static GlobalFunTable instance = new GlobalFunTable();
-    
+
     public static GlobalFunTable instance() {
         return instance;
     }
-    
-    private GlobalFunTable() { 
+
+    private GlobalFunTable() {
         super();
         init();
     }
-    
+
     protected void defineFunctions() {
         final FunTable builtinFunTable = BuiltinFunTable.instance();
         final List reservedWords = builtinFunTable.getReservedWords();
@@ -51,15 +51,15 @@ public class GlobalFunTable extends FunTableImpl {
             Resolver resolver = (Resolver) resolvers.get(i);
             define(resolver);
         }
-        
+
         final List udfImplClasses = lookupUdfImplClasses();
         for (Iterator it = udfImplClasses.iterator(); it.hasNext();) {
-            String className = (String)it.next(); 
+            String className = (String)it.next();
             defineUdf(className);
         }
     }
-    
-    
+
+
     private List lookupUdfImplClasses() {
         ClassLoader cl = this.getClass().getClassLoader();
         List serviceUrls = new ArrayList();
@@ -76,11 +76,18 @@ public class GlobalFunTable extends FunTableImpl {
             URL url = (URL) it.next();
             BufferedReader reader = null;
             try {
-                reader = new BufferedReader(new InputStreamReader(url.openStream()));
+                reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
                 String line = null;
                 while ((line = reader.readLine()) != null) {
-                    if (line.startsWith("#")) continue;
-                    classNames.add(line);
+                    line = line.trim();
+                    if (line.length() > 0) {
+                        if (line.charAt(0) == '#') continue;
+                        int comment = line.indexOf('#');
+                        if (comment != -1) {
+                            line = line.substring(0, comment).trim();
+                        }
+                        classNames.add(line);
+                    }
                 }
             } catch (IOException e) {
                 logger.warn("Error when loading service file '" + url + "'", e);
@@ -92,7 +99,7 @@ public class GlobalFunTable extends FunTableImpl {
         }
         return classNames;
     }
-    
+
     /**
      * Defines a user-defined function in this table.
      *
@@ -110,13 +117,13 @@ public class GlobalFunTable extends FunTableImpl {
         } catch (ClassNotFoundException e) {
             throw MondrianResource.instance().UdfClassNotFound.ex("",className);
         }
-        
+
         // Instantiate class with default constructor.
         final UserDefinedFunction udf;
         try {
             udf = (UserDefinedFunction) udfClass.newInstance();
         } catch (InstantiationException e) {
-            throw MondrianResource.instance().UdfClassWrongIface.ex("", 
+            throw MondrianResource.instance().UdfClassWrongIface.ex("",
                     className, UserDefinedFunction.class.getName());
         } catch (IllegalAccessException e) {
             throw MondrianResource.instance().UdfClassWrongIface.ex("",
@@ -125,10 +132,10 @@ public class GlobalFunTable extends FunTableImpl {
             throw MondrianResource.instance().UdfClassWrongIface.ex("",
                     className, UserDefinedFunction.class.getName());
         }
-        
+
         // Validate function.
         validateFunction(udf);
-        
+
         // Define function.
         define(new UdfResolver(udf));
     }
@@ -146,7 +153,7 @@ public class GlobalFunTable extends FunTableImpl {
         }
         // It's OK for the description to be null.
         //final String description = udf.getDescription();
-        
+
         final Type[] parameterTypes = udf.getParameterTypes();
         for (int i = 0; i < parameterTypes.length; i++) {
             Type parameterType = parameterTypes[i];
@@ -156,10 +163,10 @@ public class GlobalFunTable extends FunTableImpl {
                         " is null");
             }
         }
-        
+
         // It's OK for the reserved words to be null or empty.
         //final String[] reservedWords = udf.getReservedWords();
-        
+
         // Test that the function returns a sensible type when given the FORMAL
         // types. It may still fail when we give it the ACTUAL types, but it's
         // impossible to check that now.
@@ -174,6 +181,6 @@ public class GlobalFunTable extends FunTableImpl {
                     udfName + "': syntax is null");
         }
     }
-    
+
 
 }
