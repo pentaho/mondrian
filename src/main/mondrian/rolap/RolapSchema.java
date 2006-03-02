@@ -202,6 +202,16 @@ public class RolapSchema implements Schema {
         load(catalogName, null);
     }
 
+    protected void finalCleanUp() { 
+        if (aggTableManager != null) {
+            aggTableManager.finalCleanUp();
+            aggTableManager = null;
+        }
+    }
+    protected void finalize() throws Throwable { 
+        finalCleanUp();
+    }
+
     public boolean equals(Object o) {
         if (!(o instanceof RolapSchema)) {
             return false;
@@ -802,8 +812,11 @@ public class RolapSchema implements Schema {
             SoftReference ref = (SoftReference) mapUrlToSchema.get(key);
             if (ref != null) {
                 RolapSchema schema = (RolapSchema) ref.get();
-                if ((schema != null) && (schema.md5Bytes != null)) {
-                    mapUrlToSchema.remove(schema.md5Bytes);
+                if (schema != null) {
+                    if (schema.md5Bytes != null) {
+                        mapUrlToSchema.remove(schema.md5Bytes);
+                    }
+                    schema.finalCleanUp();
                 }
             }
             mapUrlToSchema.remove(key);
@@ -815,6 +828,17 @@ public class RolapSchema implements Schema {
                 LOGGER.debug(msg);
             }
 
+            Iterator it = mapUrlToSchema.values().iterator();
+            while (it.hasNext()) {
+                SoftReference ref = (SoftReference) it.next();
+                if (ref != null) {
+                    RolapSchema schema = (RolapSchema) ref.get();
+                    if (schema != null) {
+                        schema.finalCleanUp();
+                    }
+                }
+                
+            }
             mapUrlToSchema.clear();
         }
 

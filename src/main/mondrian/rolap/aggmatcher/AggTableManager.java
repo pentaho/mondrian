@@ -58,6 +58,16 @@ public class AggTableManager {
     public AggTableManager(final RolapSchema schema) {
         this.schema = schema;
     }
+    
+    /** 
+     * This should ONLY be called if the AggTableManager is no longer going
+     * to be used. In fact, it should only be called indirectly by its 
+     * associated RolapSchema object.
+     */
+    public void finalCleanUp() { 
+        clearJdbcSchema();
+        deregisterTriggers(MondrianProperties.instance());
+    }
 
     /**
      * Get the Logger.
@@ -371,9 +381,9 @@ public class AggTableManager {
 
     private void deregisterTriggers(final MondrianProperties properties) {
         properties.ChooseAggregateByVolume.removeTrigger(triggers[0]);
-        properties.AggregateRules.addTrigger(triggers[1]);
-        properties.AggregateRuleTag.addTrigger(triggers[1]);
-        properties.ReadAggregates.addTrigger(triggers[2]);
+        properties.AggregateRules.removeTrigger(triggers[1]);
+        properties.AggregateRuleTag.removeTrigger(triggers[1]);
+        properties.ReadAggregates.removeTrigger(triggers[2]);
     }
 
     private Iterator getStars() {
