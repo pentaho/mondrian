@@ -2,35 +2,27 @@
 <html>
 <head>
 <!--
-
   == $Id$
-
   == This software is subject to the terms of the Common Public License
-
   == Agreement, available at the following URL:
-
   == http://www.opensource.org/licenses/cpl.html.
-
   == (C) Copyright 2001-2005 Kana Software, Inc. and others.
-
+  == (C) Copyright 2002-2006 Julian Hyde
   == All Rights Reserved.
-
   == You must accept the terms of that agreement to use this software.
-
   == jhyde, 24 September, 2002
-
   -->
   <meta http-equiv="Content-Language" content="en-us">
   <meta name="GENERATOR" content="Microsoft FrontPage 6.0">
   <meta name="ProgId" content="FrontPage.Editor.Document">
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
-  <title>How to download, build and install Mondrian</title>
+  <title>How to install Mondrian</title>
   <link rel="stylesheet" href="stylesheet.css" type="text/css">
 </head>
 <body>
-<h1>How to download and install Mondrian</h1>
-<p>By Julian Hyde and others; last updated December, 2005.</p>
+<h1>How to install Mondrian</h1>
+<p>By Julian Hyde and others; last updated March, 2006.</p>
 <hr color="#000000" noshade="noshade" size="1">
 <ol>
   <li><a href="#2_Download_the_code">Introduction</a></li>
@@ -97,8 +89,7 @@ as described in <a href="#3_Set_up_test_data"> section 2</a>.</li>
 accessing the Perforce source-control server and building the code in
 <a href="developer.html">the Developer's Guide</a>.</p>
 <h2><a name="3_Set_up_test_data">2. Set up test data in a
-non-embedded database<br>
-</a></h2>
+non-embedded database</a></h2>
 <p>The 'FoodMart' test dataset is part of the non-embedded binary
 distribution. It is shipped in two formats: a Microsoft Access database
 (<code>demo/access/MondrianFoodMart.mdb</code>) and in
@@ -143,99 +134,103 @@ size&gt;] ]<br>
 &nbsp;&nbsp;&nbsp; | [-inputFile=&lt;file name&gt;]<br>
 &nbsp;&nbsp;&nbsp; ]</code></p>
 </blockquote>
+
 <h4>Options</h4>
-<table style="text-align: left;" border="1" cellpadding="2"
- cellspacing="0">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top; text-align: center;"> <span
- style="font-weight: bold;">Option</span><br>
-      </td>
-      <td style="vertical-align: top; text-align: center;"><span
- style="font-weight: bold;">Description</span><br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-verbose</code></td>
-      <td style="vertical-align: top;">Verbose mode.</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-tables</code></td>
-      <td style="vertical-align: top;">Create tables in output JDBC, or
+
+<blockquote>
+  <table style="border-color:#000000; text-align: left" border="1" cellpadding="2"
+ cellspacing="0" class="clsStd">
+    <tbody>
+      <tr>
+        <td style="vertical-align: top; text-align: center;">
+        <span
+ style="font-weight: bold;">Option</span><br></td>
+        <td style="vertical-align: top; text-align: center;">
+        <span
+ style="font-weight: bold;">Description</span><br></td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top;"><code>-verbose</code></td>
+        <td style="vertical-align: top;">Verbose mode.</td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top;"><code>-tables</code></td>
+        <td style="vertical-align: top;">Create tables in output JDBC, or
 generate CREATE TABLE statement file in output directory for all
 FoodMart tables, as appropriate for the output database type. If not
 given, the tables are assumed to exist, and will be deleted first.</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-data</code></td>
-      <td style="vertical-align: top;">Load data from input (JDBC,
+      </tr>
+      <tr>
+        <td style="vertical-align: top;"><code>-data</code></td>
+        <td style="vertical-align: top;">Load data from input (JDBC,
 insert statement file) to output (JDBC, insert statement file). Any
 existing data is deleted first.</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-indexes</code></td>
-      <td style="vertical-align: top;">Create indexes in output JDBC,
+      </tr>
+      <tr>
+        <td style="vertical-align: top;"><code>-indexes</code></td>
+        <td style="vertical-align: top;">Create indexes in output JDBC,
 or generate CREATE INDEX statement file in output directory for all
 FoodMart tables, as appropriate for the output database type.</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-jdbcDrivers=</code><i><code>&lt;driver
+      </tr>
+      <tr>
+        <td style="vertical-align: top;"><code>-jdbcDrivers=</code><i><code>&lt;driver
 list&gt;</code></i></td>
-      <td style="vertical-align: top;">Comma-separated list of JDBC
+        <td style="vertical-align: top;">Comma-separated list of JDBC
 drivers needed to connect to the source and target databases. The JAR
 files containing these drivers must also be in the classpath (the <code>-cp</code>
 argument to the <code>java</code> command).</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;" nowrap="nowrap"><code>-outputJdbcURL<i>=&lt;jdbcURL&gt;</i></code></td>
-      <td style="vertical-align: top;">
-      <p>JDBC URL for target database</p>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-outputJdbcUser=<i>&lt;user&gt;</i></code></td>
-      <td style="vertical-align: top;">User name for target database</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-outputJdbcPassword=<i>&lt;password&gt;</i></code></td>
-      <td style="vertical-align: top;">Password for target database</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;" nowrap="nowrap"><code>-outputDirectory=<i>&lt;directory
+      </tr>
+      <tr>
+        <td style="vertical-align: top;" nowrap="nowrap"><code>-outputJdbcURL<i>=&lt;jdbcURL&gt;</i></code></td>
+        <td style="vertical-align: top;">
+
+        <p>JDBC URL for target database</p></td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top;"><code>-outputJdbcUser=<i>&lt;user&gt;</i></code></td>
+        <td style="vertical-align: top;">User name for target database</td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top;"><code>-outputJdbcPassword=<i>&lt;password&gt;</i></code></td>
+        <td style="vertical-align: top;">Password for target database</td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top;" nowrap="nowrap"><code>-outputDirectory=<i>&lt;directory
 name&gt;</i></code></td>
-      <td style="vertical-align: top;">Optional. Directory where DB
+        <td style="vertical-align: top;">Optional. Directory where DB
 creation
 scripts will be placed. Statements are in a format that will work for
 the database type indicated by outputJdbcURL.</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-outputJdbcBatchSize=<i>&lt;batch
+      </tr>
+      <tr>
+        <td style="vertical-align: top;"><code>-outputJdbcBatchSize=<i>&lt;batch
 size&gt;</i></code></td>
-      <td style="vertical-align: top;">Size of batch for JDBC INSERT
+        <td style="vertical-align: top;">Size of batch for JDBC INSERT
 statement output. Defaults to 50. If set to 1, JDBC batches are not
 used.</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;" nowrap="nowrap"><code>-inputJdbcURL=<i>&lt;jdbcURL&gt;</i></code></td>
-      <td style="vertical-align: top;">JDBC URL for source database</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-inputJdbcUser=<i>&lt;user&gt;</i></code></td>
-      <td style="vertical-align: top;">User name for source database</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-inputJdbcPassword=<i>&lt;password&gt;</i></code></td>
-      <td style="vertical-align: top;">Password for source database</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-inputFile=<i>&lt;file
+      </tr>
+      <tr>
+        <td style="vertical-align: top;" nowrap="nowrap"><code>-inputJdbcURL=<i>&lt;jdbcURL&gt;</i></code></td>
+        <td style="vertical-align: top;">JDBC URL for source database</td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top;"><code>-inputJdbcUser=<i>&lt;user&gt;</i></code></td>
+        <td style="vertical-align: top;">User name for source database</td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top;"><code>-inputJdbcPassword=<i>&lt;password&gt;</i></code></td>
+        <td style="vertical-align: top;">Password for source database</td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top;"><code>-inputFile=<i>&lt;file
 name&gt;</i></code></td>
-      <td style="vertical-align: top;">Optional. If no input DB
+        <td style="vertical-align: top;">Optional. If no input DB
 parameters are
 given, assumes data comes from this file of INSERT statements.</td>
-    </tr>
-  </tbody>
-</table>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
 <p>The usual source for the MondrianFoodMartLoader utility is
 a SQL script (<code>[-inputFile=&lt;file name&gt;]</code>). But you
 have already loaded the data into one JDBC data source (say Microsoft
@@ -455,328 +450,11 @@ For example:</p>
 </blockquote>
 <h2>
 <a name="7_Miscellaneous">6. Miscellaneous</a></h2>
-<h3><a name="6_1_mondrian_properties">6.1. mondrian.properties<br>
-</a></h3>
-<p>Mondrian has a properties file to allow you to configure how it
-executes. The mondrian.properties file is loaded when the executing
-Mondrian JAR detects it needs properties, but can also be done
-explicitly in your code. It looks in several places, in the following
-order:<br>
+<h3><a name="6_1_mondrian_properties">6.1. mondrian.properties</a></h3>
+
+<p>Properties are described in the <a href="configuration.html">Configuration 
+Guide</a>.<br>
 </p>
-<ol>
-  <li>In the directory where you started your JVM<br>
-  </li>
-  <li>If you want property loading to be explicit in the context of a
-web application, you can call <code>MondrianProperties.instance().load(servletContext)</code>.
-This will search for a mondrian.properties file in <code>/WEB-INF</code>.
-JPivot does this and the demonstration web applications have this
-configuration.<br>
-  </li>
-</ol>
-<p>These properties are stored as system properties, so they can be set
-during JVM startup via <code>-D&lt;property&gt;=&lt;value&gt;</code>.</p>
-<p>The following properties in mondrian.properties effect the
-operations of Mondrian. There are additional properties that are
-relevant only during development and testing.<br>
-</p>
-<table style="text-align: left;" border="1" cellpadding="2"
- cellspacing="0">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top; text-align: center;"> <span
- style="font-weight: bold;">Property</span><br>
-      </td>
-      <td style="vertical-align: top; text-align: center;"><span
- style="font-weight: bold;">Description</span><br>
-      </td>
-      <td style="vertical-align: top; text-align: center;"><span
- style="font-weight: bold;">Default value</span><br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.query.limit</code></td>
-      <td style="vertical-align: top;">Maximum number of simultaneous
-queries the system will allow. Oracle fails if you try to run more than
-the 'processes' parameter in init.ora, typically 150. The throughput of
-Oracle and other databases will probably reduce long before you get to
-their limit.</td>
-      <td style="vertical-align: top;">40</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.trace.level</code><br>
-      </td>
-      <td style="vertical-align: top;">The amount of tracing displayed.
-If trace level is above 0, SQL tracing will be enabled and logged as
-per the out.file below. This is separate from Log4j logging.<br>
-      </td>
-      <td style="vertical-align: top;">0<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.debug.out.file<br>
-      </code> </td>
-      <td style="vertical-align: top;">The name of the file to which
-SQL tracing is to be written.<br>
-      </td>
-      <td style="vertical-align: top;">System.out<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.jdbcDrivers</code><br>
-      </td>
-      <td style="vertical-align: top;">A list of JDBC drivers to load
-automatically. Must be a comma-separated list of class names, and the
-classes must be on the class path.<br>
-      </td>
-      <td style="vertical-align: top;">sun.jdbc.odbc.JdbcOdbcDriver,<br>
-org.hsqldb.jdbcDriver,<br>
-oracle.jdbc.OracleDriver,<br>
-com.mysql.jdbc.Driver<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.result.limit</code>
-      </td>
-      <td style="vertical-align: top;">If set to a value greater than
-zero, limits the maximum size of a result set.<br>
-      </td>
-      <td style="vertical-align: top;">0<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.rolap.LargeDimensionThreshold</code>
-      </td>
-      <td style="vertical-align: top;">Determines when a dimension is
-considered "large". If a dimension has more than this number of
-members, use a smart member reader.<br>
-      </td>
-      <td style="vertical-align: top;">100<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.rolap.SparseSegmentValueThreshold,<br>
-mondrian.rolap.SparseSegmentDensityThreshold</code><br>
-      </td>
-      <td style="vertical-align: top;">Determines whether to choose a
-sparse or dense representation when storing collections of cell values.<br>
-      <br>
-When storing collections of cell values, we have to choose between a
-sparse and a dense representation, based upon the <span
- style="font-weight: bold;">possible</span> and <span
- style="font-weight: bold;">actual </span>number of values.<br>
-      <br>
-The density = <code>actual / possible</code>.<br>
-      <br>
-We use a sparse representation if:<br>
-      <br>
-      <code>possible - valueThreshold * actual &gt; densityThreshold</code><br>
-      <br>
-At the default values, we use a dense representation for (1000
-possible, 0 actual), or (2000 possible, 500 actual), or (3000 possible,
-1000 actual). Any fewer actual values, or any more possible values, and
-we will use a sparse representation.<br>
-      </td>
-      <td style="vertical-align: top;">ValueThreshold: 1000<br>
-DensityThreshold: 0.5<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.rolap.aggregates.Use</code>
-      </td>
-      <td style="vertical-align: top;">Boolean property that controls
-whether aggregates should be used.<br>
-      <br>
-If true, then aggregates are used. This property is queried prior to
-each aggregate query so that changing the value of this property
-dynamically (not just at startup) is meaningful.<br>
-      <br>
-Aggregates can be read from the database using the ReadAggregates
-property but will not be used unless this property is set to true.<br>
-      </td>
-      <td style="vertical-align: top;">false<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.rolap.aggregates.Read</code>
-      </td>
-      <td style="vertical-align: top;">Boolean property which
-determines whether aggregates should be read. If set to true, then the
-database is scanned for aggregate tables. <br>
-      <br>
-Unless the mondrian.rolap.aggregates.Use property is set to true, the
-aggregates found will not be used.<br>
-      </td>
-      <td style="vertical-align: top;">false </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.rolap.aggregates.ChooseByVolume</code>
-      </td>
-      <td style="vertical-align: top;">Boolean property that controls
-whether aggregate tables are ordered by their volume or row count.<br>
-      </td>
-      <td style="vertical-align: top;">false<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.rolap.aggregates.rules</code>
-      </td>
-      <td style="vertical-align: top;"> String property which can be
-either a resource in the Mondrian jar or a URL. See <a
- href="aggregate_tables.html#How_Mondrian_recognizes_Aggregate_Tables">aggregate
-table rules</a> for details.
-      </td>
-      <td style="vertical-align: top;">"/DefaultRules.xml", which is in
-the mondrian.rolap.aggmatcher package in Mondrian.jar
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.rolap.aggregates.rule.tag</code>
-      </td>
-      <td style="vertical-align: top;">The AggRule element's tag value.<br>
-      <br>
-Normally, this property is not set by a user.
-      </td>
-      <td style="vertical-align: top;">default<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.rolap.aggregates.generateSql</code>
-      </td>
-      <td style="vertical-align: top;">Boolean property which controls
-whether to print the SQL code generated for aggregate tables.<br>
-      <br>
-If set, then as each aggregate request is processed, both the lost and
-collapsed dimension create and insert sql code is printed. This is for
-use in the CmdRunner allowing one to create aggregate table generation
-sql.
-      </td>
-      <td style="vertical-align: top;">false<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.rolap.star.disableCaching</code>
-      </td>
-      <td style="vertical-align: top;">Boolean property that controls
-whether a RolapStar's aggregate data cache is cleared after each query.
-If true, RolapStar will not cache aggregate data from one query to the
-next (the cache is cleared after each query).
-      </td>
-      <td style="vertical-align: top;">false<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.olap.triggers.enable</code>
-      </td>
-      <td style="vertical-align: top;">Boolean property that controls
-whether triggers are executed when Mondrian properties change. This
-allows objects dependent on Mondrian properties to react, ie. reload,
-when a given property changes via <code>MondrianProperties.instance().populate(null)</code>
-or <code>MondrianProperties.instance().QueryLimit.set(50)</code> for
-example.<br>
-      </td>
-      <td style="vertical-align: top;">true<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.rolap.generate.formatted.sql</code>
-      </td>
-      <td style="vertical-align: top;">Boolean property which controls
-pretty-print mode. If set to true, the all SqlQuery SQL strings will be
-generated in the log or output in pretty-print mode, formatted for ease
-of reading.
-      </td>
-      <td style="vertical-align: top;">false<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.olap.case.sensitive</code>
-      </td>
-      <td style="vertical-align: top;">Boolean property which controls
-whether the MDX parser resolves uses case-sensitive matching when
-looking up identifiers.
-      </td>
-      <td style="vertical-align: top;">false<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.expCache.enable</code>
-      </td>
-      <td style="vertical-align: top;">Boolean property which controls
-whether to use a cache for frequently evaluated expressions. With the
-cache disabled, an expression like:<br>
-      <br>
-      <code>Rank([Product].CurrentMember,<br>
-Order([Product].MEMBERS, [Measures].[Unit Sales]))<br>
-      </code><br>
-would perform many redundant sorts.
-      </td>
-      <td style="vertical-align: top;">true<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.test.ExpDependencies</code>
-      </td>
-      <td style="vertical-align: top;">Integer property which controls
-whether to test operators' dependencies, and how much time to spend
-doing it.<br>
-      <br>
-If this property is positive, Mondrian allocates an expression
-evaluator which evaluates each expression several times, and makes sure
-that the results of the expression are independent of dimensions which
-the expression claims to be independent of.<br>
-      </td>
-      <td style="vertical-align: top;">0<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.rolap.localePropFile</code>
-      </td>
-      <td style="vertical-align: top;">Name of locale property file.
-Used for the LocalizingDynamicSchemaProcessor. See <a
- href="schema.html#I18n">Internationalization</a>. </td>
-      <td style="vertical-align: top;">null<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.native.crossjoin.enable</code>
-      </td>
-      <td style="vertical-align: top;">If enabled, some NON EMPTY <code>CrossJoin</code>
-MDX statements will be computed in the database and not within
-Mondrian/Java </td>
-      <td style="vertical-align: top;">true<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.native.topcount.enable</code>
-      </td>
-      <td style="vertical-align: top;">If enabled, some <code>TopCount</code>
-MDX statements will be computed in the database and not within
-Mondrian/Java </td>
-      <td style="vertical-align: top;">false<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.native.filter.enable</code>
-      </td>
-      <td style="vertical-align: top;">If enabled, some <code>Filter()</code>
-MDX statements will be computed in the database and not within
-Mondrian/Java </td>
-      <td style="vertical-align: top;">false<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mondrian.native.nonempty.enable</code>
-      </td>
-      <td style="vertical-align: top;">If enabled, some NON EMPTY MDX
-set operations like <code>member.children</code>, <code>level.members</code>
-and <code>member.descendants</code> will be computed in the database
-and not within Mondrian/Java </td>
-      <td style="vertical-align: top;">true<br>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
 <h3><a name="7_1_Cache_setup">6.2. Cache setup</a></h3>
 <p>You will need to specify the amount of memory available to the cache
 using the -Xms Java VM option, for example -Xms256m for 256 megs of ram

@@ -167,7 +167,7 @@ public class MondrianProperties extends TriggerableProperties {
 
     /**
      * Loads this property set from: the file "$PWD/mondrian.properties" (if it
-     * exists); the "mondrian.properties" in the CLASSPATH; and from the system 
+     * exists); the "mondrian.properties" in the CLASSPATH; and from the system
      * properties.
      */
     public void populate() {
@@ -261,12 +261,20 @@ public class MondrianProperties extends TriggerableProperties {
 
     /**
      * Maximum number of simultaneous queries the system will allow.
+     *
+     * <p>Oracle fails if you try to run more than the 'processes' parameter in
+     * init.ora, typically 150. The throughput of Oracle and other databases
+     * will probably reduce long before you get to their limit.</p>
      */
     public final IntegerProperty QueryLimit = new IntegerProperty(
             this, "mondrian.query.limit", 40);
 
     /**
      * Property which controls the amount of tracing displayed.
+     *
+     * <p>If trace level is above 0, SQL tracing will be enabled and logged as
+     * per the <code>out.file</code> below. This is separate from Log4j
+     * logging.
      */
     public final IntegerProperty TraceLevel = new IntegerProperty(
             this, "mondrian.trace.level");
@@ -292,7 +300,7 @@ public class MondrianProperties extends TriggerableProperties {
             "com.mysql.jdbc.Driver");
 
     /**
-     * Property which, if set to a value greatert than zero, limits the maximum
+     * Property which, if set to a value greater than zero, limits the maximum
      * size of a result set.
      */
     public final IntegerProperty ResultLimit = new IntegerProperty(
@@ -308,7 +316,7 @@ public class MondrianProperties extends TriggerableProperties {
                     this, "mondrian.rolap.RolapResult.printCacheables");
 
     /** @deprecated obsolete */
-    public final BooleanProperty getFlushAfterQuery = new BooleanProperty(
+    public final BooleanProperty FlushAfterQuery = new BooleanProperty(
             this, "mondrian.rolap.RolapResult.flushAfterEachQuery");
 
     // mondrian.test properties
@@ -378,9 +386,8 @@ public class MondrianProperties extends TriggerableProperties {
 
     /**
      * Property which determines when a dimension is considered "large".
-     * If a dimension has more than this number of members, use a
-     * smart member reader (see {@link mondrian.rolap.SmartMemberReader}).
-     * Default is 100.
+     * If a dimension has more than this number of members, Mondrian uses a
+     * {@link mondrian.rolap.SmartMemberReader smart member reader}.
      */
     public final IntegerProperty LargeDimensionThreshold = new IntegerProperty(
             this, "mondrian.rolap.LargeDimensionThreshold", 100);
@@ -388,26 +395,29 @@ public class MondrianProperties extends TriggerableProperties {
     /**
      * Property which, with {@link #SparseSegmentCountThreshold}, determines
      * whether to choose a sparse or dense representation when storing
-     * collections of cell values.
+     * collections of cell values in memory.
      *
-     * <p>When storing collections of cell values, we have to choose between a
-     * sparse and a dense representation, based upon the <code>possible</code>
-     * and <code>actual</code> number of values.
+     * <p>When storing collections of cell values, Mondrian has to choose
+     * between a sparse and a dense representation, based upon the
+     * <code>possible</code> and <code>actual</code> number of values.
      * The <code>density</code> is <code>actual / possible</code>.
-     * We use a sparse representation if
+     *
+     * <p>We use a sparse representation if
      *   <code>possible -
      *   {@link #SparseSegmentCountThreshold countThreshold} *
      *   actual &gt;
      *   {@link #SparseSegmentDensityThreshold densityThreshold}</code>
      *
-     * <p>The default values are
-     * {@link #SparseSegmentCountThreshold countThreshold} = 1000,
-     * {@link #SparseSegmentDensityThreshold} = 0.5..
-     *
-     * <p>At these default values, we use a dense representation
-     * for (1000 possible, 0 actual), or (2000 possible, 500 actual), or
-     * (3000 possible, 1000 actual). Any fewer actual values, or any more
-     * possible values, and we will use a sparse representation.
+     * <p>For example, at the default values
+     * ({@link #SparseSegmentCountThreshold countThreshold} = 1000,
+     * {@link #SparseSegmentDensityThreshold} = 0.5),
+     * we use a dense representation for<ul>
+     * <li>(1000 possible, 0 actual), or
+     * <li>(2000 possible, 500 actual), or
+     * <li>(3000 possible, 1000 actual).
+     * </ul>
+     * Any fewer actual values, or any more
+     * possible values, and Mondrian will use a sparse representation.
      */
     public final IntegerProperty SparseSegmentCountThreshold =
             new IntegerProperty(
@@ -467,12 +477,13 @@ public class MondrianProperties extends TriggerableProperties {
     //
 
     /**
-     * Boolean property that controls whether aggregates should be used.
+     * Boolean property that controls whether Mondrian uses aggregate tables.
      *
-     * <p>If true, then aggregates are used. This property is
+     * <p>If true, then Mondrian uses aggregate tables. This property is
      * queried prior to each aggregate query so that changing the value of this
      * property dynamically (not just at startup) is meaningful.
-     * Aggregates can be read from the database using the
+     *
+     * <p>Aggregates can be read from the database using the
      * {@link #ReadAggregates} property but will not be used unless this
      * property is set to true.
      */
@@ -480,9 +491,10 @@ public class MondrianProperties extends TriggerableProperties {
             this, "mondrian.rolap.aggregates.Use", false);
 
     /**
-     * Boolean property which determines whether aggregates should be read.
+     * Boolean property which determines whether Mondrian should read aggregate
+     * tables.
      *
-     * <p>If set to true, then the database is scanned for aggregate tables.
+     * <p>If set to true, then Mondrian scans the database for aggregate tables.
      * Unless mondrian.rolap.aggregates.Use is set to true, the aggregates
      * found will not be used.
      */
@@ -493,12 +505,17 @@ public class MondrianProperties extends TriggerableProperties {
     /**
      * Boolean property that controls whether aggregate tables
      * are ordered by their volume or row count.
+     *
+     * <p>If true, Mondrian uses the aggregate table with the smallest volume
+     * (number of rows multiplied by number of columns); if false, Mondrian
+     * uses the aggregate table with the fewest rows.
      */
     public final BooleanProperty ChooseAggregateByVolume = new BooleanProperty(
             this, "mondrian.rolap.aggregates.ChooseByVolume", false);
 
     /**
-     * String property which can be either a resource in the
+     * String property containing the name of the file which defines the rules
+     * for recognizing an aggregate table. Can be either a resource in the
      * Mondrian jar or a URL.
      *
      * <p>The default value is "/DefaultRules.xml", which is in the
@@ -542,8 +559,14 @@ public class MondrianProperties extends TriggerableProperties {
             this, "mondrian.rolap.star.disableCaching", false);
 
     /**
-     * Boolean property that controls whether or not triggers are
-     * executed when a {@link MondrianProperties} property changes.
+     * Boolean property that controls whether to notify the Mondrian system
+     * when a {@link MondrianProperties property value} changes.
+     *
+     * <p>This allows objects dependent on Mondrian properties to react (that
+     * is, reload), when a given property changes via, say,
+     * <code>MondrianProperties.instance().populate(null)</code> or
+     * <code>MondrianProperties.instance().QueryLimit.set(50)</code>.
+
      */
     public final BooleanProperty EnableTriggers = new BooleanProperty(
             this, "mondrian.olap.triggers.enable", true);
@@ -579,10 +602,10 @@ public class MondrianProperties extends TriggerableProperties {
      * Integer property which controls whether to test operators' dependencies,
      * and how much time to spend doing it.
      *
-     * <p>If this property is positive, Mondrian allocates an expression
-     * evaluator which evaluates each expression several times, and makes sure
-     * that the results of the expression are independent of dimensions which
-     * the expression claims to be independent of.
+     * <p>If this property is positive, Mondrian's test framework allocates an
+     * expression evaluator which evaluates each expression several times, and
+     * makes sure that the results of the expression are independent of
+     * dimensions which the expression claims to be independent of.
      *
      * <p>The default is 0.
      */
@@ -610,7 +633,13 @@ public class MondrianProperties extends TriggerableProperties {
 
     /**
      * Name of locale property file.
-     * Default value is null.
+     *
+     * <p>Used for the {@link mondrian.rolap.DynamicSchemaProcessor
+     * LocalizingDynamicSchemaProcessor}; see
+     * <a href="http://mondrian.sourceforge.net/schema.html#I18n">Internationalization</a>
+     * for more details.</td>
+     *
+     * <p>Default value is null.
      */
     public final StringProperty LocalePropFile = new StringProperty(
             this, "mondrian.rolap.localePropFile", null);
@@ -641,14 +670,15 @@ public class MondrianProperties extends TriggerableProperties {
         this, "mondrian.native.nonempty.enable", true);
 
     /**
-     * If enabled, first row in result rowset will be filled with the total
-     * count of rows in underlying database.
+     * If enabled, first row in the result of an XML/A drill-through request
+     * will be filled with the total count of rows in underlying database.
      */
     public final BooleanProperty EnableTotalCount = new BooleanProperty(
         this, "mondrian.xmla.drillthroughTotalCount.enable", true);
 
     /**
-     * Number of rows returned by drill through operation.
+     * Property which defines
+     * limit on the number of rows returned by XML/A drill through request.
      */
     public final IntegerProperty MaxRows = new IntegerProperty(
         this, "mondrian.xmla.drillthroughMaxRows", 1000);
