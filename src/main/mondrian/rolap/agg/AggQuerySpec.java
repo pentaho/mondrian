@@ -29,22 +29,18 @@ import org.apache.log4j.Logger;
  */
 class AggQuerySpec {
     private static final Logger LOGGER = Logger.getLogger(AggQuerySpec.class);
-    
+
     private final AggStar aggStar;
     private final Segment[] segments;
-    /**
-     * Whether the query contains any distinct aggregates. If so, a direct hit
-     * is required; it cannot be rolled up.
-     */
-    private final boolean isDistinct;
+    private final boolean rollup;
 
     AggQuerySpec(
             final AggStar aggStar,
             final Segment[] segments,
-            final boolean isDistinct) {
+            final boolean rollup) {
         this.aggStar = aggStar;
         this.segments = segments;
-        this.isDistinct = isDistinct;
+        this.rollup = rollup;
     }
 
     protected SqlQuery newSqlQuery() {
@@ -63,12 +59,6 @@ class AggQuerySpec {
         int bitPos = segments[i].measure.getBitPosition();
         return aggStar.lookupColumn(bitPos);
     }
-/*
-    public AggStar.FactTable.Measure getMeasure(final int i) {
-        int bitPos = segments[i].measure.getBitPosition();
-        return aggStar.lookupMeasure(bitPos);
-    }
-*/
 
     public String getMeasureAlias(final int i) {
         return "m" + Integer.toString(i);
@@ -104,18 +94,20 @@ class AggQuerySpec {
         return sqlQuery.toString();
     }
 
-    protected boolean hasDistinct() {
-        return isDistinct;
-    }
+    protected void addMeasure(final int i, final SqlQuery query) {
+        AggStar.FactTable.Measure column =
+                (AggStar.FactTable.Measure) getMeasureAsColumn(i);
 
-    protected void addMeasure(final int i, final SqlQuery sqlQuery) {
-        AggStar.FactTable.Column column = getMeasureAsColumn(i);
-
-        column.getTable().addToFrom(sqlQuery, false, true);
+        column.getTable().addToFrom(query, false, true);
         String alias = getMeasureAlias(i);
 
-        String expr = column.getExpression(sqlQuery);
-        sqlQuery.addSelect(expr, alias);
+        String expr;
+        if (rollup) {
+            expr = column.generateRollupString(query);
+        } else {
+            expr = column.generateExprString(query);
+        }
+        query.addSelect(expr, alias);
     }
 
     protected void generateSql(final SqlQuery sqlQuery) {
@@ -126,13 +118,15 @@ class AggQuerySpec {
             AggStar.Table table = column.getTable();
             table.addToFrom(sqlQuery, false, true);
 
-            String expr = column.getExpression(sqlQuery);
+            String expr = column.generateExprString(sqlQuery);
 
             ColumnConstraint[] constraints = getConstraints(i);
             if (constraints != null) {
-                sqlQuery.addWhere(RolapStar.Column.createInExpr(expr,
-                                               constraints,
-                                               column.isNumeric()));
+                sqlQuery.addWhere(
+                        RolapStar.Column.createInExpr(
+                                expr,
+                                constraints,
+                                column.isNumeric()));
             }
 
             // some DB2 (AS400) versions throw an error, if a column alias is
@@ -143,7 +137,7 @@ class AggQuerySpec {
                 sqlQuery.addSelect(expr, getColumnAlias(i));
             }
 
-            if (!hasDistinct()) {
+            if (rollup) {
                 sqlQuery.addGroupBy(expr);
             }
         }

@@ -166,7 +166,8 @@ class ExplicitRecognizer extends Recognizer {
             aggColumn.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
 
         aggUsage.setSymbolicName(measure.getSymbolicName());
-        convertAggregator(aggUsage, rm.getAggregator());
+        aggUsage.setAggregator(
+                convertAggregator(aggUsage, rm.getAggregator()));
 
         aggUsage.rMeasure = rm;
     }

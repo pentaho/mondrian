@@ -16,7 +16,6 @@ import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.AggStar;
-import mondrian.resource.MondrianResource;
 
 import org.apache.log4j.Logger;
 
@@ -32,7 +31,7 @@ import java.util.*;
  **/
 public class AggregationManager extends RolapAggregationManager {
     private static final Logger LOGGER =
-                    Logger.getLogger(AggregationManager.class);
+            Logger.getLogger(AggregationManager.class);
 
     private static AggregationManager instance;
 
@@ -124,45 +123,16 @@ public class AggregationManager extends RolapAggregationManager {
     /**
      * Generates the query to retrieve the cells for a list of segments.
      */
-    public String generateSQL(final Segment[] segments,
-                              final BitKey fkBK,
-                              final BitKey measureBK,
-                              final boolean isDistinct) {
-
+    public String generateSql(
+            final Segment[] segments,
+            final BitKey levelBitKey,
+            final BitKey measureBitKey) {
         // Check if using aggregates is enabled.
         if (MondrianProperties.instance().UseAggregates.get()) {
             RolapStar star = segments[0].aggregation.getStar();
 
-
-            // If there is no distinct count measure, isDistinct == false,
-            // then all we want is an AggStar whose BitKey is a superset
-            // of the combined measure BitKey and foreign-key/level BitKey.
-            //
-            // On the other hand, if there is at least one distinct count
-            // measure, isDistinct == true, then want is wanted is an AggStar
-            // whose measure BitKey is a superset of the measure BitKey,
-            // whose level BitKey is an exact match and the aggregate table
-            // can NOT have any foreign keys.
-            AggStar aggStar = null;
-            if (isDistinct) {
-                // no foreign keys
-                // level key exact match
-                // measure superset match
-
-                for (Iterator it = star.getAggStars(); it.hasNext(); ){
-                    AggStar as = (AggStar) it.next();
-                    if (! as.hasForeignKeys() && 
-                            as.select(fkBK, measureBK)) {
-                        aggStar = as;
-                        break;
-                    }
-                }
-
-            } else {
-                BitKey fullBK = fkBK.or(measureBK);
-                // superset match
-                aggStar = star.superSetMatch(fullBK);
-            }
+            final boolean[] rollup = {false};
+            AggStar aggStar = findAgg(star, levelBitKey, measureBitKey, rollup);
 
             if (aggStar != null) {
                 // Got a match, hot damn
@@ -171,14 +141,11 @@ public class AggregationManager extends RolapAggregationManager {
                     StringBuffer buf = new StringBuffer(256);
                     buf.append("MATCH: ");
                     buf.append(star.getFactTable().getAlias());
-                    buf.append(" isDistinct=");
-                    buf.append(isDistinct);
-                    buf.append(Util.nl);
                     buf.append("   foreign=");
-                    buf.append(fkBK);
+                    buf.append(levelBitKey);
                     buf.append(Util.nl);
                     buf.append("   measure=");
-                    buf.append(measureBK);
+                    buf.append(measureBitKey);
                     buf.append(Util.nl);
                     buf.append("   aggstar=");
                     buf.append(aggStar.getBitKey());
@@ -186,10 +153,11 @@ public class AggregationManager extends RolapAggregationManager {
                     buf.append("AggStar=");
                     buf.append(aggStar.getFactTable().getName());
                     buf.append(Util.nl);
-                    for (Iterator it = aggStar.getFactTable().getColumns();
-                            it.hasNext(); ) {
+                    for (Iterator columnIter =
+                            aggStar.getFactTable().getColumns().iterator();
+                         columnIter.hasNext(); ) {
                         AggStar.Table.Column column =
-                            (AggStar.Table.Column) it.next();
+                                (AggStar.Table.Column) columnIter.next();
                         buf.append("   ");
                         buf.append(column);
                         buf.append(Util.nl);
@@ -198,10 +166,9 @@ public class AggregationManager extends RolapAggregationManager {
                 }
 
                 AggQuerySpec aggQuerySpec =
-                    new AggQuerySpec(aggStar, segments, isDistinct);
+                        new AggQuerySpec(aggStar, segments, rollup[0]);
                 String sql = aggQuerySpec.generateSqlQuery();
                 return sql;
-
             }
 
             // No match, fall through and use fact table.
@@ -213,14 +180,11 @@ public class AggregationManager extends RolapAggregationManager {
             StringBuffer buf = new StringBuffer(256);
             buf.append("NO MATCH: ");
             buf.append(star.getFactTable().getAlias());
-            buf.append(" isDistinct=");
-            buf.append(isDistinct);
-            buf.append(Util.nl);
             buf.append("   foreign=");
-            buf.append(fkBK);
+            buf.append(levelBitKey);
             buf.append(Util.nl);
             buf.append("   measure=");
-            buf.append(measureBK);
+            buf.append(measureBitKey);
             buf.append(Util.nl);
 
             getLogger().debug(buf.toString());
@@ -229,10 +193,106 @@ public class AggregationManager extends RolapAggregationManager {
 
         // Fact table query
         SegmentArrayQuerySpec spec =
-            new SegmentArrayQuerySpec(segments, isDistinct);
+            new SegmentArrayQuerySpec(segments);
         String sql = spec.generateSqlQuery();
         return sql;
     }
+
+    /**
+     * Finds an aggregate table in the given star which has the desired levels
+     * and measures. Returns null if no aggregate table is suitable.
+     *
+     * <p>If there no aggregate is an exact match, returns a more
+     * granular aggregate which can be rolled up, and sets rollup to true.
+     * If one or more of the measures are distinct-count measures
+     * rollup is possible only in limited circumstances.
+     *
+     * @param star Star
+     * @param levelBitKey Set of levels
+     * @param measureBitKey Set of measures
+     * @param rollup Out parameter, is set to true if the aggregate is not
+     *   an exact match
+     * @return An aggregate, or null if none is suitable.
+     */
+    private AggStar findAgg(
+            RolapStar star,
+            final BitKey levelBitKey,
+            final BitKey measureBitKey,
+            boolean[] rollup) {
+        // If there is no distinct count measure, isDistinct == false,
+        // then all we want is an AggStar whose BitKey is a superset
+        // of the combined measure BitKey and foreign-key/level BitKey.
+        //
+        // On the other hand, if there is at least one distinct count
+        // measure, isDistinct == true, then want is wanted is an AggStar
+        // whose measure BitKey is a superset of the measure BitKey,
+        // whose level BitKey is an exact match and the aggregate table
+        // can NOT have any foreign keys.
+
+        BitKey fullBitKey = levelBitKey.or(measureBitKey);
+        // superset match
+        for (Iterator it = star.getAggStars().iterator(); it.hasNext(); ) {
+            AggStar aggStar = (AggStar) it.next();
+            if (!aggStar.superSetMatch(fullBitKey)) {
+                continue;
+            }
+
+            boolean isDistinct = measureBitKey.intersects(
+                    aggStar.getDistinctMeasureBitKey());
+
+            if (!isDistinct) {
+                rollup[0] = !aggStar.getLevelBitKey().equals(levelBitKey);
+                return aggStar;
+            }
+
+            // If there are distinct measures, we can only rollup in limited
+            // circumstances.
+
+            // no foreign keys
+            // level key exact match
+            // measure superset match
+
+            // Compute the core levels -- those which can be safely
+            // rolled up to. For example,
+            // if the measure is 'distinct customer count',
+            // and the agg table has levels customer_id,
+            // then gender is a core level
+            final BitKey distinctMeasuresBitKey =
+                    measureBitKey.and(aggStar.getDistinctMeasureBitKey());
+            final BitSet distinctMeasures = distinctMeasuresBitKey.toBitSet();
+            BitKey combinedLevelBitKey = null;
+            for (int k = distinctMeasures.nextSetBit(0); k >= 0;
+                 k = distinctMeasures.nextSetBit(k + 1)) {
+                final AggStar.FactTable.Measure distinctMeasure =
+                        aggStar.lookupMeasure(k);
+                BitKey rollableLevelBitKey =
+                        distinctMeasure.getRollableLevelBitKey();
+                if (combinedLevelBitKey == null) {
+                    combinedLevelBitKey = rollableLevelBitKey;
+                } else {
+                    // TODO use '&=' to remove unnecessary copy
+                    combinedLevelBitKey =
+                            combinedLevelBitKey.and(rollableLevelBitKey);
+                }
+            }
+
+            if (aggStar.hasForeignKeys()) {
+                // TODO: This is a little pessimistic. If the measure is
+                // 'count(distinct customer_id)' and one of the foreign keys is
+                // 'customer_id' then it is OK to roll up.
+                continue;
+            }
+
+            if (!aggStar.select(
+                    levelBitKey, combinedLevelBitKey, measureBitKey)) {
+                continue;
+            }
+
+            rollup[0] = !aggStar.getLevelBitKey().equals(levelBitKey);
+            return aggStar;
+        }
+        return null;
+    }
 }
 
-// End RolapAggregationManager.java
+// End AggregationManager.java

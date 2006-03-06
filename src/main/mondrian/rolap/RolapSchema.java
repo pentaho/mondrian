@@ -202,13 +202,13 @@ public class RolapSchema implements Schema {
         load(catalogName, null);
     }
 
-    protected void finalCleanUp() { 
+    protected void finalCleanUp() {
         if (aggTableManager != null) {
             aggTableManager.finalCleanUp();
             aggTableManager = null;
         }
     }
-    protected void finalize() throws Throwable { 
+    protected void finalize() throws Throwable {
         finalCleanUp();
     }
 
@@ -837,7 +837,7 @@ public class RolapSchema implements Schema {
                         schema.finalCleanUp();
                     }
                 }
-                
+
             }
             mapUrlToSchema.clear();
         }
@@ -1004,9 +1004,7 @@ public class RolapSchema implements Schema {
      */
     protected void addCube(final Cube cube) {
         this.mapNameToCube.put(
-                MondrianProperties.instance().CaseSensitive.get() ?
-                cube.getName() :
-                cube.getName().toUpperCase(),
+                Util.normalizeName(cube.getName()),
                 cube);
     }
 
@@ -1389,7 +1387,7 @@ public class RolapSchema implements Schema {
     }
 
     final RolapNativeRegistry nativeRegistry = new RolapNativeRegistry();
-    
+
     RolapNativeRegistry getNativeRegistry() {
         return nativeRegistry;
     }

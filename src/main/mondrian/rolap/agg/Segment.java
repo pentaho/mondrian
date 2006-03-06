@@ -103,8 +103,9 @@ class Segment {
      * Sets the data, and notifies any threads which are blocked in
      * {@link #waitUntilLoaded}.
      */
-    synchronized void setData(SegmentDataset data,
-                              Collection pinnedSegments) {
+    synchronized void setData(
+            SegmentDataset data,
+            Collection pinnedSegments) {
         Util.assertTrue(this.data == null);
         Util.assertTrue(this.state == State.Loading);
 
@@ -240,16 +241,16 @@ class Segment {
      *
      * @pre segments[i].aggregation == aggregation
      **/
-    static void load(final Segment[] segments,
-                     final BitKey fkBK,
-                     final BitKey measureBK,
-                     final boolean isDistinct,
-                     final Collection pinnedSegments,
-                     final Aggregation.Axis[] axes) {
-        String sql = AggregationManager.instance().generateSQL(segments,
-                                                               fkBK,
-                                                               measureBK,
-                                                               isDistinct);
+    static void load(
+            final Segment[] segments,
+            final BitKey levelBitKey,
+            final BitKey measureBitKey,
+            final Collection pinnedSegments,
+            final Aggregation.Axis[] axes) {
+        String sql = AggregationManager.instance().generateSql(
+                segments,
+                levelBitKey,
+                measureBitKey);
         Segment segment0 = segments[0];
         RolapStar star = segment0.aggregation.getStar();
         RolapStar.Column[] columns = segment0.aggregation.getColumns();
@@ -305,12 +306,30 @@ class Segment {
                     sparse = true;
                 }
             }
-            SegmentDataset[] datas = new SegmentDataset[segments.length];
             sparse = sparse || useSparse((double) n, (double) rows.size());
-            for (int i = 0; i < segments.length; i++) {
-                datas[i] = sparse
-                    ? (SegmentDataset) new SparseSegmentDataset(segments[i])
-                    : new DenseSegmentDataset(segments[i], new Object[n]);
+
+            final SegmentDataset[] dataSets;
+            final SparseSegmentDataset[] sparseDatasets;
+            final DenseSegmentDataset[] denseDatasets;
+            if (sparse) {
+                sparseDatasets = new SparseSegmentDataset[segments.length];
+                dataSets = sparseDatasets;
+                denseDatasets = null;
+            } else {
+                denseDatasets = new DenseSegmentDataset[segments.length];
+                dataSets = denseDatasets;
+                sparseDatasets = null;
+            }
+
+            if (sparse) {
+                for (int i = 0; i < segments.length; i++) {
+                    sparseDatasets[i] = new SparseSegmentDataset(segments[i]);
+                }
+            } else {
+                for (int i = 0; i < segments.length; i++) {
+                    denseDatasets[i] = new DenseSegmentDataset(
+                            segments[i], new Object[n]);
+                }
             }
             // now convert the rows into a sparse array
             int[] pos = new int[arity];
@@ -329,19 +348,20 @@ class Segment {
                 CellKey key = null;
                 if (sparse) {
                     key = new CellKey((int[]) pos.clone());
-                }
-                for (int j = 0; j < segments.length; j++) {
-                    final Object o = row[arity + j];
-                    if (sparse) {
-                        ((SparseSegmentDataset) datas[j]).put(key, o);
-                    } else {
-                        ((DenseSegmentDataset) datas[j]).set(k, o);
+                    for (int j = 0; j < segments.length; j++) {
+                        final Object o = row[arity + j];
+                        sparseDatasets[j].put(key, o);
+                    }
+                } else {
+                    for (int j = 0; j < segments.length; j++) {
+                        final Object o = row[arity + j];
+                        denseDatasets[j].set(k, o);
                     }
                 }
             }
 
             for (int i = 0; i < segments.length; i++) {
-                segments[i].setData(datas[i], pinnedSegments);
+                segments[i].setData(dataSets[i], pinnedSegments);
             }
 
         } catch (SQLException e) {

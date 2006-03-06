@@ -66,9 +66,7 @@ public class AggStar {
         AggStar aggStar = new AggStar(star, dbTable);
         AggStar.FactTable aggStarFactTable = aggStar.getFactTable();
 
-        //////////////////////////////////////////////////////////////////////
-        //
-        // load fact count
+        // 1. load fact count
         for (Iterator it =
             dbTable.getColumnUsages(JdbcSchema.FACT_COUNT_COLUMN_USAGE);
                     it.hasNext();) {
@@ -76,12 +74,8 @@ public class AggStar {
                 (JdbcSchema.Table.Column.Usage) it.next();
             aggStarFactTable.loadFactCount(usage);
         }
-        //
-        //////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////
-        //
-        // load measures
+        // 2. load measures
         for (Iterator it =
                 dbTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
                 it.hasNext();) {
@@ -89,12 +83,8 @@ public class AggStar {
                 (JdbcSchema.Table.Column.Usage) it.next();
             aggStarFactTable.loadMeasure(usage);
         }
-        //
-        //////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////
-        //
-        // load foreign keys
+        // 3. load foreign keys
         for (Iterator it =
                 dbTable.getColumnUsages(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
                 it.hasNext();) {
@@ -102,12 +92,8 @@ public class AggStar {
                 (JdbcSchema.Table.Column.Usage) it.next();
             aggStarFactTable.loadForeignKey(usage);
         }
-        //
-        //////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////
-        //
-        // load levels
+        // 4. load levels
         for (Iterator it =
                 dbTable.getColumnUsages(JdbcSchema.LEVEL_COLUMN_USAGE);
                 it.hasNext();) {
@@ -115,24 +101,91 @@ public class AggStar {
                 (JdbcSchema.Table.Column.Usage) it.next();
             aggStarFactTable.loadLevel(usage);
         }
-        //
-        //////////////////////////////////////////////////////////////////////
+
+        // 5. for each distinct-count measure, populate a list of the levels
+        //    which it is OK to roll up
+        for (int i = 0; i < aggStarFactTable.measures.size(); i++) {
+            FactTable.Measure measure =
+                    (FactTable.Measure) aggStarFactTable.measures.get(i);
+            if (measure.aggregator.isDistinct() &&
+                    measure.argument instanceof MondrianDef.Column) {
+                setLevelBits(
+                        measure.rollableLevelBitKey,
+                        aggStarFactTable,
+                        (MondrianDef.Column) measure.argument,
+                        star.getFactTable());
+            }
+        }
 
         return aggStar;
+    }
+
+    /**
+     * Sets bits in the bitmap for all levels reachable from a given table.
+     * This allows us to compute which levels can be safely aggregated away
+     * when rolling up a distinct-count measure.
+     *
+     * <p>For example, when rolling up a measure based on
+     * 'COUNT(DISTINCT customer_id)', all levels in the Customers table
+     * and the Regions table reached via the Customers table can be rolled up.
+     * So method sets the bit for all of these levels.
+     *
+     * @param bitKey Bit key of levels which can be rolled up
+     * @param aggTable Fact or dimension table which is the start point for
+     *   the navigation
+     * @param column Foreign-key column which constraints which dimension
+     * @param table
+     */
+    private static void setLevelBits(
+            final BitKey bitKey,
+            Table aggTable,
+            MondrianDef.Column column,
+            RolapStar.Table table) {
+        final Set columns = new HashSet();
+        RolapStar.collectColumns(columns, table, column);
+
+        final List levelList = new ArrayList();
+        collectLevels(levelList, aggTable, null);
+
+        for (int i = 0; i < levelList.size(); i++) {
+            Table.Level level = (Table.Level) levelList.get(i);
+            if (columns.contains(level.starColumn)) {
+                bitKey.set(level.getBitPosition());
+            }
+        }
+    }
+
+    private static void collectLevels(
+            List levelList,
+            Table table,
+            MondrianDef.Column joinColumn) {
+        if (joinColumn == null) {
+            levelList.addAll(table.levels);
+        }
+        for (int i = 0; i < table.children.size(); i++) {
+            Table dimTable = (Table) table.children.get(i);
+            if (joinColumn != null &&
+                    !dimTable.getJoinCondition().left.equals(joinColumn)) {
+                continue;
+            }
+            collectLevels(levelList, dimTable, null);
+        }
     }
 
     private final RolapStar star;
     private final AggStar.FactTable aggTable;
     private final BitKey bitKey;
-    private final BitKey fkBitKey;
+    private final BitKey levelBitKey;
     private final BitKey measureBitKey;
+    private final BitKey distinctMeasureBitKey;
     private final AggStar.Table.Column[] columns;
 
     AggStar(final RolapStar star, final JdbcSchema.Table aggTable) {
         this.star = star;
         this.bitKey = BitKey.Factory.makeBitKey(star.getColumnCount());
-        this.fkBitKey = bitKey.emptyCopy();
+        this.levelBitKey = bitKey.emptyCopy();
         this.measureBitKey = bitKey.emptyCopy();
+        this.distinctMeasureBitKey = bitKey.emptyCopy();
         this.aggTable = new AggStar.FactTable(aggTable);
         this.columns = new AggStar.Table.Column[star.getColumnCount()];
     }
@@ -166,13 +219,29 @@ public class AggStar {
     }
 
     /**
-     * Return true if this AggStar's foreign key BitKey equals the fkBK
-     * parameter and if this AggStar's measure BitKey is a super set
-     * (proper or not) of the measureBK parameter.
+     * Return true if this AggStar's level BitKey equals the
+     * <code>levelBitKey</code> parameter
+     * and if this AggStar's measure BitKey is a super set
+     * (proper or not) of the <code>measureBitKey</code> parameter.
      */
-    public boolean select(final BitKey fkBK, final BitKey measureBK) {
-        return getFKBitKey().equals(fkBK)
-            && getMeasureBitKey().isSuperSetOf(measureBK);
+    public boolean select(
+            final BitKey levelBitKey,
+            final BitKey coreLevelBitKey,
+            final BitKey measureBitKey) {
+        if (!getMeasureBitKey().isSuperSetOf(measureBitKey)) {
+            return false;
+        }
+        if (getLevelBitKey().equals(levelBitKey)) {
+            return true;
+        } else if (getLevelBitKey().isSuperSetOf(levelBitKey) &&
+                getLevelBitKey().andNot(coreLevelBitKey).equals(
+                        levelBitKey.andNot(coreLevelBitKey))) {
+            // It's OK to roll up levels which are orthogonal to the distinct
+            // measure.
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -213,15 +282,22 @@ public class AggStar {
     /**
      * Get the foreign-key/level BitKey.
      */
-    public BitKey getFKBitKey() {
-        return fkBitKey;
+    public BitKey getLevelBitKey() {
+        return levelBitKey;
     }
 
     /**
-     * Get the measure BitKey.
+     * Returns a BitKey of all measures.
      */
     public BitKey getMeasureBitKey() {
         return measureBitKey;
+    }
+
+    /**
+     * Returns a BitKey containing only distinct measures.
+     */
+    public BitKey getDistinctMeasureBitKey() {
+        return distinctMeasureBitKey;
     }
 
     /**
@@ -288,7 +364,8 @@ public class AggStar {
     }
 
     private static final Logger JOIN_CONDITION_LOGGER =
-                    Logger.getLogger(AggStar.Table.JoinCondition.class);
+            Logger.getLogger(AggStar.Table.JoinCondition.class);
+
     /**
      * Base Table class for the FactTable and DimTable classes.
      * This class parallels the RolapStar.Table class.
@@ -379,10 +456,11 @@ public class AggStar {
             /** this has a unique value per star */
             private final int bitPosition;
 
-            protected Column(final String name,
-                             final MondrianDef.Expression expression,
-                             final boolean isNumeric,
-                             final int bitPosition) {
+            protected Column(
+                    final String name,
+                    final MondrianDef.Expression expression,
+                    final boolean isNumeric,
+                    final int bitPosition) {
                 this.name = name;
                 this.expression = expression;
                 this.isNumeric = isNumeric;
@@ -392,7 +470,7 @@ public class AggStar {
 
                 // do not count the fact_count column
                 if (bitPosition >= 0) {
-                    AggStar.this.bitKey.setByPos(bitPosition);
+                    AggStar.this.bitKey.set(bitPosition);
                     AggStar.this.addColumn(this);
                 }
             }
@@ -435,12 +513,13 @@ public class AggStar {
             }
 
             /**
-             * This is used to create, generally, an SQL query segment of the
-             * form: tablename.columnname.
+             * Generates a SQL expression, which typically this looks like
+             * this: <code><i>tableName</i>.<i>columnName</i></code>.
              */
-            public String getExpression(final SqlQuery query) {
+            public String generateExprString(final SqlQuery query) {
                 return getExpression().getExpression(query);
             }
+
             public String toString() {
                 StringWriter sw = new StringWriter(256);
                 PrintWriter pw = new PrintWriter(sw);
@@ -455,7 +534,7 @@ public class AggStar {
                 pw.print(" (");
                 pw.print(getBitPosition());
                 pw.print("): ");
-                pw.print(getExpression(sqlQuery));
+                pw.print(generateExprString(sqlQuery));
             }
         }
 
@@ -465,41 +544,43 @@ public class AggStar {
          */
         final class ForeignKey extends Column {
 
-            private ForeignKey(final String name,
-                  final MondrianDef.Expression expression,
-                  final boolean isNumeric,
-                  final int bitPosition) {
+            private ForeignKey(
+                    final String name,
+                    final MondrianDef.Expression expression,
+                    final boolean isNumeric,
+                    final int bitPosition) {
                 super(name, expression, isNumeric, bitPosition);
-
-                AggStar.this.fkBitKey.setByPos(bitPosition);
+                AggStar.this.levelBitKey.set(bitPosition);
             }
         }
+
         /**
          * This class is used for holding dimension level information.
          * Both DimTables and FactTables can have Level columns.
          */
         final class Level extends Column {
+            private final RolapStar.Column starColumn;
 
-            private Level(final String name,
-                  final MondrianDef.Expression expression,
-                  final boolean isNumeric,
-                  final int bitPosition) {
-                super(name, expression, isNumeric, bitPosition);
-
-                AggStar.this.fkBitKey.setByPos(bitPosition);
+            private Level(
+                    final String name,
+                    final MondrianDef.Expression expression,
+                    final int bitPosition,
+                    RolapStar.Column starColumn) {
+                super(name, expression, starColumn.isNumeric(), bitPosition);
+                this.starColumn = starColumn;
+                AggStar.this.levelBitKey.set(bitPosition);
             }
         }
 
         /** The name of the table in the database. */
         private final String name;
         private final MondrianDef.Relation relation;
-        protected final List levels;
+        protected final List levels = new ArrayList();
         protected List children;
 
         Table(final String name, final MondrianDef.Relation relation) {
             this.name = name;
             this.relation = relation;
-            this.levels = new ArrayList();
             this.children = Collections.EMPTY_LIST;
         }
 
@@ -563,10 +644,10 @@ public class AggStar {
         }
 
         /**
-         * Get all Level columns.
+         * Returns all level columns.
          */
-        public Iterator getLevels() {
-            return levels.iterator();
+        public List getLevels() {
+            return levels;
         }
 
         /**
@@ -589,10 +670,10 @@ public class AggStar {
         }
 
         /**
-         * Get all child tables.
+         * Returns a list of child {@link Table} objects.
          */
-        public Iterator getChildren() {
-            return children.iterator();
+        public List getChildTables() {
+            return children;
         }
 
         /**
@@ -615,7 +696,7 @@ public class AggStar {
                 final String rightJoinConditionColumnName) {
             String tableName = rTable.getAlias();
             MondrianDef.Relation relation = rTable.getRelation();
-            RolapStar.Condition rjoinCondition = rTable.getCondition();
+            RolapStar.Condition rjoinCondition = rTable.getJoinCondition();
             MondrianDef.Expression rleft = rjoinCondition.getLeft();
             MondrianDef.Expression rright = rjoinCondition.getRight();
 
@@ -654,18 +735,18 @@ public class AggStar {
          */
         protected void convertColumns(final RolapStar.Table rTable) {
             // add level columns
-            for (Iterator it = rTable.getColumns(); it.hasNext(); ) {
+            for (Iterator it = rTable.getColumns().iterator(); it.hasNext(); ) {
                 RolapStar.Column column = (RolapStar.Column) it.next();
 
                 String name = column.getName();
                 MondrianDef.Expression expression = column.getExpression();
-                boolean isNumeric = column.isNumeric();
                 int bitPosition = column.getBitPosition();
 
-                Level level = new Level(name,
-                                        expression,
-                                        isNumeric,
-                                        bitPosition);
+                Level level = new Level(
+                        name,
+                        expression,
+                        bitPosition,
+                        column);
                 addLevel(level);
             }
         }
@@ -678,7 +759,7 @@ public class AggStar {
          */
         protected void convertChildren(final RolapStar.Table rTable) {
             // add children tables
-            for (Iterator it = rTable.getChildren(); it.hasNext(); ) {
+            for (Iterator it = rTable.getChildren().iterator(); it.hasNext(); ) {
                 RolapStar.Table rTableChild = (RolapStar.Table) it.next();
 
                 AggStar.DimTable dimChild = convertTable(rTableChild, null);
@@ -729,16 +810,32 @@ public class AggStar {
          */
         public class Measure extends Table.Column {
             private final RolapAggregator aggregator;
+            /**
+             * The fact table column which is being aggregated.
+             */
+            private final MondrianDef.Expression argument;
+            /**
+             * For distinct-count measures, contains a bitKey of levels which
+             * it is OK to roll up. For regular measures, this is empty, since
+             * all levels can be rolled up.
+             */
+            private final BitKey rollableLevelBitKey;
 
-            private Measure(final String name,
+            private Measure(
+                    final String name,
                     final MondrianDef.Expression expression,
                     final boolean isNumeric,
                     final int bitPosition,
-                    final RolapAggregator aggregator) {
+                    final RolapAggregator aggregator,
+                    final MondrianDef.Expression argument) {
                 super(name, expression, isNumeric, bitPosition);
                 this.aggregator = aggregator;
+                this.argument = argument;
+                assert (argument != null) == aggregator.isDistinct();
+                this.rollableLevelBitKey =
+                        BitKey.Factory.makeBitKey(star.getColumnCount());
 
-                AggStar.this.measureBitKey.setByPos(bitPosition);
+                AggStar.this.measureBitKey.set(bitPosition);
             }
 
             /**
@@ -749,14 +846,22 @@ public class AggStar {
             }
 
             /**
-             * Get this Measure's sql expression which is an aggregator.
+             * Returns a <code>BitKey</code> of the levels which can be
+             * safely rolled up. (For distinct-count measures, most can't.)
              */
-            public String getExpression(final SqlQuery query) {
-                String expr = getExpression().getExpression(query);
-                RolapAggregator agg = getAggregator();
-                return (agg.isDistinct())
-                    ? expr
-                    : getAggregator().getExpression(expr);
+            public BitKey getRollableLevelBitKey() {
+                return rollableLevelBitKey;
+            }
+
+            /**
+             * Generates an expression to rollup this measure from a previous
+             * result. For example, a "COUNT" and "DISTINCT COUNT" measures
+             * rollup using "SUM".
+             */
+            public String generateRollupString(SqlQuery query) {
+                String expr = generateExprString(query);
+                final Aggregator rollup = getAggregator().getRollup();
+                return ((RolapAggregator) rollup).getExpression(expr);
             }
         }
 
@@ -827,12 +932,10 @@ public class AggStar {
         }
 
         /**
-         * Get all Measures.
-         *
-         * @return Iterator over measures,
+         * Returns a list of all measures.
          */
-        public Iterator getMeasures() {
-            return measures.iterator();
+        public List getMeasures() {
+            return measures;
         }
 
         /**
@@ -843,20 +946,17 @@ public class AggStar {
         }
 
         /**
-         * Get all columns.
-         *
-         * @return Iterator over columns,
+         * Returns a list of the columns in this table.
          */
-        public Iterator getColumns() {
+        public List getColumns() {
             List list = new ArrayList();
             list.addAll(measures);
             list.addAll(levels);
-            for (Iterator it = getChildren(); it.hasNext(); ) {
+            for (Iterator it = getChildTables().iterator(); it.hasNext(); ) {
                 DimTable dimTable = (DimTable) it.next();
                 dimTable.addColumnsToList(list);
             }
-
-            return list.iterator();
+            return list;
         }
 
         /**
@@ -866,8 +966,9 @@ public class AggStar {
          */
         private void loadForeignKey(final JdbcSchema.Table.Column.Usage usage) {
             if (usage.rTable != null) {
-                DimTable child = convertTable(usage.rTable,
-                                          usage.rightJoinConditionColumnName);
+                DimTable child = convertTable(
+                        usage.rTable,
+                        usage.rightJoinConditionColumnName);
                 addTable(child);
             } else {
                 // it a column thats not a measure or foreign key - it must be
@@ -897,37 +998,52 @@ public class AggStar {
                 }
             }
         }
+
         /**
          * Given a usage of type measure, create a Measure column.
          *
          * @param usage
          */
         private void loadMeasure(final JdbcSchema.Table.Column.Usage usage) {
-            String name = usage.getColumn().getName();
+            final JdbcSchema.Table.Column column = usage.getColumn();
+            String name = column.getName();
             String symbolicName = usage.getSymbolicName();
             if (symbolicName == null) {
                 symbolicName = name;
             }
-            boolean isNumeric = usage.getColumn().isNumeric();
+            boolean isNumeric = column.isNumeric();
             RolapAggregator aggregator = usage.getAggregator();
 
-            MondrianDef.Expression expression = null;
-            if (usage.getColumn().hasUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE)
-                    && ! aggregator.isDistinct()) {
+            MondrianDef.Expression expression;
+            if (column.hasUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE) &&
+                    ! aggregator.isDistinct()) {
                 expression = factCountColumn.getExpression();
             } else {
                 expression = new MondrianDef.Column(getName(), name);
             }
 
+            MondrianDef.Expression argument;
+            if (aggregator.isDistinct()) {
+                argument = usage.rMeasure.getExpression();
+            } else {
+                argument = null;
+            }
+
             int bitPosition = usage.rMeasure.getBitPosition();
 
-            Measure aggMeasure = new Measure(symbolicName,
-                                             expression,
-                                             isNumeric,
-                                             bitPosition,
-                                             aggregator);
+            Measure aggMeasure = new Measure(
+                    symbolicName,
+                    expression,
+                    isNumeric,
+                    bitPosition,
+                    aggregator,
+                    argument);
 
             measures.add(aggMeasure);
+
+            if (aggMeasure.aggregator.isDistinct()) {
+                distinctMeasureBitKey.set(bitPosition);
+            }
         }
 
         /**
@@ -947,10 +1063,11 @@ public class AggStar {
             boolean isNumeric = usage.getColumn().isNumeric();
             int bitPosition = -1;
 
-            Column aggColumn = new Column(symbolicName,
-                                          expression,
-                                          isNumeric,
-                                          bitPosition);
+            Column aggColumn = new Column(
+                    symbolicName,
+                    expression,
+                    isNumeric,
+                    bitPosition);
 
             factCountColumn = aggColumn;
         }
@@ -964,15 +1081,15 @@ public class AggStar {
             String name = usage.getSymbolicName();
             MondrianDef.Expression expression =
                 new MondrianDef.Column(getName(), usage.levelColumnName);
-            boolean isNumeric = usage.getColumn().isNumeric();
             int bitPosition = usage.rColumn.getBitPosition();
-
-            Level level = new Level(name,
-                                    expression,
-                                    isNumeric,
-                                    bitPosition);
+            Level level = new Level(
+                    name,
+                    expression,
+                    bitPosition,
+                    usage.rColumn);
             addLevel(level);
         }
+
         public void print(final PrintWriter pw, final String prefix) {
             pw.print(prefix);
             pw.println("Table:");
@@ -1000,7 +1117,7 @@ public class AggStar {
 
             pw.print(subprefix);
             pw.println("Measures:");
-            for (Iterator it = getMeasures(); it.hasNext(); ) {
+            for (Iterator it = getMeasures().iterator(); it.hasNext(); ) {
                 Column column = (Column) it.next();
                 column.print(pw, subsubprefix);
                 pw.println();
@@ -1008,17 +1125,18 @@ public class AggStar {
 
             pw.print(subprefix);
             pw.println("Levels:");
-            for (Iterator it = getLevels(); it.hasNext(); ) {
+            for (Iterator it = getLevels().iterator(); it.hasNext(); ) {
                 Level level = (Level) it.next();
                 level.print(pw, subsubprefix);
                 pw.println();
             }
 
-            for (Iterator it = getChildren(); it.hasNext(); ) {
+            for (Iterator it = getChildTables().iterator(); it.hasNext(); ) {
                 DimTable child = (DimTable) it.next();
                 child.print(pw, subprefix);
             }
         }
+
         private void makeNumberOfRows() {
             SqlQuery query = getSqlQuery();
             query.addSelect("count(*)");
@@ -1057,7 +1175,6 @@ public class AggStar {
                 }
             }
         }
-
     }
 
     /**
@@ -1068,9 +1185,9 @@ public class AggStar {
         private final JoinCondition joinCondition;
 
         DimTable(final Table parent,
-                 final String name,
-                 final MondrianDef.Relation relation,
-                 final JoinCondition joinCondition) {
+                final String name,
+                final MondrianDef.Relation relation,
+                final JoinCondition joinCondition) {
             super(name, relation);
             this.parent = parent;
             this.joinCondition = joinCondition;
@@ -1088,7 +1205,6 @@ public class AggStar {
             return joinCondition;
         }
 
-
         /**
          * Add all of this Table's columns to the list parameter and then add
          * all child table columns.
@@ -1097,11 +1213,12 @@ public class AggStar {
          */
         public void addColumnsToList(final List list) {
             list.addAll(levels);
-            for (Iterator it = getChildren(); it.hasNext(); ) {
+            for (Iterator it = getChildTables().iterator(); it.hasNext(); ) {
                 DimTable dimTable = (DimTable) it.next();
                 dimTable.addColumnsToList(list);
             }
         }
+
         public void print(final PrintWriter pw, final String prefix) {
             pw.print(prefix);
             pw.println("Table:");
@@ -1121,7 +1238,7 @@ public class AggStar {
             pw.print(subprefix);
             pw.println("Levels:");
 
-            for (Iterator it = getLevels(); it.hasNext(); ) {
+            for (Iterator it = getLevels().iterator(); it.hasNext(); ) {
                 Level level = (Level) it.next();
                 level.print(pw, subsubprefix);
                 pw.println();
@@ -1129,7 +1246,7 @@ public class AggStar {
 
             joinCondition.print(pw, subprefix);
 
-            for (Iterator it = getChildren(); it.hasNext(); ) {
+            for (Iterator it = getChildTables().iterator(); it.hasNext(); ) {
                 DimTable child = (DimTable) it.next();
                 child.print(pw, subprefix);
             }
@@ -1161,7 +1278,7 @@ public class AggStar {
 
         pw.print(subprefix);
         pw.print("fbk=");
-        pw.println(fkBitKey);
+        pw.println(levelBitKey);
 
         pw.print(subprefix);
         pw.print("mbk=");

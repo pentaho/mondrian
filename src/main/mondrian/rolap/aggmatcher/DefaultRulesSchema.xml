@@ -414,14 +414,12 @@ Revision is $Id$
                     private void debug(String name) {
                         StringBuffer bf = new StringBuffer(64);
                         bf.append(NameMatcher.this.getName());
-                        bf.append(".Machter.matches:");
-                        bf.append(" name "); 
-                        bf.append('"');
+                        bf.append(".Matcher.matches:");
+                        bf.append(" name \""); 
                         bf.append(name);
-                        bf.append('"');
-                        bf.append(" patterm  \"");
+                        bf.append("\" pattern \"");
                         bf.append(pattern.pattern());
-                        bf.append('"');
+                        bf.append("\"");
                         if ((pattern.flags() &
                             java.util.regex.Pattern.CASE_INSENSITIVE) != 0) {
                             bf.append(" case_insensitive"); 
@@ -768,14 +766,12 @@ Revision is $Id$
                     private void debug(String name) {
                         StringBuffer bf = new StringBuffer(64);
                         bf.append(Mapper.this.getName());
-                        bf.append(".Machter.matches:");
-                        bf.append(" name "); 
-                        bf.append('"');
+                        bf.append(".Matcher.matches:");
+                        bf.append(" name \""); 
                         bf.append(name);
-                        bf.append('"');
-                        bf.append(" patterm  \"");
+                        bf.append("\" pattern \"");
                         bf.append(pattern.pattern());
-                        bf.append('"');
+                        bf.append("\"");
                         if ((pattern.flags() &
                             java.util.regex.Pattern.CASE_INSENSITIVE) != 0) {
                             bf.append(" case_insensitive"); 
@@ -1161,14 +1157,11 @@ Revision is $Id$
                         StringBuffer bf = new StringBuffer(64);
                         bf.append("DefaultDef.RegexMapper");
                         bf.append(".Matcher.matches:");
-                        bf.append(" name "); 
-                        bf.append('"');
+                        bf.append(" name \""); 
                         bf.append(name);
-                        bf.append('"');
-                        bf.append(" matches regex ");
-                        bf.append('"');
+                        bf.append("\" matches regex \"");
                         bf.append(p.pattern());
-                        bf.append('"');
+                        bf.append("\"");
                         if ((p.flags() &
                             java.util.regex.Pattern.CASE_INSENSITIVE) != 0) {
                             bf.append(" case_insensitive"); 

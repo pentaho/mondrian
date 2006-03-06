@@ -289,11 +289,16 @@ public class MondrianFoodMartLoader {
                         loadDataFromFile();
                     }
                 }
+                // Index the base tables before running queries to populate
+                // the summary tables.
+                if (indexes) {
+                    createIndexes(true, false);
+                }
                 loadFromSQLInserts();
             }
 
             if (indexes) {
-                createIndexes();
+                createIndexes(false, true);
             }
         } finally {
             if (connection != null) {
@@ -803,106 +808,120 @@ public class MondrianFoodMartLoader {
      * Create all indexes for the FoodMart database
      *
      * @throws Exception
+     * @param baseTables Whether to create indexes on base tables
+     * @param summaryTables Whether to create indexes on agg tables
      */
-    private void createIndexes() throws Exception {
+    private void createIndexes(
+            boolean baseTables,
+            boolean summaryTables)
+            throws Exception {
         if (outputDirectory != null) {
             fileOutput = new FileWriter(new File(outputDirectory, "createIndexes.sql"));
         }
 
-        createIndex(true, "account", "i_account_id", new String[] {"account_id"});
-        createIndex(false, "account", "i_account_parent", new String[] {"account_parent"});
-        createIndex(true, "category", "i_category_id", new String[] {"category_id"});
-        createIndex(false, "category", "i_category_parent", new String[] {"category_parent"});
-        createIndex(true, "currency", "i_currency", new String[] {"currency_id", "date"});
-        createIndex(false, "customer", "i_cust_acct_num", new String[] {"account_num"});
-        createIndex(false, "customer", "i_customer_fname", new String[] {"fname"});
-        createIndex(false, "customer", "i_customer_lname", new String[] {"lname"});
-        createIndex(false, "customer", "i_cust_child_home", new String[] {"num_children_at_home"});
-        createIndex(true, "customer", "i_customer_id", new String[] {"customer_id"});
-        createIndex(false, "customer", "i_cust_postal_code", new String[] {"postal_code"});
-        createIndex(false, "customer", "i_cust_region_id", new String[] {"customer_region_id"});
-        createIndex(true, "department", "i_department_id", new String[] {"department_id"});
-        createIndex(true, "employee", "i_employee_id", new String[] {"employee_id"});
-        createIndex(false, "employee", "i_empl_dept_id", new String[] {"department_id"});
-        createIndex(false, "employee", "i_empl_store_id", new String[] {"store_id"});
-        createIndex(false, "employee", "i_empl_super_id", new String[] {"supervisor_id"});
-        createIndex(true, "employee_closure", "i_empl_closure", new String[] {"supervisor_id", "employee_id"});
-        createIndex(false, "employee_closure", "i_empl_closure_emp", new String[] {"employee_id"});
-        createIndex(false, "expense_fact", "i_expense_store_id", new String[] {"store_id"});
-        createIndex(false, "expense_fact", "i_expense_acct_id", new String[] {"account_id"});
-        createIndex(false, "expense_fact", "i_expense_time_id", new String[] {"time_id"});
-        createIndex(false, "inventory_fact_1997", "i_inv_97_prod_id", new String[] {"product_id"});
-        createIndex(false, "inventory_fact_1997", "i_inv_97_store_id", new String[] {"store_id"});
-        createIndex(false, "inventory_fact_1997", "i_inv_97_time_id", new String[] {"time_id"});
-        createIndex(false, "inventory_fact_1997", "i_inv_97_wrhse_id", new String[] {"warehouse_id"});
-        createIndex(false, "inventory_fact_1998", "i_inv_98_prod_id", new String[] {"product_id"});
-        createIndex(false, "inventory_fact_1998", "i_inv_98_store_id", new String[] {"store_id"});
-        createIndex(false, "inventory_fact_1998", "i_inv_98_time_id", new String[] {"time_id"});
-        createIndex(false, "inventory_fact_1998", "i_inv_98_wrhse_id", new String[] {"warehouse_id"});
-        createIndex(true, "position", "i_position_id", new String[] {"position_id"});
-        createIndex(false, "product", "i_prod_brand_name", new String[] {"brand_name"});
-        createIndex(true, "product", "i_product_id", new String[] {"product_id"});
-        createIndex(false, "product", "i_prod_class_id", new String[] {"product_class_id"});
-        createIndex(false, "product", "i_product_name", new String[] {"product_name"});
-        createIndex(false, "product", "i_product_SKU", new String[] {"SKU"});
-        createIndex(true, "promotion", "i_promotion_id", new String[] {"promotion_id"});
-        createIndex(false, "promotion", "i_promo_dist_id", new String[] {"promotion_district_id"});
-        createIndex(true, "reserve_employee", "i_rsrv_empl_id", new String[] {"employee_id"});
-        createIndex(false, "reserve_employee", "i_rsrv_empl_dept", new String[] {"department_id"});
-        createIndex(false, "reserve_employee", "i_rsrv_empl_store", new String[] {"store_id"});
-        createIndex(false, "reserve_employee", "i_rsrv_empl_sup", new String[] {"supervisor_id"});
-        createIndex(false, "salary", "i_salary_pay_date", new String[] {"pay_date"});
-        createIndex(false, "salary", "i_salary_employee", new String[] {"employee_id"});
-        createIndex(false, "sales_fact_1997", "i_sls_97_cust_id", new String[] {"customer_id"});
-        createIndex(false, "sales_fact_1997", "i_sls_97_prod_id", new String[] {"product_id"});
-        createIndex(false, "sales_fact_1997", "i_sls_97_promo_id", new String[] {"promotion_id"});
-        createIndex(false, "sales_fact_1997", "i_sls_97_store_id", new String[] {"store_id"});
-        createIndex(false, "sales_fact_1997", "i_sls_97_time_id", new String[] {"time_id"});
-        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_cust", new String[] {"customer_id"});
-        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_prod", new String[] {"product_id"});
-        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_promo", new String[] {"promotion_id"});
-        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_store", new String[] {"store_id"});
-        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_time", new String[] {"time_id"});
-        createIndex(false, "sales_fact_1998", "i_sls_98_cust_id", new String[] {"customer_id"});
-        createIndex(false, "sales_fact_1998", "i_sls_1998_prod_id", new String[] {"product_id"});
-        createIndex(false, "sales_fact_1998", "i_sls_1998_promo", new String[] {"promotion_id"});
-        createIndex(false, "sales_fact_1998", "i_sls_1998_store", new String[] {"store_id"});
-        createIndex(false, "sales_fact_1998", "i_sls_1998_time_id", new String[] {"time_id"});
-        createIndex(true, "store", "i_store_id", new String[] {"store_id"});
-        createIndex(false, "store", "i_store_region_id", new String[] {"region_id"});
-        createIndex(true, "store_ragged", "i_store_raggd_id", new String[] {"store_id"});
-        createIndex(false, "store_ragged", "i_store_rggd_reg", new String[] {"region_id"});
-        createIndex(true, "time_by_day", "i_time_id", new String[] {"time_id"});
-        createIndex(true, "time_by_day", "i_time_day", new String[] {"the_date"});
-        createIndex(false, "time_by_day", "i_time_year", new String[] {"the_year"});
-        createIndex(false, "time_by_day", "i_time_quarter", new String[] {"quarter"});
-        createIndex(false, "time_by_day", "i_time_month", new String[] {"month_of_year"});
+        createIndex(true, "account", "i_account_id", new String[] {"account_id"}, baseTables, summaryTables);
+        createIndex(false, "account", "i_account_parent", new String[] {"account_parent"}, baseTables, summaryTables);
+        createIndex(true, "category", "i_category_id", new String[] {"category_id"}, baseTables, summaryTables);
+        createIndex(false, "category", "i_category_parent", new String[] {"category_parent"}, baseTables, summaryTables);
+        createIndex(true, "currency", "i_currency", new String[] {"currency_id", "date"}, baseTables, summaryTables);
+        createIndex(false, "customer", "i_cust_acct_num", new String[] {"account_num"}, baseTables, summaryTables);
+        createIndex(false, "customer", "i_customer_fname", new String[] {"fname"}, baseTables, summaryTables);
+        createIndex(false, "customer", "i_customer_lname", new String[] {"lname"}, baseTables, summaryTables);
+        createIndex(false, "customer", "i_cust_child_home", new String[] {"num_children_at_home"}, baseTables, summaryTables);
+        createIndex(true, "customer", "i_customer_id", new String[] {"customer_id"}, baseTables, summaryTables);
+        createIndex(false, "customer", "i_cust_postal_code", new String[] {"postal_code"}, baseTables, summaryTables);
+        createIndex(false, "customer", "i_cust_region_id", new String[] {"customer_region_id"}, baseTables, summaryTables);
+        createIndex(true, "department", "i_department_id", new String[] {"department_id"}, baseTables, summaryTables);
+        createIndex(true, "employee", "i_employee_id", new String[] {"employee_id"}, baseTables, summaryTables);
+        createIndex(false, "employee", "i_empl_dept_id", new String[] {"department_id"}, baseTables, summaryTables);
+        createIndex(false, "employee", "i_empl_store_id", new String[] {"store_id"}, baseTables, summaryTables);
+        createIndex(false, "employee", "i_empl_super_id", new String[] {"supervisor_id"}, baseTables, summaryTables);
+        createIndex(true, "employee_closure", "i_empl_closure", new String[] {"supervisor_id", "employee_id"}, baseTables, summaryTables);
+        createIndex(false, "employee_closure", "i_empl_closure_emp", new String[] {"employee_id"}, baseTables, summaryTables);
+        createIndex(false, "expense_fact", "i_expense_store_id", new String[] {"store_id"}, baseTables, summaryTables);
+        createIndex(false, "expense_fact", "i_expense_acct_id", new String[] {"account_id"}, baseTables, summaryTables);
+        createIndex(false, "expense_fact", "i_expense_time_id", new String[] {"time_id"}, baseTables, summaryTables);
+        createIndex(false, "inventory_fact_1997", "i_inv_97_prod_id", new String[] {"product_id"}, baseTables, summaryTables);
+        createIndex(false, "inventory_fact_1997", "i_inv_97_store_id", new String[] {"store_id"}, baseTables, summaryTables);
+        createIndex(false, "inventory_fact_1997", "i_inv_97_time_id", new String[] {"time_id"}, baseTables, summaryTables);
+        createIndex(false, "inventory_fact_1997", "i_inv_97_wrhse_id", new String[] {"warehouse_id"}, baseTables, summaryTables);
+        createIndex(false, "inventory_fact_1998", "i_inv_98_prod_id", new String[] {"product_id"}, baseTables, summaryTables);
+        createIndex(false, "inventory_fact_1998", "i_inv_98_store_id", new String[] {"store_id"}, baseTables, summaryTables);
+        createIndex(false, "inventory_fact_1998", "i_inv_98_time_id", new String[] {"time_id"}, baseTables, summaryTables);
+        createIndex(false, "inventory_fact_1998", "i_inv_98_wrhse_id", new String[] {"warehouse_id"}, baseTables, summaryTables);
+        createIndex(true, "position", "i_position_id", new String[] {"position_id"}, baseTables, summaryTables);
+        createIndex(false, "product", "i_prod_brand_name", new String[] {"brand_name"}, baseTables, summaryTables);
+        createIndex(true, "product", "i_product_id", new String[] {"product_id"}, baseTables, summaryTables);
+        createIndex(false, "product", "i_prod_class_id", new String[] {"product_class_id"}, baseTables, summaryTables);
+        createIndex(false, "product", "i_product_name", new String[] {"product_name"}, baseTables, summaryTables);
+        createIndex(false, "product", "i_product_SKU", new String[] {"SKU"}, baseTables, summaryTables);
+        createIndex(true, "promotion", "i_promotion_id", new String[] {"promotion_id"}, baseTables, summaryTables);
+        createIndex(false, "promotion", "i_promo_dist_id", new String[] {"promotion_district_id"}, baseTables, summaryTables);
+        createIndex(true, "reserve_employee", "i_rsrv_empl_id", new String[] {"employee_id"}, baseTables, summaryTables);
+        createIndex(false, "reserve_employee", "i_rsrv_empl_dept", new String[] {"department_id"}, baseTables, summaryTables);
+        createIndex(false, "reserve_employee", "i_rsrv_empl_store", new String[] {"store_id"}, baseTables, summaryTables);
+        createIndex(false, "reserve_employee", "i_rsrv_empl_sup", new String[] {"supervisor_id"}, baseTables, summaryTables);
+        createIndex(false, "salary", "i_salary_pay_date", new String[] {"pay_date"}, baseTables, summaryTables);
+        createIndex(false, "salary", "i_salary_employee", new String[] {"employee_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_1997", "i_sls_97_cust_id", new String[] {"customer_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_1997", "i_sls_97_prod_id", new String[] {"product_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_1997", "i_sls_97_promo_id", new String[] {"promotion_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_1997", "i_sls_97_store_id", new String[] {"store_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_1997", "i_sls_97_time_id", new String[] {"time_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_cust", new String[] {"customer_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_prod", new String[] {"product_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_promo", new String[] {"promotion_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_store", new String[] {"store_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_dec_1998", "i_sls_dec98_time", new String[] {"time_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_1998", "i_sls_98_cust_id", new String[] {"customer_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_1998", "i_sls_1998_prod_id", new String[] {"product_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_1998", "i_sls_1998_promo", new String[] {"promotion_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_1998", "i_sls_1998_store", new String[] {"store_id"}, baseTables, summaryTables);
+        createIndex(false, "sales_fact_1998", "i_sls_1998_time_id", new String[] {"time_id"}, baseTables, summaryTables);
+        createIndex(true, "store", "i_store_id", new String[] {"store_id"}, baseTables, summaryTables);
+        createIndex(false, "store", "i_store_region_id", new String[] {"region_id"}, baseTables, summaryTables);
+        createIndex(true, "store_ragged", "i_store_raggd_id", new String[] {"store_id"}, baseTables, summaryTables);
+        createIndex(false, "store_ragged", "i_store_rggd_reg", new String[] {"region_id"}, baseTables, summaryTables);
+        createIndex(true, "time_by_day", "i_time_id", new String[] {"time_id"}, baseTables, summaryTables);
+        createIndex(true, "time_by_day", "i_time_day", new String[] {"the_date"}, baseTables, summaryTables);
+        createIndex(false, "time_by_day", "i_time_year", new String[] {"the_year"}, baseTables, summaryTables);
+        createIndex(false, "time_by_day", "i_time_quarter", new String[] {"quarter"}, baseTables, summaryTables);
+        createIndex(false, "time_by_day", "i_time_month", new String[] {"month_of_year"}, baseTables, summaryTables);
 
-        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01cust", new String[] {"customer_id"});
-        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01prod", new String[] {"product_id"});
-        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01time", new String[] {"time_id"});
+        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01cust", new String[] {"customer_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01prod", new String[] {"product_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01time", new String[] {"time_id"}, baseTables, summaryTables);
 
-        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01cust", new String[] {"customer_id"});
-        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01prod", new String[] {"product_id"});
-        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01time", new String[] {"time_id"});
+        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01cust", new String[] {"customer_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01prod", new String[] {"product_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01time", new String[] {"time_id"}, baseTables, summaryTables);
 
-        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05cust", new String[] {"customer_id"});
-        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05prod", new String[] {"product_id"});
-        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05promo", new String[] {"promotion_id"});
-        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05store", new String[] {"store_id"});
+        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05cust", new String[] {"customer_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05prod", new String[] {"product_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05promo", new String[] {"promotion_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05store", new String[] {"store_id"}, baseTables, summaryTables);
 
-        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14cust", new String[] {"customer_id"});
-        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14prod", new String[] {"product_id"});
-        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14promo", new String[] {"promotion_id"});
-        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14store", new String[] {"store_id"});
+        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14cust", new String[] {"customer_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14prod", new String[] {"product_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14promo", new String[] {"promotion_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14store", new String[] {"store_id"}, baseTables, summaryTables);
 
-        createIndex(false, "agg_lc_100_sales_fact_1997", "i_sls97lc100cust", new String[] {"customer_id"});
-        createIndex(false, "agg_lc_100_sales_fact_1997", "i_sls97lc100prod", new String[] {"product_id"});
+        createIndex(false, "agg_lc_100_sales_fact_1997", "i_sls97lc100cust", new String[] {"customer_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_lc_100_sales_fact_1997", "i_sls97lc100prod", new String[] {"product_id"}, baseTables, summaryTables);
 
-        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97speccust", new String[] {"customer_id"});
-        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specprod", new String[] {"product_id"});
-        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specpromo", new String[] {"promotion_id"});
-        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specstore", new String[] {"store_id"});
+        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97speccust", new String[] {"customer_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specprod", new String[] {"product_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specpromo", new String[] {"promotion_id"}, baseTables, summaryTables);
+        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specstore", new String[] {"store_id"}, baseTables, summaryTables);
+
+        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_gender", new String[] {"gender"}, baseTables, summaryTables);
+        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_ms", new String[] {"marital_status"}, baseTables, summaryTables);
+        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_pfam", new String[] {"product_family"}, baseTables, summaryTables);
+        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_pdept", new String[] {"product_department"}, baseTables, summaryTables);
+        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_pcat", new String[] {"product_category"}, baseTables, summaryTables);
+        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_tmonth", new String[] {"month_of_year"}, baseTables, summaryTables);
+        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_tquarter", new String[] {"quarter"}, baseTables, summaryTables);
+        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_tyear", new String[] {"the_year"}, baseTables, summaryTables);
 
         if (outputDirectory != null) {
             fileOutput.close();
@@ -918,20 +937,39 @@ public class MondrianFoodMartLoader {
      *      output the statement to a file.
      *
      * @param isUnique
-     * @param tableName
-     * @param indexName
-     * @param columnNames
+     @param tableName
+     @param indexName
+     @param columnNames
+     @param baseTables
+     * @param aggregateTables
      */
     private void createIndex(
-        boolean isUnique,
-        String tableName,
-        String indexName,
-        String[] columnNames)
+            boolean isUnique,
+            String tableName,
+            String indexName,
+            String[] columnNames,
+            boolean baseTables,
+            boolean aggregateTables)
     {
         try {
 
+            // Is it an aggregate table or a base table?
+            boolean isBase =
+                    !aggregateTableMetadataToLoad.containsKey(tableName);
+
             // Only do aggregate tables
-            if (populationQueries && !aggregateTableMetadataToLoad.containsKey(tableName)) {
+            if (populationQueries && !isBase) {
+                return;
+            }
+
+            if (isBase && !baseTables) {
+                // This is a base table, but we're not to index base tables.
+                return;
+            }
+
+            if (!isBase && !aggregateTables) {
+                // This is an aggregate table, but we're not to index agg
+                // tables.
                 return;
             }
 
@@ -1130,6 +1168,21 @@ public class MondrianFoodMartLoader {
             new Column("store_sales_sum", Type.Currency, false),
             new Column("store_cost_sum", Type.Currency, false),
             new Column("unit_sales_sum", Type.Currency, false),
+            new Column("fact_count", Type.Integer, false),
+        }, false, true);
+        createTable("agg_gender_ms_prodcat_sales_fact_1997", new Column[] {
+            new Column("gender", Type.Varchar30, false),
+            new Column("marital_status", Type.Varchar30, false),
+            new Column("product_family", Type.Varchar30, true),
+            new Column("product_department", Type.Varchar30, true),
+            new Column("product_category", Type.Varchar30, true),
+            new Column("month_of_year", Type.Smallint, false),
+            new Column("quarter", Type.Varchar30, false),
+            new Column("the_year", Type.Smallint, false),
+            new Column("store_sales", Type.Currency, false),
+            new Column("store_cost", Type.Currency, false),
+            new Column("unit_sales", Type.Currency, false),
+            new Column("customer_count", Type.Integer, false),
             new Column("fact_count", Type.Integer, false),
         }, false, true);
 

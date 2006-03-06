@@ -51,7 +51,7 @@ public class ExplicitRules {
     }
 
     /**
-     * Return the ExplicitRules.TableDef for a tableName that is a candidate
+     * Returns the {@link TableDef} for a tableName that is a candidate
      * aggregate table. If null is returned, then the default rules are used
      * otherwise if not null, then the ExplicitRules.TableDef is used.
      */
@@ -302,62 +302,6 @@ public class ExplicitRules {
             pw.print(subprefix);
             pw.println("]");
         }
-
-        public class Table {
-            private final String tableName;
-            private final ExplicitRules.TableDef tableDef;
-
-            private Table(
-                    final String tableName,
-                    final ExplicitRules.TableDef tableDef) {
-                this.tableName = tableName;
-                this.tableDef = tableDef;
-            }
-
-            /**
-             * Get the database name of the table.
-             */
-            public String getTableName() {
-                return this.tableName;
-            }
-
-            /**
-             * Get the TableDef instance.
-             */
-            public ExplicitRules.TableDef getTableDef() {
-                return this.tableDef;
-            }
-
-            public String toString() {
-                StringWriter sw = new StringWriter(256);
-                PrintWriter pw = new PrintWriter(sw);
-                print(pw, "");
-                pw.flush();
-                return sw.toString();
-            }
-
-            public void validate(final MessageRecorder msgRecorder) {
-                msgRecorder.pushContextName(tableName);
-                try {
-                } finally {
-                    msgRecorder.popContextName();
-                }
-            }
-
-            public void print(final PrintWriter pw, final String prefix) {
-                pw.print(prefix);
-                pw.println("ExplicitRules.Table:");
-                String subprefix = prefix + "  ";
-
-                pw.print(subprefix);
-                pw.print("TableName=");
-                pw.println(this.tableName);
-
-                pw.print(subprefix);
-                pw.print("TableDef.id=");
-                pw.println(this.tableDef.getId());
-            }
-        }
     }
 
     private static Exclude make(final MondrianDef.AggExclude aggExclude) {
@@ -584,7 +528,9 @@ RME TODO
                 final ExplicitRules.TableDef tableDef,
                 final MondrianDef.AggTable aggTable) {
 
-            tableDef.setFactCountName(aggTable.getAggFactCount().getColumnName());
+            if (aggTable.getAggFactCount() != null) {
+                tableDef.setFactCountName(aggTable.getAggFactCount().getColumnName());
+            }
 
             MondrianDef.AggIgnoreColumn[] ignores =
                     aggTable.getAggIgnoreColumns();

@@ -64,12 +64,11 @@ public class TestAggregationManager extends TestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
-                "select `customer`.`gender` as `c0`," +
-                " sum(`agg_l_03_sales_fact_1997`.`unit_sales`) as `m0` " +
-                "from `customer` as `customer`, `agg_l_03_sales_fact_1997` as `agg_l_03_sales_fact_1997` " +
-                "where `agg_l_03_sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
-                "and `customer`.`gender` = 'F' " +
-                "group by `customer`.`gender`",
+                "select `agg_gender_ms_prodcat_sales_fact_1997`.`gender` as `c0`," +
+                " sum(`agg_gender_ms_prodcat_sales_fact_1997`.`unit_sales`) as `m0` " +
+                "from `agg_gender_ms_prodcat_sales_fact_1997` as `agg_gender_ms_prodcat_sales_fact_1997` " +
+                "where `agg_gender_ms_prodcat_sales_fact_1997`.`gender` = 'F' " +
+                "group by `agg_gender_ms_prodcat_sales_fact_1997`.`gender`",
                 26
             )
         };
@@ -106,7 +105,7 @@ public class TestAggregationManager extends TestCase {
 
     /**
      * Test a batch containing multiple measures:
-     *   (store_state=CA, gender=F, measure=[UNit Sales])
+     *   (store_state=CA, gender=F, measure=[Unit Sales])
      *   (store_state=CA, gender=M, measure=[Store Sales])
      *   (store_state=OR, gender=M, measure=[Unit Sales])
      */
@@ -273,20 +272,15 @@ public class TestAggregationManager extends TestCase {
             ),
             new SqlPattern(
                 SqlPattern.MY_SQL_DIALECT,
-                "select " +
-                "`time_by_day`.`the_year` as `c0`, " +
-                "`time_by_day`.`quarter` as `c1`, " +
-                "count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
-                "from " +
-                "`time_by_day` as `time_by_day`, " +
-                "`sales_fact_1997` as `sales_fact_1997` " +
-                "where " +
-                "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and " +
-                "`time_by_day`.`the_year` = 1997 and " +
-                "`time_by_day`.`quarter` = 'Q1' " +
-                "group by " +
-                "`time_by_day`.`the_year`, " +
-                "`time_by_day`.`quarter`",
+                "select" +
+                " `agg_c_10_sales_fact_1997`.`the_year` as `c0`," +
+                " `agg_c_10_sales_fact_1997`.`quarter` as `c1`," +
+                " sum(`agg_c_10_sales_fact_1997`.`customer_count`) as `m0` " +
+                "from `agg_c_10_sales_fact_1997` as `agg_c_10_sales_fact_1997` " +
+                "where `agg_c_10_sales_fact_1997`.`the_year` = 1997 " +
+                "and `agg_c_10_sales_fact_1997`.`quarter` = 'Q1' " +
+                "group by `agg_c_10_sales_fact_1997`.`the_year`," +
+                " `agg_c_10_sales_fact_1997`.`quarter`",
                 26
             )
         };
@@ -320,6 +314,145 @@ public class TestAggregationManager extends TestCase {
 
         assertRequestSql(new CellRequest[] {request}, patterns);
     }
+
+    public void testCountDistinctCannotRollup() {
+        // Summary "agg_gender_ms_prodcat_sales_fact_1997" doesn't match,
+        // because we'd need to roll-up the distinct-count measure over
+        // "month_of_year".
+        CellRequest request = createRequest(
+            "Sales", "[Measures].[Customer Count]",
+            new String[] { "time_by_day", "time_by_day", "product_class" },
+            new String[] { "the_year", "quarter", "product_family" },
+            new String[] { "1997", "Q1", "Food" });
+
+        SqlPattern[] patterns = {
+            new SqlPattern(
+                SqlPattern.MY_SQL_DIALECT,
+                "select `time_by_day`.`the_year` as `c0`," +
+                " `time_by_day`.`quarter` as `c1`," +
+                " `time_by_day`.`month_of_year` as `c2`," +
+                " `store`.`store_country` as `c3`," +
+                " count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
+                "from `time_by_day` as `time_by_day`," +
+                " `sales_fact_1997` as `sales_fact_1997`," +
+                " `store` as `store` " +
+                "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
+                "and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' " +
+                "and `time_by_day`.`month_of_year` = 1 " +
+                "and `sales_fact_1997`.`store_id` = `store`.`store_id` " +
+                "and `store`.`store_country` = 'USA' " +
+                "group by `time_by_day`.`the_year`," +
+                " `time_by_day`.`quarter`," +
+                " `time_by_day`.`month_of_year`," +
+                " `store`.`store_country`",
+                23),
+            new SqlPattern(
+                    SqlPattern.ACCESS_DIALECT,
+                    "select d0 as `c0`, d1 as `c1`, d2 as `c2`, count(m0) as `c3` from (select distinct `time_by_day`.`the_year` as `d0`, `time_by_day`.`quarter` as `d1`, `product_class`.`product_family` as `d2`, `sales_fact_1997`.`customer_id` as `m0` from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `product_class` as `product_class`, `product` as `product` where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and `product_class`.`product_family` = 'Food') as `dummyname` group by d0, d1, d2",
+                    23)
+        };
+
+        assertRequestSql(new CellRequest[] {request}, patterns);
+    }
+
+    /**
+     * Now, here's a funny thing. Usually you can't roll up a distinct-count
+     * aggregate. But if you're rolling up along the dimension which the
+     * count is counting, it's OK. In this case, you know that every
+     */
+    public void testCountDistinctRollupAlongDim() {
+        // Request has granularity
+        //  [Time].[Quarter]
+        //  [Product].[Category]
+        //
+        // whereas agg table "agg_gender_ms_prodcat_sales_fact_1997" has
+        // granularity
+        //
+        //  [Time].[Quarter]
+        //  [Product].[Category]
+        //  [Gender].[Gender]
+        //  [Marital Status].[Marital Status]
+        //
+        // Because [Gender] and [Marital Status] come from the [Customer]
+        // table (the same as the distinct-count measure), we can roll up.
+        CellRequest request = createRequest(
+            "Sales", "[Measures].[Customer Count]",
+            new String[] { "time_by_day", "time_by_day", "time_by_day", "product_class", "product_class", "product_class" },
+            new String[] { "the_year", "quarter", "month_of_year", "product_family", "product_department", "product_category" },
+            new String[] { "1997", "Q1", "1", "Food", "Deli", "Meat" });
+
+        SqlPattern[] patterns = {
+            new SqlPattern(
+                SqlPattern.MY_SQL_DIALECT | SqlPattern.ACCESS_DIALECT,
+                "select `agg_gender_ms_prodcat_sales_fact_1997`.`the_year` as `c0`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`quarter` as `c1`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`month_of_year` as `c2`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_family` as `c3`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_department` as `c4`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_category` as `c5`," +
+                " sum(`agg_gender_ms_prodcat_sales_fact_1997`.`customer_count`) as `m0` " +
+                "from `agg_gender_ms_prodcat_sales_fact_1997` as `agg_gender_ms_prodcat_sales_fact_1997` " +
+                "where `agg_gender_ms_prodcat_sales_fact_1997`.`the_year` = 1997" +
+                " and `agg_gender_ms_prodcat_sales_fact_1997`.`quarter` = 'Q1'" +
+                " and `agg_gender_ms_prodcat_sales_fact_1997`.`month_of_year` = 1" +
+                " and `agg_gender_ms_prodcat_sales_fact_1997`.`product_family` = 'Food'" +
+                " and `agg_gender_ms_prodcat_sales_fact_1997`.`product_department` = 'Deli'" +
+                " and `agg_gender_ms_prodcat_sales_fact_1997`.`product_category` = 'Meat' " +
+                "group by `agg_gender_ms_prodcat_sales_fact_1997`.`the_year`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`quarter`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`month_of_year`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_family`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_department`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_category`",
+                58)
+        };
+
+        assertRequestSql(new CellRequest[] {request}, patterns);
+    }
+
+    /**
+     * As above, but we rollup [Marital Status] but not [Gender].
+     */
+    public void testCountDistinctRollup2() {
+        CellRequest request = createRequest(
+            "Sales", "[Measures].[Customer Count]",
+            new String[] { "time_by_day", "time_by_day", "time_by_day", "product_class", "product_class", "product_class", "customer" },
+            new String[] { "the_year", "quarter", "month_of_year", "product_family", "product_department", "product_category", "gender" },
+            new String[] { "1997", "Q1", "1", "Food", "Deli", "Meat", "F" });
+
+        SqlPattern[] patterns = {
+            new SqlPattern(
+                SqlPattern.MY_SQL_DIALECT | SqlPattern.ACCESS_DIALECT,
+                "select `agg_gender_ms_prodcat_sales_fact_1997`.`the_year` as `c0`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`quarter` as `c1`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`month_of_year` as `c2`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_family` as `c3`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_department` as `c4`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_category` as `c5`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`gender` as `c6`," +
+                " sum(`agg_gender_ms_prodcat_sales_fact_1997`.`customer_count`) as `m0` " +
+                "from `agg_gender_ms_prodcat_sales_fact_1997` as `agg_gender_ms_prodcat_sales_fact_1997` " +
+                "where `agg_gender_ms_prodcat_sales_fact_1997`.`the_year` = 1997" +
+                " and `agg_gender_ms_prodcat_sales_fact_1997`.`quarter` = 'Q1'" +
+                " and `agg_gender_ms_prodcat_sales_fact_1997`.`month_of_year` = 1" +
+                " and `agg_gender_ms_prodcat_sales_fact_1997`.`product_family` = 'Food'" +
+                " and `agg_gender_ms_prodcat_sales_fact_1997`.`product_department` = 'Deli'" +
+                " and `agg_gender_ms_prodcat_sales_fact_1997`.`product_category` = 'Meat'" +
+                " and `agg_gender_ms_prodcat_sales_fact_1997`.`gender` = 'F' " +
+                "group by `agg_gender_ms_prodcat_sales_fact_1997`.`the_year`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`quarter`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`month_of_year`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_family`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_department`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_category`," +
+                " `agg_gender_ms_prodcat_sales_fact_1997`.`gender`",
+                58)
+        };
+
+        assertRequestSql(new CellRequest[] {request}, patterns);
+    }
+
+
 
     static class Bomb extends RuntimeException {
         final String sql;

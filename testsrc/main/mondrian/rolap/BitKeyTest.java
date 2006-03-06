@@ -12,6 +12,8 @@ package mondrian.rolap;
 import junit.framework.TestCase;
 import mondrian.olap.Util;
 
+import java.util.*;
+
 /**
  * Unit test for {@link BitKey}.
  *
@@ -195,8 +197,8 @@ public class BitKeyTest extends TestCase {
         int[] positions3 = {
             0, 1, 113
         };
-        doTestNotEquals(0, positions2, 64, positions3);
-        doTestNotEquals(64, positions3, 0, positions2);
+        doTestNotEquals(0, positions2, 127, positions3);
+        doTestNotEquals(127, positions3, 0, positions2);
 
         int[] positions4 = {
             0, 1, 100, 121
@@ -204,8 +206,8 @@ public class BitKeyTest extends TestCase {
         int[] positions5 = {
             0, 1, 100, 121, 200
         };
-        doTestNotEquals(64, positions4, 300, positions5);
-        doTestNotEquals(300, positions5, 64, positions4);
+        doTestNotEquals(127, positions4, 300, positions5);
+        doTestNotEquals(300, positions5, 127, positions4);
 
         int[] positions6 = {
             0, 1, 100, 121, 200,
@@ -239,7 +241,7 @@ public class BitKeyTest extends TestCase {
         assertTrue("BitKey 0 not equals after clear to 128",
                 (bitKey0.equals(bitKey_128)));
 
-        int size1 = 34;
+        int size1 = 68;
         int[] positions1 = {
             0, 1, 2, 3, 4, 45, 67
         };
@@ -253,10 +255,11 @@ public class BitKeyTest extends TestCase {
         assertTrue("BitKey 1 not equals after clear to 128",
                 (bitKey1.equals(bitKey_128)));
 
+        int size2 = 400;
         int[] positions2 = {
             0, 1, 2, 3, 4, 45, 67, 213, 333
         };
-        BitKey bitKey2 = makeAndSet(size1, positions2);
+        BitKey bitKey2 = makeAndSet(size2, positions2);
         bitKey2.clear();
 
         assertTrue("BitKey 2 not equals after clear to 0",
@@ -328,236 +331,217 @@ public class BitKeyTest extends TestCase {
     }
 
     /**
-     * This test or-ing BitKeys
+     * Tests the 'or' operation on BitKeys
      */
     public void testOr() {
-        int size0 = 40;
-        int[] positions0 = { 0 };
-        BitKey bitKey0 = makeAndSet(size0, positions0);
-        int[] positions1 = { 1 };
-        BitKey bitKey1 = makeAndSet(size0, positions1);
-
-        BitKey bitKey = bitKey0.or(bitKey1);
-
-        assertTrue("BitKey position 0 not set",
-                (bitKey.isSetByPos(0)));
-        assertTrue("BitKey position 1 not set",
-                (bitKey.isSetByPos(1)));
-
-        int[] positions2 = { 0, 1, 10, 20 };
-        BitKey bitKey2 = makeAndSet(size0, positions2);
-        int[] positions3 = { 1, 2, 10, 11 };
-        BitKey bitKey3 = makeAndSet(size0, positions3);
-
-        bitKey = bitKey2.or(bitKey3);
-
-        assertTrue("BitKey position 0 not set",
-                (bitKey.isSetByPos(0)));
-        assertTrue("BitKey position 1 not set",
-                (bitKey.isSetByPos(1)));
-        assertTrue("BitKey position 2 not set",
-                (bitKey.isSetByPos(2)));
-        assertTrue("BitKey position 10 not set",
-                (bitKey.isSetByPos(10)));
-        assertTrue("BitKey position 11 not set",
-                (bitKey.isSetByPos(11)));
-        assertTrue("BitKey position 20 not set",
-                (bitKey.isSetByPos(20)));
-
-        int size1 = 100;
-        int[] positions4 = { 0, 1, 10, 20 };
-        BitKey bitKey4 = makeAndSet(size0, positions4);
-        int[] positions5 = { 1, 2, 10, 65, 66 };
-        BitKey bitKey5 = makeAndSet(size1, positions5);
-
-        bitKey = bitKey4.or(bitKey5);
-
-        assertTrue("BitKey position 0 not set",
-                (bitKey.isSetByPos(0)));
-        assertTrue("BitKey position 1 not set",
-                (bitKey.isSetByPos(1)));
-        assertTrue("BitKey position 2 not set",
-                (bitKey.isSetByPos(2)));
-        assertTrue("BitKey position 10 not set",
-                (bitKey.isSetByPos(10)));
-        assertTrue("BitKey position 20 not set",
-                (bitKey.isSetByPos(20)));
-        assertTrue("BitKey position 65 not set",
-                (bitKey.isSetByPos(65)));
-        assertTrue("BitKey position 66 not set",
-                (bitKey.isSetByPos(66)));
-
-        bitKey = bitKey5.or(bitKey4);
-
-        assertTrue("BitKey position 0 not set",
-                (bitKey.isSetByPos(0)));
-        assertTrue("BitKey position 1 not set",
-                (bitKey.isSetByPos(1)));
-        assertTrue("BitKey position 10 not set",
-                (bitKey.isSetByPos(10)));
-        assertTrue("BitKey position 20 not set",
-                (bitKey.isSetByPos(20)));
-        assertTrue("BitKey position 65 not set",
-                (bitKey.isSetByPos(65)));
-        assertTrue("BitKey position 66 not set",
-                (bitKey.isSetByPos(66)));
-
-        int[] positions6 = { 0, 1, 10, 20, 64, 65, 66 };
-        BitKey bitKey6 = makeAndSet(size1, positions6);
-        int[] positions7 = { 1, 2, 10, 65, 66 };
-        BitKey bitKey7 = makeAndSet(size1, positions7);
-
-        bitKey = bitKey6.or(bitKey7);
-
-        assertTrue("BitKey position 0 not set",
-                (bitKey.isSetByPos(0)));
-        assertTrue("BitKey position 1 not set",
-                (bitKey.isSetByPos(1)));
-        assertTrue("BitKey position 10 not set",
-                (bitKey.isSetByPos(10)));
-        assertTrue("BitKey position 20 not set",
-                (bitKey.isSetByPos(20)));
-        assertTrue("BitKey position 64 not set",
-                (bitKey.isSetByPos(64)));
-        assertTrue("BitKey position 65 not set",
-                (bitKey.isSetByPos(65)));
-        assertTrue("BitKey position 66 not set",
-                (bitKey.isSetByPos(66)));
-
-        int size2 = 400;
-        int[] positions8 = { 0, 1, 10, 20 };
-        BitKey bitKey8 = makeAndSet(size0, positions8);
-        int[] positions9 = { 1, 2, 10, 165, 366 };
-        BitKey bitKey9 = makeAndSet(size2, positions9);
-
-        bitKey = bitKey8.or(bitKey9);
-
-        assertTrue("BitKey position 0 not set",
-                (bitKey.isSetByPos(0)));
-        assertTrue("BitKey position 1 not set",
-                (bitKey.isSetByPos(1)));
-        assertTrue("BitKey position 2 not set",
-                (bitKey.isSetByPos(2)));
-        assertTrue("BitKey position 10 not set",
-                (bitKey.isSetByPos(10)));
-        assertTrue("BitKey position 20 not set",
-                (bitKey.isSetByPos(20)));
-        assertTrue("BitKey position 165 not set",
-                (bitKey.isSetByPos(165)));
-        assertTrue("BitKey position 366 not set",
-                (bitKey.isSetByPos(366)));
-
-        bitKey = bitKey9.or(bitKey8);
-
-        assertTrue("BitKey position 0 not set",
-                (bitKey.isSetByPos(0)));
-        assertTrue("BitKey position 1 not set",
-                (bitKey.isSetByPos(1)));
-        assertTrue("BitKey position 2 not set",
-                (bitKey.isSetByPos(2)));
-        assertTrue("BitKey position 10 not set",
-                (bitKey.isSetByPos(10)));
-        assertTrue("BitKey position 20 not set",
-                (bitKey.isSetByPos(20)));
-        assertTrue("BitKey position 165 not set",
-                (bitKey.isSetByPos(165)));
-        assertTrue("BitKey position 366 not set",
-                (bitKey.isSetByPos(366)));
-
-        int[] positions10 = { 0, 1, 10, 20, 100 };
-        BitKey bitKey10 = makeAndSet(size1, positions10);
-        int[] positions11 = { 1, 2, 10, 165, 366 };
-        BitKey bitKey11 = makeAndSet(size2, positions11);
-
-        bitKey = bitKey10.or(bitKey11);
-
-        assertTrue("BitKey position 0 not set",
-                (bitKey.isSetByPos(0)));
-        assertTrue("BitKey position 1 not set",
-                (bitKey.isSetByPos(1)));
-        assertTrue("BitKey position 2 not set",
-                (bitKey.isSetByPos(2)));
-        assertTrue("BitKey position 10 not set",
-                (bitKey.isSetByPos(10)));
-        assertTrue("BitKey position 20 not set",
-                (bitKey.isSetByPos(20)));
-        assertTrue("BitKey position 100 not set",
-                (bitKey.isSetByPos(100)));
-        assertTrue("BitKey position 165 not set",
-                (bitKey.isSetByPos(165)));
-        assertTrue("BitKey position 366 not set",
-                (bitKey.isSetByPos(366)));
-
-        bitKey = bitKey11.or(bitKey10);
-
-        assertTrue("BitKey position 0 not set",
-                (bitKey.isSetByPos(0)));
-        assertTrue("BitKey position 1 not set",
-                (bitKey.isSetByPos(1)));
-        assertTrue("BitKey position 2 not set",
-                (bitKey.isSetByPos(2)));
-        assertTrue("BitKey position 10 not set",
-                (bitKey.isSetByPos(10)));
-        assertTrue("BitKey position 20 not set",
-                (bitKey.isSetByPos(20)));
-        assertTrue("BitKey position 100 not set",
-                (bitKey.isSetByPos(100)));
-        assertTrue("BitKey position 165 not set",
-                (bitKey.isSetByPos(165)));
-        assertTrue("BitKey position 366 not set",
-                (bitKey.isSetByPos(366)));
-
-        int[] positions12 = { 0, 1, 10, 20, 100, 165, 367 };
-        BitKey bitKey12 = makeAndSet(size2, positions12);
-        int[] positions13 = { 1, 2, 10, 165, 366 };
-        BitKey bitKey13 = makeAndSet(size2, positions13);
-
-        bitKey = bitKey12.or(bitKey13);
-
-        assertTrue("BitKey position 0 not set",
-                (bitKey.isSetByPos(0)));
-        assertTrue("BitKey position 1 not set",
-                (bitKey.isSetByPos(1)));
-        assertTrue("BitKey position 2 not set",
-                (bitKey.isSetByPos(2)));
-        assertTrue("BitKey position 10 not set",
-                (bitKey.isSetByPos(10)));
-        assertTrue("BitKey position 20 not set",
-                (bitKey.isSetByPos(20)));
-        assertTrue("BitKey position 100 not set",
-                (bitKey.isSetByPos(100)));
-        assertTrue("BitKey position 165 not set",
-                (bitKey.isSetByPos(165)));
-        assertTrue("BitKey position 366 not set",
-                (bitKey.isSetByPos(366)));
-        assertTrue("BitKey position 367 not set",
-                (bitKey.isSetByPos(367)));
-
-        bitKey = bitKey13.or(bitKey12);
-
-        assertTrue("BitKey position 0 not set",
-                (bitKey.isSetByPos(0)));
-        assertTrue("BitKey position 1 not set",
-                (bitKey.isSetByPos(1)));
-        assertTrue("BitKey position 2 not set",
-                (bitKey.isSetByPos(2)));
-        assertTrue("BitKey position 10 not set",
-                (bitKey.isSetByPos(10)));
-        assertTrue("BitKey position 20 not set",
-                (bitKey.isSetByPos(20)));
-        assertTrue("BitKey position 100 not set",
-                (bitKey.isSetByPos(100)));
-        assertTrue("BitKey position 165 not set",
-                (bitKey.isSetByPos(165)));
-        assertTrue("BitKey position 366 not set",
-                (bitKey.isSetByPos(366)));
-        assertTrue("BitKey position 367 not set",
-                (bitKey.isSetByPos(367)));
+        doTestOp(new Checker() {
+            public void check(
+                    int size0, int[] positions0, int size1, int[] positions1) {
+                BitKey bitKey0 = makeAndSet(size0, positions0);
+                BitKey bitKey1 = makeAndSet(size1, positions1);
+                BitKey bitKey = bitKey0.or(bitKey1);
+                int max = 0;
+                for (int i = 0; i < positions0.length; i++) {
+                    max = Math.max(max, positions0[i]);
+                }
+                for (int i = 0; i < positions1.length; i++) {
+                    max = Math.max(max, positions1[i]);
+                }
+                for (int pos = 0; pos <= max; pos++) {
+                    boolean expected = contains(positions0, pos) ||
+                            contains(positions1, pos);
+                    assertEquals(expected, bitKey.get(pos));
+                }
+            }
+        });
     }
 
+    /**
+     * Tests the 'and' operation on BitKeys
+     */
+    public void testAnd() {
+        doTestOp(new Checker() {
+            public void check(
+                    int size0, int[] positions0, int size1, int[] positions1) {
+                BitKey bitKey0 = makeAndSet(size0, positions0);
+                BitKey bitKey1 = makeAndSet(size1, positions1);
+                BitKey bitKey = bitKey0.and(bitKey1);
+                int max = 0;
+                for (int i = 0; i < positions0.length; i++) {
+                    max = Math.max(max, positions0[i]);
+                }
+                for (int i = 0; i < positions1.length; i++) {
+                    max = Math.max(max, positions1[i]);
+                }
+                for (int pos = 0; pos <= max; pos++) {
+                    boolean expected = contains(positions0, pos) &&
+                            contains(positions1, pos);
+                    assertEquals(expected, bitKey.get(pos));
+                }
+            }
+        });
+    }
 
+    /**
+     * Tests the {@link BitKey#andNot(BitKey)} operation.
+     */
+    public void testAndNot() {
+        doTestOp(new Checker() {
+            public void check(
+                    int size0, int[] positions0, int size1, int[] positions1) {
+                BitKey bitKey0 = makeAndSet(size0, positions0);
+                BitKey bitKey1 = makeAndSet(size1, positions1);
+                BitKey bitKey = bitKey0.andNot(bitKey1);
+                int max = 0;
+                for (int i = 0; i < positions0.length; i++) {
+                    max = Math.max(max, positions0[i]);
+                }
+                for (int i = 0; i < positions1.length; i++) {
+                    max = Math.max(max, positions1[i]);
+                }
+                for (int pos = 0; pos <= max; pos++) {
+                    boolean expected = contains(positions0, pos) &&
+                            !contains(positions1, pos);
+                    assertEquals(expected, bitKey.get(pos));
+                }
+            }
+        });
+    }
 
+    /**
+     * Tests the 'intersects' operation on BitKeys
+     */
+    public void testIntersects() {
+        doTestOp(new Checker() {
+            public void check(
+                    int size0, int[] positions0, int size1, int[] positions1) {
+                BitKey bitKey0 = makeAndSet(size0, positions0);
+                BitKey bitKey1 = makeAndSet(size1, positions1);
+                boolean result = bitKey0.intersects(bitKey1);
+                boolean expected = false;
+                for (int i = 0; i < positions0.length; i++) {
+                    for (int j = 0; j < positions1.length; j++) {
+                        if (positions0[i] == positions1[j]) {
+                            expected = true;
+                        }
+                    }
+                }
+                assertEquals(expected, result);
+            }
+        });
+    }
 
+    /**
+     * Tests the {@link BitKey#toBitSet()} method.
+     */
+    public void testToBitSet() {
+        doTestOp(new Checker() {
+            public void check(
+                    int size0, int[] positions0, int size1, int[] positions1) {
+                BitKey bitKey0 = makeAndSet(size0, positions0);
+                final BitSet bitSet = bitKey0.toBitSet();
+                int j = 0;
+                for (int i = bitSet.nextSetBit(0);
+                     i >= 0;
+                     i = bitSet.nextSetBit(i + 1)) {
+                    assertTrue(i == positions0[j++]);
+                }
+                assertTrue(j == positions0.length);
+            }
+        });
+    }
+
+    private void doTestOp(final Checker checker) {
+        int size0 = 40;
+        int size1 = 100;
+        int size2 = 400;
+
+        int[] positions0 = { 0 };
+        int[] positions1 = { 1 };
+        checker.check(size0, positions0, size0, positions1);
+
+        int[] positions2 = { 0, 1, 10, 20 };
+        int[] positions3 = { 1, 2, 10, 11 };
+        checker.check(size0, positions2, size0, positions3);
+
+        int[] positions4 = { 0, 1, 10, 20 };
+        int[] positions5 = { 1, 2, 10, 65, 66 };
+        checker.check(size0, positions4, size1, positions5);
+        checker.check(size1, positions5, size0, positions4);
+
+        int[] positions6 = { 0, 1, 10, 20, 64, 65, 66 };
+        int[] positions7 = { 1, 2, 10, 65, 66 };
+        checker.check(size1, positions6, size1, positions7);
+
+        int[] positions8 = { 0, 1, 10, 20 };
+        int[] positions9 = { 1, 2, 10, 165, 366 };
+        checker.check(size0, positions8, size2, positions9);
+        checker.check(size2, positions9, size0, positions8);
+
+        int[] positions10 = { 0, 1, 10, 20, 100 };
+        int[] positions11 = { 1, 2, 10, 165, 366 };
+        checker.check(size1, positions10, size2, positions11);
+        checker.check(size2, positions11, size1, positions10);
+
+        int[] positions12 = { 0, 1, 10, 20, 100, 165, 367 };
+        int[] positions13 = { 1, 2, 10, 165, 366 };
+        checker.check(size2, positions12, size2, positions13);
+        checker.check(size2, positions13, size2, positions12);
+    }
+
+    private interface Checker {
+        void check(
+            int size0, int[] positions0, int size1, int[] positions1);
+    }
+
+    private static boolean contains(int[] positions, int pos) {
+        for (int i = 0; i < positions.length; i++) {
+            if (positions[i] == pos) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void testCreateFromBitSet() {
+        final BitSet bitSet = new BitSet(72);
+        bitSet.set(2);
+        bitSet.set(3);
+        bitSet.set(5);
+        bitSet.set(11);
+        BitKey bitKey = BitKey.Factory.makeBitKey(bitSet);
+        assertEquals("0x0000000000000000000000000000000000000000000000000000100000101100", bitKey.toString());
+
+        final BitSet emptyBitSet = new BitSet(77);
+        bitKey = BitKey.Factory.makeBitKey(emptyBitSet);
+        assertTrue(bitKey.isEmpty());
+    }
+
+    public void testIsEmpty() {
+        BitKey small = BitKey.Factory.makeBitKey(3);
+        assertTrue(small.isEmpty());
+        small.set(2);
+        assertFalse(small.isEmpty());
+
+        BitKey medium = BitKey.Factory.makeBitKey(66);
+        assertTrue(medium.isEmpty());
+        medium.set(2);
+        assertFalse(medium.isEmpty());
+        medium.set(2, false);
+        assertTrue(medium.isEmpty());
+        medium.set(65);
+        assertFalse(medium.isEmpty());
+
+        BitKey large = BitKey.Factory.makeBitKey(131);
+        assertTrue(large.isEmpty());
+        large.set(2);
+        assertFalse(large.isEmpty());
+        large.set(129);
+        assertFalse(large.isEmpty());
+        large.set(129, false);
+        large.set(2, false);
+        assertTrue(large.isEmpty());
+    }
 
     private void doTestEquals(int size0, int size1, int[][] positionsArray) {
         for (int i = 0; i < positionsArray.length; i++) {
@@ -583,12 +567,14 @@ public class BitKeyTest extends TestCase {
                 (! bitKey0.equals(bitKey1)));
     }
 
-    private BitKey makeAndSet(int size, int[] positions) {
+    private static BitKey makeAndSet(int size, int[] positions) {
         BitKey bitKey = BitKey.Factory.makeBitKey(size);
 
         for (int i = 0; i < positions.length; i++) {
-            bitKey.setByPos(positions[i]);
+            bitKey.set(positions[i]);
         }
         return bitKey;
     }
 }
+
+// End BitKeyTest.java

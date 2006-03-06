@@ -15,12 +15,10 @@ import mondrian.rolap.sql.SqlQuery;
  */
 class SegmentArrayQuerySpec extends AbstractQuerySpec {
     private final Segment[] segments;
-    private final boolean isDistinct;
 
-    SegmentArrayQuerySpec(final Segment[] segments, final boolean isDistinct) {
+    SegmentArrayQuerySpec(final Segment[] segments) {
         super(segments[0].aggregation.getStar());
         this.segments = segments;
-        this.isDistinct = isDistinct;
 
         // the following code is all assertion checking
         Util.assertPrecondition(segments.length > 0, "segments.length > 0");
@@ -58,7 +56,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     /**
      * SqlQuery relies on "c" and index. All this should go into SqlQuery!
      *
-     * @see mondrian.rolap.sql.SqlQuery#addOrderBy 
+     * @see mondrian.rolap.sql.SqlQuery#addOrderBy
      */
     public String getColumnAlias(final int i) {
         return "c" + Integer.toString(i);
@@ -71,8 +69,8 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     public String generateSqlQuery() {
         SqlQuery sqlQuery = newSqlQuery();
 
-        if ((! sqlQuery.getDialect().allowsCountDistinct()) && hasDistinct()) {
-            distinctGenerateSQL(sqlQuery);
+        if (!sqlQuery.getDialect().allowsCountDistinct() && hasDistinct()) {
+            distinctGenerateSql(sqlQuery);
         } else {
             nonDistinctGenerateSQL(sqlQuery);
         }
@@ -80,9 +78,19 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         return sqlQuery.toString();
     }
 
+    /**
+     * Returns whether one or more of the measures is a distinct measure.
+     */
     protected boolean hasDistinct() {
-        return isDistinct;
+        for (int i = 0, count = getMeasureCount(); i < count; i++) {
+            RolapStar.Measure measure = getMeasure(i);
+            if (measure.getAggregator().isDistinct()) {
+                return true;
+            }
+        }
+        return false;
     }
+
     protected void addMeasure(final int i, final SqlQuery sqlQuery) {
         RolapStar.Measure measure = getMeasure(i);
 
@@ -98,15 +106,13 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         return true;
     }
 
-    protected void distinctGenerateSQL(final SqlQuery outerSqlQuery) {
-//System.err.println("XSegmentArrayQuerySpec.distinctGenerateSQL");
+    protected void distinctGenerateSql(final SqlQuery outerSqlQuery) {
         // Generate something like
         //  select d0, d1, count(m0)
         //  from (
         //    select distinct x as d0, y as d1, z as m0
         //    from t) as foo
         //  group by d0, d1
-//final SqlQuery outerSqlQuery = sqlQuery;
 
         final SqlQuery innerSqlQuery = newSqlQuery();
         innerSqlQuery.setDistinct(true);
@@ -125,9 +131,11 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
             String expr = column.getExpression(innerSqlQuery);
             ColumnConstraint[] constraints = getConstraints(i);
             if (constraints != null) {
-                innerSqlQuery.addWhere(RolapStar.Column.createInExpr(expr,
-                                                    constraints,
-                                                    column.isNumeric()));
+                innerSqlQuery.addWhere(
+                        RolapStar.Column.createInExpr(
+                                expr,
+                                constraints,
+                                column.isNumeric()));
             }
             final String alias = "d" + i;
             innerSqlQuery.addSelect(expr, alias);
@@ -151,3 +159,5 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         outerSqlQuery.addFrom(innerSqlQuery, "dummyname", true);
     }
 }
+
+// End SegmentArrayQuerySpec.java

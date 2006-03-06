@@ -12,14 +12,9 @@
 
 package mondrian.rolap.agg;
 
-import mondrian.olap.Level;
-import mondrian.olap.Member;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.SchemaReader;
-import mondrian.olap.Util;
-import mondrian.rolap.RolapStar;
+import mondrian.olap.*;
 import mondrian.rolap.BitKey;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.RolapStar;
 
 import java.lang.ref.SoftReference;
 import java.util.*;
@@ -103,13 +98,14 @@ public class Aggregation {
      *   state = {CA, OR},
      *   gender = unconstrained
      */
-    public synchronized void load(RolapStar.Column[] columns,
-                                  RolapStar.Measure[] measures,
-                                  ColumnConstraint[][] constraintses,
-                                  Collection pinnedSegments) {
+    public synchronized void load(
+            RolapStar.Column[] columns,
+            RolapStar.Measure[] measures,
+            ColumnConstraint[][] constraintses,
+            Collection pinnedSegments) {
         this.columns = columns;
 
-        BitKey measureBK = bitKey.emptyCopy();
+        BitKey measureBitKey = bitKey.emptyCopy();
         int axisCount = columns.length;
         Util.assertTrue(constraintses.length == axisCount);
 
@@ -120,24 +116,17 @@ public class Aggregation {
             axes[i] = new Aggregation.Axis(columns[i], constraintses[i]);
         }
 
-        boolean isDistinct = false;
         Segment[] segments = new Segment[measures.length];
         for (int i = 0; i < measures.length; i++) {
             RolapStar.Measure measure = measures[i];
-
-            if (measure.getAggregator().isDistinct()) {
-                isDistinct = true;
-            }
-
-            measureBK.setByPos(measure.getBitPosition());
+            measureBitKey.set(measure.getBitPosition());
             Segment segment = new Segment(this, measure, constraintses, axes);
             segments[i] = segment;
             SoftReference ref = new SoftReference(segment);
             segmentRefs.add(ref);
             pinnedSegments.add(segment);
         }
-        Segment.load(segments, bitKey, measureBK, isDistinct, pinnedSegments, axes);
-
+        Segment.load(segments, bitKey, measureBitKey, pinnedSegments, axes);
     }
 
 
@@ -375,8 +364,7 @@ public class Aggregation {
 
         private Set valueSet;
 
-        Axis(RolapStar.Column column,
-            ColumnConstraint[] constraints) {
+        Axis(RolapStar.Column column, ColumnConstraint[] constraints) {
             this.constraints = constraints;
             this.mapKeyToOffset = new HashMap();
             if (constraints != null) {

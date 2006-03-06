@@ -10,7 +10,7 @@
 
 <h1>Aggregate Tables</h1>
 
-<p>By Richard Emberson; last updated by Julian Hyde, July, 2005.</p>
+<p>By Richard Emberson; last updated by Julian Hyde, March, 2006.</p>
 
 <hr noshade color="#000000" size="1">
 
@@ -807,12 +807,8 @@ in a regular expression - it matches one or more characters.
 <p>
 As an example of applying the aggregate table name rule,
 let the fact table be called 
-<code>
-sales_fact_1997
-</code>, the 
-<code>
-Sales
-</code>
+<code>sales_fact_1997</code>, the 
+<code>Sales</code>
 cube's fact table from the FoodMart schema. Applying the
 specific fact table name to the regular expression template
 creates the following regular expression:
@@ -1109,11 +1105,8 @@ Sales
 </code>
 cube
 with fact table
-<code>
-sales_fact_1997</code>. There are child elements of the 
-<code>
-Table
-</code>
+<code>sales_fact_1997</code>. There are child elements of the 
+<code>Table</code>
 element that deal with aggregate table recognition.
 </p>
 <blockquote>
@@ -1151,153 +1144,102 @@ element that deal with aggregate table recognition.
 </blockquote>
 <p>
 The
-<code>
-AggExclude
-</code>
+<code>AggExclude</code>
 elements define tables that should not be considered aggregates of the
 fact table. In this case Mondrian is instructed to ignore the tables
-<code>
-agg_c_14_sales_fact_1997,
-agg_lc_10_sales_fact_1997
-</code>
+<code>agg_c_14_sales_fact_1997</code>,
+<code>agg_lc_10_sales_fact_1997</code>
 and
-<code>
-agg_pc_10_sales_fact_1997.
-</code>
+<code>agg_pc_10_sales_fact_1997</code>.
 Following the excludes is the 
-<code>
-AggName
-</code>
+<code>AggName</code>
 element which identifies the name of an aggregate table
 table,
-<code>
-agg_c_special_sales_fact_1997,
-</code>
+<code>agg_c_special_sales_fact_1997</code>,
 and rules for mapping names from the fact table and cube to it.
 The two
-<code>
-AggIgnoreColumn
-</code>
+<code>AggIgnoreColumn</code>
 elements are used to specifically state to Mondrian that the columns
-<code>
-admin_one
-</code>
+<code>admin_one</code>
 and
-<code>
-admin_two
-</code>
+<code>admin_two</code>
 are known and should be ignored. If these columns were not so
 identified, Mondrian at the end of determining the fitness of 
 the 
-<code>
-agg_c_special_sales_fact_1997
-</code>
+<code>agg_c_special_sales_fact_1997</code>
 table to be an aggregate  of the 
-<code>
-sales_fact_1997
-</code>
+<code>sales_fact_1997</code>
 fact table would complain that there were extra unidentified columns
 and that the mapping was incomplete.
 The
-<code>
-AggForeignKey
-</code>
+<code>AggForeignKey</code>
 elements define mappings from the 
-<code>
-sales_fact_1997
-</code>
+<code>sales_fact_1997</code>
 fact table foreign key column 
 names into the
-<code>
-agg_c_special_sales_fact_1997
-</code>
+<code>agg_c_special_sales_fact_1997</code>
 aggregate table column names.
 </p>
 <p>
 Both the
 <code>
-AggMeasure
-</code>
+AggMeasure</code>
 and
 <code>
-AggLevel
-</code>
+AggLevel</code>
 elements map "logical" name, names defined in the cube's schema,
 to the aggregate table's column names.
 An aggregate table does not have to have all of the measures
 that are found in the base fact table, so it is not a requirement
 that all of the fact table measures appear as 
 <code>
-AggMeasure
-</code>
+AggMeasure</code>
 mappings, though it will certainly be the most common case.
 The most notable exception are 
-<code>
-distinct count
-</code>
+<code>distinct-count</code>
 measures; such a measure can be aggregated, but one can not
-aggregate further on the measure - the "distinctness" of the
+in general aggregate further on the measure - the "distinctness" of the
 measure has been lost during the first aggregation.
 </p>
 <p>
 The
 <code>
-AggLevel
-</code>
-entries correspond to collapsed dimensions. For each collapsed
+AggLevel</code> entries correspond to collapsed dimensions. For each collapsed
 dimension there is a hierarchy of levels spanning from the top
-level down to some intermediate level (with no gaps).
-</p>
+level down to some intermediate level (with no gaps).</p>
 <p>
 The 
 <code>
-AggName
-</code>
+AggName</code>
 element is followed by an
-<code>
-AggPattern
-</code>
+<code>AggPattern</code>
 element.
 This matches candidate aggregate table names using a 
 regular expression. Included as child elements of the
 <code>
-AggPattern
-</code>
+AggPattern</code>
 element are two
 <code>
-AggExclude
-</code>
+AggExclude</code>
 elements. These specifically state what table names should not
 be considered by this
-<code>
-AggPattern
-</code>
+<code>AggPattern</code>
 element.
 </p>
 <p>
 In a given
-<code> 
-Table
-</code>
+<code>Table</code>
 element, all of the 
-<code>
-AggExclude
-</code>
+<code>AggExclude</code>
 are applied first, followed by the
-<code>
-AggName
-</code>
+<code>AggName</code>
 element rules and then the
-<code>
-AggPattern
-</code>
+<code>AggPattern</code>
 rules.
 In the case where the same fact table is used by multiple cubes,
 the above still applies, but its across all of the aggregation
 rules in all of the multiple cube's
-<code> 
-Table
-</code>
+<code>Table</code>
 elements.
 The first "Agg" element,
 name or pattern, that matches per candidate aggregate table
@@ -1312,26 +1254,16 @@ of the fact table (like column names) against
 which some of the aggregate table rules are applied. But, a fact table
 can actually be the basis of more than one cube. In the FoodMart
 schema the 
-<code>
-sales_fact_1997
-</code>
+<code>sales_fact_1997</code>
 fact table applies to both the 
-<code>
-Sales
-</code>
+<code>Sales</code>
 and the
-<code>
-Sales Ragged
-</code>
+<code>Sales Ragged</code>
 cubes.
 What this means is that any explicit rules defined in the 
-<code>
-Sales
-</code>
+<code>Sales</code>
 cube also applies to the 
-<code>
-Sales Ragged
-</code>
+<code>Sales Ragged</code>
 cube and visa versa.
 </p>
 <p>
@@ -1341,9 +1273,7 @@ one can force Mondrian not to recognize any aggregate tables
 for the cube's fact table. As an example, for the FoodMart Sales cube
 the following excludes all aggregate tables because the regular expression 
 pattern
-<code>
-".*"
-</code>
+<code>".*"</code>
 matches all candidate aggregate table names.
 </p>
 <blockquote>
@@ -1647,8 +1577,8 @@ granularity. See property <code>mondrian.rolap.aggregates.ChooseByVolume</code>.
 Distinct count</h3>
 
 <p>
-There is an important exception for distinct-count measures: they cannot be 
-rolled up. To see why, consider the case of a supermarket chain which has two 
+There is an important exception for distinct-count measures: they cannot in be 
+rolled up over arbitrary dimensions. To see why, consider the case of a supermarket chain which has two 
 stores in the same city. Suppose that Store A has 1000 visits from 800 distinct 
 customers in the month of July, while Store B has 1500 visits from 900 distinct 
 customers. Clearly the two stores had a total of 2500 customer visits between 
@@ -1659,13 +1589,33 @@ example of a distinct-count measure, and cannot be deduced by rolling up
 subtotals. You have to go back to the raw data in the fact table.</p>
 
 <p>
-So, when evaluating a distinct-count measure, Mondrian can only use aggregate 
-table if it has exactly the same logical/level granularity as the cell being 
-requested.  If 
-there is no aggregate table of the desired granularity, Mondrian does NOT use 
-the aggregate table, and goes instead against the fact table. Once in memory, 
-distinct-count measures are cached like other measures, and can be used for 
-future queries.</p>
+There is a special case where it is acceptable to roll up distinct count 
+measures. Suppose that we know that in July, this city's stores (Store A and B 
+combined) have visits from 600 distinct female customers and 700 distinct male 
+customers. Can we say that the number of distinct customers in July is 1300? Yes 
+we can, because we know that the sets of male and female customers cannot 
+possibly overlap. In technical terms, gender is <i>functionally dependent on</i> 
+customer id.</p>
+
+<p>
+The rule for rolling up distinct measures can be stated as follows:</p>
+
+<blockquote>
+
+  <p><b>A distinct count measure over key <i>k</i> can be computed by rolling up 
+  more granular subtotals only if the attributes which are being rolled up are 
+  functionally dependent&nbsp; on <i>k</i>.</b> </p>
+</blockquote>
+
+<p>
+Even with this special case, it is difficult to create enough aggregate tables 
+to satisfy every possible query. When evaluating a distinct-count measure, Mondrian can only use 
+an aggregate 
+table if it has the same logical/level granularity as the cell being 
+requested, or can be rolled up to that granularity only by dropping functionally 
+dependent attributes.  If 
+there is no aggregate table of the desired granularity, Mondrian goes instead 
+against the fact table. </p>
 
 <p>
 This has implications for aggregate design. If your application makes extensive 
@@ -1678,8 +1628,8 @@ That said, Mondrian will rollup measures in an aggregate table that contains
 one or more distinct-count measures if none of the distinct-count measures
 are requested. In that respect an aggregate table containing distinct-count
 measures are just like any other aggregate table as long as the 
-distinct-count measures are not needed.
-</p>
+distinct-count measures are not needed. And once in memory, distinct-count 
+measures are cached like other measures, and can be used for future queries.</p>
 
 <p>
 When building an aggregate table that will contain a distinct-count measure,
@@ -1717,21 +1667,16 @@ and <code>store_id</code>.
 &nbsp;&nbsp;&nbsp; COUNT(DISTINCT "customer_id") AS "customer_count",<br>
 &nbsp;&nbsp;&nbsp; COUNT(*) AS "fact_count"<br>
     FROM "sales_fact_1997"<br>
-    GROUP BY "time_id";
-    </code></p>
+    GROUP BY "time_id";</code></p>
 </blockquote>
 
 <p>
-Here the distinct-count measure is rolled up to the 
+This aggregate table is useless for computing the <code>&quot;customer_count&quot;</code> 
+measure. Why? The distinct-count measure is rolled up to the 
 <code>time_id</code> granularity, the lowest level granularity of the
-physical database table <code>time_by_day</code>.
-Noe, the lowest logical level in the 
-<code>Time</code> dimension is
-<code>month_of_year</code>
-which is higher level than the
-<code>time_id</code> granularity, thus any MDX query involving 
-the distinct-count will have to perform a further rollup - which
-would be an error.
+physical database table <code>time_by_day</code>. Even a query against the lowest level in the 
+<code>Time</code> dimension would require a rollup from <code>time_id</code> to
+<code>month_of_year</code>, and this is impossible to perform.
 </p>
 
 <p>
@@ -1739,7 +1684,7 @@ Now consider this collapsed <code>Time</code> dimension aggregate table
 that has the same lost dimensions <code>customer_id</code>, 
 <code>product_id</code>, <code>promotion_id</code> and <code>store_id</code>.
 The <code>time_id</code> foreign key is no longer present, rather it 
-has been replaces with the logical levels <code>the_year</code>, 
+has been replaced with the logical levels <code>the_year</code>, 
 <code>quarter</code> and <code>month_of_year</code>.
 </p>
 
@@ -1763,22 +1708,22 @@ has been replaces with the logical levels <code>the_year</code>,
 &nbsp;&nbsp;&nbsp; SUM("B"."unit_sales") AS "unit_sales", <br>
 &nbsp;&nbsp;&nbsp; COUNT(DISTINCT "customer_id") AS "customer_count", <br>
 &nbsp;&nbsp;&nbsp; COUNT(*) AS fact_count <br>
-    FROM "sales_fact_1997" "B", "time_by_day" "D" <br>
+    FROM<br>
+&nbsp;&nbsp;&nbsp; "sales_fact_1997" "B",<br>
+&nbsp;&nbsp;&nbsp; &quot;time_by_day" "D" <br>
     WHERE <br>
 &nbsp;&nbsp;&nbsp; "B"."time_id" = "D"."time_id" <br>
     GROUP BY <br>
 &nbsp;&nbsp;&nbsp; "D"."month_of_year", <br>
 &nbsp;&nbsp;&nbsp; "D"."quarter", <br>
-&nbsp;&nbsp;&nbsp; "D"."the_year";
-    </code></p>
+&nbsp;&nbsp;&nbsp; "D"."the_year";</code></p>
 </blockquote>
 
 <p>
 This aggregate table of the distinct-count measure can be used to fulfill
 a query as long as the query specifies the 
 <code>Time</code> dimension down to the
-<code>month_of_year</code> level.
-</p>
+<code>month_of_year</code> level.</p>
 
 <p>
 The general rule when building aggregate tables involving distinct-count
@@ -1793,12 +1738,64 @@ to levels unless the larger memory used by such aggregate tables is
 to much for one's database system.
 </p>
 
+<p>
+A better design for the aggregate table would include a few attributes which are 
+functionally dependent on <code>customer_id</code>, the key for the 
+distinct-count measure:
+</p>
+
+<blockquote>
+    <p><code>
+    INSERT INTO "agg_c_12_sales_fact_1997" (<br>
+&nbsp;&nbsp;&nbsp; &quot;country&quot;,<br>
+&nbsp;&nbsp;&nbsp; &quot;gender&quot;,<br>
+&nbsp;&nbsp;&nbsp; &quot;marital_status&quot;,<br>
+&nbsp;&nbsp;&nbsp; "month_of_year", <br>
+&nbsp;&nbsp;&nbsp; "quarter", <br>
+&nbsp;&nbsp;&nbsp; "the_year", <br>
+&nbsp;&nbsp;&nbsp; "store_sales", <br>
+&nbsp;&nbsp;&nbsp; "store_cost", <br>
+&nbsp;&nbsp;&nbsp; "unit_sales", <br>
+&nbsp;&nbsp;&nbsp; "customer_count", <br>
+&nbsp;&nbsp;&nbsp; "fact_count" <br>
+    ) SELECT <br>
+&nbsp;&nbsp;&nbsp; "D"."month_of_year", <br>
+&nbsp;&nbsp;&nbsp; "D"."quarter", <br>
+&nbsp;&nbsp;&nbsp; "D"."the_year", <br>
+&nbsp;&nbsp;&nbsp; SUM("B"."store_sales") AS "store_sales", <br>
+&nbsp;&nbsp;&nbsp; SUM("B"."store_cost") AS "store_cost", <br>
+&nbsp;&nbsp;&nbsp; SUM("B"."unit_sales") AS "unit_sales", <br>
+&nbsp;&nbsp;&nbsp; COUNT(DISTINCT "customer_id") AS "customer_count", <br>
+&nbsp;&nbsp;&nbsp; COUNT(*) AS fact_count <br>
+    FROM<br>
+&nbsp;&nbsp;&nbsp; "sales_fact_1997" "B",<br>
+&nbsp;&nbsp;&nbsp; &quot;time_by_day" "D",<br>
+&nbsp;&nbsp;&nbsp; &quot;customer&quot; &quot;C&quot;<br>
+    WHERE <br>
+&nbsp;&nbsp;&nbsp; "B"."time_id" = "D"."time_id"<br>
+    AND &quot;B&quot;.customer_id&quot; = &quot;C&quot;.&quot;customer_id&quot;<br>
+    GROUP BY <br>
+&nbsp;&nbsp;&nbsp; &quot;C&quot;.&quot;country&quot;,<br>
+&nbsp;&nbsp;&nbsp; &quot;C&quot;.&quot;gender&quot;,<br>
+&nbsp;&nbsp;&nbsp; &quot;C&quot;.&quot;marital_status&quot;,<br>
+&nbsp;&nbsp;&nbsp; "D"."month_of_year", <br>
+&nbsp;&nbsp;&nbsp; "D"."quarter", <br>
+&nbsp;&nbsp;&nbsp; "D"."the_year";</code></p>
+</blockquote>
+
+<p>
+The added attributes are <code>&quot;country&quot;</code>, <code>&quot;gender&quot;</code> and <code>
+&quot;marital_status&quot;</code>. This table has only appoximately 12x the number of rows 
+of the previous aggregate table (3 values of <code>country</code> x 2 values of
+<code>gender</code> x 2 values of <code>marital_status</code>) but can answer 
+many more potential queries.</p>
+
 <h2>
 <a name="Tools_for_designing_and_maintaining_aggregate_tables">Tools for 
 designing and maintaining aggregate tables</a></h2>
 
 <p>
-Aggregate tables are difficult design and maintain. We make no bones about it. 
+Aggregate tables are difficult to design and maintain. We make no bones about it. 
 But this is the first release in which aggregate tables have been available, and 
 we decided to get the internals right rather than building a toolset to make 
 them easy to use.</p>

@@ -29,55 +29,64 @@ public abstract class RolapAggregator
     private static int index = 0;
 
     public static final RolapAggregator Sum =
-    new RolapAggregator("sum", index++, false) {
-        public Object aggregate(Evaluator evaluator, List members, Calc exp) {
-            return FunUtil.sum(evaluator, members, exp);
-        }
-    };
+            new RolapAggregator("sum", index++, false) {
+                public Object aggregate(Evaluator evaluator, List members, Calc exp) {
+                    return FunUtil.sum(evaluator, members, exp);
+                }
+            };
+
     public static final RolapAggregator Count =
-    new RolapAggregator("count", index++, false) {
-        public Aggregator getRollup() {
-            return Sum;
-        }
-        public Object aggregate(Evaluator evaluator, List members, Calc exp) {
-            return new Integer(FunUtil.count(evaluator, members, false));
-        }
-    };
+            new RolapAggregator("count", index++, false) {
+                public Aggregator getRollup() {
+                    return Sum;
+                }
+                public Object aggregate(Evaluator evaluator, List members, Calc exp) {
+                    return new Integer(FunUtil.count(evaluator, members, false));
+                }
+            };
+
     public static final RolapAggregator Min =
-    new RolapAggregator("min", index++, false) {
-        public Object aggregate(Evaluator evaluator, List members, Calc exp) {
-            return FunUtil.min(evaluator, members, exp);
-        }
-    };
+            new RolapAggregator("min", index++, false) {
+                public Object aggregate(Evaluator evaluator, List members, Calc exp) {
+                    return FunUtil.min(evaluator, members, exp);
+                }
+            };
+
     public static final RolapAggregator Max =
-    new RolapAggregator("max", index++, false) {
-        public Object aggregate(Evaluator evaluator, List members, Calc exp) {
-            return FunUtil.max(evaluator, members, exp);
-        }
-    };
+            new RolapAggregator("max", index++, false) {
+                public Object aggregate(Evaluator evaluator, List members, Calc exp) {
+                    return FunUtil.max(evaluator, members, exp);
+                }
+            };
+
     public static final RolapAggregator Avg =
-    new RolapAggregator("avg", index++, false) {
-        public Aggregator getRollup() {
-            return null;
-        }
-        public Object aggregate(Evaluator evaluator, List members, Calc exp) {
-            return FunUtil.avg(evaluator, members, exp);
-        }
-    };
+            new RolapAggregator("avg", index++, false) {
+                public Aggregator getRollup() {
+                    return null;
+                }
+                public Object aggregate(Evaluator evaluator, List members, Calc exp) {
+                    return FunUtil.avg(evaluator, members, exp);
+                }
+            };
+
     public static final RolapAggregator DistinctCount =
-    new RolapAggregator("distinct count", index++, true) {
-        public RolapAggregator getNonDistinctAggregator() {
-            return Count;
-        }
-        public Object aggregate(Evaluator evaluator, List members, Calc exp) {
-            throw new UnsupportedOperationException();
-        }
+            new RolapAggregator("distinct count", index++, true) {
+                public Aggregator getRollup() {
+                    // Distinct counts cannot always be rolled up, when they can,
+                    // it's using Sum.
+                    return Sum;
+                }
+                public RolapAggregator getNonDistinctAggregator() {
+                    return Count;
+                }
+                public Object aggregate(Evaluator evaluator, List members, Calc exp) {
+                    throw new UnsupportedOperationException();
+                }
+                public String getExpression(String operand) {
+                    return "count(distinct " + operand + ")";
+                }
+            };
 
-        public String getExpression(String operand) {
-            return "count(distinct " + operand + ")";
-        }
-
-    };
     /**
      * List of all valid aggregation operators.
      */
@@ -196,6 +205,7 @@ public abstract class RolapAggregator
     public boolean isDistinct() {
         return distinct;
     }
+
     /**
      * Returns the expression to apply this aggregator to an operand.
      * For example, <code>getExpression("emp.sal")</code> returns
@@ -204,13 +214,15 @@ public abstract class RolapAggregator
     public String getExpression(String operand) {
         StringBuffer buf = new StringBuffer(64);
         buf.append(name);
-        buf.append('(');                                                                if (distinct) {
+        buf.append('(');
+        if (distinct) {
             buf.append("distinct ");
         }
         buf.append(operand);
         buf.append(')');
         return buf.toString();
     }
+
     /**
      * If this is a distinct aggregator, returns the corresponding non-distinct
      * aggregator, otherwise throws an error.
@@ -218,6 +230,7 @@ public abstract class RolapAggregator
     public RolapAggregator getNonDistinctAggregator() {
         throw new UnsupportedOperationException();
     }
+
     /**
      * Returns the aggregator used to roll up. By default, aggregators roll up
      * themselves.

@@ -466,7 +466,8 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "[Employees].[All Employees].[Derrick Whelply]",
             "$36,494.07",
             "select" +
-            " `time_by_day`.`month_of_year` as `Month`," +
+            " `time_by_day`.`month_of_year` as `Month (Key)`," +
+            " `time_by_day`.`the_month` as `Month`," +
             " `time_by_day`.`quarter` as `Quarter`," +
             " `time_by_day`.`the_year` as `Year`," +
             " `store`.`store_name` as `Store Name`," +

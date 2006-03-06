@@ -247,7 +247,7 @@ public class AggGen {
                 while (table.getParentTable().getParentTable() != null) {
                     table = table.getParentTable();
                 }
-                RolapStar.Condition cond = table.getCondition();
+                RolapStar.Condition cond = table.getJoinCondition();
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug("  RolapStar.Condition: cond="+cond);
                 }
@@ -277,7 +277,7 @@ public class AggGen {
         }
 
         // do measures
-        for (Iterator it = getFactTable().getColumns(); it.hasNext(); ) {
+        for (Iterator it = getFactTable().getColumns().iterator(); it.hasNext(); ) {
             RolapStar.Column rColumn = (RolapStar.Column) it.next();
             String name = getRolapStarColumnName(rColumn);
             if (name == null) {
@@ -495,7 +495,7 @@ public class AggGen {
         // if this is a dimension table, then walk down the levels until
         // we hit the current column
         List list = new ArrayList();
-        for (Iterator it = rt.getColumns(); it.hasNext(); ) {
+        for (Iterator it = rt.getColumns().iterator(); it.hasNext(); ) {
             RolapStar.Column rc = (RolapStar.Column) it.next();
             // do not include name columns
             if (rc.isNameColumn()) {
@@ -869,7 +869,7 @@ public class AggGen {
                     it.hasNext(); ) {
             RolapStar.Table rt = (RolapStar.Table) it.next();
 
-            RolapStar.Condition cond = rt.getCondition();
+            RolapStar.Condition cond = rt.getJoinCondition();
             if (cond == null) {
                 continue;
             }
@@ -879,7 +879,7 @@ public class AggGen {
             if (rt.getParentTable() != null) {
                 while (rt.getParentTable().getParentTable() != null) {
                     rt = rt.getParentTable();
-                    cond = rt.getCondition();
+                    cond = rt.getJoinCondition();
 
                     pw.println(" and");
 

@@ -147,8 +147,8 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
         <AggLevel name="[Time].[Quarter]" column="TIME_QUARTER" />
         <AggLevel name="[Time].[Month]" column="TIME_MONTH" />
     </AggName>
-
   </Table>
+
   <DimensionUsage name="Store" source="Store" foreignKey="store_id"/>
   <DimensionUsage name="Store Size in SQFT" source="Store Size in SQFT"
       foreignKey="store_id"/>

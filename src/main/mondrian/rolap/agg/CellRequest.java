@@ -56,7 +56,7 @@ public class CellRequest {
     public void addConstrainedColumn(RolapStar.Column column, Object value) {
         // for every column there MUST be a value (even if it is null)
         columnList.add(column);
-        this.bitKey.setByPos(column.getBitPosition());
+        this.bitKey.set(column.getBitPosition());
         if (value != null) {
             value = new ColumnConstraint(value);
         }
@@ -83,7 +83,7 @@ public class CellRequest {
         }
     }
 
-    /** 
+    /**
      * Returns the BitKey for the list of columns.
      **/
     public BitKey getBatchKey() {

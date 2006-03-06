@@ -344,10 +344,11 @@ abstract class Recognizer {
             aggColumn.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
 
         aggUsage.setSymbolicName(factUsage.getSymbolicName());
-        convertAggregator(aggUsage,
-                          factUsage.getAggregator(),
-                          aggSiblingUsage.getAggregator());
-
+        aggUsage.setAggregator(
+                convertAggregator(
+                        aggUsage,
+                        factUsage.getAggregator(),
+                        aggSiblingUsage.getAggregator()));
         aggUsage.rMeasure = factUsage.rMeasure;
     }
 
@@ -364,8 +365,8 @@ abstract class Recognizer {
             aggColumn.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
 
         aggUsage.setSymbolicName(factUsage.getSymbolicName());
-        convertAggregator(aggUsage, factUsage.getAggregator());
-
+        aggUsage.setAggregator(
+                convertAggregator(aggUsage, factUsage.getAggregator()));
         aggUsage.rMeasure = factUsage.rMeasure;
     }
 
@@ -731,7 +732,7 @@ abstract class Recognizer {
         // table, and the collapsed dimension in question in the
         // fact table is a snowflake (not just a star), so we
         // must look deeper...
-        for (Iterator it = table.getChildren(); it.hasNext(); ) {
+        for (Iterator it = table.getChildren().iterator(); it.hasNext(); ) {
             RolapStar.Table child = (RolapStar.Table) it.next();
             rc = child.lookupColumn(factColumnName);
             if (rc != null) {
@@ -798,19 +799,18 @@ abstract class Recognizer {
      * @param aggUsage
      * @param factAgg
      */
-    protected void convertAggregator(final JdbcSchema.Table.Column.Usage aggUsage,
-                                     final RolapAggregator factAgg) {
-        RolapAggregator rollupAgg =  null;
+    protected RolapAggregator convertAggregator(
+            final JdbcSchema.Table.Column.Usage aggUsage,
+            final RolapAggregator factAgg) {
 
         // NOTE: This assumes that the aggregate table does not have an explicit
         // average column.
         if (factAgg == RolapAggregator.Avg) {
             String columnExpr = getFactCountExpr(aggUsage);
-            rollupAgg =  new RolapAggregator.AvgFromSum(columnExpr);
+            return new RolapAggregator.AvgFromSum(columnExpr);
         } else {
-            rollupAgg = (RolapAggregator) factAgg.getRollup();
+            return factAgg;
         }
-        aggUsage.setAggregator(rollupAgg);
     }
 
     /**
@@ -836,9 +836,10 @@ abstract class Recognizer {
      * @param factAgg
      * @param siblingAgg
      */
-    protected void convertAggregator(final JdbcSchema.Table.Column.Usage aggUsage,
-                                     final RolapAggregator factAgg,
-                                     final RolapAggregator siblingAgg) {
+    protected RolapAggregator convertAggregator(
+            final JdbcSchema.Table.Column.Usage aggUsage,
+            final RolapAggregator factAgg,
+            final RolapAggregator siblingAgg) {
 
         msgRecorder.pushContextName("Recognizer.convertAggregator");
         RolapAggregator rollupAgg =  null;
@@ -867,9 +868,9 @@ abstract class Recognizer {
                 siblingAgg.getName());
             msgRecorder.reportError(msg);
         }
-        aggUsage.setAggregator(rollupAgg);
 
         msgRecorder.popContextName();
+        return rollupAgg;
     }
 
     /**

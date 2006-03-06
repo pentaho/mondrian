@@ -12,6 +12,8 @@
 
 package mondrian.rolap;
 
+import java.util.BitSet;
+
 /**
  * Represents a set of bits.
  *
@@ -35,10 +37,33 @@ package mondrian.rolap;
  * @version $Id$
  */
 public interface BitKey {
-    void setByPos(int pos, boolean value);
-    void setByPos(int pos);
-    boolean isSetByPos(int pos);
-    void clearByPos(int pos);
+
+    /**
+     * Sets the bit at the specified index to the specified value.
+     */
+    void set(int bitIndex, boolean value);
+
+    /**
+     * Sets the bit at the specified index to <code>true</code>.
+     */
+    void set(int bitIndex);
+
+    /**
+     * Returns the value of the bit with the specified index. The value
+     * is <code>true</code> if the bit with the index <code>bitIndex</code>
+     * is currently set in this <code>BitKey</code>; otherwise, the result
+     * is <code>false</code>.
+     */
+    boolean get(int bitIndex);
+
+    /**
+     * Sets the bit specified by the index to <code>false</code>.
+     */
+    void clear(int bitIndex);
+
+    /**
+     * Sets all of the bits in this BitKey to <code>false</code>.
+     */
     void clear();
 
     /**
@@ -51,27 +76,57 @@ public interface BitKey {
      */
     boolean isSuperSetOf(BitKey bitKey);
 
-    /** 
-     * Or the parameter <code>BitKey</code> with <code>this</code>. 
-     * 
-     * @param bitKey 
+    /**
+     * Or the parameter <code>BitKey</code> with <code>this</code>.
+     *
+     * @param bitKey
      */
-    public BitKey or(BitKey bitKey);
+    BitKey or(BitKey bitKey);
 
-    /** 
-     * Make a copy of the BitKey. 
-     * 
+    /**
+     * Returns the boolean AND of this bitkey and the given bitkey.
+     */
+    BitKey and(BitKey bitKey);
+
+    /**
+     * Returns a <code>BitKey</code> containing all of the bits in this
+     * <code>BitSet</code> whose corresponding
+     * bit is set in the specified <code>BitSet</code>.
+     */
+    BitKey andNot(BitKey bitKey);
+
+    /**
+     * Returns a copy of this BitKey.
+     *
      * @return copy of BitKey
      */
-    public BitKey copy();
+    BitKey copy();
 
-    /** 
-     * This method returns an empty BitKey of the same type. This is the same
-     * as calling copy and then clearing the copy.
-     * 
+    /**
+     * Returns an empty BitKey of the same type. This is the same
+     * as calling {@link #copy} followed by {@link #clear()}.
+     *
      * @return BitKey of same type
      */
-    public BitKey emptyCopy();
+    BitKey emptyCopy();
+
+    /**
+     * Returns true if this <code>BitKey</code> contains no bits that are set
+     * to <code>true</code>.
+     */
+    boolean isEmpty();
+
+    /**
+     * Returns whether this BitKey has any bits in common with a given BitKey.
+     */
+    boolean intersects(BitKey bitKey);
+
+    /**
+     * Returns a {@link BitSet} with the same contents as this BitKey.
+     */
+    BitSet toBitSet();
+
+
 
     public abstract class Factory {
 
@@ -93,6 +148,17 @@ public interface BitKey {
             default:
                 return new BitKey.Big(size);
             }
+        }
+
+        /**
+         * Creates a {@link BitKey} with the same contents as a {@link BitSet}.
+         */
+        public static BitKey makeBitKey(BitSet bitSet) {
+            BitKey bitKey = makeBitKey(bitSet.length());
+            for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1)) {
+                bitKey.set(i);
+            }
+            return bitKey;
         }
     }
 
@@ -131,12 +197,68 @@ public interface BitKey {
             return (size + 63) >> ChunkBitCount;
         }
 
-        public final void setByPos(int pos, boolean value) {
+        public final void set(int pos, boolean value) {
             if (value) {
-                setByPos(pos);
+                set(pos);
             } else {
-                clearByPos(pos);
+                clear(pos);
             }
+        }
+
+        protected static void copyFromByte(BitSet bitSet, int pos, byte x)
+        {
+            if (x == 0) {
+                return;
+            }
+            if ((x & 0x01) != 0) {
+                bitSet.set(pos, true);
+            }
+            ++pos;
+            if ((x & 0x02) != 0) {
+                bitSet.set(pos, true);
+            }
+            ++pos;
+            if ((x & 0x04) != 0) {
+                bitSet.set(pos, true);
+            }
+            ++pos;
+            if ((x & 0x08) != 0) {
+                bitSet.set(pos, true);
+            }
+            ++pos;
+            if ((x & 0x10) != 0) {
+                bitSet.set(pos, true);
+            }
+            ++pos;
+            if ((x & 0x20) != 0) {
+                bitSet.set(pos, true);
+            }
+            ++pos;
+            if ((x & 0x40) != 0) {
+                bitSet.set(pos, true);
+            }
+            ++pos;
+            if ((x & 0x80) != 0) {
+                bitSet.set(pos, true);
+            }
+        }
+
+        protected static void copyFromLong(
+                final BitSet bitSet,
+                int pos,
+                long x) {
+            while (x != 0) {
+                copyFromByte(bitSet, pos, (byte) (x & 0xff));
+                x >>= 8;
+                pos += 8;
+            }
+        }
+
+        protected IllegalArgumentException createException(BitKey bitKey) {
+            final String msg = (bitKey == null)
+                ? "Null BitKey"
+                : "Bad BitKey type: " +bitKey.getClass().getName();
+            return new IllegalArgumentException(msg);
         }
     }
 
@@ -151,16 +273,17 @@ public interface BitKey {
         private Small(long bits) {
             this.bits = bits;
         }
-        private Small(Small small) {
-            this.bits = small.bits;
+        public void set(int pos) {
+            if (pos < 64) {
+                bits |= bit(pos);
+            } else {
+                throw new IllegalArgumentException("pos " + pos + " exceeds capacity 64");
+            }
         }
-        public void setByPos(int pos) {
-            bits |= bit(pos);
+        public boolean get(int pos) {
+            return pos < 64 && ((bits & bit(pos)) != 0);
         }
-        public boolean isSetByPos(int pos) {
-            return ((bits & bit(pos)) != 0);
-        }
-        public void clearByPos(int pos) {
+        public void clear(int pos) {
             bits &= ~bit(pos);
         }
         public void clear() {
@@ -169,6 +292,11 @@ public interface BitKey {
         private void or(long bits) {
             this.bits |= bits;
         }
+
+        private void and(long bits) {
+            this.bits &= bits;
+        }
+
         public BitKey or(BitKey bitKey) {
             if (bitKey instanceof BitKey.Small) {
                 final BitKey.Small other = (BitKey.Small) bitKey;
@@ -189,11 +317,59 @@ public interface BitKey {
                 return bk;
             }
 
-            final String msg = (bitKey == null)
-                ? "Null BitKey"
-                : "Bad BitKey type: " +bitKey.getClass().getName();
-            throw new IllegalArgumentException(msg);
+            throw createException(bitKey);
         }
+
+        public BitKey and(BitKey bitKey) {
+            if (bitKey instanceof BitKey.Small) {
+                final BitKey.Small other = (BitKey.Small) bitKey;
+                final BitKey.Small bk = (BitKey.Small) copy();
+                bk.and(other.bits);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Mid128) {
+                final BitKey.Mid128 other = (BitKey.Mid128) bitKey;
+                final BitKey.Small bk = (BitKey.Small) copy();
+                bk.and(other.bits0);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Big) {
+                final BitKey.Big other = (BitKey.Big) bitKey;
+                final BitKey.Small bk = (BitKey.Small) copy();
+                bk.and(other.bits[0]);
+                return bk;
+            }
+
+            throw createException(bitKey);
+        }
+
+        public BitKey andNot(BitKey bitKey) {
+            if (bitKey instanceof BitKey.Small) {
+                final BitKey.Small other = (BitKey.Small) bitKey;
+                final BitKey.Small bk = (BitKey.Small) copy();
+                bk.andNot(other.bits);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Mid128) {
+                final BitKey.Mid128 other = (BitKey.Mid128) bitKey;
+                final BitKey.Small bk = (BitKey.Small) copy();
+                bk.andNot(other.bits0);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Big) {
+                final BitKey.Big other = (BitKey.Big) bitKey;
+                final BitKey.Small bk = (BitKey.Small) copy();
+                bk.andNot(other.bits[0]);
+                return bk;
+            }
+
+            throw createException(bitKey);
+        }
+
+        private void andNot(long bits) {
+            this.bits &= ~bits;
+        }
+
         public boolean isSuperSetOf(BitKey bitKey) {
             if (bitKey instanceof BitKey.Small) {
                 BitKey.Small other = (BitKey.Small) bitKey;
@@ -219,6 +395,35 @@ public interface BitKey {
             }
             return false;
         }
+
+        public boolean intersects(BitKey bitKey) {
+            if (bitKey instanceof BitKey.Small) {
+                BitKey.Small other = (BitKey.Small) bitKey;
+                return (this.bits & other.bits) != 0;
+
+            } else if (bitKey instanceof BitKey.Mid128) {
+                BitKey.Mid128 other = (BitKey.Mid128) bitKey;
+                return (this.bits & other.bits0) != 0;
+
+            } else if (bitKey instanceof BitKey.Big) {
+                BitKey.Big other = (BitKey.Big) bitKey;
+                return (this.bits & other.bits[0]) != 0;
+            }
+            return false;
+        }
+
+        public BitSet toBitSet() {
+            final BitSet bitSet = new BitSet(64);
+            long x = bits;
+            int pos = 0;
+            while (x != 0) {
+                copyFromByte(bitSet, pos, (byte) (x & 0xff));
+                x >>= 8;
+                pos += 8;
+            }
+            return bitSet;
+        }
+
         public boolean equals(Object o) {
             if (this == o) {
                 return true;
@@ -254,15 +459,19 @@ public interface BitKey {
             StringBuffer buf = new StringBuffer(64);
             buf.append("0x");
             for (int i = 63; i >= 0; i--) {
-                buf.append((isSetByPos(i)) ? '1' : '0');
+                buf.append((get(i)) ? '1' : '0');
             }
             return buf.toString();
         }
         public BitKey copy() {
-            return new Small(this);
+            return new Small(this.bits);
         }
         public BitKey emptyCopy() {
             return new Small();
+        }
+
+        public boolean isEmpty() {
+            return bits == 0;
         }
     }
 
@@ -279,35 +488,53 @@ public interface BitKey {
             this.bits0 = mid.bits0;
             this.bits1 = mid.bits1;
         }
-        public void setByPos(int pos) {
+
+        public void set(int pos) {
             if (pos < 64) {
                 bits0 |= bit(pos);
-            } else {
+            } else if (pos < 128) {
                 bits1 |= bit(pos);
-            }
-        }
-        public boolean isSetByPos(int pos) {
-            if (pos < 64) {
-                return ((bits0 & bit(pos)) != 0);
             } else {
-                return ((bits1 & bit(pos)) != 0);
+                throw new IllegalArgumentException("pos " + pos + " exceeds capacity 128");
             }
         }
-        public void clearByPos(int pos) {
+
+        public boolean get(int pos) {
+            if (pos < 64) {
+                return (bits0 & bit(pos)) != 0;
+            } else if (pos < 128) {
+                return (bits1 & bit(pos)) != 0;
+            } else {
+                return false;
+            }
+        }
+
+        public void clear(int pos) {
             if (pos < 64) {
                 bits0 &= ~bit(pos);
-            } else {
+            } else if (pos < 128) {
                 bits1 &= ~bit(pos);
+            } else {
+                throw new IndexOutOfBoundsException(
+                        "pos " + pos + " exceeds size " + 128);
             }
         }
+
         public void clear() {
             bits0 = 0;
             bits1 = 0;
         }
+
         private void or(long bits0, long bits1) {
             this.bits0 |= bits0;
             this.bits1 |= bits1;
         }
+
+        private void and(long bits0, long bits1) {
+            this.bits0 &= bits0;
+            this.bits1 &= bits1;
+        }
+
         public BitKey or(BitKey bitKey) {
             if (bitKey instanceof BitKey.Small) {
                 final BitKey.Small other = (BitKey.Small) bitKey;
@@ -328,11 +555,60 @@ public interface BitKey {
                 return bk;
             }
 
-            final String msg = (bitKey == null)
-                ? "Null BitKey"
-                : "Bad BitKey type: " +bitKey.getClass().getName();
-            throw new IllegalArgumentException(msg);
+            throw createException(bitKey);
         }
+
+        public BitKey and(BitKey bitKey) {
+            if (bitKey instanceof BitKey.Small) {
+                final BitKey.Small other = (BitKey.Small) bitKey;
+                final BitKey.Mid128 bk = (BitKey.Mid128) copy();
+                bk.and(other.bits, 0);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Mid128) {
+                final BitKey.Mid128 other = (BitKey.Mid128) bitKey;
+                final BitKey.Mid128 bk = (BitKey.Mid128) copy();
+                bk.and(other.bits0, other.bits1);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Big) {
+                final BitKey.Big other = (BitKey.Big) bitKey;
+                final BitKey.Mid128 bk = (BitKey.Mid128) copy();
+                bk.and(other.bits[0], other.bits[1]);
+                return bk;
+            }
+
+            throw createException(bitKey);
+        }
+
+        public BitKey andNot(BitKey bitKey) {
+            if (bitKey instanceof BitKey.Small) {
+                final BitKey.Small other = (BitKey.Small) bitKey;
+                final BitKey.Mid128 bk = (BitKey.Mid128) copy();
+                bk.andNot(other.bits, 0);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Mid128) {
+                final BitKey.Mid128 other = (BitKey.Mid128) bitKey;
+                final BitKey.Mid128 bk = (BitKey.Mid128) copy();
+                bk.andNot(other.bits0, other.bits1);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Big) {
+                final BitKey.Big other = (BitKey.Big) bitKey;
+                final BitKey.Mid128 bk = (BitKey.Mid128) copy();
+                bk.andNot(other.bits[0], other.bits[1]);
+                return bk;
+            }
+
+            throw createException(bitKey);
+        }
+
+        private void andNot(long bits0, long bits1) {
+            this.bits0 &= ~bits0;
+            this.bits1 &= ~bits1;
+        }
+
         public boolean isSuperSetOf(BitKey bitKey) {
             if (bitKey instanceof BitKey.Small) {
                 BitKey.Small other = (BitKey.Small) bitKey;
@@ -360,6 +636,37 @@ public interface BitKey {
             }
             return false;
         }
+
+        public boolean intersects(BitKey bitKey) {
+            if (bitKey instanceof BitKey.Small) {
+                BitKey.Small other = (BitKey.Small) bitKey;
+                return (this.bits0 & other.bits) != 0;
+
+            } else if (bitKey instanceof BitKey.Mid128) {
+                BitKey.Mid128 other = (BitKey.Mid128) bitKey;
+                return (this.bits0 & other.bits0) != 0 ||
+                    (this.bits1 & other.bits1) != 0;
+
+            } else if (bitKey instanceof BitKey.Big) {
+                BitKey.Big other = (BitKey.Big) bitKey;
+                if ((this.bits0 & other.bits[0]) != 0) {
+                    return true;
+                } else if ((this.bits1 & other.bits[1]) != 0) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        public BitSet toBitSet() {
+            final BitSet bitSet = new BitSet(128);
+            copyFromLong(bitSet, 0, bits0);
+            copyFromLong(bitSet, 64, bits1);
+            return bitSet;
+        }
+
         public boolean equals(Object o) {
             if (this == o) {
                 return true;
@@ -400,7 +707,7 @@ public interface BitKey {
             StringBuffer buf = new StringBuffer(64);
             buf.append("0x");
             for (int i = 127; i >= 0; i--) {
-                buf.append((isSetByPos(i)) ? '1' : '0');
+                buf.append((get(i)) ? '1' : '0');
             }
             return buf.toString();
         }
@@ -409,6 +716,11 @@ public interface BitKey {
         }
         public BitKey emptyCopy() {
             return new Mid128();
+        }
+
+        public boolean isEmpty() {
+            return bits0 == 0 &&
+                    bits1 == 0;
         }
     }
 
@@ -428,14 +740,14 @@ public interface BitKey {
         private int size() {
             return bits.length;
         }
-        public void setByPos(int pos) {
+        public void set(int pos) {
             bits[chunkPos(pos)] |= bit(pos);
         }
 
-        public boolean isSetByPos(int pos) {
+        public boolean get(int pos) {
             return (bits[chunkPos(pos)] & bit(pos)) != 0;
         }
-        public void clearByPos(int pos) {
+        public void clear(int pos) {
             bits[chunkPos(pos)] &= ~bit(pos);
         }
         public void clear() {
@@ -455,6 +767,16 @@ public interface BitKey {
                 this.bits[i] |= bits[i];
             }
         }
+        private void and(long[] bits) {
+            int length = Math.min(bits.length, this.bits.length);
+            for (int i = 0; i < length; i++) {
+                this.bits[i] &= bits[i];
+            }
+            for (int i = bits.length; i < this.bits.length; i++) {
+                this.bits[i] = 0;
+            }
+        }
+
         public BitKey or(BitKey bitKey) {
             if (bitKey instanceof BitKey.Small) {
                 final BitKey.Small other = (BitKey.Small) bitKey;
@@ -481,11 +803,75 @@ public interface BitKey {
                 }
             }
 
-            final String msg = (bitKey == null)
-                ? "Null BitKey"
-                : "Bad BitKey type: " +bitKey.getClass().getName();
-            throw new IllegalArgumentException(msg);
+            throw createException(bitKey);
         }
+
+        public BitKey and(BitKey bitKey) {
+            if (bitKey instanceof BitKey.Small) {
+                final BitKey.Small bk = (BitKey.Small) bitKey.copy();
+                bk.and(bits[0]);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Mid128) {
+                final BitKey.Mid128 bk = (BitKey.Mid128) bitKey.copy();
+                bk.and(bits[0], bits[1]);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Big) {
+                final BitKey.Big other = (BitKey.Big) bitKey;
+                if (other.size() < size()) {
+                    final BitKey.Big bk = (BitKey.Big) other.copy();
+                    bk.and(bits);
+                    return bk;
+                } else {
+                    final BitKey.Big bk = (BitKey.Big) copy();
+                    bk.and(other.bits);
+                    return bk;
+                }
+            }
+
+            throw createException(bitKey);
+        }
+
+        public BitKey andNot(BitKey bitKey) {
+            if (bitKey instanceof BitKey.Small) {
+                final BitKey.Small other = (BitKey.Small) bitKey;
+                final BitKey.Big bk = (BitKey.Big) copy();
+                bk.andNot(other.bits);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Mid128) {
+                final BitKey.Mid128 other = (Mid128) bitKey;
+                final BitKey.Big bk = (BitKey.Big) copy();
+                bk.andNot(other.bits0, other.bits1);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Big) {
+                final BitKey.Big other = (BitKey.Big) bitKey;
+                final BitKey.Big bk = (BitKey.Big) copy();
+                bk.andNot(other.bits);
+                return bk;
+            }
+
+            throw createException(bitKey);
+        }
+
+        private void andNot(long[] bits) {
+            for (int i = 0; i < bits.length; i++) {
+                this.bits[i] &= ~bits[i];
+
+            }
+        }
+
+        private void andNot(long bits0, long bits1) {
+            this.bits[0] &= ~bits0;
+            this.bits[1] &= ~bits1;
+        }
+
+        private void andNot(long bits) {
+            this.bits[0] &= ~bits;
+        }
+
         public boolean isSuperSetOf(BitKey bitKey) {
             if (bitKey instanceof BitKey.Small) {
                 BitKey.Small other = (BitKey.Small) bitKey;
@@ -516,6 +902,41 @@ public interface BitKey {
             }
             return false;
         }
+
+        public boolean intersects(BitKey bitKey) {
+            if (bitKey instanceof BitKey.Small) {
+                BitKey.Small other = (BitKey.Small) bitKey;
+                return (this.bits[0] & other.bits) != 0;
+
+            } else if (bitKey instanceof BitKey.Mid128) {
+                BitKey.Mid128 other = (BitKey.Mid128) bitKey;
+                return (this.bits[0] & other.bits0) != 0 ||
+                    (this.bits[1] & other.bits1) != 0;
+
+            } else if (bitKey instanceof BitKey.Big) {
+                BitKey.Big other = (BitKey.Big) bitKey;
+
+                int len = Math.min(bits.length, other.bits.length);
+                for (int i = 0; i < len; i++) {
+                    if ((this.bits[i] & other.bits[i]) != 0) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return false;
+        }
+
+        public BitSet toBitSet() {
+            final BitSet bitSet = new BitSet(64);
+            int pos = 0;
+            for (int i = 0; i < bits.length; i++) {
+                copyFromLong(bitSet, pos, bits[i]);
+                pos += 64;
+            }
+            return bitSet;
+        }
+
         public boolean equals(Object o) {
             if (this == o) {
                 return true;
@@ -586,7 +1007,7 @@ public interface BitKey {
             buf.append("0x");
             int start = bits.length*64 -1;
             for (int i = start; i >= 0; i--) {
-                buf.append((isSetByPos(i)) ? '1' : '0');
+                buf.append((get(i)) ? '1' : '0');
             }
             return buf.toString();
         }
@@ -595,6 +1016,15 @@ public interface BitKey {
         }
         public BitKey emptyCopy() {
             return new Big(size());
+        }
+
+        public boolean isEmpty() {
+            for (int i = 0; i < bits.length; i++) {
+                if (bits[i] != 0) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }
