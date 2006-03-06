@@ -32,14 +32,14 @@ class RolapResult extends ResultBase {
 
     private static final Logger LOGGER = Logger.getLogger(ResultBase.class);
 
-    private static final int MAX_AGGREGATION_PASS_COUNT = 5;
-
     private final RolapEvaluator evaluator;
     private final CellKey point;
     private final Map cellValues;
     private final FastBatchingCellReader batchingReader;
     AggregatingCellReader aggregatingReader = new AggregatingCellReader();
     private final int[] modulos;
+    private final int maxEvalDepth =
+            MondrianProperties.instance().MaxEvalDepth.get();
 
     RolapResult(Query query, boolean execute) {
         super(query, new RolapAxis[query.axes.length]);
@@ -83,9 +83,9 @@ class RolapResult extends ResultBase {
                     if (!batchingReader.loadAggregations()) {
                         break;
                     }
-                    if (attempt++ > MAX_AGGREGATION_PASS_COUNT) {
+                    if (attempt++ > maxEvalDepth) {
                         throw Util.newInternal("Failed to load all aggregations after " +
-                                MAX_AGGREGATION_PASS_COUNT +
+                                maxEvalDepth +
                                 "passes; there's probably a cycle");
                     }
                 }
@@ -240,13 +240,13 @@ class RolapResult extends ResultBase {
                     // correct.
                     return;
                 }
-                if (count++ > MAX_AGGREGATION_PASS_COUNT) {
+                if (count++ > maxEvalDepth) {
                     if (evaluator instanceof RolapDependencyTestingEvaluator) {
                         // The dependency testing evaluator can trigger new
                         // requests every cycle. So let is run as normal for
                         // the first N times, then run it disabled.
                         ((RolapDependencyTestingEvaluator.DteRoot) evaluator.root).disabled = true;
-                        if (count > MAX_AGGREGATION_PASS_COUNT * 2) {
+                        if (count > maxEvalDepth * 2) {
                             throw Util.newInternal("Query required more than "
                                 + count + " iterations");
                         }
@@ -278,10 +278,10 @@ class RolapResult extends ResultBase {
             if (!batchingReader.loadAggregations()) {
                 break;
             }
-            if (attempt++ > MAX_AGGREGATION_PASS_COUNT) {
-                throw Util.newInternal("Failed to load all aggregations after " +
-                        MAX_AGGREGATION_PASS_COUNT +
-                        "passes; there's probably a cycle");
+            if (attempt++ > maxEvalDepth) {
+                throw Util.newInternal(
+                        "Failed to load all aggregations after " +
+                        maxEvalDepth + "passes; there's probably a cycle");
             }
         }
 

@@ -16,8 +16,17 @@
 
 <h2>Contents</h2>
   <ul>
-	<li><a href="#Introduction">Properties</a></li>
-    <li>Connect string</li></ul>
+	<li><a href="#Introduction">Properties</a><ul>
+	<li><a href="#Property_list">Property list</a></li>
+    </ul>
+
+    </li>
+    <li><a href="#Connect_strings">Connect strings</a><ul>
+	<li><a href="#Connect_string_syntax">Syntax</a></li>
+    <li><a href="#Connect_string_properties">Connect string properties</a></li>
+    </ul>
+
+    </li></ul>
 
 <h2><a name="Properties">Properties</a></h2>
 
@@ -26,7 +35,7 @@ mondrian.properties file is loaded when the executing Mondrian JAR detects it
 needs properties, but can also be done explicitly in your code. It looks in 
 several places, in the following order:</p>
 <ol>
-  <li>In the directory where you started your JVM</li>
+  <li>In the directory where you started your JVM.</li>
   <li>If you want property loading to be explicit in the context of a web 
   application, you can call <code>
   MondrianProperties.instance().load(servletContext)</code>. This will search 
@@ -37,7 +46,7 @@ several places, in the following order:</p>
 <p>These properties are stored as system properties, so they can be set during 
 JVM startup via <code>-D&lt;property&gt;=&lt;value&gt;</code>.</p>
 
-<h3>Propert list</h3>
+<h3><a name="Property_list">Property list</a></h3>
 
 <p>The following properties in <code>mondrian.properties</code> effect the 
 operations of Mondrian.</p>
@@ -62,7 +71,7 @@ suite of regression tests.</p>
       </td>
       </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#FoodmartJdbcURL">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#FoodmartJdbcURL">
       <code>mondrian.foodmart.jdbcURL</code></a></td>
       <td>string</td>
       <td>&quot;jdbc:odbc:MondrianFoodMart&quot;</td>
@@ -70,7 +79,7 @@ suite of regression tests.</p>
       value is to connect to an ODBC data source called &quot;MondrianFoodMart&quot;.</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#QueryLimit">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#QueryLimit">
       <code>mondrian.query.limit</code></a></td>
       <td>int</td>
       <td>40</td>
@@ -80,7 +89,7 @@ suite of regression tests.</p>
       reduce long before you get to their limit.</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#JdbcDrivers">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#JdbcDrivers">
       <code>mondrian.jdbcDrivers</code></a></td>
       <td>string</td>
       <td>mondrian.jdbcDrivers,<br>
@@ -93,7 +102,7 @@ suite of regression tests.</p>
       path.</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#ResultLimit">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#ResultLimit">
       <code>mondrian.result.limit</code></a></td>
       <td>int</td>
       <td>0</td>
@@ -102,7 +111,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td>
-      <a href="api/mondrian.olap.MondrianProperties.html#CachePoolCostLimit">
+      <a href="api/mondrian/olap/MondrianProperties.html#CachePoolCostLimit">
       <code>mondrian.rolap. CachePool.costLimit</code></a></td>
       <td>int</td>
       <td>10,000</td>
@@ -110,26 +119,37 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td>
-      <a href="api/mondrian.olap.MondrianProperties.html#LargeDimensionThreshold">
+      <code><a href="api/mondrian/olap/MondrianProperties.html#MaxEvalDepth">mondrian.rolap. 
+      evaluate.MaxEvalDepth</a></code></td>
+      <td>int</td>
+      <td>10</td>
+      <td>Maximum number of passes allowable while evaluating an MDX expression. 
+      If evaluation exceeds this depth (for example, while evaluating a very 
+      complex calculated member), Mondrian will throw an error.</td>
+    </tr>
+    <tr>
+      <td>
+      <a href="api/mondrian/olap/MondrianProperties.html#LargeDimensionThreshold">
       <code>mondrian.rolap. LargeDimensionThreshold</code></a></td>
       <td>int</td>
       <td>100</td>
       <td>Determines when a dimension is considered &quot;large&quot;. If a dimension has 
       more than this number of members, Mondrian uses a
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/SmartMemberReader.html">
-      smart member reader</a>.</td>
+      <a href="api/mondrian/rolap/SmartMemberReader.html">smart member reader</a>.</td>
     </tr>
     <tr>
       <td>
-      <a href="api/mondrian.olap.MondrianProperties.html#SparseSegmentValueThreshold">
+      <a href="api/mondrian/olap/MondrianProperties.html#SparseSegmentCountThreshold">
       <code>mondrian.rolap. SparseSegmentValueThreshold</code></a></td>
       <td>int</td>
       <td>1,000</td>
-      <td>The values of the&nbsp; <code>
-      mondrian.rolap.SparseSegmentValueThreshold </code>(<i>countThreshold</i><code>)
-      </code>and <code>mondrian.rolap.SparseSegmentDensityThreshold</code>, (<i>densityThreshold</i>) 
+      <td>The values of the
+      <code>mondrian.rolap.SparseSegmentValueThreshold</code> (<i>countThreshold</i>) and
+      <code>mondrian.rolap.SparseSegmentDensityThreshold</code> (<i>densityThreshold</i>) 
       properties determine whether to choose a sparse or dense representation 
-      when storing collections of cell values in memory.<p>When storing 
+      when storing collections of cell values in memory.
+
+      <p>When storing 
       collections of cell values in memory, Mondrian has to choose between a 
       sparse and a dense representation, based upon the <i>possible</i> and <i>
       actual</i> number of values. The <dfn><font face="Verdana">density</font></dfn> 
@@ -137,7 +157,7 @@ suite of regression tests.</p>
 
       <blockquote>
 
-        <p><code><i>density</i> = </code><i><code>actual / possible</code></i></p>
+        <p><code><i>density</i> = <i>actual / possible</i></code></p>
       </blockquote>
 
       <p>Mondrian uses a sparse representation if</p>
@@ -160,15 +180,15 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td>
-      <a href="api/mondrian.olap.MondrianProperties.html#SparseSegmentValueThreshold">
-      <code>mondrian.rolap. SparseSegmentValueThreshold</code></a></td>
+      <a href="api/mondrian/olap/MondrianProperties.html#SparseSegmentDensityThreshold">
+      <code>mondrian.rolap. SparseSegmentDensityThreshold</code></a></td>
       <td>double</td>
       <td>0.5</td>
       <td>See <code>mondrian.rolap.SparseSegmentValueThreshold</code>.</td>
     </tr>
     <tr>
       <td><code>
-      <a href="api/mondrian.olap.MondrianProperties.html#EnableTriggers">
+      <a href="api/mondrian/olap/MondrianProperties.html#EnableTriggers">
       mondrian.olap.triggers.enable</a></code></td>
       <td>boolean</td>
       <td>true</td>
@@ -191,7 +211,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="api/mondrian.olap.MondrianProperties.html#CaseSensitive">
+      <a href="api/mondrian/olap/MondrianProperties.html#CaseSensitive">
       mondrian.olap.case.sensitive</a></code></td>
       <td>boolean</td>
       <td>false</td>
@@ -200,15 +220,14 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td style="vertical-align: top;"><code>
-      <a href="api/mondrian.olap.MondrianProperties.html#LocalePropFile">
+      <a href="api/mondrian/olap/MondrianProperties.html#LocalePropFile">
       mondrian.rolap.localePropFile</a></code></td>
       <td style="vertical-align: top;">string</td>
       <td style="vertical-align: top;">null<br>
       </td>
       <td>Name of locale property file.<p>Used for the
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/DynamicSchemaProcessor.html">
-      LocalizingDynamicSchemaProcessor</a>; see <a
- href="schema.html#I18n">Internationalization</a> for more details.</td>
+      <a href="api/mondrian/rolap/DynamicSchemaProcessor.html">LocalizingDynamicSchemaProcessor</a>; see
+      <a href="schema.html#I18n">Internationalization</a> for more details.</td>
     </tr>
     <tr>
       <td colspan="4">
@@ -218,7 +237,7 @@ suite of regression tests.</p>
       </td>
       </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#TraceLevel">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#TraceLevel">
       <code>mondrian.trace.level</code></a></td>
       <td>int</td>
       <td>-</td>
@@ -227,7 +246,7 @@ suite of regression tests.</p>
       separate from Log4j logging.</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#DebugOutFile">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#DebugOutFile">
       <code>mondrian.debug.out.file</code></a></td>
       <td>string</td>
       <td>System.out</td>
@@ -235,7 +254,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td>
-      <a href="api/mondrian.olap.MondrianProperties.html#PrintCacheablesAfterQuery">
+      <a href="api/mondrian/olap/MondrianProperties.html#PrintCacheablesAfterQuery">
       <code>mondrian.rolap. RolapResult.printCacheables</code></a></td>
       <td>boolean</td>
       <td>false</td>
@@ -249,7 +268,7 @@ suite of regression tests.</p>
       </td>
       </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#TestName">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#TestName">
       <code>mondrian.test.Name</code></a></td>
       <td>string</td>
       <td>null</td>
@@ -259,7 +278,7 @@ suite of regression tests.</p>
       whose names match the pattern in its entirety will be run.</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#TestClass">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#TestClass">
       <code>mondrian.test.Class</code></a></td>
       <td>string</td>
       <td>-</td>
@@ -270,16 +289,16 @@ suite of regression tests.</p>
       junit.framework.Test suite()</code>.</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#TestConnectString">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#TestConnectString">
       <code>mondrian.test.connectString</code></a></td>
       <td>string</td>
       <td>-</td>
       <td>Property containing the connect string which regresssion tests should 
-      use to connect to the database.<p>See the <a href="#Connect_string">
+      use to connect to the database.<p>See the <a href="#Connect_strings">
       connect string specification</a> for more details.</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#QueryFilePattern">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#QueryFilePattern">
       <code>mondrian.test.QueryFilePattern</code></a></td>
       <td>string</td>
       <td>-</td>
@@ -287,28 +306,28 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td>
-      <a href="api/mondrian.olap.MondrianProperties.html#QueryFileDirectory">
+      <a href="api/mondrian/olap/MondrianProperties.html#QueryFileDirectory">
       <code>mondrian.test.QueryFileDirectory</code></a></td>
       <td>string</td>
       <td>-</td>
       <td>(not documented)</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#Iterations">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#Iterations">
       <code>mondrian.test.Iterations</code></a></td>
       <td>int</td>
       <td>1</td>
       <td>(not documented)</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#VUsers">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#VUsers">
       <code>mondrian.test.VUsers</code></a></td>
       <td>int</td>
       <td>1</td>
       <td>(not documented)</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#TimeLimit">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#TimeLimit">
       <code>mondrian.test.TimeLimit</code></a></td>
       <td>int</td>
       <td>0</td>
@@ -316,23 +335,22 @@ suite of regression tests.</p>
       after that time, it is terminated.</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#Warmup">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#Warmup">
       <code>mondrian.test.Warmup</code></a></td>
       <td>boolean</td>
       <td>false</td>
       <td>Whether this is a &quot;warmup test&quot;.</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#CatalogURL">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#CatalogURL">
       <code>mondrian.catalogURL</code></a></td>
       <td>string</td>
       <td>-</td>
       <td>The URL of the catalog to be used by
-      <a href="http://mondrian.sourceforge.net/api/mondrian/tui/CmdRunner.html">
-      CmdRunner</a> and XML/A Test.</td>
+      <a href="api/mondrian/tui/CmdRunner.html">CmdRunner</a> and XML/A Test.</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#ExpDependencies">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#TestExpDependencies">
       <code>mondrian.test.ExpDependencies</code></a></td>
       <td>int</td>
       <td>0</td>
@@ -345,7 +363,7 @@ suite of regression tests.</p>
       dimensions which the expression claims to be independent of.</td>
     </tr>
     <tr>
-      <td><code><a href="api/mondrian.olap.MondrianProperties.html#TestSeed">
+      <td><code><a href="api/mondrian/olap/MondrianProperties.html#TestSeed">
       mondrian.test.random.seed</a></code></td>
       <td>int</td>
       <td>1234</td>
@@ -365,7 +383,7 @@ suite of regression tests.</p>
       this, &quot;&quot;, 1234);</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#TestJdbcURL">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#TestJdbcURL">
       <code>mondrian.test.jdbcURL</code></a></td>
       <td>string</td>
       <td>-</td>
@@ -373,7 +391,7 @@ suite of regression tests.</p>
       default.</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#TestJdbcUser">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#TestJdbcUser">
       <code>mondrian.test.jdbcUser</code></a></td>
       <td>string</td>
       <td>-</td>
@@ -381,7 +399,7 @@ suite of regression tests.</p>
       value is null, to cope with DBMSs that don't need this.</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#TestJdbcPassword">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#TestJdbcPassword">
       <code>mondrian.test.jdbcPassword</code></a></td>
       <td>string</td>
       <td>-</td>
@@ -396,7 +414,7 @@ suite of regression tests.</p>
       </td>
       </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#UseAggregates">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#UseAggregates">
       <code>mondrian.rolap.aggregates.Use</code></a></td>
       <td>boolean</td>
       <td>false</td>
@@ -410,7 +428,7 @@ suite of regression tests.</p>
       but will not be used unless this property is set to true.</p></td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#ReadAggregates">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#ReadAggregates">
       <code>mondrian.rolap.aggregates.Read</code></a></td>
       <td>boolean</td>
       <td>false</td>
@@ -421,7 +439,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td>
-      <a href="api/mondrian.olap.MondrianProperties.html#ChooseAggregateByVolume">
+      <a href="api/mondrian/olap/MondrianProperties.html#ChooseAggregateByVolume">
       <code>mondrian.rolap. aggregates.ChooseByVolume</code></a></td>
       <td>boolean</td>
       <td>false</td>
@@ -432,7 +450,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="api/mondrian.olap.MondrianProperties.html#AggregateRules">
+      <a href="api/mondrian/olap/MondrianProperties.html#AggregateRules">
       mondrian.rolap.aggregates.rules</a></code></td>
       <td>string</td>
       <td>&quot;/DefaultRules.xml&quot;<br>
@@ -440,13 +458,13 @@ suite of regression tests.</p>
       package in <code>mondrian.jar</code>)</td>
       <td>Name of the file which defines the rules for recognizing an aggregate 
       table.<p>Can be either a resource in the Mondrian jar or a URL. See
-      <a href="http://mondrian.sourceforge.net/aggregate_tables.html#How_Mondrian_recognizes_Aggregate_Tables">
+      <a href="aggregate_tables.html#How_Mondrian_recognizes_Aggregate_Tables">
       aggregate table rules</a> for details.</p>
 
       <p>Normally, this property is not set by a user.</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#AggregateRuleTag">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#AggregateRuleTag">
       <code>mondrian.rolap. aggregates.rule.tag</code></a></td>
       <td>string</td>
       <td>default</td>
@@ -456,7 +474,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="api/mondrian.olap.MondrianProperties.html#GenerateAggregateSql">mondrian.rolap. aggregates.generateSql</a></code></td>
+      <a href="api/mondrian/olap/MondrianProperties.html#GenerateAggregateSql">mondrian.rolap. aggregates.generateSql</a></code></td>
       <td>boolean</td>
       <td>false</td>
       <td>Whether to print the SQL code 
@@ -475,7 +493,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="api/mondrian.olap.MondrianProperties.html#DisableCaching">mondrian.rolap. star.disableCaching</a></code></td>
+      <a href="api/mondrian/olap/MondrianProperties.html#DisableCaching">mondrian.rolap. star.disableCaching</a></code></td>
       <td>boolean</td>
       <td>false</td>
       <td>Whether to clear a RolapStar's data 
@@ -485,7 +503,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="api/mondrian.olap.MondrianProperties.html#EnableExpCache">mondrian.expCache.enable</a></code></td>
+      <a href="api/mondrian/olap/MondrianProperties.html#EnableExpCache">mondrian.expCache.enable</a></code></td>
       <td>boolean</td>
       <td>true</td>
       <td>Controls whether to use a cache for the results of frequently 
@@ -498,7 +516,7 @@ suite of regression tests.</p>
       would perform many redundant sorts.</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian.olap.MondrianProperties.html#FlushAfterQuery">
+      <td><a href="api/mondrian/olap/MondrianProperties.html#FlushAfterQuery">
       <code>mondrian.rolap.RolapResult. flushAfterEachQuery</code></a></td>
       <td>boolean</td>
       <td>false</td>
@@ -513,7 +531,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td style="vertical-align: top;"><code>
-      <a href="api/mondrian.olap.MondrianProperties.html#EnableNativeCrossJoin">mondrian.native.crossjoin.enable</a></code></td>
+      <a href="api/mondrian/olap/MondrianProperties.html#EnableNativeCrossJoin">mondrian.native.crossjoin.enable</a></code></td>
       <td style="vertical-align: top;">boolean</td>
       <td style="vertical-align: top;">true<br>
       </td>
@@ -522,7 +540,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td style="vertical-align: top;"><code>
-      <a href="api/mondrian.olap.MondrianProperties.html#EnableNativeTopCount">mondrian.native.topcount.enable</a></code></td>
+      <a href="api/mondrian/olap/MondrianProperties.html#EnableNativeTopCount">mondrian.native.topcount.enable</a></code></td>
       <td style="vertical-align: top;">boolean</td>
       <td style="vertical-align: top;">false<br>
       </td>
@@ -531,7 +549,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td style="vertical-align: top;"><code>
-      <a href="api/mondrian.olap.MondrianProperties.html#EnableNativeFilter">mondrian.native.filter.enable</a></code></td>
+      <a href="api/mondrian/olap/MondrianProperties.html#EnableNativeFilter">mondrian.native.filter.enable</a></code></td>
       <td style="vertical-align: top;">boolean</td>
       <td style="vertical-align: top;">false<br>
       </td>
@@ -540,7 +558,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td style="vertical-align: top;">
-      <a href="api/mondrian.olap.MondrianProperties.html#EnableNativeNonEmpty">
+      <a href="api/mondrian/olap/MondrianProperties.html#EnableNativeNonEmpty">
       <code>mondrian.native.nonempty.enable</code></a></td>
       <td style="vertical-align: top;">boolean</td>
       <td style="vertical-align: top;">true<br>
@@ -552,7 +570,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="api/mondrian.olap.MondrianProperties.html#GenerateFormattedSql">
+      <a href="api/mondrian/olap/MondrianProperties.html#GenerateFormattedSql">
       mondrian.rolap. generate.formatted.sql</a></code></td>
       <td>boolean</td>
       <td>false</td>
@@ -562,7 +580,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td style="vertical-align: top;"><code>
-      <a href="api/mondrian.olap.MondrianProperties.html#MaxConstraints">
+      <a href="api/mondrian/olap/MondrianProperties.html#MaxConstraints">
       mondrian.rolap.maxConstraints</a></code></td>
       <td style="vertical-align: top;">int</td>
       <td style="vertical-align: top;">2,500</td>
@@ -579,7 +597,7 @@ suite of regression tests.</p>
       </tr>
     <tr>
       <td><code>
-      <a href="api/mondrian.olap.MondrianProperties.html#EnableTotalCount">
+      <a href="api/mondrian/olap/MondrianProperties.html#EnableTotalCount">
       mondrian.xmla. drillthroughTotalCount.enable</a></code></td>
       <td>boolean</td>
       <td>true</td>
@@ -587,7 +605,7 @@ suite of regression tests.</p>
       will be filled with the total count of rows in underlying database.</td>
     </tr>
     <tr>
-      <td><code><a href="api/mondrian.olap.MondrianProperties.html#MaxRows">
+      <td><code><a href="api/mondrian/olap/MondrianProperties.html#MaxRows">
       mondrian.xmla.drillthroughMaxRows</a></code></td>
       <td>int</td>
       <td>1,000</td>
@@ -597,7 +615,7 @@ suite of regression tests.</p>
 
 </blockquote>
 
-<h2><a name="Connect_string">Connect string</a></h2>
+<h2><a name="Connect_strings">Connect strings</a></h2>
 
 <p>A connect string is a URL which allows you to connect to a Mondrian server. 
 The URL includes information about the underlying JDBC database to use, the 
@@ -611,7 +629,7 @@ location of the XML catalog file, and several other things.</p>
   Catalog=/WEB-INF/queries/FoodMart.xml; JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;</code></p>
 </blockquote>
 
-<h3>Syntax</h3>
+<h3><a name="Connect_string_syntax">Syntax</a></h3>
 
 <p>A Mondrian connect string is a collection of 'property=value' pairs, 
 separated by semicolons. Property values can optionally be enclosed in quotes</p>
@@ -620,7 +638,7 @@ separated by semicolons. Property values can optionally be enclosed in quotes</p
 <a target="_blank" href="http://msdn.microsoft.com/library/en-us/oledb/htm/oledbconnectionstringsyntax.asp">
 OLE DB connect string syntax specification</a>. (This is a wide-ranging 
 specification, so Mondrian's
-<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Util.html#parseConnectString(String)">
+<a href="api/mondrian/olap/Util.html#parseConnectString(java.lang.String)">
 implementation</a> has one or two limitations.)</p>
 
 <p>Connect strings are often embedded in another programming language, such as 
@@ -654,7 +672,7 @@ to escape the '&amp;' as '&amp;#38;'.</p>
   &lt;/context-param&gt;</code></p>
 </blockquote>
 
-<h3>Connect string properties</h3>
+<h3><a name="Connect_string_properties">Connect string properties</a></h3>
 
 <p>Mondrian connect strings can contain the following properties.</p>
 
@@ -667,22 +685,22 @@ to escape the '&amp;' as '&amp;#38;'.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnectionProperties.html#Provider">
+      <a href="api/mondrian/rolap/RolapConnectionProperties.html#Provider">
       Provider</a></code></td>
       <td>yes</td>
       <td>Must have the value 'Mondrian'.</td>
     </tr>
     <tr>
       <td><code>
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnectionProperties.html#Jdbc">
+      <a href="api/mondrian/rolap/RolapConnectionProperties.html#Jdbc">
       Jdbc</a></code></td>
-      <td rowspan="2">one of</td>
+      <td rowspan="2">exactly one of these</td>
       <td>The URL of the JDBC database where the data is stored. You must 
       specify this property or <code>DataSource</code>.</td>
     </tr>
     <tr>
       <td><code>
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnectionProperties.html#DataSource">
+      <a href="api/mondrian/rolap/RolapConnectionProperties.html#DataSource">
       DataSource</a></code></td>
       <td>The name of a data source class. It must implement the
       <a href="http://java.sun.com/j2se/1.5.0/docs/api/javax/sql/DataSource.html">
@@ -690,7 +708,7 @@ to escape the '&amp;' as '&amp;#38;'.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnectionProperties.html#JdbcUser">
+      <a href="api/mondrian/rolap/RolapConnectionProperties.html#JdbcUser">
       JdbcUser</a></code></td>
       <td>no</td>
       <td>Name of the user to log on to the JDBC database.<p>You don't need to 
@@ -700,7 +718,7 @@ to escape the '&amp;' as '&amp;#38;'.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnectionProperties.html#JdbcPassword">
+      <a href="api/mondrian/rolap/RolapConnectionProperties.html#JdbcPassword">
       JdbcPassword</a></code></td>
       <td>no</td>
       <td>Password to log on to the JDBC database.<p>You don't need to specify 
@@ -710,23 +728,23 @@ to escape the '&amp;' as '&amp;#38;'.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnectionProperties.html#Catalog">
+      <a href="api/mondrian/rolap/RolapConnectionProperties.html#Catalog">
       Catalog</a></code></td>
-      <td rowspan="2">one of</td>
+      <td rowspan="2">exactly one of these</td>
       <td>The URL of an XML file containing the definition of the schema: cubes, 
       hierarchies, and so forth. Catalogs are described in the
       <a href="schema.html">Schema Guide</a>.</td>
     </tr>
     <tr>
       <td><code>
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnectionProperties.html#CatalogContent">
+      <a href="api/mondrian/rolap/RolapConnectionProperties.html#CatalogContent">
       CatalogContent</a></code></td>
       <td>An XML string representing the schema: cubes, hierarchies, and so 
       forth. Catalogs are described in the <a href="schema.html">Schema Guide</a>.</td>
     </tr>
     <tr>
       <td><code>
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnectionProperties.html#CatalogName">
+      <a href="api/mondrian/rolap/RolapConnectionProperties.html#CatalogName">
       CatalogName</a></code></td>
       <td>no</td>
       <td>Not currently used. If, in future, we support multiple catalogs, this 
@@ -734,7 +752,7 @@ to escape the '&amp;' as '&amp;#38;'.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnectionProperties.html#PoolNeeded">
+      <a href="api/mondrian/rolap/RolapConnectionProperties.html#PoolNeeded">
       PoolNeeded</a></code></td>
       <td>no</td>
       <td>Whether to add a layer of connection pooling.<br>
@@ -749,11 +767,11 @@ to escape the '&amp;' as '&amp;#38;'.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnectionProperties.html#Role">
+      <a href="api/mondrian/rolap/RolapConnectionProperties.html#Role">
       Role</a></code></td>
       <td>no</td>
       <td>The name of the
-      <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html">Role</a> 
+      <a href="api/mondrian/olap/Role.html">Role</a> 
       to adopt to provide access-control for this connection. If not specified, 
       the connection uses a role which has access to every object in the schema.<p>
       Roles are described in the <a href="schema.html#Access_control">Schema 
@@ -761,33 +779,33 @@ to escape the '&amp;' as '&amp;#38;'.</p>
     </tr>
     <tr>
       <td>
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnectionProperties.html#JdbcPropertyPrefix">
+      <a href="api/mondrian/rolap/RolapConnectionProperties.html#JdbcPropertyPrefix">
       <code>jdbc.</code><code><i>{PropertyName}</i></code></a></td>
-      <td>&nbsp;</td>
+      <td>no</td>
       <td>Any property with a 'jdbc.' prefix will be added to the JDBC connect 
       string. For example, 'jdbc.Timeout=10' will cause 'Timeout=10' be passed 
       to the JDBC provider.</td>
     </tr>
     <tr>
       <td><code>
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnectionProperties.html#DynamicSchemaProcessor">
+      <a href="api/mondrian/rolap/RolapConnectionProperties.html#DynamicSchemaProcessor">
       DynamicSchemaProcessor</a></code></td>
       <td>no</td>
-      <td>The name of a dynamic schema processor class. The class must implement 
+      <td>The name of a dynamic schema processor class.<p>A dynamic schema 
+      processor is called at runtime in order to modify the schema content. The class must implement 
       the
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/DynamicSchemaProcessor.html">
-      mondrian.rolap.DynamicSchemaProcessor</a> interface.<p>A dynamic schema 
-      processor is called at runtime in order to modify the schema content.</td>
+      <a href="api/mondrian/rolap/DynamicSchemaProcessor.html">
+      mondrian.rolap.DynamicSchemaProcessor</a> interface.</td>
     </tr>
     <tr>
       <td><code>
-      <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnectionProperties.html#Locale">
+      <a href="api/mondrian/rolap/RolapConnectionProperties.html#Locale">
       Locale</a></code></td>
       <td>no</td>
       <td>The requested Locale for the
-      <a href="http://mondrian.sourceforge.net/api/mondrian/i18n/LocalizingDynamicSchemaProcessor.html">
+      <a href="api/mondrian/i18n/LocalizingDynamicSchemaProcessor.html">
       LocalizingDynamicSchemaProcessor</a>.<p>Example values are &quot;en&quot;, &quot;en_US&quot;, 
-      &quot;hu&quot;. If Locale is not specified, then the name of system's<br>
+      &quot;hu&quot;. If <code>Locale</code> is not specified, then the name of system's<br>
       default will be used, as per <code>
       <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Locale.html#getDefault()">
       java.util.Locale.getDefault()</a></code>.</td>

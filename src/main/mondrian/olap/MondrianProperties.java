@@ -48,7 +48,6 @@ public class MondrianProperties extends TriggerableProperties {
     private static MondrianProperties instance;
     private static final String mondrianDotProperties = "mondrian.properties";
 
-
     /**
      * Returns the singleton.
      */
@@ -393,7 +392,7 @@ public class MondrianProperties extends TriggerableProperties {
             this, "mondrian.rolap.LargeDimensionThreshold", 100);
 
     /**
-     * Property which, with {@link #SparseSegmentCountThreshold}, determines
+     * Property which, with {@link #SparseSegmentDensityThreshold}, determines
      * whether to choose a sparse or dense representation when storing
      * collections of cell values in memory.
      *
@@ -423,6 +422,11 @@ public class MondrianProperties extends TriggerableProperties {
             new IntegerProperty(
                     this, "mondrian.rolap.SparseSegmentValueThreshold", 1000);
 
+    /**
+     * Property which, with {@link #SparseSegmentCountThreshold},
+     * determines whether to choose a sparse or dense representation when
+     * storing collections of cell values in memory.
+     */
     public final DoubleProperty SparseSegmentDensityThreshold =
             new DoubleProperty(
                     this, "mondrian.rolap.SparseSegmentDensityThreshold", 0.5);
@@ -689,6 +693,15 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public final IntegerProperty MaxConstraints = new IntegerProperty(
         this, "mondrian.rolap.maxConstraints", 2500);
+
+    /**
+     * Property which defines the
+     * maximum number of passes allowable while evaluating an MDX expression.
+     * If evaluation exceeds this depth (for example, while evaluating a
+     * very complex calculated member), Mondrian will throw an error.
+     */
+    public final IntegerProperty MaxEvalDepth = new IntegerProperty(
+            this, "mondrian.rolap.evaluate.MaxEvalDepth", 10);
 }
 
 // End MondrianProperties.java
