@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1999-2005 Kana Software, Inc. and others.
+// Copyright (C) 1999-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -22,13 +23,13 @@ public interface Cube extends OlapElement {
 
     /**
      * Returns the dimensions of this cube.
-     **/
+     */
     Dimension[] getDimensions();
 
     /**
      * Finds a hierarchy whose name (or unique name, if <code>unique</code> is
      * true) equals <code>s</code>.
-     **/
+     */
     Hierarchy lookupHierarchy(String s, boolean unique);
 
     /**
@@ -36,7 +37,7 @@ public interface Cube extends OlapElement {
      * gets created by running mdx sQuery.  <code>query</code> has to be in the
      * format of something like "[with calculated members] select *members* on
      * columns from <code>this</code>".
-     **/
+     */
     Member[] getMembersForQuery(String query, List calcMembers);
 
     /**

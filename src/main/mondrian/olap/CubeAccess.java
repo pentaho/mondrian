@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1999-2005 Kana Software, Inc. and others.
+// Copyright (C) 1999-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 /**
  * This class implements object of type GrantCube to apply permissions
  * on user's MDX query
- **/
+ */
 public class CubeAccess {
 
     private boolean hasRestrictions;

@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2000-2005 Kana Software, Inc. and others.
+// Copyright (C) 2000-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -20,12 +21,12 @@ import java.io.PrintWriter;
 /**
  * A <code>Formula</code> is a clause in an MDX query which defines a Set or a
  * Member.
- **/
+ */
 public class Formula extends QueryPart {
 
-    /** name of set or member **/
+    /** name of set or member */
     private final String[] names;
-    /** defining expression **/
+    /** defining expression */
     private Exp exp;
     // properties/solve order of member
     private final MemberProperty[] memberProperties;
@@ -235,7 +236,7 @@ public class Formula extends QueryPart {
      * <code>[Abc].[Def].[Ghi]</code> becomes <code>[Abc].[Def].[Xyz]</code>;
      * and the member or set is renamed from <code>Ghi</code> to
      * <code>Xyz</code>.
-     **/
+     */
     void rename(String newName)
     {
         String oldName = getElement().getName();

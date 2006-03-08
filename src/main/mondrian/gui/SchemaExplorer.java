@@ -1,17 +1,17 @@
 /*
- * SchemaExplorer.java
- *
- * This software is subject to the terms of the Common Public License
- * Agreement, available at the following URL:
- * http://www.opensource.org/licenses/cpl.html.
- * Copyright (C) 1999-2005 Kana Software, Inc. and others.
- * All Rights Reserved.
- * You must accept the terms of that agreement to use this software.
- *
- * Created on October 2, 2002, 5:42 PM
- * Modified on 15-Jun-2003 by ebengtso
- *
- */
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 1999-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+//
+// Created on October 2, 2002, 5:42 PM
+// Modified on 15-Jun-2003 by ebengtso
+//
+*/
 
 package mondrian.gui;
 
@@ -41,7 +41,8 @@ import org.eigenbase.xom.NodeDef;
 /**
  *
  * @author  sean
-  */
+ * @version $Id$
+ */
 public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionListener, CellEditorListener
 {
     private MondrianDef.Schema schema;

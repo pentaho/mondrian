@@ -1,14 +1,14 @@
 /*
- // $Id$
- // This software is subject to the terms of the Common Public License
- // Agreement, available at the following URL:
- // http://www.opensource.org/licenses/cpl.html.
- // Copyright (C) 2005 SAS Institute, Inc.
- // All Rights Reserved.
- // You must accept the terms of that agreement to use this software.
- //
- // sasebb, March 30, 2005
- */
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2005 SAS Institute, Inc.
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+//
+// sasebb, March 30, 2005
+*/
 package mondrian.test;
 
 import junit.framework.Assert;
@@ -194,3 +194,5 @@ public class CompatibilityTest extends FoodMartTestCase {
     }
 
 }
+
+// End CompatibilityTest.java

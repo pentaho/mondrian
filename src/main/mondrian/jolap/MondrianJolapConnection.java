@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2005 Julian Hyde
+// Copyright (C) 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -35,7 +35,7 @@ import java.util.List;
  * @author jhyde
  * @since Feb 24, 2003
  * @version $Id$
- **/
+ */
 class MondrianJolapConnection extends RefObjectSupport implements Connection {
     mondrian.olap.Connection mondrianConnection;
     private final MondrianMemberObjectFactories memberObjectFactories = new MondrianMemberObjectFactories();

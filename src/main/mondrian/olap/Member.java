@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 1999-2005 Kana Software, Inc. and others.
+// Copyright (C) 1999-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -31,7 +32,7 @@ package mondrian.olap;
  *
  * <p> Members can have member properties. Their {@link Level#getProperties}
  * defines which are allowed.
- **/
+ */
 public interface Member extends OlapElement, Comparable {
 
     /**
@@ -57,7 +58,7 @@ public interface Member extends OlapElement, Comparable {
      * Returns the type of member. Values are {@link #UNKNOWN_MEMBER_TYPE},
      * {@link #REGULAR_MEMBER_TYPE}, {@link #ALL_MEMBER_TYPE}, {@link
      * #MEASURE_MEMBER_TYPE}, {@link #FORMULA_MEMBER_TYPE}.
-     **/
+     */
     int getMemberType();
 
     static final int UNKNOWN_MEMBER_TYPE = 0;
@@ -78,7 +79,7 @@ public interface Member extends OlapElement, Comparable {
     /**
      * Only allowable if the member is part of the <code>WITH</code> clause of
      * a query.
-     **/
+     */
     void setName(String name);
 
     /** Returns whether this is the 'all' member. */
@@ -87,13 +88,13 @@ public interface Member extends OlapElement, Comparable {
     /** Returns whether this is a member of the measures dimension. */
     boolean isMeasure();
 
-    /** Returns whether this is the 'null member'. **/
+    /** Returns whether this is the 'null member'. */
     boolean isNull();
 
     /**
      * Returns whether <code>member</code> is equal to, a child, or a
      * descendent of this <code>Member</code>.
-     **/
+     */
     boolean isChildOrEqualTo(Member member);
 
     /** Returns whether this member is computed using either a <code>with
@@ -105,13 +106,13 @@ public interface Member extends OlapElement, Comparable {
 
     /**
      * Returns array of all members, which are ancestor to <code>this</code>.
-     **/
+     */
     Member[] getAncestorMembers();
 
     /**
      * Returns whether this member is computed from a <code>with member</code>
      * clause in an mdx query.
-     **/
+     */
     boolean isCalculatedInQuery();
 
     /**

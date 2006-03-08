@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2005 Kana Software, Inc. and others.
+// Copyright (C) 2002-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
  * @author jhyde
  * @since Dec 25, 2002
  * @version $Id$
- **/
+ */
 public class Model {
     private static final Logger LOGGER = Logger.getLogger(Model.class);
 
@@ -42,7 +42,7 @@ public class Model {
     private static final Class[] emptyClassArray = new Class[0];
     static int nextOrdinal;
 
-    /** Returns the singleton instance. **/
+    /** Returns the singleton instance. */
     public static synchronized Model instance() {
         if (instance == null) {
             instance = new Model();

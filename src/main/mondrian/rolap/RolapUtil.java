@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2005 Kana Software, Inc. and others.
+// Copyright (C) 2001-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -38,7 +39,7 @@ import org.apache.log4j.Logger;
  * @author jhyde
  * @since 22 December, 2001
  * @version $Id$
- **/
+ */
 public class RolapUtil {
 
     private static final Logger LOGGER = Logger.getLogger(RolapUtil.class);
@@ -124,7 +125,7 @@ public class RolapUtil {
     /**
      * Adds an object to the end of an array.  The resulting array is of the
      * same type (e.g. <code>String[]</code>) as the input array.
-     **/
+     */
     static Object[] addElement(Object[] a, Object o) {
         Class clazz = a.getClass().getComponentType();
         Object[] a2 = (Object[]) Array.newInstance(clazz, a.length + 1);

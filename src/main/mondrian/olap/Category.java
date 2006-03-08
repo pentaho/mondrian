@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2005 Julian Hyde
+// Copyright (C) 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -24,9 +24,9 @@ package mondrian.olap;
  * @author jhyde
  * @since Feb 21, 2003
  * @version $Id$
- **/
+ */
 public class Category extends EnumeratedValues {
-    /** The singleton instance of <code>Category</code>. **/
+    /** The singleton instance of <code>Category</code>. */
     public static final Category instance = new Category();
 
     private Category() {
@@ -49,55 +49,55 @@ public class Category extends EnumeratedValues {
         );
     }
 
-    /** Returns the singleton instance of <code>Category</code>. **/
+    /** Returns the singleton instance of <code>Category</code>. */
     public static final Category instance() {
         return instance;
     }
 
-    /** <code>Unknown</code> is an expression whose type is as yet unknown. **/
+    /** <code>Unknown</code> is an expression whose type is as yet unknown. */
     public static final int Unknown   = 0;
-    /** <code>Array</code> is an expression of array type. **/
+    /** <code>Array</code> is an expression of array type. */
     public static final int Array     = 1;
     /** <code>Dimension</code> is a dimension expression.
-     * @see Dimension **/
+     * @see Dimension */
     public static final int Dimension = 2;
     /** <code>Hierarchy</code> is a hierarchy expression.
-     * @see Hierarchy **/
+     * @see Hierarchy */
     public static final int Hierarchy = 3;
     /** <code>Level</code> is a level expression.
-     * @see Level **/
+     * @see Level */
     public static final int Level     = 4;
-    /** <code>Logical</code> is a boolean expression. **/
+    /** <code>Logical</code> is a boolean expression. */
     public static final int Logical   = 5;
     /** <code>Member</code> is a member expression.
-     * @see Member **/
+     * @see Member */
     public static final int Member    = 6;
-    /** <code>Numeric</code> is a numeric expression. **/
+    /** <code>Numeric</code> is a numeric expression. */
     public static final int Numeric   = 7;
-    /** <code>Set</code> is a set of members or tuples. **/
+    /** <code>Set</code> is a set of members or tuples. */
     public static final int Set       = 8;
-    /** <code>String</code> is a string expression. **/
+    /** <code>String</code> is a string expression. */
     public static final int String    = 9;
-    /** <code>Tuple</code> is a tuple expression. **/
+    /** <code>Tuple</code> is a tuple expression. */
     public static final int Tuple     = 10;
     /** <code>Symbol</code> is a symbol, for example the <code>BASC</code>
-     * keyword to the <code>Order()</code> function. **/
+     * keyword to the <code>Order()</code> function. */
     public static final int Symbol    = 11;
     /** <code>Cube</code> is a cube expression.
-     * @see Cube **/
+     * @see Cube */
     public static final int Cube      = 12;
-    /** <code>Value</code> is any expression yielding a string or numeric value. **/
+    /** <code>Value</code> is any expression yielding a string or numeric value. */
     public static final int Value     = 13;
     /** <code>Integer</code> is an integer expression. This is a subtype of
      * {@link #Numeric}. */
     public static final int Integer = 15;
     /** <code>Expression</code> is a flag which, when bitwise-OR-ed with a
-     * category value, indicates an expression (as opposed to a constant). **/
+     * category value, indicates an expression (as opposed to a constant). */
     public static final int Expression = 0;
     /** <code>Constant</code> is a flag which, when bitwise-OR-ed with a
-     * category value, indicates a constant (as opposed to an expression). **/
+     * category value, indicates a constant (as opposed to an expression). */
     public static final int Constant = 64;
-    /** <code>Mask</code> is a mask to remove flags. **/
+    /** <code>Mask</code> is a mask to remove flags. */
     public static final int Mask = 31;
 }
 

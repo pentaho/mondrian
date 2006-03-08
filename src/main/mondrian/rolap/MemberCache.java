@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2005 Kana Software, Inc. and others.
+// Copyright (C) 2001-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -24,7 +25,7 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
  * @author jhyde
  * @since 22 December, 2001
  * @version $Id$
- **/
+ */
 interface MemberCache {
     /**
      * Creates a key with which to {@link #getMember(Object)} or
@@ -42,7 +43,7 @@ interface MemberCache {
     /**
      * Replaces the {@link RolapMember} with a given key (created by {@link
      * #makeKey}). Returns the previous member with that key, or null.
-     **/
+     */
     Object putMember(Object key, RolapMember value);
 
     /**

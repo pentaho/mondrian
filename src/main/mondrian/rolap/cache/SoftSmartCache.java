@@ -1,10 +1,10 @@
 /*
-//This software is subject to the terms of the Common Public License
-//Agreement, available at the following URL:
-//http://www.opensource.org/licenses/cpl.html.
-//Copyright (C) 2004-2005 TONBELLER AG
-//All Rights Reserved.
-//You must accept the terms of that agreement to use this software.
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2004-2005 TONBELLER AG
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.cache;
 
@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * a map with soft references that is cleaned up in regular intervals. 
+ * A map with soft references that is cleaned up in regular intervals. 
  * <p>
  * There is no contains(key) method because it makes no sense - after 
  * contains() returns true, the garbage collector may remove 
@@ -23,6 +23,7 @@ import java.util.Map;
  * 
  * @author av
  * @since Nov 3, 2005
+ * @version $Id$
  */
 public class SoftSmartCache implements SmartCache {
 
@@ -96,3 +97,6 @@ public class SoftSmartCache implements SmartCache {
     }
 
 }
+
+// End SoftSmartCache.java
+

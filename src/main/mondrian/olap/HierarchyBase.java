@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2005 Kana Software, Inc. and others.
+// Copyright (C) 2001-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -20,7 +21,7 @@ import mondrian.resource.MondrianResource;
  * @author jhyde
  * @since 6 August, 2001
  * @version $Id$
- **/
+ */
 public abstract class HierarchyBase
     extends OlapElementBase
     implements Hierarchy {
@@ -35,7 +36,7 @@ public abstract class HierarchyBase
      * <tr> <td>[Time.Weekly]</td> <td>Time.Weekly</td> <td>Weekly</td></tr>
      * <tr> <td>[Customers]</td>   <td>Customers</td>   <td>null</td></tr>
      * </table>
-     **/
+     */
     protected final String subName;
     protected final String name;
     protected final String uniqueName;

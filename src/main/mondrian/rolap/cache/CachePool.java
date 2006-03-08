@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2004-2005 Julian Hyde and others.
+// Copyright (C) 2004-2005 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -19,10 +19,10 @@ import mondrian.rolap.RolapSchema;
  */
 public class CachePool {
 
-    /** The singleton. **/
+    /** The singleton. */
     private static CachePool instance = new CachePool();
 
-    /** Returns the singleton. **/
+    /** Returns the singleton. */
     public static CachePool instance() {
         return instance;
     }

@@ -27,7 +27,7 @@ import java.net.URL;
  * @author jhyde
  * @since Jun 28, 2005
  * @version $Id$
- **/
+ */
 public class DecoratingSchemaProcessor implements DynamicSchemaProcessor {
     /**
      * Returns the contents of a URL.

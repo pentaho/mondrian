@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2005 Kana Software, Inc. and others.
+// Copyright (C) 2002-2002 Kana Software, Inc.
+// Copyright (C) 2002-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -164,7 +165,7 @@ public class FunUtil extends Util {
     /**
      * Adds every element of <code>right</code> which is not in <code>set</code>
      * to both <code>set</code> and <code>left</code>.
-     **/
+     */
     static void addUnique(List left, List right, Set set) {
         assert left != null;
         assert right != null;
@@ -223,7 +224,7 @@ public class FunUtil extends Util {
      * Returns whether <code>m0</code> is an ancestor of <code>m1</code>.
      *
      * @param strict if true, a member is not an ancestor of itself
-     **/
+     */
     static boolean isAncestorOf(Member m0, Member m1, boolean strict) {
         if (strict) {
             if (m1 == null) {

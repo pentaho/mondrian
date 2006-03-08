@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2005 Julian Hyde
+// Copyright (C) 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -17,9 +17,9 @@ package mondrian.olap;
  * @author jhyde
  * @since Feb 21, 2003
  * @version $Id$
- **/
+ */
 public class Access extends EnumeratedValues {
-    /** The singleton instance of <code>Access</code>. **/
+    /** The singleton instance of <code>Access</code>. */
     public static final Access instance = new Access();
 
     private Access() {
@@ -33,17 +33,17 @@ public class Access extends EnumeratedValues {
         );
     }
 
-    /** Returns the singleton instance of <code>Access</code>. **/
+    /** Returns the singleton instance of <code>Access</code>. */
     public static final Access instance() {
         return instance;
     }
-    /** No access to an object. **/
+    /** No access to an object. */
     public static final int NONE = 1;
-    /** Custom access to an object (described by other parameters). **/
+    /** Custom access to an object (described by other parameters). */
     public static final int CUSTOM = 2;
-    /** Access to all shared dimensions (applies to schema grant). **/
+    /** Access to all shared dimensions (applies to schema grant). */
     public static final int ALL_DIMENSIONS = 3;
-    /** All access to an object. **/
+    /** All access to an object. */
     public static final int ALL = 4;
 }
 

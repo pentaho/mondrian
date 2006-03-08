@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2005 Kana Software, Inc. and others.
+// Copyright (C) 2002-2002 Kana Software, Inc.
+// Copyright (C) 2002-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -355,7 +356,7 @@ public class SqlQuery
     }
 
     /** Adds an expression to the select clause, with a specified column
-     * alias. **/
+     * alias. */
     public void addSelect(final String expression, final String alias) {
         buf.setLength(0);
 
@@ -678,7 +679,7 @@ public class SqlQuery
          * <code>quoteIdentifier("emp")</code> yields a string containing
          * <code>"emp"</code> in Oracle, and a string containing
          * <code>[emp]</code> in Access.
-         **/
+         */
         public String quoteIdentifier(final String val) {
             int size = val.length() + SINGLE_QUOTE_SIZE;
             StringBuffer buf = new StringBuffer(size);
@@ -745,7 +746,7 @@ public class SqlQuery
          * @param qual Qualifier. If it is not null,
          *             <code>"<em>qual</em>".</code> is prepended.
          * @param name Name to be quoted.
-         **/
+         */
         public String quoteIdentifier(final String qual, final String name) {
             // We know if the qalifier is null, then only the name is going
             // to be quoted.

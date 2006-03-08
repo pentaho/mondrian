@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2005 Julian Hyde
+// Copyright (C) 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -17,7 +17,7 @@ package mondrian.olap;
  * @author jhyde
  * @since Feb 21, 2003
  * @version $Id$
- **/
+ */
 public class AxisOrdinal extends EnumeratedValues.BasicValue {
 
     private AxisOrdinal(String name, int ordinal) {
@@ -54,22 +54,22 @@ public class AxisOrdinal extends EnumeratedValues.BasicValue {
     public static final AxisOrdinal None =
             new AxisOrdinal("NONE", NoneOrdinal);
     /** Slicer axis (which JOLAP calls the Page axis, not to be confused with
-     * our {@link #PagesOrdinal} axis). **/
+     * our {@link #PagesOrdinal} axis). */
     public static final AxisOrdinal Slicer =
             new AxisOrdinal("SLICER", SlicerOrdinal);
-    /** Columns axis (also known as X axis). **/
+    /** Columns axis (also known as X axis). */
     public static final AxisOrdinal Columns =
             new AxisOrdinal("COLUMNS", ColumnsOrdinal);
-    /** Rows axis (also known as Y axis). **/
+    /** Rows axis (also known as Y axis). */
     public static final AxisOrdinal Rows =
             new AxisOrdinal("ROWS", RowsOrdinal);
-    /** Pages axis. **/
+    /** Pages axis. */
     public static final AxisOrdinal Pages =
             new AxisOrdinal("PAGES", PagesOrdinal);
-    /** Chapters axis. **/
+    /** Chapters axis. */
     public static final AxisOrdinal Chapters =
             new AxisOrdinal("CHAPTERS", ChaptersOrdinal);
-    /** Sections axis. **/
+    /** Sections axis. */
     public static final AxisOrdinal Sections =
             new AxisOrdinal("SECTIONS", SectionsOrdinal);
     /** Enumerates the valid values {@link AxisOrdinal}. */

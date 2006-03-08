@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2005 Kana Software, Inc. and others.
+// Copyright (C) 2002-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -20,17 +20,17 @@ package mondrian.jolap;
  * @author jhyde
  * @since Dec 24, 2002
  * @version $Id$
- **/
+ */
 class Relationship {
     Class fromClass;
     Class toClass;
 
-    /** Constructs a two-way relationship. **/
+    /** Constructs a two-way relationship. */
     public Relationship(Class fromClass, String name, Class toClass, String inverseName) {
         this.fromClass = fromClass;
         this.toClass = toClass;
     }
-    /** Constructs a one-way relationship. **/
+    /** Constructs a one-way relationship. */
     public Relationship(Class fromClass, String name, Class toClass) {
         this(fromClass, name, toClass, null);
     }

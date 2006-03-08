@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2005 Kana Software, Inc. and others.
+// Copyright (C) 1998-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -210,9 +211,9 @@ public class QueryAxis extends QueryPart {
     /**
      * <code>SubtotalVisibility</code> enumerates the allowed values of
      * whether subtotals are visible.
-     **/
+     */
     public static class SubtotalVisibility extends EnumeratedValues {
-        /** The singleton instance of <code>SubtotalVisibility</code>. **/
+        /** The singleton instance of <code>SubtotalVisibility</code>. */
         public static final SubtotalVisibility instance = new SubtotalVisibility();
 
         private SubtotalVisibility() {

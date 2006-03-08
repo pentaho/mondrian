@@ -21,7 +21,7 @@ import java.util.Locale;
  * @author jhyde
  * @since September 22, 2005
  * @version $Id$
- **/
+ */
 public class I18nTest extends FoodMartTestCase {
     public void testFormat() {
         // Make sure Util is loaded, so that the LocaleFormatFactory gets

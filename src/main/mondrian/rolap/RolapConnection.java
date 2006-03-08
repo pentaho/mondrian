@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2005 Kana Software, Inc. and others.
+// Copyright (C) 2001-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -30,7 +31,7 @@ import java.util.*;
  * A <code>RolapConnection</code> is a connection to a Mondrian OLAP Server.
  *
  * <p>Typically, you create a connection via
- * {@link DriverManager#getConnection(java.lang.String, javax.servlet.ServletContext, boolean)}.
+ * {@link DriverManager#getConnection(String, mondrian.spi.CatalogLocator, boolean)}.
  * {@link RolapConnectionProperties} describes allowable keywords.</p>
  *
  * @see RolapSchema
@@ -439,7 +440,7 @@ public class RolapConnection extends ConnectionBase {
         final Result underlying;
         private final int axis;
         private final Map map;
-        /** workspace. Synchronized access only. **/
+        /** workspace. Synchronized access only. */
         private final int[] pos;
 
         NonEmptyResult(Result result, Query query, int axis) {
@@ -517,8 +518,7 @@ public class RolapConnection extends ConnectionBase {
         public void close() {
             underlying.close();
         }
-
     }
-
 }
+
 // End RolapConnection.java

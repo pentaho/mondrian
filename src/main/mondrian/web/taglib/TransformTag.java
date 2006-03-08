@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2005 Kana Software, Inc. and others.
+// Copyright (C) 2002-2002 Kana Software, Inc.
+// Copyright (C) 2002-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -38,7 +39,7 @@ import javax.xml.transform.stream.StreamResult;
  * {@link #setQuery query},
  * {@link #setXsltURI xsltURI},
  * {@link #setXsltCache xsltCache}.
- **/
+ */
 
 public class TransformTag extends TagSupport {
 
@@ -62,7 +63,7 @@ public class TransformTag extends TagSupport {
     }
 
     /** Sets the string attribute <code>query</code>, which is the name of a
-     * query declared using the {@link QueryTag &lt;query&gt;} tag. **/
+     * query declared using the {@link QueryTag &lt;query&gt;} tag. */
     public void setQuery(String newQuery) {
         query = newQuery;
     }
@@ -71,7 +72,7 @@ public class TransformTag extends TagSupport {
     }
 
     /** Sets the string attribute <code>xsltURI</code>, which is the URI of an
-     * XSL style-sheet to transform query output. **/
+     * XSL style-sheet to transform query output. */
     public void setXsltURI(String newXsltURI) {
         xsltURI = newXsltURI;
     }
@@ -80,7 +81,7 @@ public class TransformTag extends TagSupport {
     }
 
     /** Sets the boolean attribute <code>xsltCache</code>, which determines
-     * whether to cache the parsed representation of an XSL style-sheet. **/
+     * whether to cache the parsed representation of an XSL style-sheet. */
     public void setXsltCache(boolean newXsltCache) {
         xsltCache = newXsltCache;
     }

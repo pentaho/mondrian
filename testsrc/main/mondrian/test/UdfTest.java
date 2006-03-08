@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
  * @author jhyde
  * @since Apr 29, 2005
  * @version $Id$
- **/
+ */
 public class UdfTest extends FoodMartTestCase {
 
     /**

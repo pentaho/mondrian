@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2005 Kana Software, Inc. and others.
+// Copyright (C) 2002-2002 Kana Software, Inc.
+// Copyright (C) 2002-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -39,7 +40,7 @@ import java.util.*;
  */
 public class BuiltinFunTable extends FunTableImpl {
 
-    /** the singleton **/
+    /** the singleton */
     private static BuiltinFunTable instance;
 
     /**
@@ -4346,7 +4347,7 @@ public class BuiltinFunTable extends FunTableImpl {
         return Collections.unmodifiableMap(((BuiltinFunTable)instance()).mapNameToResolvers);
     }
 
-    /** Returns (creating if necessary) the singleton. **/
+    /** Returns (creating if necessary) the singleton. */
     public static BuiltinFunTable instance() {
         if (instance == null) {
             instance = new BuiltinFunTable();

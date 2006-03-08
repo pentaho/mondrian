@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2005 Kana Software, Inc. and others.
+// Copyright (C) 2002-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -28,7 +28,7 @@ import java.util.List;
  * @author jhyde
  * @since Dec 24, 2002
  * @version $Id$
- **/
+ */
 class MondrianCubeCursor extends CursorSupport implements CubeCursor {
     private RelationshipList pageEdge = new RelationshipList(Meta.pageEdge);
     private OrderedRelationshipList ordinateEdge = new OrderedRelationshipList(Meta.pageEdge);

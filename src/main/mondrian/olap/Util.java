@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2005 Kana Software, Inc. and others.
+// Copyright (C) 2001-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -33,7 +34,7 @@ import mondrian.mdx.*;
  * @author jhyde
  * @since 6 August, 2001
  * @version $Id$
- **/
+ */
 public class Util extends XOMUtil {
 
     public static final String nl = System.getProperty("line.separator");
@@ -195,7 +196,7 @@ public class Util extends XOMUtil {
     /**
      * Return identifiers quoted in [...].[...].  For example, {"Store", "USA",
      * "California"} becomes "[Store].[USA].[California]".
-     **/
+     */
     public static String quoteMdxIdentifier(String[] ids) {
         StringBuffer sb = new StringBuffer(64);
         quoteMdxIdentifier(ids, sb);
@@ -959,7 +960,7 @@ public class Util extends XOMUtil {
      *
      * @param e the error; may be null. Errors are chained according to their
      *    {@link Throwable#getCause cause}.
-     **/
+     */
     public static String[] convertStackToString(Throwable e) {
         List list = new ArrayList();
         while (e != null) {
@@ -976,7 +977,7 @@ public class Util extends XOMUtil {
      * {@link #getErrorMessage(Throwable,boolean)}, but does not print the
      * class name if the exception is derived from {@link java.sql.SQLException}
      * or is exactly a {@link java.lang.Exception}.
-     **/
+     */
     public static String getErrorMessage(Throwable err) {
         boolean prependClassName =
             !(err instanceof java.sql.SQLException ||
@@ -1022,7 +1023,7 @@ public class Util extends XOMUtil {
 
     /**
      * Creates a file-protocol URL for the given file.
-     **/
+     */
     public static URL toURL(File file) throws MalformedURLException {
         String path = file.getAbsolutePath();
         // This is a bunch of weird code that is required to
@@ -1045,7 +1046,7 @@ public class Util extends XOMUtil {
     /**
      * <code>PropertyList</code> is an order-preserving list of key-value
      * pairs. Lookup is case-insensitive, but the case of keys is preserved.
-     **/
+     */
     public static class PropertyList {
         List list = new ArrayList();
 
@@ -1126,7 +1127,7 @@ public class Util extends XOMUtil {
      * target="_blank">OLE DB connect string syntax
      * specification</a>. To find what it <em>actually</em> does, take
      * a look at the <code>mondrian.olap.UtilTestCase</code> test case.
-     **/
+     */
     public static PropertyList parseConnectString(String s) {
         return new ConnectStringParser(s).parse();
     }

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2005 Julian Hyde
+// Copyright (C) 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -24,14 +24,14 @@ public class Syntax extends EnumeratedValues.BasicValue {
     }
 
     /** Expression invoked <code>FUNCTION()</code> or
-     * <code>FUNCTION(args)</code>. **/
+     * <code>FUNCTION(args)</code>. */
     public static final Syntax Function = new Syntax("Function", 0) {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             ExpBase.unparseList(pw, args, fun + "(", ", ", ")");
         }
     };
 
-    /** Expression invoked as <code>object.PROPERTY</code>. **/
+    /** Expression invoked as <code>object.PROPERTY</code>. */
     public static final Syntax Property = new Syntax("Property", 1) {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             Util.assertTrue(args.length >= 1);
@@ -47,7 +47,7 @@ public class Syntax extends EnumeratedValues.BasicValue {
     };
 
     /** Expression invoked invoked as <code>object.METHOD()</code> or
-     * <code>object.METHOD(args)</code>. **/
+     * <code>object.METHOD(args)</code>. */
     public static final Syntax Method = new Syntax("Method", 2) {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             Util.assertTrue(args.length >= 1);
@@ -74,7 +74,7 @@ public class Syntax extends EnumeratedValues.BasicValue {
         }
     };
     /** Expression invoked as <code>arg OPERATOR arg</code> (like '+' or
-     * 'AND') **/
+     * 'AND') */
     public static final Syntax Infix = new Syntax("Infix", 3) {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             if (needParen(args)) {
@@ -92,7 +92,7 @@ public class Syntax extends EnumeratedValues.BasicValue {
     };
 
     /** Expression invoked as <code>OPERATOR arg</code> (like unary
-     * '-'). **/
+     * '-'). */
     public static final Syntax Prefix = new Syntax("Prefix", 4) {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             if (needParen(args)) {
@@ -129,7 +129,7 @@ public class Syntax extends EnumeratedValues.BasicValue {
         }
     };
 
-    /** Expression invoked as <code>CASE ... END</code>. **/
+    /** Expression invoked as <code>CASE ... END</code>. */
     public static final Syntax Case = new Syntax("Case", 7) {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             pw.print("CASE");
@@ -212,7 +212,7 @@ public class Syntax extends EnumeratedValues.BasicValue {
     /**
      * Returns a description of the signature of a function call, for
      * example, "CoalesceEmpty(<Numeric Expression>, <String Expression>)".
-     **/
+     */
     public String getSignature(String name, int returnType, int[] argTypes) {
         // e.g. "StripCalculatedMembers(<Set>)"
         return (returnType == Category.Unknown ? "" :

@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2005 Kana Software, Inc. and others.
+// Copyright (C) 2002-2002 Kana Software, Inc.
+// Copyright (C) 2002-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -48,7 +49,7 @@ import java.util.*;
  * @author jhyde
  * @since 21 March, 2002
  * @version $Id$
- **/
+ */
 class Segment {
 
     /**
@@ -86,7 +87,7 @@ class Segment {
      *    belongs to
      * @param constraintses For each column, either an array of values
      *    to fetch or null, indicating that the column is unconstrained
-     **/
+     */
     Segment(Aggregation aggregation,
             RolapStar.Measure measure,
             ColumnConstraint[][] constraintses,
@@ -183,7 +184,7 @@ class Segment {
      *
      * <p>Note: Must be called from a synchronized context, because uses the
      * <code>cellKey[]</code> as workspace.</p>
-     **/
+     */
     Object get(Object[] keys) {
         Util.assertTrue(keys.length == axes.length);
         int missed = 0;
@@ -219,7 +220,7 @@ class Segment {
     /**
      * Returns whether the given set of key values will be in this segment
      * when it finishes loading.
-     **/
+     */
     boolean wouldContain(Object[] keys) {
         Util.assertTrue(keys.length == axes.length);
         for (int i = 0; i < keys.length; i++) {
@@ -240,7 +241,7 @@ class Segment {
      * in the Western region, for all years.
      *
      * @pre segments[i].aggregation == aggregation
-     **/
+     */
     static void load(
             final Segment[] segments,
             final BitKey levelBitKey,

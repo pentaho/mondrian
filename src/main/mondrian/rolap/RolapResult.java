@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2005 Kana Software, Inc. and others.
+// Copyright (C) 2001-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -300,7 +301,7 @@ class RolapResult extends ResultBase {
     /**
      * An <code>AggregatingCellReader</code> reads cell values from the
      * {@link RolapAggregationManager}.
-     **/
+     */
     private static class AggregatingCellReader implements CellReader {
         private final RolapAggregationManager aggMan =
             AggregationManager.instance();

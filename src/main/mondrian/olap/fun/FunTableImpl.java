@@ -32,7 +32,7 @@ public abstract class FunTableImpl implements FunTable {
     private final HashSet reservedWords = new HashSet();
     private final HashSet propertyWords = new HashSet();
     protected static final Resolver[] emptyResolverArray = new Resolver[0];
-    /** used during initialization **/
+    /** used during initialization */
     protected final List resolverList = new ArrayList();
     protected final List funInfoList = new ArrayList();
 
@@ -234,7 +234,7 @@ public abstract class FunTableImpl implements FunTable {
      * word is declared by calling {@link #defineReserved(String)}.
      *
      * <p>Derived class can override this method to add more functions.
-     **/
+     */
     protected abstract void defineFunctions();
 }
 

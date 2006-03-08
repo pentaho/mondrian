@@ -22,7 +22,7 @@ import java.util.List;
  * @author jhyde$
  * @since Jul 9, 2003$
  * @version $Id$
- **/
+ */
 public interface Aggregator {
     /**
      * Returns the aggregator used to combine sub-totals into a grand-total.

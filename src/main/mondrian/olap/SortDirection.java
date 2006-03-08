@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2005 Julian Hyde
+// Copyright (C) 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -17,9 +17,9 @@ package mondrian.olap;
  * @author jhyde
  * @since Feb 21, 2003
  * @version $Id$
- **/
+ */
 public class SortDirection extends EnumeratedValues {
-    /** The singleton instance of <code>SortDirection</code>. **/
+    /** The singleton instance of <code>SortDirection</code>. */
     public static final SortDirection instance = new SortDirection();
 
     private SortDirection() {
@@ -35,7 +35,7 @@ public class SortDirection extends EnumeratedValues {
         );
     }
 
-    /** Returns the singleton instance of <code>SortDirection</code>. **/
+    /** Returns the singleton instance of <code>SortDirection</code>. */
     public static final SortDirection instance() {
         return instance;
     }

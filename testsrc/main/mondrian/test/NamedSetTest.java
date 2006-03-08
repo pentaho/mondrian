@@ -20,7 +20,7 @@ import mondrian.olap.*;
  * @author jhyde
  * @since April 30, 2005
  * @version $Id$
- **/
+ */
 public class NamedSetTest extends FoodMartTestCase {
 
     /**

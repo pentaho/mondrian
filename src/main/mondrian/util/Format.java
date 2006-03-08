@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2000-2005 Kana Software, Inc. and others.
+// Copyright (C) 2000-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -1095,7 +1096,7 @@ public class Format {
      * A FormatLocale contains all information necessary to format objects
      * based upon the locale of the end-user.  Use {@link Format#createLocale}
      * to make one.
-     **/
+     */
     public static class FormatLocale
     {
         char thousandSeparator;
@@ -1460,7 +1461,7 @@ public class Format {
      *   <a href="http://www.apostate.com/programming/vb-format.html">this
      *   description</a> for more details
      * @param locale The locale
-     **/
+     */
     public Format(String formatString, Locale locale)
     {
         this(formatString, getBestFormatLocale(locale));
@@ -1576,7 +1577,7 @@ public class Format {
     /**
      * Returns the {@link FormatLocale} which precisely matches {@link Locale},
      * if any, or null if there is none.
-     **/
+     */
     public static FormatLocale getFormatLocale(Locale locale)
     {
         if (locale == null) {
@@ -1645,7 +1646,7 @@ public class Format {
     /**
      * Registers a {@link FormatLocale} to a given {@link Locale}. Returns the
      * previous mapping.
-     **/
+     */
     public static FormatLocale registerFormatLocale(
         FormatLocale formatLocale, Locale locale)
     {

@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2005 Kana Software, Inc. and others.
+// Copyright (C) 2001-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -33,7 +34,7 @@ import java.util.Set;
  * @author jhyde
  * @since 30 August, 2001
  * @version $Id$
- **/
+ */
 public abstract class RolapAggregationManager implements CellReader {
 
     /**
@@ -46,7 +47,7 @@ public abstract class RolapAggregationManager implements CellReader {
      * @param extendedContext If true, add non-constraining columns to the
      * query for levels below each current member. This additional context
      * makes the drill-through queries easier for humans to understand.
-     **/
+     */
     static CellRequest makeRequest(
             Member[] members,
             boolean extendedContext) {
@@ -172,7 +173,7 @@ public abstract class RolapAggregationManager implements CellReader {
 
     /**
      * Returns the value of a cell from an existing aggregation.
-     **/
+     */
     public Object getCellFromCache(Member[] members) {
         CellRequest request = makeRequest(members, false);
         return (request == null)

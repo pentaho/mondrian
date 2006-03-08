@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2005 Kana Software, Inc. and others.
+// Copyright (C) 2002-2002 Kana Software, Inc.
+// Copyright (C) 2002-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -19,7 +20,7 @@ import mondrian.olap.*;
  * @author jhyde
  * @since 3 March, 2002
  * @version $Id$
- **/
+ */
 class SimpleResolver implements Resolver {
     private  final FunDef funDef;
 

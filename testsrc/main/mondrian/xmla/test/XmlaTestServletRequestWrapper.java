@@ -1,3 +1,12 @@
+/*
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2006-2006 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.xmla.test;
 
 import java.io.ByteArrayInputStream;
@@ -11,15 +20,13 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import mondrian.xmla.XmlaServlet;
 
 /**
- * Dummy request for testing XmlaServlet. Provides a 'text/xml' content
- * stream from a post from xmlaTest.jsp. Assumes that the SOAPRequest parameter
- * contains XML/A SOAP request body
+ * Dummy request for testing XmlaServlet. Provides a 'text/xml' content stream
+ * from a post from xmlaTest.jsp. Assumes that the SOAPRequest parameter
+ * contains XML/A SOAP request body.
  *  
  * @author Sherman Wood
  * @version $Id$
- *
  */
-
 public class XmlaTestServletRequestWrapper extends HttpServletRequestWrapper {
 
 	private HttpServletRequest originalRequest;
@@ -74,50 +81,52 @@ public class XmlaTestServletRequestWrapper extends HttpServletRequestWrapper {
 	
 	private class XmlaTestServletInputStream extends ServletInputStream {
 		
-		private ByteArrayInputStream bios;
+		private ByteArrayInputStream bais;
 		
 		XmlaTestServletInputStream(String source) {
-			bios = new ByteArrayInputStream(source.getBytes());
+			bais = new ByteArrayInputStream(source.getBytes());
 		}
 
 		public int readLine(byte[] arg0, int arg1, int arg2) throws IOException {
-			return bios.read(arg0, arg1, arg2);
+			return bais.read(arg0, arg1, arg2);
 		}
 
 		public int available() throws IOException {
-			return bios.available();
+			return bais.available();
 		}
 
 		public void close() throws IOException {
-			bios.close();
+			bais.close();
 		}
 
 		public synchronized void mark(int readlimit) {
-			bios.mark(readlimit);
+			bais.mark(readlimit);
 		}
 
 		public boolean markSupported() {
-			return bios.markSupported();
+			return bais.markSupported();
 		}
 
 		public int read() throws IOException {
-			return bios.read();
+			return bais.read();
 		}
 
 		public int read(byte[] b, int off, int len) throws IOException {
-			return bios.read(b, off, len);
+			return bais.read(b, off, len);
 		}
 
 		public int read(byte[] b) throws IOException {
-			return bios.read(b);
+			return bais.read(b);
 		}
 
 		public synchronized void reset() throws IOException {
-			 bios.reset();
+			 bais.reset();
 		}
 
 		public long skip(long n) throws IOException {
-			return bios.skip(n);
+			return bais.skip(n);
 		}
 	}
 }
+
+// End XmlaTestServletRequestWrapper.java

@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2000-2005 Kana Software, Inc. and others.
+// Copyright (C) 2000-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -18,7 +19,7 @@ import java.util.Locale;
  * Connection to a multi-dimensional database.
  *
  * @see DriverManager
- **/
+ */
 public interface Connection {
     
     /** 
@@ -45,7 +46,7 @@ public interface Connection {
     /**
      * Closes this <code>Connection</code>. You may not use this
      * <code>Connection</code> after closing it.
-     **/
+     */
     void close();
 
     /**
@@ -58,17 +59,17 @@ public interface Connection {
      * the currency string used in formatting cell values.
      *
      * @see mondrian.util.Format
-     **/
+     */
     Locale getLocale();
 
     /**
      * Parses an expresion.
-     **/
+     */
     Exp parseExpression(String s);
 
     /**
      * Parses a query.
-     **/
+     */
     Query parseQuery(String s);
 
     /**

@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2005 Kana Software, Inc. and others.
+// Copyright (C) 2002-2002 Kana Software, Inc.
+// Copyright (C) 2002-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -36,7 +37,7 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
  * Attributes are
  * {@link #setName name},
  * {@link #setResultCache resultCache}.
- **/
+ */
 
 public class QueryTag extends BodyTagSupport {
 
@@ -62,7 +63,7 @@ public class QueryTag extends BodyTagSupport {
 
     /** Sets string attribute <code>name</code>, which identifies this query
      * within its page. The {@link TransformTag#setQuery &lt;transform
-     * query&gt;} attribute uses this. **/
+     * query&gt;} attribute uses this. */
     public void setName(String newName) {
         name = newName;
     }
@@ -72,7 +73,7 @@ public class QueryTag extends BodyTagSupport {
     /** Sets boolean attribute <code>resultCache</code>; if true, the query is
      * parsed, executed, and converted to an XML document at most once. This
      * improves performance and consistency, but the results may become out of
-     * date. We also need a way to prevent the cache using too much memory. **/
+     * date. We also need a way to prevent the cache using too much memory. */
     public void setResultCache(boolean newResultCache) {
         resultCache = newResultCache;
     }

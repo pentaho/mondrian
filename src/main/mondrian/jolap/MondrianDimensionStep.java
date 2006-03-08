@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2005 Kana Software, Inc. and others.
+// Copyright (C) 2002-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -27,7 +27,7 @@ import javax.olap.query.querycoremodel.DimensionStepManager;
  * @author jhyde
  * @since Dec 24, 2002
  * @version $Id$
- **/
+ */
 abstract class MondrianDimensionStep extends QueryObjectSupport implements DimensionStep {
     private MondrianDimensionStepManager manager;
 
@@ -37,10 +37,10 @@ abstract class MondrianDimensionStep extends QueryObjectSupport implements Dimen
     }
 
     /** Converts this step into a Mondrian expression, taking <code>exp</code>
-     * as its input. **/
+     * as its input. */
     abstract Exp convert(Exp exp) throws OLAPException;
 
-    /** Factory method. **/
+    /** Factory method. */
     static DimensionStep create(
             MondrianDimensionStepManager stepManager, DimensionStepType stepType) {
         if (stepType == DimensionStepTypeEnum.ATTRIBUTE_FILTER) {

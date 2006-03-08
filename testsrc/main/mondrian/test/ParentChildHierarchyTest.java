@@ -23,7 +23,7 @@ import mondrian.rolap.RolapConnection;
  * @author jhyde
  * @since Mar 6, 2003
  * @version $Id$
- **/
+ */
 public class ParentChildHierarchyTest extends FoodMartTestCase {
     public ParentChildHierarchyTest(String name) {
         super(name);

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2005 Julian Hyde
+// Copyright (C) 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -24,7 +24,7 @@ import java.util.List;
  * @author jhyde
  * @since Feb 24, 2003
  * @version $Id$
- **/
+ */
 public interface SchemaReader {
     /**
      * Returns the access-control profile that this <code>SchemaReader</code>
@@ -37,7 +37,7 @@ public interface SchemaReader {
      * hierarchy is access-controlled, returns the most senior visible members.
      *
      * @see #getCalculatedMembers(Hierarchy)
-     **/
+     */
     Member[] getHierarchyRootMembers(Hierarchy hierarchy);
 
     /**
@@ -58,7 +58,7 @@ public interface SchemaReader {
      * Returns direct children of <code>member</code>.
      * @pre member != null
      * @post return != null
-     **/
+     */
     Member[] getMemberChildren(Member member);
 
     /**
@@ -80,7 +80,7 @@ public interface SchemaReader {
      * Returns direct children of each element of <code>members</code>.
      * @pre members != null
      * @post return != null
-     **/
+     */
     Member[] getMemberChildren(Member[] members);
     Member[] getMemberChildren(Member[] members, Evaluator context);
 
@@ -122,7 +122,7 @@ public interface SchemaReader {
      * @param failIfNotFound Whether to throw an error, as opposed to returning
      *   <code>null</code>, if there is no such member.
      * @return The member, or null if not found
-     **/
+     */
     Member getMemberByUniqueName(String[] uniqueNameParts, boolean failIfNotFound);
 
     /**
@@ -152,7 +152,7 @@ public interface SchemaReader {
     /**
      * Looks up a calculated member by name. If the name is not found in the
      * current scope, returns null.
-     **/
+     */
     Member getCalculatedMember(String[] nameParts);
 
     /**
@@ -187,13 +187,13 @@ public interface SchemaReader {
      *   zero if <code>m1</code> is a sibling of <code>m2</code>;
      *   a positive integer if <code>m1</code> comes later in the prefix
      *   traversal then <code>m2</code>.
-     **/
+     */
     int compareMembersHierarchically(Member m1, Member m2);
 
     /**
      * Looks up the child of <code>parent</code> called <code>s</code>; returns
      * null if no element is found.
-     **/
+     */
     OlapElement getElementChild(OlapElement parent, String name);
 
     /**

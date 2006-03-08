@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2005 Kana Software, Inc. and others.
+// Copyright (C) 1998-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -29,7 +30,7 @@ import java.util.*;
  * <p>It is created by calling {@link Connection#parseQuery},
  * and executed by calling {@link Connection#execute},
  * to return a {@link Result}.
- **/
+ */
 public class Query extends QueryPart {
 
     /**
@@ -548,7 +549,7 @@ public class Query extends QueryPart {
 
     /**
      * Returns the parameters used in this query.
-     **/
+     */
     public Parameter[] getParameters() {
         int[] usageCount = resolveParameters();
         // count the parameters which are currently used
@@ -583,7 +584,7 @@ public class Query extends QueryPart {
     /**
      * Looks up a member whose unique name is <code>s</code> from cache.
      * If the member is not in cache, returns null.
-     **/
+     */
     public Member lookupMemberFromCache(String s) {
         // first look in defined members
         Iterator definedMembers = getDefinedMembers().iterator();

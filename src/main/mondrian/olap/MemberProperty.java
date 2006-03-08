@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2000-2005 Kana Software, Inc. and others.
+// Copyright (C) 2000-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -15,7 +16,7 @@ import java.io.PrintWriter;
 
 /**
  * Member property or solve order specification.
- **/
+ */
 public class MemberProperty extends QueryPart {
 
     private final String name;
@@ -58,7 +59,7 @@ public class MemberProperty extends QueryPart {
 
     /**
      * Retrieves a property by name from an array.
-     **/
+     */
     static Exp get(MemberProperty[] a, String name) {
         // TODO: Linear search may be a performance problem.
         for (int i = 0; i < a.length; i++) {

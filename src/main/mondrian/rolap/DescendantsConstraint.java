@@ -1,10 +1,10 @@
 /*
-//This software is subject to the terms of the Common Public License
-//Agreement, available at the following URL:
-//http://www.opensource.org/licenses/cpl.html.
-//Copyright (C) 2004-2005 TONBELLER AG
-//All Rights Reserved.
-//You must accept the terms of that agreement to use this software.
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2004-2005 TONBELLER AG
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
@@ -15,11 +15,12 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
 
 /**
- * restricts the result of a tuple sqlQuery to a set of parents.
- * All parents must belong to the same level.
+ * TupleConstaint which restricts the result of a tuple sqlQuery to a
+ * set of parents.  All parents must belong to the same level.
  * 
  * @author av
  * @since Nov 10, 2005
+ * @version $Id$
  */
 class DescendantsConstraint implements TupleConstraint {
     List parentMembers;
@@ -53,3 +54,5 @@ class DescendantsConstraint implements TupleConstraint {
         return null;
     }
 }
+
+// End DescendantsConstraint.java

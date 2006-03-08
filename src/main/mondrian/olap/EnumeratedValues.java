@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2005 Kana Software, Inc. and others.
+// Copyright (C) 1998-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -22,7 +23,7 @@ import java.util.*;
  * members. Give it a private constructor, and a <code>public static final
  * <i>ClassName</i> instance</code> member to hold the singleton instance.
  * {@link Access} is a simple example of this.</p>
- **/
+ */
 public class EnumeratedValues implements Cloneable {
     /** map symbol names to values */
     private Map valuesByName = new HashMap();

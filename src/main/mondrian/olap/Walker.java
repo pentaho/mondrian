@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1999-2005 Kana Software, Inc. and others.
+// Copyright (C) 1999-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -30,14 +31,14 @@ import java.util.Stack;
  *      System.out.println(node.toString());
  *    }
  * </pre></code>
- **/
+ */
 public class Walker implements Enumeration {
     /**
      * The active parts of the tree from the root to nextNode are held in a
      * stack.  When the stack is empty, the enumeration finishes.  currentFrame
      * holds the frame of the 'current node' (the node last returned from
      * nextElement()) because it may no longer be on the stack.
-     **/
+     */
     private final Stack stack;
     private Frame currentFrame;
     private Object nextNode;

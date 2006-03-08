@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2005 Kana Software, Inc. and others.
+// Copyright (C) 2001-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -21,13 +22,13 @@ import java.io.PrintWriter;
  * @author jhyde
  * @since 6 August, 2001
  * @version $Id$
- **/
+ */
 public interface Result {
-    /** Returns the query which generated this result. **/
+    /** Returns the query which generated this result. */
     Query getQuery();
-    /** Returns the non-slicer axes. **/
+    /** Returns the non-slicer axes. */
     Axis[] getAxes();
-    /** Returns the slicer axis. **/
+    /** Returns the slicer axis. */
     Axis getSlicerAxis();
     /** Returns the cell at a given set of coordinates. For example, in a result
      * with 4 columns and 6 rows, the top-left cell has coordinates [0, 0],

@@ -1,10 +1,10 @@
 /*
 // $Id$
-// (C) Copyright 2002-2005 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2005 Kana Software, Inc. and others.
+// Copyright (C) 2002-2002 Kana Software, Inc.
+// Copyright (C) 2002-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -47,10 +47,10 @@ public class TestContext {
     private PrintWriter pw;
     /** Connect string for the FoodMart database. Set by the constructor,
      * but the connection is not created until the first call to
-     * {@link #getFoodMartConnection}. **/
+     * {@link #getFoodMartConnection}. */
     private String foodMartConnectString;
     /** Connection to the FoodMart database. Set on the first call to
-     * {@link #getFoodMartConnection}. **/
+     * {@link #getFoodMartConnection}. */
     private Connection foodMartConnection;
 
     protected static final String nl = System.getProperty("line.separator");
@@ -148,7 +148,7 @@ public class TestContext {
 
     /**
      * Creates a file-protocol URL for the given filename.
-     **/
+     */
     public static URL convertPathToURL(File file)
     {
         try {

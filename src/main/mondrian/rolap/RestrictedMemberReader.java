@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2005 Julian Hyde
+// Copyright (C) 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,7 +26,7 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
  * @author jhyde
  * @since Feb 26, 2003
  * @version $Id$
- **/
+ */
 class RestrictedMemberReader extends DelegatingMemberReader {
 
     private final Role.HierarchyAccess hierarchyAccess;

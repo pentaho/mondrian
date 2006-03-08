@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2005 Kana Software, Inc. and others.
+// Copyright (C) 2001-2002 Kana Software, Inc.
+// Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -37,7 +38,7 @@ import java.util.*;
  * @author jhyde
  * @since 12 August, 2001
  * @version $Id$
- **/
+ */
 public class RolapStar {
 
     /**
@@ -341,7 +342,7 @@ public class RolapStar {
         return jdbcConnection;
     }
 
-    /** For testing purposes only.  **/
+    /** For testing purposes only.  */
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -426,7 +427,7 @@ public class RolapStar {
      * Reads a cell of <code>measure</code>, where <code>columns</code> are
      * constrained to <code>values</code>.  <code>values</code> must be the
      * same length as <code>columns</code>; null values are left unconstrained.
-     **/
+     */
     Object getCell(CellRequest request) {
         Connection jdbcConnection = getJdbcConnection();
         try {
