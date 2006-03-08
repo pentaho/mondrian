@@ -1735,6 +1735,16 @@ public class MondrianFoodMartLoader {
         } else if (columnType.startsWith("BOOLEAN") || columnType.startsWith("BIT")) {
             Boolean result = (Boolean) obj;
             return result.toString();
+        /*
+         * Output for a BOOLEAN - TINYINT(1) (MySQL)
+         */
+        } else if (columnType.startsWith("TINYINT(1)")) {
+            Boolean result = (Boolean) obj;
+            if (result.booleanValue()) {
+                return "1";
+            } else {
+                return "0";
+            }
         }
         throw new Exception("Unknown column type: " + columnType + " for column: " + column.name);
     }

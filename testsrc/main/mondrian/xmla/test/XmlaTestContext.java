@@ -80,8 +80,8 @@ public class XmlaTestContext {
     	}
     	connectString = TestContext.getConnectString();
 
-        //connectString = MondrianProperties.instance().TestConnectString.stringValue();
-        //connectString = connectString.replaceAll("&", "&amp;");
+        // Deal with MySQL and other connect strings with & in them
+        connectString = connectString.replaceAll("&", "&amp;");
         return connectString;
 
     }

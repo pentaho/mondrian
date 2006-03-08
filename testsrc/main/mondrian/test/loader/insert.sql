@@ -288,143 +288,143 @@ GROUP BY "B"."product_id",
 # agg_gender_ms_state_sales_fact_1997
 ##################################################################
 
-INSERT INTO `agg_gender_ms_prodcat_sales_fact_1997` (
-    `gender`, 
-    `marital_status`,
-    `product_family`,
-    `product_department`,
-    `product_category`,
-    `month_of_year`,
-    `quarter`,
-    `the_year`,
-    `store_sales`, 
-    `store_cost`, 
-    `unit_sales`, 
-    `customer_count`, 
-    `fact_count`
+INSERT INTO "agg_gender_ms_prodcat_sales_fact_1997" (
+    "gender", 
+    "marital_status",
+    "product_family",
+    "product_department",
+    "product_category",
+    "month_of_year",
+    "quarter",
+    "the_year",
+    "store_sales", 
+    "store_cost", 
+    "unit_sales", 
+    "customer_count", 
+    "fact_count"
 ) SELECT
-    `C`.`gender`,
-    `C`.`marital_status`,
-    `PC`.`product_family`,
-    `PC`.`product_department`,
-    `PC`.`product_category`,
-    `T`.`month_of_year`,
-    `T`.`quarter`,
-    `T`.`the_year`,
-    SUM(`B`.`store_sales`) AS `store_sales`,
-    SUM(`B`.`store_cost`) AS `store_cost`,
-    SUM(`B`.`unit_sales`) AS `unit_sales`,
-    COUNT(DISTINCT `C`.`customer_id`) AS `customer_count`,
-    COUNT(*) AS `fact_count`
-FROM `sales_fact_1997` `B`,
-    `time_by_day` `T`,
-    `product` `P`,
-    `product_class` `PC`,
-    `customer` `C`
+    "C"."gender",
+    "C"."marital_status",
+    "PC"."product_family",
+    "PC"."product_department",
+    "PC"."product_category",
+    "T"."month_of_year",
+    "T"."quarter",
+    "T"."the_year",
+    SUM("B"."store_sales") AS "store_sales",
+    SUM("B"."store_cost") AS "store_cost",
+    SUM("B"."unit_sales") AS "unit_sales",
+    COUNT(DISTINCT "C"."customer_id") AS "customer_count",
+    COUNT(*) AS "fact_count"
+FROM "sales_fact_1997" "B",
+    "time_by_day" "T",
+    "product" "P",
+    "product_class" "PC",
+    "customer" "C"
 WHERE 
-    `B`.`time_id` = `T`.`time_id`
-AND `B`.`customer_id` = `C`.`customer_id`
-AND `B`.`product_id` = `P`.`product_id`
-AND `P`.`product_class_id` = `PC`.`product_class_id`
+    "B"."time_id" = "T"."time_id"
+AND "B"."customer_id" = "C"."customer_id"
+AND "B"."product_id" = "P"."product_id"
+AND "P"."product_class_id" = "PC"."product_class_id"
 GROUP BY 
-    `C`.`gender`,
-    `C`.`marital_status`,
-    `PC`.`product_family`,
-    `PC`.`product_department`,
-    `PC`.`product_category`,
-    `T`.`month_of_year`,
-    `T`.`quarter`,
-    `T`.`the_year`;
+    "C"."gender",
+    "C"."marital_status",
+    "PC"."product_family",
+    "PC"."product_department",
+    "PC"."product_category",
+    "T"."month_of_year",
+    "T"."quarter",
+    "T"."the_year";
 
 # Above query, rephrased for Access (which does not support
 # COUNT(DISTINCT ...) explicitly.
 #
-#INSERT INTO `agg_gender_ms_prodcat_sales_fact_1997` (
-#    `gender`, 
-#    `marital_status`,
-#    `product_family`,
-#    `product_department`,
-#    `product_category`,
-#    `month_of_year`,
-#    `quarter`,
-#    `the_year`,
-#    `store_sales`, 
-#    `store_cost`, 
-#    `unit_sales`, 
-#    `customer_count`, 
-#    `fact_count`
+#INSERT INTO "agg_gender_ms_prodcat_sales_fact_1997" (
+#    "gender", 
+#    "marital_status",
+#    "product_family",
+#    "product_department",
+#    "product_category",
+#    "month_of_year",
+#    "quarter",
+#    "the_year",
+#    "store_sales", 
+#    "store_cost", 
+#    "unit_sales", 
+#    "customer_count", 
+#    "fact_count"
 #) SELECT
-#    `C`.`gender`,
-#    `C`.`marital_status`,
-#    `PC`.`product_family`,
-#    `PC`.`product_department`,
-#    `PC`.`product_category`,
-#    `T`.`month_of_year`,
-#    `T`.`quarter`,
-#    `T`.`the_year`,
-#    SUM(`B`.`store_sales`) AS `store_sales`,
-#    SUM(`B`.`store_cost`) AS `store_cost`,
-#    SUM(`B`.`unit_sales`) AS `unit_sales`,
+#    "C"."gender",
+#    "C"."marital_status",
+#    "PC"."product_family",
+#    "PC"."product_department",
+#    "PC"."product_category",
+#    "T"."month_of_year",
+#    "T"."quarter",
+#    "T"."the_year",
+#    SUM("B"."store_sales") AS "store_sales",
+#    SUM("B"."store_cost") AS "store_cost",
+#    SUM("B"."unit_sales") AS "unit_sales",
 #    (
-#    SELECT COUNT(`customer_id`)
+#    SELECT COUNT("customer_id")
 #    FROM (
 #        SELECT DISTINCT
-#            `DC`.`gender`,
-#            `DC`.`marital_status`,
-#            `DPC`.`product_family`,
-#            `DPC`.`product_department`,
-#            `DPC`.`product_category`,
-#            `DT`.`month_of_year`,
-#            `DT`.`quarter`,
-#            `DT`.`the_year`,
-#            `DB`.`customer_id`
+#            "DC"."gender",
+#            "DC"."marital_status",
+#            "DPC"."product_family",
+#            "DPC"."product_department",
+#            "DPC"."product_category",
+#            "DT"."month_of_year",
+#            "DT"."quarter",
+#            "DT"."the_year",
+#            "DB"."customer_id"
 #        FROM
-#            `sales_fact_1997` `DB`,
-#            `time_by_day` `DT`,
-#            `product` `DP`,
-#            `product_class` `DPC`,
-#            `customer` `DC`
+#            "sales_fact_1997" "DB",
+#            "time_by_day" "DT",
+#            "product" "DP",
+#            "product_class" "DPC",
+#            "customer" "DC"
 #        WHERE 
-#            `DB`.`time_id` = `DT`.`time_id`
-#        AND `DB`.`customer_id` = `DC`.`customer_id`
-#        AND `DB`.`product_id` = `DP`.`product_id`
-#        AND `DP`.`product_class_id` = `DPC`.`product_class_id`) AS `CDC`
-#    WHERE `CDC`.`gender` = `C`.`gender`
-#    AND `CDC`.`marital_status` = `C`.`marital_status`
-#    AND `CDC`.`product_family` = `PC`.`product_family`
-#    AND `CDC`.`product_department` = `PC`.`product_department`
-#    AND `CDC`.`product_category` = `PC`.`product_category`
-#    AND `CDC`.`month_of_year` = `T`.`month_of_year`
-#    AND `CDC`.`quarter` = `T`.`quarter`
-#    AND `CDC`.`the_year` = `T`.`the_year`
+#            "DB"."time_id" = "DT"."time_id"
+#        AND "DB"."customer_id" = "DC"."customer_id"
+#        AND "DB"."product_id" = "DP"."product_id"
+#        AND "DP"."product_class_id" = "DPC"."product_class_id") AS "CDC"
+#    WHERE "CDC"."gender" = "C"."gender"
+#    AND "CDC"."marital_status" = "C"."marital_status"
+#    AND "CDC"."product_family" = "PC"."product_family"
+#    AND "CDC"."product_department" = "PC"."product_department"
+#    AND "CDC"."product_category" = "PC"."product_category"
+#    AND "CDC"."month_of_year" = "T"."month_of_year"
+#    AND "CDC"."quarter" = "T"."quarter"
+#    AND "CDC"."the_year" = "T"."the_year"
 #    GROUP BY 
-#        `gender`,
-#        `marital_status`,
-#        `product_family`,
-#        `product_department`,
-#        `product_category`,
-#        `month_of_year`,
-#        `quarter`,
-#        `the_year`) AS `customer_count`,
-#    COUNT(*) AS `fact_count`
-#FROM `sales_fact_1997` `B`,
-#    `time_by_day` `T`,
-#    `product` `P`,
-#    `product_class` `PC`,
-#    `customer` `C`
+#        "gender",
+#        "marital_status",
+#        "product_family",
+#        "product_department",
+#        "product_category",
+#        "month_of_year",
+#        "quarter",
+#        "the_year") AS "customer_count",
+#    COUNT(*) AS "fact_count"
+#FROM "sales_fact_1997" "B",
+#    "time_by_day" "T",
+#    "product" "P",
+#    "product_class" "PC",
+#    "customer" "C"
 #WHERE 
-#    `B`.`time_id` = `T`.`time_id`
-#AND `B`.`customer_id` = `C`.`customer_id`
-#AND `B`.`product_id` = `P`.`product_id`
-#AND `P`.`product_class_id` = `PC`.`product_class_id`
+#    "B"."time_id" = "T"."time_id"
+#AND "B"."customer_id" = "C"."customer_id"
+#AND "B"."product_id" = "P"."product_id"
+#AND "P"."product_class_id" = "PC"."product_class_id"
 #GROUP BY 
-#    `C`.`gender`,
-#    `C`.`marital_status`,
-#    `PC`.`product_family`,
-#    `PC`.`product_department`,
-#    `PC`.`product_category`,
-#    `T`.`month_of_year`,
-#    `T`.`quarter`,
-#    `T`.`the_year`;
+#    "C"."gender",
+#    "C"."marital_status",
+#    "PC"."product_family",
+#    "PC"."product_department",
+#    "PC"."product_category",
+#    "T"."month_of_year",
+#    "T"."quarter",
+#    "T"."the_year";
 
 # End insert.sql
