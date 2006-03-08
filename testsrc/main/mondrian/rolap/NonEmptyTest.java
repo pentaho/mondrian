@@ -47,6 +47,19 @@ public class NonEmptyTest extends FoodMartTestCase {
     private static Logger logger = Logger.getLogger(NonEmptyTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
 
+    /**
+     * must not use native sql optimization because it chooses the wrong RolapStar
+     * in SqlContextConstraint/SqlConstraintUtils.
+     * Test ensures that no exception is thrown.
+     */
+    public void testVirtualCube() throws Exception {
+        TestCase c = new TestCase(99, 3,
+                "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Warehouse Sales]} ON COLUMNS, " +
+                "NON EMPTY [Product].[All Products].Children ON ROWS " +
+                "from [Warehouse and Sales]");
+        c.run();
+    }
+
     public void testNativeFilter() {
         if (!MondrianProperties.instance().EnableNativeFilter.get()) {
             return;

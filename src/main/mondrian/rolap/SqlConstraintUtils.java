@@ -64,6 +64,7 @@ public class SqlConstraintUtils {
         CellRequest request =
                 RolapAggregationManager.makeRequest(members, false);
         if (request == null) {
+            assert !strict : "CellRequest is null - why?";
             // One or more of the members was null or calculated, so the
             // request is impossible to satisfy.
             return;
@@ -107,12 +108,16 @@ public class SqlConstraintUtils {
     /**
      * Ensures that the table of <code>level</code> is joined to the fact table
      */
-    public static void joinLevelTableToFactTable(SqlQuery sqlQuery, RolapCube cube,
+    public static void joinLevelTableToFactTable(SqlQuery sqlQuery, Evaluator e,
             RolapLevel level) {
+        RolapCube cube = (RolapCube) e.getCube();
+        Util.assertTrue(!cube.isVirtual());
         RolapStar star = cube.getStar();
         Map mapLevelToColumnMap = star.getMapLevelToColumn(cube);
         RolapStar.Column starColumn = (RolapStar.Column) mapLevelToColumnMap.get(level);
+        Util.assertTrue(starColumn != null);
         RolapStar.Table table = starColumn.getTable();
+        Util.assertTrue(table != null);
         table.addToFrom(sqlQuery, false, true);
     }
 

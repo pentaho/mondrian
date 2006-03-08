@@ -43,6 +43,18 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     private Evaluator evaluator;
     private boolean strict;
 
+    /**
+     * @return false if this contstraint will not work for the current context
+     */
+    public static boolean isValidContext(Evaluator context) {
+        if (context == null)
+            return false;
+        RolapCube cube = (RolapCube) context.getCube();
+        if (cube.isVirtual())
+            return false;
+        return true;
+    }
+
    /**
     * @param strict defines the behaviour if the evaluator context
     * contains calculated members. If true, an exception is thrown,
@@ -105,8 +117,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     public void addLevelConstraint(SqlQuery sqlQuery, RolapLevel level) {
         if (!isJoinRequired())
             return;
-        RolapCube cube = (RolapCube) evaluator.getCube();
-        SqlConstraintUtils.joinLevelTableToFactTable(sqlQuery, cube, level);
+        SqlConstraintUtils.joinLevelTableToFactTable(sqlQuery, evaluator, level);
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {

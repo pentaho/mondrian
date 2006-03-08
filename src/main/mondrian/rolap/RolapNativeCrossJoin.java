@@ -64,6 +64,8 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
     NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
         if (!isEnabled())
             return null;
+        if (!NonEmptyCrossJoinConstraint.isValidContext(evaluator))
+            return null;
 
         // join with fact table will always filter out those members
         // that dont have a row in the fact table

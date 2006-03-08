@@ -71,6 +71,9 @@ public class RolapNativeFilter extends RolapNativeSet {
         if (!isEnabled()) {
             return null;
         }
+        if (!FilterConstraint.isValidContext(evaluator)) {
+            return null;
+        }
         // is this "Filter(<set>, <numeric expr>)"
         String funName = fun.getName();
         if (!"Filter".equalsIgnoreCase(funName)) {

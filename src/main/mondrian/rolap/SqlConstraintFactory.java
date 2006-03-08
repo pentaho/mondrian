@@ -36,13 +36,13 @@ public class SqlConstraintFactory {
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(Evaluator context) {
-        if (!enabled || context == null)
+        if (!enabled || !SqlContextConstraint.isValidContext(context))
             return DefaultMemberChildrenConstraint.instance();
         return new SqlContextConstraint((RolapEvaluator) context, false);
     }
 
     public TupleConstraint getLevelMembersConstraint(Evaluator context) {
-        if (!enabled || context == null)
+        if (!enabled || !SqlContextConstraint.isValidContext(context))
             return DefaultTupleConstraint.instance();
         return new SqlContextConstraint((RolapEvaluator) context, false);
     }

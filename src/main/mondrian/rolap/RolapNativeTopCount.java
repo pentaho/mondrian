@@ -82,6 +82,10 @@ public class RolapNativeTopCount extends RolapNativeSet {
     NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
         if (!isEnabled())
             return null;
+        if (!TopCountConstraint.isValidContext(evaluator)) {
+            return null;
+        }
+
         // is this "TopCount(<set>, <count>, [<numeric expr>])"
         String funName = fun.getName();
         if ("TopCount".equalsIgnoreCase(funName)) {
