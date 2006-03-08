@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2005 Kana Software, Inc. and others.
+// Copyright (C) 2001-2006 Julian Hyde and others
+// Copyright (C) 2001-2002 Kana Software, Inc.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -53,7 +54,7 @@ import java.util.*;
  * @author jhyde
  * @since 28 August, 2001
  * @version $Id$
- **/
+ */
 public class Aggregation {
     private int maxConstraints;
 
@@ -64,7 +65,7 @@ public class Aggregation {
     /**
      * List of soft references to segments.
      * Access must be inside of synchronized methods.
-     **/
+     */
     private final List segmentRefs;
 
     /**
@@ -133,9 +134,9 @@ public class Aggregation {
     /**
      * Drops constraints, where the list of values is close to the values which
      * would be returned anyway.
-     **/
+     */
     public synchronized ColumnConstraint[][] optimizeConstraints(
-                       RolapStar.Column[] columns,
+            RolapStar.Column[] columns,
             ColumnConstraint[][] constraintses) {
 
         Util.assertTrue(constraintses.length == columns.length);
@@ -143,28 +144,34 @@ public class Aggregation {
             (ColumnConstraint[][]) constraintses.clone();
         double[] bloats = new double[columns.length];
 
-        // We want to handle the special case "drilldown" which occurs pretty often.
-        // Here, the parent is here as a constraint with a single member
-        //  and the list of children as well.
+        // We want to handle the special case "drilldown" which occurs pretty
+        // often. Here, the parent is here as a constraint with a single member
+        // and the list of children as well.
         List potentialParents = new ArrayList();
         for (int i = 0; i < constraintses.length; i++) {
-            if (constraintses[i] != null && constraintses[i].length == 1
-                    && constraintses[i][0].isMember())
+            if (constraintses[i] != null &&
+                    constraintses[i].length == 1 &&
+                    constraintses[i][0].isMember()) {
                 potentialParents.add(constraintses[i][0].getMember());
+            }
         }
 
         for (int i = 0; i < newConstraintses.length; i++) {
-            double constraintLength = (double) newConstraintses[i].length;
             // a set of constraints with only one entry will not be optimized away
             if (newConstraintses[i] == null || newConstraintses[i].length < 2) {
                 bloats[i] = 0.0;
-            } else if (newConstraintses[i].length > maxConstraints) {
+                continue;
+            }
+
+            if (newConstraintses[i].length > maxConstraints) {
                 // DBs can handle only a limited number of elements in WHERE IN (...)
                 // so hopefully there are other constraints that will limit the result
                 bloats[i] = 1.0; // will be optimized away
                 continue;
             }
+
             // more than one - check for children of same parent
+            double constraintLength = (double) newConstraintses[i].length;
             Member parent = null;
             Level level = null;
             for (int j = 0; j < newConstraintses[i].length; j++) {
@@ -299,7 +306,7 @@ public class Aggregation {
      * only pinned once.
      *
      * Returns <code>null</code> if no segment contains the cell.
-     **/
+     */
     public synchronized Object get(RolapStar.Measure measure,
                                    Object[] keys,
                                    Collection pinSet) {
@@ -386,7 +393,7 @@ public class Aggregation {
             int size = mapKeyToOffset.size();
             this.keys = new Object[size];
             Iterator it = mapKeyToOffset.entrySet().iterator();
-            while(it.hasNext()) {
+            while (it.hasNext()) {
                 Map.Entry e = (Map.Entry) it.next();
                 Object key = e.getKey();
                 Integer offsetInteger = (Integer) e.getValue();
