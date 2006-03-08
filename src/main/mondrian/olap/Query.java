@@ -437,23 +437,50 @@ public class Query extends QueryPart {
 
     /**
      * Returns the hierarchies in an expression.
+     *
+     * <p>If the expression's type is a dimension with several hierarchies,
+     * assumes that the expression yields a member of the first (default)
+     * hierarchy of the dimension.
+     *
+     * <p>For example, the expression
+     * <blockquote><code>Crossjoin(
+     *   Hierarchize(
+     *     Union(
+     *       {[Time].LastSibling}, [Time].LastSibling.Children)),
+     *       {[Measures].[Unit Sales], [Measures].[Store Cost]})</code>
+     * </blockquote>
+     *
+     * has type <code>{[Time.Monthly], [Measures]}</code> even though
+     * <code>[Time].LastSibling</code> might return a member of either
+     * [Time.Monthly] or [Time.Weekly].
      */
     private Hierarchy[] collectHierarchies(Exp queryPart) {
-        Type type = queryPart.getType();
-        if (type instanceof SetType) {
-            type = ((SetType) type).getElementType();
+        Type exprType = queryPart.getType();
+        if (exprType instanceof SetType) {
+            exprType = ((SetType) exprType).getElementType();
         }
-        if (type instanceof TupleType) {
-            final Type[] types = ((TupleType) type).elementTypes;
+        if (exprType instanceof TupleType) {
+            final Type[] types = ((TupleType) exprType).elementTypes;
             ArrayList hierarchyList = new ArrayList();
             for (int i = 0; i < types.length; i++) {
-                final Hierarchy hierarchy = types[i].getHierarchy();
-                hierarchyList.add(hierarchy);
+                hierarchyList.add(getTypeHierarchy(types[i]));
             }
             return (Hierarchy[])
                     hierarchyList.toArray(new Hierarchy[hierarchyList.size()]);
         }
-        return new Hierarchy[] {type.getHierarchy()};
+        return new Hierarchy[] {getTypeHierarchy(exprType)};
+    }
+
+    private Hierarchy getTypeHierarchy(final Type type) {
+        Hierarchy hierarchy = type.getHierarchy();
+        if (hierarchy != null) {
+            return hierarchy;
+        }
+        final Dimension dimension = type.getDimension();
+        if (dimension != null) {
+            return dimension.getHierarchy();
+        }
+        return null;
     }
 
     /**
@@ -483,7 +510,7 @@ public class Query extends QueryPart {
             throw Category.instance.badValue(category);
         }
     }
-    
+
     /**
      * Swaps the x- and y- axes.
      * Does nothing if the number of axes != 2.
