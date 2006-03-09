@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 import mondrian.olap.FunTable;
 import mondrian.olap.Syntax;
@@ -61,15 +63,14 @@ public class GlobalFunTable extends FunTableImpl {
             define(resolver);
         }
 
-        final List udfImplClasses = lookupUdfImplClasses();
-        for (Iterator it = udfImplClasses.iterator(); it.hasNext();) {
+        for (Iterator it = lookupUdfImplClasses(); it.hasNext(); ) {
             String className = (String)it.next();
             defineUdf(className);
         }
     }
 
 
-    private List lookupUdfImplClasses() {
+    private Iterator lookupUdfImplClasses() {
         ClassLoader cl = this.getClass().getClassLoader();
         List serviceUrls = new ArrayList();
         try {
@@ -80,7 +81,7 @@ public class GlobalFunTable extends FunTableImpl {
         } catch (IOException e) {
             logger.warn("Error while finding service files for user-defined functions", e);
         }
-        List classNames = new ArrayList();
+        Set classNames = new HashSet();
         for (Iterator it = serviceUrls.iterator(); it.hasNext();) {
             URL url = (URL) it.next();
             BufferedReader reader = null;
@@ -106,7 +107,7 @@ public class GlobalFunTable extends FunTableImpl {
                 }
             }
         }
-        return classNames;
+        return classNames.iterator();
     }
 
     /**
