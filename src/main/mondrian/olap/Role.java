@@ -13,10 +13,7 @@
 
 package mondrian.olap;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A <code>Role</code> is a collection of access rights to cubes, permissions,
@@ -195,44 +192,115 @@ public class Role {
         void grant(Member member, int access) {
             Util.assertTrue(member.getHierarchy() == hierarchy);
             // Remove any existing grants to descendants of "member"
-            for (Iterator membersIter = memberGrants.keySet().iterator();
-                 membersIter.hasNext();) {
-                Member m = (Member) membersIter.next();
+            for (Iterator memberIter =
+                    memberGrants.keySet().iterator(); memberIter.hasNext();) {
+                Member m = (Member) memberIter.next();
                 if (m.isChildOrEqualTo(member)) {
-                    membersIter.remove();
+                    memberIter.remove();
                 }
             }
+
             memberGrants.put(member, toInteger(access));
+
+            if (access == Access.NONE) {
+                // If an ancestor of this member has any children with 'All'
+                // access, set them to Custom.
+                loop:
+                for (Member m = member.getParentMember();
+                     m != null;
+                     m = m.getParentMember()) {
+                    final Integer memberAccess = (Integer) memberGrants.get(m);
+                    if (memberAccess == null) {
+                        if (childGrantsExist(m)) {
+                            memberGrants.put(m, toInteger(Access.CUSTOM));
+                        } else {
+                            break;
+                        }
+                    } else if (memberAccess.intValue() == Access.CUSTOM) {
+                        // Ancestor does not inherit access, but used to have
+                        // at least one child with access. See if it still
+                        // does...
+                        if (childGrantsExist(m)) {
+                            memberGrants.put(m, toInteger(Access.CUSTOM));
+                        } else {
+                            break;
+                        }
+                    } else if (memberAccess.intValue() == Access.NONE) {
+                        // Ancestor is explicitly marked having no access.
+                        // Leave it that way.
+                        break;
+                    } else if (memberAccess.intValue() == Access.ALL) {
+                        // Ancestor is explicitly marked having all access.
+                        // Leave it that way.
+                        break;
+                    }
+                }
+
+            } else {
+
+                // Create 'custom' access for any ancestors of 'member' which
+                // do not have explicit access but which have at least one
+                // child visible.
+                for (Member m = member.getParentMember();
+                     m != null;
+                     m = m.getParentMember()) {
+                    switch (toAccess((Integer) memberGrants.get(m))) {
+                    case Access.NONE:
+                        memberGrants.put(m, toInteger(Access.CUSTOM));
+                        break;
+                    default:
+                        // Existing access (All or Custom) is OK.
+                        break;
+                    }
+                }
+            }
+        }
+
+        private boolean childGrantsExist(Member parent) {
+            for (Iterator memberIter =
+                    memberGrants.keySet().iterator(); memberIter.hasNext();) {
+                final Member member = (Member) memberIter.next();
+                if (member.getParentMember() == parent) {
+                    final int access = toAccess((Integer) memberGrants.get(member));
+                    if (access != Access.NONE) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         public int getAccess(Member member) {
             int access = this.access;
-            if (access == Access.CUSTOM) {
-                access = Access.NONE;
-                if (topLevel != null &&
-                        member.getLevel().getDepth() < topLevel.getDepth()) {
-                    // no access
-                } else if (bottomLevel != null &&
-                        member.getLevel().getDepth() > bottomLevel.getDepth()) {
-                    // no access
-                } else {
-                    for (Iterator membersIter = memberGrants.keySet().iterator(); membersIter.hasNext();) {
-                        Member m = (Member) membersIter.next();
-                        final int memberAccess = toAccess((Integer) memberGrants.get(m));
-                        if (member.isChildOrEqualTo(m)) {
-                            // A member has access if it has been granted access,
-                            // or if any of its ancestors have.
-                            access = Math.max(access, memberAccess);
-                        } else if (m.isChildOrEqualTo(member) &&
-                                memberAccess != Access.NONE) {
-                            // A member has CUSTOM access if any of its descendants
-                            // has access.
-                            access = Math.max(access, Access.CUSTOM);
-                        }
-                    }
-                }
+            if (access != Access.CUSTOM) {
+                return access;
             }
-            return access;
+            access = Access.NONE;
+            if (topLevel != null &&
+                    member.getLevel().getDepth() < topLevel.getDepth()) {
+                // no access
+                return Access.NONE;
+            } else if (bottomLevel != null &&
+                    member.getLevel().getDepth() > bottomLevel.getDepth()) {
+                // no access
+                return Access.NONE;
+            } else {
+                for (Member m = member; m != null; m = m.getParentMember()) {
+                    final Integer memberAccess = (Integer) memberGrants.get(m);
+                    if (memberAccess == null) {
+                        continue;
+                    }
+                    access = memberAccess.intValue();
+                    if (access == Access.CUSTOM &&
+                            m != member) {
+                        // If member's ancestor has custom access, that
+                        // means that member has no access.
+                        return Access.NONE;
+                    }
+                    return access;
+                }
+                return Access.NONE;
+            }
         }
 
         public Hierarchy getHierarchy() {
@@ -264,7 +332,8 @@ public class Role {
      */
     public void grant(Dimension dimension, int access) {
         Util.assertPrecondition(dimension != null, "dimension != null");
-        Util.assertPrecondition(access == Access.ALL || access == Access.NONE, "access == Access.ALL || access == Access.NONE");
+        Util.assertPrecondition(access == Access.ALL || access == Access.NONE,
+                "access == Access.ALL || access == Access.NONE");
         Util.assertPrecondition(isMutable(), "isMutable()");
         grants.put(dimension, toInteger(access));
     }

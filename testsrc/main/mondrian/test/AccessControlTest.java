@@ -45,29 +45,35 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     public void testRoleMemberAccess() {
-        final Connection restrictedConnection = getRestrictedConnection();
-        bar(restrictedConnection, Access.CUSTOM, "[Store].[USA]"); // because CA has access
-        bar(restrictedConnection, Access.ALL, "[Store].[Mexico]");
-        bar(restrictedConnection, Access.NONE, "[Store].[Canada]");
-        bar(restrictedConnection, Access.NONE, "[Store].[Canada].[BC].[Vancouver]");
-        bar(restrictedConnection, Access.ALL, "[Store].[USA].[CA].[Los Angeles]");
-        bar(restrictedConnection, Access.NONE, "[Store].[USA].[CA].[San Diego]");
-        bar(restrictedConnection, Access.NONE, "[Store].[USA].[OR].[Portland]"); // USA deny supercedes OR grant
-        bar(restrictedConnection, Access.NONE, "[Store].[USA].[WA].[Seattle]");
-        bar(restrictedConnection, Access.NONE, "[Store].[USA].[WA]");
-        bar(restrictedConnection, Access.NONE, "[Store].[All Stores]"); // above top level
+        final Connection connection = getRestrictedConnection();
+        assertMemberAccess(connection, Access.CUSTOM, "[Store].[USA]"); // because CA has access
+        assertMemberAccess(connection, Access.ALL, "[Store].[Mexico]");
+        assertMemberAccess(connection, Access.NONE, "[Store].[Mexico].[DF]");
+        assertMemberAccess(connection, Access.NONE, "[Store].[Mexico].[DF].[Mexico City]");
+        assertMemberAccess(connection, Access.NONE, "[Store].[Canada]");
+        assertMemberAccess(connection, Access.NONE, "[Store].[Canada].[BC].[Vancouver]");
+        assertMemberAccess(connection, Access.ALL, "[Store].[USA].[CA].[Los Angeles]");
+        assertMemberAccess(connection, Access.NONE, "[Store].[USA].[CA].[San Diego]");
+        assertMemberAccess(connection, Access.NONE, "[Store].[USA].[OR].[Portland]"); // USA deny supercedes OR grant
+        assertMemberAccess(connection, Access.NONE, "[Store].[USA].[WA].[Seattle]");
+        assertMemberAccess(connection, Access.NONE, "[Store].[USA].[WA]");
+        assertMemberAccess(connection, Access.NONE, "[Store].[All Stores]"); // above top level
     }
 
-    private void bar(final Connection restrictedConnection, int expectedAccess, String memberName) {
-        final Role role = restrictedConnection.getRole(); // restricted
-//      final SchemaReader schemaReader = connection.getSchema().getSchemaReader(); // unrestricted
-        Schema schema = restrictedConnection.getSchema();
+    private void assertMemberAccess(
+            final Connection connection,
+            int expectedAccess,
+            String memberName) {
+        final Role role = connection.getRole(); // restricted
+        Schema schema = connection.getSchema();
         final boolean fail = true;
         Cube salesCube = schema.lookupCube("Sales", fail);
         final SchemaReader schemaReader = salesCube.getSchemaReader(null); // unrestricted
         final Member member = schemaReader.getMemberByUniqueName(Util.explode(memberName),true);
         final int actualAccess = role.getAccess(member);
-        Assert.assertEquals(memberName, Access.instance().getName(expectedAccess), Access.instance().getName(actualAccess));
+        final String expectedAccessName = Access.instance().getName(expectedAccess);
+        final String actualAccessName = Access.instance().getName(actualAccess);
+        Assert.assertEquals(memberName, expectedAccessName, actualAccessName);
     }
 
     public void testGrantHierarchy1a() {
@@ -99,6 +105,7 @@ public class AccessControlTest extends FoodMartTestCase {
         getRestrictedTestContext().assertAxisReturns("[Customers].defaultMember",
                 "[Customers].[All Customers].[Canada].[BC]");
     }
+
     public void testGrantHierarchy2() {
         // assert: can access California (parent of allowed member)
         final TestContext testContext = getRestrictedTestContext();
@@ -107,6 +114,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 "[Store].[All Stores].[USA].[CA].[Los Angeles]" + nl +
                 "[Store].[All Stores].[USA].[CA].[San Francisco]");
     }
+
     public void testGrantHierarchy3() {
         // assert: can not access Washington (child of denied member)
         final TestContext testContext = getRestrictedTestContext();
@@ -126,6 +134,7 @@ public class AccessControlTest extends FoodMartTestCase {
         final TestContext testContext = getRestrictedTestContext();
         testContext.assertAxisThrows("[Store].[USA].[OR].children", "not found");
     }
+
     public void testGrantHierarchy5() {
         // assert: can not access All (above top level)
         final TestContext testContext = getRestrictedTestContext();
@@ -136,17 +145,14 @@ public class AccessControlTest extends FoodMartTestCase {
                 // no: [All Stores] -- above top level
                 // no: [Canada] -- not explicitly allowed
                 // yes: [Mexico] -- explicitly allowed -- and all its children
+                //      except [DF]
+                // no: [Mexico].[DF]
                 // yes: [USA] -- implicitly allowed
                 // yes: [CA] -- implicitly allowed
                 // no: [OR], [WA]
                 // yes: [San Francisco] -- explicitly allowed
                 // no: [San Diego]
                 "[Store].[All Stores].[Mexico]" + nl +
-                "[Store].[All Stores].[Mexico].[DF]" + nl +
-                "[Store].[All Stores].[Mexico].[DF].[Mexico City]" + nl +
-                "[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]" + nl +
-                "[Store].[All Stores].[Mexico].[DF].[San Andres]" + nl +
-                "[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]" + nl +
                 "[Store].[All Stores].[Mexico].[Guerrero]" + nl +
                 "[Store].[All Stores].[Mexico].[Guerrero].[Acapulco]" + nl +
                 "[Store].[All Stores].[Mexico].[Guerrero].[Acapulco].[Store 1]" + nl +
@@ -172,10 +178,12 @@ public class AccessControlTest extends FoodMartTestCase {
                 "[Store].[All Stores].[USA].[CA].[San Francisco]" + nl +
                 "[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]");
     }
+
     public void testGrantHierarchy6() {
         // assert: parent if at top level is null
         getRestrictedTestContext().assertAxisReturns("[Customers].[USA].[CA].parent", "");
     }
+
     public void testGrantHierarchy7() {
         // assert: members above top level do not exist
         final TestContext testContext = getRestrictedTestContext();
@@ -183,6 +191,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 "[Customers].[Canada].children",
                 "MDX object '[Customers].[Canada]' not found in cube 'Sales'");
     }
+
     public void testGrantHierarchy8() {
         // assert: can not access Catherine Abel in San Francisco (below bottom level)
         final TestContext testContext = getRestrictedTestContext();
@@ -201,7 +210,10 @@ public class AccessControlTest extends FoodMartTestCase {
         Assert.assertEquals(122, axis.positions.length); // 13 states, 109 cities
     }
 
-    /** Test that we only aggregate over SF, LA, even when called from functions. */
+    /**
+     * Tests that we only aggregate over SF, LA, even when called from
+     * functions.
+     */
     public void testGrantHierarchy9() {
         // Analysis services doesn't allow aggregation within calculated
         // measures, so use the following query to generate the results:
@@ -230,6 +242,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 "Row #0: 6,636" + nl +
                 "Row #1: 7,329" + nl);
     }
+
     public void testGrantHierarchyA() {
         final TestContext tc = new RestrictedTestContext();
         // assert: totals for USA include missing cells
@@ -274,6 +287,7 @@ public class AccessControlTest extends FoodMartTestCase {
         role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[USA].[CA].[San Francisco]"), fail), Access.ALL);
         role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[USA].[CA].[Los Angeles]"), fail), Access.ALL);
         role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[Mexico]"), fail), Access.ALL);
+        role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[Mexico].[DF]"), fail), Access.NONE);
         role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[Canada]"), fail), Access.NONE);
         if (restrictCustomers) {
             Hierarchy customersHierarchy = salesCube.lookupHierarchy("Customers", false);
