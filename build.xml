@@ -71,6 +71,7 @@ ${lib.dir}/mondrian.xml,
 ${lib.dir}/mondrian-embedded.war,
 ${lib.dir}/web.xml,
 ${lib.dir}/index.jsp,
+${lib.dir}/*.dtd,
 demo/FoodMartCreateData.sql,
 demo/access/MondrianFoodMart.mdb"/>
 
@@ -808,29 +809,43 @@ You should set scp.user, scp.password and scp.path in build.properties">
   <target name="war" depends="jar,compile.tests" description="
 Creates mondrian.war based upon jpivot.war.
 Assumes that mondrian.jar exists (use 'jar' target)">
+
+    <!-- The Ant war task was doing funny things with update="yes" so piece the mondrian.war
+         together from the jpivot.war and Mondrian specific settings --> 
+
     <filter filtersfile="mondrian.properties"/>
-    <mkdir dir="${lib.dir}" />
+    <delete dir="${build.dir}/mondrian" />
+    <mkdir dir="${build.dir}/mondrian" />
     <delete file="${war.file}"/>
-    <copy file="${lib.dir}/jpivot.war" tofile="${war.file}"/>
-    <delete file="${lib.dir}/web.xml"/>
+    <unzip src="${lib.dir}/jpivot.war" dest="${build.dir}/mondrian"/>
+    
+	<delete>
+      <fileset dir="${build.dir}/mondrian" includes="index.jsp,xmla.jsp"/>
+      <fileset dir="${build.dir}/mondrian/WEB-INF" includes="web.xml,datasources.xml,mondrian.properties"/>
+      <fileset dir="${build.dir}/mondrian/WEB-INF/queries" includes="xmla.jsp,*.xml"/>
+      <fileset dir="${build.dir}/mondrian/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,*.xml"/>
+	</delete>
+    <mkdir dir="${lib.dir}" />
     <copy file="${webapp.dir}/WEB-INF/web-jpivot.xml"
-        filtering="true" tofile="${lib.dir}/web.xml"/>
- 
+        filtering="true" tofile="${build.dir}/mondrian/WEB-INF/web.xml"/>
+
     <war warfile="${war.file}"
-        update="yes"
-        webxml="${lib.dir}/web.xml">
-      <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml,web-jpivot.xml"/>
-      <!-- our FoodMart.xml may be newer than jpivot's -->
+        webxml="${build.dir}/mondrian/WEB-INF/web.xml">
+      <webinf dir="${webapp.dir}/WEB-INF" includes="datasources.xml,*.xsl,*.tld,**/*.jsp"/>
+      <webinf dir="${build.dir}/mondrian/WEB-INF" includes="jpivot/**/*.*,wcf/**/*.*,queries/*.jsp"
+      		excludes="queries/xmla.jsp"/>
+      <!-- our FoodMart.xml may be newer than jpivot's  excludes="web.xml,web-jpivot.xml" -->
       <webinf dir="${demo.dir}" prefix="WEB-INF/queries" includes="FoodMart.xml"/>
-      <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*,index.jsp"/>
-      <lib dir="${lib.dir}" includes="${name}.jar"/>
-      <lib dir="${lib.dir}" includes="eigenbase-*.jar"/>
-      <lib dir="${lib.dir}" includes="commons-math-1.0.jar"/>
+      <fileset dir="${build.dir}/mondrian" excludes="WEB-INF/**/*,*.jsp"/>
+      <fileset dir="${webapp.dir}" includes="*.*"/>
+      <lib dir="${build.dir}/mondrian/WEB-INF/lib" excludes="${name}.jar,eigenbase-*.jar,*.dtd"/>
+      <lib dir="${lib.dir}" includes="${name}.jar,eigenbase-*.jar,*.dtd"/>
+      <!-- <lib dir="${lib.dir}" includes="commons-math-1.0.jar"/>  -->
       <lib dir="${testlib.dir}" includes="xmlunit*.jar"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
-      <classes dir="${basedir}" includes="mondrian.properties"/>
+      <!-- <classes dir="${basedir}" includes="mondrian.properties"/>  -->
     </war>
   </target>
 
@@ -861,11 +876,11 @@ Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded data
       <webinf dir="${demo.dir}/derby" includes="queries/*.jsp,datasources.xml,mondrian.properties"/>
       <!-- our FoodMart.xml may be newer than jpivot's -->
       <webinf dir="${demo.dir}" prefix="WEB-INF/queries" includes="FoodMart.xml"/>
-      <fileset dir="${build.dir}/mondrian-embedded" excludes="WEB-INF/**/*"/>
+      <fileset dir="${build.dir}/mondrian-embedded" excludes="busy.jsp,WEB-INF/**/*"/>
       <fileset dir="${webapp.dir}" excludes="index.jsp,testpage.jsp,WEB-INF/**/*"/>
       <lib dir="${lib.dir}" includes="${name}.jar"/>
       <lib dir="${lib.dir}" includes="eigenbase-*.jar"/>
-      <lib dir="${lib.dir}" includes="commons-math-1.0.jar"/>
+      <!-- <lib dir="${lib.dir}" includes="commons-math-1.0.jar"/>  -->
       <lib dir="${testlib.dir}" includes="xmlunit*.jar,derby.jar"/>
       <classes dir="${demo.dir}/derby" includes="foodmart/**/*.*"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>

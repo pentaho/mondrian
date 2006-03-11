@@ -8,7 +8,7 @@
 
 
 <jp:mondrianQuery id="query01" jdbcDriver="org.apache.derby.jdbc.EmbeddedDriver" jdbcUrl="jdbc:derby:classpath:/foodmart" catalogUri="/WEB-INF/queries/FoodMart.xml"
-   jdbcUser="APP" jdbcPassword="APP" connectionPooling="false">
+   jdbcUser="sa" jdbcPassword="sa" connectionPooling="false">
 with member [Measures].[ROI] as '(([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost])', format_string = IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100.0) > 150.0), "|#.00%|arrow='up'", IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100.0) < 150.0), "|#.00%|arrow='down'", "|#.00%|arrow='none'"))
 select {[Measures].[ROI], [Measures].[Store Cost], [Measures].[Store Sales]} ON columns,
   {[Product].[All Products]} ON rows

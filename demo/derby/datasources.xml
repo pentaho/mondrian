@@ -4,7 +4,7 @@
 		<DataSourceName>Provider=Mondrian;DataSource=MondrianFoodMart;</DataSourceName>
 		<DataSourceDescription>FoodMart 2000 Data Warehouse</DataSourceDescription>
 		<URL>http://localhost:8080/mondrian-embedded/xmla</URL>
-		<DataSourceInfo>Provider=mondrian;Jdbc='jdbc:derby:classpath:/foodmart';Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;JdbcUser=APP;JdbcPassword=APP;PoolNeeded=false;</DataSourceInfo>
+		<DataSourceInfo>Provider=mondrian;Jdbc='jdbc:derby:classpath:/foodmart';Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;JdbcUser=sa;JdbcPassword=sa;PoolNeeded=false;</DataSourceInfo>
 		<ProviderName>Mondrian</ProviderName>
 		<ProviderType>MDP</ProviderType>
 		<AuthenticationMode>Unauthenticated</AuthenticationMode>

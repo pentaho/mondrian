@@ -31,7 +31,7 @@ database which is exploded in the class path of the WAR.
 
   <context-param>
     <param-name>connectString</param-name>
-    <param-value>Provider=mondrian;Jdbc='jdbc:derby:classpath:/foodmart';Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;JdbcUser=APP;JdbcPassword=APP;PoolNeeded=false;</param-value>
+    <param-value>Provider=mondrian;Jdbc='jdbc:derby:classpath:/foodmart';Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;JdbcUser=sa;JdbcPassword=sa;PoolNeeded=false;</param-value>
   </context-param>
 
   <filter>
@@ -81,7 +81,7 @@ database which is exploded in the class path of the WAR.
     <servlet-class>mondrian.web.servlet.MDXQueryServlet</servlet-class>
     <init-param>
       <param-name>connectString</param-name>
-      <param-value>Provider=mondrian;Jdbc='jdbc:derby:classpath:/foodmart';Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;JdbcUser=APP;JdbcPassword=APP;PoolNeeded=false;</param-value>
+      <param-value>Provider=mondrian;Jdbc='jdbc:derby:classpath:/foodmart';Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver;JdbcUser=sa;JdbcPassword=sa;PoolNeeded=false;</param-value>
     </init-param>
   </servlet>
 
