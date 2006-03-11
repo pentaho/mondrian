@@ -253,10 +253,11 @@ public class TestAggregationManager extends TestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 SqlPattern.ACCESS_DIALECT,
-                "select " +
-                "d0 as `c0`, d1 as `c1`, " +
-                "count(m0) as `c2`" +
-                " from (" +
+                "select" +
+                " d0 as `c0`," +
+                " d1 as `c1`," +
+                " count(m0) as `c2` " +
+                "from (" +
                 "select distinct `time_by_day`.`the_year` as `d0`, " +
                 "`time_by_day`.`quarter` as `d1`, " +
                 "`sales_fact_1997`.`customer_id` as `m0` " +
@@ -274,14 +275,16 @@ public class TestAggregationManager extends TestCase {
             new SqlPattern(
                 SqlPattern.MY_SQL_DIALECT,
                 "select" +
-                " `agg_c_10_sales_fact_1997`.`the_year` as `c0`," +
-                " `agg_c_10_sales_fact_1997`.`quarter` as `c1`," +
-                " sum(`agg_c_10_sales_fact_1997`.`customer_count`) as `m0` " +
-                "from `agg_c_10_sales_fact_1997` as `agg_c_10_sales_fact_1997` " +
-                "where `agg_c_10_sales_fact_1997`.`the_year` = 1997 " +
-                "and `agg_c_10_sales_fact_1997`.`quarter` = 'Q1' " +
-                "group by `agg_c_10_sales_fact_1997`.`the_year`," +
-                " `agg_c_10_sales_fact_1997`.`quarter`",
+                " `time_by_day`.`the_year` as `c0`," +
+                " `time_by_day`.`quarter` as `c1`," +
+                " count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
+                "from `time_by_day` as `time_by_day`," +
+                " `sales_fact_1997` as `sales_fact_1997` " +
+                "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
+                " and `time_by_day`.`the_year` = 1997" +
+                " and `time_by_day`.`quarter` = 'Q1' " +
+                "group by `time_by_day`.`the_year`," +
+                " `time_by_day`.`quarter`",
                 26
             )
         };
@@ -298,7 +301,7 @@ public class TestAggregationManager extends TestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.MY_SQL_DIALECT | SqlPattern.ACCESS_DIALECT,
+                SqlPattern.ACCESS_DIALECT,
                 "select " +
                 "`agg_c_10_sales_fact_1997`.`the_year` as `c0`, " +
                 "`agg_c_10_sales_fact_1997`.`quarter` as `c1`, " +
@@ -310,7 +313,7 @@ public class TestAggregationManager extends TestCase {
                 "`agg_c_10_sales_fact_1997`.`the_year` = 1997 and " +
                 "`agg_c_10_sales_fact_1997`.`quarter` = 'Q1' and " +
                 "`agg_c_10_sales_fact_1997`.`month_of_year` = 1",
-                26)
+                26),
         };
 
         assertRequestSql(new CellRequest[] {request}, patterns);
@@ -329,28 +332,49 @@ public class TestAggregationManager extends TestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 SqlPattern.MY_SQL_DIALECT,
-                "select `time_by_day`.`the_year` as `c0`," +
+                "select" +
+                " `time_by_day`.`the_year` as `c0`," +
                 " `time_by_day`.`quarter` as `c1`," +
-                " `time_by_day`.`month_of_year` as `c2`," +
-                " `store`.`store_country` as `c3`," +
+                " `product_class`.`product_family` as `c2`," +
                 " count(distinct `sales_fact_1997`.`customer_id`) as `m0` " +
                 "from `time_by_day` as `time_by_day`," +
                 " `sales_fact_1997` as `sales_fact_1997`," +
-                " `store` as `store` " +
-                "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
-                "and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' " +
-                "and `time_by_day`.`month_of_year` = 1 " +
-                "and `sales_fact_1997`.`store_id` = `store`.`store_id` " +
-                "and `store`.`store_country` = 'USA' " +
+                " `product_class` as `product_class`," +
+                " `product` as `product` " +
+                "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
+                " and `time_by_day`.`the_year` = 1997" +
+                " and `time_by_day`.`quarter` = `Q1`" +
+                " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
+                " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
+                " and `product_class`.`product_family` = `Food` " +
                 "group by `time_by_day`.`the_year`," +
                 " `time_by_day`.`quarter`," +
-                " `time_by_day`.`month_of_year`," +
-                " `store`.`store_country`",
+                " `product_class`.`product_family`",
                 23),
             new SqlPattern(
-                    SqlPattern.ACCESS_DIALECT,
-                    "select d0 as `c0`, d1 as `c1`, d2 as `c2`, count(m0) as `c3` from (select distinct `time_by_day`.`the_year` as `d0`, `time_by_day`.`quarter` as `d1`, `product_class`.`product_family` as `d2`, `sales_fact_1997`.`customer_id` as `m0` from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `product_class` as `product_class`, `product` as `product` where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and `product_class`.`product_family` = 'Food') as `dummyname` group by d0, d1, d2",
-                    23)
+                SqlPattern.ACCESS_DIALECT,
+                "select" +
+                " d0 as `c0`," +
+                " d1 as `c1`," +
+                " d2 as `c2`," +
+                " count(m0) as `c3` " +
+                "from (" +
+                "select distinct `time_by_day`.`the_year` as `d0`," +
+                " `time_by_day`.`quarter` as `d1`," +
+                " `product_class`.`product_family` as `d2`," +
+                " `sales_fact_1997`.`customer_id` as `m0` " +
+                "from `time_by_day` as `time_by_day`," +
+                " `sales_fact_1997` as `sales_fact_1997`," +
+                " `product_class` as `product_class`," +
+                " `product` as `product` " +
+                "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
+                " and `time_by_day`.`the_year` = 1997" +
+                " and `time_by_day`.`quarter` = 'Q1'" +
+                " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
+                " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
+                " and `product_class`.`product_family` = 'Food') as `dummyname` " +
+                "group by d0, d1, d2",
+                23)
         };
 
         assertRequestSql(new CellRequest[] {request}, patterns);

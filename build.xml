@@ -3,7 +3,8 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2001-2005 Kana Software, Inc. and others.
+  == (C) Copyright 2001-2004 Kana Software, Inc.
+  == (C) Copyright 2001-2006 Julian Hyde and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -133,6 +134,9 @@ demo/access/MondrianFoodMart.mdb"/>
   <!-- URL of the catalog definition. -->
   <property name="mondrian.foodmart.catalogURL"
       value="file:${project.location}/${demo.dir}/FoodMart.xml"/>
+
+  <!-- Arguments to the java process spawned by the junit task. -->
+  <property name="junit.jvmargs" value="-ea -esa"/>
 
   <target name="help">
       <echo>
@@ -401,7 +405,7 @@ in {mondrian.foodmart.jdbcURL}.">
     <echo>Connect String: ${mondrian.test.connectString}</echo>
     <java classpathref="project.test.classpath" classname="mondrian.test.Main"
         fork="yes">
-
+      <jvmarg line="${junit.jvmargs}"/>
       <sysproperty key="log4j.configuration" 
           value="${log4j.configuration}"/>
       <sysproperty key="mondrian.jdbcDrivers"
@@ -918,3 +922,5 @@ xalan.jar"/>
 
   </target>
 </project>
+
+<!-- End build.xml -->

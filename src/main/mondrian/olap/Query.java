@@ -1066,10 +1066,9 @@ public class Query extends QueryPart {
         private Type getParameterType(final Exp exp, int category) {
             switch (category) {
             case Category.Member:
-            case Category.Dimension:
-            case Category.Hierarchy:
                 assert exp instanceof DimensionExpr ||
-                        exp instanceof HierarchyExpr;
+                        exp instanceof HierarchyExpr ||
+                        exp instanceof LevelExpr;
                 return TypeUtil.toMemberType(exp.getType());
             case Category.String:
                 return new StringType();

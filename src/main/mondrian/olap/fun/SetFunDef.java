@@ -53,7 +53,7 @@ class SetFunDef extends FunDefBase {
             for (int i = 0; i < args.length; i++) {
                 Exp arg = args[i];
                 Type type = arg.getType();
-                type = TypeUtil.stripSetType(type);
+                type = TypeUtil.toMemberOrTupleType(type);
                 if (i == 0) {
                     type0 = type;
                 } else {
