@@ -273,15 +273,15 @@ public class MondrianProperties extends TriggerableProperties {
      * Property which controls the amount of tracing displayed.
      *
      * <p>If trace level is above 0, SQL tracing will be enabled and logged as
-     * per the <code>out.file</code> below. This is separate from Log4j
-     * logging.
+     * per the <code>{@link #DebugOutFile mondrian.debug.out.file}</code>
+     * property below. This is separate from Log4j logging.
      */
     public final IntegerProperty TraceLevel = new IntegerProperty(
             this, "mondrian.trace.level");
 
     /**
      * Property containing the name of the file to which tracing is to be
-     * written.
+     * written. If empty (the default), prints to stdout.
      */
     public final StringProperty DebugOutFile = new StringProperty(
             this, "mondrian.debug.out.file", null);
