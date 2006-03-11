@@ -18,6 +18,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Collection;
 import java.util.HashSet;
 
 import mondrian.olap.FunTable;
@@ -63,14 +64,14 @@ public class GlobalFunTable extends FunTableImpl {
             define(resolver);
         }
 
-        for (Iterator it = lookupUdfImplClasses(); it.hasNext(); ) {
+        for (Iterator it = lookupUdfImplClasses().iterator(); it.hasNext(); ) {
             String className = (String)it.next();
             defineUdf(className);
         }
     }
 
 
-    private Iterator lookupUdfImplClasses() {
+    private Collection lookupUdfImplClasses() {
         ClassLoader cl = this.getClass().getClassLoader();
         List serviceUrls = new ArrayList();
         try {
@@ -107,7 +108,7 @@ public class GlobalFunTable extends FunTableImpl {
                 }
             }
         }
-        return classNames.iterator();
+        return classNames;
     }
 
     /**
