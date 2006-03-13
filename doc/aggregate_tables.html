@@ -903,6 +903,8 @@ and 4) a usage prefix, "usage_prefix", which in most cases is null":
 <p>
 The "usage_prefix" is the value of the 
 <code>DimensionUsage</code>'s
+or
+private <code>Dimension</code>'s
 optional
 <code>usagePrefix</code>
 attribute. It can be the case that a "level_column_name", the name
@@ -939,6 +941,17 @@ table column was named
 <code>WS_CUST_NM</code>, then the recognizer could associate the
 column with the 
 <code>WHOLESALER</code> dimension.
+</p>
+<p>
+In the case of a private
+<code>Dimension</code>, a 
+<code>usagePrefix</code> need only be used if there is a public,
+shared
+<code>Dimension</code> that has the same name and has a 
+"level_column_name" that is also the same.
+Without the 
+<code>usagePrefix</code> there would be no way of disambiguating
+collapsed dimension aggregate tables.
 </p>
 <p>
 If any of these parameters have space characters, ' ', these are
