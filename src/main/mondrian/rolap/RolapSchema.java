@@ -457,6 +457,36 @@ public class RolapSchema implements Schema {
     }
 
     public Cube createCube(String xml) {
+
+        RolapCube cube = null;
+        try {
+            final Parser xmlParser = XOMUtil.createDefaultParser();
+            final DOMWrapper def = xmlParser.parse(xml);
+            final String tagName = def.getTagName();
+            if (tagName.equals("Cube")) {
+                // Create empty XML schema, to keep the method happy. This is
+                // okay, because there are no forward-references to resolve.
+                final MondrianDef.Schema xmlSchema = new MondrianDef.Schema();
+                MondrianDef.Cube xmlDimension = new MondrianDef.Cube(def);
+                cube = new RolapCube(this, xmlSchema, xmlDimension);
+            } else if (tagName.equals("VirtualCube")) {
+                // Need the real schema here.
+                MondrianDef.Schema xmlSchema = getXMLSchema();
+                MondrianDef.VirtualCube xmlDimension = 
+                        new MondrianDef.VirtualCube(def);
+                cube = new RolapCube(this, xmlSchema, xmlDimension);
+            } else {
+                throw new XOMException("Got <" + tagName +
+                    "> when expecting <Cube>");
+            }
+        } catch (XOMException e) {
+            throw Util.newError(e, "Error while creating cube from XML [" +
+                xml + "]");
+        }
+        return cube;
+    }
+/*
+    public Cube createCube(String xml) {
         MondrianDef.Cube xmlDimension;
         try {
             final Parser xmlParser = XOMUtil.createDefaultParser();
@@ -478,6 +508,7 @@ public class RolapSchema implements Schema {
         RolapCube cube = new RolapCube(this, xmlSchema, xmlDimension);
         return cube;
     }
+*/
 
     /**
      * A collection of schemas, identified by their connection properties
@@ -1007,6 +1038,9 @@ public class RolapSchema implements Schema {
         this.mapNameToCube.put(
                 Util.normalizeName(cube.getName()),
                 cube);
+    }
+    protected void removeCube(final Cube cube) {
+        this.mapNameToCube.remove(Util.normalizeName(cube.getName()));
     }
 
     public Cube[] getCubes() {
