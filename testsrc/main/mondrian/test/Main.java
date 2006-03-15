@@ -31,6 +31,7 @@ import mondrian.olap.HierarchyBugTest;
 import mondrian.rolap.NonEmptyTest;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.TestAggregationManager;
+import mondrian.rolap.VirtualCubeTest;
 import mondrian.test.comp.ResultComparatorTest;
 import mondrian.util.ScheduleTest;
 import mondrian.xmla.test.XmlaTest;
@@ -144,6 +145,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(ScheduleTest.class);
             suite.addTestSuite(UtilTestCase.class);
             if (isRunOnce()) suite.addTestSuite(TestAggregationManager.class);
+            suite.addTestSuite(VirtualCubeTest.class);
             suite.addTestSuite(ParameterTest.class);
             suite.addTestSuite(AccessControlTest.class);
             suite.addTestSuite(ParserTest.class);
