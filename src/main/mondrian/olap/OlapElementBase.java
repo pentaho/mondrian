@@ -39,7 +39,8 @@ public abstract class OlapElementBase
     }
 
     public boolean equals(OlapElement mdxElement) {
-        return getClass() == mdxElement.getClass() &&
+        return mdxElement != null &&
+                getClass() == mdxElement.getClass() &&
                 getUniqueName().equalsIgnoreCase(mdxElement.getUniqueName());
     }
 
