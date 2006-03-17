@@ -1532,7 +1532,7 @@ public class Format {
 
     /**
      * Create a {@link FormatLocale} object characterized by the given
-     * proeprties.
+     * properties.
      *
      * @param thousandSeparator the character used to separate thousands in
      *   numbers, or ',' by default.  For example, 12345 is '12,345 in English,

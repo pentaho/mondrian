@@ -194,7 +194,7 @@ public class MondrianProperties extends TriggerableProperties {
         if (url != null) {
             load(new UrlPropertySource(url));
         } else {
-            LOGGER.warn("mondrian.proeprties can't be found under '"
+            LOGGER.warn("mondrian.properties can't be found under '"
                     + new File(".").getAbsolutePath() + "' or classloader");
         }
 
