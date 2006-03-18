@@ -584,10 +584,19 @@ suite of regression tests.</p>
       <a href="api/mondrian/olap/MondrianProperties.html#MaxConstraints">
       mondrian.rolap.maxConstraints</a></code></td>
       <td style="vertical-align: top;">int</td>
-      <td style="vertical-align: top;">2,500</td>
+      <td style="vertical-align: top;">1,000</td>
       <td style="vertical-align: top;">Max number of constraints in a single
-      `IN' SQL clause. This value may be variant among database prodcuts and
-      their runtime settings.</td>
+      `IN' SQL clause.<p>This value may be variant among database products and
+      their runtime settings. Oracle, for example, gives the error &quot;ORA-01795: 
+      maximum number of expressions in a list is 1000&quot;.</p>
+
+      <p>Recommended values:</p>
+      <ul>
+        <li>Oracle: 1,000</li>
+        <li>DB2: 2,500</li>
+        <li>Other: 10,000</li>
+      </ul>
+      </td>
       </tr>
     <tr>
       <td style="vertical-align: top;" colspan="4">

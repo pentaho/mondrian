@@ -339,6 +339,10 @@ public class MondrianProperties extends TriggerableProperties {
      * <code>junit.framework.Test</code> or has a method
      * <code>public [static] junit.framework.Test suite()</code>.
      *
+     * <p>Example:
+     * <blockquote><code>mondrian.test.Class=mondrian.test.FoodMartTestCase</code></blockquote>
+     * </p>
+     *
      * @see #TestName
      */
     public final StringProperty TestClass = new StringProperty(
@@ -433,13 +437,21 @@ public class MondrianProperties extends TriggerableProperties {
                     this, "mondrian.rolap.SparseSegmentDensityThreshold", 0.5);
 
     /**
-     * todo:
+     * Property which defines
+     * a pattern for which test XML files to run.  Pattern has to
+     * match a file name of the form:
+     * <code>query<i>whatever</i>.xml</code> in the directory.
+     *
+     * <p>Example:
+     * <blockquote><code>mondrian.test.QueryFilePattern=queryTest_fec[A-Za-z0-9_]*.xml</code></blockquote>
+     * </p>
      */
     public final StringProperty QueryFilePattern = new StringProperty(
             this, "mondrian.test.QueryFilePattern", null);
 
     /**
-     * todo:
+     * Property defining
+     * where the test XML files are.
      */
     public final StringProperty QueryFileDirectory = new StringProperty(
             this, "mondrian.test.QueryFileDirectory", null);
@@ -689,11 +701,19 @@ public class MondrianProperties extends TriggerableProperties {
         this, "mondrian.xmla.drillthroughMaxRows", 1000);
 
     /**
-     * Max number of constraints in a single `IN' SQL clause. This value may be
-     * variant among database prodcuts and their runtime settings.
+     * Max number of constraints in a single `IN' SQL clause.
+     *
+     * <p>This value may be variant among database prodcuts and their runtime
+     * settings. Oracle, for example, gives the error "ORA-01795: maximum
+     * number of expressions in a list is 1000".
+     *
+     * <p>Recommended values:<ul>
+     * <li>Oracle: 1,000
+     * <li>DB2: 2,500
+     * <li>Other: 10,000</ul>
      */
     public final IntegerProperty MaxConstraints = new IntegerProperty(
-        this, "mondrian.rolap.maxConstraints", 2500);
+        this, "mondrian.rolap.maxConstraints", 1000);
 
     /**
      * Property which defines the
