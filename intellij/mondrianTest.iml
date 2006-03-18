@@ -17,7 +17,7 @@
     <orderEntry type="library" name="eigenbase-properties" level="project" />
     <orderEntry type="library" name="commons-math" level="project" />
     <orderEntry type="library" name="junit" level="project" />
-    <orderEntry type="library" name="xmlatest" level="project" />
+    <orderEntry type="library" name="xmlunit1.0" level="project" />
     <orderEntryProperties />
   </component>
 </module>

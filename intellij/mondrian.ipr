@@ -3,72 +3,32 @@
   <component name="AntConfiguration">
     <defaultAnt bundledAnt="true" />
   </component>
-  <component name="CodeStyleManager">
-    <option name="USE_DEFAULT_CODE_STYLE_SCHEME" value="true" />
-    <option name="CODE_STYLE_SCHEME" value="" />
-  </component>
   <component name="CodeStyleSettingsManager">
-    <option name="PER_PROJECT_SETTINGS">
-      <value>
-        <option name="INDENT_CASE_FROM_SWITCH" value="false" />
-        <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
-        <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="3" />
-        <option name="IMPORT_LAYOUT_TABLE">
-          <value>
-            <package name="mondrian" withSubpackages="true" />
-            <emptyLine />
-            <package name="" withSubpackages="true" />
-            <emptyLine />
-            <package name="javax" withSubpackages="true" />
-            <package name="java" withSubpackages="true" />
-          </value>
-        </option>
-        <option name="RIGHT_MARGIN" value="79" />
-        <option name="CALL_PARAMETERS_WRAP" value="1" />
-        <option name="METHOD_PARAMETERS_WRAP" value="5" />
-        <option name="METHOD_PARAMETERS_LPAREN_ON_NEXT_LINE" value="true" />
-        <option name="THROWS_LIST_WRAP" value="1" />
-        <option name="METHOD_CALL_CHAIN_WRAP" value="1" />
-        <option name="BINARY_OPERATION_WRAP" value="1" />
-        <option name="TERNARY_OPERATION_WRAP" value="1" />
-        <option name="FOR_STATEMENT_WRAP" value="1" />
-        <option name="ARRAY_INITIALIZER_WRAP" value="5" />
-        <option name="ARRAY_INITIALIZER_LBRACE_ON_NEXT_LINE" value="true" />
-        <option name="ARRAY_INITIALIZER_RBRACE_ON_NEXT_LINE" value="true" />
-        <option name="ASSIGNMENT_WRAP" value="1" />
-        <option name="IF_BRACE_FORCE" value="3" />
-        <option name="DOWHILE_BRACE_FORCE" value="3" />
-        <option name="WHILE_BRACE_FORCE" value="3" />
-        <option name="FOR_BRACE_FORCE" value="3" />
-      </value>
-    </option>
-    <option name="USE_PER_PROJECT_SETTINGS" value="true" />
+    <option name="PER_PROJECT_SETTINGS" />
+    <option name="USE_PER_PROJECT_SETTINGS" value="false" />
   </component>
   <component name="CompilerConfiguration">
     <option name="DEFAULT_COMPILER" value="Javac" />
     <option name="CLEAR_OUTPUT_DIRECTORY" value="false" />
     <option name="DEPLOY_AFTER_MAKE" value="0" />
     <resourceExtensions>
-      <entry name=".+\.(properties|xml|html)" />
+      <entry name=".+\.(properties|xml|html|dtd|tld)" />
       <entry name=".+\.(gif|png|jpeg|jpg)" />
     </resourceExtensions>
     <wildcardResourcePatterns>
+      <entry name="?*.properties" />
       <entry name="?*.xml" />
-      <entry name="?*.html" />
       <entry name="?*.gif" />
       <entry name="?*.png" />
       <entry name="?*.jpeg" />
       <entry name="?*.jpg" />
+      <entry name="?*.html" />
+      <entry name="?*.dtd" />
+      <entry name="?*.tld" />
     </wildcardResourcePatterns>
   </component>
   <component name="DataSourceManagerImpl" />
   <component name="DependencyValidationManager" />
-  <component name="EjbActionsConfiguration">
-    <option name="NEW_MESSAGE_BEAN_LAST_PACKAGE" value="" />
-    <option name="NEW_ENTITY_BEAN_LAST_PACKAGE" value="" />
-    <option name="NEW_SESSION_BEAN_LAST_PACKAGE" value="" />
-  </component>
-  <component name="EjbManager" enabled="false" />
   <component name="EntryPointsManager">
     <entry_points />
   </component>
@@ -78,9 +38,6 @@
     <option name="OUTPUT_DIRECTORY" />
   </component>
   <component name="GUI Designer component loader factory" />
-  <component name="JUnitProjectSettings">
-    <option name="TEST_RUNNER" value="UI" />
-  </component>
   <component name="JavacSettings">
     <option name="DEBUGGING_INFO" value="true" />
     <option name="GENERATE_NO_WARNINGS" value="false" />
@@ -223,7 +180,7 @@
       <module fileurl="file://$PROJECT_DIR$/mondrianTest.iml" filepath="$PROJECT_DIR$/mondrianTest.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="false" project-jdk-name="JDK1.5" />
+  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="JDK1.5" />
   <component name="RmicSettings">
     <option name="IS_EANABLED" value="false" />
     <option name="DEBUGGING_INFO" value="true" />
@@ -231,30 +188,29 @@
     <option name="GENERATE_IIOP_STUBS" value="false" />
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
   </component>
-  <component name="WebManager">
-    <option enabled="false" />
-  </component>
-  <component name="WebRootContainer" />
   <component name="libraryTable">
     <library name="all">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/../lib/commons-pool.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/eigenbase-resgen.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/jlfgr-1_0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/servlet.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/jmi.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/log4j-1.2.9.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/commons-collections.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/jsp-api.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/jmi.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-dbcp.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/xercesImpl.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/jpivot.war!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/jsp-api.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/mof.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/jlfgr-1_0.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/xalan.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/xml-apis.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/commons-dbcp.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/eigenbase-xom.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/javacup.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/mysql-connector-java-3.0.16-ga-bin.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/log4j-1.2.9.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/mof.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/jpivot.war!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="commons-math">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/../lib/commons-math-1.0.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
@@ -264,14 +220,9 @@
         <root url="jar://$PROJECT_DIR$/../lib/eigenbase-properties.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="commons-math">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../testlib/commons-math-1.0.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="file://$PROJECT_DIR$/../../farrago/src" />
+      </SOURCES>
     </library>
     <library name="junit">
       <CLASSES>
@@ -282,9 +233,8 @@
         <root url="jar://$PROJECT_DIR$/../../thirdparty/junit/src.jar!/" />
       </SOURCES>
     </library>
-    <library name="xmlatest">
+    <library name="xmlunit1.0">
       <CLASSES>
-        <root url="file://$PROJECT_DIR$/../testlib" />
         <root url="jar://$PROJECT_DIR$/../testlib/xmlunit1.0.jar!/" />
       </CLASSES>
       <JAVADOC />

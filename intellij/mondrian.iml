@@ -2,11 +2,11 @@
 <module version="4" relativePaths="false" type="JAVA_MODULE">
   <component name="ModuleRootManager" />
   <component name="NewModuleRootManager">
-    <output url="file://D:/open1/mondrian/classes" />
+    <output url="file:///home/jhyde/open2/mondrian/classes" />
     <exclude-output />
-    <output-test url="file://D:/open1/mondrian/classes" />
-    <content url="file://D:/open1/mondrian/src">
-      <sourceFolder url="file://D:/open1/mondrian/src/main" isTestSource="false" />
+    <output-test url="file:///home/jhyde/open2/mondrian/classes" />
+    <content url="file:///home/jhyde/open2/mondrian/src">
+      <sourceFolder url="file:///home/jhyde/open2/mondrian/src/main" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="inheritedJdk" />
