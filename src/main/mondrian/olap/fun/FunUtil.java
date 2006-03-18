@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
+// Copyright (C) 2002-2005 Kana Software, Inc. and others.
 // Copyright (C) 2002-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -165,7 +165,7 @@ public class FunUtil extends Util {
     /**
      * Adds every element of <code>right</code> which is not in <code>set</code>
      * to both <code>set</code> and <code>left</code>.
-     */
+     **/
     static void addUnique(List left, List right, Set set) {
         assert left != null;
         assert right != null;
@@ -224,7 +224,7 @@ public class FunUtil extends Util {
      * Returns whether <code>m0</code> is an ancestor of <code>m1</code>.
      *
      * @param strict if true, a member is not an ancestor of itself
-     */
+     **/
     static boolean isAncestorOf(Member m0, Member m1, boolean strict) {
         if (strict) {
             if (m1 == null) {
@@ -247,7 +247,7 @@ public class FunUtil extends Util {
      *
      * @param evaluator Evaluation context
      * @param exp Expression to evaluate
-     * @param members List of members
+     * @param members List of members (or List of Member[] tuples)
      * @param parentsToo If true, evaluate the expression for all ancestors
      *            of the members as well
      *
@@ -262,18 +262,26 @@ public class FunUtil extends Util {
         assert exp.getType() instanceof ScalarType;
         Map mapMemberToValue = new HashMap();
         for (int i = 0, count = members.size(); i < count; i++) {
-            Member member = (Member) members.get(i);
+	    Object elem = members.get(i); 
+	    // class of elem is either Member or Member[]
+	    // now we check to see if it is an array that
+	    // resulted from crossjoin, addressing bug 1440306
+	    boolean isTuple = elem.getClass().isArray();
             while (true) {
-                evaluator.setContext(member);
+		if (isTuple) {
+		    evaluator.setContext((Member[])elem);
+		} else {
+		    evaluator.setContext((Member)elem);
+		}
                 Object result = exp.evaluate(evaluator);
                 if (result == null) {
                     result = Util.nullValue;
                 }
-                mapMemberToValue.put(member, result);
+                mapMemberToValue.put(elem, result);
                 if (!parentsToo) {
                     break;
                 }
-                member = member.getParentMember();
+                Member member = ((Member)elem).getParentMember();
                 if (member == null) {
                     break;
                 }
@@ -291,9 +299,9 @@ public class FunUtil extends Util {
             boolean parentsToo) {
         Map mapMemberToValue = new HashMap();
         for (int i = 0, count = members.size(); i < count; i++) {
-            Member member = (Member) members.get(i);
+            Member member = (Member)members.get(i);
             while (true) {
-                evaluator.setContext(member);
+		evaluator.setContext(member);
                 Object result = evaluator.evaluateCurrent();
                 mapMemberToValue.put(member, result);
                 if (!parentsToo) {
@@ -487,8 +495,7 @@ public class FunUtil extends Util {
             boolean isPercent,
             double target) {
         Map mapMemberToValue = evaluateMembers(evaluator, exp, members, false);
-        Comparator comparator = new BreakMemberComparator(mapMemberToValue, isTop);
-        Collections.sort(members, comparator);
+	sort(evaluator, members, exp, isTop, true);
         if (isPercent) {
             toPercent(members, mapMemberToValue);
         }

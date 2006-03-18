@@ -1959,17 +1959,43 @@ public class BuiltinFunTable extends FunTableImpl {
                         };
                     }
 
-                    List except(final List list0, final List list1) {
+		    List except(final List list0, final List list1) {
+			if (list0 == null || list1 == null || 
+			    list0.size() == 0 || list1.size() == 0) {
+			    return list0;
+			}
                         HashSet set = new HashSet(list1);
                         List result = new ArrayList();
+			Object[] arr = set.toArray();
                         for (int i = 0, count = list0.size(); i < count; i++) {
                             Object o = list0.get(i);
-                            if (!set.contains(o)) {
-                                result.add(o);
-                            }
+			    if (o.getClass().isArray()) {
+				// unfortunately the elegant check of 
+				// set.contains(o) is always going to return
+				// false for an array, because it uses .equals
+				// which is == for array objects. so, with 
+				// no way to override this behavior, we
+				// have to do our own containment check.
+				// this change is a fix for bug 1439627
+				boolean contained = false;
+				for (int j = 0; j < arr.length; j++) {
+				    if (java.util.Arrays.equals((Object[])o, 
+								(Object[])arr[j])) {
+					contained = true;
+				    }
+				}
+				if (!contained) {
+				    result.add(o);
+				}
+			    } else {
+				if (!set.contains(o)) {
+				    result.add(o);
+				}
+			    }
                         }
                         return result;
                     }
+
                 };
             }
         });

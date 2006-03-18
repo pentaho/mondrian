@@ -1886,6 +1886,41 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Promotion Media].[All Media].[Sunday Paper, Radio, TV]"}));
     }
 
+    /**
+     * tests that Except() successfully removes crossjoined tuples
+     * from the axis results.  previously, this would fail by returning
+     * all tuples in the first argument to Except.  bug 1439627
+     */
+
+    public void testExceptCrossjoin() {
+	assertAxisReturns(
+           fold(new String[] {
+	       "Except(CROSSJOIN({[Promotion Media].[All Media]},",
+	       "                  [Product].[All Products].Children),",
+	       "       CROSSJOIN({[Promotion Media].[All Media]},",
+	       "                  {[Product].[All Products].[Drink]}))" }),
+	   fold(new String[] {
+	       "{[Promotion Media].[All Media], [Product].[All Products].[Food]}",
+	       "{[Promotion Media].[All Media], [Product].[All Products].[Non-Consumable]}" }));
+    }
+
+    /** 
+     * tests that TopPercent() operates succesfully on a 
+     * axis of crossjoined tuples.  previously, this would 
+     * fail with a ClassCastException in FunUtil.java.  bug 1440306
+     */
+
+    public void testTopPercentCrossjoin() {
+	assertAxisReturns(
+	   fold(new String[] {
+	       "{TopPercent(Crossjoin([Product].[Product Department].members,",
+	       "[Time].[1997].children),10,[Measures].[Store Sales])}" }),
+	   fold(new String[] {
+	       "{[Product].[All Products].[Food].[Produce], [Time].[1997].[Q4]}",
+	       "{[Product].[All Products].[Food].[Produce], [Time].[1997].[Q1]}",
+	       "{[Product].[All Products].[Food].[Produce], [Time].[1997].[Q3]}" }));
+    }
+
     public void testCrossjoinNested() {
         assertAxisReturns(
                 fold(new String[] {
