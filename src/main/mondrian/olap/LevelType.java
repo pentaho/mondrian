@@ -79,6 +79,14 @@ public class LevelType extends EnumeratedValues.BasicValue {
     public static final LevelType TimeDays =
             new LevelType("TimeDays", TimeDaysORDINAL);
 
+    public static final int NullORDINAL = 6;
+
+    /**
+     * Indicates that a level holds the null member.
+     */
+    public static final LevelType Null =
+            new LevelType("Null", NullORDINAL);
+
     /**
      * Contains all of the valid values for {@link LevelType}.
      */
@@ -86,7 +94,7 @@ public class LevelType extends EnumeratedValues.BasicValue {
             new EnumeratedValues(
                     new LevelType[] {
                         Regular, TimeYears, TimeQuarters, TimeMonths,
-                        TimeWeeks, TimeDays,
+                        TimeWeeks, TimeDays, Null,
                     }
             );
     public static LevelType lookup(String s) {

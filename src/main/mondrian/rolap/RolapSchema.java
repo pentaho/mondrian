@@ -472,7 +472,7 @@ public class RolapSchema implements Schema {
             } else if (tagName.equals("VirtualCube")) {
                 // Need the real schema here.
                 MondrianDef.Schema xmlSchema = getXMLSchema();
-                MondrianDef.VirtualCube xmlDimension = 
+                MondrianDef.VirtualCube xmlDimension =
                         new MondrianDef.VirtualCube(def);
                 cube = new RolapCube(this, xmlSchema, xmlDimension);
             } else {
@@ -1039,8 +1039,11 @@ public class RolapSchema implements Schema {
                 Util.normalizeName(cube.getName()),
                 cube);
     }
-    protected void removeCube(final Cube cube) {
-        this.mapNameToCube.remove(Util.normalizeName(cube.getName()));
+
+    public boolean removeCube(final String cubeName) {
+        final Cube cube =
+                (Cube) this.mapNameToCube.remove(Util.normalizeName(cubeName));
+        return cube != null;
     }
 
     public Cube[] getCubes() {

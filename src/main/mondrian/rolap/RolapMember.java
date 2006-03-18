@@ -109,6 +109,21 @@ public class RolapMember extends MemberBase {
         return (RolapHierarchy) getHierarchy();
     }
 
+    public boolean equals(Object o) {
+        return (o instanceof RolapMember) &&
+                equals((RolapMember) o);
+    }
+
+    public boolean equals(OlapElement o) {
+        return (o instanceof RolapMember) &&
+                equals((RolapMember) o);
+    }
+
+    private boolean equals(RolapMember that) {
+        assert that != null; // public method should have checked
+        return this.getUniqueName().equalsIgnoreCase(that.getUniqueName());
+    }
+
     void makeUniqueName(HierarchyUsage hierarchyUsage) {
         if (parentMember == null && key != null) {
             String n = hierarchyUsage.getName();

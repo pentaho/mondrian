@@ -13,8 +13,8 @@
 
 package mondrian.rolap.agg;
 
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.BitKey;
+import mondrian.rolap.*;
+import mondrian.olap.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,38 +30,86 @@ import java.util.List;
  */
 public class CellRequest {
     private final RolapStar.Measure measure;
+    public final boolean extendedContext;
+    public final boolean drillThrough;
     /**
-     * List of columns being which have values in this request. The 0th
-     * entry is a dummy entry: the star, which ensures that 2 requests for the
-     * same columns on measures in the same star get put into the same batch.
-     *
-     * We need to efficiently compare pairs of column lists (to figure out
-     * whether two CellRequest objects belong to the same
-     * FastBatchingCellReader.Batch), so we use an implementation of ArrayList
-     * which computes hashCode and equals more efficiently.
+     * List of {@link mondrian.rolap.RolapStar.Column}s being which have values
+     * in this request. The 0th entry is a dummy entry: the star, which ensures
+     * that 2 requests for the same columns on measures in the same star get
+     * put into the same batch.
      */
-    //private final List columnList = new FastHashingArrayList();
     private final List columnList = new ArrayList();
     private final List valueList = new ArrayList();
     private RolapStar.Column[] columns = null;
-    private BitKey bitKey;
+    /**
+     * A bit is set for each column in the column list. Allows us to rapidly
+     * figure out whether two requests are for the same column set.
+     */
+    private final BitKey bitKey;
+    /**
+     * Whether the request is impossible to satisfy. This is set to 'true' if
+     * contradictory constraints are applied to the same column. For example,
+     * the levels [Customer].[City] and [Cities].[City] map to the same column
+     * via the same join-path, and one constraint sets city = 'Burbank' and
+     * another sets city = 'Los Angeles'.
+     */
+    private boolean unsatisfiable;
 
-    /** Creates a {@link CellRequest}. */
-    public CellRequest(RolapStar.Measure measure) {
+    /**
+     * Creates a {@link CellRequest}.
+     */
+    public CellRequest(
+            RolapStar.Measure measure,
+            boolean extendedContext,
+            boolean drillThrough) {
         this.measure = measure;
+        this.extendedContext = extendedContext;
+        this.drillThrough = drillThrough;
         this.columnList.add(measure.getStar());
         this.bitKey =
             BitKey.Factory.makeBitKey(measure.getStar().getColumnCount());
     }
 
-    public void addConstrainedColumn(RolapStar.Column column, Object value) {
-        // for every column there MUST be a value (even if it is null)
-        columnList.add(column);
-        this.bitKey.set(column.getBitPosition());
-        if (value != null) {
-            value = new ColumnConstraint(value);
+    /**
+     * Adds a constraint to this request.
+     *
+     * @param column Column to constraint
+     * @param constraint Constraint to apply, or null to add column to the
+     *   output without applying constraint
+     */
+    public void addConstrainedColumn(
+            RolapStar.Column column,
+            ColumnConstraint constraint) {
+        final int bitPosition = column.getBitPosition();
+        if (this.bitKey.get(bitPosition)) {
+            // This column is already constrained. Unless the value is the same,
+            // or this value or the previous value is null (meaning
+            // unconstrained) the request will never return any results.
+            int index = columnList.indexOf(column);
+            Util.assertTrue(index >= 0);
+            --index; // column list has dummy first element
+            final ColumnConstraint prevValue =
+                    (ColumnConstraint) valueList.get(index);
+            if (prevValue == null) {
+                // Previous column was unconstrained. Constrain on new value.
+            } else if (constraint == null) {
+                // Previous column was constrained. Nothing to do.
+                return;
+            } else if (constraint.equalConstraint(prevValue)) {
+                // Same constraint again. Nothing to do.
+                return;
+            } else {
+                // Different constraint. Request is impossible to satisfy.
+                constraint = null;
+                unsatisfiable = true;
+            }
+            valueList.set(index, constraint);
+            return;
         }
-        valueList.add(value);
+
+        this.columnList.add(column);
+        this.bitKey.set(bitPosition);
+        this.valueList.add(constraint);
     }
 
     public RolapStar.Measure getMeasure() {
@@ -76,6 +124,7 @@ public class CellRequest {
         }
         return this.columns;
     }
+
     private void makeColumns() {
         // ignore the star, the 0th element of columnList
         this.columns = new RolapStar.Column[columnList.size() - 1];
@@ -107,40 +156,13 @@ public class CellRequest {
     }
 
     /**
-     * Extension to {@link ArrayList} with fast {@link #equals(Object)} and
-     * {@link #hashCode()} methods.
+     * Returns whether this cell request is impossible to satisfy.
+     * This occurs when the same column has two or more inconsistent
+     * constraints.
      */
-/*
-    private static class FastHashingArrayList extends ArrayList {
-        public boolean equals(Object o) {
-            if (!(o instanceof FastHashingArrayList)) {
-                return false;
-            }
-            FastHashingArrayList that = (FastHashingArrayList) o;
-            final int size = this.size();
-            if (size != that.size()) {
-                return false;
-            }
-            for (int i = 0; i < size; i++) {
-                Object o1 = (Object) this.get(i);
-                Object o2 = (Object) that.get(i);
-                if (!o1.equals(o2)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public int hashCode() {
-            int hashCode = 1;
-            for (int i = 0; i < size(); i++) {
-                Object obj = (Object) get(i);
-                hashCode = 31 * hashCode + (obj == null ? 0 : obj.hashCode());
-            }
-            return hashCode;
-        }
+    public boolean isUnsatisfiable() {
+        return unsatisfiable;
     }
-*/
 }
 
 // End CellRequest.java

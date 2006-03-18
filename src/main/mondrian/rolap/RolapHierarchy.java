@@ -71,6 +71,11 @@ class RolapHierarchy extends HierarchyBase {
      */
     final Type memberType = MemberType.forHierarchy(this);
 
+    /**
+     * The level that the null member belongs too.
+     */
+    private final RolapLevel nullLevel;
+
     RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll) {
         super(dimension, subName, hasAll);
 
@@ -83,6 +88,15 @@ class RolapHierarchy extends HierarchyBase {
                     RolapLevel.ALL | RolapLevel.UNIQUE));
             this.allMemberName = "All " + name + "s";
         }
+
+        // The null member belongs to a level with very similar properties to
+        // the 'all' level.
+        this.nullLevel = new RolapLevel(
+                this, 0, this.allLevelName, null, null, null, null, null, null,
+                null, RolapProperty.emptyArray,
+                RolapLevel.ALL | RolapLevel.UNIQUE,
+                RolapLevel.HideMemberCondition.Never,
+                LevelType.Null);
     }
 
     /**
@@ -132,6 +146,7 @@ class RolapHierarchy extends HierarchyBase {
                 levels[i] = new RolapLevel(this, i, xmlHierarchy.levels[i]);
             }
         }
+
         if (xmlCubeDimension instanceof MondrianDef.DimensionUsage) {
             String sharedDimensionName =
                 ((MondrianDef.DimensionUsage) xmlCubeDimension).source;
@@ -288,15 +303,16 @@ class RolapHierarchy extends HierarchyBase {
     public Member getNullMember() {
         // use lazy initialization to get around bootstrap issues
         if (nullMember == null) {
-            nullMember = new RolapNullMember(this);
+            nullMember = new RolapNullMember(nullLevel);
         }
         return nullMember;
     }
 
-    public Member createMember(Member parent,
-                               Level level,
-                               String name,
-                               Formula formula) {
+    public Member createMember(
+            Member parent,
+            Level level,
+            String name,
+            Formula formula) {
         return (formula != null)
             ? new RolapCalculatedMember(
                 (RolapMember) parent, (RolapLevel) level, name, formula)
@@ -584,12 +600,9 @@ RME HACK
      * }".
      */
     class RolapNullMember extends RolapMember {
-        RolapNullMember(RolapHierarchy hierarchy) {
-            super(null,
-                  (RolapLevel) hierarchy.getLevels()[0],
-                  null,
-                  "#Null",
-                  NULL_MEMBER_TYPE);
+        RolapNullMember(final RolapLevel level) {
+            super(null, level, null, "#Null", NULL_MEMBER_TYPE);
+            assert level != null;
         }
 
         public boolean isNull() {

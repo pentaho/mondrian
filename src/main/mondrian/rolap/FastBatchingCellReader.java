@@ -78,8 +78,8 @@ public class FastBatchingCellReader implements CellReader {
         final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
         Member[] currentMembers = rolapEvaluator.getCurrentMembers();
         CellRequest request =
-                RolapAggregationManager.makeRequest(currentMembers, false);
-        if (request == null) {
+                RolapAggregationManager.makeRequest(currentMembers, false, false);
+        if (request == null || request.isUnsatisfiable()) {
             return Util.nullValue; // request out of bounds
         }
         // Try to retrieve a cell and simultaneously pin the segment which
@@ -105,6 +105,9 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     void recordCellRequest(CellRequest request) {
+        if (request.isUnsatisfiable()) {
+            return;
+        }
         ++requestCount;
         Object key = request.getBatchKey();
         Batch batch = (Batch) batches.get(key);

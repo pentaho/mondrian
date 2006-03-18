@@ -6,24 +6,11 @@
 // (C) Copyright 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, Feb 14, 2003
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
-/*
-import mondrian.rolap.RolapConnection;
-import mondrian.rolap.cache.CachePool;
-
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.regex.Pattern;
-import java.io.PrintWriter;
-
-import junit.framework.Assert;
-*/
 
 /**
  * <code>VirtualCubeTest</code> shows virtual cube tests.
@@ -46,7 +33,7 @@ public class VirtualCubeTest extends FoodMartTestCase {
             this.result = result;
         }
     }
-    private static final QueryAndResult simpleQuery = 
+    private static final QueryAndResult simpleQuery =
             new QueryAndResult(
                 "select" + nl +
                 "{ [Measures].[Warehouse Sales], [Measures].[Unit Sales] }" + nl +
@@ -67,7 +54,7 @@ public class VirtualCubeTest extends FoodMartTestCase {
 
             );
 
-    /** 
+    /**
      * This method demonstrates bug 1449929
      */
     public void _testNoTimeDimension() {
@@ -81,14 +68,13 @@ public class VirtualCubeTest extends FoodMartTestCase {
 
         try  {
             assertQueryReturns(simpleQuery.query, simpleQuery.result);
-
         } finally {
-            ((RolapSchema)schema).removeCube(cube);
+            schema.removeCube(cube.getName());
         }
     }
-    
-    /** 
-     * I do not know/believe that the return values are correct. 
+
+    /**
+     * I do not know/believe that the return values are correct.
      */
     public void testWithTimeDimension() {
         Schema schema = getConnection().getSchema();
@@ -102,9 +88,8 @@ public class VirtualCubeTest extends FoodMartTestCase {
 
         try  {
             assertQueryReturns(simpleQuery.query, simpleQuery.result);
-
         } finally {
-            ((RolapSchema)schema).removeCube(cube);
+            schema.removeCube(cube.getName());
         }
     }
 }

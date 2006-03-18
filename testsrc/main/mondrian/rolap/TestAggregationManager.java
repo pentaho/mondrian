@@ -15,8 +15,7 @@ package mondrian.rolap;
 import junit.framework.TestCase;
 import mondrian.olap.Connection;
 import mondrian.olap.*;
-import mondrian.rolap.agg.AggregationManager;
-import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.agg.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.test.TestContext;
 import mondrian.util.DelegatingInvocationHandler;
@@ -59,6 +58,10 @@ public class TestAggregationManager extends TestCase {
      * generates the correct SQL.
      */
     public void testFemaleUnitSalesSql() {
+        if (!(MondrianProperties.instance().UseAggregates.get() &&
+                MondrianProperties.instance().ReadAggregates.get())) {
+            return;
+        }
         CellRequest request = createRequest("Sales",
             "[Measures].[Unit Sales]", "customer", "gender", "F");
 
@@ -111,6 +114,10 @@ public class TestAggregationManager extends TestCase {
      *   (store_state=OR, gender=M, measure=[Unit Sales])
      */
     public void testMultipleMeasures() {
+        if (!(MondrianProperties.instance().UseAggregates.get() &&
+                MondrianProperties.instance().ReadAggregates.get())) {
+            return;
+        }
         CellRequest[] requests = new CellRequest[] {
             createRequest("Sales", "[Measures].[Unit Sales]",
                     new String[] {"customer", "store"},
@@ -204,11 +211,12 @@ public class TestAggregationManager extends TestCase {
                 .getMemberByUniqueName(Util.explode(measure), fail);
         RolapStar.Measure starMeasure =
                 RolapStar.getStarMeasure(storeSqftMeasure);
-        CellRequest request = new CellRequest(starMeasure);
+        CellRequest request = new CellRequest(starMeasure, false, false);
         final RolapStar star = starMeasure.getStar();
         final RolapStar.Column storeTypeColumn = star.lookupColumn(
                 table, column);
-        request.addConstrainedColumn(storeTypeColumn, value);
+        request.addConstrainedColumn(
+                storeTypeColumn, new ColumnConstraint(value));
         return request;
     }
 
@@ -293,6 +301,10 @@ public class TestAggregationManager extends TestCase {
     }
 
     public void testCountDistinctAggMatch() {
+        if (!(MondrianProperties.instance().UseAggregates.get() &&
+                MondrianProperties.instance().ReadAggregates.get())) {
+            return;
+        }
         CellRequest request = createRequest(
             "Sales", "[Measures].[Customer Count]",
             new String[] { "time_by_day", "time_by_day", "time_by_day" },
@@ -386,6 +398,10 @@ public class TestAggregationManager extends TestCase {
      * count is counting, it's OK. In this case, you know that every
      */
     public void testCountDistinctRollupAlongDim() {
+        if (!(MondrianProperties.instance().UseAggregates.get() &&
+                MondrianProperties.instance().ReadAggregates.get())) {
+            return;
+        }
         // Request has granularity
         //  [Time].[Quarter]
         //  [Product].[Category]
@@ -439,6 +455,10 @@ public class TestAggregationManager extends TestCase {
      * As above, but we rollup [Marital Status] but not [Gender].
      */
     public void testCountDistinctRollup2() {
+        if (!(MondrianProperties.instance().UseAggregates.get() &&
+                MondrianProperties.instance().ReadAggregates.get())) {
+            return;
+        }
         CellRequest request = createRequest(
             "Sales", "[Measures].[Customer Count]",
             new String[] { "time_by_day", "time_by_day", "time_by_day", "product_class", "product_class", "product_class", "customer" },
@@ -546,11 +566,12 @@ public class TestAggregationManager extends TestCase {
                 Util.explode(measure), fail);
         RolapStar.Measure starMeasure =
             RolapStar.getStarMeasure(storeSqftMeasure);
-        CellRequest request = new CellRequest(starMeasure);
+        CellRequest request = new CellRequest(starMeasure, false, false);
         final RolapStar star = starMeasure.getStar();
         final RolapStar.Column storeTypeColumn = star.lookupColumn(
                 table, column);
-        request.addConstrainedColumn(storeTypeColumn, value);
+        request.addConstrainedColumn(
+                storeTypeColumn, new ColumnConstraint(value));
         return request;
     }
 
@@ -565,7 +586,7 @@ public class TestAggregationManager extends TestCase {
         Member measure = salesCube.getSchemaReader(null).getMemberByUniqueName(
                 Util.explode(measureName), fail);
         RolapStar.Measure starMeasure = RolapStar.getStarMeasure(measure);
-        CellRequest request = new CellRequest(starMeasure);
+        CellRequest request = new CellRequest(starMeasure, false, false);
         final RolapStar star = starMeasure.getStar();
         for (int i = 0; i < tables.length; i++) {
             String table = tables[i];
@@ -573,7 +594,8 @@ public class TestAggregationManager extends TestCase {
             String value = values[i];
             final RolapStar.Column storeTypeColumn = star.lookupColumn(
                     table, column);
-            request.addConstrainedColumn(storeTypeColumn, value);
+            request.addConstrainedColumn(
+                    storeTypeColumn, new ColumnConstraint(value));
         }
         return request;
     }

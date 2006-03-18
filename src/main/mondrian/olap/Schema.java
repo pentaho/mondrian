@@ -59,6 +59,13 @@ public interface Schema {
     Cube createCube(String xml);
 
     /**
+     * Removes a cube.
+     *
+     * @return Whether cube was removed
+     */
+    boolean removeCube(String cubeName);
+
+    /**
      * Creates a {@link SchemaReader} without any access control.
      */
     SchemaReader getSchemaReader();

@@ -47,125 +47,106 @@ public abstract class RolapAggregationManager implements CellReader {
      * @param extendedContext If true, add non-constraining columns to the
      * query for levels below each current member. This additional context
      * makes the drill-through queries easier for humans to understand.
+     * @param drillThrough
+     * @return Cell request, or null if the requst is unsatisfiable
      */
     static CellRequest makeRequest(
             Member[] members,
-            boolean extendedContext) {
-        boolean showNames = extendedContext;
+            boolean extendedContext,
+            final boolean drillThrough) {
         if (!(members[0] instanceof RolapStoredMeasure)) {
             return null;
         }
         RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
-        final RolapStar.Measure starMeasure = (RolapStar.Measure)
-                measure.getStarMeasure();
+        final RolapStar.Measure starMeasure =
+                (RolapStar.Measure) measure.getStarMeasure();
 
         Util.assertTrue(starMeasure != null);
 
         RolapStar star = starMeasure.getStar();
-        CellRequest request = new CellRequest(starMeasure);
+        CellRequest request =
+                new CellRequest(starMeasure, extendedContext, drillThrough);
         Map mapLevelToColumn = star.getMapLevelToColumn(measure.getCube());
 
-        for (int i = 1; i < members.length; i++) {
-            Member member = members[i];
-            RolapLevel previousLevel = null;
-            Hierarchy hierarchy = member.getHierarchy();
-            if (extendedContext) {
-                // Add the key columns as non-constraining columns. For
-                // example, if they asked for [Gender].[M], [Store].[USA].[CA]
-                // then the following levels are in play:
-                //   Gender = 'M'
-                //   Marital Status not constraining
-                //   Nation = 'USA'
-                //   State = 'CA'
-                //   City not constraining
-                //
-                // Note that [Marital Status] column is present by virtue of
-                // the implicit [Marital Status].[All] member. Hence the SQL
-                //
-                //   select [Marital Status], [City]
-                //   from [Star]
-                //   where [Gender] = 'M'
-                //   and [Nation] = 'USA'
-                //   and [State] = 'CA'
-                //
+        // Since 'request.extendedContext == false' is a well-worn code path,
+        // we have moved the test outside the loop.
+        if (request.extendedContext) {
+            for (int i = 1; i < members.length; i++) {
+                final RolapMember member = (RolapMember) members[i];
+                addNonConstrainingColumns(member, mapLevelToColumn, request);
 
-                Level[] levels = hierarchy.getLevels();
-                for (int j = levels.length - 1,
-                        depth = member.getLevel().getDepth(); j > depth; j--) {
-                    final RolapLevel level = (RolapLevel) levels[j];
-                    RolapStar.Column column = (RolapStar.Column)
-                        mapLevelToColumn.get(level);
-
-                    if (column != null) {
-                        request.addConstrainedColumn(column, null);
-                        if (showNames && level.getNameExp() != null) {
-                            RolapStar.Column nameColumn = column.getNameColumn();
-                            Util.assertTrue(nameColumn != null);
-                            request.addConstrainedColumn(nameColumn, null);
-                        }
-                    }
-                }
-            }
-            for (Member m = member; m != null; m = m.getParentMember()) {
-                RolapMember rm = (RolapMember) m;
-                if (rm.getKey() == null) {
-                    if (m == m.getHierarchy().getNullMember()) {
-                        // cannot form a request if one of the members is null
-                        return null;
-                    } else if (m.isAll()) {
-                        continue;
-                    } else {
-                        throw Util.newInternal("why is key null?");
-                    }
-                }
-                RolapLevel level = (RolapLevel) m.getLevel();
-                if (level == previousLevel) {
-                    // We are looking at a parent in a parent-child hierarchy,
-                    // for example, we have moved from Fred to Fred's boss,
-                    // Wilma. We don't want to include Wilma's key in the
-                    // request.
-                    continue;
-                }
-                previousLevel = level;
-
-                // Replace a parent/child level by its closed equivalent, when
-                // available; this is always valid, and improves performance by
-                // enabling the database to compute aggregates.
-                if (level.hasClosedPeer()) {
-                    if (member.getDataMember() == null) {
-                        // Member has no data member because it IS the data
-                        // member of a parent-child hierarchy member. Leave
-                        // it be. We don't want to aggregate.
-                    } else {
-                        level = level.getClosedPeer();
-                        final RolapMember allMember = (RolapMember)
-                            hierarchy.getDefaultMember();
-                        assert allMember.isAll();
-                        member = new RolapMember(allMember, level,
-                            ((RolapMember) member).getKey());
-                    }
-                }
-                RolapStar.Column column =
-                    (RolapStar.Column) mapLevelToColumn.get(level);
-
-                if (column == null) {
-                    // This hierarchy is not one which qualifies the starMeasure
-                    // (this happens in virtual cubes). The starMeasure only has
-                    // a value for the 'all' member of the hierarchy.
+                final RolapLevel level = (RolapLevel) member.getLevel();
+                boolean needToReturnNull =
+                        level.getLevelReader().constrainRequest(
+                                member, mapLevelToColumn, request);
+                if (needToReturnNull) {
                     return null;
                 }
-                // use the member as constraint, this will give us some
-                //  optimization potential
-                request.addConstrainedColumn(column, m);
-                if (showNames && level.getNameExp() != null) {
-                    RolapStar.Column nameColumn = column.getNameColumn();
+            }
+        } else {
+            for (int i = 1; i < members.length; i++) {
+                RolapMember member = (RolapMember) members[i];
+                final RolapLevel level = (RolapLevel) member.getLevel();
+                boolean needToReturnNull =
+                        level.getLevelReader().constrainRequest(
+                                member, mapLevelToColumn, request);
+                if (needToReturnNull) {
+                    return null;
+                }
+            }
+        }
+        return request;
+    }
 
+    /**
+     * Adds the key columns as non-constraining columns. For
+     * example, if they asked for [Gender].[M], [Store].[USA].[CA]
+     * then the following levels are in play:<ul>
+     *   <li>Gender = 'M'
+     *   <li>Marital Status not constraining
+     *   <li>Nation = 'USA'
+     *   <li>State = 'CA'
+     *   <li>City not constraining
+     * </ul>
+     *
+     * <p>Note that [Marital Status] column is present by virtue of
+     * the implicit [Marital Status].[All] member. Hence the SQL
+     *
+     *   <blockquote><pre>
+     *   select [Marital Status], [City]
+     *   from [Star]
+     *   where [Gender] = 'M'
+     *   and [Nation] = 'USA'
+     *   and [State] = 'CA'
+     *   </pre></blockquote>
+     *
+     * @param member Member to constraint
+     * @param mapLevelToColumn Level to star column map
+     * @param request Cell request
+     */
+    private static void addNonConstrainingColumns(
+            RolapMember member,
+            Map mapLevelToColumn,
+            CellRequest request) {
+
+        Hierarchy hierarchy = member.getHierarchy();
+        Level[] levels = hierarchy.getLevels();
+        for (int j = levels.length - 1, depth = member.getLevel().getDepth();
+             j > depth; j--) {
+            final RolapLevel level = (RolapLevel) levels[j];
+            RolapStar.Column column =
+                    (RolapStar.Column) mapLevelToColumn.get(level);
+
+            if (column != null) {
+                request.addConstrainedColumn(column, null);
+                if (request.extendedContext &&
+                        level.getNameExp() != null) {
+                    RolapStar.Column nameColumn = column.getNameColumn();
                     Util.assertTrue(nameColumn != null);
                     request.addConstrainedColumn(nameColumn, null);
                 }
             }
         }
-        return request;
     }
 
     protected RolapAggregationManager() {
@@ -175,7 +156,7 @@ public abstract class RolapAggregationManager implements CellReader {
      * Returns the value of a cell from an existing aggregation.
      */
     public Object getCellFromCache(Member[] members) {
-        CellRequest request = makeRequest(members, false);
+        CellRequest request = makeRequest(members, false, false);
         return (request == null)
             // request out of bounds
             ? Util.nullValue
@@ -187,7 +168,7 @@ public abstract class RolapAggregationManager implements CellReader {
     public abstract Object getCellFromCache(CellRequest request, Set pinSet);
 
     public Object getCell(Member[] members) {
-        CellRequest request = makeRequest(members, false);
+        CellRequest request = makeRequest(members, false, false);
         RolapMeasure measure = (RolapMeasure) members[0];
         final RolapStar.Measure starMeasure = (RolapStar.Measure)
                 measure.getStarMeasure();

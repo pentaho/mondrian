@@ -14,12 +14,12 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.agg.MemberColumnConstraint;
 
 import org.apache.log4j.Logger;
 import java.lang.reflect.Constructor;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * <code>RolapLevel</code> implements {@link Level} for a ROLAP database.
@@ -71,13 +71,12 @@ public class RolapLevel extends LevelBase {
     private final MondrianDef.Expression parentExp;
     /** Value which indicates a null parent in a parent-child hierarchy. */
     private final String nullParentValue;
-    /** For a parent-child hierarchy with a closure provided by the schema,
-     * the equivalent level in the closed hierarchy; otherwise null */
-    private RolapLevel closedPeer;
 
     /** Condition under which members are hidden. */
     private final HideMemberCondition hideMemberCondition;
     private final MondrianDef.Closure xmlClosure;
+
+    private LevelReader levelReader;
 
     /**
      * Creates a level.
@@ -87,21 +86,22 @@ public class RolapLevel extends LevelBase {
      * @pre levelType != null
      * @pre hideMemberCondition != null
      */
-    RolapLevel(RolapHierarchy hierarchy,
-        int depth,
-        String name,
-        MondrianDef.Expression keyExp,
-        MondrianDef.Expression nameExp,
-        MondrianDef.Expression captionExp,
-        MondrianDef.Expression ordinalExp,
-        MondrianDef.Expression parentExp,
-        String nullParentValue,
-        MondrianDef.Closure xmlClosure,
-        RolapProperty[] properties,
-        int flags,
-        HideMemberCondition
-        hideMemberCondition,
-        LevelType levelType)
+    RolapLevel(
+            RolapHierarchy hierarchy,
+            int depth,
+            String name,
+            MondrianDef.Expression keyExp,
+            MondrianDef.Expression nameExp,
+            MondrianDef.Expression captionExp,
+            MondrianDef.Expression ordinalExp,
+            MondrianDef.Expression parentExp,
+            String nullParentValue,
+            MondrianDef.Closure xmlClosure,
+            RolapProperty[] properties,
+            int flags,
+            HideMemberCondition
+            hideMemberCondition,
+            LevelType levelType)
     {
         super(hierarchy, name, depth, levelType);
 
@@ -193,7 +193,6 @@ public class RolapLevel extends LevelBase {
             }
         }
         this.hideMemberCondition = hideMemberCondition;
-        this.closedPeer = null;
     }
 
     protected Logger getLogger() {
@@ -211,12 +210,18 @@ public class RolapLevel extends LevelBase {
         return tableName;
     }
 
+    LevelReader getLevelReader() {
+        return levelReader;
+    }
+
     public MondrianDef.Expression getKeyExp() {
         return keyExp;
     }
+
     MondrianDef.Expression getOrdinalExp() {
         return ordinalExp;
     }
+
     public MondrianDef.Expression getCaptionExp() {
         return captionExp;
     }
@@ -347,12 +352,20 @@ public class RolapLevel extends LevelBase {
     }
 
     void init(RolapCube cube, MondrianDef.CubeDimension xmlDimension) {
-        if (xmlClosure != null) {
+        if (isAll()) {
+            this.levelReader = new AllLevelReaderImpl();
+        } else if (levelType == LevelType.Null) {
+            this.levelReader = new NullLevelReader();
+        } else if (xmlClosure != null) {
             final RolapDimension dimension = ((RolapHierarchy) hierarchy)
                 .createClosedPeerDimension(this, xmlClosure, cube, xmlDimension);
             dimension.init(cube, xmlDimension);
             cube.registerDimension(dimension);
-            this.closedPeer = (RolapLevel) dimension.getHierarchies()[0].getLevels()[1];
+            RolapLevel closedPeer =
+                    (RolapLevel) dimension.getHierarchies()[0].getLevels()[1];
+            this.levelReader = new ParentChildLevelReaderImpl(closedPeer);
+        } else {
+            this.levelReader = new RegularLevelReader();
         }
     }
 
@@ -423,19 +436,155 @@ public class RolapLevel extends LevelBase {
      * an equivalent closed level.
      */
     boolean hasClosedPeer() {
-        return (parentExp != null) && (closedPeer != null);
+        return levelReader instanceof ParentChildLevelReaderImpl;
     }
 
+
+    interface LevelReader {
+        /**
+         * Adds constraints to a cell request for a member of this level.
+         *
+         * @param member
+         * @param mapLevelToColumn
+         * @param request
+         * @return true if request is unsatisfiable (e.g. if the member is the
+         *   null member)
+         */
+        boolean constrainRequest(
+                RolapMember member,
+                Map mapLevelToColumn,
+                CellRequest request);
+    }
 
     /**
-     * When the level is part of a parent/child hierarchy and was provided with
-     * a closure, returns the equivalent closed level.
+     * Level reader for a regular level.
      */
-    RolapLevel getClosedPeer() {
-        return closedPeer;
+    class RegularLevelReader implements LevelReader {
+        public boolean constrainRequest(
+                RolapMember member,
+                Map mapLevelToColumn,
+                CellRequest request) {
+            assert member.getLevel() == RolapLevel.this;
+            if (member.getKey() == null) {
+                if (member == member.getHierarchy().getNullMember()) {
+                    // cannot form a request if one of the members is null
+                    return true;
+                } else {
+                    throw Util.newInternal("why is key null?");
+                }
+            }
+
+            RolapStar.Column column =
+                    (RolapStar.Column) mapLevelToColumn.get(RolapLevel.this);
+
+            if (column == null) {
+                // This hierarchy is not one which qualifies the starMeasure
+                // (this happens in virtual cubes). The starMeasure only has
+                // a value for the 'all' member of the hierarchy.
+                return true;
+            }
+            // use the member as constraint, this will give us some
+            //  optimization potential
+            request.addConstrainedColumn(
+                    column, new MemberColumnConstraint(member));
+            if (request.extendedContext && getNameExp() != null) {
+                RolapStar.Column nameColumn = column.getNameColumn();
+
+                Util.assertTrue(nameColumn != null);
+                request.addConstrainedColumn(nameColumn, null);
+            }
+
+            // Constrain the parent member, if any.
+            RolapMember parent = (RolapMember) member.getParentMember();
+            while (true) {
+                if (parent == null) {
+                    return false;
+                }
+                RolapLevel level = (RolapLevel) parent.getLevel();
+                final LevelReader levelReader = level.levelReader;
+                if (levelReader == this) {
+                    // We are looking at a parent in a parent-child hierarchy,
+                    // for example, we have moved from Fred to Fred's boss,
+                    // Wilma. We don't want to include Wilma's key in the
+                    // request.
+                    parent = (RolapMember) parent.getParentMember();
+                    continue;
+                }
+                return levelReader.constrainRequest(
+                        parent, mapLevelToColumn, request);
+            }
+        }
     }
 
+    /**
+     * Level reader for a parent-child level which has a closed peer level.
+     */
+    class ParentChildLevelReaderImpl extends RegularLevelReader {
+        /**
+         * For a parent-child hierarchy with a closure provided by the schema,
+         * the equivalent level in the closed hierarchy; otherwise null.
+         */
+        private final RolapLevel closedPeer;
 
+        ParentChildLevelReaderImpl(RolapLevel closedPeer) {
+            this.closedPeer = closedPeer;
+        }
+
+        public boolean constrainRequest(
+                RolapMember member,
+                Map mapLevelToColumn,
+                CellRequest request) {
+
+            // Replace a parent/child level by its closed equivalent, when
+            // available; this is always valid, and improves performance by
+            // enabling the database to compute aggregates.
+            if (member.getDataMember() == null) {
+                // Member has no data member because it IS the data
+                // member of a parent-child hierarchy member. Leave
+                // it be. We don't want to aggregate.
+                return super.constrainRequest(
+                        member, mapLevelToColumn, request);
+            } else if (request.drillThrough) {
+                member = (RolapMember) member.getDataMember();
+                return super.constrainRequest(
+                        member, mapLevelToColumn, request);
+            } else {
+                RolapLevel level = closedPeer;
+                final RolapMember allMember = (RolapMember)
+                        level.getHierarchy().getDefaultMember();
+                assert allMember.isAll();
+                member = new RolapMember(allMember, level,
+                        ((RolapMember) member).getKey());
+                return level.getLevelReader().constrainRequest(
+                        member, mapLevelToColumn, request);
+            }
+        }
+    }
+
+    /**
+     * Level reader for the level which contains the 'all' member.
+     */
+    class AllLevelReaderImpl implements LevelReader {
+        public boolean constrainRequest(
+                RolapMember member,
+                Map mapLevelToColumn,
+                CellRequest request) {
+            // We don't need to apply any constraints.
+            return false;
+        }
+    }
+
+    /**
+     * Level reader for the level which contains the null member.
+     */
+    class NullLevelReader implements LevelReader {
+        public boolean constrainRequest(
+                RolapMember member,
+                Map mapLevelToColumn,
+                CellRequest request) {
+            return true;
+        }
+    }
 }
 
 // End RolapLevel.java

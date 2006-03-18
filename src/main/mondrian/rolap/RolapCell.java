@@ -66,15 +66,8 @@ class RolapCell implements Cell {
 
         final RolapEvaluator evaluator = getEvaluator();
         final Member[] currentMembers = evaluator.getCurrentMembers();
-        for (int i = 0; i < currentMembers.length; i++) {
-            Member member = currentMembers[i];
-            final RolapLevel level = (RolapLevel) member.getLevel();
-            if (level.hasClosedPeer()) {
-                currentMembers[i] = member.getDataMember();
-            }
-        }
         CellRequest cellRequest = RolapAggregationManager.makeRequest(
-                currentMembers, extendedContext);
+                currentMembers, extendedContext, true);
         return (cellRequest == null)
             ? null
             : aggMan.getDrillThroughSQL(cellRequest);

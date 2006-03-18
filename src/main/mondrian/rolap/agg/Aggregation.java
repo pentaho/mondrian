@@ -149,21 +149,24 @@ public class Aggregation {
         // and the list of children as well.
         List potentialParents = new ArrayList();
         for (int i = 0; i < constraintses.length; i++) {
-            if (constraintses[i] != null &&
-                    constraintses[i].length == 1 &&
-                    constraintses[i][0].isMember()) {
-                potentialParents.add(constraintses[i][0].getMember());
+            final ColumnConstraint[] constraints = constraintses[i];
+            Member m;
+            if (constraints != null &&
+                    constraints.length == 1 &&
+                    (m = constraints[0].getMember()) != null) {
+                potentialParents.add(m);
             }
         }
 
         for (int i = 0; i < newConstraintses.length; i++) {
             // a set of constraints with only one entry will not be optimized away
-            if (newConstraintses[i] == null || newConstraintses[i].length < 2) {
+            final ColumnConstraint[] newConstraints = newConstraintses[i];
+            if (newConstraints == null || newConstraints.length < 2) {
                 bloats[i] = 0.0;
                 continue;
             }
 
-            if (newConstraintses[i].length > maxConstraints) {
+            if (newConstraints.length > maxConstraints) {
                 // DBs can handle only a limited number of elements in WHERE IN (...)
                 // so hopefully there are other constraints that will limit the result
                 bloats[i] = 1.0; // will be optimized away
@@ -171,11 +174,12 @@ public class Aggregation {
             }
 
             // more than one - check for children of same parent
-            double constraintLength = (double) newConstraintses[i].length;
+            double constraintLength = (double) newConstraints.length;
             Member parent = null;
             Level level = null;
-            for (int j = 0; j < newConstraintses[i].length; j++) {
-                if (!(newConstraintses[i][j].isMember())) {
+            for (int j = 0; j < newConstraints.length; j++) {
+                Member m = newConstraints[j].getMember();
+                if (m == null) {
                     // should not occur - but
                     //  we compute bloat by #constraints / column cardinality
                     parent = null;
@@ -183,7 +187,6 @@ public class Aggregation {
                     bloats[i] =  constraintLength / columns[i].getCardinality();
                     break;
                 } else {
-                    Member m = newConstraintses[i][j].getMember();
                     if (j == 0) {
                         parent = m.getParentMember();
                         level = m.getLevel();
@@ -376,8 +379,9 @@ public class Aggregation {
             this.mapKeyToOffset = new HashMap();
             if (constraints != null) {
                 valueSet = new HashSet();
-                for (int i = 0; i < constraints.length; i++)
+                for (int i = 0; i < constraints.length; i++) {
                     valueSet.add(constraints[i].getValue());
+                }
             }
         }
 

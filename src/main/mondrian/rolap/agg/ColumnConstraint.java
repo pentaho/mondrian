@@ -20,16 +20,9 @@ import mondrian.rolap.RolapMember;
 public class ColumnConstraint {
 
     private final Object value;
-    private final RolapMember member;
 
-    public ColumnConstraint(Object o) {
-        if ( o instanceof RolapMember ) {
-            member = (RolapMember) o;
-            value = member.getSqlKey();
-        } else {
-            member = null;
-            value = o;
-        }
+    public ColumnConstraint(Object value) {
+        this.value = value;
     }
 
     public Object getValue() {
@@ -37,36 +30,37 @@ public class ColumnConstraint {
     }
 
     public RolapMember getMember() {
-        return member;
+        return null;
     }
 
-    public boolean isMember() {
-        return (member != null);
+    /**
+     * Returns whether this constraint has the same constraining effect as the
+     * other constraint. This is weaker than {@link #equals(Object)} -- it is
+     * possible for two different members to constraint the same column in the
+     * same way.
+     */
+    public boolean equalConstraint(ColumnConstraint that) {
+        return this.value.equals(that.value);
     }
 
-    public boolean equals(Object other){
+    public boolean equals(Object other) {
         if (!(other instanceof ColumnConstraint)) {
             return false;
         }
-        if (member!= null) {
-            return (member.equals(((ColumnConstraint)other).getMember()));
-        }
+        final ColumnConstraint that = (ColumnConstraint) other;
         if (value != null) {
-            return (value.equals(((ColumnConstraint)other).getValue()));
+            return value.equals(that.getValue());
+        } else {
+            return null == that.getValue();
         }
-        return (null == ((ColumnConstraint)other).getValue());
     }
 
     public int hashCode() {
-        if (member!= null) {
-            return member.hashCode();
-        }
         if (value != null) {
             return value.hashCode();
         }
         return 0;
     }
-
 }
 
 // End ColumnConstraint.java

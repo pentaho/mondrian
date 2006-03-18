@@ -20,8 +20,7 @@ import java.util.Set;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Member;
 import mondrian.olap.Util;
-import mondrian.rolap.agg.CellRequest;
-import mondrian.rolap.agg.ColumnConstraint;
+import mondrian.rolap.agg.*;
 import mondrian.rolap.sql.SqlQuery;
 
 /**
@@ -62,7 +61,7 @@ public class SqlConstraintUtils {
         }
 
         CellRequest request =
-                RolapAggregationManager.makeRequest(members, false);
+                RolapAggregationManager.makeRequest(members, false, false);
         if (request == null) {
             assert !strict : "CellRequest is null - why?";
             // One or more of the members was null or calculated, so the
@@ -179,7 +178,7 @@ public class SqlConstraintUtils {
         Iterator it = members.iterator();
         for (int i = 0; i < constraints.length; i++) {
             RolapMember m = (RolapMember) it.next();
-            constraints[i] = new ColumnConstraint(m);
+            constraints[i] = new MemberColumnConstraint(m);
         }
         return constraints;
     }
