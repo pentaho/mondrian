@@ -914,14 +914,14 @@ public class MondrianFoodMartLoader {
         createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specpromo", new String[] {"promotion_id"}, baseTables, summaryTables);
         createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specstore", new String[] {"store_id"}, baseTables, summaryTables);
 
-        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_gender", new String[] {"gender"}, baseTables, summaryTables);
-        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_ms", new String[] {"marital_status"}, baseTables, summaryTables);
-        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_pfam", new String[] {"product_family"}, baseTables, summaryTables);
-        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_pdept", new String[] {"product_department"}, baseTables, summaryTables);
-        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_pcat", new String[] {"product_category"}, baseTables, summaryTables);
-        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_tmonth", new String[] {"month_of_year"}, baseTables, summaryTables);
-        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_tquarter", new String[] {"quarter"}, baseTables, summaryTables);
-        createIndex(false, "agg_gender_ms_prodcat_sales_fact_1997", "i_sls97gmp_tyear", new String[] {"the_year"}, baseTables, summaryTables);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_gender", new String[] {"gender"}, baseTables, summaryTables);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_ms", new String[] {"marital_status"}, baseTables, summaryTables);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_pfam", new String[] {"product_family"}, baseTables, summaryTables);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_pdept", new String[] {"product_department"}, baseTables, summaryTables);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_pcat", new String[] {"product_category"}, baseTables, summaryTables);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_tmonth", new String[] {"month_of_year"}, baseTables, summaryTables);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_tquarter", new String[] {"quarter"}, baseTables, summaryTables);
+        createIndex(false, "agg_g_ms_pcat_sales_fact_1997", "i_sls97gmp_tyear", new String[] {"the_year"}, baseTables, summaryTables);
 
         if (outputDirectory != null) {
             fileOutput.close();
@@ -1170,7 +1170,7 @@ public class MondrianFoodMartLoader {
             new Column("unit_sales_sum", Type.Currency, false),
             new Column("fact_count", Type.Integer, false),
         }, false, true);
-        createTable("agg_gender_ms_prodcat_sales_fact_1997", new Column[] {
+        createTable("agg_g_ms_pcat_sales_fact_1997", new Column[] {
             new Column("gender", Type.Varchar30, false),
             new Column("marital_status", Type.Varchar30, false),
             new Column("product_family", Type.Varchar30, true),

@@ -65,11 +65,11 @@ public class TestAggregationManager extends TestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
-                "select `agg_gender_ms_prodcat_sales_fact_1997`.`gender` as `c0`," +
-                " sum(`agg_gender_ms_prodcat_sales_fact_1997`.`unit_sales`) as `m0` " +
-                "from `agg_gender_ms_prodcat_sales_fact_1997` as `agg_gender_ms_prodcat_sales_fact_1997` " +
-                "where `agg_gender_ms_prodcat_sales_fact_1997`.`gender` = 'F' " +
-                "group by `agg_gender_ms_prodcat_sales_fact_1997`.`gender`",
+                "select `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c0`," +
+                " sum(`agg_g_ms_pcat_sales_fact_1997`.`unit_sales`) as `m0` " +
+                "from `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997` " +
+                "where `agg_g_ms_pcat_sales_fact_1997`.`gender` = 'F' " +
+                "group by `agg_g_ms_pcat_sales_fact_1997`.`gender`",
                 26
             )
         };
@@ -320,7 +320,7 @@ public class TestAggregationManager extends TestCase {
     }
 
     public void testCountDistinctCannotRollup() {
-        // Summary "agg_gender_ms_prodcat_sales_fact_1997" doesn't match,
+        // Summary "agg_g_ms_pcat_sales_fact_1997" doesn't match,
         // because we'd need to roll-up the distinct-count measure over
         // "month_of_year".
         CellRequest request = createRequest(
@@ -390,7 +390,7 @@ public class TestAggregationManager extends TestCase {
         //  [Time].[Quarter]
         //  [Product].[Category]
         //
-        // whereas agg table "agg_gender_ms_prodcat_sales_fact_1997" has
+        // whereas agg table "agg_g_ms_pcat_sales_fact_1997" has
         // granularity
         //
         //  [Time].[Quarter]
@@ -409,26 +409,26 @@ public class TestAggregationManager extends TestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 SqlPattern.MY_SQL_DIALECT | SqlPattern.ACCESS_DIALECT,
-                "select `agg_gender_ms_prodcat_sales_fact_1997`.`the_year` as `c0`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`quarter` as `c1`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`month_of_year` as `c2`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_family` as `c3`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_department` as `c4`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_category` as `c5`," +
-                " sum(`agg_gender_ms_prodcat_sales_fact_1997`.`customer_count`) as `m0` " +
-                "from `agg_gender_ms_prodcat_sales_fact_1997` as `agg_gender_ms_prodcat_sales_fact_1997` " +
-                "where `agg_gender_ms_prodcat_sales_fact_1997`.`the_year` = 1997" +
-                " and `agg_gender_ms_prodcat_sales_fact_1997`.`quarter` = 'Q1'" +
-                " and `agg_gender_ms_prodcat_sales_fact_1997`.`month_of_year` = 1" +
-                " and `agg_gender_ms_prodcat_sales_fact_1997`.`product_family` = 'Food'" +
-                " and `agg_gender_ms_prodcat_sales_fact_1997`.`product_department` = 'Deli'" +
-                " and `agg_gender_ms_prodcat_sales_fact_1997`.`product_category` = 'Meat' " +
-                "group by `agg_gender_ms_prodcat_sales_fact_1997`.`the_year`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`quarter`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`month_of_year`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_family`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_department`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_category`",
+                "select `agg_g_ms_pcat_sales_fact_1997`.`the_year` as `c0`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`quarter` as `c1`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` as `c2`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`product_family` as `c3`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`product_department` as `c4`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`product_category` as `c5`," +
+                " sum(`agg_g_ms_pcat_sales_fact_1997`.`customer_count`) as `m0` " +
+                "from `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997` " +
+                "where `agg_g_ms_pcat_sales_fact_1997`.`the_year` = 1997" +
+                " and `agg_g_ms_pcat_sales_fact_1997`.`quarter` = 'Q1'" +
+                " and `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` = 1" +
+                " and `agg_g_ms_pcat_sales_fact_1997`.`product_family` = 'Food'" +
+                " and `agg_g_ms_pcat_sales_fact_1997`.`product_department` = 'Deli'" +
+                " and `agg_g_ms_pcat_sales_fact_1997`.`product_category` = 'Meat' " +
+                "group by `agg_g_ms_pcat_sales_fact_1997`.`the_year`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`quarter`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`month_of_year`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`product_family`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`product_department`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`product_category`",
                 58)
         };
 
@@ -448,29 +448,29 @@ public class TestAggregationManager extends TestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 SqlPattern.MY_SQL_DIALECT | SqlPattern.ACCESS_DIALECT,
-                "select `agg_gender_ms_prodcat_sales_fact_1997`.`the_year` as `c0`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`quarter` as `c1`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`month_of_year` as `c2`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_family` as `c3`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_department` as `c4`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_category` as `c5`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`gender` as `c6`," +
-                " sum(`agg_gender_ms_prodcat_sales_fact_1997`.`customer_count`) as `m0` " +
-                "from `agg_gender_ms_prodcat_sales_fact_1997` as `agg_gender_ms_prodcat_sales_fact_1997` " +
-                "where `agg_gender_ms_prodcat_sales_fact_1997`.`the_year` = 1997" +
-                " and `agg_gender_ms_prodcat_sales_fact_1997`.`quarter` = 'Q1'" +
-                " and `agg_gender_ms_prodcat_sales_fact_1997`.`month_of_year` = 1" +
-                " and `agg_gender_ms_prodcat_sales_fact_1997`.`product_family` = 'Food'" +
-                " and `agg_gender_ms_prodcat_sales_fact_1997`.`product_department` = 'Deli'" +
-                " and `agg_gender_ms_prodcat_sales_fact_1997`.`product_category` = 'Meat'" +
-                " and `agg_gender_ms_prodcat_sales_fact_1997`.`gender` = 'F' " +
-                "group by `agg_gender_ms_prodcat_sales_fact_1997`.`the_year`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`quarter`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`month_of_year`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_family`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_department`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`product_category`," +
-                " `agg_gender_ms_prodcat_sales_fact_1997`.`gender`",
+                "select `agg_g_ms_pcat_sales_fact_1997`.`the_year` as `c0`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`quarter` as `c1`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` as `c2`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`product_family` as `c3`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`product_department` as `c4`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`product_category` as `c5`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c6`," +
+                " sum(`agg_g_ms_pcat_sales_fact_1997`.`customer_count`) as `m0` " +
+                "from `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997` " +
+                "where `agg_g_ms_pcat_sales_fact_1997`.`the_year` = 1997" +
+                " and `agg_g_ms_pcat_sales_fact_1997`.`quarter` = 'Q1'" +
+                " and `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` = 1" +
+                " and `agg_g_ms_pcat_sales_fact_1997`.`product_family` = 'Food'" +
+                " and `agg_g_ms_pcat_sales_fact_1997`.`product_department` = 'Deli'" +
+                " and `agg_g_ms_pcat_sales_fact_1997`.`product_category` = 'Meat'" +
+                " and `agg_g_ms_pcat_sales_fact_1997`.`gender` = 'F' " +
+                "group by `agg_g_ms_pcat_sales_fact_1997`.`the_year`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`quarter`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`month_of_year`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`product_family`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`product_department`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`product_category`," +
+                " `agg_g_ms_pcat_sales_fact_1997`.`gender`",
                 58)
         };
 

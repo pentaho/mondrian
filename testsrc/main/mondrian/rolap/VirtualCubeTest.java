@@ -70,7 +70,7 @@ public class VirtualCubeTest extends FoodMartTestCase {
     /** 
      * This method demonstrates bug 1449929
      */
-    public void testNoTimeDimension() {
+    public void _testNoTimeDimension() {
         Schema schema = getConnection().getSchema();
         final Cube cube = schema.createCube(fold(new String[] {
                 "<VirtualCube name=\"Sales vs Warehouse\">",

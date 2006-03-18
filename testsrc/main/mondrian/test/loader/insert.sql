@@ -288,7 +288,7 @@ GROUP BY "B"."product_id",
 # agg_gender_ms_state_sales_fact_1997
 ##################################################################
 
-INSERT INTO "agg_gender_ms_prodcat_sales_fact_1997" (
+INSERT INTO "agg_g_ms_pcat_sales_fact_1997" (
     "gender", 
     "marital_status",
     "product_family",
@@ -339,7 +339,7 @@ GROUP BY
 # Above query, rephrased for Access (which does not support
 # COUNT(DISTINCT ...) explicitly.
 #
-#INSERT INTO "agg_gender_ms_prodcat_sales_fact_1997" (
+#INSERT INTO "agg_g_ms_pcat_sales_fact_1997" (
 #    "gender", 
 #    "marital_status",
 #    "product_family",
