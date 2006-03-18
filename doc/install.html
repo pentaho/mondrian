@@ -254,24 +254,37 @@ log4j:WARN Please initialize the log4j system properly.</code></p>
 will vary depending upon your operating system, and intended
 source and target data sources.</p>
 
+<h5>Example 1. Loading MySQL from a file on Linux</h5>
+
 <p>The following example is a Linux command line to
 create a MySQL schema called 'foodmart', and create
 FoodMart tables from the test dataset in the SQL
-scripts:</p>
+scripts. First, create a <code>foodmart</code> database and a <code>foodmart</code> 
+user:</p>
 
 <blockquote>
   <p><code><i><b>$</b></i> mysqladmin create foodmart<b><i><br>
-$</i></b> java -cp
-"/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/usr/local/mysql/mysql-connector-java-3.0.16-ga-bin.jar"<br>
-&nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>
-&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>
-&nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=com.mysql.jdbc.Driver<br>
-&nbsp;&nbsp;&nbsp;&nbsp;
--inputFile=/mondrian/demo/FoodMartCreateData.sql <br>
-&nbsp;&nbsp;&nbsp;&nbsp;
--outputJdbcURL="jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin"</code><br>
+  $</i></b> mysql<b><br>
+  <i>mysql&gt;</i> grant all privileges on *.* to 'foodmart'@'localhost' identified 
+  by 'foodmart';<br>
+  <i>Query OK, 0 rows affected (0.00 sec)<br>
+  <br>
+  mysql&gt; </i></b>quit<b><i><br>
+  Bye</i></b></code></p>
+</blockquote>
+
+<p>Now load the data:</p>
+
+<blockquote>
+  
+  <p><code><b><i>$</i></b> java -cp
+"/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/usr/local/mysql/mysql-connector-java-3.0.16-ga-bin.jar"<br>&nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>&nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=com.mysql.jdbc.Driver<br>&nbsp;&nbsp;&nbsp;&nbsp;
+-inputFile=/mondrian/demo/FoodMartCreateData.sql <br>&nbsp;&nbsp;&nbsp;&nbsp;
+-outputJdbcURL="jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart"</code><br>
   </p>
 </blockquote>
+
+<h5>Example 2. Loading PostgreSQL from Access on Windows</h5>
 
 <p>The following example is a Windows command line to
 create FoodMart tables for PostgreSQL from the test
