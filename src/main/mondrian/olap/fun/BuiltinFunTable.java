@@ -1946,56 +1946,71 @@ public class BuiltinFunTable extends FunTableImpl {
                 return new FunDefBase(dummyFunDef) {
                     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                         // todo: implement ALL
-                        final ListCalc listCalc1 =
+                        final ListCalc listCalc0 =
                                 compiler.compileList(call.getArg(0));
-                        final ListCalc listCalc2 =
+                        final ListCalc listCalc1 =
                                 compiler.compileList(call.getArg(1));
-                        return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                List list1 = listCalc1.evaluateList(evaluator);
-                                List list2 = listCalc2.evaluateList(evaluator);
-                                return except(list1, list2);
-                            }
-                        };
+                        final Type elementType = ((SetType) listCalc0.getType()).getElementType();
+                        if (elementType instanceof TupleType) {
+                            return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
+                                public List evaluateList(Evaluator evaluator) {
+                                    List list0 = listCalc0.evaluateList(evaluator);
+                                    if (list0.isEmpty()) {
+                                        return list0;
+                                    }
+                                    List list1 = listCalc1.evaluateList(evaluator);
+                                    return exceptTuples(list0, list1);
+                                }
+                            };
+                        } else {
+                            return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
+                                public List evaluateList(Evaluator evaluator) {
+                                    List list0 = listCalc0.evaluateList(evaluator);
+                                    if (list0.isEmpty()) {
+                                        return list0;
+                                    }
+                                    List list1 = listCalc1.evaluateList(evaluator);
+                                    return except(list0, list1);
+                                }
+                            };
+                        }
                     }
 
-		    List except(final List list0, final List list1) {
-			if (list0 == null || list1 == null || 
-			    list0.size() == 0 || list1.size() == 0) {
-			    return list0;
-			}
-                        HashSet set = new HashSet(list1);
+                    List except(final List list0, final List list1) {
+                        if (list0.size() == 0) {
+                            return list0;
+                        }
+                        Set set = new HashSet(list1);
                         List result = new ArrayList();
-			Object[] arr = set.toArray();
                         for (int i = 0, count = list0.size(); i < count; i++) {
                             Object o = list0.get(i);
-			    if (o.getClass().isArray()) {
-				// unfortunately the elegant check of 
-				// set.contains(o) is always going to return
-				// false for an array, because it uses .equals
-				// which is == for array objects. so, with 
-				// no way to override this behavior, we
-				// have to do our own containment check.
-				// this change is a fix for bug 1439627
-				boolean contained = false;
-				for (int j = 0; j < arr.length; j++) {
-				    if (java.util.Arrays.equals((Object[])o, 
-								(Object[])arr[j])) {
-					contained = true;
-				    }
-				}
-				if (!contained) {
-				    result.add(o);
-				}
-			    } else {
-				if (!set.contains(o)) {
-				    result.add(o);
-				}
-			    }
+                            if (!set.contains(o)) {
+                                result.add(o);
+                            }
                         }
                         return result;
                     }
 
+                    List exceptTuples(final List list0, final List list1) {
+                        if (list0.size() == 0) {
+                            return list0;
+                        }
+                        // Because the .equals and .hashCode methods of
+                        // Member[] use identity, wrap each tuple in a list.
+                        Set set = new HashSet();
+                        for (int i = 0, count1 = list1.size(); i < count1; i++) {
+                            Member[] members = (Member[]) list1.get(i);
+                            set.add(Arrays.asList(members));
+                        }
+                        List result = new ArrayList();
+                        for (int i = 0, count0 = list0.size(); i < count0; i++) {
+                            Member[] members = (Member[]) list0.get(i);
+                            if (!set.contains(Arrays.asList(members))) {
+                                result.add(members);
+                            }
+                        }
+                        return result;
+                    }
                 };
             }
         });

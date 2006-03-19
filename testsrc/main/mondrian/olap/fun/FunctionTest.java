@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde and others
+// Copyright (C) 2003-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -1886,39 +1886,47 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Promotion Media].[All Media].[Sunday Paper, Radio, TV]"}));
     }
 
+    public void testExceptEmpty() {
+        // If left is empty, result is empty.
+        assertAxisReturns("Except(Filter([Gender].Members, 1=0), {[Gender].[M]})",
+                "");
+
+        // If right is empty, result is left.
+        assertAxisReturns("Except({[Gender].[M]}, Filter([Gender].Members, 1=0))",
+                "[Gender].[All Gender].[M]");
+    }
+
     /**
-     * tests that Except() successfully removes crossjoined tuples
-     * from the axis results.  previously, this would fail by returning
+     * Tests that Except() successfully removes crossjoined tuples
+     * from the axis results.  Previously, this would fail by returning
      * all tuples in the first argument to Except.  bug 1439627
      */
-
     public void testExceptCrossjoin() {
-	assertAxisReturns(
-           fold(new String[] {
-	       "Except(CROSSJOIN({[Promotion Media].[All Media]},",
-	       "                  [Product].[All Products].Children),",
-	       "       CROSSJOIN({[Promotion Media].[All Media]},",
-	       "                  {[Product].[All Products].[Drink]}))" }),
-	   fold(new String[] {
-	       "{[Promotion Media].[All Media], [Product].[All Products].[Food]}",
-	       "{[Promotion Media].[All Media], [Product].[All Products].[Non-Consumable]}" }));
+        assertAxisReturns(
+                fold(new String[] {
+                    "Except(CROSSJOIN({[Promotion Media].[All Media]},",
+                    "                  [Product].[All Products].Children),",
+                    "       CROSSJOIN({[Promotion Media].[All Media]},",
+                    "                  {[Product].[All Products].[Drink]}))" }),
+                fold(new String[] {
+                    "{[Promotion Media].[All Media], [Product].[All Products].[Food]}",
+                    "{[Promotion Media].[All Media], [Product].[All Products].[Non-Consumable]}" }));
     }
 
     /** 
-     * tests that TopPercent() operates succesfully on a 
+     * Tests that TopPercent() operates succesfully on a
      * axis of crossjoined tuples.  previously, this would 
      * fail with a ClassCastException in FunUtil.java.  bug 1440306
      */
-
     public void testTopPercentCrossjoin() {
-	assertAxisReturns(
-	   fold(new String[] {
-	       "{TopPercent(Crossjoin([Product].[Product Department].members,",
-	       "[Time].[1997].children),10,[Measures].[Store Sales])}" }),
-	   fold(new String[] {
-	       "{[Product].[All Products].[Food].[Produce], [Time].[1997].[Q4]}",
-	       "{[Product].[All Products].[Food].[Produce], [Time].[1997].[Q1]}",
-	       "{[Product].[All Products].[Food].[Produce], [Time].[1997].[Q3]}" }));
+        assertAxisReturns(
+                fold(new String[] {
+                    "{TopPercent(Crossjoin([Product].[Product Department].members,",
+                    "[Time].[1997].children),10,[Measures].[Store Sales])}" }),
+                fold(new String[] {
+                    "{[Product].[All Products].[Food].[Produce], [Time].[1997].[Q4]}",
+                    "{[Product].[All Products].[Food].[Produce], [Time].[1997].[Q1]}",
+                    "{[Product].[All Products].[Food].[Produce], [Time].[1997].[Q3]}" }));
     }
 
     public void testCrossjoinNested() {
@@ -4916,6 +4924,11 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Customers].[All Customers].[USA].[WA].[Spokane].[Matt Bellah]"}));
     }
 
+    public void testTopCountEmpty() {
+        assertAxisReturns("TopCount(Filter({[Promotion Media].[Media Type].members}, 1=0), 2, [Measures].[Unit Sales])",
+                "");
+    }
+
     public void testTopPercent() {
         assertAxisReturns("TopPercent({[Promotion Media].[Media Type].members}, 70, [Measures].[Unit Sales])",
                 "[Promotion Media].[All Media].[No Media]");
@@ -4928,6 +4941,11 @@ public class FunctionTest extends FoodMartTestCase {
                 fold(new String[] {
                     "[Promotion Media].[All Media].[No Media]",
                     "[Promotion Media].[All Media].[Daily Paper, Radio, TV]"}));
+    }
+
+    public void testTopSumEmpty() {
+        assertAxisReturns("TopSum(Filter({[Promotion Media].[Media Type].members}, 1=0), 200000, [Measures].[Unit Sales])",
+                "");
     }
 
     public void testUnionAll() {

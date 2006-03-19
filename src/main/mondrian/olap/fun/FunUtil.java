@@ -3,8 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2005 Kana Software, Inc. and others.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2002 Kana Software, Inc.
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -165,7 +165,7 @@ public class FunUtil extends Util {
     /**
      * Adds every element of <code>right</code> which is not in <code>set</code>
      * to both <code>set</code> and <code>left</code>.
-     **/
+     */
     static void addUnique(List left, List right, Set set) {
         assert left != null;
         assert right != null;
@@ -224,7 +224,7 @@ public class FunUtil extends Util {
      * Returns whether <code>m0</code> is an ancestor of <code>m1</code>.
      *
      * @param strict if true, a member is not an ancestor of itself
-     **/
+     */
     static boolean isAncestorOf(Member m0, Member m1, boolean strict) {
         if (strict) {
             if (m1 == null) {
@@ -245,9 +245,12 @@ public class FunUtil extends Util {
      * For each member in a list, evaluate an expression and create a map
      * from members to values.
      *
+     * <p>If the list contains tuples, use
+     * {@link #evaluateTuples(mondrian.olap.Evaluator, mondrian.calc.Calc, java.util.List)}.
+     *
      * @param evaluator Evaluation context
      * @param exp Expression to evaluate
-     * @param members List of members (or List of Member[] tuples)
+     * @param members List of members
      * @param parentsToo If true, evaluate the expression for all ancestors
      *            of the members as well
      *
@@ -262,26 +265,18 @@ public class FunUtil extends Util {
         assert exp.getType() instanceof ScalarType;
         Map mapMemberToValue = new HashMap();
         for (int i = 0, count = members.size(); i < count; i++) {
-	    Object elem = members.get(i); 
-	    // class of elem is either Member or Member[]
-	    // now we check to see if it is an array that
-	    // resulted from crossjoin, addressing bug 1440306
-	    boolean isTuple = elem.getClass().isArray();
+            Member member = (Member) members.get(i);
             while (true) {
-		if (isTuple) {
-		    evaluator.setContext((Member[])elem);
-		} else {
-		    evaluator.setContext((Member)elem);
-		}
+                evaluator.setContext(member);
                 Object result = exp.evaluate(evaluator);
                 if (result == null) {
                     result = Util.nullValue;
                 }
-                mapMemberToValue.put(elem, result);
+                mapMemberToValue.put(member, result);
                 if (!parentsToo) {
                     break;
                 }
-                Member member = ((Member)elem).getParentMember();
+                member = member.getParentMember();
                 if (member == null) {
                     break;
                 }
@@ -289,6 +284,35 @@ public class FunUtil extends Util {
                     break;
                 }
             }
+        }
+        return mapMemberToValue;
+    }
+
+    /**
+     * For each tuple in a list, evaluates an expression and creates a map
+     * from tuples to values.
+     *
+     * @param evaluator Evaluation context
+     * @param exp Expression to evaluate
+     * @param members List of members (or List of Member[] tuples)
+     *
+     * @pre exp != null
+     * @pre exp.getType() instanceof ScalarType
+     */
+    static Map evaluateTuples(
+            Evaluator evaluator,
+            Calc exp,
+            List members) {
+        assert exp.getType() instanceof ScalarType;
+        Map mapMemberToValue = new HashMap();
+        for (int i = 0, count = members.size(); i < count; i++) {
+            Member[] tuples = (Member[]) members.get(i);
+            evaluator.setContext(tuples);
+            Object result = exp.evaluate(evaluator);
+            if (result == null) {
+                result = Util.nullValue;
+            }
+            mapMemberToValue.put(tuples, result);
         }
         return mapMemberToValue;
     }
@@ -301,7 +325,7 @@ public class FunUtil extends Util {
         for (int i = 0, count = members.size(); i < count; i++) {
             Member member = (Member)members.get(i);
             while (true) {
-		evaluator.setContext(member);
+                evaluator.setContext(member);
                 Object result = evaluator.evaluateCurrent();
                 mapMemberToValue.put(member, result);
                 if (!parentsToo) {
@@ -462,14 +486,14 @@ public class FunUtil extends Util {
      */
     static void toPercent(List members, Map mapMemberToValue) {
         double total = 0;
-        int numMembers = members.size();
-        for (int i = 0; i < numMembers; i++) {
+        int memberCount = members.size();
+        for (int i = 0; i < memberCount; i++) {
             Object o = mapMemberToValue.get(members.get(i));
             if (o instanceof Number) {
                 total += ((Number) o).doubleValue();
             }
         }
-        for (int i = 0; i < numMembers; i++) {
+        for (int i = 0; i < memberCount; i++) {
             Object member = members.get(i);
             Object o = mapMemberToValue.get(member);
             if (o instanceof Number) {
@@ -479,7 +503,6 @@ public class FunUtil extends Util {
                     new Double(d / total * (double) 100));
             }
         }
-
     }
 
     /**
@@ -494,15 +517,24 @@ public class FunUtil extends Util {
             boolean isTop,
             boolean isPercent,
             double target) {
-        Map mapMemberToValue = evaluateMembers(evaluator, exp, members, false);
-	sort(evaluator, members, exp, isTop, true);
+        if (members.isEmpty()) {
+            return members;
+        }
+        Map mapMemberToValue;
+        Object first = members.get(0);
+        if (first instanceof Member) {
+            mapMemberToValue = evaluateMembers(evaluator, exp, members, false);
+        } else {
+            mapMemberToValue = evaluateTuples(evaluator, exp, members);
+        }
+        sort(evaluator, members, exp, isTop, true);
         if (isPercent) {
             toPercent(members, mapMemberToValue);
         }
         double runningTotal = 0;
-        int numMembers = members.size();
+        int memberCount = members.size();
         int nullCount = 0;
-        for (int i = 0; i < numMembers; i++) {
+        for (int i = 0; i < memberCount; i++) {
             if (runningTotal >= target) {
                 members = members.subList(0, i);
                 break;
@@ -522,10 +554,10 @@ public class FunUtil extends Util {
         // MSAS exhibits the following behavior. If the value of all members is
         // null, then the first (or last) member of the set is returned for percent
         // operations.
-        if ((numMembers > 0) && isPercent && (nullCount == numMembers)) {
+        if ((memberCount > 0) && isPercent && (nullCount == memberCount)) {
             return (isTop)
                 ? members.subList(0, 1)
-                : members.subList(numMembers - 1, numMembers);
+                : members.subList(memberCount - 1, memberCount);
         }
         return members;
     }
