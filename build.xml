@@ -17,7 +17,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="2.0.1"/>
+  <property name="version" value="2.1-RC"/>
 
   <!--
     ===================================================================
@@ -38,6 +38,7 @@
   <property name="testclasses.dir" value="testclasses"/>
   <property name="build.dir" value="build"/>
   <property name="dist.name" value="${name}-${version}"/>
+  <property name="embedded.dist.name" value="${name}-${version}-embedded"/>
   <property name="dist.base" value="distribution"/>
   <property name="dist.dir" value="dist"/>
   <property name="demo.dir" value="demo"/>
@@ -660,7 +661,7 @@ ${doc.dir}/api/src-html/**/*"/>
     <zip zipfile="${dist.bin.derby.file}">
       <zipfileset
           dir="."
-          prefix="${dist.name}"
+          prefix="${embedded.dist.name}"
           includes="
 ${doc.dir}/**/*.jpg,
 ${doc.dir}/**/*.html,
@@ -681,7 +682,7 @@ VERSION.txt"
 ${doc.dir}/api/src-html/**/*"/>
       <zipfileset
           dir="${dist.dir}"
-          prefix="${dist.name}"
+          prefix="${embedded.dist.name}"
           includes="${dist.name}-src.zip"/>
     </zip>
   </target>
@@ -831,7 +832,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
 
     <war warfile="${war.file}"
         webxml="${build.dir}/mondrian/WEB-INF/web.xml">
-      <webinf dir="${webapp.dir}/WEB-INF" includes="datasources.xml,*.xsl,*.tld,**/*.jsp"/>
+      <webinf dir="${webapp.dir}/WEB-INF" includes="mondrian.properties,datasources.xml,*.xsl,*.tld,**/*.jsp"/>
       <webinf dir="${build.dir}/mondrian/WEB-INF" includes="jpivot/**/*.*,wcf/**/*.*,queries/*.jsp"
       		excludes="queries/xmla.jsp"/>
       <!-- our FoodMart.xml may be newer than jpivot's  excludes="web.xml,web-jpivot.xml" -->
