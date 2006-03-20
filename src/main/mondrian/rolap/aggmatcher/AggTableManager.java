@@ -66,8 +66,15 @@ public class AggTableManager {
      * associated RolapSchema object.
      */
     public void finalCleanUp() { 
-        clearJdbcSchema();
+        removeJdbcSchema();
         deregisterTriggers(MondrianProperties.instance());
+
+        if (getLogger().isDebugEnabled()) {
+            StringBuffer buf = new StringBuffer(100);
+            buf.append("AggTableManager.finalCleanUp: schema=");
+            buf.append(schema.getName());
+            getLogger().debug(buf.toString());
+        }
     }
 
     /**
@@ -143,13 +150,6 @@ public class AggTableManager {
         }
     }
 
-    /**
-     * Clear the possibly already loaded snapshot of what is in the database.
-     */
-    private void clearJdbcSchema() {
-        DataSource dataSource = schema.getInternalConnection().getDataSource();
-        JdbcSchema.clearDB(dataSource);
-    }
     private JdbcSchema getJdbcSchema() {
         DataSource dataSource = schema.getInternalConnection().getDataSource();
 
@@ -159,6 +159,23 @@ public class AggTableManager {
 
         return db;
     }
+
+    /**
+     * Clear the possibly already loaded snapshot of what is in the database.
+     */
+    private void clearJdbcSchema() {
+        DataSource dataSource = schema.getInternalConnection().getDataSource();
+        JdbcSchema.clearDB(dataSource);
+    }
+
+    /**
+     * Remove the possibly already loaded snapshot of what is in the database.
+     */
+    private void removeJdbcSchema() {
+        DataSource dataSource = schema.getInternalConnection().getDataSource();
+        JdbcSchema.removeDB(dataSource);
+    }
+
 
     /**
      * This method loads and/or reloads the aggregate tables.
@@ -374,6 +391,11 @@ public class AggTableManager {
             }
         };
 
+        // Note that for each AggTableManager theses triggers are 
+        // added to the properties object. Each trigger has just
+        // been created and "knows" its AggTableManager instance.
+        // The triggers' hashCode and equals methods (those provided
+        // by the Object class) are used when removing the trigger.
         properties.ChooseAggregateByVolume.addTrigger(triggers[0]);
         properties.AggregateRules.addTrigger(triggers[1]);
         properties.AggregateRuleTag.addTrigger(triggers[1]);
@@ -381,6 +403,7 @@ public class AggTableManager {
     }
 
     private void deregisterTriggers(final MondrianProperties properties) {
+        // Remove this AggTableManager's instance's triggers.
         properties.ChooseAggregateByVolume.removeTrigger(triggers[0]);
         properties.AggregateRules.removeTrigger(triggers[1]);
         properties.AggregateRuleTag.removeTrigger(triggers[1]);

@@ -10,6 +10,7 @@
 
 package mondrian.rolap.aggmatcher;
 
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianDef;
 import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapStar;
@@ -19,10 +20,19 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
+import java.lang.ref.SoftReference;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.*;
-import java.util.*;
+import java.sql.ResultSet;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.Types;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * This class is used to scrape a database and store information about its
@@ -60,36 +70,39 @@ public class JdbcSchema {
 
     public interface Factory {
         JdbcSchema makeDB(DataSource dataSource);
-        void clearDB(DataSource dataSource);
+        void clearDB(JdbcSchema db);
+        void removeDB(JdbcSchema db);
     }
 
+    private static final Map dbMap = new HashMap();
+
+    /** 
+     * How often between sweeping through the dbMap looking for nulls. 
+     */
+    private static final int SWEEP_COUNT = 10;
+    private static int sweepDBCount = 0;
+
     public static class StdFactory implements Factory {
-        private final WeakHashMap dbMap = new WeakHashMap();
         StdFactory() {
         }
         public JdbcSchema makeDB(DataSource dataSource) {
-            JdbcSchema db = (JdbcSchema) dbMap.get(dataSource);
-            if (db == null) {
-                db = new JdbcSchema(dataSource);
-                dbMap.put(dataSource, db);
-            }
+            JdbcSchema db = new JdbcSchema(dataSource);
             return db;
         }
-        public void clearDB(DataSource dataSource) {
-            JdbcSchema db = (JdbcSchema) dbMap.get(dataSource);
-            if (db != null) {
-                db.clear();
-            }
+        public void clearDB(JdbcSchema db) {
+            // NoOp
+        }
+        public void removeDB(JdbcSchema db) {
+            // NoOp
         }
     }
 
-    public static final String FACTORY_CLASS =
-                        "mondrian.rolap.aggregates.jdbcFactoryClass";
     private static Factory factory;
 
     private static void makeFactory() {
         if (factory == null) {
-            String classname = System.getProperty(FACTORY_CLASS);
+            String classname =
+                    MondrianProperties.instance().JdbcFactoryClass.get();
             if (classname == null) {
                 factory = new StdFactory();
             } else {
@@ -106,15 +119,97 @@ public class JdbcSchema {
             }
         }
     }
-    public static synchronized void clearDB(DataSource dataSource) {
-        makeFactory();
-        factory.clearDB(dataSource);
-    }
-
+    
+    /** 
+     * Create or retrieve an instance of the JdbcSchema for the given
+     * DataSource.
+     * 
+     * @param dataSource 
+     * @return 
+     */
     public static synchronized JdbcSchema makeDB(DataSource dataSource) {
         makeFactory();
-        return factory.makeDB(dataSource);
+
+        JdbcSchema db = null;
+        SoftReference ref = (SoftReference) dbMap.get(dataSource);
+        if (ref != null) {
+            db = (JdbcSchema) ref.get();
+        }
+        if (db == null) {
+            db = factory.makeDB(dataSource);
+            dbMap.put(dataSource, new SoftReference(db));
+        }
+
+        sweepDB();
+
+        return db;
     }
+    /** 
+     * Clear information in a JdbcSchema associated with a DataSource. 
+     * 
+     * @param dataSource 
+     */
+    public static synchronized void clearDB(DataSource dataSource) {
+        makeFactory();
+
+        SoftReference ref = (SoftReference) dbMap.get(dataSource);
+        if (ref != null) {
+            JdbcSchema db = (JdbcSchema) ref.get();
+            if (db != null) {
+                factory.clearDB(db);
+                db.clear();
+            } else {
+                dbMap.remove(dataSource);
+            }
+        }
+        sweepDB();
+    }
+    
+    /** 
+     * Remove a JdbcSchema associated with a DataSource. 
+     * 
+     * @param dataSource 
+     */
+    public static synchronized void removeDB(DataSource dataSource) {
+        makeFactory();
+
+        SoftReference ref = (SoftReference) dbMap.remove(dataSource);
+        if (ref != null) {
+            JdbcSchema db = (JdbcSchema) ref.get();
+            if (db != null) {
+                factory.removeDB(db);
+                db.remove();
+            }
+        }
+        sweepDB();
+    }
+    
+    /** 
+     * Every SWEEP_COUNT calls to this method, go through all elements of
+     * the dbMap removing all that either have null values (null SoftReference)
+     * or those with SoftReference with null content.
+     */
+    private static void sweepDB() {
+        if (sweepDBCount > SWEEP_COUNT) {
+            Iterator it = dbMap.values().iterator();
+            while (it.hasNext()) {
+                SoftReference ref = (SoftReference) it.next();
+                if ((ref == null) || (ref.get() == null)) {
+                    try {
+                        it.remove();
+                    } catch (Exception ex) {
+                        // Should not happen, but might still like to
+                        // know that something's funky.
+                        LOGGER.warn(ex);
+                    }
+                }
+
+            }
+            // reset
+            sweepDBCount = 0;
+        }
+    }
+
 
     //
     // Types of column usages.
@@ -1131,6 +1226,11 @@ public class JdbcSchema {
         schema = null;
         catalog = null;
         tables.clear();
+    }
+    protected void remove() {
+        // set ALL instance variables to null
+        clear();
+        dataSource = null;
     }
 
     /**

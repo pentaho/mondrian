@@ -723,6 +723,10 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public final IntegerProperty MaxEvalDepth = new IntegerProperty(
             this, "mondrian.rolap.evaluate.MaxEvalDepth", 10);
+
+
+    public final StringProperty JdbcFactoryClass = new StringProperty(
+            this, "mondrian.rolap.aggregates.jdbcFactoryClass", null);
 }
 
 // End MondrianProperties.java
