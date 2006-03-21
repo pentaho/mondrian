@@ -620,7 +620,7 @@ doc/deployDoc.sh" />
   <target name="release" depends="binzip"/>
 
   <target name="binzip"
-      depends="version,war,srczip,javadoc,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
+      depends="version,war,srczip,javadoc,xml_schema,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
@@ -655,7 +655,7 @@ ${doc.dir}/api/src-html/**/*"/>
   </target>
   
   <target name="binDerbyzip"
-      depends="version,derby-war,srczip,javadoc,unzip-FoodMartDerbyDB">
+      depends="version,derby-war,srczip,javadoc,xml_schema,unzip-FoodMartDerbyDB">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.derby.file}"/>
     <zip zipfile="${dist.bin.derby.file}">
@@ -744,6 +744,13 @@ VERSION.txt"/>
           includes="
 META-INF/**"/>
     </zip>
+  </target>
+
+  <target name="xml_schema"
+      description="Generates xml_schema.html from Mondrian.xml">
+    <xslt in="src/main/mondrian/olap/Mondrian.xml"
+        out="doc/xml_schema.html"
+        style="misc/Meta.xsl"/>
   </target>
 
   <target name="javadoc">

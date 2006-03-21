@@ -1,14 +1,15 @@
-<?xsl version='1.0'?>
+<?xml version='1.0'?>
 <!--
   == $Id$
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2000-2005 Kana Software, Inc. and others.
+  == Copyright (C) 2000-2002 Kana Software, Inc.
+  == Copyright (C) 2002-2006 Julian Hyde and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/TR/WD-xsl">
+<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
 <!-- Main document -->
 <xsl:template match="/">
@@ -511,7 +512,7 @@ DFN { font-weight:bold; font-style:italic; }
   <xsl:for-each select="Attribute">
   <tr><td>
           <xsl:choose>
-         <xsl:when test=".[@required='true']">
+         <xsl:when test="@required='true'">
              <b><xsl:value-of select="@name"/></b>
              </xsl:when>
          <xsl:otherwise>
@@ -565,14 +566,14 @@ DFN { font-weight:bold; font-style:italic; }
       <td><xsl:value-of select="@name"/></td>
       <td>
          <xsl:choose>
-        <xsl:when test=".[@required='true']">
+        <xsl:when test="@required='true'">
             <i>Required</i>
         </xsl:when>
         <xsl:when test="@min">
             <i>Array [<xsl:value-of select="@min"/> ..
         <xsl:value-of select="@max"/>]</i>
         </xsl:when>
-        <xsl:when test=".[@name=../Array/@name]">
+        <xsl:when test="@name=../Array/@name">
             <i>Array</i>
         </xsl:when>
         <xsl:otherwise>
@@ -595,7 +596,7 @@ DFN { font-weight:bold; font-style:italic; }
 <xsl:when test="CData"><i>Text</i></xsl:when>
 <xsl:otherwise><i>empty</i></xsl:otherwise>
 </xsl:choose>
-<xsl:if test=".[@keepDef='true']">; keep DOM node</xsl:if>
+<xsl:if test="@keepDef='true'">; keep DOM node</xsl:if>
 
 </blockquote>
 </xsl:template>
@@ -638,7 +639,7 @@ DFN { font-weight:bold; font-style:italic; }
   <xsl:for-each select="Attribute">
   <tr><td>
           <xsl:choose>
-         <xsl:when test=".[@required='true']">
+         <xsl:when test="@required='true'">
              <b><xsl:value-of select="@name"/></b>
              </xsl:when>
          <xsl:otherwise>
@@ -730,7 +731,7 @@ DFN { font-weight:bold; font-style:italic; }
   <xsl:for-each select="Attribute">
   <tr><td>
           <xsl:choose>
-         <xsl:when test=".[@required='true']">
+         <xsl:when test="@required='true'">
              <b><xsl:value-of select="@name"/></b>
              </xsl:when>
          <xsl:otherwise>
@@ -784,14 +785,14 @@ DFN { font-weight:bold; font-style:italic; }
       <td><xsl:value-of select="@name"/></td>
       <td>
          <xsl:choose>
-        <xsl:when test=".[@required='true']">
+        <xsl:when test="@required='true'">
             <i>Required</i>
         </xsl:when>
         <xsl:when test="@min">
             <i>Array [<xsl:value-of select="@min"/> ..
         <xsl:value-of select="@max"/>]</i>
         </xsl:when>
-        <xsl:when test=".[@name=../Array/@name]">
+        <xsl:when test="@name=../Array/@name">
             <i>Array</i>
         </xsl:when>
         <xsl:otherwise>

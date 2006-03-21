@@ -17,29 +17,45 @@
 <h2>Contents</h2>
   <ul>
 	<li><a href="#Introduction">Introduction</a></li>
-	<li><a href="#What_are_aggregates">What are aggregate tables?</a><ol>
-		<li><a href="#A_simple_aggregate_table">A simple aggregate table</a></li>
-		<li><a href="#Another_aggregate_table">Another aggregate table</a></li>
-	</ol></li>
+	<li><a href="#What_are_aggregates">What are aggregate tables?</a><ul>
+      <li><a href="#A_simple_aggregate_table">A simple aggregate table</a></li>
+      <li><a href="#Another_aggregate_table">Another aggregate table</a></li>
+    </ul>
+    </li>
 	<li><a href="#Defining_aggregate_tables">Defining aggregate tables</a></li>
 	<li><a href="#Building_aggregates">Building aggregate tables</a></li>
 	<li><a href="#How_Mondrian_recognizes_Aggregate_Tables">How Mondrian 
-	recognizes aggregate tables</a><ol>
-		<li><a href="#Recognizing_default">Rules</a></li>
-		<li><a href="#Recognizing_explicit">Explicit aggregates</a></li>
-	</ol></li>
-	<li><a href="#How_Mondrian_uses_aggregate_tables">How Mondrian uses 
-	aggregate tables</a></li>
-	<li><a href="#Tools_for_designing_and_maintaining_aggregate_tables">Tools 
+	recognizes aggregate tables</a><ul>
+      <li><a href="#Recognizing_default">Rules</a></li>
+      <li><a href="#Recognizing_explicit">Explicit aggregates</a></li>
+    </ul>
+    </li>
+	<li><a href="#Aggregate_tables_and_parent-child_hierarchies">Aggregate 
+    tables and parent-child hierarchies</a><ul>
+	<li>
+    <a href="#Aggregate_tables_at_the_leaf_level_of_a_parent-child_hierarchy">
+    Aggregate tables at the leaf level of a parent-child hierarchy</a></li>
+    <li><a href="#Combined_closure_and_aggregate_tables">Combined closure and 
+    aggregate tables</a></li>
+    </ul></li>
+    <li><a href="#How_Mondrian_uses_aggregate_tables">How Mondrian uses 
+	aggregate tables</a><ul>
+	<li><a href="#Choosing_between_aggregate_tables">Choosing between aggregate 
+    tables</a></li>
+    <li><a href="#Distinct_count">Distinct count</a></li>
+    </ul>
+
+    </li>
+    <li><a href="#Tools_for_designing_and_maintaining_aggregate_tables">Tools 
 		for designing and maintaining aggregate tables</a><ul>
-		<li><a href="#AggGen_aggregate_generator">AggGen (aggregate generator)</a></li>
-		<li><a href="#Aggregate_table_populater">Aggregate table populater</a></li>
-		<li><a href="#Script_generator">Script generator</a></li>
-		<li><a href="#Recommender">Recommender</a></li>
-		<li><a href="#Online_offline_control">Online/offline control</a></li>
-	</ul>
-	<li><a href="#Aggregate_properties">Properties which affect aggregates</a><li>
-	<a href="#References">References</a></ul>
+      <li><a href="#AggGen_aggregate_generator">AggGen (aggregate generator)</a></li>
+      <li><a href="#Aggregate_table_populater">Aggregate table populater</a></li>
+      <li><a href="#Script_generator">Script generator</a></li>
+      <li><a href="#Recommender">Recommender</a></li>
+      <li><a href="#Online_offline_control">Online/offline control</a></li>
+    </ul>
+    <li><a href="#Aggregate_properties">Properties which affect aggregates</a><li>
+    <a href="#References">References</a></ul>
 
 <h2><a name="Introduction">Introduction</a></h2>
 <p>
@@ -1487,7 +1503,7 @@ example.</p>
 </blockquote>
 
 <h3>
-Aggregate tables at the leaf level of a parent-child hierarchy</h3>
+<a name="Aggregate_tables_at_the_leaf_level_of_a_parent-child_hierarchy">Aggregate tables at the leaf level of a parent-child hierarchy</a></h3>
 
 <p>
 The simplest option is to create an aggregate table which joins at the leaf 
@@ -1522,7 +1538,7 @@ agg_salary_Employee_Time_Year.supervisor_id</code>&nbsp; to rollup employees
 efficiently.</p>
 
 <h3>
-Combined closure and aggregate tables</h3>
+<a name="Combined_closure_and_aggregate_tables">Combined closure and aggregate tables</a></h3>
 
 <p>
 A more advanced option is to combine the closure table and aggregate table into 
@@ -1581,13 +1597,24 @@ hierarchy) it find and use the aggregate table in the ordinary way.</p>
 <h2>
 <a name="How_Mondrian_uses_aggregate_tables">How Mondrian uses aggregate tables</a></h2>
 
+<h3>
+<a name="Choosing_between_aggregate_tables">Choosing between aggregate tables</a></h3>
+
 <p>
-In general Mondrian looks for the nearest hit. If there is no aggregate table at 
-the desired granularity, Mondrian rolls up from an aggregate table of lower 
-granularity. See property <code>mondrian.rolap.aggregates.ChooseByVolume</code>.</p>
+If more than one aggregate table matches a particular query, Mondrian needs to 
+choose between them.</p>
+
+<p>
+If there is an aggregate table of the same granularity as the query, Mondrian 
+will use it. If there is no aggregate table at 
+the desired granularity, Mondrian will pick an aggregate table of lower 
+granularity and roll up from it. In general, Mondrian chooses the aggregate 
+table with the fewest rows, which is typically the aggregate table with the 
+fewest extra dimensions. See property <code>
+<a href="configuration.html#Properties">mondrian.rolap.aggregates.ChooseByVolume</a></code>.</p>
 
 <h3>
-Distinct count</h3>
+<a name="Distinct_count">Distinct count</a></h3>
 
 <p>
 There is an important exception for distinct-count measures: they cannot in be 
