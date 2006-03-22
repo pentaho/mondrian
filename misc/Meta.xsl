@@ -446,7 +446,8 @@ DFN { font-weight:bold; font-style:italic; }
 
 <h2>Element Summary</h2>
 <ul>
-<xsl:for-each select="Element|StringElement|Plugin" order-by="+@type">
+<xsl:for-each select="Element|StringElement|Plugin">
+<xsl:sort select="@type"/>
 <li>
 <a><xsl:attribute name="href">#<xsl:value-of select="@type"/></xsl:attribute>
 <xsl:value-of select="@type"/>
@@ -457,7 +458,8 @@ DFN { font-weight:bold; font-style:italic; }
 
 <h2>Classes</h2>
 <ul>
-<xsl:for-each select="Class" order-by="+@class">
+<xsl:for-each select="Class">
+<xsl:sort select="@class"/>
 <li>
 <a><xsl:attribute name="href">#<xsl:value-of select="@class"/></xsl:attribute>
 <xsl:value-of select="@class"/>
