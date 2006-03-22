@@ -53,6 +53,9 @@ public class NonEmptyTest extends FoodMartTestCase {
      * Test ensures that no exception is thrown.
      */
     public void testVirtualCube() throws Exception {
+        if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
+            return;
+        }
         TestCase c = new TestCase(99, 3,
                 "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Warehouse Sales]} ON COLUMNS, " +
                 "NON EMPTY [Product].[All Products].Children ON ROWS " +
@@ -384,13 +387,20 @@ public class NonEmptyTest extends FoodMartTestCase {
      * it shall not lookup additional members.
      */
     public void testLookupMemberCache() {
+        if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
+            // Dependency testing causes extra SQL reads, and screws up this
+            // test.
+            return;
+        }
         SmartMemberReader smr = getSmartMemberReader("Store");
         smr.mapLevelToMembers.setCache(new HardSmartCache());
         smr.mapMemberToChildren.setCache(new HardSmartCache());
         // smr.mapKeyToMember = new HardSmartCache();
         smr.mapKeyToMember.clear();
-        RolapResult result = (RolapResult) executeQuery("select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
-        assertTrue("no additional members should be read", smr.mapKeyToMember.size() <= 5);
+        RolapResult result = (RolapResult) executeQuery(
+                "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
+        assertTrue("no additional members should be read:" + smr.mapKeyToMember.size(),
+                smr.mapKeyToMember.size() <= 5);
         RolapMember sf = (RolapMember) result.getAxes()[0].positions[0].members[0];
         RolapMember ca = (RolapMember) sf.getParentMember();
 

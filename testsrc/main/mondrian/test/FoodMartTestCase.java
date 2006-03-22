@@ -27,7 +27,7 @@ import java.util.ArrayList;
  * @version $Id$
  */
 public class FoodMartTestCase extends TestCase {
-    protected static final String nl = System.getProperty("line.separator");
+    protected static final String nl = Util.nl;
 
     public FoodMartTestCase(String name) {
         super(name);

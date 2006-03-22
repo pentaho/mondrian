@@ -13,7 +13,9 @@ package mondrian.jolap;
 
 import mondrian.olap.DriverManager;
 import mondrian.olap.Util;
+import mondrian.olap.MondrianProperties;
 import mondrian.util.BarfingInvocationHandler;
+import mondrian.rolap.RolapConnectionProperties;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -52,19 +54,26 @@ public class MondrianJolapConnectionFactory extends RefObjectSupport
     public Connection getConnection(ConnectionSpec properties) throws OLAPException {
         Util.PropertyList propertyList = new Util.PropertyList();
         MondrianJolapConnectionSpec cs = (MondrianJolapConnectionSpec) properties;
-        propertyList.put("Provider", "mondrian");
+        setDefaultProperties(propertyList);
+        // Note: "User" and "Password" are not supported properties for a Mondrian connection.
         propertyList.put("User", cs.getName());
         propertyList.put("Password", cs.getPassword());
-        propertyList.put("Jdbc", "jdbc:odbc:MondrianFoodMart");
-        if( System.getProperty(FOODMART_CATALOG_URL) != null )
-            propertyList.put("Catalog", System.getProperty(FOODMART_CATALOG_URL));
-        else
-            propertyList.put("Catalog", "file:///e:/mondrian/demo/FoodMart.xml");
-        propertyList.put("JdbcDrivers", "sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver,com.mysql.jdbc.Driver");
         final boolean fresh = false;
         mondrian.olap.Connection mondrianConnection = DriverManager.
                 getConnection(propertyList, null, fresh);
         return new MondrianJolapConnection(mondrianConnection);
+    }
+
+    static void setDefaultProperties(Util.PropertyList propertyList) {
+        propertyList.put(RolapConnectionProperties.Provider, "mondrian");
+        propertyList.put(RolapConnectionProperties.Jdbc, "jdbc:odbc:MondrianFoodMart");
+        if (System.getProperty(FOODMART_CATALOG_URL) != null) {
+            propertyList.put(RolapConnectionProperties.Catalog, System.getProperty(FOODMART_CATALOG_URL));
+        } else {
+            propertyList.put(RolapConnectionProperties.Catalog, "file:///e:/mondrian/demo/FoodMart.xml");
+        }
+        propertyList.put(RolapConnectionProperties.JdbcDrivers,
+                MondrianProperties.instance().JdbcDrivers.getDefaultValue());
     }
 
     public ConnectionSpec createConnectionSpec() throws OLAPException {
@@ -80,8 +89,7 @@ public class MondrianJolapConnectionFactory extends RefObjectSupport
         return (Context) Proxy.newProxyInstance(
                 null,
                 new Class[] {Context.class},
-                new ContextHandler()
-        );
+                new ContextHandler());
     }
 
     public void setReference(Reference ref) {
@@ -98,57 +106,51 @@ public class MondrianJolapConnectionFactory extends RefObjectSupport
             return MondrianJolapConnectionFactory.this;
         }
     }
+
+    /**
+     * <code>MondrianJolapConnectionSpec</code> contains the attributes necessary
+     * to establish a JOLAP connection to a Mondrian server.
+     *
+     * @see MondrianJolapConnectionFactory#createConnectionSpec
+     */
+    static class MondrianJolapConnectionSpec implements ConnectionSpec {
+        final Util.PropertyList propertyList = new Util.PropertyList();
+
+        MondrianJolapConnectionSpec() {
+            MondrianJolapConnectionFactory.setDefaultProperties(propertyList);
+        }
+        public void setName(String name) {
+            propertyList.put("name", name);
+        }
+        public String getName() {
+            return propertyList.get("name");
+        }
+        public void setPassword(String password) {
+            propertyList.put("password", password);
+        }
+        public String getPassword() {
+            return propertyList.get("password");
+        }
+        public void setCatalog(String catalog) {
+            propertyList.put("catalog", catalog);
+        }
+        public String getCatalog() {
+            return propertyList.get("catalog");
+        }
+        public void setJdbc(String jdbc) {
+            propertyList.put("jdbc", jdbc);
+        }
+        public String getJdbc() {
+            return propertyList.get("jdbc");
+        }
+        public void setJdbcDrivers(String jdbcDrivers) {
+            propertyList.put("jdbcDrivers", jdbcDrivers);
+        }
+        public String getJdbcDrivers() {
+            return propertyList.get("jdbcDrivers");
+        }
+    }
 }
 
-/**
- * <code>MondrianJolapConnectionSpec</code> contains the attributes necessary
- * to establish a JOLAP connection to a Mondrian server.
- *
- * @see MondrianJolapConnectionFactory#createConnectionSpec
- */
-class MondrianJolapConnectionSpec implements ConnectionSpec {
-    Util.PropertyList propertyList = new Util.PropertyList();
-    private static final String FOODMART_CATALOG_URL = "mondrian.test.foodmart.catalogURL";
-
-    MondrianJolapConnectionSpec() {
-        propertyList.put("Provider", "mondrian");
-        propertyList.put("Jdbc", "jdbc:odbc:MondrianFoodMart");
-        if( System.getProperty(FOODMART_CATALOG_URL) != null )
-            propertyList.put("Catalog", System.getProperty(FOODMART_CATALOG_URL));
-        else
-            propertyList.put("Catalog", "file:///e:/mondrian/demo/FoodMart.xml");
-        propertyList.put("JdbcDrivers", "sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver,com.mysql.jdbc.Driver");
-    }
-    public void setName(String name) {
-        propertyList.put("name", name);
-    }
-    public String getName() {
-        return propertyList.get("name");
-    }
-    public void setPassword(String password) {
-        propertyList.put("password", password);
-    }
-    public String getPassword() {
-        return propertyList.get("password");
-    }
-    public void setCatalog(String catalog) {
-        propertyList.put("catalog", catalog);
-    }
-    public String getCatalog() {
-        return propertyList.get("catalog");
-    }
-    public void setJdbc(String jdbc) {
-        propertyList.put("jdbc", jdbc);
-    }
-    public String getJdbc() {
-        return propertyList.get("jdbc");
-    }
-    public void setJdbcDrivers(String jdbcDrivers) {
-        propertyList.put("jdbcDrivers", jdbcDrivers);
-    }
-    public String getJdbcDrivers() {
-        return propertyList.get("jdbcDrivers");
-    }
-}
 
 // End MondrianJolapConnectionFactory.java

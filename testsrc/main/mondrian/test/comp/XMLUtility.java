@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 
+import mondrian.olap.Util;
+
 /**
  * XML utility methods.
  */
@@ -79,7 +81,7 @@ class XMLUtility {
 
         outputFormat.setLineWidth(Integer.MAX_VALUE);
 
-        outputFormat.setLineSeparator(System.getProperty("line.separator"));
+        outputFormat.setLineSeparator(Util.nl);
 
         try {
             XMLSerializer serializer = new XMLSerializer(writer, outputFormat);

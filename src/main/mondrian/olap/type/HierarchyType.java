@@ -51,9 +51,8 @@ public class HierarchyType implements Type {
     }
 
     public boolean usesDimension(Dimension dimension, boolean maybe) {
-        final Dimension hierarchyDimension = hierarchy.getDimension();
-        return hierarchyDimension == dimension ||
-                (maybe && hierarchyDimension == null);
+        return this.dimension == dimension ||
+                (maybe && this.dimension == null);
     }
 
     public Dimension getDimension() {

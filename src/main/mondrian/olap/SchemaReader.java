@@ -11,6 +11,8 @@
 */
 package mondrian.olap;
 
+import mondrian.calc.Calc;
+
 import javax.sql.DataSource;
 import java.util.List;
 
@@ -261,12 +263,16 @@ public interface SchemaReader {
     Member lookupMemberChildByName(Member parent, String childName);
 
     /**
-     * returns the instance that can perform native crossjoin
-     * @param args
-     * @param evaluator
-     * @param fun
+     * Returns an object which can evaluate an expression in native SQL, or
+     * null if this is not possible.
+     *
+     * @param fun Function
+     * @param args Arguments to the function
+     * @param evaluator Evaluator, provides context
+     * @param calc
      */
-    NativeEvaluator getNativeSetEvaluator(FunDef fun, Evaluator evaluator, Exp[] args);
+    NativeEvaluator getNativeSetEvaluator(
+            FunDef fun, Exp[] args, Evaluator evaluator, Calc calc);
 
     DataSource getDataSource();
 }

@@ -31,6 +31,7 @@ import mondrian.xmla.XmlaRequest;
 import mondrian.xmla.XmlaResponse;
 import mondrian.xmla.XmlaServlet;
 import mondrian.xmla.XmlaUtil;
+import mondrian.olap.Util;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -46,7 +47,7 @@ import org.xml.sax.SAXException;
 public class DefaultXmlaServlet extends XmlaServlet {
 
     private static final Logger LOGGER = Logger.getLogger(DefaultXmlaServlet.class);
-    protected static final String EOL = System.getProperty("line.separator", "\n");
+    protected static final String nl = Util.nl;
 
     private DocumentBuilderFactory domFactory = null;
 
@@ -74,7 +75,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
         if (LOGGER.isDebugEnabled()) {
             StringBuffer buf = new StringBuffer();
-            buf.append("XML/A request content").append(EOL);
+            buf.append("XML/A request content").append(nl);
             buf.append(XmlaUtil.element2Text(envElem));
             LOGGER.debug(buf.toString());
         }
@@ -159,7 +160,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
         if (LOGGER.isDebugEnabled()) {
             StringBuffer buf = new StringBuffer();
-            buf.append("XML/A response content").append(EOL);
+            buf.append("XML/A response content").append(nl);
             try {
                 for (int i = 0; i < byteChunks.length; i++) {
                     byte[] chunk = (byte[]) byteChunks[i];

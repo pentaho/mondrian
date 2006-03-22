@@ -135,7 +135,7 @@ public abstract class AbstractCalc implements Calc {
         }
         for (int i = 1; i < calcs.length; i++) {
             Calc calc = calcs[i];
-            if (calc.dependsOn(dimension)) {
+            if (calc != null && calc.dependsOn(dimension)) {
                 return true;
             }
         }
@@ -148,6 +148,54 @@ public abstract class AbstractCalc implements Calc {
      */
     public List getArguments() {
         return Collections.EMPTY_LIST;
+    }
+
+    /**
+     * Returns a simplified evalator whose context is the same for every
+     * dimension which an expression depends on, and the default member for
+     * every dimension which it does not depend on.
+     *
+     * <p>The default member is oftne the 'all' member, so this evaluator is
+     * usually the most efficient context in which to evaluate the expression.
+     *
+     * @param calc
+     * @param evaluator
+     * @return
+     */
+    public static Evaluator simplifyEvaluator(Calc calc, Evaluator evaluator) {
+        if (evaluator.isNonEmpty()) {
+            // If NON EMPTY is present, we cannot simplify the context, because
+            // we have to assume that the expression depends on everything.
+            // TODO: Bug 1456418: Convert 'NON EMPTY Crossjoin' to
+            // 'NonEmptyCrossJoin'.
+            return evaluator;
+        }
+        int changeCount = 0;
+        Evaluator ev = evaluator;
+        final Dimension[] dimensions = evaluator.getCube().getDimensions();
+        for (int i = 0; i < dimensions.length; i++) {
+            Dimension dimension = dimensions[i];
+            final Member member = ev.getContext(dimension);
+            if (member.isAll()) {
+                continue;
+            }
+            if (calc.dependsOn(dimension)) {
+                continue;
+            }
+            final Member unconstrainedMember =
+                    member.getHierarchy().getDefaultMember();
+            if (member == unconstrainedMember) {
+                // This is a hierarchy without an 'all' member, and the context
+                // is already the default member.
+                continue;
+            }
+            if (changeCount++ == 0) {
+                ev = evaluator.push(unconstrainedMember);
+            } else {
+                ev.setContext(unconstrainedMember);
+            }
+        }
+        return ev;
     }
 }
 

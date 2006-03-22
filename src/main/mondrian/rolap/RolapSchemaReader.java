@@ -36,6 +36,8 @@ import mondrian.olap.SchemaReader;
 import mondrian.olap.Util;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
+import mondrian.calc.Calc;
+import mondrian.calc.impl.AbstractCalc;
 
 import org.apache.log4j.Logger;
 
@@ -384,8 +386,10 @@ public abstract class RolapSchemaReader implements SchemaReader {
         return Collections.EMPTY_LIST;
     }
 
-    public NativeEvaluator getNativeSetEvaluator(FunDef fun, Evaluator evaluator, Exp[] args) {
-        RolapEvaluator revaluator = (RolapEvaluator) evaluator;
+    public NativeEvaluator getNativeSetEvaluator(
+            FunDef fun, Exp[] args, Evaluator evaluator, Calc calc) {
+        RolapEvaluator revaluator = (RolapEvaluator)
+                AbstractCalc.simplifyEvaluator(calc, evaluator);
         return schema.getNativeRegistry().createEvaluator(revaluator, fun, args);
     }
 

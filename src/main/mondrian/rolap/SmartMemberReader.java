@@ -14,6 +14,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.Util;
+import mondrian.olap.Member;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
@@ -224,7 +225,7 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         // we know their size (hence their 'cost' to the cache pool).
         Map tempMap = new HashMap();
         for (int i = 0, n = members.size(); i < n; i++) {
-            tempMap.put(members.get(i), new ArrayList());
+            tempMap.put(members.get(i), Collections.EMPTY_LIST);
         }
         for (int i = 0, childrenCount = children.size(); i < childrenCount; i++) {
             // todo: We could optimize here. If members.length is small, it's
@@ -234,15 +235,28 @@ public class SmartMemberReader implements MemberReader, MemberCache {
             // contains members from different levels, children of the same
             // member will be contiguous.
             RolapMember child = (RolapMember) children.get(i);
-            List list = (ArrayList) tempMap.get(child.getParentMember());
+            assert child != null : "child";
+            assert tempMap != null : "tempMap";
+            final Member parentMember = child.getParentMember();
+            List list = (List) tempMap.get(parentMember);
+            if (list == null) {
+                // The list is null if, due to dropped constraints, we now
+                // have a children list of a member we didn't explicitly
+                // ask for it. Adding it to the cache would be viable, but
+                // let's ignore it.
+                continue;
+            } else if (list == Collections.EMPTY_LIST) {
+                list = new ArrayList();
+                tempMap.put(parentMember, list);
+            }
             list.add(child);
             result.add(child);
         }
         synchronized (this) {
             for (Iterator keys = tempMap.keySet().iterator(); keys.hasNext();) {
                 RolapMember member = (RolapMember) keys.next();
-                List list = (ArrayList) tempMap.get(member);
                 if (getChildrenFromCache(member, constraint) == null) {
+                    List list = (List) tempMap.get(member);
                     putChildren(member, constraint, list);
                 }
             }

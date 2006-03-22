@@ -77,7 +77,9 @@ class CrossJoinFunDef extends FunDefBase {
         return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
             public List evaluateList(Evaluator evaluator) {
                 SchemaReader schemaReader = evaluator.getSchemaReader();
-                NativeEvaluator nativeEvaluator = schemaReader.getNativeSetEvaluator(call.getFunDef(), evaluator, call.getArgs());
+                NativeEvaluator nativeEvaluator =
+                        schemaReader.getNativeSetEvaluator(
+                                call.getFunDef(), call.getArgs(), evaluator, this);
                 if (nativeEvaluator != null) {
                     return (List) nativeEvaluator.execute();
                 }

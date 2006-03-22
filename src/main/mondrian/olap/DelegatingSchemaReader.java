@@ -12,6 +12,8 @@
 */
 package mondrian.olap;
 
+import mondrian.calc.Calc;
+
 import javax.sql.DataSource;
 import java.util.List;
 
@@ -159,8 +161,9 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.lookupMemberChildByName(member, memberName);
     }
 
-    public NativeEvaluator getNativeSetEvaluator(FunDef fun, Evaluator evaluator, Exp[] args) {
-        return schemaReader.getNativeSetEvaluator(fun, evaluator, args);
+    public NativeEvaluator getNativeSetEvaluator(
+            FunDef fun, Exp[] args, Evaluator evaluator, Calc calc) {
+        return schemaReader.getNativeSetEvaluator(fun, args, evaluator, calc);
     }
 
     public DataSource getDataSource() {

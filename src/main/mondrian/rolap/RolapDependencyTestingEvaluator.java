@@ -100,6 +100,13 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
                         saveMember, getQuery().getSchemaReader(false));
         setContext(otherMember);
         final Object otherResult = calc.evaluate(this);
+        if (false) {
+            System.out.println(
+                    "original=" + saveMember.getUniqueName() +
+                    ", member=" + otherMember.getUniqueName() +
+                    ", originalResult=" + result + "" +
+                    ", result=" + otherResult);
+        }
         if (!equals(otherResult, result)) {
             final Member[] members = getCurrentMembers();
             final StringBuffer buf = new StringBuffer();

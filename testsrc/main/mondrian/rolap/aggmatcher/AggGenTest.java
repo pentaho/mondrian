@@ -23,6 +23,7 @@ import org.apache.log4j.WriterAppender;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Query;
+import mondrian.olap.Util;
 import mondrian.rolap.RolapConnection;
 import mondrian.test.FoodMartTestCase;
 
@@ -71,7 +72,7 @@ public class AggGenTest extends FoodMartTestCase {
         
         String log = writer.toString();
         Pattern p = Pattern.compile("DEBUG - Init: Column: [^:]+: `(\\w+)`.`(\\w+)`" + 
-                System.getProperty("line.separator") + 
+                Util.nl + 
                 "WARN - Can not find column: \\2");
         Matcher m = p.matcher(log);
         

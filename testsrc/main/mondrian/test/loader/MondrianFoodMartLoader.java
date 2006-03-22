@@ -89,7 +89,7 @@ public class MondrianFoodMartLoader {
     // Constants
 
     private static final Logger LOGGER = Logger.getLogger(MondrianFoodMartLoader.class);
-    private static final String nl = System.getProperty("line.separator");
+    private static final String nl = Util.nl;
 
     // Fields
 

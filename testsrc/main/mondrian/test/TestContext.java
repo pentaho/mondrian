@@ -53,7 +53,7 @@ public class TestContext {
      * {@link #getFoodMartConnection}. */
     private Connection foodMartConnection;
 
-    protected static final String nl = System.getProperty("line.separator");
+    protected static final String nl = Util.nl;
     private static final String lineBreak = "\"," + nl + "\"";
     private static final Pattern LineBreakPattern =
         Pattern.compile("\r\n|\r|\n");
@@ -140,36 +140,14 @@ public class TestContext {
                 // Works if we are running in bin directory of runtime env
                 file = new File("../demo/FoodMart.xml");
             }
-            catalogURL = convertPathToURL(file);
+            try {
+                catalogURL = Util.toURL(file);
+            } catch (MalformedURLException e) {
+                throw new Error(e.getMessage());
+            }
         }
         connectProperties.put("catalog", catalogURL.toString());
         return connectProperties.toString();
-    }
-
-    /**
-     * Creates a file-protocol URL for the given filename.
-     */
-    public static URL convertPathToURL(File file)
-    {
-        try {
-            String path = file.getAbsolutePath();
-            // This is a bunch of weird code that is required to
-            // make a valid URL on the Windows platform, due
-            // to inconsistencies in what getAbsolutePath returns.
-            String fs = System.getProperty("file.separator");
-            if (fs.length() == 1)
-            {
-                char sep = fs.charAt(0);
-                if (sep != '/')
-                    path = path.replace(sep, '/');
-                if (path.charAt(0) != '/')
-                    path = '/' + path;
-            }
-            path = "file://" + path;
-            return new URL(path);
-        } catch (MalformedURLException e) {
-            throw new java.lang.Error(e.getMessage());
-        }
     }
 
     /**

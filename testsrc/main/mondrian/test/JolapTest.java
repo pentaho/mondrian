@@ -46,7 +46,7 @@ import java.util.List;
  * @version $Id$
  */
 public class JolapTest extends TestCase {
-    private static final String nl = System.getProperty("line.separator");
+    private static final String nl = Util.nl;
 
     public JolapTest(String name) {
         super(name);
