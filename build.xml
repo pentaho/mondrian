@@ -137,6 +137,12 @@ demo/access/MondrianFoodMart.mdb"/>
   <property name="mondrian.foodmart.catalogURL"
       value="file:${project.location}/${demo.dir}/FoodMart.xml"/>
 
+  <!-- Test class name. -->
+  <property name="mondrian.test.Class" value=""/>
+
+  <!-- Test pattern. -->
+  <property name="mondrian.test.Name" value=""/>
+
   <!-- Arguments to the java process spawned by the junit task. -->
   <property name="junit.jvmargs" value="-ea -esa"/>
 
@@ -247,7 +253,8 @@ generate.resources,
 def,
 compile.java,
 unzip-FoodMartCreateData,
-unzip-FoodMartAccessDB"/>
+unzip-FoodMartAccessDB,
+unzip-FoodMartDerbyDB"/>
 
   <target name="generate.resources">
     <taskdef name="resgen" classname="org.eigenbase.resgen.ResourceGenTask">
@@ -418,6 +425,10 @@ in {mondrian.foodmart.jdbcURL}.">
           value="${mondrian.foodmart.catalogURL}"/>
       <sysproperty key="mondrian.test.connectString"
           value="${mondrian.test.connectString}"/>
+      <sysproperty key="mondrian.test.Class"
+          value="${mondrian.test.Class}"/>
+      <sysproperty key="mondrian.test.Name"
+          value="${mondrian.test.Name}"/>
       <!-- tests require en_US locale -->
       <sysproperty key="user.language" value="en"/>
       <sysproperty key="user.region" value="US"/>

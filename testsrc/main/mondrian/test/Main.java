@@ -102,7 +102,7 @@ public class Main extends TestSuite {
         System.out.println("testClass: " + testClass);
 
         TestSuite suite = new TestSuite();
-        if (testClass != null) {
+        if (testClass != null && !testClass.equals("")) {
             Class clazz = Class.forName(testClass);
 
             // use addTestSuite only if the class has test methods
@@ -171,7 +171,7 @@ public class Main extends TestSuite {
             else
                 logger.warn("skipping NonEmptyTests");
         }
-        if (testName != null) {
+        if (testName != null && !testName.equals("")) {
             // Filter the suite, so that only tests whose names match
             // "testName" (in its entirety) will be run.
             Pattern testPattern = Pattern.compile(testName);

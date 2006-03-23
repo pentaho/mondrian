@@ -359,7 +359,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         if (type1 instanceof mondrian.olap.type.LevelType) {
                             final LevelCalc levelCalc =
                                     compiler.compileLevel(call.getArg(1));
-                            return new AbstractMemberCalc(call, new Calc[] {levelCalc}) {
+                            return new AbstractMemberCalc(call, new Calc[] {memberCalc, levelCalc}) {
                                 public Member evaluateMember(Evaluator evaluator) {
                                     Level level = levelCalc.evaluateLevel(evaluator);
                                     Member member = memberCalc.evaluateMember(evaluator);
@@ -370,7 +370,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         } else {
                             final IntegerCalc distanceCalc =
                                     compiler.compileInteger(call.getArg(1));
-                            return new AbstractMemberCalc(call, new Calc[] {distanceCalc}) {
+                            return new AbstractMemberCalc(call, new Calc[] {memberCalc, distanceCalc}) {
                                 public Member evaluateMember(Evaluator evaluator) {
                                     int distance = distanceCalc.evaluateInteger(evaluator);
                                     Member member = memberCalc.evaluateMember(evaluator);
@@ -379,7 +379,6 @@ public class BuiltinFunTable extends FunTableImpl {
                             };
                         }
                     }
-
                 };
             }
         });
@@ -1631,7 +1630,9 @@ public class BuiltinFunTable extends FunTableImpl {
                                 // Use a native evaluator, if more efficient.
                                 // TODO: Figure this out at compile time.
                                 SchemaReader schemaReader = evaluator.getSchemaReader();
-                                NativeEvaluator nativeEvaluator = schemaReader.getNativeSetEvaluator(call.getFunDef(), evaluator, call.getArgs());
+                                NativeEvaluator nativeEvaluator =
+                                        schemaReader.getNativeSetEvaluator(
+                                                call.getFunDef(), call.getArgs(), evaluator, this);
                                 if (nativeEvaluator != null) {
                                     return (List) nativeEvaluator.execute();
                                 }
@@ -1646,6 +1647,10 @@ public class BuiltinFunTable extends FunTableImpl {
                                     list = list.subList(0, n);
                                 }
                                 return list;
+                            }
+
+                            public boolean dependsOn(Dimension dimension) {
+                                return anyDependsButFirst(getCalcs(), dimension);
                             }
                         };
                     }
@@ -1673,6 +1678,10 @@ public class BuiltinFunTable extends FunTableImpl {
                                 double n = doubleCalc.evaluateDouble(evaluator);
                                 return topOrBottom(evaluator.push(), list, calc, false, true, n);
                             }
+
+                            public boolean dependsOn(Dimension dimension) {
+                                return anyDependsButFirst(getCalcs(), dimension);
+                            }
                         };
                     }
                 };
@@ -1698,6 +1707,10 @@ public class BuiltinFunTable extends FunTableImpl {
                                 List list = listCalc.evaluateList(evaluator);
                                 double n = doubleCalc.evaluateDouble(evaluator);
                                 return topOrBottom(evaluator.push(), list, calc, false, false, n);
+                            }
+
+                            public boolean dependsOn(Dimension dimension) {
+                                return anyDependsButFirst(getCalcs(), dimension);
                             }
                         };
                     }
@@ -2039,7 +2052,9 @@ public class BuiltinFunTable extends FunTableImpl {
                             // Use a native evaluator, if more efficient.
                             // TODO: Figure this out at compile time.
                             SchemaReader schemaReader = evaluator.getSchemaReader();
-                            NativeEvaluator nativeEvaluator = schemaReader.getNativeSetEvaluator(call.getFunDef(), evaluator, call.getArgs());
+                            NativeEvaluator nativeEvaluator =
+                                    schemaReader.getNativeSetEvaluator(
+                                            call.getFunDef(), call.getArgs(), evaluator, this);
                             if (nativeEvaluator != null) {
                                 return (List) nativeEvaluator.execute();
                             }
@@ -2067,7 +2082,9 @@ public class BuiltinFunTable extends FunTableImpl {
                             // Use a native evaluator, if more efficient.
                             // TODO: Figure this out at compile time.
                             SchemaReader schemaReader = evaluator.getSchemaReader();
-                            NativeEvaluator nativeEvaluator = schemaReader.getNativeSetEvaluator(call.getFunDef(), evaluator, call.getArgs());
+                            NativeEvaluator nativeEvaluator =
+                                    schemaReader.getNativeSetEvaluator(
+                                            call.getFunDef(), call.getArgs(), evaluator, this);
                             if (nativeEvaluator != null) {
                                 return (List) nativeEvaluator.execute();
                             }
@@ -2826,7 +2843,9 @@ public class BuiltinFunTable extends FunTableImpl {
                                 // Use a native evaluator, if more efficient.
                                 // TODO: Figure this out at compile time.
                                 SchemaReader schemaReader = evaluator.getSchemaReader();
-                                NativeEvaluator nativeEvaluator = schemaReader.getNativeSetEvaluator(call.getFunDef(), evaluator, call.getArgs());
+                                NativeEvaluator nativeEvaluator =
+                                        schemaReader.getNativeSetEvaluator(
+                                                call.getFunDef(), call.getArgs(), evaluator, this);
                                 if (nativeEvaluator != null) {
                                     return (List) nativeEvaluator.execute();
                                 }
@@ -2842,6 +2861,11 @@ public class BuiltinFunTable extends FunTableImpl {
                                 }
                                 return list;
                             }
+
+                            public boolean dependsOn(Dimension dimension) {
+                                return anyDependsButFirst(getCalcs(), dimension);
+                            }
+
                         };
                     }
                 };
@@ -2868,6 +2892,10 @@ public class BuiltinFunTable extends FunTableImpl {
                                 double n = doubleCalc.evaluateDouble(evaluator);
                                 return topOrBottom(evaluator.push(), list, calc, true, true, n);
                             }
+
+                            public boolean dependsOn(Dimension dimension) {
+                                return anyDependsButFirst(getCalcs(), dimension);
+                            }
                         };
                     }
                 };
@@ -2893,6 +2921,10 @@ public class BuiltinFunTable extends FunTableImpl {
                                 List list = listCalc.evaluateList(evaluator);
                                 double n = doubleCalc.evaluateDouble(evaluator);
                                 return topOrBottom(evaluator.push(), list, calc, true, false, n);
+                            }
+
+                            public boolean dependsOn(Dimension dimension) {
+                                return anyDependsButFirst(getCalcs(), dimension);
                             }
                         };
                     }
@@ -4636,7 +4668,7 @@ public class BuiltinFunTable extends FunTableImpl {
             }
 
             public boolean dependsOn(Dimension dimension) {
-                return hierarchyCalc.getType().usesDimension(dimension, true) ;
+                return hierarchyCalc.getType().usesDimension(dimension, true);
             }
         }
     }

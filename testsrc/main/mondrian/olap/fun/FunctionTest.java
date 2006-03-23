@@ -178,6 +178,17 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns("Dimensions(\"Store\").UniqueName", "[Store]");
     }
 
+    public void testDimensionsDepends() {
+        final String expression =
+                "Crossjoin(" +
+                "{Dimensions(\"Measures\").CurrentMember.Hierarchy.CurrentMember}, " +
+                "{Dimensions(\"Product\")})";
+        assertAxisReturns(
+                expression,
+                "{[Measures].[Unit Sales], [Product].[All Products]}");
+        assertSetExprDependsOn(expression, allDims());
+    }
+
     public void testTime() {
         assertExprReturns("[Time].[1997].[Q1].[1].Hierarchy.UniqueName", "[Time]");
     }
@@ -334,18 +345,35 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertTrue(member.isAll());
     }
 
-    public void testAncestorWithHiddenParent() throws Exception {
-        Member member = getTestContext("[Sales Ragged]").executeSingletonAxis("Ancestor([Store].[All Stores].[Israel].[Haifa], [Store].[Store Country])");
+    public void testAncestorWithHiddenParent() {
+        final TestContext testContext = getTestContext("[Sales Ragged]");
+        Member member = testContext.executeSingletonAxis(
+                "Ancestor([Store].[All Stores].[Israel].[Haifa], [Store].[Store Country])");
 
         assertNotNull("Member must not be null.", member);
         Assert.assertEquals("Israel", member.getName());
     }
 
+    public void testAncestorDepends() {
+        assertExprDependsOn("Ancestor([Store].CurrentMember, [Store].[Store Country]).Name",
+                "{[Store]}");
+
+        assertExprDependsOn("Ancestor([Store].[All Stores].[USA], [Store].CurrentMember.Level).Name",
+                "{[Store]}");
+
+        assertExprDependsOn("Ancestor([Store].[All Stores].[USA], [Store].[Store Country]).Name",
+                "{}");
+
+        assertExprDependsOn("Ancestor([Store].CurrentMember, 2+1).Name",
+                "{[Store]}");
+    }
+
     public void testOrdinal() throws Exception {
-        Cell cell = getTestContext("Sales Ragged").executeExprRaw("[Store].[All Stores].[Vatican].ordinal");
+        final TestContext testContext = getTestContext("Sales Ragged");
+        Cell cell = testContext.executeExprRaw("[Store].[All Stores].[Vatican].ordinal");
         assertEquals("Vatican is at level 1.", 1, ((Number)cell.getValue()).intValue());
 
-        cell = getTestContext("Sales Ragged").executeExprRaw("[Store].[All Stores].[USA].[Washington].ordinal");
+        cell = testContext.executeExprRaw("[Store].[All Stores].[USA].[Washington].ordinal");
         assertEquals("Washington is at level 3.", 3, ((Number) cell.getValue()).intValue());
     }
 
@@ -4927,6 +4955,27 @@ public class FunctionTest extends FoodMartTestCase {
     public void testTopCountEmpty() {
         assertAxisReturns("TopCount(Filter({[Promotion Media].[Media Type].members}, 1=0), 2, [Measures].[Unit Sales])",
                 "");
+    }
+
+    public void testTopCountDepends() {
+        checkTopBottomCountPercentDepends("TopCount");
+        checkTopBottomCountPercentDepends("TopPercent");
+        checkTopBottomCountPercentDepends("TopSum");
+        checkTopBottomCountPercentDepends("BottomCount");
+        checkTopBottomCountPercentDepends("BottomPercent");
+        checkTopBottomCountPercentDepends("BottomSum");
+    }
+
+    private void checkTopBottomCountPercentDepends(String fun) {
+        assertSetExprDependsOn(
+                fun + "({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])",
+                allDimsExcept(new String[] {"[Measures]", "[Promotion Media]"}));
+
+        if (fun.endsWith("Count")) {
+            assertSetExprDependsOn(
+                    fun + "({[Promotion Media].[Media Type].members}, 2)",
+                    "{}");
+        }
     }
 
     public void testTopPercent() {
