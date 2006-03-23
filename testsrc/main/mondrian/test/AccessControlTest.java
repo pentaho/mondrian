@@ -261,6 +261,34 @@ public class AccessControlTest extends FoodMartTestCase {
                 "Row #1: 74,748" + nl);
     }
 
+    public void _testSharedObjectsInGrantMappingsBug() {
+        new TestContext() {
+            public Connection getConnection() {
+                boolean mustGet = true;
+                Connection connection = super.getConnection();
+                Schema schema = connection.getSchema();
+                Cube salesCube = schema.lookupCube("Sales", mustGet);
+                Cube warehouseCube = schema.lookupCube("Warehouse", mustGet);
+                Hierarchy measuresInSales = salesCube.lookupHierarchy("Measures", false);
+                Hierarchy storeInWarehouse = warehouseCube.lookupHierarchy("Store", false);
+
+                Role role = new Role();
+                role.grant(schema, Access.NONE);
+                role.grant(salesCube, Access.NONE);
+                // For using hierarchy Measures in #assertExprThrows
+                role.grant(measuresInSales, Access.ALL, null, null);
+                role.grant(warehouseCube, Access.NONE);
+                role.grant(storeInWarehouse.getDimension(), Access.ALL);
+
+                role.makeImmutable();
+                connection.setRole(role);
+                return connection;
+            }
+        // Looking up default member on dimension Store in cube Sales should fail.
+        }.assertExprThrows("[Store].DefaultMember", "'[Store]' not found in cube 'Sales'");
+    }
+
+
     private Connection getRestrictedConnection() {
         return getRestrictedConnection(true);
     }
