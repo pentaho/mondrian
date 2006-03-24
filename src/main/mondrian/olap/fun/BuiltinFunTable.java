@@ -14,14 +14,14 @@ package mondrian.olap.fun;
 
 import mondrian.calc.*;
 import mondrian.calc.impl.*;
-import mondrian.mdx.*;
+import mondrian.mdx.DimensionExpr;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.olap.type.*;
-import mondrian.olap.type.LevelType;
+import mondrian.olap.fun.extra.NthQuartileFunDef;
 import mondrian.olap.type.DimensionType;
-import mondrian.resource.MondrianResource;
-import mondrian.util.Format;
-
+import mondrian.olap.type.LevelType;
+import mondrian.olap.type.Type;
+import mondrian.olap.type.TypeUtil;
 import org.eigenbase.xom.XOMUtil;
 
 import java.io.PrintWriter;
@@ -70,7 +70,7 @@ public class BuiltinFunTable extends FunTableImpl {
 
         //
         // DIMENSION FUNCTIONS
-        define(new HierarchyDimensionFunDef());
+        define(HierarchyDimensionFunDef.instance);
 
         define(new FunDefBase(
                 "Dimension",
@@ -193,12 +193,12 @@ public class BuiltinFunTable extends FunTableImpl {
 
         //
         // HIERARCHY FUNCTIONS
-        define(new LevelHierarchyFunDef());
-        define(new MemberHierarchyFunDef());
+        define(LevelHierarchyFunDef.instance);
+        define(MemberHierarchyFunDef.instance);
 
         //
         // LEVEL FUNCTIONS
-        define(new MemberLevelFunDef());
+        define(MemberLevelFunDef.instance);
 
         define(new FunDefBase(
                 "Levels",
@@ -281,26 +281,7 @@ public class BuiltinFunTable extends FunTableImpl {
 
         //
         // LOGICAL FUNCTIONS
-        define(new MultiResolver(
-                "IsEmpty",
-                "IsEmpty(<Value Expression>)",
-                "Determines if an expression evaluates to the empty cell value.",
-                new String[] {"fbS", "fbn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final Calc calc = compiler.compileScalar(call.getArg(0), true);
-                        return new AbstractBooleanCalc(call, new Calc[] {calc}) {
-                            public boolean evaluateBoolean(Evaluator evaluator) {
-                                Object o = calc.evaluate(evaluator);
-                                return o == null;
-                            }
-                        };
-                    }
-
-                };
-            }
-        });
+        define(IsEmptyFunDef.Resolver);
 
         define(new FunDefBase(
                 "IS NULL",
@@ -320,68 +301,11 @@ public class BuiltinFunTable extends FunTableImpl {
 
         });
 
-        define(new MultiResolver(
-                "IS",
-                "<Expression> IS <Expression>",
-                "Returns whether two objects are the same (idempotent)",
-                new String[] {"ibmm", "ibll", "ibhh", "ibdd"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final Calc calc0 = compiler.compile(call.getArg(0));
-                        final Calc calc1 = compiler.compile(call.getArg(1));
-                        return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
-                            public boolean evaluateBoolean(Evaluator evaluator) {
-                                Object o0 = calc0.evaluate(evaluator);
-                                Object o1 = calc1.evaluate(evaluator);
-                                return o0 == o1;
-                            }
-                        };
-                    }
-
-                };
-            }
-        });
+        define(IsFunDef.Resolver);
 
         //
         // MEMBER FUNCTIONS
-        define(new MultiResolver(
-                "Ancestor",
-                "Ancestor(<Member>, {<Level>|<Numeric Expression>})",
-                "Returns the ancestor of a member at a specified level.",
-                new String[] {"fmml", "fmmn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final MemberCalc memberCalc =
-                                compiler.compileMember(call.getArg(0));
-                        final Type type1 = call.getArg(1).getType();
-                        if (type1 instanceof mondrian.olap.type.LevelType) {
-                            final LevelCalc levelCalc =
-                                    compiler.compileLevel(call.getArg(1));
-                            return new AbstractMemberCalc(call, new Calc[] {memberCalc, levelCalc}) {
-                                public Member evaluateMember(Evaluator evaluator) {
-                                    Level level = levelCalc.evaluateLevel(evaluator);
-                                    Member member = memberCalc.evaluateMember(evaluator);
-                                    int distance = member.getLevel().getDepth() - level.getDepth();
-                                    return ancestor(evaluator, member, distance, level);
-                                }
-                            };
-                        } else {
-                            final IntegerCalc distanceCalc =
-                                    compiler.compileInteger(call.getArg(1));
-                            return new AbstractMemberCalc(call, new Calc[] {memberCalc, distanceCalc}) {
-                                public Member evaluateMember(Evaluator evaluator) {
-                                    int distance = distanceCalc.evaluateInteger(evaluator);
-                                    Member member = memberCalc.evaluateMember(evaluator);
-                                    return ancestor(evaluator, member, distance, null);
-                                }
-                            };
-                        }
-                    }
-                };
-            }
-        });
+        define(AncestorFunDef.Resolver);
 
         define(new FunDefBase(
                 "Cousin",
@@ -407,9 +331,9 @@ public class BuiltinFunTable extends FunTableImpl {
 
         });
 
-        define(new DimensionCurrentMemberFunDef());
+        define(DimensionCurrentMemberFunDef.instance);
 
-        define(new HierarchyCurrentMemberFunDef());
+        define(HierarchyCurrentMemberFunDef.instance);
 
         define(new FunDefBase(
                 "DataMember",
@@ -524,30 +448,7 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(new MultiResolver(
-                "Lag",
-                "<Member>.Lag(<Numeric Expression>)",
-                "Returns a member further along the specified member's dimension.",
-                new String[]{"mmmn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final MemberCalc memberCalc =
-                                compiler.compileMember(call.getArg(0));
-                        final IntegerCalc integerCalc =
-                                compiler.compileInteger(call.getArg(1));
-                        return new AbstractMemberCalc(call, new Calc[] {memberCalc, integerCalc}) {
-                            public Member evaluateMember(Evaluator evaluator) {
-                                Member member = memberCalc.evaluateMember(evaluator);
-                                int n = integerCalc.evaluateInteger(evaluator);
-                                return evaluator.getSchemaReader().getLeadMember(member, -n);
-                            }
-                        };
-                    }
-
-                };
-            }
-        });
+        define(LeadLagFunDef.LagResolver);
 
         define(new FunDefBase(
                 "LastChild",
@@ -607,28 +508,7 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(new MultiResolver(
-                "Lead",
-                "<Member>.Lead(<Numeric Expression>)",
-                "Returns a member further along the specified member's dimension.",
-                new String[]{"mmmn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final MemberCalc memberCalc =
-                                compiler.compileMember(call.getArg(0));
-                        final IntegerCalc integerCalc =
-                                compiler.compileInteger(call.getArg(1));
-                        return new AbstractMemberCalc(call, new Calc[] {memberCalc, integerCalc}) {
-                            public Member evaluateMember(Evaluator evaluator) {
-                                Member member = memberCalc.evaluateMember(evaluator);
-                                int n = integerCalc.evaluateInteger(evaluator);
-                                return evaluator.getSchemaReader().getLeadMember(member, n);
-                            }
-                        };
-                    }
-                };
-            }});
+        define(LeadLagFunDef.LeadResolver);
 
         define(new FunDefBase(
                 "Members",
@@ -658,116 +538,10 @@ public class BuiltinFunTable extends FunTableImpl {
 
         });
 
-        define(OpeningClosingPeriodFunDef.createResolver(true));
-        define(OpeningClosingPeriodFunDef.createResolver(false));
+        define(OpeningClosingPeriodFunDef.OpeningPeriodResolver);
+        define(OpeningClosingPeriodFunDef.ClosingPeriodResolver);
 
-        define(new MultiResolver(
-                "ParallelPeriod",
-                "ParallelPeriod([<Level>[, <Numeric Expression>[, <Member>]]])",
-                "Returns a member from a prior period in the same relative position as a specified member.",
-                new String[] {"fm", "fml", "fmln", "fmlnm"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Type getResultType(Validator validator, Exp[] args) {
-                        if (args.length == 0) {
-                            // With no args, the default implementation cannot
-                            // guess the hierarchy, so we supply the Time
-                            // dimension.
-                            Hierarchy hierarchy = validator.getQuery()
-                                    .getCube().getTimeDimension()
-                                    .getHierarchy();
-                            return MemberType.forHierarchy(hierarchy);
-                        }
-                        return super.getResultType(validator, args);
-                    }
-
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        // Member defaults to [Time].currentmember
-                        Exp[] args = call.getArgs();
-                        final MemberCalc memberCalc;
-                        switch (args.length) {
-                        case 3:
-                            memberCalc = compiler.compileMember(args[2]);
-                            break;
-                        case 1:
-                            final Dimension dimension =
-                                    args[0].getType().getHierarchy().getDimension();
-                            memberCalc = new DimensionCurrentMemberCalc(dimension);
-                            break;
-                        default:
-                            final Dimension timeDimension =
-                                    compiler.getEvaluator().getCube()
-                                    .getTimeDimension();
-                            memberCalc = new DimensionCurrentMemberCalc(
-                                    timeDimension);
-                            break;
-                        }
-
-                        // Numeric Expression defaults to 1.
-                        final IntegerCalc lagValueCalc = (args.length >= 2) ?
-                                compiler.compileInteger(args[1]) :
-                                ConstantCalc.constantInteger(1);
-
-                        // If level is not specified, we compute it from
-                        // member at runtime.
-                        final LevelCalc ancestorLevelCalc =
-                                args.length >= 1 ?
-                                compiler.compileLevel(args[0]) :
-                                null;
-
-                        return new AbstractMemberCalc(call, new Calc[] {memberCalc, lagValueCalc, ancestorLevelCalc}) {
-                            public Member evaluateMember(Evaluator evaluator) {
-                                Member member = memberCalc.evaluateMember(
-                                        evaluator);
-                                int lagValue = lagValueCalc.evaluateInteger(
-                                        evaluator);
-                                Level ancestorLevel;
-                                if (ancestorLevelCalc != null) {
-                                    ancestorLevel = ancestorLevelCalc
-                                            .evaluateLevel(evaluator);
-                                } else {
-                                    Member parent = member.getParentMember();
-                                    if (parent == null) {
-                                        // This is a root member,
-                                        // so there is no parallelperiod.
-                                        return member.getHierarchy()
-                                                .getNullMember();
-                                    }
-                                    ancestorLevel = parent.getLevel();
-                                }
-                                return parallelPeriod(member, ancestorLevel,
-                                        evaluator, lagValue);
-                            }
-                        };
-                    }
-
-                    Member parallelPeriod(
-                            Member member,
-                            Level ancestorLevel,
-                            Evaluator evaluator,
-                            int lagValue) {
-                        // Now do some error checking.
-                        // The ancestorLevel and the member must be from the
-                        // same hierarchy.
-                        if (member.getHierarchy() != ancestorLevel.getHierarchy()) {
-                            MondrianResource.instance().FunctionMbrAndLevelHierarchyMismatch.ex(
-                                    "ParallelPeriod", ancestorLevel.getHierarchy().getUniqueName(),
-                                    member.getHierarchy().getUniqueName()
-                            );
-                        }
-
-                        int distance = member.getLevel().getDepth() -
-                                ancestorLevel.getDepth();
-                        Member ancestor = FunUtil.ancestor(
-                                evaluator, member, distance, ancestorLevel);
-                        Member inLaw = evaluator.getSchemaReader()
-                                .getLeadMember(ancestor, -lagValue);
-                        return FunUtil.cousin(
-                                evaluator.getSchemaReader(), member, inLaw);
-                    }
-                };
-            }
-        });
+        define(ParallelPeriodFunDef.Resolver);
 
 
         define(new FunDefBase(
@@ -852,8 +626,9 @@ public class BuiltinFunTable extends FunTableImpl {
         });
         //
         // NUMERIC FUNCTIONS
-        define(new AggregateFunDef.Resolver());
+        define(AggregateFunDef.resolver);
 
+        // Obsolete??
         define(new MultiResolver(
                 "$AggregateChildren",
                 "$AggregateChildren(<Hierarchy>)",
@@ -907,119 +682,11 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(new MultiResolver(
-                "Avg",
-                "Avg(<Set>[, <Numeric Expression>])",
-                "Returns the average value of a numeric expression evaluated over a set.",
-                new String[]{"fnx", "fnxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new AbstractAggregateFunDef(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final Calc calc = call.getArgCount() > 1 ?
-                                compiler.compileScalar(call.getArg(1), true) :
-                                new ValueCalc(call);
-                        return new AbstractCalc(call) {
-                            public Object evaluate(Evaluator evaluator) {
-                                List memberList = listCalc.evaluateList(evaluator);
-                                return avg(evaluator.push(), memberList, calc);
-                            }
+        define(AvgFunDef.Resolver);
 
-                            public Calc[] getCalcs() {
-                                return new Calc[] {listCalc, calc};
-                            }
+        define(CorrelationFunDef.Resolver);
 
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-                };
-            }
-        });
-
-        define(new MultiResolver(
-                "Correlation",
-                "Correlation(<Set>, <Numeric Expression>[, <Numeric Expression>])",
-                "Returns the correlation of two series evaluated over a set.",
-                new String[]{"fnxn","fnxnn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new AbstractAggregateFunDef(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final Calc calc1 =
-                                compiler.compileScalar(call.getArg(1), true);
-                        final Calc calc2 = call.getArgCount() > 2 ?
-                                compiler.compileScalar(call.getArg(2), true) :
-                                new ValueCalc(call);
-                        return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc1, calc2}) {
-                            public double evaluateDouble(Evaluator evaluator) {
-                                List memberList = listCalc.evaluateList(evaluator);
-                                return correlation(evaluator.push(),
-                                        memberList, calc1, calc2);
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-                };
-            }
-        });
-
-        final String[] resWords = {"INCLUDEEMPTY", "EXCLUDEEMPTY"};
-        define(new MultiResolver(
-                "Count",
-                "Count(<Set>[, EXCLUDEEMPTY | INCLUDEEMPTY])",
-                "Returns the number of tuples in a set, empty cells included unless the optional EXCLUDEEMPTY flag is used.",
-            new String[]{"fnx", "fnxy"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new AbstractAggregateFunDef(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc memberListCalc =
-                                compiler.compileList(call.getArg(0));
-                        final boolean includeEmpty =
-                                call.getArgCount() < 2 ||
-                                ((Literal) call.getArg(1)).getValue().equals(
-                                        "INCLUDEEMPTY");
-                        return new AbstractIntegerCalc(
-                                call, new Calc[] {memberListCalc}) {
-                            public int evaluateInteger(Evaluator evaluator) {
-                                List memberList =
-                                        memberListCalc.evaluateList(evaluator);
-                                return count(evaluator, memberList, includeEmpty);
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                // COUNT(<set>, INCLUDEEMPTY) is straightforward -- it
-                                // depends only on the dimensions that <Set> depends
-                                // on.
-                                if (super.dependsOn(dimension)) {
-                                    return true;
-                                }
-                                if (includeEmpty) {
-                                    return false;
-                                }
-                                // COUNT(<set>, EXCLUDEEMPTY) depends only on the
-                                // dimensions that <Set> depends on, plus all
-                                // dimensions not masked by the set.
-                                if (memberListCalc.getType().usesDimension(dimension, true) ) {
-                                    return false;
-                                }
-                                return true;
-                            }
-                        };
-                    }
-
-                };
-            }
-            public String[] getReservedWords() {
-                return resWords;
-            }
-        });
+        define(CountFunDef.Resolver);
 
         define(new FunDefBase(
                 "Count",
@@ -1037,75 +704,10 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
-        define(new MultiResolver(
-                "Covariance",
-                "Covariance(<Set>, <Numeric Expression>[, <Numeric Expression>])",
-                "Returns the covariance of two series evaluated over a set (biased).",
-                new String[]{"fnxn","fnxnn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final Calc calc1 =
-                                compiler.compileScalar(call.getArg(1), true);
-                        final Calc calc2 = call.getArgCount() > 2 ?
-                                compiler.compileScalar(call.getArg(2), true) :
-                                new ValueCalc(call);
-                        return new AbstractCalc(call) {
-                            public Object evaluate(Evaluator evaluator) {
-                                List memberList = listCalc.evaluateList(evaluator);
-                                return covariance(evaluator.push(), memberList,
-                                        calc1, calc2, true);
-                            }
-
-                            public Calc[] getCalcs() {
-                                return new Calc[] {listCalc, calc1, calc2};
-                            }
-                        };
-                    }
-                };
-            }
-        });
-
-        define(new MultiResolver(
-                "CovarianceN",
-                "CovarianceN(<Set>, <Numeric Expression>[, <Numeric Expression>])",
-                "Returns the covariance of two series evaluated over a set (unbiased).",
-                new String[]{"fnxn","fnxnn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new AbstractAggregateFunDef(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final Calc calc1 =
-                                compiler.compileScalar(call.getArg(1), true);
-                        final Calc calc2 = call.getArgCount() > 2 ?
-                                compiler.compileScalar(call.getArg(2), true) :
-                                new ValueCalc(call);
-                        return new AbstractCalc(call) {
-                            public Object evaluate(Evaluator evaluator) {
-                                List memberList = listCalc.evaluateList(evaluator);
-                                return covariance(evaluator.push(), memberList,
-                                        calc1, calc2, false);
-                            }
-
-                            public Calc[] getCalcs() {
-                                return new Calc[] {listCalc, calc1, calc2};
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-                };
-            }
-        });
+        define(CovarianceFunDef.CovarianceResolver);
+        define(CovarianceFunDef.CovarianceNResolver);
 
         define(new FunDefBase(
                 "IIf",
@@ -1154,111 +756,17 @@ public class BuiltinFunTable extends FunTableImpl {
 
         });
 
-        define(new LinReg.InterceptFunDef.Resolver());
+        define(LinReg.InterceptResolver);
+        define(LinReg.PointResolver);
+        define(LinReg.R2Resolver);
+        define(LinReg.SlopeResolver);
+        define(LinReg.VarianceResolver);
 
-        define(new LinReg.PointFunDef.Resolver());
+        define(MinMaxFunDef.MaxResolver);
 
-        define(new LinReg.R2FunDef.Resolver());
+        define(MedianFunDef.Resolver);
 
-        define(new LinReg.SlopeFunDef.Resolver());
-
-        define(new LinReg.VarianceFunDef.Resolver());
-
-        define(new MultiResolver(
-                "Max",
-                "Max(<Set>[, <Numeric Expression>])",
-                "Returns the maximum value of a numeric expression evaluated over a set.",
-                new String[]{"fnx", "fnxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new AbstractAggregateFunDef(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final Calc calc = call.getArgCount() > 1 ?
-                                compiler.compileScalar(call.getArg(1), true) :
-                                new ValueCalc(call);
-                        return new AbstractCalc(call) {
-                            public Object evaluate(Evaluator evaluator) {
-                                List memberList = listCalc.evaluateList(evaluator);
-                                return max(evaluator.push(), memberList, calc);
-                            }
-
-                            public Calc[] getCalcs() {
-                                return new Calc[] {listCalc, calc};
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-                };
-            }
-        });
-
-        define(new MultiResolver(
-                "Median",
-                "Median(<Set>[, <Numeric Expression>])",
-                "Returns the median value of a numeric expression evaluated over a set.",
-                new String[]{"fnx", "fnxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new AbstractAggregateFunDef(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final Calc calc = call.getArgCount() > 1 ?
-                                compiler.compileScalar(call.getArg(1), true) :
-                                new ValueCalc(call);
-                        return new AbstractCalc(call) {
-                            public Object evaluate(Evaluator evaluator) {
-                                List memberList = listCalc.evaluateList(evaluator);
-                                return median(evaluator.push(), memberList, calc);
-                            }
-
-                            public Calc[] getCalcs() {
-                                return new Calc[] {listCalc, calc};
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-                };
-            }
-        });
-
-        define(new MultiResolver(
-                "Min",
-                "Min(<Set>[, <Numeric Expression>])",
-                "Returns the minimum value of a numeric expression evaluated over a set.",
-                new String[]{"fnx", "fnxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new AbstractAggregateFunDef(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final Calc calc = call.getArgCount() > 1 ?
-                                compiler.compileScalar(call.getArg(1), true) :
-                                new ValueCalc(call);
-                        return new AbstractCalc(call) {
-                            public Object evaluate(Evaluator evaluator) {
-                                List memberList = listCalc.evaluateList(evaluator);
-                                return min(evaluator.push(), memberList, calc);
-                            }
-
-                            public Calc[] getCalcs() {
-                                return new Calc[] {listCalc, calc};
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-                };
-            }
-        });
+        define(MinMaxFunDef.MinResolver);
 
         define(new FunDefBase(
                 "Ordinal",
@@ -1278,126 +786,17 @@ public class BuiltinFunTable extends FunTableImpl {
 
         });
 
-        define(RankFunDef.createResolver());
+        define(RankFunDef.Resolver);
 
-        define(new CacheFunDef.CacheFunResolver());
+        define(CacheFunDef.Resolver);
 
-        final MultiResolver stdevResolver = new MultiResolver(
-                        "Stdev",
-                        "Stdev(<Set>[, <Numeric Expression>])",
-                        "Returns the standard deviation of a numeric expression evaluated over a set (unbiased).",
-                        new String[]{"fnx", "fnxn"}) {
-                    protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                        return new AbstractAggregateFunDef(dummyFunDef) {
-                            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                                final ListCalc listCalc =
-                                        compiler.compileList(call.getArg(0));
-                                final Calc calc = call.getArgCount() > 1 ?
-                                        compiler.compileScalar(call.getArg(1), true) :
-                                        new ValueCalc(call);
-                                return new AbstractCalc(call) {
-                                    public Object evaluate(Evaluator evaluator) {
-                                        List memberList = listCalc.evaluateList(evaluator);
-                                        return stdev(evaluator.push(), memberList, calc, false);
-                                    }
+        define(StdevFunDef.StdevResolver);
+        define(StdevFunDef.StddevResolver);
 
-                                    public Calc[] getCalcs() {
-                                        return new Calc[] {listCalc, calc};
-                                    }
+        define(StdevPFunDef.StdevpResolver);
+        define(StdevPFunDef.StddevpResolver);
 
-                                    public boolean dependsOn(Dimension dimension) {
-                                        return anyDependsButFirst(getCalcs(), dimension);
-                                    }
-                                };
-                            }
-                        };
-                    }
-                };
-
-        define(stdevResolver);
-        define(new MultiResolver(
-                "Stddev",
-                "Stddev(<Set>[, <Numeric Expression>])",
-                "Alias for Stdev.",
-                new String[]{"fnx", "fnxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return stdevResolver.createFunDef(args, dummyFunDef);
-            }
-        });
-
-        final MultiResolver stdevpResolver = new MultiResolver(
-                        "StdevP",
-                        "StdevP(<Set>[, <Numeric Expression>])",
-                        "Returns the standard deviation of a numeric expression evaluated over a set (biased).",
-                        new String[]{"fnx", "fnxn"}) {
-                    protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                        return new AbstractAggregateFunDef(dummyFunDef) {
-                            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                                final ListCalc listCalc =
-                                        compiler.compileList(call.getArg(0));
-                                final Calc calc = call.getArgCount() > 1 ?
-                                        compiler.compileScalar(call.getArg(1), true) :
-                                        new ValueCalc(call);
-                                return new AbstractCalc(call) {
-                                    public Object evaluate(Evaluator evaluator) {
-                                        List memberList = listCalc.evaluateList(evaluator);
-                                        return stdev(evaluator.push(), memberList, calc, true);
-                                    }
-
-                                    public Calc[] getCalcs() {
-                                        return new Calc[] {listCalc, calc};
-                                    }
-
-                                    public boolean dependsOn(Dimension dimension) {
-                                        return anyDependsButFirst(getCalcs(), dimension);
-                                    }
-                                };
-                            }
-                        };
-                    }
-                };
-
-        define(stdevpResolver);
-
-        define(new MultiResolver(
-                "StddevP",
-                "StddevP(<Set>[, <Numeric Expression>])",
-                "Alias for StdevP.",
-                new String[]{"fnx", "fnxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return stdevpResolver.createFunDef(args, dummyFunDef);
-            }
-        });
-
-        define(new MultiResolver(
-                "Sum", "Sum(<Set>[, <Numeric Expression>])", "Returns the sum of a numeric expression evaluated over a set.",
-                new String[]{"fnx", "fnxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new AbstractAggregateFunDef(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final Calc calc = call.getArgCount() > 1 ?
-                                compiler.compileScalar(call.getArg(1), true) :
-                                new ValueCalc(call);
-                        return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
-                            public double evaluateDouble(Evaluator evaluator) {
-                                List memberList = listCalc.evaluateList(evaluator);
-                                return sumDouble(evaluator.push(), memberList, calc);
-                            }
-
-                            public Calc[] getCalcs() {
-                                return new Calc[] {listCalc, calc};
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-                };
-            }
-        });
+        define(SumFunDef.Resolver);
 
         define(new FunDefBase(
                 "Value",
@@ -1433,153 +832,16 @@ public class BuiltinFunTable extends FunTableImpl {
 
         });
 
-        final MultiResolver varResolver = new MultiResolver(
-                        "Var",
-                        "Var(<Set>[, <Numeric Expression>])",
-                        "Returns the variance of a numeric expression evaluated over a set (unbiased).",
-                        new String[]{"fnx", "fnxn"}) {
-                    protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                        return new AbstractAggregateFunDef(dummyFunDef) {
-                            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                                final ListCalc listCalc =
-                                        compiler.compileList(call.getArg(0));
-                                final Calc calc = call.getArgCount() > 1 ?
-                                        compiler.compileScalar(call.getArg(1), true) :
-                                        new ValueCalc(call);
-                                return new AbstractCalc(call) {
-                                    public Object evaluate(Evaluator evaluator) {
-                                        List memberList = listCalc.evaluateList(evaluator);
-                                        return var(evaluator.push(), memberList, calc, false);
-                                    }
+        define(VarFunDef.VarResolver);
+        define(VarFunDef.VarianceResolver);
 
-                                    public Calc[] getCalcs() {
-                                        return new Calc[] {listCalc, calc};
-                                    }
-
-                                    public boolean dependsOn(Dimension dimension) {
-                                        return anyDependsButFirst(getCalcs(), dimension);
-                                    }
-                                };
-                            }
-                        };
-                    }
-                };
-        define(varResolver);
-
-        define(new MultiResolver(
-                "Variance", "Variance(<Set>[, <Numeric Expression>])",
-                "Alias for Var.",
-                new String[]{"fnx", "fnxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return varResolver.createFunDef(args, dummyFunDef);
-            }
-        });
-
-        final MultiResolver variancepResolver = new MultiResolver(
-                        "VarianceP",
-                        "VarianceP(<Set>[, <Numeric Expression>])",
-                        "Alias for VarP.",
-                        new String[]{"fnx", "fnxn"}) {
-                    protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                        return new AbstractAggregateFunDef(dummyFunDef) {
-                            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                                final ListCalc listCalc =
-                                        compiler.compileList(call.getArg(0));
-                                final Calc calc = call.getArgCount() > 1 ?
-                                        compiler.compileScalar(call.getArg(1), true) :
-                                        new ValueCalc(call);
-                                return new AbstractCalc(call) {
-                                    public Object evaluate(Evaluator evaluator) {
-                                        List memberList = listCalc.evaluateList(evaluator);
-                                        return var(evaluator.push(), memberList, calc, true);
-                                    }
-
-                                    public Calc[] getCalcs() {
-                                        return new Calc[] {listCalc, calc};
-                                    }
-
-                                    public boolean dependsOn(Dimension dimension) {
-                                        return anyDependsButFirst(getCalcs(), dimension);
-                                    }
-                                };
-                            }
-                        };
-                    }
-                };
-        define(variancepResolver);
-
-        define(new MultiResolver(
-                "VarP",
-                "VarP(<Set>[, <Numeric Expression>])",
-                "Returns the variance of a numeric expression evaluated over a set (biased).",
-                new String[]{"fnx", "fnxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return variancepResolver.createFunDef(args, dummyFunDef);
-            }
-        });
+        define(VarPFunDef.VariancePResolver);
+        define(VarPFunDef.VarPResolver);
 
         //
         // SET FUNCTIONS
 
-        /*
-         * AddCalculatedMembers adds calculated members that are siblings
-         * of the members in the set. The set is limited to one dimension.
-         */
-        define(new FunDefBase(
-                "AddCalculatedMembers",
-                "AddCalculatedMembers(<Set>)",
-                "Adds calculated members to a set.",
-                "fxx") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final ListCalc listCalc = compiler.compileList(call.getArg(0));
-                return new AbstractListCalc(call, new Calc[] {listCalc}) {
-                    public List evaluateList(Evaluator evaluator) {
-                        final List list = listCalc.evaluateList(evaluator);
-                        return addCalculatedMembers(list, evaluator);
-                    }
-                };
-            }
-
-            private List addCalculatedMembers(List memberList, Evaluator evaluator) {
-                // Determine unique levels in the set
-                Map levelMap = new HashMap();
-                Dimension dim = null;
-
-                Iterator it = memberList.iterator();
-                while (it.hasNext()) {
-                    Object obj = it.next();
-                    if (!(obj instanceof Member)) {
-                        throw newEvalException(this, "Only single dimension members allowed in set for AddCalculatedMembers");
-                    }
-                    Member member = (Member) obj;
-                    if (dim == null) {
-                        dim = member.getDimension();
-                    } else if (dim != member.getDimension()) {
-                        throw newEvalException(this, "Only members from the same dimension are allowed in the AddCalculatedMembers set: "
-                                + dim.toString() + " vs " + member.getDimension().toString());
-                    }
-                    if (!levelMap.containsKey(member.getLevel())) {
-                        levelMap.put(member.getLevel(), null);
-                    }
-                }
-                /*
-                 * For each level, add the calculated members from both
-                 * the schema and the query
-                 */
-                List workingList = new ArrayList(memberList);
-                final SchemaReader schemaReader =
-                        evaluator.getQuery().getSchemaReader(true);
-                it = levelMap.keySet().iterator();
-                while (it.hasNext()) {
-                    Level level = (Level) it.next();
-                    List calcMemberList =
-                            schemaReader.getCalculatedMembers(level);
-                    workingList.addAll(calcMemberList);
-                }
-                memberList = workingList;
-                return memberList;
-            }
-        });
+        define(AddCalculatedMembersFunDef.instance);
 
         define(new FunDefBase(
                 "Ascendants",
@@ -1609,114 +871,12 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(new MultiResolver(
-                "BottomCount",
-                "BottomCount(<Set>, <Count>[, <Numeric Expression>])",
-                "Returns a specified number of items from the bottom of a set, optionally ordering the set first.",
-                new String[]{"fxxnn", "fxxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final IntegerCalc integerCalc =
-                                compiler.compileInteger(call.getArg(1));
-                        final Calc orderCalc =
-                                call.getArgCount() > 2 ?
-                                compiler.compileScalar(call.getArg(2), true) :
-                                null;
-                        return new AbstractListCalc(call, new Calc[] {listCalc, integerCalc, orderCalc}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                // Use a native evaluator, if more efficient.
-                                // TODO: Figure this out at compile time.
-                                SchemaReader schemaReader = evaluator.getSchemaReader();
-                                NativeEvaluator nativeEvaluator =
-                                        schemaReader.getNativeSetEvaluator(
-                                                call.getFunDef(), call.getArgs(), evaluator, this);
-                                if (nativeEvaluator != null) {
-                                    return (List) nativeEvaluator.execute();
-                                }
-
-                                List list = listCalc.evaluateList(evaluator);
-                                int n = integerCalc.evaluateInteger(evaluator);
-                                if (orderCalc != null) {
-                                    boolean desc = false, brk = true;
-                                    sort(evaluator.push(), list, orderCalc, desc, brk);
-                                }
-                                if (n < list.size()) {
-                                    list = list.subList(0, n);
-                                }
-                                return list;
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-                };
-            }
-        });
-
-        define(new MultiResolver(
-                "BottomPercent",
-                "BottomPercent(<Set>, <Percentage>, <Numeric Expression>)",
-                "Sorts a set and returns the bottom N elements whose cumulative total is at least a specified percentage.",
-                new String[]{"fxxnn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final DoubleCalc doubleCalc =
-                                compiler.compileDouble(call.getArg(1));
-                        final Calc calc =
-                                compiler.compileScalar(call.getArg(2), true);
-                        return new AbstractListCalc(call, new Calc[] {listCalc, doubleCalc, calc}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                List list = listCalc.evaluateList(evaluator);
-                                double n = doubleCalc.evaluateDouble(evaluator);
-                                return topOrBottom(evaluator.push(), list, calc, false, true, n);
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-                };
-            }
-        });
-
-        define(new MultiResolver(
-                "BottomSum",
-                "BottomSum(<Set>, <Value>, <Numeric Expression>)",
-                "Sorts a set and returns the bottom N elements whose cumulative total is at least a specified value.",
-                new String[]{"fxxnn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final DoubleCalc doubleCalc =
-                                compiler.compileDouble(call.getArg(1));
-                        final Calc calc =
-                                compiler.compileScalar(call.getArg(2), true);
-                        return new AbstractListCalc(call, new Calc[] {listCalc, doubleCalc, calc}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                List list = listCalc.evaluateList(evaluator);
-                                double n = doubleCalc.evaluateDouble(evaluator);
-                                return topOrBottom(evaluator.push(), list, calc, false, false, n);
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-                };
-            }
-        });
+        define(TopBottomCountFunDef.BottomCountResolver);
+        define(TopBottomPercentSumFunDef.BottomPercentResolver);
+        define(TopBottomPercentSumFunDef.BottomSumResolver);
+        define(TopBottomCountFunDef.TopCountResolver);
+        define(TopBottomPercentSumFunDef.TopPercentResolver);
+        define(TopBottomPercentSumFunDef.TopSumResolver);
 
         define(new FunDefBase(
                 "Children",
@@ -1737,49 +897,13 @@ public class BuiltinFunTable extends FunTableImpl {
 
         });
 
-        define(new MultiResolver(
-                "Crossjoin",
-                "Crossjoin(<Set1>, <Set2>)",
-                "Returns the cross product of two sets.",
-                new String[]{"fxxx"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new CrossJoinFunDef(dummyFunDef);
-            }
-        });
+        define(CrossJoinFunDef.Resolver);
 
-        define(new MultiResolver(
-                "NonEmptyCrossJoin",
-                "NonEmptyCrossJoin(<Set1>, <Set2>)",
-                "Returns the cross product of two sets, excluding empty tuples and tuples without associated fact table data.",
-                new String[]{"fxxx"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new NonEmptyCrossJoinFunDef(dummyFunDef);
-            }
-        });
+        define(NonEmptyCrossJoinFunDef.Resolver);
 
-        define(new MultiResolver(
-                "*",
-                "<Set1> * <Set2>",
-                "Returns the cross product of two sets.",
-                new String[]{"ixxx", "ixmx", "ixxm", "ixmm"}) {
-            public FunDef resolve(
-                    Exp[] args, Validator validator, int[] conversionCount) {
-                // This function only applies in contexts which require a set.
-                // Elsewhere, "*" is the multiplication operator.
-                // This means that [Measures].[Unit Sales] * [Gender].[M] is
-                // well-defined.
-                if (validator.requiresExpression()) {
-                    return null;
-                }
-                return super.resolve(args, validator, conversionCount);
-            }
+        define(CrossJoinFunDef.StarResolver);
 
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new CrossJoinFunDef(dummyFunDef);
-            }
-        });
-
-        define(new DescendantsFunDef.Resolver());
+        define(DescendantsFunDef.Resolver);
 
         define(new FunDefBase(
                 "Distinct",
@@ -1814,79 +938,7 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(new MultiResolver(
-                "DrilldownLevel",
-                "DrilldownLevel(<Set>[, <Level>]) or DrilldownLevel(<Set>, , <Index>)",
-                "Drills down the members of a set, at a specified level, to one level below. Alternatively, drills down on a specified dimension in the set.",
-                new String[]{"fxx", "fxxl"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final LevelCalc levelCalc =
-                                call.getArgCount() > 1 ?
-                                compiler.compileLevel(call.getArg(1)) :
-                                null;
-                        return new AbstractListCalc(call, new Calc[] {listCalc, levelCalc}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                List list = listCalc.evaluateList(evaluator);
-                                if (list.size() == 0) {
-                                    return list;
-                                }
-                                int searchDepth = -1;
-                                if (levelCalc != null) {
-                                    Level level = levelCalc.evaluateLevel(evaluator);
-                                    searchDepth = level.getDepth();
-                                }
-                                return drill(searchDepth, list, evaluator);
-                            }
-                        };
-                    }
-
-                    List drill(int searchDepth, List list, Evaluator evaluator) {
-                        if (searchDepth == -1) {
-                            searchDepth = ((Member)list.get(0)).getLevel().getDepth();
-
-                            for (int i = 1, m = list.size(); i < m; i++) {
-                                Member member = (Member) list.get(i);
-                                int memberDepth = member.getLevel().getDepth();
-
-                                if (memberDepth > searchDepth) {
-                                    searchDepth = memberDepth;
-                                }
-                            }
-                        }
-
-                        List drilledSet = new ArrayList();
-
-                        for (int i = 0, m = list.size(); i < m; i++) {
-                            Member member = (Member) list.get(i);
-                            drilledSet.add(member);
-
-                            Member nextMember = i == (m - 1) ?
-                                    null :
-                                    (Member) list.get(i + 1);
-
-                            //
-                            // This member is drilled if it's at the correct depth
-                            // and if it isn't drilled yet. A member is considered
-                            // to be "drilled" if it is immediately followed by
-                            // at least one descendant
-                            //
-                            if (member.getLevel().getDepth() == searchDepth
-                                    && !FunUtil.isAncestorOf(member, nextMember, true)) {
-                                Member[] childMembers = evaluator.getSchemaReader().getMemberChildren(member);
-                                for (int j = 0; j < childMembers.length; j++) {
-                                    drilledSet.add(childMembers[j]);
-                                }
-                            }
-                        }
-                        return drilledSet;
-                    }
-                };
-            }
-        });
+        define(DrilldownLevelFunDef.Resolver);
 
         if (false) define(new FunDefBase(
                 "DrilldownLevelBottom",
@@ -1908,7 +960,7 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(new DrilldownMemberFunDef.Resolver());
+        define(DrilldownMemberFunDef.Resolver);
 
         if (false) define(new FunDefBase(
                 "DrilldownMemberBottom",
@@ -1950,83 +1002,7 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(new MultiResolver(
-                "Except",
-                "Except(<Set1>, <Set2>[, ALL])",
-                "Finds the difference between two sets, optionally retaining duplicates.",
-                new String[]{"fxxx", "fxxxy"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        // todo: implement ALL
-                        final ListCalc listCalc0 =
-                                compiler.compileList(call.getArg(0));
-                        final ListCalc listCalc1 =
-                                compiler.compileList(call.getArg(1));
-                        final Type elementType = ((SetType) listCalc0.getType()).getElementType();
-                        if (elementType instanceof TupleType) {
-                            return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
-                                public List evaluateList(Evaluator evaluator) {
-                                    List list0 = listCalc0.evaluateList(evaluator);
-                                    if (list0.isEmpty()) {
-                                        return list0;
-                                    }
-                                    List list1 = listCalc1.evaluateList(evaluator);
-                                    return exceptTuples(list0, list1);
-                                }
-                            };
-                        } else {
-                            return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
-                                public List evaluateList(Evaluator evaluator) {
-                                    List list0 = listCalc0.evaluateList(evaluator);
-                                    if (list0.isEmpty()) {
-                                        return list0;
-                                    }
-                                    List list1 = listCalc1.evaluateList(evaluator);
-                                    return except(list0, list1);
-                                }
-                            };
-                        }
-                    }
-
-                    List except(final List list0, final List list1) {
-                        if (list0.size() == 0) {
-                            return list0;
-                        }
-                        Set set = new HashSet(list1);
-                        List result = new ArrayList();
-                        for (int i = 0, count = list0.size(); i < count; i++) {
-                            Object o = list0.get(i);
-                            if (!set.contains(o)) {
-                                result.add(o);
-                            }
-                        }
-                        return result;
-                    }
-
-                    List exceptTuples(final List list0, final List list1) {
-                        if (list0.size() == 0) {
-                            return list0;
-                        }
-                        // Because the .equals and .hashCode methods of
-                        // Member[] use identity, wrap each tuple in a list.
-                        Set set = new HashSet();
-                        for (int i = 0, count1 = list1.size(); i < count1; i++) {
-                            Member[] members = (Member[]) list1.get(i);
-                            set.add(Arrays.asList(members));
-                        }
-                        List result = new ArrayList();
-                        for (int i = 0, count0 = list0.size(); i < count0; i++) {
-                            Member[] members = (Member[]) list0.get(i);
-                            if (!set.contains(Arrays.asList(members))) {
-                                result.add(members);
-                            }
-                        }
-                        return result;
-                    }
-                };
-            }
-        });
+        define(ExceptFunDef.Resolver);
 
         if (false) define(new FunDefBase(
                 "Extract",
@@ -2038,335 +1014,15 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(new FunDefBase(
-                "Filter",
-                "Filter(<Set>, <Search Condition>)",
-                "Returns the set resulting from filtering a set based on a search condition.",
-                "fxxb") {
-            public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
-                final ListCalc listCalc = compiler.compileList(call.getArg(0));
-                final BooleanCalc calc = compiler.compileBoolean(call.getArg(1));
-                if (((SetType) listCalc.getType()).getElementType() instanceof MemberType) {
-                    return new AbstractListCalc(call, new Calc[] {listCalc, calc}) {
-                        public List evaluateList(Evaluator evaluator) {
-                            // Use a native evaluator, if more efficient.
-                            // TODO: Figure this out at compile time.
-                            SchemaReader schemaReader = evaluator.getSchemaReader();
-                            NativeEvaluator nativeEvaluator =
-                                    schemaReader.getNativeSetEvaluator(
-                                            call.getFunDef(), call.getArgs(), evaluator, this);
-                            if (nativeEvaluator != null) {
-                                return (List) nativeEvaluator.execute();
-                            }
+        define(FilterFunDef.instance);
 
-                            List members = listCalc.evaluateList(evaluator);
-                            List result = new ArrayList();
-                            Evaluator evaluator2 = evaluator.push();
-                            for (int i = 0, count = members.size(); i < count; i++) {
-                                Member member = (Member) members.get(i);
-                                evaluator2.setContext(member);
-                                if (calc.evaluateBoolean(evaluator2)) {
-                                    result.add(member);
-                                }
-                            }
-                            return result;
-                        }
+        define(GenerateFunDef.Resolver);
+        define(HeadTailFunDef.HeadResolver);
 
-                        public boolean dependsOn(Dimension dimension) {
-                            return anyDependsButFirst(getCalcs(), dimension);
-                        }
-                    };
-                } else {
-                    return new AbstractListCalc(call, new Calc[] {listCalc, calc}) {
-                        public List evaluateList(Evaluator evaluator) {
-                            // Use a native evaluator, if more efficient.
-                            // TODO: Figure this out at compile time.
-                            SchemaReader schemaReader = evaluator.getSchemaReader();
-                            NativeEvaluator nativeEvaluator =
-                                    schemaReader.getNativeSetEvaluator(
-                                            call.getFunDef(), call.getArgs(), evaluator, this);
-                            if (nativeEvaluator != null) {
-                                return (List) nativeEvaluator.execute();
-                            }
+        define(HierarchizeFunDef.Resolver);
 
-                            List tupleList = listCalc.evaluateList(evaluator);
-                            List result = new ArrayList();
-                            Evaluator evaluator2 = evaluator.push();
-                            for (int i = 0, count = tupleList.size(); i < count; i++) {
-                                Member[] members = (Member []) tupleList.get(i);
-                                evaluator2.setContext(members);
-                                if (calc.evaluateBoolean(evaluator2)) {
-                                    result.add(members);
-                                }
-                            }
-                            return result;
-                        }
-
-                        public boolean dependsOn(Dimension dimension) {
-                            return anyDependsButFirst(getCalcs(), dimension);
-                        }
-                    };
-                }
-            }
-
-        });
-
-        define(new MultiResolver(
-                "Generate",
-                "Generate(<Set1>, <Set2>[, ALL])",
-                "Applies a set to each member of another set and joins the resulting sets by union.",
-                new String[] {"fxxx", "fxxxy"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                final boolean all = getLiteralArg(args, 2, "", new String[] {"ALL"}, dummyFunDef).equalsIgnoreCase("ALL");
-                return new FunDefBase(dummyFunDef) {
-                    public Type getResultType(Validator validator, Exp[] args) {
-                        final Type type = args[1].getType();
-                        final Type memberType = TypeUtil.toMemberOrTupleType(type);
-                        return new SetType(memberType);
-                    }
-
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc1 =
-                                compiler.compileList(call.getArg(0));
-                        final ListCalc listCalc2 =
-                                compiler.compileList(call.getArg(1));
-                        return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                final List list1 = listCalc1.evaluateList(evaluator);
-                                return generate(evaluator, list1, listCalc2, all);
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-
-                    List generate(
-                            Evaluator evaluator,
-                            List members,
-                            final ListCalc listCalc,
-                            final boolean all) {
-                        final Evaluator evaluator2 = evaluator.push();
-                        List result = new ArrayList();
-                        HashSet emitted = all ? null : new HashSet();
-                        for (int i = 0; i < members.size(); i++) {
-                            Object o = members.get(i);
-                            if (o instanceof Member) {
-                                evaluator2.setContext((Member) o);
-                            } else {
-                                evaluator2.setContext((Member[]) o);
-                            }
-                            final List result2 = listCalc.evaluateList(evaluator2);
-                            if (all) {
-                                result.addAll(result2);
-                            } else {
-                                for (int j = 0; j < result2.size(); j++) {
-                                    Object row = result2.get(j);
-                                    if (emitted.add(row)) {
-                                        result.add(row);
-                                    }
-                                }
-                            }
-                        }
-                        return result;
-                    }
-                };
-            }
-        });
-
-        define(new MultiResolver(
-                "Head",
-                "Head(<Set>[, < Numeric Expression >])",
-                "Returns the first specified number of elements in a set.",
-                new String[] {"fxx", "fxxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final IntegerCalc integerCalc =
-                                call.getArgCount() > 1 ?
-                                compiler.compileInteger(call.getArg(1)) :
-                                ConstantCalc.constantInteger(1);
-                        return new AbstractListCalc(call, new Calc[] {listCalc, integerCalc}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                List list = listCalc.evaluateList(evaluator);
-                                int count = integerCalc.evaluateInteger(evaluator);
-                                return head(count, list);
-                            }
-                        };
-                    }
-
-                    List head(final int count, List members) {
-                        assert members != null;
-                        if (count >= members.size()) {
-                            return members;
-                        }
-                        if (count <= 0) {
-                            return Collections.EMPTY_LIST;
-                        }
-                        return members.subList(0, count);
-                    }
-                };
-            }
-        });
-
-        final String[] prePost = {"PRE","POST"};
-        define(new MultiResolver(
-                "Hierarchize", "Hierarchize(<Set>[, POST])", "Orders the members of a set in a hierarchy.",
-                new String[] {"fxx", "fxxy"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                String order = getLiteralArg(args, 1, "PRE", prePost, dummyFunDef);
-                final boolean post = order.equals("POST");
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        return new AbstractListCalc(call, new Calc[] {listCalc}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                List list = listCalc.evaluateList(evaluator);
-                                hierarchize(list, post);
-                                return list;
-                            }
-                        };
-                    }
-
-                };
-            }
-
-            public String[] getReservedWords() {
-                return prePost;
-            }
-        });
-
-        define(new MultiResolver(
-                "Intersect",
-                "Intersect(<Set1>, <Set2>[, ALL])",
-                "Returns the intersection of two input sets, optionally retaining duplicates.",
-                new String[] {"fxxxy", "fxxx"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                final boolean all = getLiteralArg(args, 2, "", new String[] {"ALL"}, dummyFunDef).equalsIgnoreCase("ALL");
-                return new IntersectFunDef(dummyFunDef, all);
-            }
-        });
-
-        define(new MultiResolver(
-                "LastPeriods",
-                "LastPeriods(<Index> [, <Member>])",
-                "Returns a set of members prior to and including a specified member.",
-                new String[] {"fxn", "fxnm"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Type getResultType(Validator validator, Exp[] args) {
-                        if (args.length == 1) {
-                            // If Member is not specified,
-                            // it is Time.CurrentMember.
-                            Hierarchy hierarchy = validator.getQuery()
-                                    .getCube().getTimeDimension()
-                                    .getHierarchy();
-                            return new SetType(MemberType.forHierarchy(hierarchy));
-                        } else {
-                            Type type = args[1].getType();
-                            Type memberType =
-                            TypeUtil.toMemberOrTupleType(type);
-                            return new SetType(memberType);
-                        }
-                    }
-
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        // Member defaults to [Time].currentmember
-                        Exp[] args = call.getArgs();
-                        final MemberCalc memberCalc;
-                        if (args.length == 1) {
-                            Dimension timeDimension =
-                                    compiler.getEvaluator().getCube()
-                                    .getTimeDimension();
-                            memberCalc = new DimensionCurrentMemberCalc(
-                                    timeDimension);
-                        } else {
-                            memberCalc = compiler.compileMember(args[1]);
-                        }
-
-                        // Numeric Expression.
-                        final IntegerCalc indexValueCalc =
-                                compiler.compileInteger(args[0]);
-
-                        return new AbstractListCalc(call, new Calc[] {memberCalc, indexValueCalc}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                Member member = memberCalc.evaluateMember(
-                                        evaluator);
-                                int indexValue = indexValueCalc.evaluateInteger(
-                                        evaluator);
-
-                                return lastPeriods(member,
-                                        evaluator, indexValue);
-                            }
-                        };
-                    }
-
-                    /*
-                        If Index is positive, returns the set of Index
-                        members ending with Member and starting with the
-                        member lagging Index - 1 from Member.
-
-                        If Index is negative, returns the set of (- Index)
-                        members starting with Member and ending with the
-                        member leading (- Index - 1) from Member.
-
-                        If Index is zero, the empty set is returned.
-                    */
-                    List lastPeriods(
-                            Member member,
-                            Evaluator evaluator,
-                            int indexValue) {
-                        // empty set
-                        if ((indexValue == 0) || member.isNull()) {
-                            return Collections.EMPTY_LIST;
-                        }
-                        List list = new ArrayList();
-
-                        // set with just member
-                        if ((indexValue == 1) || (indexValue == -1)) {
-                            list.add(member);
-                            return list;
-                        }
-
-                        // When null is found, getting the first/last
-                        // member at a given level is not particularly
-                        // fast.
-                        Member startMember;
-                        Member endMember;
-                        if (indexValue > 0) {
-                            startMember = evaluator.getSchemaReader()
-                                .getLeadMember(member, -(indexValue-1));
-                            endMember = member;
-                            if (startMember.isNull()) {
-                                Member[] members = evaluator.getSchemaReader()
-                                    .getLevelMembers(member.getLevel(), false);
-                                startMember = members[0];
-                            }
-                        } else {
-                            startMember = member;
-                            endMember = evaluator.getSchemaReader()
-                                .getLeadMember(member, -(indexValue+1));
-                            if (endMember.isNull()) {
-                                Member[] members = evaluator.getSchemaReader()
-                                    .getLevelMembers(member.getLevel(), false);
-                                endMember = members[members.length - 1];
-                            }
-                        }
-
-                        evaluator.getSchemaReader().
-                            getMemberRange(member.getLevel(),
-                               startMember,
-                               endMember,
-                               list);
-                        return list;
-                    }
-                };
-            }
-        });
+        define(IntersectFunDef.resolver);
+        define(LastPeriodsFunDef.Resolver);
 
         define(new FunDefBase(
                 "Members",
@@ -2477,96 +1133,10 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(new XtdFunDef.Resolver(
-                "Mtd",
-                "Mtd([<Member>])",
-                "A shortcut function for the PeriodsToDate function that specifies the level to be Month.",
-                new String[]{"fx", "fxm"},
-                mondrian.olap.LevelType.TimeMonths));
-
-        define(new OrderFunDef.OrderResolver());
-
-        define(new MultiResolver(
-                "PeriodsToDate",
-                "PeriodsToDate([<Level>[, <Member>]])",
-                "Returns a set of periods (members) from a specified level starting with the first period and ending with a specified member.",
-                new String[]{"fx", "fxl", "fxlm"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Type getResultType(Validator validator, Exp[] args) {
-                        if (args.length == 0) {
-                            // With no args, the default implementation cannot
-                            // guess the hierarchy.
-                            Hierarchy hierarchy = validator.getQuery()
-                                    .getCube().getTimeDimension()
-                                    .getHierarchy();
-                            return new SetType(
-                                    MemberType.forHierarchy(hierarchy));
-                        }
-                        final Type type = args[0].getType();
-                        if (type.getHierarchy().getDimension()
-                                .getDimensionType() !=
-                                mondrian.olap.DimensionType.TimeDimension) {
-                            throw MondrianResource.instance().TimeArgNeeded.ex(getName());
-                        }
-                        return super.getResultType(validator, args);
-                    }
-
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final LevelCalc levelCalc =
-                                call.getArgCount() > 0 ?
-                                compiler.compileLevel(call.getArg(0)) :
-                                null;
-                        final MemberCalc memberCalc =
-                                call.getArgCount() > 1 ?
-                                compiler.compileMember(call.getArg(1)) :
-                                null;
-                        final Dimension timeDimension = compiler
-                                .getEvaluator().getCube().getTimeDimension();
-                        return new AbstractListCalc(call, new Calc[] {levelCalc, memberCalc}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                final Member member;
-                                final Level level;
-                                if (levelCalc == null) {
-                                    member = evaluator.getContext(timeDimension);
-                                    level = member.getLevel().getParentLevel();
-                                } else {
-                                    level = levelCalc.evaluateLevel(evaluator);
-                                    if (memberCalc == null) {
-                                        member = evaluator.getContext(
-                                                level.getHierarchy().getDimension());
-                                    } else {
-                                        member = memberCalc.evaluateMember(evaluator);
-                                    }
-                                }
-                                return periodsToDate(evaluator, level, member);
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                if (super.dependsOn(dimension)) {
-                                    return true;
-                                }
-                                if (memberCalc != null) {
-                                    return false;
-                                } else if (levelCalc != null) {
-                                    return levelCalc.getType().usesDimension(dimension, true) ;
-                                } else {
-                                    return dimension == timeDimension;
-                                }
-                            }
-                        };
-                    }
-
-                };
-            }
-        });
-
-        define(new XtdFunDef.Resolver(
-                "Qtd",
-                "Qtd([<Member>])",
-                "A shortcut function for the PeriodsToDate function that specifies the level to be Quarter.",
-                new String[]{"fx", "fxm"},
-                mondrian.olap.LevelType.TimeQuarters));
+        define(XtdFunDef.MtdResolver);
+        define(OrderFunDef.Resolver);
+        define(PeriodsToDateFunDef.Resolver);
+        define(XtdFunDef.QtdResolver);
 
         define(new FunDefBase(
                 "StripCalculatedMembers",
@@ -2621,497 +1191,20 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(new StrToSetFunDef.Resolver());
-
-        define(new MultiResolver(
-                "Subset",
-                "Subset(<Set>, <Start>[, <Count>])",
-                "Returns a subset of elements from a set.",
-                new String[] {"fxxn", "fxxnn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final IntegerCalc startCalc =
-                                compiler.compileInteger(call.getArg(1));
-                        final IntegerCalc countCalc =
-                                call.getArgCount() > 2 ?
-                                compiler.compileInteger(call.getArg(2)) :
-                                null;
-                        return new AbstractListCalc(call, new Calc[] {listCalc, startCalc, countCalc}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                final List list =
-                                        listCalc.evaluateList(evaluator);
-                                final int start =
-                                        startCalc.evaluateInteger(evaluator);
-                                int end;
-                                if (countCalc != null) {
-                                    final int count =
-                                        countCalc.evaluateInteger(evaluator);
-                                    end = start + count;
-                                } else {
-                                    end = list.size();
-                                }
-                                if (end > list.size()) {
-                                    end = list.size();
-                                }
-                                if (start >= end || start < 0) {
-                                    return Collections.EMPTY_LIST;
-                                }
-                                assert 0 <= start;
-                                assert start < end;
-                                assert end <= list.size();
-                                if (start == 0 && end == list.size()) {
-                                    return list;
-                                } else {
-                                    return list.subList(start, end);
-                                }
-                            }
-                        };
-                    }
-
-                };
-            }
-        });
-
-        define(new MultiResolver(
-                "Tail",
-                "Tail(<Set>[, <Count>])",
-                "Returns a subset from the end of a set.",
-                new String[] {"fxx", "fxxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final IntegerCalc integerCalc =
-                                call.getArgCount() > 1 ?
-                                compiler.compileInteger(call.getArg(1)) :
-                                ConstantCalc.constantInteger(1);
-                        return new AbstractListCalc(call, new Calc[] {listCalc, integerCalc}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                List list = listCalc.evaluateList(evaluator);
-                                int count = integerCalc.evaluateInteger(evaluator);
-                                return tail(count, list);
-                            }
-                        };
-                    }
-
-                    List tail(final int count, List members) {
-                        assert members != null;
-                        if (count >= members.size()) {
-                            return members;
-                        }
-                        if (count <= 0) {
-                            return Collections.EMPTY_LIST;
-                        }
-                        return members.subList(members.size() - count,
-                                members.size());
-                    }
-                };
-            }
-        });
-
-        define(new MultiResolver(
-                "ToggleDrillState",
-                "ToggleDrillState(<Set1>, <Set2>[, RECURSIVE])",
-                "Toggles the drill state of members. This function is a combination of DrillupMember and DrilldownMember.",
-                new String[]{"fxxx", "fxxxy"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        if (call.getArgCount() > 2) {
-                            throw MondrianResource.instance().ToggleDrillStateRecursiveNotSupported.ex();
-                        }
-                        final ListCalc listCalc0 =
-                                compiler.compileList(call.getArg(0));
-                        final ListCalc listCalc1 =
-                                compiler.compileList(call.getArg(1));
-                        return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                final List list0 = listCalc0.evaluateList(evaluator);
-                                final List list1 = listCalc1.evaluateList(evaluator);
-                                return toggleDrillState(evaluator, list0, list1);
-                            }
-                        };
-                    }
-
-                    List toggleDrillState(Evaluator evaluator, List v0, List list1) {
-                        if (list1.isEmpty()) {
-                            return v0;
-                        }
-                        if (v0.isEmpty()) {
-                            return v0;
-                        }
-                        HashSet set = new HashSet();
-                        set.addAll(list1);
-                        HashSet set1 = set;
-                        List result = new ArrayList();
-                        int i = 0, n = v0.size();
-                        while (i < n) {
-                            Object o = v0.get(i++);
-                            result.add(o);
-                            Member m = null;
-                            int k = -1;
-                            if (o instanceof Member) {
-                                if (!set1.contains(o)) {
-                                    continue;
-                                }
-                                m = (Member) o;
-                                k = -1;
-                            } else {
-                                Util.assertTrue(o instanceof Member[]);
-                                Member[] members = (Member[]) o;
-                                for (int j = 0; j < members.length; j++) {
-                                    Member member = members[j];
-                                    if (set1.contains(member)) {
-                                        k = j;
-                                        m = member;
-                                        break;
-                                    }
-                                }
-                                if (k == -1) {
-                                    continue;
-                                }
-                            }
-                            boolean isDrilledDown = false;
-                            if (i < n) {
-                                Object next = v0.get(i);
-                                Member nextMember = (k < 0) ? (Member) next :
-                                        ((Member[]) next)[k];
-                                boolean strict = true;
-                                if (FunUtil.isAncestorOf(m, nextMember, strict)) {
-                                    isDrilledDown = true;
-                                }
-                            }
-                            if (isDrilledDown) {
-                                // skip descendants of this member
-                                do {
-                                    Object next = v0.get(i);
-                                    Member nextMember = (k < 0) ? (Member) next :
-                                            ((Member[]) next)[k];
-                                    boolean strict = true;
-                                    if (FunUtil.isAncestorOf(m, nextMember, strict)) {
-                                        i++;
-                                    } else {
-                                        break;
-                                    }
-                                } while (i < n);
-                            } else {
-                                Member[] children = evaluator.getSchemaReader().getMemberChildren(m);
-                                for (int j = 0; j < children.length; j++) {
-                                    if (k < 0) {
-                                        result.add(children[j]);
-                                    } else {
-                                        Member[] members = (Member[]) ((Member[]) o).clone();
-                                        members[k] = children[j];
-                                        result.add(members);
-                                    }
-                                }
-                            }
-                        }
-                        return result;
-                    }
-
-                };
-            }
-
-            public String[] getReservedWords() {
-                return new String[] {"RECURSIVE"};
-            }
-        });
-
-        define(new MultiResolver(
-                "TopCount",
-                "TopCount(<Set>, <Count>[, <Numeric Expression>])",
-                "Returns a specified number of items from the top of a set, optionally ordering the set first.",
-                new String[]{"fxxnn", "fxxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final IntegerCalc integerCalc =
-                                compiler.compileInteger(call.getArg(1));
-                        final Calc orderCalc =
-                                call.getArgCount() > 2 ?
-                                compiler.compileScalar(call.getArg(2), true) :
-                                null;
-                        return new AbstractListCalc(call, new Calc[] {listCalc, integerCalc, orderCalc}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                // Use a native evaluator, if more efficient.
-                                // TODO: Figure this out at compile time.
-                                SchemaReader schemaReader = evaluator.getSchemaReader();
-                                NativeEvaluator nativeEvaluator =
-                                        schemaReader.getNativeSetEvaluator(
-                                                call.getFunDef(), call.getArgs(), evaluator, this);
-                                if (nativeEvaluator != null) {
-                                    return (List) nativeEvaluator.execute();
-                                }
-
-                                List list = listCalc.evaluateList(evaluator);
-                                int n = integerCalc.evaluateInteger(evaluator);
-                                if (orderCalc != null) {
-                                    boolean desc = true, brk = true;
-                                    sort(evaluator.push(), list, orderCalc, desc, brk);
-                                }
-                                if (n < list.size()) {
-                                    list = list.subList(0, n);
-                                }
-                                return list;
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-
-                        };
-                    }
-                };
-            }
-        });
-
-        define(new MultiResolver(
-                "TopPercent",
-                "TopPercent(<Set>, <Percentage>, <Numeric Expression>)",
-                "Sorts a set and returns the top N elements whose cumulative total is at least a specified percentage.",
-                new String[]{"fxxnn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final DoubleCalc doubleCalc =
-                                compiler.compileDouble(call.getArg(1));
-                        final Calc calc =
-                                compiler.compileScalar(call.getArg(2), true);
-                        return new AbstractListCalc(call, new Calc[] {listCalc, doubleCalc, calc}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                List list = listCalc.evaluateList(evaluator);
-                                double n = doubleCalc.evaluateDouble(evaluator);
-                                return topOrBottom(evaluator.push(), list, calc, true, true, n);
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-                };
-            }
-        });
-
-        define(new MultiResolver(
-                "TopSum",
-                "TopSum(<Set>, <Value>, <Numeric Expression>)",
-                "Sorts a set and returns the top N elements whose cumulative total is at least a specified value.",
-                new String[]{"fxxnn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final DoubleCalc doubleCalc =
-                                compiler.compileDouble(call.getArg(1));
-                        final Calc calc =
-                                compiler.compileScalar(call.getArg(2), true);
-                        return new AbstractListCalc(call, new Calc[] {listCalc, doubleCalc, calc}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                List list = listCalc.evaluateList(evaluator);
-                                double n = doubleCalc.evaluateDouble(evaluator);
-                                return topOrBottom(evaluator.push(), list, calc, true, false, n);
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-                };
-            }
-        });
-
-        final String[] allDistinct = new String[] {"ALL", "DISTINCT"};
-        define(new MultiResolver(
-                "Union",
-                "Union(<Set1>, <Set2>[, ALL])",
-                "Returns the union of two sets, optionally retaining duplicates.",
-                new String[] {"fxxx", "fxxxy"}) {
-            public String[] getReservedWords() {
-                return allDistinct;
-            }
-
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                String allString = getLiteralArg(args, 2, "DISTINCT", allDistinct, dummyFunDef);
-                final boolean all = allString.equalsIgnoreCase("ALL");
-                checkCompatible(args[0], args[1], dummyFunDef);
-                return new FunDefBase(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc0 =
-                                compiler.compileList(call.getArg(0));
-                        final ListCalc listCalc1 =
-                                compiler.compileList(call.getArg(1));
-                        return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
-                            public List evaluateList(Evaluator evaluator) {
-                                List list0 = listCalc0.evaluateList(evaluator);
-                                List list1 = listCalc1.evaluateList(evaluator);
-                                return union(list0, list1, all);
-                            }
-                        };
-                    }
-
-                    List union(List list0, List list1, final boolean all) {
-                        assert list0 != null;
-                        assert list1 != null;
-                        if (all) {
-                            if (list0.isEmpty()) {
-                                return list1;
-                            }
-                            list0.addAll(list1);
-                            return list0;
-                        } else {
-                            Set added = new HashSet();
-                            List result = new ArrayList();
-                            FunUtil.addUnique(result, list0, added);
-                            FunUtil.addUnique(result, list1, added);
-                            return result;
-                        }
-                    }
-                };
-            }
-        });
-
-        define(new VisualTotalsFunDef.Resolver());
-
-        define(new XtdFunDef.Resolver(
-                "Wtd",
-                "Wtd([<Member>])",
-                "A shortcut function for the PeriodsToDate function that specifies the level to be Week.",
-                new String[]{"fx", "fxm"},
-                mondrian.olap.LevelType.TimeWeeks));
-
-        define(new XtdFunDef.Resolver(
-                "Ytd",
-                "Ytd([<Member>])",
-                "A shortcut function for the PeriodsToDate function that specifies the level to be Year.",
-                new String[]{"fx", "fxm"},
-                mondrian.olap.LevelType.TimeYears));
-
-        define(new FunDefBase(
-                ":",
-                "<Member>:<Member>",
-                "Infix colon operator returns the set of members between a given pair of members.",
-                "ixmm") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final MemberCalc memberCalc0 =
-                        compiler.compileMember(call.getArg(0));
-                final MemberCalc memberCalc1 =
-                        compiler.compileMember(call.getArg(1));
-                return new AbstractListCalc(call, new Calc[] {memberCalc0, memberCalc1}) {
-                    public List evaluateList(Evaluator evaluator) {
-                        final Member member0 = memberCalc0.evaluateMember(evaluator);
-                        final Member member1 = memberCalc1.evaluateMember(evaluator);
-                        return colon(member0, member1, evaluator);
-                    }
-                };
-            }
-
-            List colon(
-                    final Member member0, final Member member1, Evaluator evaluator) {
-                if (member0.isNull() || member1.isNull()) {
-                    return Collections.EMPTY_LIST;
-                }
-                if (member0.getLevel() != member1.getLevel()) {
-                    throw newEvalException(this, "Members must belong to the same level");
-                }
-                return FunUtil.memberRange(evaluator, member0, member1);
-            }
-        });
-
-        // special resolver for the "{...}" operator
-        define(new ResolverBase(
-                "{}",
-                "{<Member> [, <Member>...]}",
-                "Brace operator constructs a set.",
-                Syntax.Braces) {
-            public FunDef resolve(
-                    Exp[] args, Validator validator, int[] conversionCount) {
-                int[] parameterTypes = new int[args.length];
-                for (int i = 0; i < args.length; i++) {
-                    if (validator.canConvert(
-                            args[i], Category.Member, conversionCount)) {
-                        parameterTypes[i] = Category.Member;
-                        continue;
-                    }
-                    if (validator.canConvert(
-                            args[i], Category.Set, conversionCount)) {
-                        parameterTypes[i] = Category.Set;
-                        continue;
-                    }
-                    if (validator.canConvert(
-                            args[i], Category.Tuple, conversionCount)) {
-                        parameterTypes[i] = Category.Tuple;
-                        continue;
-                    }
-                    return null;
-                }
-                return new SetFunDef(this, parameterTypes);
-            }
-        });
+        define(StrToSetFunDef.Resolver);
+        define(SubsetFunDef.Resolver);
+        define(HeadTailFunDef.TailResolver);
+        define(ToggleDrillStateFunDef.Resolver);
+        define(UnionFunDef.Resolver);
+        define(VisualTotalsFunDef.Resolver);
+        define(XtdFunDef.WtdResolver);
+        define(XtdFunDef.YtdResolver);
+        define(RangeFunDef.instance); // "<member> : <member>" operator
+        define(SetFunDef.Resolver); // "{ <member> [,...] }" operator
 
         //
         // STRING FUNCTIONS
-        define(new MultiResolver(
-                "Format",
-                "Format(<Numeric Expression>, <String Expression>)",
-                "Formats a number to string.",
-                new String[] { "fSmS", "fSnS" }) {
-            protected FunDef createFunDef(final Exp[] args,
-                                          final FunDef dummyFunDef) {
-                final Locale locale = Locale.getDefault(); // todo: use connection's locale
-                if (args[1] instanceof Literal) {
-                    // Constant string expression: optimize by compiling
-                    // format string.
-                    String formatString = (String) ((Literal) args[1]).getValue();
-                    final Format format = new Format(formatString, locale);
-                    return new FunDefBase(dummyFunDef) {
-                        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                            final Calc calc =
-                                    compiler.compileScalar(call.getArg(0), true);
-                            return new AbstractStringCalc(call, new Calc[] {calc}) {
-                                public String evaluateString(Evaluator evaluator) {
-                                    final Object o = calc.evaluate(evaluator);
-                                    return format.format(o);
-                                }
-                            };
-                        }
-
-                    };
-                } else {
-                    // Variable string expression
-                    return new FunDefBase(dummyFunDef) {
-                        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                            final Calc calc =
-                                    compiler.compileScalar(call.getArg(0), true);
-                            final StringCalc stringCalc =
-                                    compiler.compileString(call.getArg(1));
-                            return new AbstractStringCalc(call, new Calc[] {calc, stringCalc}) {
-                                public String evaluateString(Evaluator evaluator) {
-                                    final Object o = calc.evaluate(evaluator);
-                                    final String formatString =
-                                            stringCalc.evaluateString(evaluator);
-                                    final Format format =
-                                            new Format(formatString, locale);
-                                    return format.format(o);
-                                }
-                            };
-                        }
-
-                    };
-                }
-            }
-        });
+        define(FormatFunDef.Resolver);
 
         define(new FunDefBase(
                 "Caption",
@@ -3129,7 +1222,6 @@ public class BuiltinFunTable extends FunTableImpl {
                     }
                 };
             }
-
         });
 
         define(new FunDefBase(
@@ -3423,427 +1515,23 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(new FunDefBase(
-                "Item",
-                "<Set>.Item(<Index>)",
-                "Returns a tuple from the set specified in <Set>. The tuple to be returned is specified by the zero-based position of the tuple in the set in <Index>.",
-                "mmxn") {
-            public Type getResultType(Validator validator, Exp[] args) {
-                SetType setType = (SetType) args[0].getType();
-                return setType.getElementType();
-            }
-
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final ListCalc listCalc =
-                        compiler.compileList(call.getArg(0));
-                final IntegerCalc indexCalc =
-                        compiler.compileInteger(call.getArg(1));
-                final Type elementType = ((SetType) listCalc.getType()).getElementType();
-                if (elementType instanceof TupleType) {
-                    final TupleType tupleType = (TupleType) elementType;
-                    final Member[] nullTuple = makeNullTuple(tupleType);
-                    return new AbstractTupleCalc(call, new Calc[] {listCalc, indexCalc}) {
-                        public Member[] evaluateTuple(Evaluator evaluator) {
-                            final List list = listCalc.evaluateList(evaluator);
-                            assert list != null;
-                            final int index = indexCalc.evaluateInteger(evaluator);
-                            int listSize = list.size();
-                            if (index >= listSize || index < 0) {
-                                return nullTuple;
-                            } else {
-                                return (Member[]) list.get(index);
-                            }
-                        }
-                    };
-                } else {
-                    final MemberType memberType = (MemberType) elementType;
-                    final Member nullMember = makeNullMember(memberType);
-                    return new AbstractMemberCalc(call, new Calc[] {listCalc, indexCalc}) {
-                        public Member evaluateMember(Evaluator evaluator) {
-                            final List list = listCalc.evaluateList(evaluator);
-                            assert list != null;
-                            final int index = indexCalc.evaluateInteger(evaluator);
-                            int listSize = list.size();
-                            if (index >= listSize || index < 0) {
-                                return nullMember;
-                            } else {
-                                return (Member) list.get(index);
-                            }
-                        }
-                    };
-                }
-            }
-
-            Object makeNullMember(Evaluator evaluator, Exp[] args) {
-                final Type elementType = ((SetType) args[0].getType()).getElementType();
-                return makeNullMemberOrTuple(elementType);
-            }
-
-            Object makeNullMemberOrTuple(final Type elementType) {
-                if (elementType instanceof MemberType) {
-                    MemberType memberType = (MemberType) elementType;
-                    return makeNullMember(memberType);
-                } else if (elementType instanceof TupleType) {
-                    return makeNullTuple((TupleType) elementType);
-                } else {
-                    throw Util.newInternal("bad type " + elementType);
-                }
-            }
-
-
-        });
-
-        define(new FunDefBase(
-                "Item",
-                "<Tuple>.Item(<Index>)",
-                "Returns a member from the tuple specified in <Tuple>. The member to be returned is specified by the zero-based position of the member in the set in <Index>.",
-                "mmtn") {
-            public Type getResultType(Validator validator, Exp[] args) {
-                // Suppose we are called as follows:
-                //   ([Gender].CurrentMember, [Store].CurrentMember).Item(n)
-                //
-                // We know that our result is a member type, but we don't
-                // know which dimension.
-                return MemberType.Unknown;
-            }
-
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final Type type = call.getArg(0).getType();
-                if (type instanceof MemberType) {
-                    final MemberCalc memberCalc =
-                            compiler.compileMember(call.getArg(0));
-                    final IntegerCalc indexCalc =
-                            compiler.compileInteger(call.getArg(1));
-                    return new AbstractMemberCalc(call, new Calc[] {memberCalc, indexCalc}) {
-                        public Member evaluateMember(Evaluator evaluator) {
-                            final Member member =
-                                    memberCalc.evaluateMember(evaluator);
-                            final int index =
-                                    indexCalc.evaluateInteger(evaluator);
-                            if (index != 0) {
-                                return null;
-                            }
-                            return member;
-                        }
-                    };
-                } else {
-                    final TupleCalc tupleCalc =
-                            compiler.compileTuple(call.getArg(0));
-                    final IntegerCalc indexCalc =
-                            compiler.compileInteger(call.getArg(1));
-                    return new AbstractMemberCalc(call, new Calc[] {tupleCalc, indexCalc}) {
-                        final Member[] nullTupleMembers =
-                                makeNullTuple((TupleType) tupleCalc.getType());
-                        public Member evaluateMember(Evaluator evaluator) {
-                            final Member[] members =
-                                    tupleCalc.evaluateTuple(evaluator);
-                            assert members == null ||
-                                    members.length == nullTupleMembers.length;
-                            final int index = indexCalc.evaluateInteger(evaluator);
-                            if (members == null) {
-                                return nullTupleMembers[index];
-                            }
-                            if (index >= members.length || index < 0) {
-                                return null;
-                            }
-                            return members[index];
-                        }
-                    };
-                }
-            }
-
-        });
-
-        define(new FunDefBase(
-                "StrToTuple",
-                "StrToTuple(<String Expression>)",
-                "Constructs a tuple from a string.",
-                "ftS") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                throw Util.needToImplement(this);
-            }
-
-            public Exp createCall(Validator validator, Exp[] args) {
-                final int argCount = args.length;
-                if (argCount <= 1) {
-                    throw MondrianResource.instance().MdxFuncArgumentsNum.ex(getName());
-                }
-                for (int i = 1; i < argCount; i++) {
-                    final Exp arg = args[i];
-                    if (arg instanceof DimensionExpr) {
-                        // if arg is a dimension, switch to dimension's default
-                        // hierarchy
-                        DimensionExpr dimensionExpr = (DimensionExpr) arg;
-                        Dimension dimension = dimensionExpr.getDimension();
-                        args[i] = new HierarchyExpr(dimension.getHierarchy());
-                    } else if (arg instanceof Hierarchy) {
-                        // nothing
-                    } else {
-                        throw MondrianResource.instance().MdxFuncNotHier.ex(
-                                new Integer(i + 1), getName());
-                    }
-                }
-                return super.createCall(validator, args);
-            }
-
-            public Type getResultType(Validator validator, Exp[] args) {
-                if (args.length == 1) {
-                    // This is a call to the standard version of StrToTuple,
-                    // which doesn't give us any hints about type.
-                    return new TupleType(null);
-                } else {
-                    // This is a call to Mondrian's extended version of
-                    // StrToTuple, of the form
-                    //   StrToTuple(s, <Hier1>, ... , <HierN>)
-                    //
-                    // The result is a tuple
-                    //  (<Hier1>, ... ,  <HierN>)
-                    final ArrayList list = new ArrayList();
-                    for (int i = 1; i < args.length; i++) {
-                        Exp arg = args[i];
-                        final Type type = arg.getType();
-                        list.add(type);
-                    }
-                    final Type[] types =
-                            (Type[]) list.toArray(new Type[list.size()]);
-                    return new TupleType(types);
-                }
-            }
-        });
+        define(SetItemFunDef.instance);
+        define(TupleItemFunDef.instance);
+        define(StrToTupleFunDef.instance);
 
         // special resolver for "()"
-        define(new ResolverBase(
-            "()",
-            null,
-            null,
-            Syntax.Parentheses) {
-            public FunDef resolve(
-                    Exp[] args, Validator validator, int[] conversionCount) {
-                // Compare with TupleFunDef.getReturnCategory().  For example,
-                //   ([Gender].members) is a set,
-                //   ([Gender].[M]) is a member,
-                //   (1 + 2) is a numeric,
-                // but
-                //   ([Gender].[M], [Marital Status].[S]) is a tuple.
-                if (args.length == 1) {
-                    return new ParenthesesFunDef(args[0].getCategory());
-                } else {
-                    final int[] argTypes = new int[args.length];
-                    Arrays.fill(argTypes, Category.Member);
-                    return (FunDef) new TupleFunDef(argTypes);
-                }
-            }
-        });
+        define(TupleFunDef.Resolver);
 
         //
         // GENERIC VALUE FUNCTIONS
-        define(new ResolverBase(
-                "CoalesceEmpty",
-                "CoalesceEmpty(<Value Expression>[, <Value Expression>...])",
-                "Coalesces an empty cell value to a different value. All of the expressions must be of the same type (number or string).",
-                Syntax.Function) {
-            public FunDef resolve(
-                    Exp[] args, Validator validator, int[] conversionCount) {
-                if (args.length < 1) {
-                    return null;
-                }
-                final int[] types = {Category.Numeric, Category.String};
-                final int[] argTypes = new int[args.length];
-                for (int j = 0; j < types.length; j++) {
-                    int type = types[j];
-                    int matchingArgs = 0;
-                    conversionCount[0] = 0;
-                    for (int i = 0; i < args.length; i++) {
-                        if (validator.canConvert(args[i], type, conversionCount)) {
-                            matchingArgs++;
-                        }
-                        argTypes[i] = type;
-                    }
-                    if (matchingArgs == args.length) {
-                        return new CoalesceEmptyFunDef(this, type, argTypes);
-                    }
-                }
-                return null;
-            }
-
-            public boolean requiresExpression(int k) {
-                return true;
-            }
-        });
-
-        define(new ResolverBase(
-                "_CaseTest",
-                "Case When <Logical Expression> Then <Expression> [...] [Else <Expression>] End",
-                "Evaluates various conditions, and returns the corresponding expression for the first which evaluates to true.",
-                Syntax.Case) {
-            public FunDef resolve(
-                    Exp[] args, Validator validator, int[] conversionCount) {
-                if (args.length < 1) {
-                    return null;
-                }
-                int j = 0;
-                int clauseCount = args.length / 2;
-                int mismatchingArgs = 0;
-                int returnType = args[1].getCategory();
-                for (int i = 0; i < clauseCount; i++) {
-                    if (!validator.canConvert(args[j++], Category.Logical, conversionCount)) {
-                        mismatchingArgs++;
-                    }
-                    if (!validator.canConvert(args[j++], returnType, conversionCount)) {
-                        mismatchingArgs++;
-                    }
-                }
-                if (j < args.length) {
-                    if (!validator.canConvert(args[j++], returnType, conversionCount)) {
-                        mismatchingArgs++;
-                    }
-                }
-                Util.assertTrue(j == args.length);
-                if (mismatchingArgs != 0) {
-                    return null;
-                }
-                return new FunDefBase(this, returnType, ExpBase.getTypes(args)) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final Exp[] args = call.getArgs();
-                        final BooleanCalc[] conditionCalcs =
-                                new BooleanCalc[args.length / 2];
-                        final Calc[] exprCalcs =
-                                new Calc[args.length / 2];
-                        final List calcList = new ArrayList();
-                        for (int i = 0, j = 0; i < exprCalcs.length; i++) {
-                            conditionCalcs[i] =
-                                    compiler.compileBoolean(args[j++]);
-                            calcList.add(conditionCalcs[i]);
-                            exprCalcs[i] =
-                                    compiler.compileScalar(args[j++], true);
-                            calcList.add(exprCalcs[i]);
-                        }
-                        final Calc defaultCalc =
-                                args.length % 2 == 1 ?
-                                compiler.compileScalar(args[args.length - 1], true) :
-                                ConstantCalc.constantNull(call.getType());
-                        calcList.add(defaultCalc);
-                        final Calc[] calcs = (Calc[])
-                                calcList.toArray(new Calc[calcList.size()]);
-
-                        return new AbstractCalc(call) {
-                            public Object evaluate(Evaluator evaluator) {
-                                for (int i = 0; i < conditionCalcs.length; i++) {
-                                    if (conditionCalcs[i].evaluateBoolean(evaluator)) {
-                                        return exprCalcs[i].evaluate(evaluator);
-                                    }
-                                }
-                                return defaultCalc.evaluate(evaluator);
-                            }
-
-                            public Calc[] getCalcs() {
-                                return calcs;
-                            }
-                        };
-                    }
-
-                };
-            }
-
-            public boolean requiresExpression(int k) {
-                return true;
-            }
-        });
-
-        define(new ResolverBase(
-                "_CaseMatch",
-                "Case <Expression> When <Expression> Then <Expression> [...] [Else <Expression>] End",
-                "Evaluates various expressions, and returns the corresponding expression for the first which matches a particular value.",
-                Syntax.Case) {
-            public FunDef resolve(
-                    Exp[] args, Validator validator, int[] conversionCount) {
-                if (args.length < 3) {
-                    return null;
-                }
-                int valueType = args[0].getCategory();
-                int returnType = args[2].getCategory();
-                int j = 0;
-                int clauseCount = (args.length - 1) / 2;
-                int mismatchingArgs = 0;
-                if (!validator.canConvert(args[j++], valueType, conversionCount)) {
-                    mismatchingArgs++;
-                }
-                for (int i = 0; i < clauseCount; i++) {
-                    if (!validator.canConvert(args[j++], valueType, conversionCount)) {
-                        mismatchingArgs++;
-                    }
-                    if (!validator.canConvert(args[j++], returnType, conversionCount)) {
-                        mismatchingArgs++;
-                    }
-                }
-                if (j < args.length) {
-                    if (!validator.canConvert(args[j++], returnType, conversionCount)) {
-                        mismatchingArgs++;
-                    }
-                }
-                Util.assertTrue(j == args.length);
-                if (mismatchingArgs != 0) {
-                    return null;
-                }
-                return new FunDefBase(this, returnType, ExpBase.getTypes(args)) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final Exp[] args = call.getArgs();
-                        final List calcList = new ArrayList();
-                        final Calc valueCalc =
-                                compiler.compileScalar(args[0], true);
-                        calcList.add(valueCalc);
-                        final int matchCount = (args.length - 1) / 2;
-                        final Calc[] matchCalcs = new Calc[matchCount];
-                        final Calc[] exprCalcs = new Calc[matchCount];
-                        for (int i = 0, j = 1; i < exprCalcs.length; i++) {
-                            matchCalcs[i] =
-                                    compiler.compileScalar(args[j++], true);
-                            calcList.add(matchCalcs[i]);
-                            exprCalcs[i] =
-                                    compiler.compileScalar(args[j++], true);
-                            calcList.add(exprCalcs[i]);
-                        }
-                        final Calc defaultCalc =
-                                args.length % 2 == 0 ?
-                                compiler.compileScalar(args[args.length - 1], true) :
-                                ConstantCalc.constantNull(call.getType());
-                        calcList.add(defaultCalc);
-                        final Calc[] calcs = (Calc[])
-                                calcList.toArray(new Calc[calcList.size()]);
-
-                        return new AbstractCalc(call) {
-                            public Object evaluate(Evaluator evaluator) {
-
-                                Object value = valueCalc.evaluate(evaluator);
-                                for (int i = 0; i < matchCalcs.length; i++) {
-                                    Object match = matchCalcs[i].evaluate(evaluator);
-                                    if (match.equals(value)) {
-                                        return exprCalcs[i].evaluate(evaluator);
-                                    }
-                                }
-                                return defaultCalc.evaluate(evaluator);
-                            }
-
-                            public Calc[] getCalcs() {
-                                return calcs;
-                            }
-                        };
-                    }
-
-                };
-            }
-
-            public boolean requiresExpression(int k) {
-                return true;
-            }
-        });
-
-        define(new PropertiesFunDef.Resolver());
+        define(CoalesceEmptyFunDef.Resolver);
+        define(CaseTestFunDef.Resolver);
+        define(CaseMatchFunDef.Resolver);
+        define(PropertiesFunDef.Resolver);
 
         //
         // PARAMETER FUNCTIONS
         define(new ParameterFunDef.ParameterResolver());
-
         define(new ParameterFunDef.ParamRefResolver());
 
         //
@@ -4324,63 +2012,9 @@ public class BuiltinFunTable extends FunTableImpl {
 
         // NON-STANDARD FUNCTIONS
 
-        define(new MultiResolver(
-                "FirstQ",
-                "FirstQ(<Set>[, <Numeric Expression>])",
-                "Returns the 1st quartile value of a numeric expression evaluated over a set.",
-                new String[]{"fnx", "fnxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new AbstractAggregateFunDef(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final DoubleCalc doubleCalc =
-                                call.getArgCount() > 1 ?
-                                compiler.compileDouble(call.getArg(1)) :
-                                new ValueCalc(call);
-                        return new AbstractDoubleCalc(call, new Calc[] {listCalc, doubleCalc}) {
-                            public double evaluateDouble(Evaluator evaluator) {
-                                List members = listCalc.evaluateList(evaluator);
-                                return quartile(evaluator.push(), members, doubleCalc, 1);
-                            }
+        define(NthQuartileFunDef.FirstQResolver);
 
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-                };
-            }
-        });
-
-        define(new MultiResolver(
-                "ThirdQ",
-                "ThirdQ(<Set>[, <Numeric Expression>])",
-                "Returns the 3rd quartile value of a numeric expression evaluated over a set.",
-                new String[]{"fnx", "fnxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new AbstractAggregateFunDef(dummyFunDef) {
-                    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                        final ListCalc listCalc =
-                                compiler.compileList(call.getArg(0));
-                        final DoubleCalc doubleCalc =
-                                call.getArgCount() > 1 ?
-                                compiler.compileDouble(call.getArg(1)) :
-                                new ValueCalc(call);
-                        return new AbstractDoubleCalc(call, new Calc[] {listCalc, doubleCalc}) {
-                            public double evaluateDouble(Evaluator evaluator) {
-                                List members = listCalc.evaluateList(evaluator);
-                                return quartile(evaluator.push(), members, doubleCalc, 3);
-                            }
-
-                            public boolean dependsOn(Dimension dimension) {
-                                return anyDependsButFirst(getCalcs(), dimension);
-                            }
-                        };
-                    }
-                };
-            }
-        });
+        define(NthQuartileFunDef.ThirdQResolver);
     }
 
 
@@ -4452,98 +2086,6 @@ public class BuiltinFunTable extends FunTableImpl {
         return sr.getLevelMembers(level, true);
     }
 
-    static class StrToSetFunDef extends FunDefBase {
-        public StrToSetFunDef(int[] parameterTypes) {
-            super("StrToSet", "<Set> StrToSet(<String>[, <Dimension>...])",
-                    "Constructs a set from a string expression.",
-                    Syntax.Function, Category.Set, parameterTypes);
-        }
-
-        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-            throw new UnsupportedOperationException();
-        }
-
-        public Exp createCall(Validator validator, Exp[] args) {
-            final int argCount = args.length;
-            if (argCount <= 1) {
-                throw MondrianResource.instance().MdxFuncArgumentsNum.ex(getName());
-            }
-            for (int i = 1; i < argCount; i++) {
-                final Exp arg = args[i];
-                if (arg instanceof DimensionExpr) {
-                    // if arg is a dimension, switch to dimension's default
-                    // hierarchy
-                    DimensionExpr dimensionExpr = (DimensionExpr) arg;
-                    Dimension dimension = dimensionExpr.getDimension();
-                    args[i] = new HierarchyExpr(dimension.getHierarchy());
-                } else if (arg instanceof HierarchyExpr) {
-                    // nothing
-                } else {
-                    throw MondrianResource.instance().MdxFuncNotHier.ex(
-                            new Integer(i + 1), getName());
-                }
-            }
-            return super.createCall(validator, args);
-        }
-
-        public Type getResultType(Validator validator, Exp[] args) {
-            if (args.length == 1) {
-                // This is a call to the standard version of StrToSet,
-                // which doesn't give us any hints about type.
-                return new SetType(null);
-            } else {
-                // This is a call to Mondrian's extended version of
-                // StrToSet, of the form
-                //   StrToSet(s, <Hier1>, ... , <HierN>)
-                //
-                // The result is a set of tuples
-                //  (<Hier1>, ... ,  <HierN>)
-                final ArrayList list = new ArrayList();
-                for (int i = 1; i < args.length; i++) {
-                    Exp arg = args[i];
-                    final Type type = arg.getType();
-                    list.add(type);
-                }
-                final Type[] types =
-                        (Type[]) list.toArray(new Type[list.size()]);
-                return new SetType(new TupleType(types));
-            }
-        }
-
-        public static class Resolver extends ResolverBase {
-            Resolver() {
-                super(
-                        "StrToSet",
-                        "StrToSet(<String Expression>)",
-                        "Constructs a set from a string expression.",
-                        Syntax.Function);
-            }
-
-            public FunDef resolve(
-                    Exp[] args, Validator validator, int[] conversionCount) {
-                if (args.length < 1) {
-                    return null;
-                }
-                Type type = args[0].getType();
-                if (!(type instanceof StringType)) {
-                    return null;
-                }
-                for (int i = 1; i < args.length; i++) {
-                    Exp exp = args[i];
-                    if (!(exp instanceof DimensionExpr)) {
-                        return null;
-                    }
-                }
-                int[] argTypes = new int[args.length];
-                argTypes[0] = Category.String;
-                for (int i = 1; i < argTypes.length; i++) {
-                    argTypes[i] = Category.Hierarchy;
-                }
-                return new StrToSetFunDef(argTypes);
-            }
-        }
-    }
-
     static List levelMembers(
             Level level,
             Evaluator evaluator,
@@ -4585,206 +2127,6 @@ public class BuiltinFunTable extends FunTableImpl {
             FunUtil.hierarchize(memberList, false);
         }
         return memberList;
-    }
-
-    public static class DimensionCurrentMemberFunDef extends FunDefBase {
-        public DimensionCurrentMemberFunDef() {
-            super("CurrentMember", "<Dimension>.CurrentMember",
-                    "Returns the current member along a dimension during an iteration.",
-                    "pmd");
-        }
-
-        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-            final DimensionCalc dimensionCalc =
-                    compiler.compileDimension(call.getArg(0));
-            return new CalcImpl(call, dimensionCalc);
-        }
-
-        public static class CalcImpl extends AbstractMemberCalc {
-            private final DimensionCalc dimensionCalc;
-
-            public CalcImpl(Exp exp, DimensionCalc dimensionCalc) {
-                super(exp, new Calc[] {dimensionCalc});
-                this.dimensionCalc = dimensionCalc;
-            }
-
-            protected String getName() {
-                return "CurrentMember";
-            }
-
-            public Member evaluateMember(Evaluator evaluator) {
-                Dimension dimension =
-                        dimensionCalc.evaluateDimension(evaluator);
-                return evaluator.getContext(dimension);
-            }
-
-            public boolean dependsOn(Dimension dimension) {
-                return dimensionCalc.getType().usesDimension(dimension, true) ;
-            }
-        }
-    }
-
-    public static class HierarchyCurrentMemberFunDef extends FunDefBase {
-        public HierarchyCurrentMemberFunDef() {
-            super("CurrentMember", "<Hierarchy>.CurrentMember",
-                    "Returns the current member along a hierarchy during an iteration.",
-                    "pmh");
-        }
-
-        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-            final HierarchyCalc hierarchyCalc =
-                    compiler.compileHierarchy(call.getArg(0));
-            return new CalcImpl(call, hierarchyCalc);
-        }
-
-        public static class CalcImpl extends AbstractMemberCalc {
-            private final HierarchyCalc hierarchyCalc;
-
-            public CalcImpl(Exp exp, HierarchyCalc hierarchyCalc) {
-                super(exp, new Calc[] {hierarchyCalc});
-                this.hierarchyCalc = hierarchyCalc;
-            }
-
-            protected String getName() {
-                return "CurrentMember";
-            }
-
-            public Member evaluateMember(Evaluator evaluator) {
-                Hierarchy hierarchy =
-                        hierarchyCalc.evaluateHierarchy(evaluator);
-                Member member = evaluator.getContext(hierarchy.getDimension());
-                // If the dimension has multiple hierarchies, and the current
-                // member belongs to a different hierarchy, then this hierarchy
-                // reverts to its default member.
-                //
-                // For example, if the current member of the [Time] dimension
-                // is [Time.Weekly].[2003].[Week 4], then the current member
-                // of the [Time.Monthly] hierarchy is its default member,
-                // [Time.Monthy].[All].
-                if (member.getHierarchy() != hierarchy) {
-                    member = hierarchy.getDefaultMember();
-                }
-                return member;
-            }
-
-            public boolean dependsOn(Dimension dimension) {
-                return hierarchyCalc.getType().usesDimension(dimension, true);
-            }
-        }
-    }
-
-    public static class HierarchyDimensionFunDef extends FunDefBase {
-        public HierarchyDimensionFunDef() {
-            super("Dimension", "<Hierarchy>.Dimension",
-                    "Returns the dimension that contains a specified hierarchy.",
-                    "pdh");
-        }
-
-        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-            final HierarchyCalc hierarchyCalc =
-                    compiler.compileHierarchy(call.getArg(0));
-            return new CalcImpl(call, hierarchyCalc);
-        }
-
-        public static class CalcImpl extends AbstractDimensionCalc {
-            private final HierarchyCalc hierarchyCalc;
-
-            public CalcImpl(Exp exp, HierarchyCalc hierarchyCalc) {
-                super(exp, new Calc[] {hierarchyCalc});
-                this.hierarchyCalc = hierarchyCalc;
-            }
-
-            public Dimension evaluateDimension(Evaluator evaluator) {
-                Hierarchy hierarchy =
-                        hierarchyCalc.evaluateHierarchy(evaluator);
-                return hierarchy.getDimension();
-            }
-        }
-    }
-
-    public static class MemberHierarchyFunDef extends FunDefBase {
-        public MemberHierarchyFunDef() {
-            super("Hierarchy", "<Member>.Hierarchy",
-                    "Returns a member's hierarchy.", "phm");
-        }
-
-        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-            final MemberCalc memberCalc =
-                    compiler.compileMember(call.getArg(0));
-            return new CalcImpl(call, memberCalc);
-        }
-
-        public static class CalcImpl extends AbstractHierarchyCalc {
-            private final MemberCalc memberCalc;
-
-            public CalcImpl(Exp exp, MemberCalc memberCalc) {
-                super(exp, new Calc[] {memberCalc});
-                this.memberCalc = memberCalc;
-            }
-
-            public Hierarchy evaluateHierarchy(Evaluator evaluator) {
-                Member member = memberCalc.evaluateMember(evaluator);
-                return member.getHierarchy();
-            }
-        }
-    }
-
-    public static class MemberLevelFunDef extends FunDefBase {
-        public MemberLevelFunDef() {
-            super("Level", "<Member>.Level", "Returns a member's level.", "plm");
-        }
-
-        public Type getResultType(Validator validator, Exp[] args) {
-            final Type argType = args[0].getType();
-            return LevelType.forType(argType);
-        }
-
-        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-            final MemberCalc memberCalc =
-                    compiler.compileMember(call.getArg(0));
-            return new CalcImpl(call, memberCalc);
-        }
-
-        public static class CalcImpl extends AbstractLevelCalc {
-            private final MemberCalc memberCalc;
-
-            public CalcImpl(Exp exp, MemberCalc memberCalc) {
-                super(exp, new Calc[] {memberCalc});
-                this.memberCalc = memberCalc;
-            }
-
-            public Level evaluateLevel(Evaluator evaluator) {
-                Member member = memberCalc.evaluateMember(evaluator);
-                return member.getLevel();
-            }
-        }
-    }
-
-    public static class LevelHierarchyFunDef extends FunDefBase {
-        public LevelHierarchyFunDef() {
-            super("Hierarchy", "<Level>.Hierarchy",
-                    "Returns a level's hierarchy.", "phl");
-        }
-
-        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-            final LevelCalc levelCalc =
-                    compiler.compileLevel(call.getArg(0));
-            return new CalcImpl(call, levelCalc);
-        }
-
-        public static class CalcImpl extends AbstractHierarchyCalc {
-            private final LevelCalc levelCalc;
-
-            public CalcImpl(Exp exp, LevelCalc levelCalc) {
-                super(exp, new Calc[] {levelCalc});
-                this.levelCalc = levelCalc;
-            }
-
-            public Hierarchy evaluateHierarchy(Evaluator evaluator) {
-                Level level = levelCalc.evaluateLevel(evaluator);
-                return level.getHierarchy();
-            }
-        }
     }
 }
 

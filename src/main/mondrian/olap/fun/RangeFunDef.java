@@ -11,38 +11,54 @@
 // jhyde, 3 March, 2002
 */
 package mondrian.olap.fun;
-import mondrian.olap.Category;
-import mondrian.olap.Exp;
-import mondrian.olap.ExpBase;
-import mondrian.olap.Syntax;
+import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
+import mondrian.calc.MemberCalc;
+import mondrian.calc.impl.AbstractListCalc;
+import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Member;
 
-import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * <code>RangeFunDef</code> implements the ':' operator.
+ * Definition of the MDX <code>&lt;Member&gt : &lt;Member&gt;</code> operator,
+ * which returns the set of members between a given pair of members.
  *
  * @author jhyde
  * @since 3 March, 2002
  * @version $Id$
  */
 class RangeFunDef extends FunDefBase {
-    RangeFunDef() {
-        super(
-            ":",
-            "{<Member> : <Member>}",
-            "Infix colon operator returns the set of members between a given pair of members.",
-            Syntax.Infix,
-            Category.Set,
-            new int[] {Category.Member, Category.Member});
+    static final RangeFunDef instance = new RangeFunDef();
+
+    private RangeFunDef() {
+        super(":", "<Member> : <Member>",
+                "Infix colon operator returns the set of members between a given pair of members.",
+                "ixmm");
     }
-    public void unparse(Exp[] args, PrintWriter pw) {
-        ExpBase.unparseList(pw, args, "{", " : ", "}");
-    }
-    public int getReturnCategory() {
-        return Category.Set;
-    }
-    public int[] getParameterCategories() {
-        return new int[] {Category.Member, Category.Member};
+
+    public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
+        final MemberCalc memberCalc0 =
+                compiler.compileMember(call.getArg(0));
+        final MemberCalc memberCalc1 =
+                compiler.compileMember(call.getArg(1));
+        return new AbstractListCalc(call, new Calc[] {memberCalc0, memberCalc1}) {
+            public List evaluateList(Evaluator evaluator) {
+                final Member member0 = memberCalc0.evaluateMember(evaluator);
+                final Member member1 = memberCalc1.evaluateMember(evaluator);
+                if (member0.isNull() || member1.isNull()) {
+                    return Collections.EMPTY_LIST;
+                }
+                if (member0.getLevel() != member1.getLevel()) {
+                    throw evaluator.newEvalException(
+                            call.getFunDef(),
+                            "Members must belong to the same level");
+                }
+                return FunUtil.memberRange(evaluator, member0, member1);
+            }
+        };
     }
 }
 

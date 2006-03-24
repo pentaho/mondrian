@@ -21,9 +21,19 @@ import mondrian.mdx.ResolvedFunCall;
 
 
 /**
- * Definition of the <code>NONEMPTYCROSSJOIN</code> MDX function.
+ * Definition of the <code>NonEmptyCrossJoin</code> MDX function.
+ *
+ * @author jhyde
+ * @version $Id$
+ * @since Mar 23, 2006
  */
 public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
+    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+            "NonEmptyCrossJoin",
+            "NonEmptyCrossJoin(<Set1>, <Set2>)",
+            "Returns the cross product of two sets, excluding empty tuples and tuples without associated fact table data.",
+            new String[]{"fxxx"},
+            NonEmptyCrossJoinFunDef.class);
 
     public NonEmptyCrossJoinFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);

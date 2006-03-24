@@ -19,6 +19,7 @@ import mondrian.calc.impl.AbstractTupleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 /**
  * <code>TupleFunDef</code> implements the '( ... )' operator which builds
@@ -31,8 +32,9 @@ import java.io.PrintWriter;
  */
 public class TupleFunDef extends FunDefBase {
     private final int[] argTypes;
+    static final ResolverImpl Resolver = new ResolverImpl();
 
-    TupleFunDef(int[] argTypes) {
+    private TupleFunDef(int[] argTypes) {
         super(
             "()",
             "(<Member> [, <Member>]...)",
@@ -133,6 +135,29 @@ public class TupleFunDef extends FunDefBase {
 
         public MemberCalc[] getMemberCalcs() {
             return memberCalcs;
+        }
+    }
+
+    private static class ResolverImpl extends ResolverBase {
+        public ResolverImpl() {
+            super("()", null, null, Syntax.Parentheses);
+        }
+
+        public FunDef resolve(
+                Exp[] args, Validator validator, int[] conversionCount) {
+            // Compare with TupleFunDef.getReturnCategory().  For example,
+            //   ([Gender].members) is a set,
+            //   ([Gender].[M]) is a member,
+            //   (1 + 2) is a numeric,
+            // but
+            //   ([Gender].[M], [Marital Status].[S]) is a tuple.
+            if (args.length == 1) {
+                return new ParenthesesFunDef(args[0].getCategory());
+            } else {
+                final int[] argTypes = new int[args.length];
+                Arrays.fill(argTypes, Category.Member);
+                return (FunDef) new TupleFunDef(argTypes);
+            }
         }
     }
 }

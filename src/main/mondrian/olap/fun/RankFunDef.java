@@ -27,7 +27,15 @@ import java.io.PrintWriter;
  * @since 17 January, 2005
  * @version $Id$
  */
-public abstract class RankFunDef extends FunDefBase {
+public class RankFunDef extends FunDefBase {
+    static final boolean debug = false;
+    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+            "Rank",
+            "Rank(<Tuple>, <Set> [, <Calc Expression>])",
+            "Returns the one-based rank of a tuple in a set.",
+            new String[]{"fitx", "fitxn", "fimx", "fimxn"},
+            RankFunDef.class);
+
     public RankFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
     }
@@ -47,301 +55,269 @@ public abstract class RankFunDef extends FunDefBase {
         return true;
     }
 
-    public static MultiResolver createResolver() {
-        return new MultiResolver(
-                "Rank",
-                "Rank(<Tuple>, <Set> [, <Calc Expression>])",
-                "Returns the one-based rank of a tuple in a set.",
-                new String[]{"fitx","fitxn", "fimx", "fimxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                switch (args.length) {
-                case 2:
-                    return new Rank2FunDef(dummyFunDef);
-                case 3:
-                    return new Rank3FunDef(dummyFunDef);
-                default:
-                    throw Util.newInternal("invalid arg count " + args.length);
-                }
-            }
-        };
-    }
-
-    /**
-     * Rank function with 2 arguments:
-     *
-     * <code>Rank({Tuple}, {Set})</code>
-     */
-    private static class Rank2FunDef extends RankFunDef {
-        public Rank2FunDef(FunDef dummyFunDef) {
-            super(dummyFunDef);
-        }
-
-        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-            final Exp listExp = call.getArg(1);
-            ListCalc listCalc0 = compiler.compileList(listExp);
-            Calc listCalc1 = new RankedListCalc(listCalc0);
-            final Calc listCalc;
-            if (MondrianProperties.instance().EnableExpCache.get()) {
-                final ExpCacheDescriptor key = new ExpCacheDescriptor(
-                        listExp, listCalc1, compiler.getEvaluator());
-                listCalc = new CacheCalc(listExp, key);
-            } else {
-                listCalc = listCalc1;
-            }
-            if (call.getArg(0).getType() instanceof TupleType) {
-                final TupleCalc tupleCalc =
-                        compiler.compileTuple(call.getArg(0));
-                return new Rank2TupleCalc(call, tupleCalc, listCalc);
-            } else {
-                final MemberCalc memberCalc =
-                        compiler.compileMember(call.getArg(0));
-                return new Rank2MemberCalc(call, memberCalc, listCalc);
-            }
-        }
-
-        private static class Rank2TupleCalc extends AbstractDoubleCalc {
-            private final TupleCalc tupleCalc;
-            private final Calc listCalc;
-
-            public Rank2TupleCalc(ResolvedFunCall call, TupleCalc tupleCalc, Calc listCalc) {
-                super(call, new Calc[] {tupleCalc, listCalc});
-                this.tupleCalc = tupleCalc;
-                this.listCalc = listCalc;
-            }
-
-            public double evaluateDouble(Evaluator evaluator) {
-                // Get member or tuple.
-                // If the member is null (or the tuple contains a null member)
-                // the result is null (even if the list is null).
-                final Member[] members = tupleCalc.evaluateTuple(evaluator);
-                if (members == null) {
-                    return DoubleNull;
-                }
-                assert !tupleContainsNullMember(members);
-
-                // Get the set of members/tuples.
-                // If the list is empty, MSAS cannot figure out the type of the
-                // list, so returns an error "Formula error - dimension count is
-                // not valid - in the Rank function". We will naturally return 0,
-                // which I think is better.
-                RankedList rankedList = (RankedList) listCalc.evaluate(evaluator);
-                if (rankedList == null) {
-                    return 0;
-                }
-
-                // Find position of member in list. -1 signifies not found.
-                final int i = rankedList.indexOf(members);
-                // Return 1-based rank. 0 signifies not found.
-                return i + 1;
-            }
-        }
-
-        private static class Rank2MemberCalc extends AbstractDoubleCalc {
-            private final MemberCalc memberCalc;
-            private final Calc listCalc;
-
-            public Rank2MemberCalc(ResolvedFunCall call, MemberCalc memberCalc, Calc listCalc) {
-                super(call, new Calc[] {memberCalc, listCalc});
-                this.memberCalc = memberCalc;
-                this.listCalc = listCalc;
-            }
-
-            public double evaluateDouble(Evaluator evaluator) {
-                // Get member or tuple.
-                // If the member is null (or the tuple contains a null member)
-                // the result is null (even if the list is null).
-                final Member member = memberCalc.evaluateMember(evaluator);
-                if (member == null ||
-                        member.isNull()) {
-                    return DoubleNull;
-                }
-                // Get the set of members/tuples.
-                // If the list is empty, MSAS cannot figure out the type of the
-                // list, so returns an error "Formula error - dimension count is
-                // not valid - in the Rank function". We will naturally return 0,
-                // which I think is better.
-                RankedList rankedList = (RankedList) listCalc.evaluate(evaluator);
-                if (rankedList == null) {
-                    return 0;
-                }
-
-                // Find position of member in list. -1 signifies not found.
-                final int i = rankedList.indexOf(member);
-                // Return 1-based rank. 0 signifies not found.
-                return i + 1;
-            }
+    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+        switch (call.getArgCount()) {
+        case 2:
+            return compileCall2(call, compiler);
+        case 3:
+            return compileCall3(call, compiler);
+        default:
+            throw Util.newInternal("invalid arg count " + call.getArgCount());
         }
     }
 
-    /**
-     * Rank function with 3 arguments:
-     *
-     * <code>Rank({Tuple}, {Set}, {Calc Expression})</code>
-     */
-    private static class Rank3FunDef extends RankFunDef {
-        private static final boolean debug = false;
+    public Calc compileCall3(ResolvedFunCall call, ExpCompiler compiler) {
+        final Type type0 = call.getArg(0).getType();
+        if (type0 instanceof TupleType) {
+            final TupleCalc tupleCalc =
+                    compiler.compileTuple(call.getArg(0));
+            final ListCalc listCalc =
+                    compiler.compileList(call.getArg(1));
+            final Calc sortCalc =
+                    compiler.compileScalar(call.getArg(2), true);
+            Calc sortedListCalc =
+                    new SortCalc(call, listCalc, sortCalc);
+            final ExpCacheDescriptor cacheDescriptor =
+                    new ExpCacheDescriptor(
+                            call, sortedListCalc, compiler.getEvaluator());
+            return new Rank3TupleCalc(call, tupleCalc, sortCalc, cacheDescriptor);
+        } else {
+            final MemberCalc memberCalc =
+                    compiler.compileMember(call.getArg(0));
+            final ListCalc listCalc = compiler.compileList(call.getArg(1));
+            final Calc sortCalc = compiler.compileScalar(call.getArg(2), true);
+            Calc sortedListCalc =
+                    new SortCalc(call, listCalc, sortCalc);
+            final ExpCacheDescriptor cacheDescriptor =
+                    new ExpCacheDescriptor(
+                            call, sortedListCalc, compiler.getEvaluator());
+            return new Rank3MemberCalc(call, memberCalc, sortCalc, cacheDescriptor);
+        }
+    }
 
-        public Rank3FunDef(FunDef dummyFunDef) {
-            super(dummyFunDef);
+    public Calc compileCall2(ResolvedFunCall call, ExpCompiler compiler) {
+        final Exp listExp = call.getArg(1);
+        ListCalc listCalc0 = compiler.compileList(listExp);
+        Calc listCalc1 = new RankedListCalc(listCalc0);
+        final Calc listCalc;
+        if (MondrianProperties.instance().EnableExpCache.get()) {
+            final ExpCacheDescriptor key = new ExpCacheDescriptor(
+                    listExp, listCalc1, compiler.getEvaluator());
+            listCalc = new CacheCalc(listExp, key);
+        } else {
+            listCalc = listCalc1;
+        }
+        if (call.getArg(0).getType() instanceof TupleType) {
+            final TupleCalc tupleCalc =
+                    compiler.compileTuple(call.getArg(0));
+            return new Rank2TupleCalc(call, tupleCalc, listCalc);
+        } else {
+            final MemberCalc memberCalc =
+                    compiler.compileMember(call.getArg(0));
+            return new Rank2MemberCalc(call, memberCalc, listCalc);
+        }
+    }
+
+    private static class Rank2TupleCalc extends AbstractDoubleCalc {
+        private final TupleCalc tupleCalc;
+        private final Calc listCalc;
+
+        public Rank2TupleCalc(ResolvedFunCall call, TupleCalc tupleCalc, Calc listCalc) {
+            super(call, new Calc[] {tupleCalc, listCalc});
+            this.tupleCalc = tupleCalc;
+            this.listCalc = listCalc;
         }
 
-        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-            final Type type0 = call.getArg(0).getType();
-            if (type0 instanceof TupleType) {
-                final TupleCalc tupleCalc =
-                        compiler.compileTuple(call.getArg(0));
-                final ListCalc listCalc =
-                        compiler.compileList(call.getArg(1));
-                final Calc sortCalc =
-                        compiler.compileScalar(call.getArg(2), true);
-                Calc sortedListCalc =
-                        new SortCalc(call, listCalc, sortCalc);
-                final ExpCacheDescriptor cacheDescriptor =
-                        new ExpCacheDescriptor(
-                                call, sortedListCalc, compiler.getEvaluator());
-                return new Rank3TupleCalc(call, tupleCalc, sortCalc, cacheDescriptor);
-            } else {
-                final MemberCalc memberCalc =
-                        compiler.compileMember(call.getArg(0));
-                final ListCalc listCalc = compiler.compileList(call.getArg(1));
-                final Calc sortCalc = compiler.compileScalar(call.getArg(2), true);
-                Calc sortedListCalc =
-                        new SortCalc(call, listCalc, sortCalc);
-                final ExpCacheDescriptor cacheDescriptor =
-                        new ExpCacheDescriptor(
-                                call, sortedListCalc, compiler.getEvaluator());
-                return new Rank3MemberCalc(call, memberCalc, sortCalc, cacheDescriptor);
+        public double evaluateDouble(Evaluator evaluator) {
+            // Get member or tuple.
+            // If the member is null (or the tuple contains a null member)
+            // the result is null (even if the list is null).
+            final Member[] members = tupleCalc.evaluateTuple(evaluator);
+            if (members == null) {
+                return DoubleNull;
             }
+            assert !tupleContainsNullMember(members);
+
+            // Get the set of members/tuples.
+            // If the list is empty, MSAS cannot figure out the type of the
+            // list, so returns an error "Formula error - dimension count is
+            // not valid - in the Rank function". We will naturally return 0,
+            // which I think is better.
+            RankedList rankedList = (RankedList) listCalc.evaluate(evaluator);
+            if (rankedList == null) {
+                return 0;
+            }
+
+            // Find position of member in list. -1 signifies not found.
+            final int i = rankedList.indexOf(members);
+            // Return 1-based rank. 0 signifies not found.
+            return i + 1;
+        }
+    }
+
+    private static class Rank2MemberCalc extends AbstractDoubleCalc {
+        private final MemberCalc memberCalc;
+        private final Calc listCalc;
+
+        public Rank2MemberCalc(ResolvedFunCall call, MemberCalc memberCalc, Calc listCalc) {
+            super(call, new Calc[] {memberCalc, listCalc});
+            this.memberCalc = memberCalc;
+            this.listCalc = listCalc;
         }
 
-        private static class Rank3TupleCalc extends AbstractDoubleCalc {
-            private final TupleCalc tupleCalc;
-            private final Calc sortCalc;
-            private final ExpCacheDescriptor cacheDescriptor;
-
-            public Rank3TupleCalc(
-                    ResolvedFunCall call,
-                    TupleCalc tupleCalc,
-                    Calc sortCalc,
-                    ExpCacheDescriptor cacheDescriptor) {
-                super(call, new Calc[] {tupleCalc, sortCalc});
-                this.tupleCalc = tupleCalc;
-                this.sortCalc = sortCalc;
-                this.cacheDescriptor = cacheDescriptor;
+        public double evaluateDouble(Evaluator evaluator) {
+            // Get member or tuple.
+            // If the member is null (or the tuple contains a null member)
+            // the result is null (even if the list is null).
+            final Member member = memberCalc.evaluateMember(evaluator);
+            if (member == null ||
+                    member.isNull()) {
+                return DoubleNull;
+            }
+            // Get the set of members/tuples.
+            // If the list is empty, MSAS cannot figure out the type of the
+            // list, so returns an error "Formula error - dimension count is
+            // not valid - in the Rank function". We will naturally return 0,
+            // which I think is better.
+            RankedList rankedList = (RankedList) listCalc.evaluate(evaluator);
+            if (rankedList == null) {
+                return 0;
             }
 
-            public double evaluateDouble(Evaluator evaluator) {
-                Member[] members = tupleCalc.evaluateTuple(evaluator);
-                if (members == null) {
-                    return DoubleNull;
-                }
-                assert !tupleContainsNullMember(members);
+            // Find position of member in list. -1 signifies not found.
+            final int i = rankedList.indexOf(member);
+            // Return 1-based rank. 0 signifies not found.
+            return i + 1;
+        }
+    }
 
-                // Compute the value of the tuple.
-                final Evaluator evaluator2 = evaluator.push(members);
-                Object value = sortCalc.evaluate(evaluator2);
-                if (value instanceof RuntimeException) {
-                    // The value wasn't ready, so quit now... we'll be back.
-                    return 0;
-                }
+    private static class Rank3TupleCalc extends AbstractDoubleCalc {
+        private final TupleCalc tupleCalc;
+        private final Calc sortCalc;
+        private final ExpCacheDescriptor cacheDescriptor;
 
-                // Evaluate the list (or retrieve from cache).
-                // If there was an exception while calculating the
-                // list, propagate it up.
-                final SortResult sortResult = (SortResult)
-                        evaluator.getCachedResult(cacheDescriptor);
-                if (debug) {
-                    sortResult.print(new PrintWriter(System.out));
-                }
-                if (sortResult.empty) {
-                    // If list is empty, the rank is null.
-                    return DoubleNull;
-                }
+        public Rank3TupleCalc(
+                ResolvedFunCall call,
+                TupleCalc tupleCalc,
+                Calc sortCalc,
+                ExpCacheDescriptor cacheDescriptor) {
+            super(call, new Calc[] {tupleCalc, sortCalc});
+            this.tupleCalc = tupleCalc;
+            this.sortCalc = sortCalc;
+            this.cacheDescriptor = cacheDescriptor;
+        }
 
-                // If value is null, it won't be in the values array.
-                if (value == Util.nullValue) {
-                    return sortResult.values.length + 1;
-                }
-                // Look for the ranked value in the array.
-                int j = FunUtil.searchValuesDesc(sortResult.values, value);
-                if (j < 0) {
-                    // Value not found. Flip the result to find the
-                    // insertion point.
-                    j = -(j + 1);
-                    return j + 1; // 1-based
-                }
-                if (j <= sortResult.values.length) {
-                    // If the values preceding are equal, increase the rank.
-                    while (j > 0 && sortResult.values[j - 1].equals(value)) {
-                        --j;
-                    }
-                }
+        public double evaluateDouble(Evaluator evaluator) {
+            Member[] members = tupleCalc.evaluateTuple(evaluator);
+            if (members == null) {
+                return DoubleNull;
+            }
+            assert !tupleContainsNullMember(members);
+
+            // Compute the value of the tuple.
+            final Evaluator evaluator2 = evaluator.push(members);
+            Object value = sortCalc.evaluate(evaluator2);
+            if (value instanceof RuntimeException) {
+                // The value wasn't ready, so quit now... we'll be back.
+                return 0;
+            }
+
+            // Evaluate the list (or retrieve from cache).
+            // If there was an exception while calculating the
+            // list, propagate it up.
+            final SortResult sortResult = (SortResult)
+                    evaluator.getCachedResult(cacheDescriptor);
+            if (debug) {
+                sortResult.print(new PrintWriter(System.out));
+            }
+            if (sortResult.empty) {
+                // If list is empty, the rank is null.
+                return DoubleNull;
+            }
+
+            // If value is null, it won't be in the values array.
+            if (value == Util.nullValue) {
+                return sortResult.values.length + 1;
+            }
+            // Look for the ranked value in the array.
+            int j = FunUtil.searchValuesDesc(sortResult.values, value);
+            if (j < 0) {
+                // Value not found. Flip the result to find the
+                // insertion point.
+                j = -(j + 1);
                 return j + 1; // 1-based
             }
+            if (j <= sortResult.values.length) {
+                // If the values preceding are equal, increase the rank.
+                while (j > 0 && sortResult.values[j - 1].equals(value)) {
+                    --j;
+                }
+            }
+            return j + 1; // 1-based
+        }
+    }
+
+    private static class Rank3MemberCalc extends AbstractDoubleCalc {
+        private final MemberCalc memberCalc;
+        private final Calc sortCalc;
+        private final ExpCacheDescriptor cacheDescriptor;
+
+        public Rank3MemberCalc(
+                ResolvedFunCall call,
+                MemberCalc memberCalc,
+                Calc sortCalc,
+                ExpCacheDescriptor cacheDescriptor) {
+            super(call, new Calc[] {memberCalc, sortCalc});
+            this.memberCalc = memberCalc;
+            this.sortCalc = sortCalc;
+            this.cacheDescriptor = cacheDescriptor;
         }
 
-        private static class Rank3MemberCalc extends AbstractDoubleCalc {
-            private final MemberCalc memberCalc;
-            private final Calc sortCalc;
-            private final ExpCacheDescriptor cacheDescriptor;
-
-            public Rank3MemberCalc(
-                    ResolvedFunCall call,
-                    MemberCalc memberCalc,
-                    Calc sortCalc,
-                    ExpCacheDescriptor cacheDescriptor) {
-                super(call, new Calc[] {memberCalc, sortCalc});
-                this.memberCalc = memberCalc;
-                this.sortCalc = sortCalc;
-                this.cacheDescriptor = cacheDescriptor;
+        public double evaluateDouble(Evaluator evaluator) {
+            Member member = memberCalc.evaluateMember(evaluator);
+            if (member == null || member.isNull()) {
+                return DoubleNull;
+            }
+            // Compute the value of the tuple.
+            final Evaluator evaluator2 = evaluator.push(member);
+            Object value = sortCalc.evaluate(evaluator2);
+            if (value == RolapUtil.valueNotReadyException) {
+                // The value wasn't ready, so quit now... we'll be back.
+                return 0;
             }
 
-            public double evaluateDouble(Evaluator evaluator) {
-                Member member = memberCalc.evaluateMember(evaluator);
-                if (member == null || member.isNull()) {
-                    return DoubleNull;
-                }
-                // Compute the value of the tuple.
-                final Evaluator evaluator2 = evaluator.push(member);
-                Object value = sortCalc.evaluate(evaluator2);
-                if (value == RolapUtil.valueNotReadyException) {
-                    // The value wasn't ready, so quit now... we'll be back.
-                    return 0;
-                }
+            // Evaluate the list (or retrieve from cache).
+            // If there was an exception while calculating the
+            // list, propagate it up.
+            final SortResult sortResult = (SortResult)
+                    evaluator.getCachedResult(cacheDescriptor);
+            if (debug) {
+                sortResult.print(new PrintWriter(System.out));
+            }
+            if (sortResult.empty) {
+                // If list is empty, the rank is null.
+                return DoubleNull;
+            }
 
-                // Evaluate the list (or retrieve from cache).
-                // If there was an exception while calculating the
-                // list, propagate it up.
-                final SortResult sortResult = (SortResult)
-                        evaluator.getCachedResult(cacheDescriptor);
-                if (debug) {
-                    sortResult.print(new PrintWriter(System.out));
-                }
-                if (sortResult.empty) {
-                    // If list is empty, the rank is null.
-                    return DoubleNull;
-                }
-
-                // If value is null, it won't be in the values array.
-                if (value == Util.nullValue) {
-                    return sortResult.values.length + 1;
-                }
-                // Look for the ranked value in the array.
-                int j = FunUtil.searchValuesDesc(sortResult.values, value);
-                if (j < 0) {
-                    // Value not found. Flip the result to find the
-                    // insertion point.
-                    j = -(j + 1);
-                    return j + 1; // 1-based
-                }
-                if (j <= sortResult.values.length) {
-                    // If the values preceding are equal, increase the rank.
-                    while (j > 0 && sortResult.values[j - 1].equals(value)) {
-                        --j;
-                    }
-                }
+            // If value is null, it won't be in the values array.
+            if (value == Util.nullValue) {
+                return sortResult.values.length + 1;
+            }
+            // Look for the ranked value in the array.
+            int j = FunUtil.searchValuesDesc(sortResult.values, value);
+            if (j < 0) {
+                // Value not found. Flip the result to find the
+                // insertion point.
+                j = -(j + 1);
                 return j + 1; // 1-based
             }
+            if (j <= sortResult.values.length) {
+                // If the values preceding are equal, increase the rank.
+                while (j > 0 && sortResult.values[j - 1].equals(value)) {
+                    --j;
+                }
+            }
+            return j + 1; // 1-based
         }
     }
 

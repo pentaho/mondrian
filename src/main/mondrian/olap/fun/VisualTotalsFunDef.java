@@ -29,7 +29,14 @@ import java.util.List;
  * @since Jan 16, 2006
  */
 public class VisualTotalsFunDef extends FunDefBase {
-    private VisualTotalsFunDef(FunDef dummyFunDef) {
+    static final Resolver Resolver = new ReflectiveMultiResolver(
+            "VisualTotals",
+            "VisualTotals(<Set>[, <Pattern>])",
+            "Dynamically totals child members specified in a set using a pattern for the total label in the result set.",
+            new String[] {"fxx", "fxxS"},
+            VisualTotalsFunDef.class);
+
+    public VisualTotalsFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
     }
 
@@ -222,22 +229,6 @@ public class VisualTotalsFunDef extends FunDefBase {
     }
 
     /**
-     * Resolves calls to the <code>VisualTotals</code> function.
-     */
-    public static class Resolver extends MultiResolver {
-        public Resolver() {
-            super("VisualTotals",
-                    "VisualTotals(<Set>[, <Pattern>])",
-                    "Dynamically totals child members specified in a set using a pattern for the total label in the result set.",
-                    new String[] {"fxx", "fxxS"});
-        }
-
-        protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-            return new VisualTotalsFunDef(dummyFunDef);
-        }
-    }
-    
-    /**
      * Substitutes a name into a pattern.<p/>
      *
      * Asterisks are replaced with the name,
@@ -255,10 +246,10 @@ public class VisualTotalsFunDef extends FunDefBase {
         final StringBuffer buf = new StringBuffer(256);
         final int namePatternLen = namePattern.length();
         int startIndex = 0;
-        
+
         while (true) {
             int endIndex = namePattern.indexOf('*', startIndex);
-            
+
             if (endIndex == -1) { // No '*' left
                 // append the rest of namePattern from startIndex onwards
                 buf.append(namePattern.substring(startIndex));
@@ -274,7 +265,7 @@ public class VisualTotalsFunDef extends FunDefBase {
                 buf.append(namePattern.substring(startIndex, endIndex - 1)); // Exclude '*'
                 buf.append(name);
             }
-            
+
             startIndex = endIndex;
         }
 

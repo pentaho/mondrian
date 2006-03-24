@@ -22,14 +22,14 @@ import mondrian.olap.*;
  * @since Feb 12, 2003
  * @version $Id$
  */
-abstract class MultiResolver extends FunUtil implements Resolver {
+public abstract class MultiResolver extends FunUtil implements Resolver {
     private final String name;
     private final String signature;
     private final String description;
     private final String[] signatures;
     private final Syntax syntax;
 
-    MultiResolver(
+    protected MultiResolver(
             String name,
             String signature,
             String description,

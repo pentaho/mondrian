@@ -25,6 +25,13 @@ import java.util.List;
  * @version $Id$
  */
 class AggregateFunDef extends AbstractAggregateFunDef {
+    static final ReflectiveMultiResolver resolver =
+            new ReflectiveMultiResolver(
+                    "Aggregate", "Aggregate(<Set>[, <Numeric Expression>])",
+                    "Returns a calculated value using the appropriate aggregate function, based on the context of the query.",
+                    new String[]{"fnx", "fnxn"},
+                    AggregateFunDef.class);
+
     public AggregateFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
     }
@@ -58,22 +65,6 @@ class AggregateFunDef extends AbstractAggregateFunDef {
                 return anyDependsButFirst(getCalcs(), dimension);
             }
         };
-    }
-
-    MultiResolver newResolver() {
-        return new Resolver();
-    }
-
-    public static class Resolver extends MultiResolver {
-        public Resolver() {
-            super("Aggregate", "Aggregate(<Set>[, <Numeric Expression>])",
-                    "Returns a calculated value using the appropriate aggregate function, based on the context of the query.",
-                    new String[]{"fnx", "fnxn"});
-        }
-
-        protected FunDef createFunDef(final Exp[] args, FunDef dummyFunDef) {
-            return new AggregateFunDef(dummyFunDef);
-        }
     }
 }
 

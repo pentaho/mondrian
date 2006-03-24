@@ -21,10 +21,43 @@ import mondrian.mdx.ResolvedFunCall;
 import java.util.List;
 
 /**
- * Definition of Ytd, Qtd, Mtd, Wtd functions.
+ * Definition of <code>Ytd</code>, <code>Qtd</code>, <code>Mtd</code>,
+ * and <code>Wtd</code> MDX builtin functions.
+ *
+ * @author jhyde
+ * @version $Id$
+ * @since Mar 23, 2006
  */
 class XtdFunDef extends FunDefBase {
     private final LevelType levelType;
+
+    static final ResolverImpl MtdResolver = new ResolverImpl(
+            "Mtd",
+            "Mtd([<Member>])",
+            "A shortcut function for the PeriodsToDate function that specifies the level to be Month.",
+            new String[]{"fx", "fxm"},
+            LevelType.TimeMonths);
+
+    static final ResolverImpl QtdResolver = new ResolverImpl(
+            "Qtd",
+            "Qtd([<Member>])",
+            "A shortcut function for the PeriodsToDate function that specifies the level to be Quarter.",
+            new String[]{"fx", "fxm"},
+            LevelType.TimeQuarters);
+
+    static final ResolverImpl WtdResolver = new ResolverImpl(
+            "Wtd",
+            "Wtd([<Member>])",
+            "A shortcut function for the PeriodsToDate function that specifies the level to be Week.",
+            new String[]{"fx", "fxm"},
+            LevelType.TimeWeeks);
+
+    static final ResolverImpl YtdResolver = new ResolverImpl(
+            "Ytd",
+            "Ytd([<Member>])",
+            "A shortcut function for the PeriodsToDate function that specifies the level to be Year.",
+            new String[]{"fx", "fxm"},
+            LevelType.TimeYears);
 
     public XtdFunDef(FunDef dummyFunDef, LevelType levelType) {
         super(dummyFunDef);
@@ -92,10 +125,10 @@ class XtdFunDef extends FunDefBase {
         }
     }
 
-    public static class Resolver extends MultiResolver {
+    private static class ResolverImpl extends MultiResolver {
         private final LevelType levelType;
 
-        public Resolver(
+        public ResolverImpl(
                 String name,
                 String signature,
                 String description,

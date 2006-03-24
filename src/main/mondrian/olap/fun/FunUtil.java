@@ -17,6 +17,7 @@ import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.Calc;
 import mondrian.calc.DoubleCalc;
+import mondrian.mdx.ResolvedFunCall;
 
 import org.apache.log4j.Logger;
 
@@ -79,22 +80,23 @@ public class FunUtil extends Util {
      * Returns an argument whose value is a literal.
      */
     static String getLiteralArg(
-            Exp[] args,
+            ResolvedFunCall call,
             int i,
             String defaultValue,
-            String[] allowedValues,
-            FunDef funDef) {
-        if (i >= args.length) {
+            String[] allowedValues) {
+        if (i >= call.getArgCount()) {
             if (defaultValue == null) {
-                throw newEvalException(funDef, "Required argument is missing");
+                throw newEvalException(call.getFunDef(),
+                        "Required argument is missing");
             } else {
                 return defaultValue;
             }
         }
-        Exp arg = args[i];
+        Exp arg = call.getArg(i);
         if (!(arg instanceof Literal) ||
                 arg.getCategory() != Category.Symbol) {
-            throw newEvalException(funDef, "Expected a symbol, found '" + arg + "'");
+            throw newEvalException(call.getFunDef(),
+                    "Expected a symbol, found '" + arg + "'");
         }
         String s = (String) ((Literal) arg).getValue();
         StringBuffer sb = new StringBuffer(64);
@@ -108,7 +110,8 @@ public class FunUtil extends Util {
             }
             sb.append(allowedValue);
         }
-        throw newEvalException(funDef, "Allowed values are: {" + sb + "}");
+        throw newEvalException(call.getFunDef(),
+                "Allowed values are: {" + sb + "}");
     }
 
     /**
@@ -116,17 +119,15 @@ public class FunUtil extends Util {
      * belong to the supplied enumeration, returns -1.
      */
     static int getLiteralArg(
-            Exp[] args,
+            ResolvedFunCall call,
             int i,
             int defaultValue,
-            EnumeratedValues allowedValues,
-            FunDef funDef) {
+            EnumeratedValues allowedValues) {
         final String literal = getLiteralArg(
-                args,
+                call,
                 i,
                 allowedValues.getName(defaultValue),
-                allowedValues.getNames(),
-                funDef);
+                allowedValues.getNames());
         return (literal == null)
             ? -1
             : allowedValues.getOrdinal(literal);
@@ -505,62 +506,6 @@ public class FunUtil extends Util {
         }
     }
 
-    /**
-     * Handles TopSum, TopPercent, BottomSum, BottomPercent by
-     * evaluating members, sorting appropriately, and returning a
-     * truncated list of members
-     */
-    static List topOrBottom(
-            Evaluator evaluator,
-            List members,
-            Calc exp,
-            boolean isTop,
-            boolean isPercent,
-            double target) {
-        if (members.isEmpty()) {
-            return members;
-        }
-        Map mapMemberToValue;
-        Object first = members.get(0);
-        if (first instanceof Member) {
-            mapMemberToValue = evaluateMembers(evaluator, exp, members, false);
-        } else {
-            mapMemberToValue = evaluateTuples(evaluator, exp, members);
-        }
-        sort(evaluator, members, exp, isTop, true);
-        if (isPercent) {
-            toPercent(members, mapMemberToValue);
-        }
-        double runningTotal = 0;
-        int memberCount = members.size();
-        int nullCount = 0;
-        for (int i = 0; i < memberCount; i++) {
-            if (runningTotal >= target) {
-                members = members.subList(0, i);
-                break;
-            }
-            Object o = mapMemberToValue.get(members.get(i));
-            if (o == Util.nullValue) {
-                nullCount++;
-            } else if (o instanceof Number) {
-                runningTotal += ((Number) o).doubleValue();
-            } else if (o instanceof Exception) {
-                // ignore the error
-            } else {
-                throw Util.newInternal("got " + o + " when expecting Number");
-            }
-        }
-
-        // MSAS exhibits the following behavior. If the value of all members is
-        // null, then the first (or last) member of the set is returned for percent
-        // operations.
-        if ((memberCount > 0) && isPercent && (nullCount == memberCount)) {
-            return (isTop)
-                ? members.subList(0, 1)
-                : members.subList(memberCount - 1, memberCount);
-        }
-        return members;
-    }
 
     /**
      * Decodes the syntactic type of an operator.
@@ -775,7 +720,7 @@ public class FunUtil extends Util {
      *
      * @pre range >= 1 && range <= 3
      */
-    static double quartile(
+    protected static double quartile(
             Evaluator evaluator,
             List members,
             Calc exp,

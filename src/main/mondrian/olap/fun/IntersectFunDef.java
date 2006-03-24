@@ -19,20 +19,34 @@ import java.util.*;
 
 /**
  * Definition of the <code>INTERSECT</code> MDX function.
+ *
+ * @author jhyde
+ * @version $Id$
+ * @since Mar 23, 2006
  */
 class IntersectFunDef extends FunDefBase
 {
-    private final boolean all;
+    private static final String[] ReservedWords = new String[] {"ALL"};
 
-    public IntersectFunDef(FunDef dummyFunDef, boolean all)
+    static final Resolver resolver = new ReflectiveMultiResolver(
+            "Intersect",
+            "Intersect(<Set1>, <Set2>[, ALL])",
+            "Returns the intersection of two input sets, optionally retaining duplicates.",
+            new String[] {"fxxxy", "fxxx"},
+            IntersectFunDef.class,
+            ReservedWords);
+    
+    public IntersectFunDef(FunDef dummyFunDef)
     {
         super(dummyFunDef);
-        this.all = all;
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc1 = compiler.compileList(call.getArg(0));
         final ListCalc listCalc2 = compiler.compileList(call.getArg(1));
+        final String literalArg = getLiteralArg(call, 2, "", ReservedWords);
+        final boolean all = literalArg.equalsIgnoreCase("ALL");
+
         // todo: optimize for member lists vs. tuple lists
         return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
             public List evaluateList(Evaluator evaluator) {

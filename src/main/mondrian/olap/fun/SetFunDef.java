@@ -33,6 +33,8 @@ import java.util.List;
  * @version $Id$
  */
 class SetFunDef extends FunDefBase {
+    static final ResolverImpl Resolver = new ResolverImpl();
+
     SetFunDef(Resolver resolver, int[] argTypes) {
         super(resolver, Category.Set, argTypes);
     }
@@ -189,6 +191,40 @@ class SetFunDef extends FunDefBase {
                 voidCalcs[i].evaluateVoid(evaluator);
             }
             return new ArrayList(result);
+        }
+    }
+
+    private static class ResolverImpl extends ResolverBase {
+        public ResolverImpl() {
+            super(
+                    "{}",
+                    "{<Member> [, <Member>...]}",
+                    "Brace operator constructs a set.",
+                    Syntax.Braces);
+        }
+
+        public FunDef resolve(
+                Exp[] args, Validator validator, int[] conversionCount) {
+            int[] parameterTypes = new int[args.length];
+            for (int i = 0; i < args.length; i++) {
+                if (validator.canConvert(
+                        args[i], Category.Member, conversionCount)) {
+                    parameterTypes[i] = Category.Member;
+                    continue;
+                }
+                if (validator.canConvert(
+                        args[i], Category.Set, conversionCount)) {
+                    parameterTypes[i] = Category.Set;
+                    continue;
+                }
+                if (validator.canConvert(
+                        args[i], Category.Tuple, conversionCount)) {
+                    parameterTypes[i] = Category.Tuple;
+                    continue;
+                }
+                return null;
+            }
+            return new SetFunDef(this, parameterTypes);
         }
     }
 }

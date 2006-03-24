@@ -15,9 +15,15 @@ import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 /**
- * Defines the <code>PROPERTIES</code> MDX function.
+ * Definition of the <code>Properties</code> MDX function.
+ *
+ * @author jhyde
+ * @version $Id$
+ * @since Mar 23, 2006
  */
 class PropertiesFunDef extends FunDefBase {
+    static final ResolverImpl Resolver = new ResolverImpl();
+
     public PropertiesFunDef(
             String name,
             String signature,
@@ -59,8 +65,8 @@ class PropertiesFunDef extends FunDefBase {
     /**
      * Resolves calls to the <code>PROPERTIES</code> MDX function.
      */
-    static class Resolver extends ResolverBase {
-        Resolver() {
+    private static class ResolverImpl extends ResolverBase {
+        private ResolverImpl() {
             super("Properties",
                   "<Member>.Properties(<String Expression>)",
                   "Returns the value of a member property.",

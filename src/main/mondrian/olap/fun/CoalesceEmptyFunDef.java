@@ -24,6 +24,8 @@ import mondrian.mdx.ResolvedFunCall;
  * @version $Id$
  */
 public class CoalesceEmptyFunDef extends FunDefBase {
+    static final ResolverBase Resolver = new ResolverImpl();
+
     public CoalesceEmptyFunDef(ResolverBase resolverBase, int type, int[] types) {
         super(resolverBase,  type, types);
     }
@@ -52,6 +54,43 @@ public class CoalesceEmptyFunDef extends FunDefBase {
         };
     }
 
+    private static class ResolverImpl extends ResolverBase {
+        public ResolverImpl() {
+            super(
+                    "CoalesceEmpty",
+                    "CoalesceEmpty(<Value Expression>[, <Value Expression>...])",
+                    "Coalesces an empty cell value to a different value. All of the expressions must be of the same type (number or string).",
+                    Syntax.Function);
+        }
+
+        public FunDef resolve(
+                Exp[] args, Validator validator, int[] conversionCount) {
+            if (args.length < 1) {
+                return null;
+            }
+            final int[] types = {Category.Numeric, Category.String};
+            final int[] argTypes = new int[args.length];
+            for (int j = 0; j < types.length; j++) {
+                int type = types[j];
+                int matchingArgs = 0;
+                conversionCount[0] = 0;
+                for (int i = 0; i < args.length; i++) {
+                    if (validator.canConvert(args[i], type, conversionCount)) {
+                        matchingArgs++;
+                    }
+                    argTypes[i] = type;
+                }
+                if (matchingArgs == args.length) {
+                    return new CoalesceEmptyFunDef(this, type, argTypes);
+                }
+            }
+            return null;
+        }
+
+        public boolean requiresExpression(int k) {
+            return true;
+        }
+    }
 }
 
 // End CoalesceEmptyFunDef.java

@@ -32,6 +32,30 @@ import mondrian.mdx.ResolvedFunCall;
 class OpeningClosingPeriodFunDef extends FunDefBase {
     private final boolean opening;
 
+    static final Resolver OpeningPeriodResolver = new MultiResolver(
+            "OpeningPeriod",
+            "OpeningPeriod([<Level>[, <Member>]])",
+            "Returns the first descendant of a member at a level.",
+            new String[] {"fm", "fml", "fmlm"}) {
+        protected FunDef createFunDef(
+                Exp[] args, FunDef dummyFunDef) {
+            return new OpeningClosingPeriodFunDef(
+                    dummyFunDef, true);
+        }
+    };
+
+    static final Resolver ClosingPeriodResolver = new MultiResolver(
+            "ClosingPeriod",
+            "ClosingPeriod([<Level>[, <Member>]])",
+            "Returns the last descendant of a member at a level.",
+            new String[] {"fm", "fml", "fmlm", "fmm"}) {
+        protected FunDef createFunDef(
+                Exp[] args, FunDef dummyFunDef) {
+            return new OpeningClosingPeriodFunDef(
+                    dummyFunDef, false);
+        }
+    };
+
     public OpeningClosingPeriodFunDef(
             FunDef dummyFunDef,
             boolean opening) {
@@ -165,31 +189,6 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
         }
     }
 
-    public static Resolver createResolver(final boolean opening) {
-        return opening ?
-                (Resolver) new MultiResolver(
-                        "OpeningPeriod",
-                        "OpeningPeriod([<Level>[, <Member>]])",
-                        "Returns the first descendant of a member at a level.",
-                        new String[] {"fm", "fml", "fmlm"}) {
-                    protected FunDef createFunDef(
-                            Exp[] args, FunDef dummyFunDef) {
-                        return new OpeningClosingPeriodFunDef(
-                                dummyFunDef, opening);
-                    }
-                } :
-                new MultiResolver(
-                        "ClosingPeriod",
-                        "ClosingPeriod([<Level>[, <Member>]])",
-                        "Returns the last descendant of a member at a level.",
-                        new String[] {"fm", "fml", "fmlm", "fmm"}) {
-                    protected FunDef createFunDef(
-                            Exp[] args, FunDef dummyFunDef) {
-                        return new OpeningClosingPeriodFunDef(
-                                dummyFunDef, opening);
-                    }
-                };
-    }
 }
 
 // End OpeningClosingPeriodFunDef.java

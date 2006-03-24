@@ -115,6 +115,42 @@ public abstract class LinReg extends FunDefBase {
     public static final int Slope = 3;
     public static final int Variance = 4;
 
+    static final Resolver InterceptResolver = new ReflectiveMultiResolver(
+            "LinRegIntercept",
+            "LinRegIntercept(<Set>, <Numeric Expression>[, <Numeric Expression>])",
+            "Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.",
+            new String[]{"fnxn","fnxnn"},
+            InterceptFunDef.class);
+
+    static final Resolver PointResolver = new ReflectiveMultiResolver(
+            "LinRegPoint",
+            "LinRegPoint(<Numeric Expression>, <Set>, <Numeric Expression>[, <Numeric Expression>])",
+            "Calculates the linear regression of a set and returns the value of y in the regression line y = ax + b.",
+            new String[]{"fnnxn","fnnxnn"},
+            PointFunDef.class);
+
+    static final Resolver SlopeResolver = new ReflectiveMultiResolver(
+            "LinRegSlope",
+            "LinRegSlope(<Set>, <Numeric Expression>[, <Numeric Expression>])",
+            "Calculates the linear regression of a set and returns the value of a in the regression line y = ax + b.",
+            new String[]{"fnxn","fnxnn"},
+            SlopeFunDef.class);
+
+    static final Resolver R2Resolver = new ReflectiveMultiResolver(
+            "LinRegR2",
+            "LinRegR2(<Set>, <Numeric Expression>[, <Numeric Expression>])",
+            "Calculates the linear regression of a set and returns R2 (the coefficient of determination).",
+            new String[]{"fnxn","fnxnn"},
+            R2FunDef.class);
+
+    static final Resolver VarianceResolver = new ReflectiveMultiResolver(
+            "LinRegVariance",
+            "LinRegVariance(<Set>, <Numeric Expression>[, <Numeric Expression>])",
+            "Calculates the linear regression of a set and returns the variance associated with the regression line y = ax + b.",
+            new String[]{"fnxn","fnxnn"},
+            VarianceFunDef.class);
+
+
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc = compiler.compileList(call.getArg(0));
         final DoubleCalc yCalc = compiler.compileDouble(call.getArg(1));
@@ -159,12 +195,15 @@ public abstract class LinReg extends FunDefBase {
             this.xs = xs;
             this.ys = ys;
         }
+
         public double getIntercept() {
             return this.intercept;
         }
+
         public double getSlope() {
             return this.slope;
         }
+
         public double getRSquared() {
             return this.rSquared;
         }
@@ -181,9 +220,11 @@ public abstract class LinReg extends FunDefBase {
         public double getVariance() {
             return this.variance;
         }
+
         public void setVariance(double variance) {
             this.variance = variance;
         }
+
         public String toString() {
             return "LinReg.Value: slope of "
                 + slope
@@ -203,22 +244,8 @@ public abstract class LinReg extends FunDefBase {
      * <blockquote><code>LinRegIntercept(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric  Expression&gt;])</code></blockquote>
      */
     public static class InterceptFunDef extends LinReg {
-        InterceptFunDef(FunDef funDef) {
+        public InterceptFunDef(FunDef funDef) {
             super(funDef, Intercept);
-        }
-
-        public static class Resolver extends MultiResolver {
-            Resolver() {
-                super(
-                        "LinRegIntercept",
-                        "LinRegIntercept(<Set>, <Numeric Expression>[, <Numeric Expression>])",
-                        "Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.",
-                        new String[]{"fnxn","fnxnn"});
-            }
-
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new InterceptFunDef(dummyFunDef);
-            }
         }
     }
 
@@ -246,19 +273,6 @@ public abstract class LinReg extends FunDefBase {
             return new PointCalc(call, xPointCalc, listCalc, yCalc, xCalc, isTuples);
         }
 
-        public static class Resolver extends MultiResolver {
-            Resolver() {
-                super(
-                "LinRegPoint",
-                "LinRegPoint(<Numeric Expression>, <Set>, <Numeric Expression>[, <Numeric Expression>])",
-                "Calculates the linear regression of a set and returns the value of y in the regression line y = ax + b.",
-                new String[]{"fnnxn","fnnxnn"});
-            }
-
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new PointFunDef(dummyFunDef);
-            }
-        }
     }
 
     private static class PointCalc extends AbstractDoubleCalc {
@@ -305,20 +319,6 @@ public abstract class LinReg extends FunDefBase {
         public SlopeFunDef(FunDef funDef) {
             super(funDef, Slope);
         }
-
-        public static class Resolver extends MultiResolver {
-            Resolver() {
-                super(
-                        "LinRegSlope",
-                        "LinRegSlope(<Set>, <Numeric Expression>[, <Numeric Expression>])",
-                        "Calculates the linear regression of a set and returns the value of a in the regression line y = ax + b.",
-                        new String[]{"fnxn","fnxnn"});
-            }
-
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new SlopeFunDef(dummyFunDef);
-            }
-        }
     }
 
     /**
@@ -331,20 +331,6 @@ public abstract class LinReg extends FunDefBase {
         public R2FunDef(FunDef funDef) {
             super(funDef, R2);
         }
-
-        public static class Resolver extends MultiResolver {
-            Resolver() {
-                super(
-                        "LinRegR2",
-                        "LinRegR2(<Set>, <Numeric Expression>[, <Numeric Expression>])",
-                        "Calculates the linear regression of a set and returns R2 (the coefficient of determination).",
-                        new String[]{"fnxn","fnxnn"});
-            }
-
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new R2FunDef(dummyFunDef);
-            }
-        }
     }
 
     /**
@@ -356,20 +342,6 @@ public abstract class LinReg extends FunDefBase {
     public static class VarianceFunDef extends LinReg {
         public VarianceFunDef(FunDef funDef) {
             super(funDef, Variance);
-        }
-
-        public static class Resolver extends MultiResolver {
-            Resolver() {
-                super(
-                        "LinRegVariance",
-                        "LinRegVariance(<Set>, <Numeric Expression>[, <Numeric Expression>])",
-                        "Calculates the linear regression of a set and returns the variance associated with the regression line y = ax + b.",
-                        new String[]{"fnxn","fnxnn"});
-            }
-
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new VarianceFunDef(dummyFunDef);
-            }
         }
     }
 

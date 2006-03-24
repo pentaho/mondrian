@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2005 Julian Hyde
+// Copyright (C) 2003-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,6 +13,7 @@ package mondrian.test;
 
 import mondrian.olap.*;
 import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapSchema;
 import mondrian.rolap.cache.CachePool;
 
 import java.sql.DatabaseMetaData;
@@ -663,18 +664,19 @@ public class BasicQueryTest extends FoodMartTestCase {
         sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL(false);
         assertNull(sql); // because it is a calculated member
     }
+
     public void testDrillThrough2() {
-        Result result = executeQuery("WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / [Measures].[Unit Sales]'" + nl +
-                        "SELECT {[Measures].[Unit Sales], [Measures].[Price]} on columns," + nl +
-                        " {[Product].Children} on rows" + nl +
-                        "from Sales");
+        Result result = executeQuery(
+                "WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / [Measures].[Unit Sales]'" + nl +
+                "SELECT {[Measures].[Unit Sales], [Measures].[Price]} on columns," + nl +
+                " {[Product].Children} on rows" + nl +
+                "from Sales");
         String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(true);
-        //System.out.println("Drillthrough= " + sql);
 
         RolapConnection conn = (RolapConnection) getConnection();
         String jdbc_url = conn.getConnectInfo().get("Jdbc");
         String fname_plus_lname;
-        if (jdbc_url.toLowerCase().indexOf("mysql") >= 0 ) {
+        if (jdbc_url.toLowerCase().indexOf("mysql") >= 0) {
             // Mysql would generate "CONCAT( ... )"
             fname_plus_lname = " CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `Name`,";
         } else if (jdbc_url.toLowerCase().indexOf("postgresql") >= 0  ||
@@ -688,12 +690,6 @@ public class BasicQueryTest extends FoodMartTestCase {
         } else {
             fname_plus_lname = " fname + ' ' + lname as `Name`,";
         }
-/*
- * What about generic?
-                        <SQL dialect="generic">
-              fullname
-                        </SQL>
-*/
         // the following replacement is for databases in ANSI mode
         //  using '"' to quote identifiers
         sql = sql.replace('"', '`');
@@ -704,7 +700,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             tableQualifier = "";
         }
 
-        String expectedSQL = "select `store`.`store_name` as `Store Name`," +
+        String expectedSql = "select `store`.`store_name` as `Store Name`," +
                 " `store`.`store_city` as `Store City`," +
                 " `store`.`store_state` as `Store State`," +
                 " `store`.`store_country` as `Store Country`," +
@@ -721,7 +717,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " `product_class`.`product_family` as `Product Family`," +
                 " `promotion`.`media_type` as `Media Type`," +
                 " `promotion`.`promotion_name` as `Promotion Name`," +
-                fname_plus_lname + //" fname + ' ' + lname as `Name`," +
+                fname_plus_lname +
                 " `customer`.`city` as `City`," +
                 " `customer`.`state_province` as `State Province`," +
                 " `customer`.`country` as `Country`," +
@@ -750,12 +746,14 @@ public class BasicQueryTest extends FoodMartTestCase {
          * DB2 does not have quotes on identifiers
          */
         if (jdbc_url.toLowerCase().indexOf(":db2:") >= 0) {
-            expectedSQL = expectedSQL.replaceAll("`", "");
+            expectedSql = expectedSql.replaceAll("`", "");
         }
 
-        assertEquals(expectedSQL, sql);
+        assertEquals(expectedSql, sql);
+
+        // Drillthrough SQL is null for cell based on calc member
         sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL(true);
-        assertNull(sql); // because it is a calculated member
+        assertNull(sql);
     }
 
     public void testNonEmpty1() {
@@ -1148,7 +1146,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * Plato does). But now we revert to the context of the default member when
      * calculating calculated members (we used to stay in the context of the
      * calculated member), and we get a result.
-     **/
+     */
     public void testCycle() {
         if (false) {
             assertExprThrows("[Time].[1997].[Q4]", "infinite loop");
@@ -2283,7 +2281,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "{[Promotion Media].[All Media], [Product].[All Products]}" + nl +
                 "Row #0: 5,581" + nl);
     }
-    /** Make sure that the "Store" cube is working. **/
+    /** Make sure that the "Store" cube is working. */
     public void testStoreCube() {
         assertQueryReturns(
                 "select {[Measures].members} on columns," + nl +
@@ -3060,7 +3058,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * retrieve unit sales information for each store from the Sales cube,
      * presenting it side by side with the budget information from the Budget
      * cube.
-     **/
+     */
     public void _testLookupCube() {
         assertQueryReturns(
                 "WITH MEMBER Measures.[Store Unit Sales] AS " + nl +
@@ -4649,7 +4647,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * twice.
      */
     public void testDimWithoutAll() {
-        RolapConnection conn = (RolapConnection) getConnection();
+        Connection conn = getConnection();
         Schema schema = getConnection().getSchema();
         final Cube cube = schema.createCube(fold(new String[] {
                 "<Cube name=\"Sales_DimWithoutAll\">",
@@ -4791,33 +4789,134 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testNullMember() {
-        assertQueryReturns("SELECT " + nl +
-                           "{[Measures].[Store Cost]} ON columns, " + nl +
-                           "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]} ON rows " + nl +
-                           "FROM [Sales] " + nl +
-                           "WHERE [Time].[1997]",
-                           "Axis #0:" + nl +
-                           "{[Time].[1997]}" + nl +
-                           "Axis #1:" + nl +
-                           "{[Measures].[Store Cost]}" + nl +
-                           "Axis #2:" + nl +
-                           "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}" + nl +
-                           "Row #0: 33,307.69" + nl);
+        assertQueryReturns(
+                "SELECT " + nl +
+                "{[Measures].[Store Cost]} ON columns, " + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]} ON rows " + nl +
+                "FROM [Sales] " + nl +
+                "WHERE [Time].[1997]",
+                "Axis #0:" + nl +
+                "{[Time].[1997]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Store Cost]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}" + nl +
+                "Row #0: 33,307.69" + nl);
     }
 
-    public void _testFoo() {
-//        System.setProperty("mondrian.expCache.enable", "false");
-//        System.setProperty("mondrian.native.topcount.enable", "false");
-        System.setProperty("mondrian.native.filter.enable", "false");
-//        System.setProperty("mondrian.native.nonempty.enable", "false");
-//        System.setProperty("mondrian.native.crossjoin.enable", "false");
+    /**
+     * Tests whether the agg mgr behaves correctly if a cell request causes
+     * a column to be constrained multiple times. This happens if two levels
+     * map to the same column via the same join-path. If the constraints are
+     * inconsistent, no data will be returned.
+     */
+    public void testMultipleConstraintsOnSameColumn() {
+        TestContext testContext = new TestContext() {
+            public Connection getConnection() {
+                return super.getConnection();
+            }
+        };
+        Connection conn = getConnection();
+        Schema schema = getConnection().getSchema();
+        final String cubeName = "Sales_withCities";
+        final Cube cube = schema.createCube(fold(new String[] {
+            "<Cube name=\"" + cubeName + "\">",
+            "  <Table name=\"sales_fact_1997\"/>",
+            "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>",
+            "  <Dimension name=\"Cities\" foreignKey=\"customer_id\">",
+            "    <Hierarchy hasAll=\"true\" allMemberName=\"All Cities\" primaryKey=\"customer_id\">",
+            "      <Table name=\"customer\"/>",
+            "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/> ",
+            "    </Hierarchy>",
+            "  </Dimension>",
+            "  <Dimension name=\"Customers\" foreignKey=\"customer_id\">",
+            "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"customer_id\">",
+            "      <Table name=\"customer\"/>",
+            "      <Level name=\"Country\" column=\"country\" uniqueMembers=\"true\"/>",
+            "      <Level name=\"State Province\" column=\"state_province\" uniqueMembers=\"true\"/>",
+            "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/>",
+            "      <Level name=\"Name\" column=\"fullname\" uniqueMembers=\"true\">",
+            "        <Property name=\"Gender\" column=\"gender\"/>",
+            "        <Property name=\"Marital Status\" column=\"marital_status\"/>",
+            "        <Property name=\"Education\" column=\"education\"/>",
+            "        <Property name=\"Yearly Income\" column=\"yearly_income\"/>",
+            "      </Level>",
+            "    </Hierarchy>",
+            "  </Dimension>",
+            "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">",
+            "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">",
+            "    <Table name=\"customer\"/>",
+            "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>",
+            "    </Hierarchy>",
+            "  </Dimension>" +
+                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"",
+            "      formatString=\"Standard\" visible=\"false\"/>",
+            "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"",
+            "      formatString=\"#,###.00\"/>",
+            "</Cube>"}));
+
+        try {
+            // Note that USA, CA, Burbank, and Alma Son are consistent with the
+            // constraint in the slicer, and therefore return a value, but other
+            // members are inconsistent so return null.
+            getTestContext().assertQueryReturns(
+                    fold(new String[] {
+                        "select {",
+                        " [Customers].[All Customers].[USA],",
+                        " [Customers].[All Customers].[USA].[OR],",
+                        " [Customers].[All Customers].[USA].[CA],",
+                        " [Customers].[All Customers].[USA].[CA].[Altadena],",
+                        " [Customers].[All Customers].[USA].[CA].[Burbank],",
+                        " [Customers].[All Customers].[USA].[CA].[Burbank].[Alma Son]} ON COLUMNS",
+                        "from [" + cubeName + "] ",
+                        "where ([Cities].[All Cities].[Burbank], [Measures].[Store Sales])"}),
+                    fold(new String[] {
+                        "Axis #0:",
+                        "{[Cities].[All Cities].[Burbank], [Measures].[Store Sales]}",
+                        "Axis #1:",
+                        "{[Customers].[All Customers].[USA]}",
+                        "{[Customers].[All Customers].[USA].[OR]}",
+                        "{[Customers].[All Customers].[USA].[CA]}",
+                        "{[Customers].[All Customers].[USA].[CA].[Altadena]}",
+                        "{[Customers].[All Customers].[USA].[CA].[Burbank]}",
+                        "{[Customers].[All Customers].[USA].[CA].[Burbank].[Alma Son]}",
+                        "Row #0: 6,577.33",
+                        "Row #0: (null)",
+                        "Row #0: 6,577.33",
+                        "Row #0: (null)",
+                        "Row #0: 6,577.33",
+                        "Row #0: 36.50",
+                        ""}));
+        } finally {
+            schema.removeCube(cubeName);
+        }
+    }
+
+    public void testOverrideDimension() {
         assertQueryReturns(
-                "with member [Measures].[Qualified Count] as 'Count(Filter(Descendants([Customers].[All Customers].[USA].[CA], [Customers].[City]), (([Measures].[Store Sales] > 6000.0) OR ([Measures].[Unit Sales] > 3000.0))))'\n" +
-                "  member [Measures].[Qualified Sales] as 'Sum(Filter(Descendants([Customers].[All Customers].[USA].[CA], [Customers].[City]), (([Measures].[Store Sales] > 6000.0) OR ([Measures].[Unit Sales] > 3000.0))), [Measures].[Store Sales])'\n" +
-                "select {[Measures].[Store Sales], [Measures].[Unit Sales], [Measures].[Qualified Count], [Measures].[Qualified Sales]} ON COLUMNS,\n" +
-                "  {Filter(Descendants([Customers].[All Customers].[USA].[CA], [Customers].[City]), (([Measures].[Store Sales] > 6000.0) OR ([Measures].[Unit Sales] > 3000.0)))} ON ROWS\n" +
-                "from [Sales]",
-                "x");
+                fold(new String[] {
+                    "with member  [Gender].[test] as '",
+                    "  aggregate(",
+                    "  filter ( crossjoin( [Gender].[Gender].members, [Time].members), ",
+                    "      [time].CurrentMember = [Time].[1997].[Q1]   AND",
+                    "[measures].[unit sales] > 50)  )",
+                    "'",
+                    "select ",
+                    "  { [time].[year].members } on 0,",
+                    "  { [gender].[test] }",
+                    " on 1  ",
+                    "from [sales]"}),
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Time].[1997]}",
+                    "{[Time].[1998]}",
+                    "Axis #2:",
+                    "{[Gender].[test]}",
+                    "Row #0: 66,291",
+                    "Row #0: 66,291",
+                    ""}));
     }
 }
 

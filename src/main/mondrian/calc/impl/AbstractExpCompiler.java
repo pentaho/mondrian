@@ -10,7 +10,7 @@
 package mondrian.calc.impl;
 
 import mondrian.olap.*;
-import mondrian.olap.fun.BuiltinFunTable;
+import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
 import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
@@ -49,7 +49,7 @@ public class AbstractExpCompiler implements ExpCompiler {
         if (type instanceof DimensionType ||
                 type instanceof HierarchyType) {
             final DimensionCalc dimensionCalc = compileDimension(exp);
-            return new BuiltinFunTable.DimensionCurrentMemberFunDef.CalcImpl(
+            return new DimensionCurrentMemberFunDef.CalcImpl(
                     new DummyExp(TypeUtil.toMemberType(type)), dimensionCalc);
         }
         assert type instanceof MemberType;
@@ -61,7 +61,7 @@ public class AbstractExpCompiler implements ExpCompiler {
         if (type instanceof MemberType) {
             // <Member> --> <Member>.Level
             final MemberCalc memberCalc = compileMember(exp);
-            return new BuiltinFunTable.MemberLevelFunDef.CalcImpl(
+            return new MemberLevelFunDef.CalcImpl(
                     new DummyExp(LevelType.forType(type)),
                     memberCalc);
         }
@@ -73,7 +73,7 @@ public class AbstractExpCompiler implements ExpCompiler {
         final Type type = exp.getType();
         if (type instanceof HierarchyType) {
             final HierarchyCalc hierarchyCalc = compileHierarchy(exp);
-            return new BuiltinFunTable.HierarchyDimensionFunDef.CalcImpl(
+            return new HierarchyDimensionFunDef.CalcImpl(
                     exp, hierarchyCalc);
         }
         assert type instanceof DimensionType : type;
@@ -86,14 +86,14 @@ public class AbstractExpCompiler implements ExpCompiler {
                 type instanceof MemberType) {
             // <Dimension> --> <Dimension>.CurrentMember.Hierarchy
             final MemberCalc memberCalc = compileMember(exp);
-            return new BuiltinFunTable.MemberHierarchyFunDef.CalcImpl(
+            return new MemberHierarchyFunDef.CalcImpl(
                     new DummyExp(HierarchyType.forType(type)),
                     memberCalc);
         }
         if (type instanceof LevelType) {
             // <Level> --> <Level>.Hierarchy
             final LevelCalc levelCalc = compileLevel(exp);
-            return new BuiltinFunTable.LevelHierarchyFunDef.CalcImpl(
+            return new LevelHierarchyFunDef.CalcImpl(
                     new DummyExp(HierarchyType.forType(type)),
                     levelCalc);
         }
@@ -149,7 +149,7 @@ public class AbstractExpCompiler implements ExpCompiler {
             final DimensionCalc dimensionCalc = compileDimension(exp);
             MemberType memberType = MemberType.forType(type);
             final MemberCalc dimensionCurrentMemberCalc =
-                    new BuiltinFunTable.DimensionCurrentMemberFunDef.CalcImpl(
+                    new DimensionCurrentMemberFunDef.CalcImpl(
                             new DummyExp(memberType),
                             dimensionCalc);
             return new MemberValueCalc(
@@ -161,7 +161,7 @@ public class AbstractExpCompiler implements ExpCompiler {
                     MemberType.forHierarchy(hierarchyType.getHierarchy());
             final HierarchyCalc hierarchyCalc = compileHierarchy(exp);
             final MemberCalc hierarchyCurrentMemberCalc =
-                    new BuiltinFunTable.HierarchyCurrentMemberFunDef.CalcImpl(
+                    new HierarchyCurrentMemberFunDef.CalcImpl(
                             new DummyExp(type), hierarchyCalc);
             return new MemberValueCalc(
                     new DummyExp(memberType.getValueType()),

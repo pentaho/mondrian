@@ -20,7 +20,7 @@ import mondrian.mdx.UnresolvedFunCall;
  * @since 2005/8/14
  * @version $Id$
  */
-class AbstractAggregateFunDef extends FunDefBase {
+public class AbstractAggregateFunDef extends FunDefBase {
     public AbstractAggregateFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
     }

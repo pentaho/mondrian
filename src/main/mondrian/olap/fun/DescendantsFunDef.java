@@ -18,34 +18,50 @@ import mondrian.olap.*;
 import mondrian.olap.type.NumericType;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
-import mondrian.resource.MondrianResource;
 import mondrian.mdx.ResolvedFunCall;
 
 /**
- * Definition of the <code>DESCENDANTS</code> MDX function.
+ * Definition of the <code>Descendants</code> MDX function.
+ *
+ * @author jhyde
+ * @version $Id$
+ * @since Mar 23, 2006
  */
 class DescendantsFunDef extends FunDefBase {
-    private final boolean self;
-    private final boolean before;
-    private final boolean after;
-    private final boolean depthSpecified;
-    private final boolean leaves;
 
-    public DescendantsFunDef(
-            FunDef dummyFunDef,
-            int flag,
-            boolean depthSpecified) {
+    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+            "Descendants",
+            "Descendants(<Member>[, <Level>[, <Desc_flag>]])",
+            "Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.",
+            new String[]{"fxm", "fxml", "fxmly", "fxmn", "fxmny"},
+            DescendantsFunDef.class,
+            Flags.instance.getNames());
+
+    public DescendantsFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
 
-        this.self = FunUtil.checkFlag(flag, Flags.SELF, true);
-        this.after = FunUtil.checkFlag(flag, Flags.AFTER, true);
-        this.before = FunUtil.checkFlag(flag, Flags.BEFORE, true);
-        this.leaves = FunUtil.checkFlag(flag, Flags.LEAVES, true);
-        this.depthSpecified = depthSpecified;
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final MemberCalc memberCalc = compiler.compileMember(call.getArg(0));
+        int flag = Flags.SELF;
+        if (call.getArgCount() == 1) {
+            flag = Flags.SELF_BEFORE_AFTER;
+        }
+        final boolean depthSpecified;
+        if (call.getArgCount() >= 2) {
+            depthSpecified = call.getArg(1).getType() instanceof NumericType;
+        } else {
+            depthSpecified = false;
+        }
+        if (call.getArgCount() >= 3) {
+            flag = FunUtil.getLiteralArg(call, 2, Flags.SELF, Flags.instance);
+        }
+        final boolean self = FunUtil.checkFlag(flag, Flags.SELF, true);
+        final boolean before = FunUtil.checkFlag(flag, Flags.BEFORE, true);
+        final boolean after = FunUtil.checkFlag(flag, Flags.AFTER, true);
+        final boolean leaves = FunUtil.checkFlag(flag, Flags.LEAVES, true);
+
         if (depthSpecified && leaves) {
             final IntegerCalc depthCalc = call.getArgCount() > 1 ?
                     compiler.compileInteger(call.getArg(1)) :
@@ -308,44 +324,6 @@ class DescendantsFunDef extends FunDefBase {
         public static final int SELF_AND_BEFORE = SELF | BEFORE;
         public static final int SELF_BEFORE_AFTER = SELF | BEFORE | AFTER;
         public static final int LEAVES = 8;
-    }
-
-    /**
-     * Resolves calls to the <code>DESCENDANTS</code> function.
-     */
-    static class Resolver extends MultiResolver {
-        public Resolver() {
-            super("Descendants",
-                "Descendants(<Member>[, <Level>[, <Desc_flag>]])",
-                "Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.",
-                new String[]{"fxm", "fxml", "fxmly", "fxmn", "fxmny"});
-        }
-
-        protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-            int flag = Flags.SELF;
-            if (args.length == 1) {
-                flag = Flags.SELF_BEFORE_AFTER;
-            }
-            final boolean depthSpecified;
-            if (args.length >= 2) {
-                depthSpecified = args[1].getType() instanceof NumericType;
-            } else {
-                depthSpecified = false;
-            }
-            if (args.length >= 3) {
-                flag = FunUtil.getLiteralArg(args, 2, Flags.SELF,
-                    Flags.instance, dummyFunDef);
-            }
-
-            return new DescendantsFunDef(
-                    dummyFunDef,
-                    flag,
-                    depthSpecified);
-        }
-
-        public String[] getReservedWords() {
-            return Flags.instance.getNames();
-        }
     }
 }
 

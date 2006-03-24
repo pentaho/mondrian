@@ -19,21 +19,33 @@ import mondrian.mdx.ResolvedFunCall;
 import java.util.*;
 
 /**
- * Definition of the <code>ORDER</code> MDX function.
+ * Definition of the <code>Order</code> MDX function.
+ *
+ * @author jhyde
+ * @version $Id$
+ * @since Mar 23, 2006
  */
 class OrderFunDef extends FunDefBase {
-    private final boolean desc;
-    private final boolean brk;
 
-    public OrderFunDef(FunDef dummyFunDef, boolean desc, boolean brk) {
+    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+            "Order",
+            "Order(<Set>, <Value Expression>[, ASC | DESC | BASC | BDESC])",
+            "Arranges members of a set, optionally preserving or breaking the hierarchy.",
+            new String[]{"fxxvy", "fxxv"},
+            OrderFunDef.class,
+            Flags.instance.getNames());
+
+    public OrderFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
-        this.desc = desc;
-        this.brk = brk;
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc = compiler.compileList(call.getArg(0));
         final Calc expCalc = compiler.compileScalar(call.getArg(1), true);
+        int order = getLiteralArg(call, 2, Flags.ASC, Flags.instance);
+        final boolean desc = Flags.isDescending(order);
+        final boolean brk = Flags.isBreak(order);
+
         if (expCalc instanceof MemberValueCalc) {
             MemberValueCalc memberValueCalc = (MemberValueCalc) expCalc;
             ArrayList constantList = new ArrayList();
@@ -59,7 +71,9 @@ class OrderFunDef extends FunDefBase {
                                 call,
                                 listCalc,
                                 new ValueCalc(
-                                        new DummyExp(expCalc.getType()))));
+                                        new DummyExp(expCalc.getType())),
+                                desc,
+                                brk));
             } else {
                 // Some members are constant. Evaluate these before evaluating
                 // the list expression.
@@ -72,33 +86,12 @@ class OrderFunDef extends FunDefBase {
                                 new MemberValueCalc(
                                         new DummyExp(expCalc.getType()),
                                         (MemberCalc[]) variableList.toArray(
-                                                new MemberCalc[variableList.size()]))));
+                                                new MemberCalc[variableList.size()])),
+                                desc,
+                                brk));
             }
         }
-        return new CalcImpl(call, listCalc, expCalc);
-    }
-
-    /**
-     * Resolves calls to the <code>ORDER</code> MDX function.
-     */
-    static class OrderResolver extends MultiResolver {
-        public OrderResolver() {
-            super("Order",
-                "Order(<Set>, <Value Expression>[, ASC | DESC | BASC | BDESC])",
-                "Arranges members of a set, optionally preserving or breaking the hierarchy.",
-                new String[]{"fxxvy", "fxxv"});
-        }
-
-        public String[] getReservedWords() {
-            return OrderFunDef.Flags.instance.getNames();
-        }
-
-        protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-            int order = getLiteralArg(args, 2, Flags.ASC, Flags.instance, dummyFunDef);
-            final boolean desc = Flags.isDescending(order);
-            final boolean brk = Flags.isBreak(order);
-            return new OrderFunDef(dummyFunDef, desc, brk);
-        }
+        return new CalcImpl(call, listCalc, expCalc, desc, brk);
     }
 
     /**
@@ -124,11 +117,15 @@ class OrderFunDef extends FunDefBase {
     private class CalcImpl extends AbstractListCalc {
         private final ListCalc listCalc;
         private final Calc expCalc;
+        private final boolean desc;
+        private final boolean brk;
 
-        public CalcImpl(ResolvedFunCall call, ListCalc listCalc, Calc expCalc) {
+        public CalcImpl(ResolvedFunCall call, ListCalc listCalc, Calc expCalc, boolean desc, boolean brk) {
             super(call, new Calc[]{listCalc, expCalc});
             this.listCalc = listCalc;
             this.expCalc = expCalc;
+            this.desc = desc;
+            this.brk = brk;
         }
 
         public List evaluateList(Evaluator evaluator) {

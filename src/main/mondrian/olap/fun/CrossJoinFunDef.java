@@ -25,9 +25,22 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Definition of the <code>CROSSJOIN</code> MDX function.
+ * Definition of the <code>CrossJoin</code> MDX function.
+ *
+ * @author jhyde
+ * @version $Id$
+ * @since Mar 23, 2006
  */
 class CrossJoinFunDef extends FunDefBase {
+    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+            "Crossjoin",
+            "Crossjoin(<Set1>, <Set2>)",
+            "Returns the cross product of two sets.",
+            new String[]{"fxxx"},
+            CrossJoinFunDef.class);
+
+    static final StarCrossJoinResolver StarResolver = new StarCrossJoinResolver();
+
     public CrossJoinFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
     }
@@ -229,6 +242,31 @@ class CrossJoinFunDef extends FunDefBase {
         return result;
     }
 
+    private static class StarCrossJoinResolver extends MultiResolver {
+        public StarCrossJoinResolver() {
+            super(
+                    "*",
+                    "<Set1> * <Set2>",
+                    "Returns the cross product of two sets.",
+                    new String[]{"ixxx", "ixmx", "ixxm", "ixmm"});
+        }
+
+        public FunDef resolve(
+                Exp[] args, Validator validator, int[] conversionCount) {
+            // This function only applies in contexts which require a set.
+            // Elsewhere, "*" is the multiplication operator.
+            // This means that [Measures].[Unit Sales] * [Gender].[M] is
+            // well-defined.
+            if (validator.requiresExpression()) {
+                return null;
+            }
+            return super.resolve(args, validator, conversionCount);
+        }
+
+        protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+            return new CrossJoinFunDef(dummyFunDef);
+        }
+    }
 }
 
 // End CrossJoinFunDef.java

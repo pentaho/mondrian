@@ -35,6 +35,7 @@ public class CacheFunDef extends FunDefBase {
     private static final String DESCRIPTION = "Evaluates and returns its sole argument, applying statement-level caching";
     private static final Syntax SYNTAX = Syntax.Internal;
     private ExpCacheDescriptor cacheDescriptor;
+    static final CacheFunResolver Resolver = new CacheFunResolver();
 
     CacheFunDef(
             String name,
