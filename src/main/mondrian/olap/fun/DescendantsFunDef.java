@@ -71,10 +71,10 @@ class DescendantsFunDef extends FunDefBase {
                     final Member member = memberCalc.evaluateMember(evaluator);
                     List result = new ArrayList();
                     int depth = depthCalc.evaluateInteger(evaluator);
-                    final SchemaReader schemaReader = evaluator.getSchemaReader();
                     if (depth < 0) {
-                        depth = Integer.MAX_VALUE;
+                        depth = -1; // no limit
                     }
+                    final SchemaReader schemaReader = evaluator.getSchemaReader();
                     descendantsLeavesByDepth(
                             member, result, schemaReader, depth);
                     hierarchize(result, false);
@@ -159,9 +159,14 @@ class DescendantsFunDef extends FunDefBase {
         }
     }
 
+    /**
+     * Populates 'result' with the descendants at the leaf level at depth
+     * 'depthLimit' or less. If 'depthLimit' is -1, does not apply a depth
+     * constraint.
+     */
     private static void descendantsLeavesByDepth(
-            Member member,
-            List result,
+            final Member member,
+            final List result,
             final SchemaReader schemaReader,
             final int depthLimit) {
         if (!schemaReader.isDrillable(member)) {
@@ -171,7 +176,7 @@ class DescendantsFunDef extends FunDefBase {
             return;
         }
         Member[] children = {member};
-        for (int depth = 0; depth <= depthLimit; ++depth) {
+        for (int depth = 0; depthLimit == -1 || depth <= depthLimit; ++depth) {
             children = schemaReader.getMemberChildren(children);
             if (children.length == 0) {
                 throw Util.newInternal("drillable member must have children");
@@ -179,6 +184,10 @@ class DescendantsFunDef extends FunDefBase {
             List nextChildren = new ArrayList();
             for (int i = 0; i < children.length; i++) {
                 Member child = children[i];
+                // TODO: Implement this more efficiently. The current
+                // implementation of isDrillable for a parent-child hierarchy
+                // simply retrieves the children sees whether there are any,
+                // so we end up fetching each member's children twice.
                 if (schemaReader.isDrillable(child)) {
                     nextChildren.add(child);
                 } else {
@@ -186,7 +195,7 @@ class DescendantsFunDef extends FunDefBase {
                 }
             }
             if (nextChildren.isEmpty()) {
-                break;
+                return;
             }
             children = (Member[])
                     nextChildren.toArray(new Member[nextChildren.size()]);

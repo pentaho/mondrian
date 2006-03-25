@@ -2682,8 +2682,12 @@ public class FunctionTest extends FoodMartTestCase {
         testContext.assertExprReturns("Count(Descendants([Employees], 3, LEAVES))", "16");
         testContext.assertExprReturns("Count(Descendants([Employees], 4, LEAVES))", "63");
         testContext.assertExprReturns("Count(Descendants([Employees], 999, LEAVES))", "1,044");
+
         // negative depth acts like +infinity (per MSAS)
-        testContext.assertExprReturns("Count(Descendants([Employees], -1, LEAVES))", "1,044");
+        // Run the test several times because we had a non-deterministic bug here.
+        for (int i = 0; i < 100; ++i) {
+            testContext.assertExprReturns("Count(Descendants([Employees], -1, LEAVES))", "1,044");
+        }
     }
 
     public void testDescendantsSBA() throws Exception {
