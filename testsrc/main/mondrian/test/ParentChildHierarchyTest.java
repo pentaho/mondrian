@@ -521,6 +521,42 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         }
         assertEquals(expectedSql, sql);
     }
+
+    /**
+     * Testcase for bug 1459995, "NullPointerException in
+     * RolapEvaluator.setContext(....)".
+     */
+    public void testBug1459995() {
+        assertQueryReturns(
+                "select \n" +
+                "     {[Employee Salary]} on columns, \n" +
+                "     {[Employees]} on rows \n" +
+                "from [HR]",
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Employee Salary]}",
+                    "Axis #2:",
+                    "{[Employees].[All Employees]}",
+                    "Row #0: (null)",
+                    ""}));
+
+        assertQueryReturns(
+                "select \n" +
+                "     {[Position]} on columns,\n" +
+                "     {[Employee Salary]} on rows\n" +
+                "from [HR]",
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Position].[All Position]}",
+                    "Axis #2:",
+                    "{[Measures].[Employee Salary]}",
+                    "Row #0: (null)",
+                    ""}));
+    }
 }
 
 // End ParentChildHierarchyTest.java
