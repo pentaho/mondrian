@@ -239,8 +239,13 @@ public class Scanner {
         return makeSymbol(i, s);
     }
 
-    private Symbol makeString( String s ) {
-        return makeSymbol(ParserSym.STRING, s);
+    private Symbol makeString(String s) {
+        if (inFormula) {
+            inFormula = false;
+            return makeSymbol(ParserSym.FORMULA_STRING, s);
+        } else {
+            return makeSymbol(ParserSym.STRING, s);
+        }
     }
 
     /**
@@ -490,14 +495,8 @@ public class Scanner {
                 }
 
             case '\'':
-                if (inFormula) {
-                    inFormula = false;
-                    advance();
-                    return makeToken(ParserSym.QUOTE, "'");
-                } else if (previousSymbol == ParserSym.AS) {
+                if (previousSymbol == ParserSym.AS) {
                     inFormula = true;
-                    advance();
-                    return makeToken(ParserSym.QUOTE, "'");
                 }
 
                 /* parse a single-quoted string */

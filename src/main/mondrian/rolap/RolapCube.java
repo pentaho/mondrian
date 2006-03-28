@@ -462,10 +462,9 @@ public class RolapCube extends CubeBase {
         buf.append("SET ")
                 .append(Util.makeFqName(xmlNamedSet.name))
                 .append(Util.nl)
-                .append(" AS '")
-                .append(xmlNamedSet.getFormula())
-                .append("'")
-                .append(Util.nl);
+                .append(" AS ");
+        Util.singleQuoteString(xmlNamedSet.getFormula(), buf);
+        buf.append(Util.nl);
     }
 
     private void postCalcMember(
@@ -551,7 +550,8 @@ public class RolapCube extends CubeBase {
         assert memberUniqueName.startsWith("[");
         buf.append("MEMBER ").append(memberUniqueName)
                 .append(Util.nl)
-                .append("  AS ").append(xmlCalcMember.getFormula());
+                .append("  AS ");
+        Util.singleQuoteString(xmlCalcMember.getFormula(), buf);
 
         assert propNames.size() == propExprs.size();
 

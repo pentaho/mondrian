@@ -491,6 +491,209 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                     "Row #0: |533,546|style=red",
                     ""}));
     }
+
+    public void testCalcMemberWithQuote() {
+        // single-quote inside double-quoted string literal
+        // MSAS does not allow this
+        assertThrows(
+                "with member [Measures].[Foo] as ' \"quoted string with 'apostrophe' in it\" ' " +
+                "select {[Measures].[Foo]} on columns " +
+                "from [Sales]",
+                "Syntax error at line 1, column 57, token 'apostrophe'");
+
+        // Escaped single quote in double-quoted string literal inside
+        // single-quoted member declaration.
+        assertQueryReturns(
+                "with member [Measures].[Foo] as ' \"quoted string with ''apostrophe'' in it\" ' " +
+                "select {[Measures].[Foo]} on columns " +
+                "from [Sales]",
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Foo]}",
+                    "Row #0: quoted string with 'apostrophe' in it",
+                    ""}));
+
+        // escaped double-quote inside double-quoted string literal
+        assertQueryReturns(
+                "with member [Measures].[Foo] as ' \"quoted string with \"\"double-quote\"\" in it\" ' " +
+                "select {[Measures].[Foo]} on columns " +
+                "from [Sales]",
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Foo]}",
+                    "Row #0: quoted string with \"double-quote\" in it",
+                    ""}));
+
+        // escaped double-quote inside double-quoted string literal
+        assertQueryReturns(
+                "with member [Measures].[Foo] as \"quoted string with 'apos' in it\" " +
+                "select {[Measures].[Foo]} on columns " +
+                "from [Sales]",
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Foo]}",
+                    "Row #0: quoted string with 'apos' in it",
+                    ""}));
+
+        // Double-escaped single-quote
+        // inside escaped single-quoted string literal
+        // inside single-quoted formula.
+        // MSAS does not allow this, but I think it should.
+        assertQueryReturns(
+                "with member [Measures].[Foo] as ' ''quoted string and ''''apos''''.'' ' " +
+                "select {[Measures].[Foo]} on columns " +
+                "from [Sales]",
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Foo]}",
+                    "Row #0: quoted string and 'apos'.",
+                    ""}));
+
+        // Escaped single-quote
+        // inside double-quoted string literal
+        // inside single-quoted formula.
+        assertQueryReturns(
+                "with member [Measures].[Foo] as ' \"quoted string and ''apos''.\" ' " +
+                "select {[Measures].[Foo]} on columns " +
+                "from [Sales]",
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Foo]}",
+                    "Row #0: quoted string and 'apos'.",
+                    ""}));
+
+        // single quote in format expression
+        assertQueryReturns(
+                "with member [Measures].[Colored Profit] as  ' [Measures].[Store Sales] - [Measures].[Store Cost] ', " +
+                "  FORMAT_STRING = Iif([Measures].[Colored Profit] < 0, '|($#,##0.00)|style=red', '|$#,##0.00|style=green') " +
+                "select {[Measures].[Colored Profit]} on columns," +
+                " {[Product].Children} on rows " +
+                "from [Sales]",
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Colored Profit]}",
+                    "Axis #2:",
+                    "{[Product].[All Products].[Drink]}",
+                    "{[Product].[All Products].[Food]}",
+                    "{[Product].[All Products].[Non-Consumable]}",
+                    "Row #0: |$29,358.98|style=green",
+                    "Row #1: |$245,764.87|style=green",
+                    "Row #2: |$64,487.05|style=green",
+                    ""}));
+
+        // double quote in format expression
+        assertQueryReturns(
+                "with member [Measures].[Colored Profit] as  ' [Measures].[Store Sales] - [Measures].[Store Cost] ', " +
+                "  FORMAT_STRING = Iif([Measures].[Colored Profit] < 0, \"|($#,##0.00)|style=red\", \"|$#,##0.00|style=green\") " +
+                "select {[Measures].[Colored Profit]} on columns," +
+                " {[Product].Children} on rows " +
+                "from [Sales]",
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Colored Profit]}",
+                    "Axis #2:",
+                    "{[Product].[All Products].[Drink]}",
+                    "{[Product].[All Products].[Food]}",
+                    "{[Product].[All Products].[Non-Consumable]}",
+                    "Row #0: |$29,358.98|style=green",
+                    "Row #1: |$245,764.87|style=green",
+                    "Row #2: |$64,487.05|style=green",
+                    ""}));
+    }
+
+    /**
+     * Testcase for <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1410383&group_id=35302&atid=414613">
+     * bug 1410383, "error if calc member in schema file contains single quotes"</a>.
+     */
+    public void testQuoteInCalcMember() {
+        Schema schema = getConnection().getSchema();
+        final String cubeName = "Sales_Bug1410383";
+        schema.createCube(fold(new String[] {
+                "<Cube name=\"" + cubeName + "\">",
+                "  <Table name=\"sales_fact_1997\"/>",
+                "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">",
+                "    <Hierarchy hasAll=\"false\" primaryKey=\"customer_id\">",
+                "    <Table name=\"customer\"/>",
+                "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>",
+                "    </Hierarchy>",
+                "  </Dimension>",
+                "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"",
+                "      formatString=\"Standard\" visible=\"false\"/>",
+                "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"",
+                "      formatString=\"Standard\" visible=\"false\"/>",
+                "  <CalculatedMember",
+                "      name=\"Apos in dq\"",
+                "      dimension=\"Measures\"",
+                "      visible=\"false\"",
+                "      formula=\" &quot;an 'apos' in dq&quot; \" />",
+                "  <CalculatedMember",
+                "      name=\"Dq in dq\"",
+                "      dimension=\"Measures\"",
+                "      visible=\"false\"",
+                "      formula=\" &quot;a &quot;&quot;dq&quot;&quot; in dq&quot; \" />",
+                "  <CalculatedMember",
+                "      name=\"Apos in apos\"",
+                "      dimension=\"Measures\"",
+                "      visible=\"false\"",
+                "      formula=\" &apos;an &apos;&apos;apos&apos;&apos; in apos&apos; \" />",
+                "  <CalculatedMember",
+                "      name=\"Dq in apos\"",
+                "      dimension=\"Measures\"",
+                "      visible=\"false\"",
+                "      formula=\" &apos;a &quot;dq&quot; in apos&apos; \" />",
+                "  <CalculatedMember",
+                "      name=\"Colored Profit\"",
+                "      dimension=\"Measures\"",
+                "      visible=\"false\"",
+                "      formula=\" [Measures].[Store Sales] - [Measures].[Store Cost] \">",
+                "    <CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"Iif([Measures].[Colored Profit] &lt; 0, '|($#,##0.00)|style=red', '|$#,##0.00|style=green')\"/>",
+                "  </CalculatedMember>",
+                "</Cube>"}));
+
+        getTestContext(cubeName).assertQueryReturns(
+                fold(new String[] {
+                    "select {[Measures].[Apos in dq], [Measures].[Dq in dq], [Measures].[Apos in apos], [Measures].[Dq in apos], [Measures].[Colored Profit]} on columns,",
+                    " {[Gender].Members} on rows",
+                    "from [" + cubeName + "]"}),
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Apos in dq]}",
+                    "{[Measures].[Dq in dq]}",
+                    "{[Measures].[Apos in apos]}",
+                    "{[Measures].[Dq in apos]}",
+                    "{[Measures].[Colored Profit]}",
+                    "Axis #2:",
+                    "{[Gender].[F]}",
+                    "{[Gender].[M]}",
+                    "Row #0: an 'apos' in dq",
+                    "Row #0: a \"dq\" in dq",
+                    "Row #0: an 'apos' in apos",
+                    "Row #0: a \"dq\" in apos",
+                    "Row #0: |$168,448.73|style=green",
+                    "Row #1: an 'apos' in dq",
+                    "Row #1: a \"dq\" in dq",
+                    "Row #1: an 'apos' in apos",
+                    "Row #1: a \"dq\" in apos",
+                    "Row #1: |$171,162.17|style=green",
+                    ""}));
+    }
+
 }
 
 // End CalculatedMembersTestCase.java

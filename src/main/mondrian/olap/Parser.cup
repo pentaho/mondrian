@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1999-2005 Kana Software, Inc. and others.
+// Copyright (C) 1999-2002 Kana Software, Inc.
+// Copyright (C) 2002-2006 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,6 +27,15 @@ parser code {:
     private String queryString;
     private Connection mdxConnection;
     private FunTable funTable;
+
+    /**
+      * Recursively parses an expression.
+      */
+    Exp recursivelyParseExp(String s)
+    {
+        return new Parser().parseExpression(
+            mdxConnection, s, false, funTable);
+    }
 
     /**
       * Parses a string to create a {@link Query}.
@@ -223,7 +233,6 @@ terminal
     ON,
     OR,
     PROPERTIES,
-    QUOTE,
     SELECT,
     SET,
     THEN,
@@ -260,6 +269,7 @@ terminal String ID;
 terminal String QUOTED_ID;
 terminal String AMP_QUOTED_ID;
 terminal String STRING;
+terminal String FORMULA_STRING;
 terminal String UNKNOWN; // a token the lexer doesn't like!
 
 // Non terminals
@@ -1193,8 +1203,9 @@ single_formula_specification ::=
 //                                 [, <solve_order_specification>]
 //                                 [, <member_property_definition>...]
 member_specification ::=
-        MEMBER member_name:m AS QUOTE value_expression:e QUOTE
+        MEMBER member_name:m AS FORMULA_STRING:s
         comma_member_property_def_list_opt:l {:
+            Exp e = parser.recursivelyParseExp(s);
             RESULT = new Formula(
                 m.toStringArray(),
                 e,
@@ -1259,11 +1270,12 @@ member_property_definition ::=
 //
 // <set_specification> ::= SET <set_name> AS <set>
 set_specification ::=
-        SET set_name:s AS QUOTE expression:e QUOTE {:
-            RESULT = new Formula(s.toStringArray(), e);
+        SET set_name:n AS FORMULA_STRING:s {:
+            Exp e = parser.recursivelyParseExp(s);
+            RESULT = new Formula(n.toStringArray(), e);
         :}
-    |   SET set_name:s AS expression:e {:
-            RESULT = new Formula(s.toStringArray(), e);
+    |   SET set_name:n AS expression:e {:
+            RESULT = new Formula(n.toStringArray(), e);
         :}
     ;
 //
