@@ -368,7 +368,7 @@ public class FunctionTest extends FoodMartTestCase {
                 "{[Store]}");
     }
 
-    public void testOrdinal() throws Exception {
+    public void testOrdinal() {
         final TestContext testContext = getTestContext("Sales Ragged");
         Cell cell = testContext.executeExprRaw("[Store].[All Stores].[Vatican].ordinal");
         assertEquals("Vatican is at level 1.", 1, ((Number)cell.getValue()).intValue());
@@ -1149,7 +1149,7 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertEquals("Unit Sales", member.getName());
     }
 
-    public void testDrilldownLevel() throws Exception {
+    public void testDrilldownLevel() {
         // Expect all children of USA
         assertAxisReturns("DrilldownLevel({[Store].[USA]}, [Store].[Store Country])",
                 fold(new String[] {
@@ -1179,7 +1179,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
 
-    public void testDrilldownMember() throws Exception {
+    public void testDrilldownMember() {
 
         // Expect all children of USA
         assertAxisReturns("DrilldownMember({[Store].[USA]}, {[Store].[USA]})",
@@ -1941,9 +1941,9 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Promotion Media].[All Media], [Product].[All Products].[Non-Consumable]}" }));
     }
 
-    /** 
+    /**
      * Tests that TopPercent() operates succesfully on a
-     * axis of crossjoined tuples.  previously, this would 
+     * axis of crossjoined tuples.  previously, this would
      * fail with a ClassCastException in FunUtil.java.  bug 1440306
      */
     public void testTopPercentCrossjoin() {
@@ -2690,7 +2690,7 @@ public class FunctionTest extends FoodMartTestCase {
         }
     }
 
-    public void testDescendantsSBA() throws Exception {
+    public void testDescendantsSBA() {
         assertAxisReturns("Descendants([Time].[1997], 1, SELF_BEFORE_AFTER)",
                 hierarchized1997);
     }
@@ -2927,7 +2927,7 @@ public class FunctionTest extends FoodMartTestCase {
                 allDimsExcept(new String[] {"[Measures]", "[Time]"}));
     }
 
-    public void testCoalesceEmpty() throws Exception {
+    public void testCoalesceEmpty() {
         // [DF] is all null and [WA] has numbers for 1997 but not for 1998.
         Result result = executeQuery(
                 fold(new String[] {
@@ -2950,7 +2950,17 @@ public class FunctionTest extends FoodMartTestCase {
 
         result = executeQuery(
                 fold(new String[] {
-                    "with", "    member Measures.[Sales Per Customer] as 'Measures.[Sales Count] / Measures.[Customer Count]'", "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),", "        Measures.[Sales Per Customer])'", "select ", "    {Measures.[Sales Per Customer], Measures.[Coal]} on columns,", "    {[Store].[All Stores].[Mexico].[DF], [Store].[All Stores].[USA].[WA]} on rows", "from ", "    [Sales]", "where", "    ([Time].[1997].[Q2])"}));
+                    "with",
+                    "    member Measures.[Sales Per Customer] as 'Measures.[Sales Count] / Measures.[Customer Count]'",
+                    "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),",
+                    "        Measures.[Sales Per Customer])'",
+                    "select ",
+                    "    {Measures.[Sales Per Customer], Measures.[Coal]} on columns,",
+                    "    {[Store].[All Stores].[Mexico].[DF], [Store].[All Stores].[USA].[WA]} on rows",
+                    "from ",
+                    "    [Sales]",
+                    "where",
+                    "    ([Time].[1997].[Q2])"}));
 
         checkDataResults(new Double[][] {
             { null, null },
@@ -2961,7 +2971,24 @@ public class FunctionTest extends FoodMartTestCase {
 
         result = executeQuery(
                 fold(new String[] {
-                    "with", "    member Measures.[Sales Per Customer] as 'Measures.[Sales Count] / Measures.[Customer Count]'", "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),", "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),", "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),", "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),", "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),", "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),", "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),", "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),", "        Measures.[Sales Per Customer])'", "select ", "    {Measures.[Sales Per Customer], Measures.[Coal]} on columns,", "    {[Store].[All Stores].[Mexico].[DF], [Store].[All Stores].[USA].[WA]} on rows", "from ", "    [Sales]", "where", "    ([Time].[1997].[Q2])"}));
+                    "with",
+                    "    member Measures.[Sales Per Customer] as 'Measures.[Sales Count] / Measures.[Customer Count]'",
+                    "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),",
+                    "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),",
+                    "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),",
+                    "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),",
+                    "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),",
+                    "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),",
+                    "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),",
+                    "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),",
+                    "        Measures.[Sales Per Customer])'",
+                    "select ",
+                    "    {Measures.[Sales Per Customer], Measures.[Coal]} on columns,",
+                    "    {[Store].[All Stores].[Mexico].[DF], [Store].[All Stores].[USA].[WA]} on rows",
+                    "from ",
+                    "    [Sales]",
+                    "where",
+                    "    ([Time].[1997].[Q2])"}));
 
         checkDataResults(new Double[][] {
             { null, null },
@@ -2971,7 +2998,7 @@ public class FunctionTest extends FoodMartTestCase {
                 0.001);
     }
 
-    public void testBrokenContextBug() throws Exception {
+    public void testBrokenContextBug() {
         Result result = executeQuery(
                 fold(new String[] {
                     "with",
@@ -2990,7 +3017,10 @@ public class FunctionTest extends FoodMartTestCase {
 
     }
 
-    public void testSetItem() throws Exception {
+    /**
+     * Tests the function <code>&lt;Set&gt;.Item(&lt;Integer&gt;)</code>.
+     */
+    public void testSetItemInt() {
         assertAxisReturns("{[Customers].[All Customers].[USA].[OR].[Lebanon].[Mary Frances Christian]}.Item(0)",
                 "[Customers].[All Customers].[USA].[OR].[Lebanon].[Mary Frances Christian]");
 
@@ -3028,6 +3058,33 @@ public class FunctionTest extends FoodMartTestCase {
                 "");
     }
 
+    /**
+     * Tests the function <code>&lt;Set&gt;.Item(&lt;String&gt; [,...])</code>.
+     */
+    public void testSetItemString() {
+        assertAxisReturns("{[Gender].[M], [Gender].[F]}.Item(\"M\")",
+                "[Gender].[All Gender].[M]");
+
+        assertAxisReturns("{CrossJoin([Gender].Members, [Marital Status].Members)}.Item(\"M\", \"S\")",
+                "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}");
+
+        // MSAS fails with "duplicate dimensions across (independent) axes".
+        // (That's a bug in MSAS.)
+        assertAxisReturns("{CrossJoin([Gender].Members, [Marital Status].Members)}.Item(\"M\", \"M\")",
+                "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}");
+
+        // None found.
+        assertAxisReturns("{[Gender].[M], [Gender].[F]}.Item(\"X\")",
+                "");
+        assertAxisReturns("{CrossJoin([Gender].Members, [Marital Status].Members)}.Item(\"M\", \"F\")",
+                "");
+        assertAxisReturns("CrossJoin([Gender].Members, [Marital Status].Members).Item(\"S\", \"M\")",
+                "");
+
+        assertAxisThrows("CrossJoin([Gender].Members, [Marital Status].Members).Item(\"M\")",
+                "Argument count does not match set's cardinality 2");
+    }
+
     public void testTuple() {
         assertExprReturns(
                 "([Gender].[M], [Time].Children.Item(2), [Measures].[Unit Sales])",
@@ -3039,7 +3096,7 @@ public class FunctionTest extends FoodMartTestCase {
                 "MemberValueCalc([Gender].[All Gender].[M], Item(Children(CurrentMember([Time])), 2.0), [Measures].[Unit Sales])");
     }
 
-    public void testTupleItem() throws Exception {
+    public void testTupleItem() {
         assertAxisReturns(
                 "([Time].[1997].[Q1].[1], [Customers].[All Customers].[USA].[OR], [Gender].[All Gender].[M]).item(2)",
                 "[Gender].[All Gender].[M]");
@@ -3182,7 +3239,7 @@ public class FunctionTest extends FoodMartTestCase {
         }
     }
 
-    public void testLevelMemberExpressions() throws Exception {
+    public void testLevelMemberExpressions() {
         // Should return Beverly Hills in California.
         assertAxisReturns("[Store].[Store City].[Beverly Hills]",
                 "[Store].[All Stores].[USA].[CA].[Beverly Hills]");
@@ -3290,7 +3347,7 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertEquals("(null)", cell.getFormattedValue());
     }
 
-    public void testOpeningPeriod() throws Exception {
+    public void testOpeningPeriod() {
         assertAxisReturns("OpeningPeriod([Time].[Month], [Time].[1997].[Q3])",
                 "[Time].[1997].[Q3].[7]");
 
@@ -3333,7 +3390,7 @@ public class FunctionTest extends FoodMartTestCase {
                 + "the member was from '[Time]'.");
     }
 
-    public void testLastPeriods() throws Exception {
+    public void testLastPeriods() {
         assertAxisReturns("LastPeriods(0, [Time].[1998])",
                 "");
         assertAxisReturns("LastPeriods(1, [Time].[1998])",
@@ -3457,7 +3514,8 @@ public class FunctionTest extends FoodMartTestCase {
         assertAxisReturns("LastPeriods(2, [Gender].Parent)",
                 "");
     }
-    public void testParallelPeriod() throws Exception {
+
+    public void testParallelPeriod() {
         assertAxisReturns("parallelperiod([Time].[Quarter], 1, [Time].[1998].[Q1])",
                 "[Time].[1997].[Q4]");
 
@@ -3539,7 +3597,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: [Time].[#Null]" + nl}));
     }
 
-    public void _testParallelPeriodThrowsException() throws Exception {
+    public void _testParallelPeriodThrowsException() {
         assertThrows("select {parallelperiod([Time].[Year], 1)} on columns "
                 + "from [Sales] where ([Time].[1998].[Q1].[2])",
                 "This should say something about Time appearing on two different axes (slicer an columns)");
@@ -3564,7 +3622,7 @@ public class FunctionTest extends FoodMartTestCase {
                 allDimsExcept(new String[] {"[Gender]"}));
     }
 
-    public void testParallelPeriodLevelLag() throws Exception {
+    public void testParallelPeriodLevelLag() {
         assertQueryReturns(
                 "with member [Measures].[Prev Unit Sales] as "
                 + "        '([Measures].[Unit Sales], parallelperiod([Time].[Quarter], 2))' "
@@ -3590,7 +3648,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     }
 
-    public void testParallelPeriodLevel() throws Exception {
+    public void testParallelPeriodLevel() {
         assertQueryReturns("with "
                 + "    member [Measures].[Prev Unit Sales] as "
                 + "        '([Measures].[Unit Sales], parallelperiod([Time].[Quarter]))' "
@@ -4930,7 +4988,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Store].[All Stores].[USA], [Product].[All Products].[Drink]}"}));
     }
 
-    public void testToggleDrillStateRecursive() throws Exception {
+    public void testToggleDrillStateRecursive() {
         // We expect this to fail.
         assertThrows(
                 fold(new String [] {

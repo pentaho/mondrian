@@ -149,6 +149,9 @@ public class FunInfo implements Comparable {
 
     private static List toList(Object a) {
         final ArrayList list = new ArrayList();
+        if (a == null) {
+            return list;
+        }
         final int length = Array.getLength(a);
         for (int i = 0; i < length; i++) {
             final Object o = Array.get(a, i);

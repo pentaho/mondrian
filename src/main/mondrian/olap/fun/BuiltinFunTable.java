@@ -1515,7 +1515,8 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(SetItemFunDef.instance);
+        define(SetItemFunDef.intResolver);
+        define(SetItemFunDef.stringResolver);
         define(TupleItemFunDef.instance);
         define(StrToTupleFunDef.instance);
 
