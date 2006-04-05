@@ -126,6 +126,10 @@ public class MondrianFoodMartLoader {
 
 
     public MondrianFoodMartLoader(String[] args) {
+	if (args.length == 0) {
+	    usage();
+	    return;
+	}
 
         StringBuffer errorMessage = new StringBuffer();
         StringBuffer parametersMessage = new StringBuffer();
