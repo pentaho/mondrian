@@ -117,8 +117,8 @@ public class XmlaHandler implements XmlaConstants {
         }
     }
 
-    private void execute(XmlaRequest request, XmlaResponse response)
-            throws XmlaException {
+    private void checkFormat(XmlaRequest request) throws XmlaException {
+
         // Check response's rowset format in request
         String propertyName = null;
         try {
@@ -134,14 +134,14 @@ public class XmlaHandler implements XmlaConstants {
                         new UnsupportedOperationException("<Format>: only 'Tabular' allowed when drilling through"));
                 }
             } else {
-System.out.println("XmlaHandler.execute: TODO NOT checking format");
+//System.out.println("XmlaHandler.execute: TODO NOT checking format");
                 propertyName = PropertyDefinition.Format.name;
                 final String formatName = (String) request.getProperties().get(propertyName);
                 if (formatName != null) {
                     Enumeration.Format format = Enumeration.Format.getValue(formatName);
                     if (format != Enumeration.Format.Multidimensional) {
-System.out.println("XmlaHandler.execute: format NOT Enumeration.Format.Multidimensional");
-                    //    throw new UnsupportedOperationException("<Format>: only 'Multidimensional' currently supported");
+//System.out.println("XmlaHandler.execute: format NOT Enumeration.Format.Multidimensional");
+                    throw new UnsupportedOperationException("<Format>: only 'Multidimensional' currently supported");
                     }
                 }
                 propertyName = PropertyDefinition.AxisFormat.name;
@@ -150,8 +150,8 @@ System.out.println("XmlaHandler.execute: format NOT Enumeration.Format.Multidime
                     Enumeration.AxisFormat axisFormat = Enumeration.AxisFormat.getValue(axisFormatName);
 
                     if (axisFormat != Enumeration.AxisFormat.TupleFormat) {
-System.out.println("XmlaHandler.execute: axisFormat NOT Enumeration.AxisFormat.TupleFormat");
-                    //    throw new UnsupportedOperationException("<AxisFormat>: only 'TupleFormat' currently supported");
+//System.out.println("XmlaHandler.execute: axisFormat NOT Enumeration.AxisFormat.TupleFormat");
+                    throw new UnsupportedOperationException("<AxisFormat>: only 'TupleFormat' currently supported");
                     }
                 }
             }
@@ -165,6 +165,11 @@ System.out.println("XmlaHandler.execute: axisFormat NOT Enumeration.AxisFormat.T
                 new UnsupportedOperationException(
                     "Property <" + propertyName + "> must be provided"));
         }
+    }
+
+    private void execute(XmlaRequest request, XmlaResponse response)
+            throws XmlaException {
+
         final String contentName =
             (String) request.getProperties().get(PropertyDefinition.Content.name);
         // default value is SchemaData
@@ -760,6 +765,9 @@ System.out.println("XmlaHandler.execute: axisFormat NOT Enumeration.AxisFormat.T
 
     private QueryResult executeDrillThroughQuery(XmlaRequest request)
             throws XmlaException {
+
+        checkFormat(request);
+
         final String statement = request.getStatement();
         final Connection connection = getConnection(request);
         final Query query = connection.parseQuery(statement);
@@ -926,6 +934,8 @@ System.out.println("XmlaHandler.execute: axisFormat NOT Enumeration.AxisFormat.T
         if ((statement == null) || (statement.length() == 0)) {
             return null;
         } else {
+            checkFormat(request);
+
             final Connection connection = getConnection(request);
             final Query query;
             try {
