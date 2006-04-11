@@ -81,6 +81,7 @@ public class SimpleTestRunner {
         String classname = null;
         TestCase testcase = null;
         boolean quiet = false;
+        boolean explicitMethods = false;
 
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
@@ -97,20 +98,8 @@ public class SimpleTestRunner {
                     usage("Must supply TestCase classname after -c");
                 }
                 classname = args[i];
-                try {
-                    // maybe it has a no argument constructor
-                    testcase = makeTestCase(classname);
-                } catch (InstantiationException ex) {
-                    String msg = "InstantiationException: " +
-                        "most likely the test class does not have a " +
-                        "zero-parameter, public constructor.";
-                    System.out.println(msg);
-                    System.exit(1);
-                } catch (Exception ex) {
-                    testcase = null;
-                    // ignore
-                }
             } else {
+                explicitMethods = true;
                 String methodname = arg;
 
                 if (testcase == null) {
@@ -138,22 +127,42 @@ public class SimpleTestRunner {
                 testcase = null;
             }
         }
-        if (testcase != null) {
-            TestSuite suite = new TestSuite(testcase.getClass());
-            TestResult tr = new TestResult();
-
-            suite.run(tr);
-            System.out.println("Test Class: " +classname);
-            System.out.println("  Method Count : " +tr.runCount());
-            System.out.println("  Error Count : " +tr.errorCount());
-            if (tr.errorCount() != 0) {
-                Enumeration e = tr.errors();
-                outputErrorInfo(e, quiet);
+        if ( ! explicitMethods) {
+            if (classname == null) {
+                usage("Must supply TestCase classname");
             }
-            System.out.println("  Failure Count : " +tr.failureCount());
-            if (tr.failureCount() != 0) {
-                Enumeration e = tr.failures();
-                outputErrorInfo(e, quiet);
+            if (testcase == null) {
+                try {
+                    // maybe it has a no argument constructor
+                    testcase = makeTestCase(classname);
+                } catch (InstantiationException ex) {
+                    String msg = "InstantiationException: " +
+                        "most likely the test class does not have a " +
+                        "zero-parameter, public constructor.";
+                    System.out.println(msg);
+                    System.exit(1);
+                } catch (Exception ex) {
+                    testcase = null;
+                    // ignore
+                }
+            }
+            if (testcase != null) {
+                TestSuite suite = new TestSuite(testcase.getClass());
+                TestResult tr = new TestResult();
+
+                suite.run(tr);
+                System.out.println("Test Class: " +classname);
+                System.out.println("  Method Count : " +tr.runCount());
+                System.out.println("  Error Count : " +tr.errorCount());
+                if (tr.errorCount() != 0) {
+                    Enumeration e = tr.errors();
+                    outputErrorInfo(e, quiet);
+                }
+                System.out.println("  Failure Count : " +tr.failureCount());
+                if (tr.failureCount() != 0) {
+                    Enumeration e = tr.failures();
+                    outputErrorInfo(e, quiet);
+                }
             }
         }
     }

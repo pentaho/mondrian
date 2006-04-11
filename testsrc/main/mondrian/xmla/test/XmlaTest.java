@@ -49,7 +49,7 @@ public class XmlaTest extends TestCase {
 
     public XmlaTest(String name) {
         super(name);
-        testFile = null;
+        testFile = findFile(name);;
     }
 
     public XmlaTest(File file) {
@@ -57,8 +57,20 @@ public class XmlaTest extends TestCase {
         testFile = file;
     }
 
+    protected File findFile(String filename) {
+        File[] files = context.retrieveQueryFiles();
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
+            if (file.getName().equals(filename)) {
+                return file;
+            }
+        }
+        return null;
+    }
+
     protected void runTest() throws Exception {
-        Element[] xmlaCyclePair = XmlaTestContext.extractXmlaCycle(testFile, XmlaTestContext.ENV);
+        Element[] xmlaCyclePair = 
+            XmlaTestContext.extractXmlaCycle(testFile, XmlaTestContext.ENV);
         Element requestElem = xmlaCyclePair[0];
         Element expectedResponseElem = xmlaCyclePair[1];
         Element responseElem = executeRequest(requestElem);

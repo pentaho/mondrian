@@ -11,20 +11,45 @@
 package mondrian.tui;
 
 import mondrian.olap.Category;
-import mondrian.olap.*;
+import mondrian.olap.Cube;
+import mondrian.olap.OlapElement;
+import mondrian.olap.Parameter;
+import mondrian.olap.Connection;
+import mondrian.olap.DriverManager;
+import mondrian.olap.Dimension;
+import mondrian.olap.Member;
+import mondrian.olap.Query;
+import mondrian.olap.FunTable;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Result;
+import mondrian.olap.Util;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.fun.FunInfo;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.rolap.RolapCube;
 import org.apache.log4j.Level;
-import org.apache.log4j.*;
-import org.eigenbase.util.property.*;
+import org.apache.log4j.Logger;
+import org.apache.log4j.LogManager;
 import org.eigenbase.util.property.Property;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.Reader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.lang.reflect.Field;
@@ -92,7 +117,7 @@ public class CmdRunner {
         for (int i = 0; i < cubes.length; i++) {
             Cube cube = cubes[i];
             RolapCube rcube = (RolapCube) cube;
-            rcube.setCache(false);
+            rcube.setCacheAggregations(false);
         }
     }
 
@@ -472,7 +497,7 @@ public class CmdRunner {
             buf.append(rcube.getStar().getFactTable().getAlias());
             buf.append(nl);
             buf.append("caching=");
-            buf.append(rcube.isCache());
+            buf.append(rcube.isCacheAggregations());
             buf.append(nl);
         }
     }
@@ -489,7 +514,7 @@ public class CmdRunner {
         } else {
             if (command.equals("clearCache")) {
                 RolapCube rcube = (RolapCube) cube;
-                rcube.clearCache();
+                rcube.clearCachedAggregations();
             } else {
                 buf.append("For cube \"");
                 buf.append(cubename);
@@ -513,7 +538,8 @@ public class CmdRunner {
         } else {
             if (name.equals("caching")) {
                 RolapCube rcube = (RolapCube) cube;
-                rcube.setCache(Boolean.valueOf(value).booleanValue());
+                boolean isCache = Boolean.valueOf(value).booleanValue();
+                rcube.setCacheAggregations(isCache);
             } else {
                 buf.append("For cube \"");
                 buf.append(cubename);
@@ -558,6 +584,28 @@ public class CmdRunner {
             }
             start = System.currentTimeMillis();
             result = this.connection.execute(query);
+/*
+// RME START
+int len = query.axes.length;
+System.out.println("CmdRunner.runQuery: len=" +len);
+for (int i = 0; i < len; i++) {
+    Hierarchy[] hs = query.getMdxHierarchiesOnAxis(i);
+    if (hs == null) {
+        System.out.println("CmdRunner.runQuery: got null i=" +i);
+    } else {
+        for (int j = 0; j < hs.length; j++) {
+            Hierarchy h = hs[j];
+            System.out.print("CmdRunner.runQuery: j=" +j);
+            if (h == null) {
+                System.out.println(": got null");
+            } else {
+                System.out.println(": h=" +h.getName());
+            }
+        }
+    }
+}
+// RME END
+*/
         } finally {
             CmdRunner.debug("CmdRunner.runQuery: BOTTOM");
         }
@@ -676,6 +724,15 @@ public class CmdRunner {
                 DriverManager.getConnection(this.connectString, null, fresh);
         }
         return this.connection;
+    }
+    public String getConnectString() {
+        return getConnectString(CmdRunner.RELOAD_CONNECTION);
+    }
+    public synchronized String getConnectString(boolean fresh) {
+        if (this.connectString == null) {
+            makeConnectString();
+        }
+        return this.connectString;
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -1081,6 +1138,70 @@ public class CmdRunner {
         return i;
     }   
        
+    /////////////////////////////////////////////////////////////////////////
+    // xmla file
+    /////////////////////////////////////////////////////////////////////////
+    
+    /** 
+     * This is called to process a file containing XMLA as the contents
+     * of SOAP xml.
+     * 
+     * @param file 
+     * @param validateXmlaResponce 
+     * @throws Exception 
+     */
+    protected void processSoapXmla(File file, int validateXmlaResponce) 
+            throws Exception {
+        byte[] bytes = XmlaSupport.processSoapXmla(file, 
+                        getConnectString(), null);
+
+        String response = new String(bytes);
+        System.out.println(response);
+
+        switch (validateXmlaResponce) {
+        case VALIDATE_NONE :
+            break;
+        case VALIDATE_TRANSFORM :
+            XmlaSupport.validateSchemaSoapXmla(bytes);
+            System.out.println("XML Data is Valid");
+            break;
+        case VALIDATE_XPATH :
+            XmlaSupport.validateSoapXmlaUsingXpath(bytes);
+            System.out.println("XML Data is Valid");
+            break;
+        }
+    }
+
+    /** 
+     * This is called to process a file containing XMLA xml.
+     * 
+     * @param file 
+     * @param validateXmlaResponce 
+     * @throws Exception 
+     */
+    protected void processXmla(File file, int validateXmlaResponce) 
+            throws Exception {
+
+        byte[] bytes = XmlaSupport.processXmla(file, 
+                        getConnectString());
+
+        String response = new String(bytes);
+        System.out.println(response);
+
+        switch (validateXmlaResponce) {
+        case VALIDATE_NONE :
+            break;
+        case VALIDATE_TRANSFORM :
+            XmlaSupport.validateSchemaXmla(bytes);
+            System.out.println("XML Data is Valid");
+            break;
+        case VALIDATE_XPATH :
+            XmlaSupport.validateXmlaUsingXpath(bytes);
+            System.out.println("XML Data is Valid");
+            break;
+        }
+    }
+
     /////////////////////////////////////////////////////////////////////////
     // user commands and help messages
     /////////////////////////////////////////////////////////////////////////
@@ -2147,7 +2268,20 @@ public class CmdRunner {
         buf.append(nl);
         buf.append("  -p propertyfile  : load mondrian properties");
         buf.append(nl);
-        buf.append("  -f filename+     : execute mdx in one or more files");
+        buf.append("  -f mdx_filename+ : execute mdx in one or more files");
+        buf.append(nl);
+        buf.append("  -x xmla_filename+: execute XMLA in one or more files");
+        buf.append("                     the XMLA request has no SOAP wrapper");
+        buf.append(nl);
+        buf.append("  -xs soap_xmla_filename+ ");
+        buf.append("                   : execute Soap XMLA in one or more files");
+        buf.append("                     the XMLA request has a SOAP wrapper");
+        buf.append(nl);
+        buf.append("  -vt              : validate xmla response using transforms");
+        buf.append("                     only used with -x or -xs flags");
+        buf.append(nl);
+        buf.append("  -vx              : validate xmla response using xpaths");
+        buf.append("                     only used with -x or -xs flags");
         buf.append(nl);
         buf.append("  mdx_cmd          : execute mdx_cmd");
         buf.append(nl);
@@ -2177,11 +2311,21 @@ public class CmdRunner {
         }
     }
     
-    public static void main(String[] args) throws IOException {
+    private static final int DO_MDX             = 1;
+    private static final int DO_XMLA            = 2;
+    private static final int DO_SOAP_XMLA       = 3;
+
+    private static final int VALIDATE_NONE      = 1;
+    private static final int VALIDATE_TRANSFORM = 2;
+    private static final int VALIDATE_XPATH     = 3;
+
+    public static void main(String[] args) throws Exception {
         List filenames = null;
+        int doingWhat = DO_MDX;
         String mdxCmd = null;
         boolean timeQueries = false;
         boolean noCache = false;
+        int validateXmlaResponce = VALIDATE_NONE;
 
         setDefaultCommentState();
         
@@ -2203,14 +2347,42 @@ public class CmdRunner {
             } else if (arg.equals("-rc")) {
                 CmdRunner.RELOAD_CONNECTION = false;
 
+            } else if (arg.equals("-vt")) {
+                validateXmlaResponce = VALIDATE_TRANSFORM;
+
+            } else if (arg.equals("-vx")) {
+                validateXmlaResponce = VALIDATE_XPATH;
+
             } else if (arg.equals("-f")) {
                 i++;
                 if (i == args.length) {
-                    usage("no filename given");
+                    usage("no mdx filename given");
                 }
                 if (filenames == null) {
                     filenames = new ArrayList();
                 }
+                filenames.add(args[i]);
+
+            } else if (arg.equals("-x")) {
+                i++;
+                if (i == args.length) {
+                    usage("no XMLA filename given");
+                }
+                if (filenames == null) {
+                    filenames = new ArrayList();
+                }
+                doingWhat = DO_XMLA;
+                filenames.add(args[i]);
+
+            } else if (arg.equals("-xs")) {
+                i++;
+                if (i == args.length) {
+                    usage("no XMLA filename given");
+                }
+                if (filenames == null) {
+                    filenames = new ArrayList();
+                }
+                doingWhat = DO_SOAP_XMLA;
                 filenames.add(args[i]);
 
             } else if (arg.equals("-p")) {
@@ -2238,7 +2410,18 @@ public class CmdRunner {
             for (Iterator it = filenames.iterator(); it.hasNext(); ) {
                 String filename = (String) it.next();
                 cmdRunner.filename = filename;
-                cmdRunner.commandLoop(new File(filename));
+                if (doingWhat == DO_MDX) {
+                    // its a file containing mdx
+                    cmdRunner.commandLoop(new File(filename));
+                } else if (doingWhat == DO_XMLA) {
+                    // its a file containing XMLA
+                    cmdRunner.processXmla(new File(filename),
+                        validateXmlaResponce);
+                } else {
+                    // its a file containing SOAP XMLA
+                    cmdRunner.processSoapXmla(new File(filename),
+                        validateXmlaResponce);
+                }
                 if (cmdRunner.error != null) {
                     System.err.println(filename);
                     System.err.println(cmdRunner.error);

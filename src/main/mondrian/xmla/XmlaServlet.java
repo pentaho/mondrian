@@ -19,8 +19,12 @@ import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
 import org.w3c.dom.Element;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -38,15 +42,54 @@ public abstract class XmlaServlet extends HttpServlet
 
     private static final Logger LOGGER = Logger.getLogger(XmlaServlet.class);
 
-    private static final String PARAM_DATASOURCES_CONFIG = "DataSourcesConfig";
-    private static final String PARAM_CHAR_ENCODING = "CharacterEncoding";
-    private static final String PARAM_CALLBACKS = "Callbacks";
+    public static final String PARAM_DATASOURCES_CONFIG = "DataSourcesConfig";
+    public static final String PARAM_OPTIONAL_DATASOURCE_CONFIG = 
+            "OptionalDataSourceConfig";
+    public static final String PARAM_CHAR_ENCODING = "CharacterEncoding";
+    public static final String PARAM_CALLBACKS = "Callbacks";
 
+    public static final String DEFAULT_DATASOURCE_FILE = "datasources.xml";
+
+    public static final int VALIDATE_HTTP_HEAD_PHASE    = 1;
+    public static final int INITIAL_PARSE_PHASE         = 2;
+    public static final int CALLBACK_PRE_ACTION_PHASE   = 3;
+    public static final int PROCESS_HEADER_PHASE        = 4;
+    public static final int PROCESS_BODY_PHASE          = 5;
+    public static final int CALLBACK_POST_ACTION_PHASE  = 6;
+    public static final int SEND_RESPONSE_PHASE         = 7;
+    public static final int SEND_ERROR_PHASE            = 8;
+
+    /** 
+     * If paramName's value is not null and 'true', then return true. 
+     * 
+     * @param servletConfig 
+     * @param paramName 
+     * @return 
+     */
+    public static boolean getBooleanInitParameter(
+            ServletConfig servletConfig,
+            String paramName) {
+        String paramValue = servletConfig.getInitParameter(paramName);
+        return ((paramValue != null) && 
+            Boolean.valueOf(paramValue).booleanValue());
+    }
+    public static boolean getParameter(
+            HttpServletRequest req, 
+            String paramName) {
+        String paramValue = req.getParameter(paramName);
+        return ((paramValue != null) && 
+            Boolean.valueOf(paramValue).booleanValue());
+    }
+
+    protected CatalogLocator catalogLocator = null;
+    protected DataSourcesConfig.DataSources dataSources = null;
     protected XmlaHandler xmlaHandler = null;
     private String charEncoding = null;
-    private CatalogLocator catalogLocator = null;
-    private URL dataSourcesConfigUrl = null;
     private final List callbackList = new ArrayList();
+
+    public XmlaServlet() {
+    }
+
 
     /**
      * Initializes servlet and XML/A handler.
@@ -56,44 +99,34 @@ public abstract class XmlaServlet extends HttpServlet
      */
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
-        ServletContext servletContext = servletConfig.getServletContext();
-
-        String paramValue = null;
 
         // init: charEncoding
-        paramValue = servletConfig.getInitParameter(PARAM_DATASOURCES_CONFIG);
-        if (paramValue == null) paramValue = "datasources.xml"; // fallback to default
-        try {
-            try {
-                dataSourcesConfigUrl = new URL(paramValue);
-            } catch (MalformedURLException mue) {
-                paramValue = "WEB-INF/" + paramValue;
-                LOGGER.warn("Use default datasources config file '" +
-                            paramValue + "' in web context direcotry");
-                dataSourcesConfigUrl =
-                    new File(servletContext.getRealPath(paramValue)).toURL();
-            }
-        } catch (MalformedURLException mue) {
-            throw Util.newError(mue, "invalid URL path '" + paramValue + "'");
-        }
-
-        // init: charEncoding
-        paramValue = servletConfig.getInitParameter(PARAM_CHAR_ENCODING);
-        if (paramValue != null) {
-            charEncoding = paramValue;
-        } else {
-            charEncoding = null;
-            LOGGER.warn("Use default character encoding from HTTP client");
-        }
-
-        // init: catalogLocator
-        catalogLocator = new ServletContextCatalogLocator(servletContext);
-
-        // init: xmlaHandler
-        initXmlaHandler();
+        initCharEncodingHandler(servletConfig);
 
         // init: callbacks
         initCallbacks(servletConfig);
+
+        // make: catalogLocator
+        // A derived class can alter how the calalog locator object is
+        // created.
+        this.catalogLocator = makeCatalogLocator(servletConfig);
+
+        DataSourcesConfig.DataSources dataSources = 
+                makeDataSources(servletConfig);
+        addToDataSources(dataSources);
+    }
+
+    /** 
+     * Get and create if needed the XmlaHandler. 
+     * 
+     * @return 
+     */
+    protected XmlaHandler getXmlaHandler() {
+        if (this.xmlaHandler == null) {
+            this.xmlaHandler = 
+                new XmlaHandler(this.dataSources, this.catalogLocator);
+        }
+        return this.xmlaHandler;
     }
 
     /**
@@ -102,6 +135,16 @@ public abstract class XmlaServlet extends HttpServlet
     protected final void addCallback(XmlaRequestCallback callback) {
         callbackList.add(callback);
     }
+
+    /** 
+     * Return an unmodifiable list of callbacks. 
+     * 
+     * @return 
+     */
+    protected final List getCallbacks() {
+        return Collections.unmodifiableList(callbackList);
+    }
+
 
     /**
      * Main entry for HTTP post method
@@ -115,89 +158,226 @@ public abstract class XmlaServlet extends HttpServlet
             HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
-        if (charEncoding != null) {
+
+        // Request Soap Header and Body
+        // header [0] and body [1]
+        Element[] requestSoapParts = new Element[2];
+
+        // Response Soap Header and Body
+        // An array allows response parts to be passed into callback
+        // and possible modifications returned.
+        // response header in [0] and response body in [1]
+        byte[][] responseSoapParts = new byte[2][];
+
+        int phase = VALIDATE_HTTP_HEAD_PHASE;
+
+        try {
+
+            phase = INITIAL_PARSE_PHASE;
+
+
+            if (charEncoding != null) {
+                try {
+                    request.setCharacterEncoding(charEncoding);
+                    response.setCharacterEncoding(charEncoding);
+                } catch (UnsupportedEncodingException uee) {
+                    charEncoding = null;
+                    String msg = "Unsupported character encoding '" + 
+                        charEncoding + 
+                        "': " +
+                        "Use default character encoding from HTTP client for now";
+                    LOGGER.warn(msg);
+                }
+            }
+
+            response.setContentType("text/xml");
+
+            Map context = new HashMap(); 
+
             try {
-                request.setCharacterEncoding(charEncoding);
-                response.setCharacterEncoding(charEncoding);
-            } catch (UnsupportedEncodingException uee) {
-                charEncoding = null;
-                LOGGER.warn("Unsupported character encoding '" + charEncoding + "'");
-                LOGGER.warn("Use default character encoding from HTTP client from now");
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Invoking validate http header callbacks");
+                }
+                for (Iterator it = getCallbacks().iterator(); it.hasNext(); ) {
+                    XmlaRequestCallback callback = 
+                            (XmlaRequestCallback) it.next();
+                    if (!callback.processHttpHeader(request, response, context)) {
+                        return;
+                    }
+                }
+
+            } catch (XmlaException xex) {
+                LOGGER.error("Errors when invoking callbacks validateHttpHeader", xex);
+                handleFault(response, responseSoapParts, phase, xex);
+                phase = SEND_ERROR_PHASE;
+                marshallSoapMessage(response, responseSoapParts);
+                return;
+
+            } catch (Exception ex) {
+                LOGGER.error("Errors when invoking callbacks validateHttpHeader", ex);
+                handleFault(response, responseSoapParts, 
+                        phase, new XmlaException(
+                                SERVER_FAULT_FC,
+                                CHH_CODE, 
+                                CHH_FAULT_FS,
+                                ex));
+                phase = SEND_ERROR_PHASE;
+                marshallSoapMessage(response, responseSoapParts);
+                return;
             }
-        }
 
-        response.setContentType("text/xml");
 
-        OutputStream outputStream = response.getOutputStream();
-        String soapResCharEncoding = response.getCharacterEncoding();
-        byte[] soapResHeader = null;
-        byte[] soapResBody = null;
-        Element hdrElem = null;
-        Element bodyElem = null;
 
-        try {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Unmarshalling SOAP message");
+            try {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Unmarshalling SOAP message");
+                }
+
+                // check request's content type
+                String contentType = request.getContentType();
+                if (contentType == null || 
+                    contentType.indexOf("text/xml") == -1) {
+                    throw new IllegalArgumentException("Only accepts content type 'text/xml', not '" + contentType + "'");
+                }
+
+                unmarshallSoapMessage(request, requestSoapParts);
+
+            } catch (XmlaException xex) {
+                LOGGER.error("Unable to unmarshall SOAP message", xex);
+                handleFault(response, responseSoapParts, phase, xex);
+                phase = SEND_ERROR_PHASE;
+                marshallSoapMessage(response, responseSoapParts);
+                return;
             }
 
-            // check request's content type
-            String contentType = request.getContentType();
-            if (contentType == null || contentType.indexOf("text/xml") == -1) {
-                throw new IllegalArgumentException("Only accepts content type 'text/xml', not '" + contentType + "'");
+            phase = CALLBACK_PRE_ACTION_PHASE;
+
+
+            try {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Invoking callbacks preAction");
+                }
+
+                for (Iterator it = getCallbacks().iterator(); it.hasNext(); ) {
+                    XmlaRequestCallback callback = 
+                            (XmlaRequestCallback) it.next();
+                    callback.preAction(request, requestSoapParts, context);
+                }
+            } catch (XmlaException xex) {
+                LOGGER.error("Errors when invoking callbacks preaction", xex);
+                handleFault(response, responseSoapParts, phase, xex);
+                phase = SEND_ERROR_PHASE;
+                marshallSoapMessage(response, responseSoapParts);
+                return;
+
+            } catch (Exception ex) {
+                LOGGER.error("Errors when invoking callbacks preaction", ex);
+                handleFault(response, responseSoapParts, 
+                        phase, new XmlaException(
+                                SERVER_FAULT_FC,
+                                CPREA_CODE, 
+                                CPREA_FAULT_FS,
+                                ex));
+                phase = SEND_ERROR_PHASE;
+                marshallSoapMessage(response, responseSoapParts);
+                return;
             }
 
-            Element[] soapParts = unmarshallSoapMessage(request.getInputStream());
-            hdrElem = soapParts[0];
-            bodyElem = soapParts[1];
+            phase = PROCESS_HEADER_PHASE;
+
+            // freeze context binding
+            // context = Collections.unmodifiableMap(context);
+
+            try {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Handling XML/A message header");
+                }
+
+                // process application specified SOAP header here
+                handleSoapHeader(response,
+                                 requestSoapParts,
+                                 responseSoapParts,
+                                 context);
+            } catch (XmlaException xex) {
+                LOGGER.error("Errors when handling XML/A message", xex);
+                handleFault(response, responseSoapParts, phase, xex);
+                phase = SEND_ERROR_PHASE;
+                marshallSoapMessage(response, responseSoapParts);
+                return;
+            }
+
+            phase = PROCESS_BODY_PHASE;
+
+            try {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Handling XML/A message body");
+                }
+
+                // process XML/A request
+                handleSoapBody(response,
+                               requestSoapParts,
+                               responseSoapParts,
+                               context);
+
+            } catch (XmlaException xex) {
+                LOGGER.error("Errors when handling XML/A message", xex);
+                handleFault(response, responseSoapParts, phase, xex);
+                phase = SEND_ERROR_PHASE;
+                marshallSoapMessage(response, responseSoapParts);
+                return;
+            }
+
+            phase = CALLBACK_POST_ACTION_PHASE;
+
+            try {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Invoking callbacks postAction");
+                }
+
+                for (Iterator it = getCallbacks().iterator(); it.hasNext(); ) {
+                    XmlaRequestCallback callback = 
+                            (XmlaRequestCallback) it.next();
+                    callback.postAction(request, response, 
+                                        responseSoapParts, context);
+                }
+            } catch (XmlaException xex) {
+                LOGGER.error("Errors when invoking callbacks postaction", xex);
+                handleFault(response, responseSoapParts, phase, xex);
+                phase = SEND_ERROR_PHASE;
+                marshallSoapMessage(response, responseSoapParts);
+                return;
+
+            } catch (Exception ex) {
+                LOGGER.error("Errors when invoking callbacks postaction", ex);
+                handleFault(response, responseSoapParts, 
+                        phase, new XmlaException(
+                                SERVER_FAULT_FC,
+                                CPOSTA_CODE, 
+                                CPOSTA_FAULT_FS,
+                                ex));
+                phase = SEND_ERROR_PHASE;
+                marshallSoapMessage(response, responseSoapParts);
+                return;
+            }
+
+            phase = SEND_RESPONSE_PHASE;
+
+            try {
+
+                marshallSoapMessage(response, responseSoapParts);
+
+            } catch (XmlaException xex) {
+                LOGGER.error("Errors when handling XML/A message", xex);
+                handleFault(response, responseSoapParts, phase, xex);
+                phase = SEND_ERROR_PHASE;
+                marshallSoapMessage(response, responseSoapParts);
+                return;
+            }
+
         } catch (Throwable t) {
-            LOGGER.error("Unable to unmarshall SOAP message", t);
-            soapResBody = handleFault(t, soapResCharEncoding);
-            marshallSoapMessage(outputStream, soapResCharEncoding,
-                                soapResHeader, soapResBody);
-            return;
-        }
-
-        Map context = new HashMap(); // context binding for application's extensibility
-        try {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Invoking callbacks");
-            }
-            for (Iterator it = callbackList.iterator(); it.hasNext();) {
-                XmlaRequestCallback callback = (XmlaRequestCallback) it.next();
-                callback.invoke(context, request, hdrElem, bodyElem);
-            }
-        } catch (Throwable t) {
-            LOGGER.error("Errors when invoking callbacks", t);
-            soapResBody = handleFault(t, soapResCharEncoding);
-            marshallSoapMessage(outputStream, soapResCharEncoding,
-                                soapResHeader, soapResBody);
-            return;
-        }
-        // freeze context binding
-        context = Collections.unmodifiableMap(context);
-
-        try {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Handling XML/A message");
-            }
-
-            // process application specified SOAP header here
-            soapResHeader = handleSoapHeader(hdrElem,
-                                             response.getCharacterEncoding(),
-                                             context);
-
-            // process XML/A request
-            soapResBody = handleSoapBody(hdrElem, bodyElem,
-                                         response.getCharacterEncoding(),
-                                         context);
-
-            marshallSoapMessage(outputStream, soapResCharEncoding,
-                                soapResHeader, soapResBody);
-        } catch (Throwable t) {
-            LOGGER.error("Errors when handling XML/A message", t);
-            soapResBody = handleFault(t, soapResCharEncoding);
-            marshallSoapMessage(outputStream, soapResCharEncoding, soapResHeader, soapResBody);
-            return;
+            LOGGER.error("Unknown Error when handling XML/A message", t);
+            handleFault(response, responseSoapParts, phase, t);
+            marshallSoapMessage(response, responseSoapParts);
         }
 
     }
@@ -207,63 +387,210 @@ public abstract class XmlaServlet extends HttpServlet
      *
      * @return SOAP header, body as a tow items array.
      */
-    protected abstract Element[] unmarshallSoapMessage(
-            InputStream inputStream) throws Exception;
+    protected abstract void unmarshallSoapMessage(
+            HttpServletRequest request,
+            Element[] requestSoapParts) throws XmlaException;
 
     /**
      * Implement to handle application specified SOAP header.
      *
      * @return if no header data in response, please return null or byte[0].
      */
-    protected abstract byte[] handleSoapHeader(
-            Element bodyElem,
-            String charEncoding,
-            Map context) throws Exception;
+    protected abstract void handleSoapHeader(
+            HttpServletResponse response,
+            Element[] requestSoapParts,
+            byte[][] responseSoapParts,
+            Map context) throws XmlaException;
 
     /**
      * Implement to hanle XML/A request.
      *
      * @return XML/A response.
      */
-    protected abstract byte[] handleSoapBody(
-            Element hdrElem,
-            Element bodyElem,
-            String charEncoding,
-            Map context) throws Exception;
+    protected abstract void handleSoapBody(
+            HttpServletResponse response,
+            Element[] requestSoapParts,
+            byte[][] responseSoapParts,
+            Map context) throws XmlaException;
 
     /**
      * Implement to privode application specified SOAP marshalling algorithm.
      */
     protected abstract void marshallSoapMessage(
-            OutputStream outputStream,
-            String encoding,
-            byte[] soapHeader,
-            byte[] soapBody);
+            HttpServletResponse response,
+            byte[][] responseSoapParts) throws XmlaException;
 
     /**
      * Implement to application specified handler of SOAP fualt.
      */
-    protected abstract byte[] handleFault(Throwable t, String charEncoding);
+    protected abstract void handleFault(
+            HttpServletResponse response,
+            byte[][] responseSoapParts,
+            int phase,
+            Throwable t);
+
+
 
     /**
-     * Initialize XML/A handler
+     * Make catalog locator.  Derived classes can roll their own
      */
-    private void initXmlaHandler() {
+    protected CatalogLocator makeCatalogLocator(ServletConfig servletConfig) {
+        ServletContext servletContext = servletConfig.getServletContext();
+        return new ServletContextCatalogLocator(servletContext);
+    }
+
+    /**
+     * Make DataSourcesConfig.DataSources instance. Derived classes
+     * can roll their own
+     * <p>
+     * If there is an initParameter called "DataSourcesConfig"
+     * get its value, replace any "${key}" content with "value" where
+     * "key/value" are System properties, and try to create a URL
+     * instance out of it. If that fails, then assume its a 
+     * real filepath and if the file exists then create a URL from it
+     * (but only if the file exists).
+     * If there is no initParameter with that name, then attempt to
+     * find the file called "datasources.xml"  under "WEB-INF/"
+     * and if it exists, use it.
+     */
+    protected DataSourcesConfig.DataSources makeDataSources(
+                ServletConfig servletConfig) {
+
+        String paramValue = 
+                servletConfig.getInitParameter(PARAM_DATASOURCES_CONFIG);
+        // if false, then do not throw exception if the file/url
+        // can not be found
+        boolean optional = 
+            getBooleanInitParameter(servletConfig, PARAM_OPTIONAL_DATASOURCE_CONFIG);
+
+        URL dataSourcesConfigUrl = null;
         try {
-            final Parser parser = XOMUtil.createDefaultParser();
-            final DOMWrapper doc = parser.parse(dataSourcesConfigUrl);
-            DataSourcesConfig.DataSources dataSources = new DataSourcesConfig.DataSources(doc);
-            xmlaHandler = new XmlaHandler(dataSources, catalogLocator);
-        } catch (XOMException e) {
+            if (paramValue == null) {
+                // fallback to default
+                String defaultDS = "WEB-INF/" + DEFAULT_DATASOURCE_FILE;
+                ServletContext servletContext = servletConfig.getServletContext();
+                File realPath = new File(servletContext.getRealPath(defaultDS));
+                if (realPath.exists()) {
+                    // only if it exists
+                    dataSourcesConfigUrl = realPath.toURL();
+                }
+            } else {
+                paramValue = Util.replaceProperties(paramValue, 
+                                      System.getProperties());
+                if (LOGGER.isDebugEnabled()) {
+                    String msg = "XmlaServlet.makeDataSources: " +
+                            "paramValue="+paramValue;
+                    LOGGER.debug(msg);
+                }
+                // is the parameter a valid URL
+                MalformedURLException mue = null;
+                try {
+                    dataSourcesConfigUrl = new URL(paramValue);
+                } catch (MalformedURLException e) {
+                    // not a valid url
+                    mue = e;
+                }
+                if (dataSourcesConfigUrl == null) {
+                    // see if its a full valid file path
+                    File f = new File(paramValue);
+                    if (f.exists()) {
+                        // yes, a real file path
+                        dataSourcesConfigUrl = f.toURL();
+                    } else if (mue != null) {
+                        // neither url or file, 
+                        // is it not optional
+                        if (! optional) {
+                            throw mue;
+                        }
+                    }
+                }
+            }
+        } catch (MalformedURLException mue) {
+            throw Util.newError(mue, "invalid URL path '" + paramValue + "'");
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            String msg = "XmlaServlet.makeDataSources: " +
+                    "dataSourcesConfigUrl="+dataSourcesConfigUrl;
+            LOGGER.debug(msg);
+        }
+        // don't try to parse a null 
+        return (dataSourcesConfigUrl == null) 
+            ? null : parseDataSourcesUrl(dataSourcesConfigUrl);
+    }
+
+    protected void addToDataSources(DataSourcesConfig.DataSources dataSources) {
+        if (this.dataSources == null) {
+            this.dataSources = dataSources;
+        } else {
+            DataSourcesConfig.DataSource[] ds1 = this.dataSources.dataSources;
+            int len1 = ds1.length;
+            DataSourcesConfig.DataSource[] ds2 = dataSources.dataSources;
+            int len2 = ds2.length;
+
+            DataSourcesConfig.DataSource[] tmp = 
+                new DataSourcesConfig.DataSource[len1+len2];
+
+            System.arraycopy(ds1, 0, tmp, 0, len1);
+            System.arraycopy(ds2, 0, tmp, len1, len2);
+
+            this.dataSources.dataSources = tmp;
+        }
+    }
+
+    protected DataSourcesConfig.DataSources parseDataSourcesUrl(
+                URL dataSourcesConfigUrl) {
+
+        try {
+            String dataSourcesConfigString = 
+                Util.readURL(dataSourcesConfigUrl, System.getProperties());
+            return parseDataSources(dataSourcesConfigString);
+
+        } catch (Exception e) {
             throw Util.newError(e, "Failed to parse data sources config '" +
                                 dataSourcesConfigUrl.toExternalForm() + "'");
+        }
+    }
+    protected DataSourcesConfig.DataSources parseDataSources(
+                String dataSourcesConfigString) {
+
+        try {
+            dataSourcesConfigString = 
+                Util.replaceProperties(dataSourcesConfigString, 
+                                      System.getProperties());
+
+        if (LOGGER.isDebugEnabled()) {
+            String msg = "XmlaServlet.parseDataSources: " +
+                    "dataSources="+dataSourcesConfigString;
+            LOGGER.debug(msg);
+        }
+            final Parser parser = XOMUtil.createDefaultParser();
+            final DOMWrapper doc = parser.parse(dataSourcesConfigString);
+            return new DataSourcesConfig.DataSources(doc);
+
+        } catch (XOMException e) {
+            throw Util.newError(e, "Failed to parse data sources config: " +
+                                dataSourcesConfigString);
+        }
+    }
+
+    /**
+     * Initialize character encoding
+     */
+    protected void initCharEncodingHandler(ServletConfig servletConfig) {
+        String paramValue = servletConfig.getInitParameter(PARAM_CHAR_ENCODING);
+        if (paramValue != null) {
+            this.charEncoding = paramValue;
+        } else {
+            this.charEncoding = null;
+            LOGGER.warn("Use default character encoding from HTTP client");
         }
     }
 
     /**
      * Registers callbacks configured in web.xml.
      */
-    private void initCallbacks(ServletConfig servletConfig) {
+    protected void initCallbacks(ServletConfig servletConfig) {
         String callbacksValue = servletConfig.getInitParameter(PARAM_CALLBACKS);
 
         if (callbacksValue != null) {

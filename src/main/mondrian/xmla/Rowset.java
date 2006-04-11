@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
  * @since May 2, 2003
  * @version $Id$
  */
-abstract class Rowset {
+abstract class Rowset implements XmlaConstants {
     private static final Logger LOGGER = Logger.getLogger(Rowset.class);
 
     protected final RowsetDefinition rowsetDefinition;
@@ -40,6 +40,16 @@ abstract class Rowset {
     protected final XmlaHandler handler;
     private final RowsetDefinition.Column[] restrictedColumns;
 
+    /** 
+     * The exceptions thrown in this constructor are not produced during
+     * the execution of an XMLA request and so can be ordinary exceptions and
+     * not XmlaException (which are  specifically for generating SOAP Fault
+     * xml).
+     * 
+     * @param definition 
+     * @param request 
+     * @param handler 
+     */
     Rowset(RowsetDefinition definition, XmlaRequest request, XmlaHandler handler) {
         this.rowsetDefinition = definition;
         this.restrictions = request.getRestrictions();
@@ -119,6 +129,14 @@ abstract class Rowset {
             break;
         case PropertyDefinition.Catalog_ORDINAL:
             break;
+        case PropertyDefinition.LocaleIdentifier_ORDINAL:
+            // locale ids:
+            // http://krafft.com/scripts/deluxe-calendar/lcid_chart.htm
+            // 1033 is US English
+            if ((value != null) && (value.equals("1033"))) {
+                return;
+            }
+            // fall through
         default:
             LOGGER.warn("Warning: Rowset '" + rowsetDefinition.name +
                     "' does not support property '" + propertyDef.name +
@@ -129,7 +147,7 @@ abstract class Rowset {
     /**
      * Writes the contents of this rowset as a series of SAX events.
      */
-    public abstract void unparse(XmlaResponse response);
+    public abstract void unparse(XmlaResponse response) throws XmlaException;
 
     private static boolean haveCommonMember(String[] a, String[] b) {
         for (int i = 0; i < a.length; i++) {
@@ -143,12 +161,13 @@ abstract class Rowset {
     }
 
     /**
-     * Emits a row for this rowset, reading fields from a {@link mondrian.xmla.Rowset.Row} object.
+     * Emits a row for this rowset, reading fields from a 
+     * {@link mondrian.xmla.Rowset.Row} object.
      *
      * @param row
      * @param response
      */
-    protected void emit(Row row, XmlaResponse response) {
+    protected void emit(Row row, XmlaResponse response) throws XmlaException {
         for (int i = 0; i < restrictedColumns.length; i++) {
             RowsetDefinition.Column column = restrictedColumns[i];
             Object value = row.get(column.name);
@@ -156,21 +175,34 @@ abstract class Rowset {
                 return;
             }
             final Object requiredValue = restrictions.get(column.name);
-            String[] requiredValues, values;
+
+            String[] requiredValues;
             if (requiredValue instanceof String) {
                 requiredValues = new String[] {(String) requiredValue};
             } else if (requiredValue instanceof String[]) {
                 requiredValues = (String[]) requiredValue;
             } else {
-                throw Util.newInternal("Restriction value is of wrong type: " + requiredValue);
+                throw new XmlaException(
+                    CLIENT_FAULT_FC,
+                    HSB_BAD_RESTRICTION_TYPE_CODE, 
+                    HSB_BAD_RESTRICTION_TYPE_FAULT_FS,
+                    Util.newInternal("Restriction value is of wrong type: " +
+                        requiredValue));
             }
+
+            String[] values;
             if (value instanceof String) {
                 values = new String[] {(String) value};
             } else if (value instanceof String[]) {
                 values = (String[]) value;
             } else {
-                throw Util.newInternal("Unexpected value type: " + value);
+                throw new XmlaException(
+                    CLIENT_FAULT_FC,
+                    HSB_BAD_RESTRICTION_VALUE_CODE, 
+                    HSB_BAD_RESTRICTION_VALUE_FAULT_FS,
+                    Util.newInternal("Unexpected value type: " + value));
             }
+
             if (!haveCommonMember(requiredValues, values)) {
                 return;
             }
@@ -184,8 +216,14 @@ abstract class Rowset {
             Object value = row.get(column.name);
             if (value == null) {
                 if (!column.nullable) {
-                    throw Util.newInternal("Value required for column " +
-                            column.name + " of rowset " + rowsetDefinition.name);
+                    throw new XmlaException(
+                        CLIENT_FAULT_FC,
+                        HSB_BAD_NON_NULLABLE_COLUMN_CODE, 
+                        HSB_BAD_NON_NULLABLE_COLUMN_FAULT_FS,
+                        Util.newInternal("Value required for column " +
+                            column.name + 
+                            " of rowset " + 
+                            rowsetDefinition.name));
                 }
             } else if (value instanceof XmlElement[]) {
                 XmlElement[] elements = (XmlElement[]) value;
@@ -242,7 +280,8 @@ abstract class Rowset {
      * @param row
      * @param response
      */
-    protected void emit(Object row, XmlaResponse response) {
+    protected void emit(Object row, XmlaResponse response) 
+            throws XmlaException {
         for (int i = 0; i < restrictedColumns.length; i++) {
             RowsetDefinition.Column column = restrictedColumns[i];
             Object value = column.get(row);
@@ -259,7 +298,12 @@ abstract class Rowset {
                     return;
                 }
             } else {
-                throw Util.newInternal("Restriction value is of wrong type: " + requiredValue);
+                throw new XmlaException(
+                    CLIENT_FAULT_FC,
+                    HSB_BAD_RESTRICTION_TYPE_CODE, 
+                    HSB_BAD_RESTRICTION_TYPE_FAULT_FS,
+                    Util.newInternal("Restriction value is of wrong type: " + 
+                        requiredValue));
             }
         }
 
@@ -273,6 +317,9 @@ abstract class Rowset {
                 writer.startElement(column.name);
                 writer.characters(value.toString());
                 writer.endElement();
+            } else {
+                writer.startElement(column.name);
+                writer.endElement();
             }
         }
         writer.endElement();
@@ -281,7 +328,8 @@ abstract class Rowset {
     /**
      * Emits all of the values in an enumeration.
      */
-    protected void emit(EnumeratedValues enumeration, XmlaResponse response) {
+    protected void emit(EnumeratedValues enumeration, XmlaResponse response) 
+            throws XmlaException {
         final List valuesSortedByName = enumeration.getValuesSortedByName();
         for (int i = 0; i < valuesSortedByName.size(); i++) {
             EnumeratedValues.Value value = (EnumeratedValues.Value)
@@ -297,15 +345,15 @@ abstract class Rowset {
     protected boolean passesRestriction(RowsetDefinition.Column column,
             String value) {
         final Object requiredValue = restrictions.get(column.name);
-        if (requiredValue == null) {
-            return true;
-        }
-        return requiredValue.equals(value);
+
+        return (requiredValue == null)
+            ? true
+            : requiredValue.equals(value);
     }
 
 
     protected boolean isRestricted(RowsetDefinition.Column column) {
-        return restrictions.get(column.name) != null;
+        return (restrictions.get(column.name) != null);
     }
 
     /**

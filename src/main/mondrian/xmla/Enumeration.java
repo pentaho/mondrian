@@ -52,7 +52,7 @@ class Enumeration extends EnumeratedValues {
     public static final class Access extends BasicValue {
         public static final Access read = new Access("Read", 1);
         public static final Access write = new Access("Write", 2);
-        public static final Access readWrite = new Access("Read/Write", 3);
+        public static final Access readWrite = new Access("ReadWrite", 3);
 
         private Access(String name, int ordinal) {
             super(name, ordinal, null);
@@ -215,7 +215,7 @@ class Enumeration extends EnumeratedValues {
 
         static final EnumeratedValues enumeration = new EnumeratedValues(
                 new Literal[] {
-                    new Literal("DBLITERAL_CATALOG_NAME", DBLITERAL_CATALOG_NAME, null, -1, ".", "0123456789", "A catalog name in a text command."),
+                    new Literal("DBLITERAL_CATALOG_NAME", DBLITERAL_CATALOG_NAME, null, 24, ".", "0123456789", "A catalog name in a text command."),
                     new Literal("DBLITERAL_CATALOG_SEPARATOR", DBLITERAL_CATALOG_SEPARATOR, ".", 0, null, null, null),
                     new Literal("DBLITERAL_COLUMN_ALIAS", DBLITERAL_COLUMN_ALIAS, null, -1, "'\"[]", "0123456789", null),
                     new Literal("DBLITERAL_COLUMN_NAME", DBLITERAL_COLUMN_NAME, null, -1, ".", "0123456789", null),
@@ -227,7 +227,7 @@ class Enumeration extends EnumeratedValues {
                     new Literal("DBLITERAL_MEMBER_NAME", DBLITERAL_MEMBER_NAME, null, -1, ".", "0123456789", null),
                     new Literal("DBLITERAL_PROCEDURE_NAME", DBLITERAL_PROCEDURE_NAME, null, -1, ".", "0123456789", null),
                     new Literal("DBLITERAL_PROPERTY_NAME", DBLITERAL_PROPERTY_NAME, null, -1, ".", "0123456789", null),
-                    new Literal("DBLITERAL_QUOTE_PREFIX", DBLITERAL_QUOTE_PREFIX, "[", -1, null, null, "The character used in a text command as the opening quote for quoting identifiers that contain special characters."),
+                    new Literal("DBLITERAL_QUOTE", DBLITERAL_QUOTE, "[", -1, null, null, "The character used in a text command as the opening quote for quoting identifiers that contain special characters."),
                     new Literal("DBLITERAL_QUOTE_SUFFIX", DBLITERAL_QUOTE_SUFFIX, "]", -1, null, null, "The character used in a text command as the closing quote for quoting identifiers that contain special characters. 1.x providers that use the same character as the prefix and suffix may not return this literal value and can set the lt member of the DBLITERAL structure to DBLITERAL_INVALID if requested."),
                     new Literal("DBLITERAL_TABLE_NAME", DBLITERAL_TABLE_NAME, null, -1, ".", "0123456789", null),
                     new Literal("DBLITERAL_TEXT_COMMAND", DBLITERAL_TEXT_COMMAND, null, -1, null, null, "A text command, such as an SQL statement."),

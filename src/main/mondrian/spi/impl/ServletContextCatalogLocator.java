@@ -43,7 +43,8 @@ public class ServletContextCatalogLocator implements CatalogLocator {
                     // URL so that the error message makes sense.
                     url = servletContext.getResource("/");
                     url = new URL(url.getProtocol(), url.getHost(),
-                            url.getPort(), url.getFile() + catalogPath.substring(1));
+                            url.getPort(), 
+                            url.getFile() + catalogPath.substring(1));
                 }
                 catalogPath = url.toString();
             } catch (MalformedURLException ignored) {

@@ -224,7 +224,8 @@ class RolapHierarchy extends HierarchyBase {
             if (defaultMember == null) {
                 throw Util.newInternal(
                     "Can not find Default Member with name \""
-                        + defaultMemberName + "\"");
+                        + defaultMemberName + "\" in Hierarchy \"" +
+                        getName() + "\"");
             }
         }
     }
@@ -418,7 +419,7 @@ class RolapHierarchy extends HierarchyBase {
      * A hierarchy is ragged if it contains one or more levels with hidden
      * members.
      */
-    boolean isRagged() {
+    public boolean isRagged() {
         for (int i = 0; i < levels.length; i++) {
             RolapLevel level = (RolapLevel) levels[i];
             if (level.getHideMemberCondition() !=

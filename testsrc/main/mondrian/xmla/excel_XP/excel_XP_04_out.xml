@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Header>
+    <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
+  </SOAP-ENV:Header>
+  <SOAP-ENV:Body>
+    <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+      <xmla:return xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+          xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <xsd:schema elementFormDefault="qualified"
+            targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+            xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+            xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <xsd:element name="root">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element maxOccurs="unbounded" minOccurs="0"
+                    name="row" type="row"/>
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+            <xsd:simpleType name="uuid">
+              <xsd:restriction base="xsd:string">
+                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+              </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:complexType name="row">
+              <xsd:sequence>
+                <xsd:element name="PropertyName"
+                  sql:field="PropertyName" type="xsd:string"/>
+                <xsd:element name="PropertyDescription"
+                  sql:field="PropertyDescription" type="xsd:string"/>
+                <xsd:element name="PropertyType"
+                  sql:field="PropertyType" type="xsd:string"/>
+                <xsd:element name="PropertyAccessType"
+                  sql:field="PropertyAccessType" type="xsd:string"/>
+                <xsd:element name="IsRequired" sql:field="IsRequired" type="xsd:boolean"/>
+                <xsd:element name="Value"
+                  sql:field="Value" type="xsd:string"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:schema>
+          <row>
+            <PropertyName>ProviderVersion</PropertyName>
+            <PropertyDescription>The version of the Mondrian XMLA Provider</PropertyDescription>
+            <PropertyType>string</PropertyType>
+            <PropertyAccessType>Read</PropertyAccessType>
+            <IsRequired>false</IsRequired>
+            <Value>2.1.0.0</Value>
+          </row>
+        </root>
+      </xmla:return>
+    </xmla:DiscoverResponse>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

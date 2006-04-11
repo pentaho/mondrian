@@ -258,8 +258,11 @@ class RolapResult extends ResultBase {
                 }
             }
         } finally {
+            // This call to clear the cube's cache only has an 
+            // effect if caching has been disabled, otherwise
+            // nothing happens.
             RolapCube cube = (RolapCube) query.getCube();
-            cube.clearCache();
+            cube.clearCachedAggregations();
         }
     }
 

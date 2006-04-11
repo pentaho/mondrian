@@ -19,12 +19,14 @@ import java.util.Map;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.xmla.XmlaConstants;
+import mondrian.xmla.XmlaException;
 import mondrian.xmla.XmlaRequest;
 import mondrian.xmla.XmlaUtil;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.apache.log4j.Logger;
 
 /**
  * Default implementation of {@link mondrian.xmla.XmlaRequest} by DOM API.
@@ -34,9 +36,11 @@ import org.w3c.dom.NodeList;
 public class DefaultXmlaRequest implements XmlaRequest,
                                            XmlaConstants {
 
+    private static final Logger LOGGER = Logger.getLogger(DefaultXmlaRequest.class);
+
     private static final String MSG_INVALID_XMLA = "Invalid XML/A message";
     private static final String MSG_INVALID_DRILLTHROUGH = "Invalid DRILLTHROUGH statement";
-    private static final String MSG_INVALID_MAXROWS = "MAXROWS isn't positive integer";
+    private static final String MSG_INVALID_MAXROWS = "MAXROWS is not positive integer";
     private static final String MSG_INVALID_FIRSTROWSET = "FIRSTROWSET isn't positive integer";
 
     /* common content */
@@ -59,7 +63,8 @@ public class DefaultXmlaRequest implements XmlaRequest,
         this(xmlaRoot, null);
     }
 
-    public DefaultXmlaRequest(Element xmlaRoot, String role) {
+    public DefaultXmlaRequest(Element xmlaRoot, String role) 
+            throws XmlaException {
         init(xmlaRoot);
         this.role = role;
     }
@@ -119,7 +124,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
     }
 
 
-    protected final void init(Element xmlaRoot) {
+    protected final void init(Element xmlaRoot) throws XmlaException {
         if (NS_XMLA.equals(xmlaRoot.getNamespaceURI())) {
             String lname = xmlaRoot.getLocalName();
             if ("Discover".equals(lname)) {
@@ -129,19 +134,51 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 method = METHOD_EXECUTE;
                 initExecute(xmlaRoot);
             } else {
-                throw Util.newError(MSG_INVALID_XMLA);
+                // Note that is code will never be reached because
+                // the error will be caught in 
+                // DefaultXmlaServlet.handleSoapBody first
+                StringBuffer buf = new StringBuffer(100);
+                buf.append(MSG_INVALID_XMLA);
+                buf.append(": Bad method name \"");
+                buf.append(lname);
+                buf.append("\"");
+                throw new XmlaException(
+                    CLIENT_FAULT_FC,
+                    HSB_BAD_METHOD_CODE, 
+                    HSB_BAD_METHOD_FAULT_FS,
+                    Util.newError(buf.toString()));
             }
         } else {
-            throw Util.newError(MSG_INVALID_XMLA);
+            // Note that is code will never be reached because
+            // the error will be caught in 
+            // DefaultXmlaServlet.handleSoapBody first
+            StringBuffer buf = new StringBuffer(100);
+            buf.append(MSG_INVALID_XMLA);
+            buf.append(": Bad namespace url \"");
+            buf.append(xmlaRoot.getNamespaceURI());
+            buf.append("\"");
+            throw new XmlaException(
+                CLIENT_FAULT_FC,
+                HSB_BAD_METHOD_NS_CODE, 
+                HSB_BAD_METHOD_NS_FAULT_FS,
+                Util.newError(buf.toString()));
         }
     }
 
-    private void initDiscover(Element discoverRoot) {
+    private void initDiscover(Element discoverRoot) throws XmlaException {
         Element[] childElems = XmlaUtil.filterChildElements(discoverRoot,
                                                             NS_XMLA,
                                                             "RequestType");
         if (childElems.length != 1) {
-            throw Util.newError(MSG_INVALID_XMLA);
+            StringBuffer buf = new StringBuffer(100);
+            buf.append(MSG_INVALID_XMLA);
+            buf.append(": Wrong number of RequestType elements: ");
+            buf.append(childElems.length);
+            throw new XmlaException(
+                CLIENT_FAULT_FC,
+                HSB_BAD_REQUEST_TYPE_CODE, 
+                HSB_BAD_REQUEST_TYPE_FAULT_FS,
+                Util.newError(buf.toString()));
         }
         requestType = XmlaUtil.textInElement(childElems[0]); // <RequestType>
 
@@ -149,7 +186,15 @@ public class DefaultXmlaRequest implements XmlaRequest,
                                                   NS_XMLA,
                                                   "Restrictions");
         if (childElems.length != 1) {
-            throw Util.newError(MSG_INVALID_XMLA);
+            StringBuffer buf = new StringBuffer(100);
+            buf.append(MSG_INVALID_XMLA);
+            buf.append(": Wrong number of Restrictions elements: ");
+            buf.append(childElems.length);
+            throw new XmlaException(
+                CLIENT_FAULT_FC,
+                HSB_BAD_RESTRICTIONS_CODE, 
+                HSB_BAD_RESTRICTIONS_FAULT_FS,
+                Util.newError(buf.toString()));
         }
         initRestrictions(childElems[0]); // <Restriciotns><RestrictionList>
 
@@ -157,17 +202,33 @@ public class DefaultXmlaRequest implements XmlaRequest,
                                                   NS_XMLA,
                                                   "Properties");
         if (childElems.length != 1) {
-            throw Util.newError(MSG_INVALID_XMLA);
+            StringBuffer buf = new StringBuffer(100);
+            buf.append(MSG_INVALID_XMLA);
+            buf.append(": Wrong number of Properties elements: ");
+            buf.append(childElems.length);
+            throw new XmlaException(
+                CLIENT_FAULT_FC,
+                HSB_BAD_PROPERTIES_CODE, 
+                HSB_BAD_PROPERTIES_FAULT_FS,
+                Util.newError(buf.toString()));
         }
         initProperties(childElems[0]); // <Properties><PropertyList>
     }
 
-    private void initExecute(Element executeRoot) {
+    private void initExecute(Element executeRoot) throws XmlaException {
         Element[] childElems = XmlaUtil.filterChildElements(executeRoot,
                                                             NS_XMLA,
                                                             "Command");
         if (childElems.length != 1) {
-            throw Util.newError(MSG_INVALID_XMLA);
+            StringBuffer buf = new StringBuffer(100);
+            buf.append(MSG_INVALID_XMLA);
+            buf.append(": Wrong number of Command elements: ");
+            buf.append(childElems.length);
+            throw new XmlaException(
+                CLIENT_FAULT_FC,
+                HSB_BAD_COMMAND_CODE, 
+                HSB_BAD_COMMAND_FAULT_FS,
+                Util.newError(buf.toString()));
         }
         initCommand(childElems[0]); // <Command><Statement>
 
@@ -175,12 +236,20 @@ public class DefaultXmlaRequest implements XmlaRequest,
                                                   NS_XMLA,
                                                   "Properties");
         if (childElems.length != 1) {
-            throw Util.newError(MSG_INVALID_XMLA);
+            StringBuffer buf = new StringBuffer(100);
+            buf.append(MSG_INVALID_XMLA);
+            buf.append(": Wrong number of Properties elements: ");
+            buf.append(childElems.length);
+            throw new XmlaException(
+                CLIENT_FAULT_FC,
+                HSB_BAD_PROPERTIES_CODE, 
+                HSB_BAD_PROPERTIES_FAULT_FS,
+                Util.newError(buf.toString()));
         }
         initProperties(childElems[0]); // <Properties><PropertyList>
     }
 
-    private void initRestrictions(Element restrictionsRoot) {
+    private void initRestrictions(Element restrictionsRoot) throws XmlaException {
         Map restricions = new HashMap();
         Element[] childElems = XmlaUtil.filterChildElements(restrictionsRoot,
                                                             NS_XMLA,
@@ -191,17 +260,31 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 Node n = nlst.item(i);
                 if (n instanceof Element) {
                     Element e = (Element) n;
-                    if (!NS_XMLA.equals(e.getNamespaceURI()))
-                        continue;
-                    String key = e.getLocalName();
-                    List values;
-                    if (restricions.containsKey(key)) {
-                        values = (List) restricions.get(key);
-                    } else {
-                        values = new ArrayList();
-                        restricions.put(key, values);
+                    if (NS_XMLA.equals(e.getNamespaceURI())) {
+                        String key = e.getLocalName();
+                        String value = XmlaUtil.textInElement(e);
+
+                        List values;
+                        if (restricions.containsKey(key)) {
+                            values = (List) restricions.get(key);
+                        } else {
+                            values = new ArrayList();
+                            restricions.put(key, values);
+                        }
+
+                        if (LOGGER.isDebugEnabled()) {
+                            StringBuffer buf = new StringBuffer(100);
+                            buf.append("DefaultXmlaRequest.initRestrictions: ");
+                            buf.append(" key=\"");
+                            buf.append(key);
+                            buf.append("\", value=\"");
+                            buf.append(value);
+                            buf.append("\"");
+                            LOGGER.debug(buf.toString());
+                        }
+
+                        values.add(value);
                     }
-                    values.add(XmlaUtil.textInElement(e));
                 }
             }
             String[] dummy = new String[0];
@@ -215,13 +298,21 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 }
             }
         } else if (childElems.length > 1) {
-            throw Util.newError(MSG_INVALID_XMLA);
+            StringBuffer buf = new StringBuffer(100);
+            buf.append(MSG_INVALID_XMLA);
+            buf.append(": Wrong number of RestrictionList elements: ");
+            buf.append(childElems.length);
+            throw new XmlaException(
+                CLIENT_FAULT_FC,
+                HSB_BAD_RESTRICTION_LIST_CODE, 
+                HSB_BAD_RESTRICTION_LIST_FAULT_FS,
+                Util.newError(buf.toString()));
         } else {
         }
         restrictions = Collections.unmodifiableMap(restricions);
     }
 
-    private void initProperties(Element propertiesRoot) {
+    private void initProperties(Element propertiesRoot) throws XmlaException {
         Map properties = new HashMap();
         Element[] childElems = XmlaUtil.filterChildElements(propertiesRoot,
                                                             NS_XMLA,
@@ -232,25 +323,56 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 Node n = nlst.item(i);
                 if (n instanceof Element) {
                     Element e = (Element) n;
-                    if (!NS_XMLA.equals(e.getNamespaceURI()))
-                        continue;
-                    properties.put(e.getLocalName(), XmlaUtil.textInElement(e));
+                    if (NS_XMLA.equals(e.getNamespaceURI())) {
+
+                        String key = e.getLocalName();
+                        String value = XmlaUtil.textInElement(e);
+
+                        if (LOGGER.isDebugEnabled()) {
+                            StringBuffer buf = new StringBuffer(100);
+                            buf.append("DefaultXmlaRequest.initProperties: ");
+                            buf.append(" key=\"");
+                            buf.append(key);
+                            buf.append("\", value=\"");
+                            buf.append(value);
+                            buf.append("\"");
+                            LOGGER.debug(buf.toString());
+                        }
+
+                        properties.put(key, value);
+                    }
                 }
             }
         } else if (childElems.length > 1) {
-            throw Util.newError(MSG_INVALID_XMLA);
+            StringBuffer buf = new StringBuffer(100);
+            buf.append(MSG_INVALID_XMLA);
+            buf.append(": Wrong number of PropertyList elements: ");
+            buf.append(childElems.length);
+            throw new XmlaException(
+                CLIENT_FAULT_FC,
+                HSB_BAD_PROPERTIES_LIST_CODE, 
+                HSB_BAD_PROPERTIES_LIST_FAULT_FS,
+                Util.newError(buf.toString()));
         } else {
         }
         this.properties = Collections.unmodifiableMap(properties);
     }
 
 
-    private void initCommand(Element commandRoot) {
+    private void initCommand(Element commandRoot) throws XmlaException {
         Element[] childElems = XmlaUtil.filterChildElements(commandRoot,
                                                             NS_XMLA,
                                                             "Statement");
         if (childElems.length != 1) {
-            throw Util.newError(MSG_INVALID_XMLA);
+            StringBuffer buf = new StringBuffer(100);
+            buf.append(MSG_INVALID_XMLA);
+            buf.append(": Wrong number of Statement elements: ");
+            buf.append(childElems.length);
+            throw new XmlaException(
+                CLIENT_FAULT_FC,
+                HSB_BAD_STATEMENT_CODE, 
+                HSB_BAD_STATEMENT_FAULT_FS,
+                Util.newError(buf.toString()));
         }
         statement = XmlaUtil.textInElement(childElems[0]).replaceAll("\\r", "");
 
@@ -263,23 +385,53 @@ public class DefaultXmlaRequest implements XmlaRequest,
         if (dtOffset == -1) {
             drillthrough = false;
         } else {
+            /*
+             * <drillthrough> := DRILLTHROUGH
+             *     [<Max_Rows>] [<First_Rowset>] <MDX select> [<Return_Columns>]
+             * <Max_Rows> := MAXROWS <positive number>
+             * <First_Rowset> := FIRSTROWSET <positive number>
+             * <Return_Columns> := RETURN <member or attribute> 
+             *     [, <member or attribute>]
+             */
             if (dtOffset < slOffset) {
                 maxRows = firstRowset = -1;
                 try {
                     if (mrOffset > dtOffset && mrOffset < slOffset) {
                         maxRows = parseIntValue(statement.substring(mrOffset, slOffset));
                         if (maxRows <= 0) {
-                            new IllegalArgumentException(MSG_INVALID_MAXROWS);
+                            StringBuffer buf = new StringBuffer(100);
+                            buf.append(MSG_INVALID_MAXROWS);
+                            buf.append(": ");
+                            buf.append(maxRows);
+                            throw new XmlaException(
+                                CLIENT_FAULT_FC,
+                                HSB_DRILLDOWN_BAD_MAXROWS_CODE, 
+                                HSB_DRILLDOWN_BAD_MAXROWS_FAULT_FS,
+                                Util.newError(buf.toString()));
                         }
                     }
                     if (frOffset > dtOffset && frOffset > mrOffset && frOffset < slOffset) {
                         firstRowset = parseIntValue(statement.substring(frOffset, slOffset));
                         if (firstRowset <= 0) {
-                            new IllegalArgumentException(MSG_INVALID_FIRSTROWSET);
+                            StringBuffer buf = new StringBuffer(100);
+                            buf.append(MSG_INVALID_FIRSTROWSET);
+                            buf.append(": ");
+                            buf.append(firstRowset);
+                            throw new XmlaException(
+                                CLIENT_FAULT_FC,
+                                HSB_DRILLDOWN_BAD_FIRST_ROWSET_CODE, 
+                                HSB_DRILLDOWN_BAD_FIRST_ROWSET_FAULT_FS,
+                                Util.newError(buf.toString()));
                         }
                     }
+                } catch (XmlaException xex) {
+                    throw xex;
                 } catch (Exception e) {
-                    throw Util.newError(e, MSG_INVALID_DRILLTHROUGH);
+                    throw new XmlaException(
+                        CLIENT_FAULT_FC,
+                        HSB_DRILLDOWN_ERROR_CODE, 
+                        HSB_DRILLDOWN_ERROR_FAULT_FS,
+                        Util.newError(e, MSG_INVALID_DRILLTHROUGH));
                 }
 
                 int configMaxRows = MondrianProperties.instance().MaxRows.get();
@@ -294,7 +446,11 @@ public class DefaultXmlaRequest implements XmlaRequest,
 
                 drillthrough = true;
             } else {
-                throw Util.newError(MSG_INVALID_DRILLTHROUGH);
+                throw new XmlaException(
+                    CLIENT_FAULT_FC,
+                    HSB_DRILLDOWN_ERROR_CODE, 
+                    HSB_DRILLDOWN_ERROR_FAULT_FS,
+                    Util.newError(MSG_INVALID_DRILLTHROUGH));
             }
         }
     }

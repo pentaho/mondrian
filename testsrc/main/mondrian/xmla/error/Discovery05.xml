@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <RequestType>DISCOVER_DATASOURCES</RequestType>
+      <Restrictions>
+        <RestrictionList/>
+      </Restrictions>
+      <Properties>
+        <PropertyList>
+          <Content>Data</Content>
+        </PropertyList>
+        <PropertyList/>
+      </Properties>
+    </Discover>
+  </Body>
+</Envelope>

@@ -1,0 +1,403 @@
+<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Header>
+    <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
+  </SOAP-ENV:Header>
+  <SOAP-ENV:Body>
+    <xmla:ExecuteResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+      <xmla:return xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <root xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
+          xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <xsd:schema elementFormDefault="qualified"
+            targetNamespace="urn:schemas-microsoft-com:xml-analysis:mddataset"
+            xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset"
+            xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <xsd:complexType name="MemberType">
+              <xsd:sequence>
+                <xsd:element name="UName" type="xsd:string"/>
+                <xsd:element name="Caption" type="xsd:string"/>
+                <xsd:element name="LName" type="xsd:string"/>
+                <xsd:element name="LNum" type="xsd:unsignedInt"/>
+                <xsd:group ref="GCustomDimProps"/>
+              </xsd:sequence>
+              <xsd:attribute name="Hierarchy" type="xsd:string"/>
+            </xsd:complexType>
+            <xsd:complexType name="PropType">
+              <xsd:sequence>
+                <xsd:element minOccurs="0" name="Default"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+              <xsd:attribute name="type" type="xsd:QName"/>
+            </xsd:complexType>
+            <xsd:element abstract="true" name="ECustomDimPropType" type="PropType"/>
+            <xsd:element abstract="true" name="ECustomCellPropType" type="PropType"/>
+            <xsd:element name="DisplayInfo" substitutionGroup="ECustomDimPropType"/>
+            <xsd:element name="PARENT_UNIQUE_NAME" substitutionGroup="ECustomDimPropType"/>
+            <xsd:complexType name="TupleType">
+              <xsd:sequence>
+                <xsd:element maxOccurs="unbounded" name="Member" type="MemberType"/>
+              </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="MembersType">
+              <xsd:sequence>
+                <xsd:element maxOccurs="unbounded" minOccurs="0"
+                  name="Member" type="MemberType"/>
+              </xsd:sequence>
+              <xsd:attribute name="Hierarchy" type="xsd:string" use="required"/>
+            </xsd:complexType>
+            <xsd:complexType name="TuplesType">
+              <xsd:sequence>
+                <xsd:element maxOccurs="unbounded" minOccurs="0"
+                  name="Tuple" type="TupleType"/>
+              </xsd:sequence>
+            </xsd:complexType>
+            <xsd:group name="SetType">
+              <xsd:choice>
+                <xsd:element name="Members" type="MembersType"/>
+                <xsd:element name="Tuples" type="TuplesType"/>
+                <xsd:element name="CrossProduct" type="SetListType"/>
+                <xsd:element name="Union">
+                  <xsd:complexType>
+                    <xsd:group maxOccurs="unbounded" minOccurs="0" ref="SetType"/>
+                  </xsd:complexType>
+                </xsd:element>
+              </xsd:choice>
+            </xsd:group>
+            <xsd:complexType name="SetListType">
+              <xsd:group maxOccurs="unbounded" minOccurs="0" ref="SetType"/>
+              <xsd:attribute name="Size" type="xsd:unsignedInt"/>
+            </xsd:complexType>
+            <xsd:complexType name="OlapInfo">
+              <xsd:sequence>
+                <xsd:element name="CubeInfo">
+                  <xsd:complexType>
+                    <xsd:sequence>
+                      <xsd:element maxOccurs="unbounded" name="Cube">
+                        <xsd:complexType>
+                          <xsd:sequence>
+                            <xsd:element name="CubeName" type="xsd:string"/>
+                          </xsd:sequence>
+                        </xsd:complexType>
+                      </xsd:element>
+                    </xsd:sequence>
+                  </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="AxesInfo">
+                  <xsd:complexType>
+                    <xsd:sequence>
+                      <xsd:element maxOccurs="unbounded" name="AxisInfo">
+                        <xsd:complexType>
+                          <xsd:sequence>
+                            <xsd:element maxOccurs="unbounded"
+                              minOccurs="0" name="HierarchyInfo">
+                              <xsd:complexType>
+                                <xsd:sequence>
+                                  <xsd:element name="UName" type="PropType"/>
+                                  <xsd:element name="Caption" type="PropType"/>
+                                  <xsd:element name="LName" type="PropType"/>
+                                  <xsd:element name="LNum" type="PropType"/>
+                                  <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" ref="ECustomDimPropType"/>
+                                </xsd:sequence>
+                                <xsd:attribute name="name"
+                                  type="xsd:string" use="required"/>
+                              </xsd:complexType>
+                            </xsd:element>
+                          </xsd:sequence>
+                          <xsd:attribute name="name" type="xsd:string"/>
+                        </xsd:complexType>
+                      </xsd:element>
+                    </xsd:sequence>
+                  </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="CellInfo">
+                  <xsd:complexType>
+                    <xsd:choice maxOccurs="unbounded" minOccurs="0">
+                      <xsd:element name="Value" type="PropType"/>
+                      <xsd:element name="FmtValue" type="PropType"/>
+                      <xsd:element name="CellOrdinal" type="PropType"/>
+                      <xsd:element name="BackColor" type="PropType"/>
+                      <xsd:element name="ForeColor" type="PropType"/>
+                      <xsd:element ref="ECustomCellPropType"/>
+                    </xsd:choice>
+                  </xsd:complexType>
+                </xsd:element>
+              </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="Axes">
+              <xsd:sequence>
+                <xsd:element maxOccurs="unbounded" name="Axis">
+                  <xsd:complexType>
+                    <xsd:group maxOccurs="unbounded" minOccurs="0" ref="SetType"/>
+                    <xsd:attribute name="name" type="xsd:string"/>
+                  </xsd:complexType>
+                </xsd:element>
+              </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="CellData">
+              <xsd:sequence>
+                <xsd:element maxOccurs="unbounded" minOccurs="0" name="Cell">
+                  <xsd:complexType>
+                    <xsd:sequence>
+                      <xsd:element minOccurs="0" name="Value" nillable="true"/>
+                      <xsd:element minOccurs="0" name="FmtValue"
+                        nillable="true" type="xsd:string"/>
+                      <xsd:element minOccurs="0" name="BackColor"
+                        nillable="true" type="xsd:unsignedInt"/>
+                      <xsd:element minOccurs="0" name="ForeColor"
+                        nillable="true" type="xsd:unsignedInt"/>
+                      <xsd:group ref="GCustomCellProps"/>
+                    </xsd:sequence>
+                    <xsd:attribute name="CellOrdinal"
+                      type="xsd:unsignedInt" use="required"/>
+                  </xsd:complexType>
+                </xsd:element>
+              </xsd:sequence>
+            </xsd:complexType>
+            <xsd:group name="GCustomDimProps">
+              <xsd:sequence>
+                <xsd:element minOccurs="0" name="DisplayInfo"
+                  nillable="true" type="xsd:int"/>
+                <xsd:element minOccurs="0" name="PARENT_UNIQUE_NAME"
+                  nillable="true" type="xsd:string"/>
+              </xsd:sequence>
+            </xsd:group>
+            <xsd:group name="GCustomCellProps">
+              <xsd:sequence/>
+            </xsd:group>
+            <xsd:element name="root">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:any minOccurs="0"
+                    namespace="http://www.w3.org/2001/XMLSchema" processContents="strict"/>
+                  <xsd:element minOccurs="0" name="OlapInfo" type="OlapInfo"/>
+                  <xsd:element minOccurs="0" name="Axes" type="Axes"/>
+                  <xsd:element minOccurs="0" name="CellData" type="CellData"/>
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:schema>
+          <OlapInfo>
+            <AxesInfo>
+              <AxisInfo name="Axis0">
+                <HierarchyInfo name="Time">
+                  <UName name="[Time].[MEMBER_UNIQUE_NAME]"/>
+                  <Caption name="[Time].[MEMBER_CAPTION]"/>
+                  <LName name="[Time].[LEVEL_UNIQUE_NAME]"/>
+                  <LNum name="[Time].[LEVEL_NUMBER]"/>
+                  <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
+                  <PARENT_UNIQUE_NAME name="[Time].[PARENT_UNIQUE_NAME]"/>
+                </HierarchyInfo>
+              </AxisInfo>
+              <AxisInfo name="SlicerAxis">
+                <HierarchyInfo name="Measures">
+                  <UName name="[Measures].[MEMBER_UNIQUE_NAME]"/>
+                  <Caption name="[Measures].[MEMBER_CAPTION]"/>
+                  <LName name="[Measures].[LEVEL_UNIQUE_NAME]"/>
+                  <LNum name="[Measures].[LEVEL_NUMBER]"/>
+                  <DisplayInfo name="[Measures].[DISPLAY_INFO]"/>
+                </HierarchyInfo>
+                <HierarchyInfo name="Store">
+                  <UName name="[Store].[MEMBER_UNIQUE_NAME]"/>
+                  <Caption name="[Store].[MEMBER_CAPTION]"/>
+                  <LName name="[Store].[LEVEL_UNIQUE_NAME]"/>
+                  <LNum name="[Store].[LEVEL_NUMBER]"/>
+                  <DisplayInfo name="[Store].[DISPLAY_INFO]"/>
+                </HierarchyInfo>
+                <HierarchyInfo name="Product">
+                  <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
+                  <Caption name="[Product].[MEMBER_CAPTION]"/>
+                  <LName name="[Product].[LEVEL_UNIQUE_NAME]"/>
+                  <LNum name="[Product].[LEVEL_NUMBER]"/>
+                  <DisplayInfo name="[Product].[DISPLAY_INFO]"/>
+                </HierarchyInfo>
+                <HierarchyInfo name="Promotion Media">
+                  <UName name="[Promotion Media].[MEMBER_UNIQUE_NAME]"/>
+                  <Caption name="[Promotion Media].[MEMBER_CAPTION]"/>
+                  <LName name="[Promotion Media].[LEVEL_UNIQUE_NAME]"/>
+                  <LNum name="[Promotion Media].[LEVEL_NUMBER]"/>
+                  <DisplayInfo name="[Promotion Media].[DISPLAY_INFO]"/>
+                </HierarchyInfo>
+                <HierarchyInfo name="Promotions">
+                  <UName name="[Promotions].[MEMBER_UNIQUE_NAME]"/>
+                  <Caption name="[Promotions].[MEMBER_CAPTION]"/>
+                  <LName name="[Promotions].[LEVEL_UNIQUE_NAME]"/>
+                  <LNum name="[Promotions].[LEVEL_NUMBER]"/>
+                  <DisplayInfo name="[Promotions].[DISPLAY_INFO]"/>
+                </HierarchyInfo>
+                <HierarchyInfo name="Customers">
+                  <UName name="[Customers].[MEMBER_UNIQUE_NAME]"/>
+                  <Caption name="[Customers].[MEMBER_CAPTION]"/>
+                  <LName name="[Customers].[LEVEL_UNIQUE_NAME]"/>
+                  <LNum name="[Customers].[LEVEL_NUMBER]"/>
+                  <DisplayInfo name="[Customers].[DISPLAY_INFO]"/>
+                </HierarchyInfo>
+                <HierarchyInfo name="Education Level">
+                  <UName name="[Education Level].[MEMBER_UNIQUE_NAME]"/>
+                  <Caption name="[Education Level].[MEMBER_CAPTION]"/>
+                  <LName name="[Education Level].[LEVEL_UNIQUE_NAME]"/>
+                  <LNum name="[Education Level].[LEVEL_NUMBER]"/>
+                  <DisplayInfo name="[Education Level].[DISPLAY_INFO]"/>
+                </HierarchyInfo>
+                <HierarchyInfo name="Gender">
+                  <UName name="[Gender].[MEMBER_UNIQUE_NAME]"/>
+                  <Caption name="[Gender].[MEMBER_CAPTION]"/>
+                  <LName name="[Gender].[LEVEL_UNIQUE_NAME]"/>
+                  <LNum name="[Gender].[LEVEL_NUMBER]"/>
+                  <DisplayInfo name="[Gender].[DISPLAY_INFO]"/>
+                </HierarchyInfo>
+                <HierarchyInfo name="Marital Status">
+                  <UName name="[Marital Status].[MEMBER_UNIQUE_NAME]"/>
+                  <Caption name="[Marital Status].[MEMBER_CAPTION]"/>
+                  <LName name="[Marital Status].[LEVEL_UNIQUE_NAME]"/>
+                  <LNum name="[Marital Status].[LEVEL_NUMBER]"/>
+                  <DisplayInfo name="[Marital Status].[DISPLAY_INFO]"/>
+                </HierarchyInfo>
+                <HierarchyInfo name="Store Size in SQFT">
+                  <UName name="[Store Size in SQFT].[MEMBER_UNIQUE_NAME]"/>
+                  <Caption name="[Store Size in SQFT].[MEMBER_CAPTION]"/>
+                  <LName name="[Store Size in SQFT].[LEVEL_UNIQUE_NAME]"/>
+                  <LNum name="[Store Size in SQFT].[LEVEL_NUMBER]"/>
+                  <DisplayInfo name="[Store Size in SQFT].[DISPLAY_INFO]"/>
+                </HierarchyInfo>
+                <HierarchyInfo name="Store Type">
+                  <UName name="[Store Type].[MEMBER_UNIQUE_NAME]"/>
+                  <Caption name="[Store Type].[MEMBER_CAPTION]"/>
+                  <LName name="[Store Type].[LEVEL_UNIQUE_NAME]"/>
+                  <LNum name="[Store Type].[LEVEL_NUMBER]"/>
+                  <DisplayInfo name="[Store Type].[DISPLAY_INFO]"/>
+                </HierarchyInfo>
+                <HierarchyInfo name="Yearly Income">
+                  <UName name="[Yearly Income].[MEMBER_UNIQUE_NAME]"/>
+                  <Caption name="[Yearly Income].[MEMBER_CAPTION]"/>
+                  <LName name="[Yearly Income].[LEVEL_UNIQUE_NAME]"/>
+                  <LNum name="[Yearly Income].[LEVEL_NUMBER]"/>
+                  <DisplayInfo name="[Yearly Income].[DISPLAY_INFO]"/>
+                </HierarchyInfo>
+              </AxisInfo>
+            </AxesInfo>
+            <CellInfo>
+              <Value name="VALUE"/>
+              <FmtValue name="FORMATTED_VALUE"/>
+              <CellOrdinal name="CELL_ORDINAL"/>
+            </CellInfo>
+          </OlapInfo>
+          <Axes>
+            <Axis name="Axis0">
+              <Tuples>
+                <Tuple>
+                  <Member Hierarchy="Time">
+                    <UName>[Time].[1997]</UName>
+                    <Caption>1997</Caption>
+                    <LName>[Time].[Year]</LName>
+                    <LNum>0</LNum>
+                    <DisplayInfo>4</DisplayInfo>
+                  </Member>
+                </Tuple>
+              </Tuples>
+            </Axis>
+            <Axis name="SlicerAxis">
+              <Tuples>
+                <Tuple>
+                  <Member Hierarchy="Measures">
+                    <UName>[Measures].[Unit Sales]</UName>
+                    <Caption>Unit Sales</Caption>
+                    <LName>[Measures].[MeasuresLevel]</LName>
+                    <LNum>0</LNum>
+                    <DisplayInfo>0</DisplayInfo>
+                  </Member>
+                  <Member Hierarchy="Store">
+                    <UName>[Store].[All Stores]</UName>
+                    <Caption>All Stores</Caption>
+                    <LName>[Store].[(All)]</LName>
+                    <LNum>0</LNum>
+                    <DisplayInfo>3</DisplayInfo>
+                  </Member>
+                  <Member Hierarchy="Product">
+                    <UName>[Product].[All Products]</UName>
+                    <Caption>All Products</Caption>
+                    <LName>[Product].[(All)]</LName>
+                    <LNum>0</LNum>
+                    <DisplayInfo>3</DisplayInfo>
+                  </Member>
+                  <Member Hierarchy="Promotion Media">
+                    <UName>[Promotion Media].[All Media]</UName>
+                    <Caption>All Media</Caption>
+                    <LName>[Promotion Media].[(All)]</LName>
+                    <LNum>0</LNum>
+                    <DisplayInfo>14</DisplayInfo>
+                  </Member>
+                  <Member Hierarchy="Promotions">
+                    <UName>[Promotions].[All Promotions]</UName>
+                    <Caption>All Promotions</Caption>
+                    <LName>[Promotions].[(All)]</LName>
+                    <LNum>0</LNum>
+                    <DisplayInfo>51</DisplayInfo>
+                  </Member>
+                  <Member Hierarchy="Customers">
+                    <UName>[Customers].[All Customers]</UName>
+                    <Caption>All Customers</Caption>
+                    <LName>[Customers].[(All)]</LName>
+                    <LNum>0</LNum>
+                    <DisplayInfo>3</DisplayInfo>
+                  </Member>
+                  <Member Hierarchy="Education Level">
+                    <UName>[Education Level].[All Education Level]</UName>
+                    <Caption>All Education Level</Caption>
+                    <LName>[Education Level].[(All)]</LName>
+                    <LNum>0</LNum>
+                    <DisplayInfo>5</DisplayInfo>
+                  </Member>
+                  <Member Hierarchy="Gender">
+                    <UName>[Gender].[All Gender]</UName>
+                    <Caption>All Gender</Caption>
+                    <LName>[Gender].[(All)]</LName>
+                    <LNum>0</LNum>
+                    <DisplayInfo>2</DisplayInfo>
+                  </Member>
+                  <Member Hierarchy="Marital Status">
+                    <UName>[Marital Status].[All Marital Status]</UName>
+                    <Caption>All Marital Status</Caption>
+                    <LName>[Marital Status].[(All)]</LName>
+                    <LNum>0</LNum>
+                    <DisplayInfo>2</DisplayInfo>
+                  </Member>
+                  <Member Hierarchy="Store Size in SQFT">
+                    <UName>[Store Size in SQFT].[All Store Size in SQFT]</UName>
+                    <Caption>All Store Size in SQFT</Caption>
+                    <LName>[Store Size in SQFT].[(All)]</LName>
+                    <LNum>0</LNum>
+                    <DisplayInfo>21</DisplayInfo>
+                  </Member>
+                  <Member Hierarchy="Store Type">
+                    <UName>[Store Type].[All Store Type]</UName>
+                    <Caption>All Store Type</Caption>
+                    <LName>[Store Type].[(All)]</LName>
+                    <LNum>0</LNum>
+                    <DisplayInfo>6</DisplayInfo>
+                  </Member>
+                  <Member Hierarchy="Yearly Income">
+                    <UName>[Yearly Income].[All Yearly Income]</UName>
+                    <Caption>All Yearly Income</Caption>
+                    <LName>[Yearly Income].[(All)]</LName>
+                    <LNum>0</LNum>
+                    <DisplayInfo>8</DisplayInfo>
+                  </Member>
+                </Tuple>
+              </Tuples>
+            </Axis>
+          </Axes>
+          <CellData>
+            <Cell CellOrdinal="0">
+              <Value xsi:type="xsd:double">266773</Value>
+              <FmtValue>266,773.00</FmtValue>
+            </Cell>
+          </CellData>
+        </root>
+      </xmla:return>
+    </xmla:ExecuteResponse>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

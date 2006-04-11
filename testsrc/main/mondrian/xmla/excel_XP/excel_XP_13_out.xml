@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Header>
+    <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
+  </SOAP-ENV:Header>
+  <SOAP-ENV:Body>
+    <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+      <xmla:return xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+          xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <xsd:schema elementFormDefault="qualified"
+            targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+            xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+            xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <xsd:element name="root">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element maxOccurs="unbounded" minOccurs="0"
+                    name="row" type="row"/>
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+            <xsd:simpleType name="uuid">
+              <xsd:restriction base="xsd:string">
+                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+              </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:complexType name="row">
+              <xsd:sequence>
+                <xsd:element minOccurs="0" name="CATALOG_NAME"
+                  sql:field="CATALOG_NAME" type="xsd:string"/>
+                <xsd:element minOccurs="0" name="SCHEMA_NAME"
+                  sql:field="SCHEMA_NAME" type="xsd:string"/>
+                <xsd:element name="CUBE_NAME"
+                  sql:field="CUBE_NAME" type="xsd:string"/>
+                <xsd:element name="DIMENSION_NAME"
+                  sql:field="DIMENSION_NAME" type="xsd:string"/>
+                <xsd:element name="DIMENSION_UNIQUE_NAME"
+                  sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+                <xsd:element minOccurs="0" name="DIMENSION_GUID"
+                  sql:field="DIMENSION_GUID" type="uuid"/>
+                <xsd:element name="DIMENSION_CAPTION"
+                  sql:field="DIMENSION_CAPTION" type="xsd:string"/>
+                <xsd:element name="DIMENSION_ORDINAL"
+                  sql:field="DIMENSION_ORDINAL" type="xsd:unsignedInt"/>
+                <xsd:element name="DIMENSION_TYPE"
+                  sql:field="DIMENSION_TYPE" type="xsd:short"/>
+                <xsd:element name="DIMENSION_CARDINALITY"
+                  sql:field="DIMENSION_CARDINALITY" type="xsd:unsignedInt"/>
+                <xsd:element name="DEFAULT_HIERARCHY"
+                  sql:field="DEFAULT_HIERARCHY" type="xsd:string"/>
+                <xsd:element minOccurs="0" name="DESCRIPTION"
+                  sql:field="DESCRIPTION" type="xsd:string"/>
+                <xsd:element minOccurs="0" name="IS_VIRTUAL" 
+                  sql:field="IS_VIRTUAL" type="xsd:boolean"/>
+                <xsd:element minOccurs="0" name="IS_READWRITE"
+                  sql:field="IS_READWRITE" type="xsd:boolean"/>
+                <xsd:element minOccurs="0" name="DIMENSION_UNIQUE_SETTINGS"
+                  sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
+                <xsd:element minOccurs="0" name="DIMENSION_MASTER_UNIQUE_NAME"
+                  sql:field="DIMENSION_MASTER_UNIQUE_NAME" type="xsd:string"/>
+                <xsd:element minOccurs="0" name="DIMENSION_IS_VISIBLE"
+                  sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:schema>
+        </root>
+      </xmla:return>
+    </xmla:DiscoverResponse>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

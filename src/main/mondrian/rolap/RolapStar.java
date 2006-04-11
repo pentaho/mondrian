@@ -40,6 +40,7 @@ import java.util.*;
  * @version $Id$
  */
 public class RolapStar {
+    private static final Logger LOGGER = Logger.getLogger(RolapStar.class);
 
     /**
       * This static variable controls the aggregate data cache for all
@@ -60,7 +61,7 @@ public class RolapStar {
                         disableCaching = property.booleanValue();
                         // must flush all caches
                         if (disableCaching) {
-                            RolapSchema.flushAllRolapStarCaches();
+                            RolapSchema.flushAllRolapStarCachedAggregations();
                         }
                     }
                 }
@@ -278,7 +279,7 @@ public class RolapStar {
     void setCacheAggregations(boolean b) {
         // this can only change from true to false
         this.cacheAggregations = b;
-        clearCache();
+        clearCachedAggregations(false);
     }
 
     /**
@@ -291,9 +292,22 @@ public class RolapStar {
     /**
      * Clear the aggregate cache. This only does something if this star has
      * caching set to off.
+     * 
+     * @param forced if true, then the cached aggregations are cleared
+     * regardless of any other settings.
      */
-    void clearCache() {
-        if (! this.cacheAggregations || RolapStar.disableCaching) {
+    void clearCachedAggregations(boolean forced) {
+        if (forced || (! this.cacheAggregations) || RolapStar.disableCaching) {
+
+            if (LOGGER.isDebugEnabled()) {
+                StringBuffer buf = new StringBuffer(100);
+                buf.append("RolapStar.clearCachedAggregations: schema=");
+                buf.append(schema.getName());
+                buf.append(", star=");
+                buf.append(getFactTable().getAlias());
+                LOGGER.debug(buf.toString());
+            }
+
             aggregations.clear();
         }
     }

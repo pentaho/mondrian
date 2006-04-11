@@ -1,0 +1,25 @@
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <XA:Session 
+        mustUnderstand="1" 
+        SessionId="${session.id}" 
+        xmlns:XA="urn:schemas-microsoft-com:xml-analysis" 
+     />
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement>SELECT HIERARCHIZE({[Measures].[Unit Sales]}) DIMENSION PROPERTIES MEMBER_CAPTION, MEMBER_UNIQUE_NAME ON COLUMNS , HIERARCHIZE({[Time].[Year].members}) DIMENSION PROPERTIES MEMBER_CAPTION, MEMBER_UNIQUE_NAME ON ROWS , HIERARCHIZE({DrillDownLevel({[Customers].[All Customers]})}) DIMENSION PROPERTIES MEMBER_CAPTION, MEMBER_UNIQUE_NAME ON PAGES  FROM [Sales]</Statement>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+          <Catalog>FoodMart</Catalog>
+          <Format>Tabular</Format>
+          <Content>SchemaData</Content>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>

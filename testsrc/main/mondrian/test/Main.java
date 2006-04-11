@@ -34,6 +34,9 @@ import mondrian.rolap.TestAggregationManager;
 import mondrian.rolap.VirtualCubeTest;
 import mondrian.test.comp.ResultComparatorTest;
 import mondrian.util.ScheduleTest;
+import mondrian.xmla.XmlaBasicTest;
+import mondrian.xmla.XmlaExcel2000Test;
+import mondrian.xmla.XmlaExcelXPTest;
 import mondrian.xmla.test.XmlaTest;
 
 import org.apache.log4j.Logger;
@@ -150,6 +153,9 @@ public class Main extends TestSuite {
             suite.addTestSuite(AccessControlTest.class);
             suite.addTestSuite(ParserTest.class);
             suite.addTestSuite(ParentChildHierarchyTest.class);
+            suite.addTestSuite(XmlaBasicTest.class);
+            suite.addTestSuite(XmlaExcel2000Test.class);
+            suite.addTestSuite(XmlaExcelXPTest.class);
             suite.addTest(XmlaTest.suite());
             if (isRunOnce()) suite.addTestSuite(TestCalculatedMembers.class);
             suite.addTestSuite(RaggedHierarchyTest.class);

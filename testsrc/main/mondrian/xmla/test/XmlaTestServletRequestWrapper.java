@@ -60,9 +60,9 @@ public class XmlaTestServletRequestWrapper extends HttpServletRequestWrapper {
 		 */
         StringBuffer buf = new StringBuffer();
         buf.append("<?xml version=\"1.0\"?>\r\n");
-        buf.append("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"").append(XmlaServlet.NS_SOAP).
+        buf.append("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"").append(XmlaServlet.NS_SOAP_ENV_1_1).
             append("\" SOAP-ENV:encodingStyle=\"").
-            append(XmlaServlet.NS_SOAP_ENCODING_STYLE).append("\">\r\n");
+            append(XmlaServlet.NS_SOAP_ENC_1_1).append("\">\r\n");
         buf.append("<SOAP-ENV:Header/>\r\n");
         buf.append("<SOAP-ENV:Body>\r\n");
         buf.append(soapRequest);

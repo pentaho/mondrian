@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList/>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>

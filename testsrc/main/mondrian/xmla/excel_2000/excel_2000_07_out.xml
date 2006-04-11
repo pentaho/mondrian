@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Header>
+    <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
+  </SOAP-ENV:Header>
+  <SOAP-ENV:Body>
+    <xmla:ExecuteResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+      <xmla:return xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <root xmlns="urn:schemas-microsoft-com:xml-analysis:empty"
+          xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <xsd:schema elementFormDefault="qualified"
+            targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+            xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+            xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <xsd:element name="root"/>
+          </xsd:schema>
+        </root>
+      </xmla:return>
+    </xmla:ExecuteResponse>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

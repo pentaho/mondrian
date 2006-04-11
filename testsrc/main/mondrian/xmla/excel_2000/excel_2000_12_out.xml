@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Header>
+    <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
+  </SOAP-ENV:Header>
+  <SOAP-ENV:Body>
+    <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+      <xmla:return xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+          xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <xsd:schema elementFormDefault="qualified"
+            targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+            xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+            xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <xsd:element name="root">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element maxOccurs="unbounded" minOccurs="0"
+                    name="row" type="row"/>
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+            <xsd:simpleType name="uuid">
+              <xsd:restriction base="xsd:string">
+                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+              </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:complexType name="row">
+              <xsd:sequence>
+                <xsd:element minOccurs="0" name="CATALOG_NAME"
+                  sql:field="CATALOG_NAME" type="xsd:string"/>
+                <xsd:element minOccurs="0" name="SCHEMA_NAME"
+                  sql:field="SCHEMA_NAME" type="xsd:string"/>
+                <xsd:element name="CUBE_NAME"
+                  sql:field="CUBE_NAME" type="xsd:string"/>
+                <xsd:element name="MEASURE_NAME"
+                  sql:field="MEASURE_NAME" type="xsd:string"/>
+                <xsd:element name="MEASURE_UNIQUE_NAME"
+                  sql:field="MEASURE_UNIQUE_NAME" type="xsd:string"/>
+                <xsd:element name="MEASURE_CAPTION"
+                  sql:field="MEASURE_CAPTION" type="xsd:string"/>
+                <xsd:element minOccurs="0" name="MEASURE_GUID"
+                  sql:field="MEASURE_GUID" type="uuid"/>
+                <xsd:element name="MEASURE_AGGREGATOR"
+                  sql:field="MEASURE_AGGREGATOR" type="xsd:int"/>
+                <xsd:element name="DATA_TYPE" 
+                    sql:field="DATA_TYPE" type="xsd:unsignedShort"/>
+                <xsd:element name="MEASURE_IS_VISIBLE"
+                  sql:field="MEASURE_IS_VISIBLE" type="xsd:boolean"/>
+                <xsd:element minOccurs="0" name="LEVELS_LIST"
+                  sql:field="LEVELS_LIST" type="xsd:string"/>
+                <xsd:element minOccurs="0" name="DESCRIPTION"
+                  sql:field="DESCRIPTION" type="xsd:string"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:schema>
+        </root>
+      </xmla:return>
+    </xmla:DiscoverResponse>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

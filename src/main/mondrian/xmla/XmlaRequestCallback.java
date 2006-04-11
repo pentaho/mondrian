@@ -14,6 +14,7 @@ import java.util.Map;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.w3c.dom.Element;
 
@@ -28,13 +29,74 @@ import org.w3c.dom.Element;
  * @version $Id$
  */
 public interface XmlaRequestCallback {
+    String AUTHORIZATION = "Authorization";
+    String EXPECT = "Expect";
+    String EXPECT_100_CONTINUE = "100-continue";
 
-    public void init(ServletConfig servletConfig) throws ServletException;
+    public class Helper {
+        public static XmlaException authorizationException(Exception ex) {
+            return new XmlaException(
+                XmlaConstants.CLIENT_FAULT_FC,
+                XmlaConstants.CHH_AUTHORIZATION_CODE,
+                XmlaConstants.CHH_AUTHORIZATION_FAULT_FS,
+                ex);
+        }
+ 
+/*
+HTTP/1.1 100 Continue
+Server: Microsoft-IIS/5.0
+Date: Tue, 21 Feb 2006 21:07:57 GMT
+X-Powered-By: ASP.NET
+*/
+        public static void generatedExpectResponse(HttpServletRequest request, 
+                HttpServletResponse response,
+                Map context) throws Exception {
+            response.reset();
+            response.setStatus(HttpServletResponse.SC_CONTINUE);
+        }
+    }
 
-    public void invoke(Map context,
-                       HttpServletRequest request,
-                       Element soapHeader,
-                       Element soapBody) throws Exception;
+    void init(ServletConfig servletConfig) throws ServletException;
+
+    /** 
+     * Process the request header items. Specifically if present the
+     * Authorization and Expect headers. If the Authorization header is
+     * present, then the callback can validate the user/password. If 
+     * authentication fails, the callback should throw an XmlaException
+     * with the correct XmlaConstants values. The XmlaRequestCallback.Helper
+     * class contains the authorizationException method that can be used
+     * by a callback to generate the XmlaException with the correct values.
+     * If the Expect header is set with "100-continue", then it is
+     * upto the callback to create the appropriate response and return false.
+     * In this case, the XmlaServlet stops processing and returns the
+     * response to the client application. To facilitate the generation of
+     * the response, the XmlaRequestCallback.Helper has the method
+     * generatedExpectResponse that can be called by the callback.
+     * <p>
+     * Note that it is upto the XMLA client to determine whether or not
+     * there is an Expect header entry (ADOMD.NET seems to like to do this).
+     * 
+     * @param request 
+     * @param response 
+     * @param context 
+     * @return true if XmlaServlet handling is to continue and false if
+     *         there was an Expect header "100-continue".
+     * @throws Exception 
+     */
+    boolean processHttpHeader(HttpServletRequest request, 
+                HttpServletResponse response,
+                Map context) throws Exception;
+
+    void preAction(HttpServletRequest request,
+                Element[] requestSoapParts,
+                Map context) throws Exception;
+
+    String generateSessionId(Map context); 
+
+    void postAction(HttpServletRequest request,
+                HttpServletResponse response,
+                byte[][] responseSoapParts,
+                Map context) throws Exception;
 }
 
 // End XmlaRequestCallback.java

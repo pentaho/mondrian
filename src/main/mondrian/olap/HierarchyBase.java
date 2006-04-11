@@ -81,6 +81,8 @@ public abstract class HierarchyBase
         return MondrianResource.instance().MdxHierarchyName.str(getUniqueName());
     }
 
+    public abstract boolean isRagged();
+
     public String getDescription() {
         return description;
     }

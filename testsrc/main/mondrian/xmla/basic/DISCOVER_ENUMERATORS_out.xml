@@ -1,0 +1,214 @@
+<SOAP-ENV:Envelope
+  xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'
+  SOAP-ENV:encodingStyle='http://schemas.xmlsoap.org/soap/encoding/'
+>
+  <SOAP-ENV:Header/>
+  <SOAP-ENV:Body>
+    <xmla:DiscoverResponse
+      xmlns:xmla='urn:schemas-microsoft-com:xml-analysis'
+    >
+      <xmla:return
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xmlns:xsd='http://www.w3.org/2001/XMLSchema'
+      >
+        <root
+          xmlns='urn:schemas-microsoft-com:xml-analysis:rowset'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xmlns:xsd='http://www.w3.org/2001/XMLSchema'
+          xmlns:EX='urn:schemas-microsoft-com:xml-analysis:exception'
+        >
+          <xsd:schema
+            xmlns='urn:schemas-microsoft-com:xml-analysis:rowset'
+            targetNamespace='urn:schemas-microsoft-com:xml-analysis:rowset'
+            xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+            xmlns:xsd='http://www.w3.org/2001/XMLSchema'
+            xmlns:sql='urn:schemas-microsoft-com:xml-sql'
+            elementFormDefault='qualified'
+          >
+            <xsd:element
+              name='root'
+            >
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element
+                    name='row'
+                    type='row'
+                    minOccurs='0'
+                    maxOccurs='unbounded'
+                  />
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+            <xsd:simpleType
+              name='uuid'
+            >
+              <xsd:restriction
+                base='xsd:string'
+              >
+                <xsd:pattern
+                  value='[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+                />
+              </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:complexType
+              name='row'
+            >
+              <xsd:sequence>
+                <xsd:element
+                  name='EnumName'
+                  type='xsd:string'
+                  sql:field='EnumName'
+                />
+                <xsd:element
+                  name='EnumDescription'
+                  type='xsd:string'
+                  sql:field='EnumDescription'
+                  minOccurs='0'
+                />
+                <xsd:element
+                  name='EnumType'
+                  type='xsd:string'
+                  sql:field='EnumType'
+                />
+                <xsd:element
+                  name='ElementName'
+                  type='xsd:string'
+                  sql:field='ElementName'
+                />
+                <xsd:element
+                  name='ElementDescription'
+                  type='xsd:string'
+                  sql:field='ElementDescription'
+                  minOccurs='0'
+                />
+                <xsd:element
+                  name='ElementValue'
+                  type='xsd:string'
+                  sql:field='ElementValue'
+                  minOccurs='0'
+                />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:schema>
+            <row>
+                <EnumName>Access</EnumName>
+                <EnumDescription>The read/write behavior of a property</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>ReadWrite</ElementName>
+                <ElementValue>3</ElementValue>
+            </row>
+            <row>
+                <EnumName>Access</EnumName>
+                <EnumDescription>The read/write behavior of a property</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>Write</ElementName>
+                <ElementValue>2</ElementValue>
+            </row>
+            <row>
+                <EnumName>Access</EnumName>
+                <EnumDescription>The read/write behavior of a property</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>Read</ElementName>
+                <ElementValue>1</ElementValue>
+            </row>
+            <row>
+                <EnumName>AuthenticationMode</EnumName>
+                <EnumDescription>Specification of what type of security mode the data source uses.</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>Integrated</ElementName>
+                <ElementDescription>the data source uses the underlying security to determine authorization, such as Integrated Security provided by Microsoft Internet Information Services (IIS).</ElementDescription>
+                <ElementValue>2</ElementValue>
+            </row>
+            <row>
+                <EnumName>AuthenticationMode</EnumName>
+                <EnumDescription>Specification of what type of security mode the data source uses.</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>Unauthenticated</ElementName>
+                <ElementDescription>no user ID or password needs to be sent.</ElementDescription>
+                <ElementValue>0</ElementValue>
+            </row>
+            <row>
+                <EnumName>AuthenticationMode</EnumName>
+                <EnumDescription>Specification of what type of security mode the data source uses.</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>Authenticated</ElementName>
+                <ElementDescription>User ID and Password must be included in the information required for the connection.</ElementDescription>
+                <ElementValue>1</ElementValue>
+            </row>
+            <row>
+                <EnumName>ProviderType</EnumName>
+                <EnumDescription>The types of data supported by the provider.</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>TDP</ElementName>
+                <ElementDescription>tabular data provider.</ElementDescription>
+                <ElementValue>0</ElementValue>
+            </row>
+            <row>
+                <EnumName>ProviderType</EnumName>
+                <EnumDescription>The types of data supported by the provider.</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>MDP</ElementName>
+                <ElementDescription>multidimensional data provider.</ElementDescription>
+                <ElementValue>1</ElementValue>
+            </row>
+            <row>
+                <EnumName>ProviderType</EnumName>
+                <EnumDescription>The types of data supported by the provider.</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>DMP</ElementName>
+                <ElementDescription>data mining provider. A DMP provider implements the OLE DB for Data Mining specification.</ElementDescription>
+                <ElementValue>2</ElementValue>
+            </row>
+            <row>
+                <EnumName>TREE_OP</EnumName>
+                <EnumDescription>Bitmap which controls which relatives of a member are returned</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>MDTREEOP_DESCENDANTS</ElementName>
+                <ElementDescription>Returns all descendants</ElementDescription>
+                <ElementValue>16</ElementValue>
+            </row>
+            <row>
+                <EnumName>TREE_OP</EnumName>
+                <EnumDescription>Bitmap which controls which relatives of a member are returned</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>MDTREEOP_PARENT</ElementName>
+                <ElementDescription>Returns only the immediate parent</ElementDescription>
+                <ElementValue>4</ElementValue>
+            </row>
+            <row>
+                <EnumName>TREE_OP</EnumName>
+                <EnumDescription>Bitmap which controls which relatives of a member are returned</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>MDTREEOP_CHILDREN</ElementName>
+                <ElementDescription>Returns only the immediate children</ElementDescription>
+                <ElementValue>1</ElementValue>
+            </row>
+            <row>
+                <EnumName>TREE_OP</EnumName>
+                <EnumDescription>Bitmap which controls which relatives of a member are returned</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>MDTREEOP_SIBLINGS</ElementName>
+                <ElementDescription>Returns members on the same level</ElementDescription>
+                <ElementValue>2</ElementValue>
+            </row>
+            <row>
+                <EnumName>TREE_OP</EnumName>
+                <EnumDescription>Bitmap which controls which relatives of a member are returned</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>MDTREEOP_ANCESTORS</ElementName>
+                <ElementDescription>Returns all ancestors</ElementDescription>
+                <ElementValue>32</ElementValue>
+            </row>
+            <row>
+                <EnumName>TREE_OP</EnumName>
+                <EnumDescription>Bitmap which controls which relatives of a member are returned</EnumDescription>
+                <EnumType>string</EnumType>
+                <ElementName>MDTREEOP_SELF</ElementName>
+                <ElementDescription>Returns the immediate member in the list of returned rows</ElementDescription>
+                <ElementValue>8</ElementValue>
+            </row>
+        </root>
+      </xmla:return>
+    </xmla:DiscoverResponse>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

@@ -77,7 +77,7 @@ public class RolapCube extends CubeBase {
     private RolapCube(RolapSchema schema,
                       MondrianDef.Schema xmlSchema,
                       String name,
-                      boolean cache,
+                      boolean isCache,
                       MondrianDef.Relation fact,
                       MondrianDef.CubeDimension[] dimensions) {
         super(name, new RolapDimension[dimensions.length + 1]);
@@ -94,8 +94,8 @@ public class RolapCube extends CubeBase {
             // only set if different from default (so that if two cubes share
             // the same fact table, either can turn off caching and both are
             // effected).
-            if (! cache) {
-                star.setCacheAggregations(cache);
+            if (! isCache) {
+                star.setCacheAggregations(isCache);
             }
         }
 
@@ -716,23 +716,40 @@ assert is not true.
         return this.cellReader;
     }
 
-    public boolean isCache() {
+    /** 
+     * Returns true if this Cube is either virtual or if the Cube's
+     * RolapStar is caching aggregates.
+     * 
+     * @return 
+     */
+    public boolean isCacheAggregations() {
         return (isVirtual()) ? true : star.isCacheAggregations();
     }
 
-    public void setCache(boolean cache) {
+    /** 
+     * Set if this (non-virtual) Cube's RolapStar should cache
+     * aggregations.
+     * 
+     * @param cache 
+     */
+    public void setCacheAggregations(boolean cache) {
         if (! isVirtual()) {
             star.setCacheAggregations(cache);
         }
     }
 
-    public void clearCache() {
+    /** 
+     * Clear the in memory aggregate cache associated with this Cube, but
+     * only if Disabling Caching has been enabled.
+     */
+    public void clearCachedAggregations() {
         if (isVirtual()) {
+            // TODO:
             // Currently a virtual cube does not keep a list of all of its
             // base cubes, so we must just flush all of them.
-            schema.flushRolapStarCaches();
+            schema.flushRolapStarCachedAggregations();
         } else {
-            star.clearCache();
+            star.clearCachedAggregations(false);
         }
     }
 
@@ -1814,6 +1831,10 @@ assert is not true.
      */
     public Hierarchy getMeasuresHierarchy(){
         return measuresHierarchy;
+    }
+    // RME
+    public RolapMember[] getMeasuresMembers(){
+        return measuresHierarchy.memberReader.getMembers();
     }
 
     public Member createCalculatedMember(String xml) {

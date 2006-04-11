@@ -18,10 +18,16 @@ import org.eigenbase.xom.XOMUtil;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.io.BufferedReader;
+import java.io.Reader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import mondrian.olap.fun.*;
 import mondrian.resource.MondrianResource;
@@ -1090,18 +1096,22 @@ public class Util extends XOMUtil {
                 sb.append(pair[0]);
                 sb.append('=');
 
-                /*
-                 * Quote a property value if is has a semi colon in it
-                 * 'xxx;yyy';
-                 */
-                if (pair[1].indexOf(';') >= 0 && pair[1].charAt(0) != '\'') {
-                    sb.append("'");
-                }
+                if (pair[1] == null) {
+                    sb.append("'null'");
+                } else {
+                    /*
+                     * Quote a property value if is has a semi colon in it
+                     * 'xxx;yyy';
+                     */
+                    if (pair[1].indexOf(';') >= 0 && pair[1].charAt(0) != '\'') {
+                        sb.append("'");
+                    }
 
-                sb.append(pair[1]);
+                    sb.append(pair[1]);
 
-                if (pair[1].indexOf(';') >= 0 && pair[1].charAt(pair[1].length() - 1) != '\'') {
-                    sb.append("'");
+                    if (pair[1].indexOf(';') >= 0 && pair[1].charAt(pair[1].length() - 1) != '\'') {
+                        sb.append("'");
+                    }
                 }
 
             }
@@ -1403,6 +1413,108 @@ public class Util extends XOMUtil {
                 return null;
             }
         };
+    }
+
+    /**
+     * Read a Reader until EOF and return as String.
+     * Note: this ought to be in a Utility class.
+     *
+     * @param rdr  Reader to read.
+     * @param bufferSize size of buffer to allocate for reading.
+     * @return content of Reader as String or null if Reader was empty.
+     * @throws IOException
+     */
+    public static String readFully(final Reader rdr, final int bufferSize)
+                 throws IOException {
+    
+        if (bufferSize <= 0) {
+            throw new IllegalArgumentException(
+                        "Buffer size must be greater than 0");
+        }
+
+        final char[] buffer = new char[bufferSize];
+        final StringBuffer buf = new StringBuffer(bufferSize);
+                   
+        int len = rdr.read(buffer);
+        while (len != -1) {
+            buf.append(buffer, 0, len);
+            len = rdr.read(buffer);
+        }
+
+        final String s = buf.toString();
+        return (s.length() == 0) ? null : s;
+    }
+
+    public static final int BUF_SIZE = 8096;
+ 
+    /**
+     * Read URL and return String containing content.
+     *
+     * @param urlStr actually a catalog URL
+     * @return String containing content of catalog.
+     * @throws MalformedURLException
+     * @throws IOException
+     */
+    public static String readURL(final String urlStr)
+            throws MalformedURLException, IOException {
+        return readURL(urlStr, null);
+    }
+    
+    /** 
+     * Read URL and return String containing content.
+     * Any content of the form "${key}" is replaced with "value"
+     * if the map contains the "key/value" pair.
+     * 
+     * @param urlStr 
+     * @param map 
+     * @return 
+     * @throws MalformedURLException 
+     * @throws IOException 
+     */
+    public static String readURL(final String urlStr, Map map)
+            throws MalformedURLException, IOException {
+        final URL url = new URL(urlStr);
+        return readURL(url, map);
+    }
+    public static String readURL(final URL url)
+            throws MalformedURLException, IOException {
+        return readURL(url, null);
+    }
+    public static String readURL(final URL url, Map map)
+            throws MalformedURLException, IOException {
+        final Reader r =
+            new BufferedReader(new InputStreamReader(url.openStream()));
+        String xmlCatalog = readFully(r, BUF_SIZE);
+        return (map == null) 
+            ? xmlCatalog
+            : Util.replaceProperties(xmlCatalog, map);
+    }
+
+
+    /** 
+     * This code is basically does the Ant-like property replacement 
+     * job. Its take from the XmlaTestContext class - nice code btw.
+     * 
+     * @param text 
+     * @return 
+     */
+    public static String replaceProperties(String text, Map env) {
+        StringBuffer buf = new StringBuffer(text.length()+200);
+
+        Pattern pattern = Pattern.compile("\\$\\{([^}]+)\\}");
+        Matcher matcher = pattern.matcher(text);
+        while (matcher.find()) {
+            String varName = matcher.group(1);
+            String varValue = (String) env.get(varName);
+            if (varValue != null) {
+                matcher.appendReplacement(buf, varValue);
+            } else {
+                matcher.appendReplacement(buf, "\\${$1}");
+            }
+        }
+        matcher.appendTail(buf);
+
+        return buf.toString();
     }
 
 }

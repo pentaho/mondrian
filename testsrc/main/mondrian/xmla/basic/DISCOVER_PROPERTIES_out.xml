@@ -1,0 +1,233 @@
+<SOAP-ENV:Envelope
+  xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'
+  SOAP-ENV:encodingStyle='http://schemas.xmlsoap.org/soap/encoding/'
+>
+<SOAP-ENV:Header/>
+  <SOAP-ENV:Body>
+    <xmla:DiscoverResponse
+      xmlns:xmla='urn:schemas-microsoft-com:xml-analysis'
+    >
+      <xmla:return
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xmlns:xsd='http://www.w3.org/2001/XMLSchema'
+      >
+        <root
+          xmlns='urn:schemas-microsoft-com:xml-analysis:rowset'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xmlns:xsd='http://www.w3.org/2001/XMLSchema'
+          xmlns:EX='urn:schemas-microsoft-com:xml-analysis:exception'
+        >
+          <xsd:schema
+            xmlns='urn:schemas-microsoft-com:xml-analysis:rowset'
+            targetNamespace='urn:schemas-microsoft-com:xml-analysis:rowset'
+            xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+            xmlns:xsd='http://www.w3.org/2001/XMLSchema'
+            xmlns:sql='urn:schemas-microsoft-com:xml-sql'
+            elementFormDefault='qualified'
+          >
+            <xsd:element
+              name='root'
+            >
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element
+                    name='row'
+                    type='row'
+                    minOccurs='0'
+                    maxOccurs='unbounded'
+                  />
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+            <xsd:simpleType
+              name='uuid'
+            >
+              <xsd:restriction
+                base='xsd:string'
+              >
+                <xsd:pattern
+                  value='[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+                />
+              </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:complexType
+              name='row'
+            >
+              <xsd:sequence>
+                <xsd:element
+                  name='PropertyName'
+                  type='xsd:string'
+                  sql:field='PropertyName'
+                />
+                <xsd:element
+                  name='PropertyDescription'
+                  type='xsd:string'
+                  sql:field='PropertyDescription'
+                />
+                <xsd:element
+                  name='PropertyType'
+                  type='xsd:string'
+                  sql:field='PropertyType'
+                />
+                <xsd:element
+                  name='PropertyAccessType'
+                  type='xsd:string'
+                  sql:field='PropertyAccessType'
+                />
+                <xsd:element
+                  name='IsRequired'
+                  type='xsd:boolean'
+                  sql:field='IsRequired'
+                />
+                <xsd:element
+                  name='Value'
+                  type='xsd:string'
+                  sql:field='Value'
+                />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:schema>
+            <row>
+                <PropertyName>Timeout</PropertyName>
+                <PropertyDescription>A numeric time-out specifying in seconds the amount of time to wait for a request to be successful.</PropertyDescription>
+                <PropertyType>UnsignedInteger</PropertyType>
+                <PropertyAccessType>ReadWrite</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value>Undefined</Value>
+            </row>
+            <row>
+                <PropertyName>ProviderVersion</PropertyName>
+                <PropertyDescription>The version of the Mondrian XMLA Provider</PropertyDescription>
+                <PropertyType>string</PropertyType>
+                <PropertyAccessType>Read</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value>2.1.0.0</Value>
+            </row>
+            <row>
+                <PropertyName>StateSupport</PropertyName>
+                <PropertyDescription>Property that specifies the degree of support in the provider for state. For information about state in XML for Analysis, see "Support for Statefulness in XML for Analysis." Minimum enumeration values are as follows:
+None - No support for sessions or stateful operations.
+Sessions - Provider supports sessions.</PropertyDescription>
+                <PropertyType>EnumString</PropertyType>
+                <PropertyAccessType>Read</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value>None</Value>
+            </row>
+            <row>
+                <PropertyName>Catalog</PropertyName>
+                <PropertyDescription>Specifies the initial catalog or database on which to connect.</PropertyDescription>
+                <PropertyType>string</PropertyType>
+                <PropertyAccessType>ReadWrite</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value/>
+            </row>
+            <row>
+                <PropertyName>MDXSupport</PropertyName>
+                <PropertyDescription>Enumeration that describes the degree of MDX support. At initial release Core is the only value in the enumeration. In future releases, other values will be defined for this enumeration.</PropertyDescription>
+                <PropertyType>EnumString</PropertyType>
+                <PropertyAccessType>Read</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value>Core</Value>
+            </row>
+            <row>
+                <PropertyName>DataSourceInfo</PropertyName>
+                <PropertyDescription>A string containing provider specific information, required to access the data source.</PropertyDescription>
+                <PropertyType>string</PropertyType>
+                <PropertyAccessType>ReadWrite</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value/>
+            </row>
+            <row>
+                <PropertyName>ProviderName</PropertyName>
+                <PropertyDescription>The XML for Analysis Provider name.</PropertyDescription>
+                <PropertyType>string</PropertyType>
+                <PropertyAccessType>Read</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value>Mondrian XML for Analysis Provider</Value>
+            </row>
+            <row>
+                <PropertyName>Cube</PropertyName>
+                <PropertyDescription>The cube context for the Command parameter. If the command contains a cube name (such as an MDX FROM clause) the setting of this property is ignored.</PropertyDescription>
+                <PropertyType>string</PropertyType>
+                <PropertyAccessType>ReadWrite</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value/>
+            </row>
+            <row>
+                <PropertyName>EndRange</PropertyName>
+                <PropertyDescription>An integer value corresponding to a CellOrdinal used to restrict an MDDataSet returned by a command to a specific range of cells. Used in conjunction with the BeginRange property. If unspecified, all cells are returned in the rowset. The value -1 means unspecified.</PropertyDescription>
+                <PropertyType>Integer</PropertyType>
+                <PropertyAccessType>Write</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value>-1</Value>
+            </row>
+            <row>
+                <PropertyName>Password</PropertyName>
+                <PropertyDescription>This property is deprecated in XMLA 1.1. To support legacy applications, the provider accepts but ignores the Password property setting when it is used with the Discover and Execute method</PropertyDescription>
+                <PropertyType>string</PropertyType>
+                <PropertyAccessType>Read</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value/>
+            </row>
+            <row>
+                <PropertyName>LocaleIdentifier</PropertyName>
+                <PropertyDescription>Use this to read or set the numeric locale identifier for this request. The default is provider-specific.
+For the complete hexadecimal list of language identifiers, search on "Language Identifiers" in the MSDN Library at http://www.msdn.microsoft.com.</PropertyDescription>
+                <PropertyType>UnsignedInteger</PropertyType>
+                <PropertyAccessType>ReadWrite</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value>None</Value>
+            </row>
+            <row>
+                <PropertyName>AxisFormat</PropertyName>
+                <PropertyDescription>Client asks for the MDDataSet axis to be formatted in one of these ways: TupleFormat, ClusterFormat, CustomFormat.</PropertyDescription>
+                <PropertyType>Enumeration</PropertyType>
+                <PropertyAccessType>Write</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value/>
+            </row>
+            <row>
+                <PropertyName>BeginRange</PropertyName>
+                <PropertyDescription>An integer value corresponding to a CellOrdinal used to restrict an MDDataSet returned by a command to a specific range of cells. Used in conjunction with the EndRange property. If unspecified, all cells are returned in the rowset. The value -1 means unspecified.</PropertyDescription>
+                <PropertyType>Integer</PropertyType>
+                <PropertyAccessType>Write</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value>-1</Value>
+            </row>
+            <row>
+                <PropertyName>UserName</PropertyName>
+                <PropertyDescription>Returns the UserName the server associates with the command.
+This property is deprecated as writeable in XMLA 1.1. To support legacy applications, servers accept but ignore the password setting when it is used with the Execute method.</PropertyDescription>
+                <PropertyType>string</PropertyType>
+                <PropertyAccessType>Read</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value/>
+            </row>
+            <row>
+                <PropertyName>Content</PropertyName>
+                <PropertyDescription>An enumerator that specifies what type of data is returned in the result set. 
+None: Allows the structure of the command to be verified, but not executed. Analogous to using Prepare to check syntax, and so on.
+Schema: Contains the XML schema (which indicates column information, and so on) that relates to the requested query.
+Data: Contains only the data that was requested.
+SchemaData: Returns both the schema information as well as the data.</PropertyDescription>
+                <PropertyType>EnumString</PropertyType>
+                <PropertyAccessType>Write</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value>SchemaData</Value>
+            </row>
+            <row>
+                <PropertyName>Format</PropertyName>
+                <PropertyDescription>Enumerator that determines the format of the returned result set. Values include:
+Tabular: a flat or hierarchical rowset. Similar to the XML RAW format in SQL. The Format property should be set to Tabular for OLE DB for Data Mining commands.
+Multidimensional: Indicates that the result set will use the MDDataSet format (Execute method only).
+Native: The client does not request a specific format, so the provider may return the format  appropriate to the query. (The actual result type is identified by namespace of the result.)</PropertyDescription>
+                <PropertyType>EnumString</PropertyType>
+                <PropertyAccessType>Write</PropertyAccessType>
+                <IsRequired>false</IsRequired>
+                <Value>Native</Value>
+            </row>
+        </root>
+      </xmla:return>
+    </xmla:DiscoverResponse>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

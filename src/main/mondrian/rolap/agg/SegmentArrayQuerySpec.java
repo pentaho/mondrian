@@ -102,7 +102,6 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
 
     protected void addMeasure(final int i, final SqlQuery sqlQuery) {
         RolapStar.Measure measure = getMeasure(i);
-
         Util.assertTrue(measure.getTable() == getStar().getFactTable());
         measure.getTable().addToFrom(sqlQuery, false, true);
 

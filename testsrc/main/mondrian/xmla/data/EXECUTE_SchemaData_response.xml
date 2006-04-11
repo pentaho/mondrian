@@ -23,10 +23,12 @@
         <xsd:group ref="GCustomDimProps"/></xsd:sequence>
         <xsd:attribute name="Hierarchy" type="xsd:string"/></xsd:complexType>
         <xsd:complexType name="PropType">
-        <xsd:sequence>
-        <xsd:element name="Default" minOccurs="0"/></xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string" use="required"/>
-        <xsd:attribute name="type" type="xsd:QName"/></xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="Default" minOccurs="0"/>
+            </xsd:sequence>
+            <xsd:attribute name="name" type="xsd:string" use="required"/>
+            <xsd:attribute name="type" type="xsd:QName"/>
+        </xsd:complexType>
         <xsd:element abstract="true" name="ECustomDimPropType" type="PropType"/>
         <xsd:element abstract="true" name="ECustomCellPropType" type="PropType"/>
         <xsd:element substitutionGroup="ECustomDimPropType" name="DisplayInfo"/>
@@ -41,72 +43,110 @@
         <xsd:sequence>
         <xsd:element name="Tuple" type="TupleType" minOccurs="0" maxOccurs="unbounded"/></xsd:sequence></xsd:complexType>
         <xsd:group name="SetType">
-        <xsd:choice>
-        <xsd:element name="Members" type="MembersType"/>
-        <xsd:element name="Tuples" type="TuplesType"/>
-        <xsd:element name="CrossProduct" type="SetListType"/>
-        <xsd:element name="Union">
-        <xsd:complexType>
-        <xsd:group ref="SetType" minOccurs="0" maxOccurs="unbounded"/></xsd:complexType></xsd:element></xsd:choice></xsd:group>
+            <xsd:choice>
+                <xsd:element name="Members" type="MembersType"/>
+                <xsd:element name="Tuples" type="TuplesType"/>
+                <xsd:element name="CrossProduct" type="SetListType"/>
+                <xsd:element name="Union">
+                <xsd:complexType>
+                <xsd:group ref="SetType" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:complexType>
+                </xsd:element>
+            </xsd:choice>
+        </xsd:group>
         <xsd:complexType name="SetListType">
-        <xsd:group ref="SetType" minOccurs="0" maxOccurs="unbounded"/>
-        <xsd:attribute name="Size" type="xsd:unsignedInt"/></xsd:complexType>
+            <xsd:group ref="SetType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:attribute name="Size" type="xsd:unsignedInt"/>
+        </xsd:complexType>
         <xsd:complexType name="OlapInfo">
         <xsd:sequence>
-        <xsd:element name="CubeInfo">
-        <xsd:complexType>
-        <xsd:sequence>
-        <xsd:element name="Cube" maxOccurs="unbounded">
-        <xsd:complexType>
-        <xsd:sequence>
-        <xsd:element name="CubeName" type="xsd:string"/></xsd:sequence></xsd:complexType></xsd:element></xsd:sequence></xsd:complexType></xsd:element>
-        <xsd:element name="AxesInfo">
-        <xsd:complexType>
-        <xsd:sequence>
-        <xsd:element name="AxisInfo" maxOccurs="unbounded">
-        <xsd:complexType>
-        <xsd:sequence>
-        <xsd:element name="HierarchyInfo" minOccurs="0" maxOccurs="unbounded">
-        <xsd:complexType>
-        <xsd:sequence>
-        <xsd:element name="UName" type="PropType"/>
-        <xsd:element name="Caption" type="PropType"/>
-        <xsd:element name="LName" type="PropType"/>
-        <xsd:element name="LNum" type="PropType"/>
-        <xsd:element ref="ECustomDimPropType" minOccurs="0" maxOccurs="unbounded"/></xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string" use="required"/></xsd:complexType></xsd:element></xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string"/></xsd:complexType></xsd:element></xsd:sequence></xsd:complexType></xsd:element>
+            <xsd:element name="CubeInfo">
+            <xsd:complexType>
+                <xsd:sequence>
+                <xsd:element name="Cube" maxOccurs="unbounded">
+                    <xsd:complexType>
+                    <xsd:sequence>
+                    <xsd:element name="CubeName" type="xsd:string"/>
+                    </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="AxesInfo">
+                <xsd:complexType>
+                    <xsd:sequence>
+                    <xsd:element name="AxisInfo" maxOccurs="unbounded">
+                        <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="HierarchyInfo" minOccurs="0" maxOccurs="unbounded">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                <xsd:element name="UName" type="PropType"/>
+                                <xsd:element name="Caption" type="PropType"/>
+                                <xsd:element name="LName" type="PropType"/>
+                                <xsd:element name="LNum" type="PropType"/>
+                                <xsd:element ref="ECustomDimPropType" 
+                                    minOccurs="0" maxOccurs="unbounded"/>
+                                </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required"/>
+                            </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                        <xsd:attribute name="name" type="xsd:string"/>
+                        </xsd:complexType>
+                    </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
         <xsd:element name="CellInfo">
-        <xsd:complexType>
-        <xsd:choice minOccurs="0" maxOccurs="unbounded">
-        <xsd:element name="Value" type="PropType"/>
-        <xsd:element name="FmtValue" type="PropType"/>
-        <xsd:element name="CellOrdinal" type="PropType"/>
-        <xsd:element name="BackColor" type="PropType"/>
-        <xsd:element name="ForeColor" type="PropType"/>
-        <xsd:element ref="ECustomCellPropType"/></xsd:choice></xsd:complexType></xsd:element></xsd:sequence></xsd:complexType>
+            <xsd:complexType>
+                <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="Value" type="PropType"/>
+                <xsd:element name="FmtValue" type="PropType"/>
+                <xsd:element name="CellOrdinal" type="PropType"/>
+                <xsd:element name="BackColor" type="PropType"/>
+                <xsd:element name="ForeColor" type="PropType"/>
+                <xsd:element ref="ECustomCellPropType"/>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+        </xsd:sequence>
+        </xsd:complexType>
         <xsd:complexType name="Axes">
-        <xsd:sequence>
-        <xsd:element name="Axis" maxOccurs="unbounded">
-        <xsd:complexType>
-        <xsd:group ref="SetType" minOccurs="0" maxOccurs="unbounded"/>
-        <xsd:attribute name="name" type="xsd:string"/></xsd:complexType></xsd:element></xsd:sequence></xsd:complexType>
+            <xsd:sequence>
+            <xsd:element name="Axis" maxOccurs="unbounded">
+            <xsd:complexType>
+            <xsd:group ref="SetType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+            </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
         <xsd:complexType name="CellData">
-        <xsd:sequence>
-        <xsd:element name="Cell" minOccurs="0" maxOccurs="unbounded">
-        <xsd:complexType>
-        <xsd:sequence>
-        <xsd:element minOccurs="0" nillable="true" name="Value"/>
-        <xsd:element minOccurs="0" nillable="true" name="FmtValue" type="xsd:string"/>
-        <xsd:element minOccurs="0" nillable="true" name="BackColor" type="xsd:unsignedInt"/>
-        <xsd:element minOccurs="0" nillable="true" name="ForeColor" type="xsd:unsignedInt"/>
-        <xsd:group ref="GCustomCellProps"/></xsd:sequence>
-        <xsd:attribute name="CellOrdinal" type="xsd:unsignedInt" use="required"/></xsd:complexType></xsd:element></xsd:sequence></xsd:complexType>
+            <xsd:sequence>
+            <xsd:element name="Cell" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:sequence>
+                    <xsd:element minOccurs="0" nillable="true" name="Value"/>
+                    <xsd:element minOccurs="0" nillable="true" name="FmtValue" type="xsd:string"/>
+                    <xsd:element minOccurs="0" nillable="true" name="BackColor" type="xsd:unsignedInt"/>
+                    <xsd:element minOccurs="0" nillable="true" name="ForeColor" type="xsd:unsignedInt"/>
+                    <xsd:group ref="GCustomCellProps"/>
+                    </xsd:sequence>
+                <xsd:attribute name="CellOrdinal" type="xsd:unsignedInt" use="required"/>
+                </xsd:complexType>
+            </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
         <xsd:group name="GCustomDimProps">
-        <xsd:sequence>
-        <xsd:element minOccurs="0" nillable="true" name="DisplayInfo" type="xsd:int"/></xsd:sequence></xsd:group>
+            <xsd:sequence>
+            <xsd:element minOccurs="0" nillable="true" name="DisplayInfo" type="xsd:int"/>
+            </xsd:sequence>
+        </xsd:group>
         <xsd:group name="GCustomCellProps">
-        <xsd:sequence></xsd:sequence></xsd:group>
+            <xsd:sequence></xsd:sequence>
+        </xsd:group>
         <xsd:element name="root">
         <xsd:complexType>
         <xsd:sequence>
@@ -1222,7 +1262,8 @@
     <Caption>Store Cost</Caption>
     <LName>[Measures].[MeasuresLevel]</LName>
     <LNum>0</LNum>
-    <DisplayInfo>131072</DisplayInfo></Member></Tuple></Tuples></Axis>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple></Tuples>
+    </Axis>
     <Axis name="Axis1">
     <Tuples>
     <Tuple>

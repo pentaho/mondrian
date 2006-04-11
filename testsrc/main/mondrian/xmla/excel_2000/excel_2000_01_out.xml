@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Header/>
+  <SOAP-ENV:Body>
+    <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+      <xmla:return xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+          xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <xsd:schema elementFormDefault="qualified"
+            targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+            xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+            xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <xsd:element name="root">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element maxOccurs="unbounded" minOccurs="0"
+                    name="row" type="row"/>
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+            <xsd:simpleType name="uuid">
+              <xsd:restriction base="xsd:string">
+                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+              </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:complexType name="row">
+              <xsd:sequence>
+                <xsd:element 
+                    name="DataSourceName"
+                    sql:field="DataSourceName" 
+                    type="xsd:string"
+                  />
+                <xsd:element 
+                    minOccurs="0" 
+                    name="DataSourceDescription"
+                    sql:field="DataSourceDescription" 
+                    type="xsd:string"
+                  />
+                <xsd:element 
+                    minOccurs="0" 
+                    name="URL" 
+                    sql:field="URL" 
+                    type="xsd:string"
+                />
+                <xsd:element 
+                    minOccurs="0" 
+                    name="DataSourceInfo"
+                    sql:field="DataSourceInfo" 
+                    type="xsd:string"
+                  />
+                <xsd:element 
+                    minOccurs="0" 
+                    name="ProviderName"
+                    sql:field="ProviderName" 
+                    type="xsd:string"
+                  />
+                <xsd:element 
+                    maxOccurs="unbounded" 
+                    name="ProviderType" 
+                    sql:field="ProviderType" 
+                    type="xsd:string"
+                  />
+                <xsd:element 
+                    name="AuthenticationMode"
+                    sql:field="AuthenticationMode" 
+                    type="xsd:string"
+                />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:schema>
+          <row>
+            <DataSourceName>MondrianFoodMart</DataSourceName>
+            <DataSourceDescription>Mondrian FoodMart data source</DataSourceDescription>
+            <URL>http://localhost:8080/mondrian/xmla</URL>
+            <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+            <ProviderName>Mondrian</ProviderName>
+            <ProviderType>MDP</ProviderType>
+            <AuthenticationMode>Unauthenticated</AuthenticationMode>
+          </row>
+        </root>
+      </xmla:return>
+    </xmla:DiscoverResponse>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

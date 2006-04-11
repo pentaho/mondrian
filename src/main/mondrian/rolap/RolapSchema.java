@@ -106,6 +106,15 @@ public class RolapSchema implements Schema {
 
     private MondrianDef.Schema xmlSchema;
 
+    /** 
+     * This is the common base constructor which is NEVER called by
+     * anything but another constructor.
+     * 
+     * @param key 
+     * @param connectInfo 
+     * @param dataSource 
+     * @param md5Bytes 
+     */
     private RolapSchema(final String key,
                         final Util.PropertyList connectInfo,
                         final DataSource dataSource,
@@ -122,40 +131,6 @@ public class RolapSchema implements Schema {
         this.mapNameToCube = new HashMap();
         this.mapNameToRole = new HashMap();
         this.aggTableManager = new AggTableManager(this);
-    }
-
-    /**
-     * Loads a schema using a dynamic loader.
-     *
-     * @param dynProcName
-     * @param catalogName
-     * @param connectInfo
-     */
-    private RolapSchema(
-            final String key,
-            final String catalogName,
-            final Util.PropertyList connectInfo,
-            final String dynProcName,
-            final DataSource dataSource) {
-        this(key, connectInfo, dataSource, (String) null);
-
-        String catalogStr = null;
-
-        try {
-            final URL url = new URL(catalogName);
-
-            final Class clazz = Class.forName(dynProcName);
-            final Constructor ctor = clazz.getConstructor(new Class[0]);
-            final DynamicSchemaProcessor dynProc =
-                    (DynamicSchemaProcessor) ctor.newInstance(new Object[0]);
-            catalogStr = dynProc.processSchema(url, connectInfo);
-
-        } catch (Exception e) {
-            throw Util.newError(e, "loading DynamicSchemaProcessor "
-                    + dynProcName);
-        }
-
-        load(catalogName, catalogStr);
     }
 
     /**
@@ -191,16 +166,6 @@ public class RolapSchema implements Schema {
         this(key, connectInfo, dataSource, md5Bytes);
 
         load(catalogName, catalogStr);
-    }
-
-    private RolapSchema(final String key,
-                        final String catalogName,
-                        final Util.PropertyList connectInfo,
-                        final DataSource dataSource) {
-
-        this(key, connectInfo, dataSource, null);
-
-        load(catalogName, null);
     }
 
     protected void finalCleanUp() {
@@ -539,36 +504,6 @@ public class RolapSchema implements Schema {
         }
 
         /**
-         * Read a Reader until EOF and return as String.
-         * Note: this ought to be in a Utility class.
-         *
-         * @param rdr  Reader to read.
-         * @param bufferSize size of buffer to allocate for reading.
-         * @return content of Reader as String or null if Reader was empty.
-         * @throws IOException
-         */
-        public static String readFully(final Reader rdr, final int bufferSize)
-                     throws IOException {
-
-            if (bufferSize <= 0) {
-                throw new IllegalArgumentException(
-                            "Buffer size must be greater than 0");
-            }
-
-            final char[] buffer = new char[bufferSize];
-            final StringBuffer buf = new StringBuffer(bufferSize);
-
-            int len = rdr.read(buffer);
-            while (len != -1) {
-                buf.append(buffer, 0, len);
-                len = rdr.read(buffer);
-            }
-
-            final String s = buf.toString();
-            return (s.length() == 0) ? null : s;
-        }
-
-        /**
          * Create an MD5 hash of String.
          * Note: this ought to be in a Utility class.
          *
@@ -582,48 +517,7 @@ public class RolapSchema implements Schema {
         }
 
 
-        public static final int BUF_SIZE = 8096;
 
-        /**
-         * Read URL and return String containing content.
-         * Note: this ought to be in a Utility class.
-         *
-         * @param urlStr actually a catalog URL
-         * @return String containing content of catalog.
-         * @throws MalformedURLException
-         * @throws IOException
-         */
-        public static String readURL(final String urlStr)
-                throws MalformedURLException, IOException {
-
-            final URL url = new URL(urlStr);
-            final Reader r =
-                new BufferedReader(new InputStreamReader(url.openStream()));
-            final String xmlCatalog = readFully(r, BUF_SIZE);
-            return xmlCatalog;
-        }
-
-        /**
-         * Compare two byte arrays for equality checking both length and
-         * byte values.
-         * Note: this ought to be in a Utility class.
-         *
-         * @param b1 first byte array.
-         * @param b2 second byte array.
-         * @return true if lengths and all values are equal and false otherwise.
-        private static boolean equals(final byte[] b1, final byte[] b2) {
-            if (b1.length != b2.length) {
-                return false;
-            } else {
-                for (int i = 0; i < b1.length; i++) {
-                    if (b1[i] != b2[i]) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-         */
         /**
          * Note: this is a place holder variable. The value of USE_MD5 should be
          * determined by a new mondrian property in the connectInfo string.
@@ -672,138 +566,131 @@ public class RolapSchema implements Schema {
 
             RolapSchema schema = null;
 
-            final String dynProc =
+            final String dynProcName =
                 connectInfo.get(RolapConnectionProperties.DynamicSchemaProcessor);
+            String catalogStr =
+                    connectInfo.get(RolapConnectionProperties.CatalogContent);
+
             // If there is a dynamic processor registered, use it. This
             // implies there is not MD5 based caching, but, as with the previous
             // implementation, if the catalog string is in the connectInfo
             // object as catalog content then it is used.
-            if ( ! Util.isEmpty(dynProc)) {
-                String catalogStr =
-                    connectInfo.get(RolapConnectionProperties.CatalogContent);
+            if ((catalogStr == null) && ! Util.isEmpty(dynProcName)) { 
 
-                schema = (catalogStr == null)
-                    // If a schema will be dynamically processed, caching is not
-                    // possible.
-                    ? new RolapSchema(key,
-                                      catalogName,
-                                      connectInfo,
-                                      dynProc,
-                                      dataSource)
-                    // Got the catalog string, no need to get it again in the
-                    // constructor
-                    : new RolapSchema(key,
-                                      catalogName,
-                                      catalogStr,
-                                      connectInfo,
-                                      dataSource);
+                try {
 
-                if (LOGGER.isDebugEnabled()) {
-                    String msg = "Pool.get: create schema \"" +
-                        catalogName +
-                        "\" using dynamic processor";
-                    LOGGER.debug(msg);
+                final URL url = new URL(catalogName);
+                final Class clazz = Class.forName(dynProcName);
+                final Constructor ctor = clazz.getConstructor(new Class[0]);
+                final DynamicSchemaProcessor dynProc =
+                    (DynamicSchemaProcessor) ctor.newInstance(new Object[0]);
+                catalogStr = dynProc.processSchema(url, connectInfo);
+
+                } catch (Exception e) {
+                    throw Util.newError(e, "loading DynamicSchemaProcessor "
+                    + dynProcName);
                 }
-            } else {
+            }
 
-                if (USE_MD5) {
-                    // Different catalogNames can actually yield the same
-                    // catalogStr! So, we use the MD5 as the key as well as
-                    // the key made above - its has two entries in the
-                    // mapUrlToSchema Map. We must then also during the
-                    // remove operation make sure we remove both.
+            if (USE_MD5) {
+                // Different catalogNames can actually yield the same
+                // catalogStr! So, we use the MD5 as the key as well as
+                // the key made above - its has two entries in the
+                // mapUrlToSchema Map. We must then also during the
+                // remove operation make sure we remove both.
 
-                    String catalogStr = null;
-                    String md5Bytes = null;
-                    try {
-                        catalogStr = readURL(catalogName);
-                        md5Bytes = encodeMD5(catalogStr);
-
-                    } catch (Exception ex) {
-                        // Note, can not throw an Exception from this method
-                        // but just to show that all is not well in Mudville
-                        // we print stack trace (for now - better to change
-                        // method signature and throw).
-                        ex.printStackTrace();
+                String md5Bytes = null;
+                try {
+                    if (catalogStr == null) {
+                        catalogStr = Util.readURL(catalogName);
                     }
-                    if (md5Bytes != null) {
-                        SoftReference ref =
-                            (SoftReference) mapUrlToSchema.get(md5Bytes);
-                        if (ref != null) {
-                            schema = (RolapSchema) ref.get();
-                            if (schema == null) {
-                                // clear out the reference since schema is null
-                                mapUrlToSchema.remove(key);
-                                mapUrlToSchema.remove(md5Bytes);
-                            }
-                        }
-                    }
+                    md5Bytes = encodeMD5(catalogStr);
 
-                    if ((schema == null) ||
-                        md5Bytes == null ||
-                        schema.md5Bytes == null ||
-                        ! schema.md5Bytes.equals(md5Bytes)) {
-
-                        schema = new RolapSchema(key,
-                                                 md5Bytes,
-                                                 catalogName,
-                                                 catalogStr,
-                                                 connectInfo,
-                                                 dataSource);
-
-                        SoftReference ref = new SoftReference(schema);
-                        if (md5Bytes != null) {
-                            mapUrlToSchema.put(md5Bytes, ref);
-                        }
-                        mapUrlToSchema.put(key, ref);
-
-                        if (LOGGER.isDebugEnabled()) {
-                            String msg = "Pool.get: create schema \"" +
-                                catalogName +
-                                "\" with MD5";
-                            LOGGER.debug(msg);
-                        }
-
-                    } else if (LOGGER.isDebugEnabled()) {
-                        String msg = "Pool.get: schema \"" +
-                            catalogName +
-                            "\" exists already with MD5";
-                        LOGGER.debug(msg);
-                    }
-
-                } else {
-                    SoftReference ref = (SoftReference) mapUrlToSchema.get(key);
+                } catch (Exception ex) {
+                    // Note, can not throw an Exception from this method
+                    // but just to show that all is not well in Mudville
+                    // we print stack trace (for now - better to change
+                    // method signature and throw).
+                    ex.printStackTrace();
+                }
+                if (md5Bytes != null) {
+                    SoftReference ref =
+                        (SoftReference) mapUrlToSchema.get(md5Bytes);
                     if (ref != null) {
                         schema = (RolapSchema) ref.get();
                         if (schema == null) {
                             // clear out the reference since schema is null
                             mapUrlToSchema.remove(key);
+                            mapUrlToSchema.remove(md5Bytes);
                         }
                     }
+                }
 
-                    if (schema == null) {
-                        schema = new RolapSchema(key,
-                                                 catalogName,
-                                                 connectInfo,
-                                                 dataSource);
+                if ((schema == null) ||
+                    md5Bytes == null ||
+                    schema.md5Bytes == null ||
+                    ! schema.md5Bytes.equals(md5Bytes)) {
 
-                        mapUrlToSchema.put(key, new SoftReference(schema));
+                    schema = new RolapSchema(key,
+                                             md5Bytes,
+                                             catalogName,
+                                             catalogStr,
+                                             connectInfo,
+                                             dataSource);
 
-                        if (LOGGER.isDebugEnabled()) {
-                            String msg = "Pool.get: create schema \"" +
-                                catalogName +
-                                "\"";
-                            LOGGER.debug(msg);
-                        }
+                    SoftReference ref = new SoftReference(schema);
+                    if (md5Bytes != null) {
+                        mapUrlToSchema.put(md5Bytes, ref);
+                    }
+                    mapUrlToSchema.put(key, ref);
 
-                    } else if (LOGGER.isDebugEnabled()) {
-                        String msg = "Pool.get: schema \"" +
+                    if (LOGGER.isDebugEnabled()) {
+                        String msg = "Pool.get: create schema \"" +
                             catalogName +
-                            "\" exists already ";
+                            "\" with MD5";
                         LOGGER.debug(msg);
                     }
 
+                } else if (LOGGER.isDebugEnabled()) {
+                    String msg = "Pool.get: schema \"" +
+                        catalogName +
+                        "\" exists already with MD5";
+                    LOGGER.debug(msg);
                 }
+
+            } else {
+                SoftReference ref = (SoftReference) mapUrlToSchema.get(key);
+                if (ref != null) {
+                    schema = (RolapSchema) ref.get();
+                    if (schema == null) {
+                        // clear out the reference since schema is null
+                        mapUrlToSchema.remove(key);
+                    }
+                }
+
+                if (schema == null) {
+                    schema = new RolapSchema(key,
+                                             catalogName,
+                                             catalogStr,
+                                             connectInfo,
+                                             dataSource);
+
+                    mapUrlToSchema.put(key, new SoftReference(schema));
+
+                    if (LOGGER.isDebugEnabled()) {
+                        String msg = "Pool.get: create schema \"" +
+                            catalogName +
+                            "\"";
+                        LOGGER.debug(msg);
+                    }
+
+                } else if (LOGGER.isDebugEnabled()) {
+                    String msg = "Pool.get: schema \"" +
+                        catalogName +
+                        "\" exists already ";
+                    LOGGER.debug(msg);
+                }
+
             }
             return schema;
         }
@@ -1039,7 +926,6 @@ public class RolapSchema implements Schema {
                 Util.normalizeName(cube.getName()),
                 cube);
     }
-
     public boolean removeCube(final String cubeName) {
         final Cube cube =
                 (Cube) this.mapNameToCube.remove(Util.normalizeName(cubeName));
@@ -1070,6 +956,10 @@ public class RolapSchema implements Schema {
 
     public Role lookupRole(final String role) {
         return (Role) mapNameToRole.get(role);
+    }
+
+    public Set roleNames() {
+        return mapNameToRole.keySet();
     }
 
     public FunTable getFunTable() {
@@ -1406,21 +1296,26 @@ public class RolapSchema implements Schema {
     public Iterator getStars() {
       return getRolapStarRegistry().getStars();
     }
-    public void flushRolapStarCaches() {
+    public void flushRolapStarCachedAggregations() {
+        if (getLogger().isDebugEnabled()) {
+            StringBuffer buf = new StringBuffer(100);
+            buf.append("RolapStar.flushRolapStarCaches: ");
+            buf.append(getName());
+            getLogger().debug(buf.toString());
+        }
+
         for (Iterator itStars = getStars(); itStars.hasNext(); ) {
             RolapStar star = (RolapStar) itStars.next();
-            // this will only flush the star's aggregate cache if
-            // 1) DisableCaching is true or the star's cube has
-            // cacheAggregations set to false in the schema.
-            star.clearCache();
+            // force clearing any cached aggregations
+            star.clearCachedAggregations(true);
         }
     }
-    public static void flushAllRolapStarCaches() {
+    public static void flushAllRolapStarCachedAggregations() {
         for (Iterator itSchemas = RolapSchema.getRolapSchemas();
                 itSchemas.hasNext(); ) {
 
             RolapSchema schema = (RolapSchema) itSchemas.next();
-            schema.flushRolapStarCaches();
+            schema.flushRolapStarCachedAggregations();
         }
     }
 

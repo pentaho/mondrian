@@ -129,6 +129,8 @@ public class DefaultSaxWriter implements SaxWriter {
         // or using XML escapes as a last result.
         String s = new String(ch, start, length);
         if (XOMUtil.stringHasXMLSpecials(s)) {
+            XMLUtil.stringEncodeXML(s, writer);
+/*
             if (s.indexOf("]]>") < 0) {
                 writer.print("<![CDATA[");
                 writer.print(s);
@@ -136,6 +138,7 @@ public class DefaultSaxWriter implements SaxWriter {
             } else {
                 XMLUtil.stringEncodeXML(s, writer);
             }
+*/
         } else {
             writer.print(s);
         }
