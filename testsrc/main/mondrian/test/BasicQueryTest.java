@@ -13,13 +13,11 @@ package mondrian.test;
 
 import mondrian.olap.*;
 import mondrian.rolap.RolapConnection;
-import mondrian.rolap.RolapSchema;
 import mondrian.rolap.cache.CachePool;
 
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 import java.util.regex.Pattern;
-import java.io.PrintWriter;
+import java.util.List;
+import java.util.ArrayList;
 
 import junit.framework.Assert;
 
@@ -32,6 +30,11 @@ import junit.framework.Assert;
  * @version $Id$
  */
 public class BasicQueryTest extends FoodMartTestCase {
+    static final String EmptyResult = "Axis #0:" + nl +
+                    "{}" + nl +
+                    "Axis #1:" + nl +
+                    "Axis #2:" + nl;
+
     public BasicQueryTest(String name) {
         super(name);
     }
@@ -446,6 +449,278 @@ public class BasicQueryTest extends FoodMartTestCase {
         assertQueryReturns(sampleQueries[7].query, sampleQueries[7].result);
     }
 
+    public void testGoodComments() {
+
+        assertQueryReturns(
+                "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]/* trailing comment*/",
+                EmptyResult);
+
+        String[] comments = {
+            "-- a basic comment\n",
+
+            "// another basic comment\n",
+
+            "/* yet another basic comment */",
+
+            "-- a more complicated comment test\n",
+
+            "-- to make it more intesting, -- we'll nest this comment\n",
+
+            "-- also, \"we can put a string in the comment\"\n",
+
+            "-- also, 'even a single quote string'\n",
+
+            "---- and, the comment delimiter is looong\n",
+
+            "/*\n" +
+                " * next, how about a comment block?\n" +
+                " * with several lines.\n" +
+                " * also, \"we can put a string in the comment\"\n" +
+                " * also, 'even a single quote string'\n" +
+                " * also, -- another style comment is happy\n" +
+                " */\n",
+
+            "/* a simple /* nested */ comment */",
+
+            "/*\n" +
+                " * a multiline /* nested */ comment\n" +
+                "*/",
+
+            "/*\n" +
+                " * a multiline\n" +
+                " * /* multiline\n" +
+                " *  * nested comment\n" +
+                " *  */\n" +
+                "*/",
+
+            "/*\n" +
+                " * a multiline\n" +
+                " * /* multiline\n" +
+                " * /* deeply\n" +
+                " * /* really /* deeply */\n" +
+                " *  * nested comment\n" +
+                " *  */\n" +
+                " *  */\n" +
+                " *  */\n" +
+                "*/",
+
+            "-- single-line comment containing /* multiline */ comment\n",
+
+            "/* multi-line comment containing -- single-line comment */",
+        };
+
+
+        List allCommentList = new ArrayList();
+        for (int i = 0; i < comments.length; i++) {
+            String comment = comments[i];
+            allCommentList.add(comment);
+            if (comment.contains("\n")) {
+                allCommentList.add(comment.replaceAll("\n", "\r\n"));
+                allCommentList.add(comment.replaceAll("\n", "\n\r"));
+                allCommentList.add(comment.replaceAll("\n", " \n \n "));
+            }
+        }
+        allCommentList.add("");
+        final String[] allComments = (String[])
+                allCommentList.toArray(new String[allCommentList.size()]);
+
+        // The last element of the array is the concatenation of all other
+        // comments.
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < allComments.length; i++) {
+            buf.append(allComments[i]);
+        }
+        final String concatenatedComments = buf.toString();
+        allComments[allComments.length - 1] = concatenatedComments;
+
+        // Comment at start of query.
+        for (int i = 0; i < allComments.length; i++) {
+            String comment = allComments[i];
+            assertQueryReturns(
+                    comment + "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]",
+                    EmptyResult);
+        }
+
+        // Comment after SELECT.
+        for (int i = 0; i < allComments.length; i++) {
+            String comment = allComments[i];
+            assertQueryReturns(
+                    "SELECT" + comment + "{} ON ROWS, {} ON COLUMNS FROM [Sales]",
+                    EmptyResult);
+        }
+
+        // Comment within braces.
+        for (int i = 0; i < allComments.length; i++) {
+            String comment = allComments[i];
+            assertQueryReturns(
+                    "SELECT {" + comment + "} ON ROWS, {} ON COLUMNS FROM [Sales]",
+                    EmptyResult);
+        }
+
+        // Comment after axis name.
+        for (int i = 0; i < allComments.length; i++) {
+            String comment = allComments[i];
+            assertQueryReturns(
+                    "SELECT {} ON ROWS" + comment + ", {} ON COLUMNS FROM [Sales]",
+                    EmptyResult);
+        }
+
+        // Comment before slicer.
+        for (int i = 0; i < allComments.length; i++) {
+            String comment = allComments[i];
+            assertQueryReturns(
+                    "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales] WHERE" + comment + "([Gender].[F])",
+                    fold(new String[] {
+                        "Axis #0:",
+                        "{[Gender].[All Gender].[F]}",
+                        "Axis #1:",
+                        "Axis #2:",
+                        ""}));
+        }
+
+        // Comment after query.
+        for (int i = 0; i < allComments.length; i++) {
+            String comment = allComments[i];
+            assertQueryReturns(
+                    "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]" + comment,
+                    EmptyResult);
+        }
+
+
+        assertQueryReturns(
+                "-- a comment test with carriage returns at the end of the lines\r" + nl +
+                "-- first, more than one single-line comment in a row\r" + nl +
+                "-- and, to make it more intesting, -- we'll nest this comment\r" + nl +
+                "-- also, \"we can put a string in the comment\"\r" + nl +
+                "-- also, 'even a single quote string'\r" + nl +
+                "---- and, the comment delimiter is looong\r" + nl +
+                "/*\r" + nl +
+                " * next, now about a comment block?\r" + nl +
+                " * with several lines.\r" + nl +
+                " * also, \"we can put a string in the comment\"\r" + nl +
+                " * also, 'even a single quote comment'\r" + nl +
+                " * also, -- another style comment is heppy\r" + nl +
+                " * also, // another style comment is heppy\r" + nl +
+                " */\r" + nl +
+                "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]\r",
+                EmptyResult);
+
+        assertQueryReturns(
+                "/* a simple /* nested */ comment */" + nl +
+                "/*" + nl +
+                " * a multiline /* nested */ comment" + nl +
+                "*/" + nl +
+                "/*" + nl +
+                " * a multiline" + nl +
+                " * /* multiline" + nl +
+                " *  * nested comment" + nl +
+                " *  */" + nl +
+                "*/" + nl +
+                "/*" + nl +
+                " * a multiline" + nl +
+                " * /* multiline" + nl +
+                " * /* deeply" + nl +
+                " * /* really /* deeply */" + nl +
+                " *  * nested comment" + nl +
+                " *  */" + nl +
+                " *  */" + nl +
+                " *  */" + nl +
+                "*/" + nl +
+                "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]",
+                EmptyResult);
+
+        assertQueryReturns(
+                "-- an entire select statement commented out" + nl +
+                "-- SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales];" + nl +
+                "/*SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales];*/" + nl +
+                "// SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales];" + nl +
+                "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]",
+                EmptyResult);
+
+        assertQueryReturns(
+                "// now for some comments in a larger command" + nl +
+                "with // create calculate measure [Product].[All Products].[Drink].[Percent of Alcoholic Drinks]" + nl +
+                "   member [Product].[All Products].[Drink].[Percent of Alcoholic Drinks]/*the measure name*/as '                        // begin the definition of the measure next" + nl +
+                "       [Product]./****this is crazy****/[All Products].[Drink].[Alcoholic Beverages]/[Product].[All Products].[Drink]',  // divide number of alcoholic drinks by total # of drinks" + nl +
+                "       format_string = '#.00%'  // a custom format for our measure" + nl +
+                "select" + nl +
+                "   { [Product]/**** still crazy ****/.[All Products].[Drink].[Percent of Alcoholic Drinks] } on columns," + nl +
+                "   order(/****do not put a comment inside square brackets****/[Customers].[All Customers].[USA].[WA].Children, [Product].[All Products].[Drink].[Percent of Alcoholic Drinks],BDESC ) on rows" + nl +
+                "from Sales" + nl +
+                "where ( [Measures].[Unit Sales] /****,[Time].[1997]****/) -- a comment at the end of the command",
+
+                "Axis #0:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #1:" + nl +
+                "{[Product].[All Products].[Drink].[Percent of Alcoholic Drinks]}" + nl +
+                "Axis #2:" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Seattle]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Kirkland]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Marysville]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Anacortes]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Olympia]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Ballard]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Bremerton]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Puyallup]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Yakima]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Tacoma]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Everett]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Renton]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Issaquah]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Bellingham]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Port Orchard]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Redmond]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Spokane]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Burien]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Lynnwood]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Walla Walla]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Edmonds]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA].[Sedro Woolley]}" + nl +
+                "Row #0: 44.05%" + nl +
+                "Row #1: 34.41%" + nl +
+                "Row #2: 34.20%" + nl +
+                "Row #3: 32.93%" + nl +
+                "Row #4: 31.05%" + nl +
+                "Row #5: 30.84%" + nl +
+                "Row #6: 30.69%" + nl +
+                "Row #7: 29.81%" + nl +
+                "Row #8: 28.82%" + nl +
+                "Row #9: 28.70%" + nl +
+                "Row #10: 28.37%" + nl +
+                "Row #11: 26.67%" + nl +
+                "Row #12: 26.60%" + nl +
+                "Row #13: 26.47%" + nl +
+                "Row #14: 26.42%" + nl +
+                "Row #15: 26.28%" + nl +
+                "Row #16: 25.96%" + nl +
+                "Row #17: 24.70%" + nl +
+                "Row #18: 21.89%" + nl +
+                "Row #19: 21.47%" + nl +
+                "Row #20: 17.47%" + nl +
+                "Row #21: 13.79%" + nl);
+    }
+
+    public void testBadComments() {
+        // Comments cannot appear inside identifiers.
+        assertThrows(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[Gender].MEMBERS} ON ROWS" + nl +
+                "FROM [Sales]" + nl +
+                "WHERE {[/***an illegal comment****/Marital Status].[S]}",
+                "Failed to parse query");
+
+        // Nested comments must be closed.
+        assertThrows(
+                "/* a simple /* nested * comment */" + nl +
+                "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]",
+                "Failed to parse query");
+
+        // We do NOT support \r as a line-end delimiter. (Too bad, Mac users.)
+        assertThrows(
+                "SELECT {} ON COLUMNS -- comment terminated by CR only\r, {} ON ROWS FROM [Sales]",
+                "Failed to parse query");
+    }
+
     /**
      * Tests that a query whose axes are empty works.
      * (Bug 1220787.)
@@ -453,20 +728,14 @@ public class BasicQueryTest extends FoodMartTestCase {
     public void testBothAxesEmpty() {
         assertQueryReturns(
                 "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]",
-                "Axis #0:" + nl +
-                "{}" + nl +
-                "Axis #1:" + nl +
-                "Axis #2:" + nl);
+                EmptyResult);
 
         // expression which evaluates to empty set
         assertQueryReturns(
                 "SELECT Filter({[Gender].MEMBERS}, 1 = 0) ON COLUMNS, " + nl +
                 "{} ON ROWS" + nl +
                 "FROM [Sales]",
-                "Axis #0:" + nl +
-                "{}" + nl +
-                "Axis #1:" + nl +
-                "Axis #2:" + nl);
+                EmptyResult);
 
         // with slicer
         assertQueryReturns(

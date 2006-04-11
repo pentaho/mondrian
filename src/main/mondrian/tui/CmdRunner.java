@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde and others
+// Copyright (C) 2005-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -57,7 +57,9 @@ public class CmdRunner {
     private String stack;
     private String connectString;
     private Connection connection;
-
+    private static String[][] commentDelim;
+    private static boolean allowNestedComments;
+    
     /**
      * Creates a <code>CmdRunner</code>.
      */
@@ -764,7 +766,7 @@ public class CmdRunner {
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
         boolean inMDXCmd = false;
         String resultString = null;
-
+                
         for(;;) {
             if (resultString != null) {
                 printResults(resultString);
@@ -844,7 +846,6 @@ public class CmdRunner {
                 if ((line == null) || (line.charAt(0) == EXECUTE_CHAR)) {
                     String mdxCmd = buf.toString().trim();
                     debug("mdxCmd=\""+mdxCmd+"\"");
-
                     resultString = executeMDXCmd(mdxCmd);
                 }
 
@@ -894,106 +895,192 @@ public class CmdRunner {
      */
     protected static String readLine(Reader reader, boolean inMDXCmd)
         throws IOException {
-        StringBuffer buf = null;
+        
+        StringBuffer buf = new StringBuffer(128);
+        StringBuffer line = new StringBuffer(128);
+        int offset;
+       int i=getLine(reader, line);
 
-        int i = reader.read();
-        for (;;) {
-            if (i == -1) {
-                // At EOF, return what we've read so far.
-                return (buf == null) ? null : buf.toString();
-            }
-            char c = (char) i;
-
-            if (buf == null) {
-                buf = new StringBuffer(128);
-            }
-
+        for (offset = 0; offset < line.length(); offset++) {
+            char c = line.charAt(offset);
+            
             if (c == ESCAPE_CHAR) {
-                buf.append(c);
-
-                i = reader.read();
-                if (i == -1) {
-                    // At EOF, return what we've read so far.
-                    return buf.toString();
+                buf.append(ESCAPE_CHAR);
+                buf.append(line.charAt(++offset));
+            }
+            else if ((c == STRING_CHAR_1) || (c == STRING_CHAR_2)) {
+                i = readString(reader, line, offset, buf, i);
+                offset = 0;
+            }
+            else {
+                int commentType=-1;
+                
+                // check if we have the start of a comment block 
+                for (int x = 0; x < commentDelim.length; x++) {
+                    if (line.substring(offset).startsWith(commentDelim[x][0])) {
+                        commentType = x;
+                        break;
+                    }
                 }
-                buf.append((char)i);
-
-                i = reader.read();
-                continue;
-            }
-
-            // At EOL, return what we've read so far.
-            if ((c == '\n') || (c == '\r')) {
-                return buf.toString();
-            }
-            // comment handling
-            if (! inMDXCmd) {
-                if (c == COMMENT_CHAR) {
-                    // Not in string, read to EOL or EOF
-                    i = reader.read();
-                    for (;;) {
-                        if (i == -1) {
-                            return buf.toString();
-                        }
-                        c = (char) i;
-                        if ((c == '\n') || (c == '\r')) {
-                            return buf.toString();
-                        }
-                        i = reader.read();
-                    }
-                    // In string, do nothing special with comment character
-                }
-            }
-
-            if ((c == STRING_CHAR_1) || (c == STRING_CHAR_2)) {
-                // Start of a string, read all of it even if it spans
-                // more than one line adding each line's <cr> to the
-                // buffer.
-
-                char str_char = c;
-                buf.append(c);
-
-                i = reader.read();
-
-                STRING_LOOP:
-                for (;;) {
-                    if (i == -1) {
-                        return buf.toString();
-                    }
-                    c = (char) i;
-
-                    if (c == ESCAPE_CHAR) {
-                        buf.append(c);
-
-                        i = reader.read();
-                        if (i == -1) {
-                            // At EOF, return what we've read so far.
-                            return buf.toString();
-                        }
-                        buf.append((char)i);
-
-                        i = reader.read();
-                        continue STRING_LOOP;
-                    }
-
+                
+                // -1 means no comment
+                if (commentType == -1) {
                     buf.append(c);
-
-                    if (c == str_char) {
-                        break STRING_LOOP;
-                    }
-
-                    i = reader.read();
                 }
-
-
-            } else {
-                buf.append(c);
+                else {
+                    // check for comment to end of line comment
+                    if (commentDelim[commentType][1] == null) {
+                        if (inMDXCmd) {
+                            buf.append(line.substring(offset));   
+                        }
+                        break;
+                    }
+                    else {
+                        // handle delimited comment block
+                        i = readBlock(reader, line, offset, 
+                                commentDelim[commentType][0], 
+                                commentDelim[commentType][1],
+                                false, inMDXCmd, buf, i); 
+                        offset = 0;
+                    }
+                }
             }
-
-            i = reader.read();
+        }
+        
+        if (i == -1 && buf.length() == 0)
+            return null;
+        else
+            return buf.toString();
+    }
+    
+   /**
+     * Read the next line of input.  Return the terminating character,
+     * -1 for end of file, or \n or \r.  Add \n and \r to the end of the
+     * buffer to be included in strings and comment blocks.
+     */
+    protected static int getLine(Reader reader, StringBuffer line) 
+        throws IOException {
+        
+        line.setLength(0);
+        for (;;) {
+            int i = reader.read();
+            
+            if (i == -1) {
+                return i;
+            }
+            
+            line.append((char)i);
+            
+            if (i == '\n' || i == '\r') {
+                return i;
+            }
         }
     }
+     
+    /**
+     * Start of a string, read all of it even if it spans
+     * more than one line adding each line's <cr> to the
+     * buffer.
+     */
+    protected static int readString(
+            Reader reader, 
+            StringBuffer line, 
+            int offset,
+            StringBuffer buf,
+            int i)
+            throws IOException {
 
+        String delim=line.substring(offset, offset + 1);
+        return readBlock(reader, line, offset, delim, delim, true, true, buf, i);
+    }   
+
+    /**
+     * Start of a delimted block, read all of it even if it spans
+     * more than one line adding each line's <cr> to the
+     * buffer.
+     *
+     * A delimited block is a delimited comment (/\* ... *\/), or a string.
+     */
+    protected static int readBlock(
+            Reader reader,
+            StringBuffer line, 
+            int offset,
+            final String startDelim,
+            final String endDelim,
+            final boolean allowEscape,
+            final boolean addToBuf,
+            StringBuffer buf,
+            int i)
+            throws IOException {
+           
+        int depth=1;
+        if (addToBuf) {
+            buf.append(startDelim);
+        }
+        offset += startDelim.length();
+
+        for (;;) {
+            // see if we are at the end of the block
+            if (line.substring(offset).startsWith(endDelim)) {
+                if (addToBuf) {
+                    buf.append(endDelim);
+                }
+                offset += endDelim.length();
+                if (--depth == 0) {
+                     break;
+                }
+            }
+            // check for nested block
+            else if (allowNestedComments &&
+                     line.substring(offset).startsWith(startDelim)) {
+                if (addToBuf) {
+                    buf.append(startDelim);
+                }
+                offset += startDelim.length();
+                depth++;
+            }
+            else if (offset < line.length()) {
+                // not at the end of line, so eat the next char
+                char c = line.charAt(offset++);
+                if (allowEscape && c == ESCAPE_CHAR) {
+                    if (addToBuf) {
+                        buf.append(ESCAPE_CHAR);
+                    }
+
+                    if (offset < line.length()) {
+                        if (addToBuf) {
+                            buf.append(line.charAt(offset));
+                        }
+                        offset++;
+                    }
+                }
+                else if (addToBuf) {
+                    buf.append(c);
+                }
+            }            
+            else {
+                // finished a line; read in the next one and continue
+                if (i == -1) {
+                    break;
+                }
+                i = getLine(reader, line);
+                
+                // line will always contain EOL marker at least, unless at EOF
+                offset = 0;
+               if (line.length() == 0) {
+                    break;
+                }
+            }
+        }
+        
+        // remove to the end of the string, so caller starts at offset 0
+        if (offset > 0) {
+            line.delete(0, offset - 1);
+        }
+        
+        return i;
+    }   
+       
     /////////////////////////////////////////////////////////////////////////
     // user commands and help messages
     /////////////////////////////////////////////////////////////////////////
@@ -1031,7 +1118,6 @@ public class CmdRunner {
     private static final char ESCAPE_CHAR         = '\\';
     private static final char EXECUTE_CHAR        = '=';
     private static final char CANCEL_CHAR         = '~';
-    private static final char COMMENT_CHAR        = '#';
     private static final char STRING_CHAR_1       = '"';
     private static final char STRING_CHAR_2       = '\'';
 
@@ -2069,12 +2155,36 @@ public class CmdRunner {
         System.out.println(buf.toString());
         System.exit(0);
     }
+    
+    /**
+     * Set the default comment delimiters for CmdRunner.  These defaults are
+     * # to end of line
+     * plus all the comment delimiters in Scanner.
+     */
+    private static void setDefaultCommentState() {
+        allowNestedComments = mondrian.olap.Scanner.getNestedCommentsState();
+        String[][] scannerCommentsDelimiters = mondrian.olap.Scanner.getCommentDelimiters();
+        commentDelim = new String[scannerCommentsDelimiters.length+1][2];
+
+        // CmdRunner has extra delimiter; # to end of line
+        commentDelim[0][0] = "#";
+        commentDelim[0][1] = null;
+        
+        // copy all the rest of the delimiters
+        for (int x = 0; x < scannerCommentsDelimiters.length; x++) {
+            commentDelim[x + 1][0] = scannerCommentsDelimiters[x][0];
+            commentDelim[x + 1][1] = scannerCommentsDelimiters[x][1];
+        }
+    }
+    
     public static void main(String[] args) throws IOException {
         List filenames = null;
         String mdxCmd = null;
         boolean timeQueries = false;
         boolean noCache = false;
 
+        setDefaultCommentState();
+        
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
 

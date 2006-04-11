@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -30,7 +30,9 @@ public class Scanner {
     /** single lookahead character */
     protected int nextChar;
     /** next lookahead character */
-    private int lookaheadChar = 0;
+    private int lookaheadChars[] = new int[16];
+    private int firstLookaheadChar = 0;
+    private int lastLookaheadChar = 0;
     private Hashtable m_resWordsTable;
     private int iMaxResword;
     private String m_aResWords[];
@@ -41,21 +43,52 @@ public class Scanner {
     private int previousSymbol; // previous symbol returned
     private boolean inFormula;
 
+    /**
+     * Comment delimiters. Modify this list to support other comment styles.
+     */
+    private static final String[][] commentDelim = {
+        {"//", null},
+        {"--", null},
+        {"/*", "*/"}
+    };
+
+    /**
+     * Whether to allow nested comments.
+     */
+    private static final boolean allowNestedComments = true;
+
     Scanner(boolean debug) {
         this.debug = debug;
+    }
+
+    /**
+     * Returns the current nested comments state.
+     */
+    public static boolean getNestedCommentsState() {
+        return allowNestedComments;
+    }
+
+    /**
+     * Returns the list of comment delimiters.
+     */
+    public static String[][] getCommentDelimiters() {
+        return commentDelim;
     }
 
     /* Advance input by one character, setting {@link #nextChar}. */
     private final void advance()
         throws java.io.IOException {
 
-        if (lookaheadChar == 0) {
-            // We have not called lookahead().
+        if (firstLookaheadChar == lastLookaheadChar) {
+            // We have nothing in the lookahead buffer.
             nextChar = getChar();
         } else {
-            // We have called lookahead(); advance to the character it got.
-            nextChar = lookaheadChar;
-            lookaheadChar = 0;
+            // We have called lookahead(); advance to the next character it got.
+            nextChar = lookaheadChars[firstLookaheadChar++];
+            if (firstLookaheadChar == lastLookaheadChar) {
+                firstLookaheadChar = 0;
+                lastLookaheadChar = 0;
+            }
         }
         if (nextChar == '\012') {
             lines.add(new Integer(iChar));
@@ -67,8 +100,55 @@ public class Scanner {
     private final int lookahead()
         throws java.io.IOException {
 
-        lookaheadChar = getChar();
-        return lookaheadChar;
+        return lookahead(1);
+    }
+
+    /**
+     * Peeks at the character n after {@link #nextChar} without advancing.
+     * lookahead(0) returns the current char (nextChar).
+     * lookahead(1) returns the next char (was lookaheadChar, same as lookahead());
+     */
+    private final int lookahead(int n)
+        throws java.io.IOException {
+
+        if (n == 0) {
+            return nextChar;
+        }
+        else {
+            // if the desired character not in lookahead buffer, read it in
+            if (n > lastLookaheadChar - firstLookaheadChar) {
+                int len=lastLookaheadChar - firstLookaheadChar;
+                int t[];
+
+                // make sure we do not go off the end of the buffer
+                if (n + firstLookaheadChar > lookaheadChars.length) {
+                    if (n > lookaheadChars.length) {
+                        // the array is too small; make it bigger and shift
+                        // everything to the beginning.
+                        t=new int[n * 2];
+                    }
+                    else {
+                        // the array is big enough, so just shift everything
+                        // to the beginning of it.
+                        t = lookaheadChars;
+                    }
+
+                    for (int x = 0; x < len; x++) {
+                        t[x] = lookaheadChars[x + firstLookaheadChar];
+                    }
+                    lookaheadChars = t;
+                    firstLookaheadChar = 0;
+                    lastLookaheadChar = len;
+                }
+
+                // read ahead enough
+                while (n > lastLookaheadChar - firstLookaheadChar) {
+                    lookaheadChars[lastLookaheadChar++] = getChar();
+                }
+            }
+
+            return lookaheadChars[n - 1 + firstLookaheadChar];
+        }
     }
 
     /** Read a character from input, returning -1 if end of input. */
@@ -249,6 +329,93 @@ public class Scanner {
     }
 
     /**
+     * Discards all characters until the end of the current line.
+     */
+    private void skipToEOL() throws IOException {
+        while (nextChar != -1 && nextChar != '\012') {
+            advance();
+        }
+    }
+
+    /**
+     * Eats a delimited comment.
+     * The type of delimiters are kept in commentDelim.  The current
+     * comment type is indicated by commentType.
+     * end of file terminates a comment without error.
+     */
+    private void skipComment(
+            final String startDelim,
+            final String endDelim) throws IOException {
+
+        int depth = 1;
+
+        // skip the starting delimiter
+        for (int x = 0; x < startDelim.length(); x++) {
+            advance();
+        }
+
+        for (;;) {
+            if (nextChar == -1) {
+                return;
+            }
+            else if (checkForSymbol(endDelim)) {
+                // eat the end delimiter
+                for (int x = 0; x < endDelim.length(); x++) {
+                    advance();
+                }
+                if (--depth == 0) {
+                    return;
+                }
+            }
+            else if (allowNestedComments && checkForSymbol(startDelim)) {
+               // eat the nested start delimiter
+                for (int x = 0; x < startDelim.length(); x++) {
+                    advance();
+                }
+                depth++;
+            }
+            else {
+                advance();
+            }
+        }
+    }
+
+    /**
+     * If the next tokens are comments, skip over them.
+     */
+    private void searchForComments() throws IOException {
+
+        // eat all following comments
+        boolean foundComment;
+        do {
+            foundComment = false;
+            for (int x = 0; x < commentDelim.length; x++) {
+                if (checkForSymbol(commentDelim[x][0])) {
+                    if (commentDelim[x][1] == null) {
+                        foundComment = true;
+                        skipToEOL();
+                    } else {
+                        foundComment = true;
+                        skipComment(commentDelim[x][0], commentDelim[x][1]);
+                    }
+                }
+            }
+        } while (foundComment);
+    }
+
+    /**
+     * Checks if the next symbol is the supplied string
+     */
+    private boolean checkForSymbol(final String symb) throws IOException {
+            for (int x = 0; x < symb.length(); x++) {
+                if (symb.charAt(x) != lookahead(x)) {
+                    return false;
+                }
+            }
+            return true;
+    }
+
+    /**
      * Recognizes and returns the next complete token.
      */
     public Symbol next_token() throws IOException {
@@ -256,6 +423,7 @@ public class Scanner {
         StringBuffer id;
         boolean ampersandId = false;
         for (;;) {
+            searchForComments();
             switch (nextChar) {
             case '.':
                 switch (lookahead()) {

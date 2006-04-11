@@ -28,7 +28,7 @@
 
 <hr noshade color="#000000" size="1">
 
-<h2>What is MDX?</h2>
+<h2><a name="What_is_MDX">What is MDX?</a></h2>
 
 <p>MDX is stands for 'multi-dimensional expressions'. It is the main query 
 language implemented by Mondrian.</p>
@@ -36,20 +36,19 @@ language implemented by Mondrian.</p>
 <p>MDX was introduced by Microsoft with Microsoft SQL Server OLAP Services in 
 around 1998, as the language component of the <i>OLE DB for OLAP</i> API. More 
 recently, MDX has appeared as part of the <i>XML for Analysis</i> API. Microsoft 
-proposed that the MDX is a standard, and its adoption among application writers 
+proposed MDX as a standard, and its adoption among application writers 
 and other OLAP providers is steadily increasing.</p>
 
-<h2>What is the syntax of MDX?</h2>
+<h2><a name="What_is_the_syntax_of_MDX">What is the syntax of MDX?</a></h2>
 
 <p>A basic MDX query looks like this:</p>
 
 <blockquote>
 
-	<p><code>SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON 
-	COLUMNS,<br>
-&nbsp; {[Product].members} ON ROWS<br>
-	FROM [Sales]<br>
-	WHERE [Time].[1997].[Q2]</code></p>
+	<pre><code>SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS,
+  {[Product].members} ON ROWS
+FROM [Sales]
+WHERE [Time].[1997].[Q2]</code></pre>
 </blockquote>
 
 <p>It looks a little like SQL, but don't be deceived! The structure of an MDX 
@@ -63,7 +62,7 @@ MDX specification</a>; there's also a
 good tutorial in Database Journal</a>.) This specification describes the 
 differences between Mondrian's dialect and the standard dialect of MDX.</p>
 
-<h2>Mondrian-specific MDX</h2>
+<h2><a name="Mondrian-specific_MDX">Mondrian-specific MDX</a></h2>
 <h3><code>StrToSet</code> and <code>StrToTuple</code></h3>
 
 <p>The <code>StrToSet()</code> and <code>StrToTuple()</code> functions take
@@ -78,17 +77,43 @@ differences between Mondrian's dialect and the standard dialect of MDX.</p>
 <p>Pseudo-functions <code>Param()</code> and <code>ParamRef()</code> allow
   you to create parameterized MDX statements.</p>
 
+<h2><a name="Comments">Comments</a></h2>
+
+<p>MDX statements can contain comments. There are 3 syntactic forms for 
+comments:</p>
+
+<blockquote>
+  <pre><code>// </code><i><code>End-of-line comment</code></i></pre>
+</blockquote>
+
+<blockquote>
+  <pre><code>-- <i>End-of-line comment</i></code></pre>
+</blockquote>
+
+<blockquote>
+  <pre><code>/* <i>Multi-line
+   comment</i> */</code></pre>
+</blockquote>
+
+<p>Comments can be nested, for example</p>
+
+<blockquote>
+  <pre><code>/* <i>Multi-line
+   comment</i> /* <i>Comment within a comment</i> */ 
+ */</code></pre>
+</blockquote>
+
 <h2><a name="Format_strings">Format strings</a></h2><p>Every member has a 
 FORMAT_STRING property, which affects how its raw value is rendered into text in 
 the user interface. For example, the query</p>
 
 <blockquote>
 
-	<p><code>WITH MEMBER [Measures].[Profit] AS '([Measures].[Store Sales] - [Measures].[Store Cost])',<br>
-	&nbsp;&nbsp;FORMAT_STRING = &quot;$#,###.00&quot;<br/>
-SELECT {[Measures].[Store Sales], [Measures].[Profit]} ON COLUMNS,<br/>
-&nbsp;&nbsp;{[Product].CurrentMember.Children} ON ROWS<br/>
-FROM [Sales]</code></p>
+	<pre><code>WITH MEMBER [Measures].[Profit] AS '([Measures].[Store Sales] - [Measures].[Store Cost])',
+&nbsp;&nbsp;FORMAT_STRING = &quot;$#,###.00&quot;
+SELECT {[Measures].[Store Sales], [Measures].[Profit]} ON COLUMNS,
+&nbsp;&nbsp;{[Product].CurrentMember.Children} ON ROWS
+FROM [Sales]</code></pre>
 </blockquote>
 
 <p>yields cells formatted in dollar and cent amounts.</p>
@@ -137,9 +162,11 @@ FROM [Sales]</code></blockquote>
  
 </p>
 
-<h2>Function list</h2>
+<h2><a name="Function_list">Function list</a></h2>
 
 <p>These are the functions implemented in the current Mondrian release.</p>
+
+<p>&nbsp;</p>
 
 <!-- This table is generated using
      mondrian.olap.fun.FunctionTest.testDumpFunctions.
