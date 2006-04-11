@@ -514,7 +514,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         for (int i = 0; i < comments.length; i++) {
             String comment = comments[i];
             allCommentList.add(comment);
-            if (comment.contains("\n")) {
+            if (comment.indexOf("\n") >= 0) {
                 allCommentList.add(comment.replaceAll("\n", "\r\n"));
                 allCommentList.add(comment.replaceAll("\n", "\n\r"));
                 allCommentList.add(comment.replaceAll("\n", " \n \n "));
