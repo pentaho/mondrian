@@ -14,6 +14,7 @@ package mondrian.xmla;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +33,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
+import org.apache.log4j.Logger;
 
 /**
  * Utility methods for XML/A implementation.
@@ -39,8 +41,9 @@ import org.xml.sax.InputSource;
  * @author Gang Chen
  * @version $Id$
  */
-public class XmlaUtil {
+public class XmlaUtil implements XmlaConstants {
 
+    private static final Logger LOGGER = Logger.getLogger(XmlaUtil.class);
     /**
      * Invalid characters for XML element name.
      *
@@ -115,28 +118,35 @@ public class XmlaUtil {
     }
 
 
-    public static String element2Text(Element elem) {
+    public static String element2Text(Element elem) 
+            throws XmlaException {
         StringWriter writer = new StringWriter();
         try {
             TransformerFactory factory = TransformerFactory.newInstance();
             Transformer transformer = factory.newTransformer();
             transformer.transform(new DOMSource(elem), new StreamResult(writer));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new XmlaException(
+                CLIENT_FAULT_FC,
+                USM_DOM_PARSE_CODE, 
+                USM_DOM_PARSE_FAULT_FS,
+                e);
         }
         return writer.getBuffer().toString();
     }
 
-    public static Element text2Element(String text) {
+    public static Element text2Element(String text) 
+            throws XmlaException {
         return _2Element(new InputSource(new StringReader(text)));
     }
 
-    public static Element stream2Element(InputStream stream) {
+    public static Element stream2Element(InputStream stream) 
+            throws XmlaException {
         return _2Element(new InputSource(stream));
     }
 
-    private static Element _2Element(InputSource source) {
-        Element elem = null;
+    private static Element _2Element(InputSource source) 
+            throws XmlaException {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setIgnoringElementContentWhitespace(true);
@@ -144,11 +154,16 @@ public class XmlaUtil {
             factory.setNamespaceAware(true);
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.parse(source);
-            elem = doc.getDocumentElement();
+            Element elem = doc.getDocumentElement();
+            return elem;
+
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new XmlaException(
+                CLIENT_FAULT_FC,
+                USM_DOM_PARSE_CODE, 
+                USM_DOM_PARSE_FAULT_FS,
+                e);
         }
-        return elem;
     }
 
     /**
@@ -157,11 +172,33 @@ public class XmlaUtil {
     public static Element firstChildElement(Element parent,
                                             String ns,
                                             String lname) {
+        if (LOGGER.isDebugEnabled()) {
+            StringBuffer buf = new StringBuffer(100);
+            buf.append("XmlaUtil.firstChildElement: ");
+            buf.append(" ns=\"");
+            buf.append(ns);
+            buf.append("\", lname=\"");
+            buf.append(lname);
+            buf.append("\"");
+            LOGGER.debug(buf.toString());
+        }
         NodeList nlst = parent.getChildNodes();
         for (int i = 0, nlen = nlst.getLength(); i < nlen; i++) {
             Node n = nlst.item(i);
             if (n instanceof Element) {
                 Element e = (Element) n;
+
+                if (LOGGER.isDebugEnabled()) {
+                    StringBuffer buf = new StringBuffer(100);
+                    buf.append("XmlaUtil.firstChildElement: ");
+                    buf.append(" e.getNamespaceURI()=\"");
+                    buf.append(e.getNamespaceURI());
+                    buf.append("\", e.getLocalName()=\"");
+                    buf.append(e.getLocalName());
+                    buf.append("\"");
+                    LOGGER.debug(buf.toString());
+                }
+
                 if ((ns == null || ns.equals(e.getNamespaceURI())) &&
                     (lname == null || lname.equals(e.getLocalName()))) {
                     return e;
@@ -174,12 +211,41 @@ public class XmlaUtil {
     public static Element[] filterChildElements(Element parent,
                                                 String ns,
                                                 String lname) {
+
+/*
+way too noisy
+        if (LOGGER.isDebugEnabled()) {
+            StringBuffer buf = new StringBuffer(100);
+            buf.append("XmlaUtil.filterChildElements: ");
+            buf.append(" ns=\"");
+            buf.append(ns);
+            buf.append("\", lname=\"");
+            buf.append(lname);
+            buf.append("\"");
+            LOGGER.debug(buf.toString());
+        }
+*/
+
         List elems = new ArrayList();
         NodeList nlst = parent.getChildNodes();
         for (int i = 0, nlen = nlst.getLength(); i < nlen; i++) {
             Node n = nlst.item(i);
             if (n instanceof Element) {
                 Element e = (Element) n;
+
+/*
+                if (LOGGER.isDebugEnabled()) {
+                    StringBuffer buf = new StringBuffer(100);
+                    buf.append("XmlaUtil.filterChildElements: ");
+                    buf.append(" e.getNamespaceURI()=\"");
+                    buf.append(e.getNamespaceURI());
+                    buf.append("\", e.getLocalName()=\"");
+                    buf.append(e.getLocalName());
+                    buf.append("\"");
+                    LOGGER.debug(buf.toString());
+                }
+*/
+
                 if ((ns == null || ns.equals(e.getNamespaceURI())) &&
                     (lname == null || lname.equals(e.getLocalName()))) {
                     elems.add(e);
@@ -190,7 +256,7 @@ public class XmlaUtil {
     }
 
     public static String textInElement(Element elem) {
-        StringBuffer buf = new StringBuffer();
+        StringBuffer buf = new StringBuffer(100);
         elem.normalize();
         NodeList nlst = elem.getChildNodes();
         for (int i = 0, nlen = nlst.getLength(); i < nlen ; i++) {
@@ -242,13 +308,21 @@ public class XmlaUtil {
         return numericStr;
     }
 
-    public static byte[] decodeBase64(String encoded) {
-        throw new UnsupportedOperationException();
+    public static String encodeBase64(byte[] bytes) {
+        // This uses Sun's private encodes, we need to find public
+        // implementation that can be added to Mondrian.
+        sun.misc.BASE64Encoder encoder = new sun.misc.BASE64Encoder();
+        String encodedStr = encoder.encodeBuffer(bytes);
+        return encodedStr;
+    }
+    public static byte[] decodeBase64(String arg) throws IOException {
+        // This uses Sun's private encodes, we need to find public
+        // implementation that can be added to Mondrian.
+        sun.misc.BASE64Decoder decoder = new sun.misc.BASE64Decoder();
+        byte[] bytes = decoder.decodeBuffer(arg);
+        return bytes;
     }
 
-    public static String encodeBase64(byte[] bytes) {
-        throw new UnsupportedOperationException();
-    }
 }
 
 // End XmlaUtil.java
