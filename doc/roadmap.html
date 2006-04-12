@@ -12,7 +12,7 @@
 
 <h1><font size="6"> Mondrian roadmap</font></h1>
 
-<p>By Julian Hyde; last updated October, 2005.</p>
+<p>By Julian Hyde; last updated April, 2006.</p>
 
 <hr noshade color="#000000" size="1">
 
@@ -27,6 +27,17 @@
 	<li><a href="#2.4_Sponsored_development_and_co-development">Sponsored 
 	development and co-development</a></li>
   </ol>
+  </li>
+  <li><a href="#3_Release_history">Release history</a><ol>
+  <li><a href="#Release_2.1">Release 2.1</a></li>
+  <li><a href="#Release_2.0">Release 2.0</a></li>
+  <li><a href="#Release_1.1">Release 1.1</a></li>
+  <li><a href="#Release_0.6">Release 0.6</a></li>
+  <li><a href="#Release_0.5">Release 0.5</a></li>
+  <li><a href="#Release_0.4">Release 0.4</a></li>
+  <li><a href="#Release_0.3">Release 0.3</a></li>
+</ol>
+
   </li>
   <li><a href="#4_Build">Feature list</a>
   <ol>
@@ -55,6 +66,10 @@
 		<li><a href="#Feature_Mondrian_XMLA_server">Mondrian XML/A server</a></li>
 		<li><a href="#Feature_User_defined_aggregate_functions">User-defined 
 		aggregate functions</a></li>
+        <li><a href="#Feature_Time_function_and_scalar_functions">Time function 
+        and scalar functions</a></li>
+        <li><a href="#Feature_Further_work_on_aggregate_tables">Further work on 
+        aggregate tables</a></li>
 
   </ol>
 	<li><a href="#4._Features_implemented_in_1.2">Features implemented in 1.2</a><ol>
@@ -83,9 +98,9 @@ delivering the same functionality that we haven't thought of.</p>
 prioritize. If we hear that a particular feature is important to a lot of 
 people, we will try to get to it sooner.</p>
 
-<p>Third, it allows us to attract resources.&nbsp; If there are features in this 
+<p>Third, it allows us to attract resources.&nbsp;If there are features in this 
 roadmap which are important to your organization, consider sponsoring Mondrian's 
-development. The extra </p>
+development.</p>
 
 <h3><a name="2.2_Mondrians_goals">2.2 Mondrian's goal</a></h3>
 
@@ -139,9 +154,133 @@ resulting code is contributed to the project.</p>
 <p>If your organization would like to sponsor development of features, please 
 contact Julian Hyde.</p>
 
-<h2>3 Feature list</h2>
+<h2><a name="3_Release_history">3 Release history</a></h2>
 
-<h3><a name="Feature_Internationalization_localization">3.1 Internationalization/localization</a></h3>
+<h3><a name="Release_2.1">Release 2.1 (2006-04-xx)</a></h3>
+<ol>
+  <li>Finally, a separate distribution <code>mondrian-*-embedded.zip</code>, 
+  including an embedded Derby database in the WAR. This can be deployed to 
+  Tomcat on any platform by simply exploding the WAR into TOMCAT/webapps, 
+  allowing folks &quot;kicking the tires&quot; to easily try out Mondrian/JPivot. See
+  <a href="http://mondrian.sourceforge.net/install.html#5_Deploy_and_run_the_embedded_web_app">
+  how to deploy and run the embedded web app</a>.</li>
+  <li>XML/A bug fixes, functionality and test suite improvements.</li>
+  <li>Compilation of MDX expressions. This is an architectural change to allow 
+  Mondrian to analyze queries at the start of execution, and trade off various 
+  techniques such as expression-caching and pushing predicates into the 
+  generated SQL. It involves some API changes (see <a href="#API_changes_in_2.1">
+  below</a>).</li>
+  <li>Allow distinct-count measures to be rolled up over attributes which are 
+  functionally dependent on the key of the measure (e.g. &quot;gender&quot; is 
+  functionally dependent on the key &quot;customer_id&quot; of the measure &quot;Customer 
+  Count&quot;). This yields performance improvements when using distinct 
+  count-aggregates.</li>
+  <li>Improved integration of User-Defined Functions.</li>
+  <li>Implemented <code>VisualTotals</code>, <code>LastPeriods</code>, <code>
+  AddCalculatedMembers</code>, <code>StripCalculatedMembers</code> MDX 
+  functions.</li>
+  <li>Support for comments in MDX (<code>/* </code>...<code> */</code>, <code>--</code>
+  <i>[rest of line]</i>, <code>//</code> <i>[rest of line]</i>).</li>
+  <li>Includes recent, compatible version of JPivot.</li>
+  <li>Interbase 6 support.</li>
+  <li>Many bug fixes and extensions to the test suite.</li>
+  <li>Documentation improvements.</li>
+</ol>
+
+<h4><a name="API_changes_in_2.1">API changes in 2.1</a></h4>
+<ol>
+  <li><b>FunCall and UnresolvedFunCall</b>. It used to be possible to create a
+  <code>FunCall</code> with the name of a function but no function definition. 
+  This complicated the validation process, because we would discover at runtime 
+  that a function call had no definition. Now you should use the new class <code>
+  UnresolvedFunCall</code>.</li>
+  <li><b>Category methods</b>. Renaming a few of the methods concerning types 
+  and categories.<ul>
+    <li><code>Exp.getType()</code> used to return <code>int</code>, now returns
+    <code>Type</code></li>
+    <li>Old usages of <code>Exp.getType()</code> should use <code>
+    Exp.getCategory()</code></li>
+    <li><code>int[] FunDef.getParameterTypes()</code> is renamed to int[] <code>
+    FunCall.getParameterCategories()</code></li>
+    <li><code>int FunCall.getReturnType()</code> is renamed to <code>int 
+    FunCall.getReturnCategory()</code></li>
+    <li>Removed the <code>Exp.getTypeX()</code> method; old usages of this 
+    method should now use <code>Exp.getType()</code>.</li>
+  </ul>
+  </li>
+  <li><b>OLAP element types</b>. OLAP elements <code>Cube</code>, <code>
+  Dimension</code>, <code>Hierarchy</code>, <code>Level</code> and <code>Member</code> 
+  no longer implement the <code>Exp</code> interface. If you want to use these 
+  in expressions, there are wrapper classes: <code>DimensionExpr</code>, <code>
+  HierarchyExpr</code>, <code>LevelExpr</code>, <code>MemberExpr</code>. These 
+  are in a new package, <code>mondrian.mdx</code>. Some other parse tree classes 
+  (<code>Query</code>, <code>Literal</code>) will move to this package at some 
+  time in the future.</li>
+</ol>
+
+<h3><a name="Release_2.0">Release 2.0 (2005-12-19)</a></h3>
+<ul>
+  <li><a href="aggregate_tables.html">Aggregate tables</a>.</li>
+  <li>Calculated sets defined in the schema, and <code>WITH SET</code> syntax to 
+  define sets within an MDX query.</li>
+  <li>Cached set expressions. The <code>WITH SET</code> feature and functions such as 
+  <code>RANK</code> cause the same expression to 
+be evaluated many times within the course of a single MDX statement. The set-expression cache 
+  improves the performance of such queries. </li>
+  <li><a href="schema.html#User-defined_function">User-defined functions</a>.</li>
+  <li>Enhanced support for parent-child hierarchies.</li>
+  <li>Enhanced <a target="_top" href="http://www.xmla.org/">XML for Analysis 
+  (XML/A)</a> support.</li>
+  <li>Enhanced support for internationalized/localized (I18N/L10N) applications.</li>
+  <li>Pushdown SQL. To improve performance, Mondrian automatically translates 
+  filters and aggregations into SQL which can be executed on the underlying 
+  RDBMS.</li>
+  <li>Support for the <a target="_top" href="http://db.apache.org/derby/">Apache 
+  Derby</a> pure Java embedded RDBMS.</li>
+</ul>
+
+<h3><a name="Release_1.1">Release 1.1 (2005-04-06)</a></h3>
+<ul>
+  <li>Numerous improvements in functionality, performance, and stability.</li>
+</ul>
+
+<h3><a name="Release_1.0">Release 1.0 (2003-08-18)</a></h3>
+<ul>
+  <li>First production release.</li>
+  <li>Distinct-count aggregations.</li>
+  <li>JDBC connection-pooling.</li>
+  <li>Support for XML for Analysis (XML/A).</li>
+</ul>
+
+<h3><a name="Release_0.6">Release 0.6 (2003-05-24)</a></h3>
+<ul>
+  <li>Parent-child hierarchies.</li>
+  <li>Partial support for XML for Analysis (XML/A).</li>
+</ul>
+
+<h3><a name="Release_0.5">Release 0.5 (2003-02-20)</a></h3>
+<ul>
+  <li>Partial support for JOLAP.</li>
+  <li>Implement <code>Hierarchize</code>, &quot;:&quot;, <code>Aggregate</code>, and 
+  statistical functions.</li>
+</ul>
+
+<h3><a name="Release_0.4">Release 0.4 (2002-11-10)</a></h3>
+<ul>
+  <li>Integration with JPivot.</li>
+  <li>Improved thread-safety.</li>
+</ul>
+
+<h3><a name="Release_0.3">Release 0.3 (2002-08-09)</a></h3>
+<ul>
+  <li>First public release.</li>
+  <li>JSP page generates a static table from an MDX query.</li>
+  <li>Support for several SQL dialects.</li>
+</ul>
+
+<h2><a name="4_Feature_list">4 Feature list</a></h2>
+
+<h3><a name="Feature_Internationalization_localization">4.1 Internationalization/localization</a></h3>
 
 <p><i>Effort: medium; importance: medium.</i></p>
 
@@ -168,7 +307,7 @@ contact Julian Hyde.</p>
 <a href="http://sourceforge.net/mailarchive/forum.php?thread_id=6386685&forum_id=8760">
 email thread &quot;MLS cubes RFC&quot;</a>.</p>
 
-<h3><a name="Feature_Improved_cache_control">3.2 Improved cache control</a></h3>
+<h3><a name="Feature_Improved_cache_control">4.2 Improved cache control</a></h3>
 
 <p><i>Effort: medium; importance: medium.</i></p>
 
@@ -214,7 +353,7 @@ Oklahoma since 2005/9/2:</p>
 
 <p>See also <a href="#Feature_Partitioned_cubes">partitioned cubes</a>.</p>
 
-<h3><a name="Feature_Partitioned_cubes">3.3 Partitioned cubes</a></h3>
+<h3><a name="Feature_Partitioned_cubes">4.3 Partitioned cubes</a></h3>
 
 <p><i>Effort: medium; importance: medium; priority: medium.</i></p>
 
@@ -271,13 +410,13 @@ performance.</p>
 	&lt;/Cube&gt;</code></p>
 </blockquote>
 
-<h3><a name="Feature_Improve_dimension_sharing">3.4 Improve dimension sharing</a></h3>
+<h3><a name="Feature_Improve_dimension_sharing">4.4 Improve dimension sharing</a></h3>
 
 <p><i>Effort: high; importance: high; priority: medium.</i></p>
 
 <p>Use the same dimension twice in the same cube.</p>
 
-<h3><a name="Feature_Virtual_cube_enhancements">3.5 Virtual cube enhancements</a></h3>
+<h3><a name="Feature_Virtual_cube_enhancements">4.5 Virtual cube enhancements</a></h3>
 
 <p><i>Effort: medium; importance: medium; priority: medium.</i></p>
 
@@ -285,14 +424,14 @@ performance.</p>
 disambiguate which usage of the dimension is involved. Allow the virtual cube to 
 use the same cube more than once.</p>
 
-<h3><a name="Feature_Calculated_members_in_virtual_cubes">3.6 Calculated members in virtual cubes</a></h3>
+<h3><a name="Feature_Calculated_members_in_virtual_cubes">4.6 Calculated members in virtual cubes</a></h3>
 
 <p><i>Effort: low; importance: medium; priority: medium.</i></p>
 
 <p>One could imagine two levels: 1) simply access calculated measures from base 
 cubes, 2) define new calculated measures spanning measures in the base cubes.</p>
 
-<h3><a name="Feature_Time_function">3.7 Time function</a></h3>
+<h3><a name="Feature_Time_function">4.7 Time function</a></h3>
 
 <p><i>Effort: low; importance: medium; priority: medium.</i></p>
 
@@ -300,7 +439,7 @@ cubes, 2) define new calculated measures spanning measures in the base cubes.</p
 <a href="https://sourceforge.net/forum/forum.php?thread_id=1222972&forum_id=111375">
 the Open Discussion thread &quot;Accessing the current date in MDX&quot;</a>.</p>
 
-<h3><a name="Feature_Scalar_functions">3.8 Scalar functions</a></h3>
+<h3><a name="Feature_Scalar_functions">4.8 Scalar functions</a></h3>
 
 <p><i>Effort: medium; importance: high; priority: medium.</i></p>
 
@@ -309,7 +448,7 @@ is limited. This feature would add string manipulation functions (substring,
 trim, regular expressions) and arithmetic expressions (power, log, sqrt) and 
 conversion functions (string to numeric, numeric to string).</p>
 
-<h3><a name="Feature_Cold_start">3.9 Cold start</a></h3>
+<h3><a name="Feature_Cold_start">4.9 Cold start</a></h3>
 
 <p><i>Effort: medium; importance: medium; priority: low.</i></p>
 
@@ -321,12 +460,20 @@ size. For example in one test an 8GB cube (55M row fact table) took 15 minutes
 (mostly doing a group by) before it returned results from its first query, and 
 absent any caching on the database server would take another 15 minutes if you 
 closed it and reopened the application. Now, this cube was just one month of 
-data; imagine the time if there was 5 years worth.<br>
-<br>
-What ideas and designs can you come up with to speed that up, in other words to 
+data; imagine the time if there was 5 years worth.</p>
+
+<p>What ideas and designs can you come up with to speed that up, in other words to 
 do anything time consuming only once and reuse it between instances?</p>
 
-<h3><a name="Feature_Rollups">3.10 Rollups</a></h3>
+<p><i>Gang Chen</i>: If it's possible, can we calculate the real levels of a
+parent-child hierarchy? This'll let Mondrian's metadata close to MS
+AS's.</p>
+
+<p><i>Julian Hyde</i>: Can you give me more details on how that would work?
+Start a discussion forum or feature request on SourceForge.</p>
+
+
+<h3><a name="Feature_Rollups">4.10 Rollups</a></h3>
 
 <p><i>Effort: medium; importance: medium; priority: low.</i></p>
 
@@ -337,11 +484,11 @@ would be able to compute the aggregate for the parent member by rolling up.</p>
 <a href="https://sourceforge.net/mailarchive/forum.php?thread_id=6496831&forum_id=8760">
 email thread &quot;grouper in Mondrian&quot;</a>.</p>
 
-<h3><a name="Feature_Compound_slicer">3.11 Compound slicer</a></h3>
+<h3><a name="Feature_Compound_slicer">4.11 Compound slicer</a></h3>
 
 <p><i>Effort: medium; importance: low; priority: low.</i></p>
 
-<h3><a name="Feature_Enhancements_to_schema_cache">3.12 Enhancements to schema cache</a></h3>
+<h3><a name="Feature_Enhancements_to_schema_cache">4.12 Enhancements to schema cache</a></h3>
 
 <p><i>Effort: low; importance: medium; priority: high.</i></p>
 
@@ -367,29 +514,29 @@ Values are:</p>
 	definition from the cache.</li>
 </ul>
 
-<h3><a name="Feature_JOLAP_support">3.13 JOLAP support</a></h3>
+<h3><a name="Feature_JOLAP_support">4.13 JOLAP support</a></h3>
 
 <p><i>Effort: very high; importance: medium; priority: low.</i></p>
 
 <p>Mondrian's support for the JOLAP API is currently incomplete. This feature 
 would complete the implementation of the API.</p>
 
-<h3><a name="Feature_Schema_and_query_validation">3.14 Schema and query validation</a></h3>
+<h3><a name="Feature_Schema_and_query_validation">4.14 Schema and query validation</a></h3>
 
 <p>Process to validate a schema.</p>
 
-<p>PRocess to validate a set of queries. Maybe an option to ignore errors due to 
+<p>Process to validate a set of queries. Maybe an option to ignore errors due to 
 specific members not existing because the data hasn't been loaded yet.</p>
 
 <p>Expose validation via Eclipse plugin.</p>
 
-<h3><a name="Feature_Documentation">3.15 Documentation</a></h3>
+<h3><a name="Feature_Documentation">4.15 Documentation</a></h3>
 
 <ul>
 <li>Document 'ordinalColumn'</li>
 </ul>
 
-<h3><a name="Feature_Name-resolution">3.16 Name-resolution</a></h3>
+<h3><a name="Feature_Name-resolution">4.16 Name-resolution</a></h3>
 
 <p>Mondrian's name resolution is not always compatible with other MDX 
 implementations such as MSAS and SAS.</p>
@@ -402,7 +549,7 @@ implementations such as MSAS and SAS.</p>
 	are supported, but '<code>ON 0</code>' is not.</li>
 </ol>
 
-<h3><a name="Feature_XMLA_interoperability">3.17 XML/A interoperability</a></h3>
+<h3><a name="Feature_XMLA_interoperability">4.17 XML/A interoperability</a></h3>
 
 <p>Other improvements (Schema, Tabular Format, ...)</p>
 
@@ -411,15 +558,11 @@ implementations such as MSAS and SAS.</p>
 href="https://sourceforge.net/forum/forum.php?thread_id=1306599&forum_id=111376">Excel
 2003 and Mondrian</a>.
 
-<h3><a name="Feature_Standard_functions">3.18 Standard functions</a></h3>
+<h3><a name="Feature_Standard_functions">4.18 Standard functions</a></h3>
 
 <p>Implement standard MDX functions:<ul>
-<li>LastPeriods(Index[, Member])</li>
-<li>VisualTotals(Set, Pattern)</li>
 <li>SetToArray(&lt;Set&gt;[, &lt;Set&gt;]...[, &lt;Numeric Expression&gt;])</li>
-<li>&lt;Tuple&gt;.Item(&lt;Numeric Expression&gt;)</li>
 <li>ValidMeasure(&lt;Tuple&gt;)</li>
-<li>AddCalculatedMembers(&lt;Set&gt;)</li>
 <li>DrilldownLevelBottom(&lt;Set&gt;, &lt;Count&gt;[, [&lt;Level&gt;][, &lt;Numeric Expression&gt;]])</li>
 <li>DrilldownLevelTop(&lt;Set&gt;, &lt;Count&gt;[, [&lt;Level&gt;][, &lt;Numeric Expression&gt;]])</li>
 <li>DrilldownMemberBottom(&lt;Set1&gt;, &lt;Set2&gt;, &lt;Count&gt;[, [&lt;Numeric Expression&gt;][, 
@@ -429,10 +572,6 @@ RECURSIVE]])</li>
 <li>DrillupLevel(&lt;Set&gt;[, &lt;Level&gt;])</li>
 <li>DrillupMember(&lt;Set1&gt;, &lt;Set2&gt;)</li>
 <li>Extract(&lt;Set&gt;, &lt;Dimension&gt;[, &lt;Dimension&gt;...])</li>
-<li>LastPeriods(&lt;Index&gt;[, &lt;Member&gt;])</li>
-<li>StripCalculatedMembers(&lt;Set&gt;)</li>
-<li>VisualTotals(&lt;Set&gt;, &lt;Pattern&gt;)</li>
-<li>&lt;Set&gt;.Item(&lt;String Expression&gt;[, &lt;String Expression&gt;...] | &lt;Index&gt;)</li>
 <li>Except(&lt;Set1&gt;, &lt;Set2&gt;[, ALL])</li>
 </ul>
 
@@ -525,16 +664,20 @@ of this.</p>
 tables.</p>
 
 
-<h2><a name="4._Features_implemented_in_1.2">4. Features implemented in 1.2</a></h2>
+<h3><a name="Feature_Time_function_and_scalar_functions">3.23 Time function and scalar functions</a></h3>
 
-<h3><a name="Feature_Aggregate_navigation">4.1 Aggregate navigation</a></h3>
+<p><i>Gang Chen</i>: We may split them (common UDFs) into a standalone UDF package or
+project. Autoload them to setup a GlobalFunTable when constructing
+RolapSchema. I have implemented it in my working copy. Other
+application specified UDFs can also be configured in schema file.</p>
 
-<p><i>Effort: high; importance: high.</i></p>
+<p><i>Julian Hyde</i>: I'd be happy to accept them into Mondrian. Let's make
+them an optional part of Mondrian -- in the source tree, but not
+loaded in the MDX dialect by default -- but create a set of tests for
+them. They will serve as great examples for others writing UDFs.</p>
 
-<p>Define aggregate tables in the schema.</p>
-
-<p>Once the aggregate tables feature is stabilized, there are a number of extra
-features we can build around it:
+<h3><a name="Feature_Further_work_on_aggregate_tables">3.24 Further work on 
+aggregate tables</a></h3>
 
 <p>1. Utility to populate (or generate INSERT statements to populate) the  agg
 tables. (For extra credit: populate the tables in topological order, so that
@@ -560,33 +703,6 @@ running.
 <p>I'm thinking of these being utilities, not part of the core runtime engine.
 There's plenty of room to wrap these utilities in nice graphical interfaces,
 make them smarter.
-
-<h3><a name="Feature_WITH_SET">4.2 WITH SET</a></h3>
-
-<p><i>Effort: medium; importance: high; priority: high.</i></p>
-
-<p>Support the MDX <code>WITH SET</code> syntax.</p>
-
-<h3>4.2.1 Store set definitions against cube</h3>
-
-<h3><a name="Feature_Cache_set_expressions">4.3 Cache set expressions</a></h3>
-
-<p><i>Effort: medium; importance: medium.</i></p>
-
-<p>The WITH SET feature and functions such as RANK cause the same expression to 
-be evaluated many times within the course of a single MDX statement. A 
-set-expression cache will provide an order of magnitude performance improvement 
-for such queries. </p>
-
-<h3><a name="Feature_User-defined_functions">4.4 User-defined functions</a></h3>
-
-<p><i>Effort: low; importance: medium; priority: medium.</i></p>
-
-<p>A user-defined functions facility will allow an application developer to add 
-MDX functions without modifying Mondrian's source code. To write a function, the 
-developer will need to write a class which implements a given SPI 
-(service-provider interface), include the class on the class-path, and reference 
-the class from the schema file.</p>
 
 <hr>
 
