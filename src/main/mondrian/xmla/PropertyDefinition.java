@@ -88,7 +88,11 @@ class PropertyDefinition extends EnumeratedValues.BasicValue {
             Enumeration.Access.write, 
             XmlaConstants.CONTENT_DEFAULT.getName(),
             Enumeration.Methods.discoverAndExecute,
-            "An enumerator that specifies what type of data is returned in the result set. " + nl + "None: Allows the structure of the command to be verified, but not executed. Analogous to using Prepare to check syntax, and so on." + nl + "Schema: Contains the XML schema (which indicates column information, and so on) that relates to the requested query." + nl + "Data: Contains only the data that was requested." + nl + "SchemaData: Returns both the schema information as well as the data.");
+            "An enumerator that specifies what type of data is returned in the result set. " + nl + 
+            "None: Allows the structure of the command to be verified, but not executed. Analogous to using Prepare to check syntax, and so on." + nl + 
+            "Schema: Contains the XML schema (which indicates column information, and so on) that relates to the requested query." + nl + 
+            "Data: Contains only the data that was requested." + nl + 
+            "SchemaData: Returns both the schema information as well as the data.");
 
     public static final int Cube_ORDINAL = 4;
     static final PropertyDefinition Cube = 
@@ -136,7 +140,10 @@ class PropertyDefinition extends EnumeratedValues.BasicValue {
             Enumeration.Access.write, 
             "Native", 
             Enumeration.Methods.discoverAndExecute,
-            "Enumerator that determines the format of the returned result set. Values include:" + nl + "Tabular: a flat or hierarchical rowset. Similar to the XML RAW format in SQL. The Format property should be set to Tabular for OLE DB for Data Mining commands." + nl + "Multidimensional: Indicates that the result set will use the MDDataSet format (Execute method only)." + nl + "Native: The client does not request a specific format, so the provider may return the format  appropriate to the query. (The actual result type is identified by namespace of the result.)");
+            "Enumerator that determines the format of the returned result set. Values include:" + nl + 
+            "Tabular: a flat or hierarchical rowset. Similar to the XML RAW format in SQL. The Format property should be set to Tabular for OLE DB for Data Mining commands." + nl + 
+            "Multidimensional: Indicates that the result set will use the MDDataSet format (Execute method only)." + nl + 
+            "Native: The client does not request a specific format, so the provider may return the format  appropriate to the query. (The actual result type is identified by namespace of the result.)");
 
     public static final int LocaleIdentifier_ORDINAL = 8;
     static final PropertyDefinition LocaleIdentifier = 
@@ -148,7 +155,8 @@ class PropertyDefinition extends EnumeratedValues.BasicValue {
             Enumeration.Access.readWrite, 
             "None", 
             Enumeration.Methods.discoverAndExecute,
-            "Use this to read or set the numeric locale identifier for this request. The default is provider-specific." + nl + "For the complete hexadecimal list of language identifiers, search on \"Language Identifiers\" in the MSDN Library at http://www.msdn.microsoft.com.");
+            "Use this to read or set the numeric locale identifier for this request. The default is provider-specific." + nl + 
+            "For the complete hexadecimal list of language identifiers, search on \"Language Identifiers\" in the MSDN Library at http://www.msdn.microsoft.com.");
 
     public static final int MDXSupport_ORDINAL = 9;
     static final PropertyDefinition MDXSupport = 
@@ -208,7 +216,9 @@ class PropertyDefinition extends EnumeratedValues.BasicValue {
             Enumeration.Access.read, 
             "None", 
             Enumeration.Methods.discover,
-            "Property that specifies the degree of support in the provider for state. For information about state in XML for Analysis, see \"Support for Statefulness in XML for Analysis.\" Minimum enumeration values are as follows:" + nl + "None - No support for sessions or stateful operations." + nl + "Sessions - Provider supports sessions.");
+            "Property that specifies the degree of support in the provider for state. For information about state in XML for Analysis, see \"Support for Statefulness in XML for Analysis.\" Minimum enumeration values are as follows:" + nl +
+            "None - No support for sessions or stateful operations." + nl + 
+            "Sessions - Provider supports sessions.");
 
     public static final int Timeout_ORDINAL = 14;
     static final PropertyDefinition Timeout = 
@@ -230,7 +240,8 @@ class PropertyDefinition extends EnumeratedValues.BasicValue {
             null, Enumeration.Access.read, 
             "", 
             Enumeration.Methods.discoverAndExecute,
-            "Returns the UserName the server associates with the command." + nl + "This property is deprecated as writeable in XMLA 1.1. To support legacy applications, servers accept but ignore the password setting when it is used with the Execute method.");
+            "Returns the UserName the server associates with the command." + nl + 
+            "This property is deprecated as writeable in XMLA 1.1. To support legacy applications, servers accept but ignore the password setting when it is used with the Execute method.");
 
     static final EnumeratedValues enumeration = new EnumeratedValues(new PropertyDefinition[]{
             AxisFormat,
