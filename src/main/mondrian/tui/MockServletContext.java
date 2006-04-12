@@ -61,7 +61,6 @@ public class MockServletContext implements ServletContext {
      * the server.
      * 
      * @param s 
-     * @return 
      */
     public ServletContext getContext(String s) {
         // TODO
@@ -72,7 +71,6 @@ public class MockServletContext implements ServletContext {
      * Returns the major version of the Java Servlet API that this servlet
      * container supports.
      * 
-     * @return 
      */
     public int getMajorVersion() {
         return this.majorVersion;
@@ -82,7 +80,6 @@ public class MockServletContext implements ServletContext {
      * Returns the minor version of the Servlet API that this servlet container
      * supports.
      * 
-     * @return 
      */
     public int getMinorVersion() {
         return this.minorVersion;
@@ -93,7 +90,6 @@ public class MockServletContext implements ServletContext {
      * not known.
      * 
      * @param s 
-     * @return 
      */
     public String getMimeType(String s) {
         // TODO
@@ -104,7 +100,6 @@ public class MockServletContext implements ServletContext {
      *  
      * 
      * @param s 
-     * @return 
      */
     public Set getResourcePaths(String s) {
         // TODO
@@ -115,7 +110,6 @@ public class MockServletContext implements ServletContext {
      *  Returns a URL to the resource that is mapped to a specified path.
      * 
      * @param name 
-     * @return 
      * @throws MalformedURLException 
      */
     public URL getResource(String name) throws MalformedURLException {
@@ -126,7 +120,6 @@ public class MockServletContext implements ServletContext {
      *  Returns the resource located at the named path as an InputStream object.
      * 
      * @param s 
-     * @return 
      */
     public InputStream getResourceAsStream(String s) {
         // TODO
@@ -138,7 +131,6 @@ public class MockServletContext implements ServletContext {
      *  resource located at the given path.
      * 
      * @param s 
-     * @return 
      */
     public RequestDispatcher getRequestDispatcher(String s) {
         // TODO
@@ -150,7 +142,6 @@ public class MockServletContext implements ServletContext {
      * servlet.
      * 
      * @param s 
-     * @return 
      */
     public RequestDispatcher getNamedDispatcher(String s) {
         // TODO
@@ -171,7 +162,6 @@ public class MockServletContext implements ServletContext {
      * 
      * @deprecated Method getServlet is deprecated
      * @param s  
-     * @return 
      * @throws ServletException 
      */
 
@@ -253,7 +243,6 @@ public class MockServletContext implements ServletContext {
      * Returns a String containing the real path for a given virtual path.
      * 
      * @param s 
-     * @return 
      */
     public String getRealPath(String path) {
         return path;
@@ -263,7 +252,6 @@ public class MockServletContext implements ServletContext {
      * Returns the name and version of the servlet container on which the
      * servlet is running.
      * 
-     * @return 
      */
     public String getServerInfo() {
         // TODO
@@ -275,7 +263,6 @@ public class MockServletContext implements ServletContext {
      * initialization parameter, or null if the parameter does not exist.
      * 
      * @param s 
-     * @return 
      */
     public String getInitParameter(String name) {
         return parameters.getProperty(name);
@@ -286,7 +273,6 @@ public class MockServletContext implements ServletContext {
      * Enumeration of String objects, or an empty Enumeration if the context has
      * no initialization parameters.
      * 
-     * @return 
      */
     public Enumeration getInitParameterNames() {
         return parameters.propertyNames();
@@ -296,7 +282,6 @@ public class MockServletContext implements ServletContext {
      *  
      * 
      * @param s 
-     * @return 
      */
     public Object getAttribute(String s) {
         return this.attributes.get(s);
@@ -306,7 +291,6 @@ public class MockServletContext implements ServletContext {
      * Returns an Enumeration containing the attribute names available within
      * this servlet context.
      * 
-     * @return 
      */
     public Enumeration getAttributeNames() {
         // TODO
@@ -338,7 +322,6 @@ public class MockServletContext implements ServletContext {
     /** 
      *  
      * 
-     * @return 
      */
     public String getServletContextName() {
         // TODO

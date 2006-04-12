@@ -44,7 +44,6 @@ public class MockServletConfig implements ServletConfig {
     /** 
      * Returns the name of this servlet instance.
      * 
-     * @return 
      */
     public String getServletName() {
         return servletName;
@@ -54,7 +53,6 @@ public class MockServletConfig implements ServletConfig {
      * Returns a reference to the ServletContext in which the servlet is
      * executing.
      * 
-     * @return 
      */
     public ServletContext getServletContext() {
         return servletContext;
@@ -65,7 +63,6 @@ public class MockServletConfig implements ServletConfig {
      * parameter, or null if the parameter does not exist.
      * 
      * @param s 
-     * @return 
      */
     public String getInitParameter(String key) {
         return (String) initParams.get(key);
@@ -76,7 +73,6 @@ public class MockServletConfig implements ServletConfig {
      *  Enumeration of String objects, or an empty Enumeration if the servlet
      *  has no initialization parameters.
      * 
-     * @return 
      */
     public Enumeration getInitParameterNames() {
         return Collections.enumeration(initParams.keySet());

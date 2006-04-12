@@ -119,7 +119,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * Returns the name of the charset used for the MIME body sent in this
      * response. 
      * 
-     * @return 
      */
     public String getCharacterEncoding() {
         return charEncoding;
@@ -129,7 +128,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * Returns a ServletOutputStream suitable for writing binary data in the
      * response. 
      * 
-     * @return 
      * @throws IOException 
      */
     public ServletOutputStream getOutputStream() throws IOException {
@@ -139,7 +137,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      * Returns a PrintWriter object that can send character text to the client. 
      * 
-     * @return 
      * @throws IOException 
      */
     public PrintWriter getWriter() throws IOException {
@@ -187,7 +184,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      * Returns the actual buffer size used for the response. 
      * 
-     * @return 
      */
     public int getBufferSize() {
         return this.bufferSize;
@@ -212,7 +208,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      * Returns a boolean indicating if the response has been committed. 
      * 
-     * @return 
      */
     public boolean isCommitted() {
         return isCommited;
@@ -240,7 +235,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      * Returns the locale assigned to the response. 
      * 
-     * @return 
      */
     public Locale getLocale() {
         return locale;
@@ -263,7 +257,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * already been set. 
      * 
      * @param s 
-     * @return 
      */
     public boolean containsHeader(String name) {
         return headers.containsKey(name);
@@ -274,7 +267,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * encoding is not needed, returns the URL unchanged. 
      * 
      * @param s 
-     * @return 
      */
     public String encodeURL(String url) {
         return encode(url);
@@ -285,7 +277,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * encoding is not needed, returns the URL unchanged. 
      * 
      * @param s 
-     * @return 
      */
     public String encodeRedirectURL(String url) {
         return encode(url);
