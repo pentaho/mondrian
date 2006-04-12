@@ -72,14 +72,6 @@
         aggregate tables</a></li>
 
   </ol>
-	<li><a href="#4._Features_implemented_in_1.2">Features implemented in 1.2</a><ol>
-  <li><a href="#Feature_Aggregate_navigation">Aggregate navigation</a></li>
-	<li><a href="#Feature_WITH_SET">WITH SET</a></li>
-	<li><a href="#Feature_Cache_set_expressions">Cache set expressions</a></li>
-	<li><a href="#Feature_User-defined_functions">User-defined functions</a></li>
-</ol>
-
-	</li>
 </ol>
 
 <h2><a name="2_Introduction">2 Introduction</a></h2>
@@ -579,7 +571,7 @@ RECURSIVE]])</li>
 <p><code>Except</code> is implemented in Mondrian 1.2 except the <code>ALL</code> 
 keyword.</p>
 
-<h3><a name="Feature_Bridge_to_CWM">3.19 Bridge to CWM</a></h3>
+<h3><a name="Feature_Bridge_to_CWM">4.19 Bridge to CWM</a></h3>
 
 <p>CWM (Common Warehouse Model) is a standard model for defining data warehouse 
 and multidimensional schemas. It allows interoperability with tools such as UML 
@@ -592,7 +584,7 @@ diagrams, relational report design tools, and ETL tools.</p>
 	<li>A bridge to read a CWM schema and create a Mondrian schema from it.</li>
 </ul>
 
-<h3><a name="Feature_Graphical_administrator">3.20 Graphical administrator</a></h3>
+<h3><a name="Feature_Graphical_administrator">4.20 Graphical administrator</a></h3>
 
 <p><i>Effort: high; importance: high; priority: high.</i></p>
 
@@ -622,14 +614,14 @@ together in one application, which can easily be installed and launched.</p>
 
 <p>Will probably be built in Swing, based upon JRubik components.</p>
 
-<h3><a name="Feature_Mondrian_XMLA_server">3.21 Mondrian XML/A server</a></h3>
+<h3><a name="Feature_Mondrian_XMLA_server">4.21 Mondrian XML/A server</a></h3>
 
 <p>The standard installation will include a script to start and stop a Mondrian 
 instance running XML/A. This will invoke a lightweight servlet engine running 
 Mondrian's XML/A adapter. (You will still be able to include Mondrian's XML/A 
 servlet in your web server of choice.)</p>
 
-<h3><a name="Feature_User_defined_aggregate_functions">3.22 User-defined 
+<h3><a name="Feature_User_defined_aggregate_functions">4.22 User-defined 
 aggregate functions</a></h3>
 
 <p>The standard aggregate functions are sum, count, distinct-count, min, max and 
@@ -664,7 +656,7 @@ of this.</p>
 tables.</p>
 
 
-<h3><a name="Feature_Time_function_and_scalar_functions">3.23 Time function and scalar functions</a></h3>
+<h3><a name="Feature_Time_function_and_scalar_functions">4.23 Time function and scalar functions</a></h3>
 
 <p><i>Gang Chen</i>: We may split them (common UDFs) into a standalone UDF package or
 project. Autoload them to setup a GlobalFunTable when constructing
@@ -676,7 +668,7 @@ them an optional part of Mondrian -- in the source tree, but not
 loaded in the MDX dialect by default -- but create a set of tests for
 them. They will serve as great examples for others writing UDFs.</p>
 
-<h3><a name="Feature_Further_work_on_aggregate_tables">3.24 Further work on 
+<h3><a name="Feature_Further_work_on_aggregate_tables">4.24 Further work on 
 aggregate tables</a></h3>
 
 <p>1. Utility to populate (or generate INSERT statements to populate) the  agg
@@ -702,9 +694,7 @@ running.
 
 <p>I'm thinking of these being utilities, not part of the core runtime engine.
 There's plenty of room to wrap these utilities in nice graphical interfaces,
-make them smarter.
-
-<hr>
+make them smarter.<p>&nbsp;<hr>
 
 <table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0" id="table1">
   <tr>
