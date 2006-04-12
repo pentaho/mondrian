@@ -1159,13 +1159,13 @@ for (int i = 0; i < len; i++) {
         System.out.println(response);
 
         switch (validateXmlaResponce) {
-        case VALIDATE_NONE :
+        case VALIDATE_NONE:
             break;
-        case VALIDATE_TRANSFORM :
+        case VALIDATE_TRANSFORM:
             XmlaSupport.validateSchemaSoapXmla(bytes);
             System.out.println("XML Data is Valid");
             break;
-        case VALIDATE_XPATH :
+        case VALIDATE_XPATH:
             XmlaSupport.validateSoapXmlaUsingXpath(bytes);
             System.out.println("XML Data is Valid");
             break;
@@ -1189,13 +1189,13 @@ for (int i = 0; i < len; i++) {
         System.out.println(response);
 
         switch (validateXmlaResponce) {
-        case VALIDATE_NONE :
+        case VALIDATE_NONE:
             break;
-        case VALIDATE_TRANSFORM :
+        case VALIDATE_TRANSFORM:
             XmlaSupport.validateSchemaXmla(bytes);
             System.out.println("XML Data is Valid");
             break;
-        case VALIDATE_XPATH :
+        case VALIDATE_XPATH:
             XmlaSupport.validateXmlaUsingXpath(bytes);
             System.out.println("XML Data is Valid");
             break;
