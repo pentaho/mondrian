@@ -242,6 +242,13 @@ public class XmlaUtil {
         return numericStr;
     }
 
+    public static byte[] decodeBase64(String encoded) {
+        throw new UnsupportedOperationException();
+    }
+
+    public static String encodeBase64(byte[] bytes) {
+        throw new UnsupportedOperationException();
+    }
 }
 
 // End XmlaUtil.java

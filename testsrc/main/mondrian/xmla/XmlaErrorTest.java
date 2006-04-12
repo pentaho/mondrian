@@ -14,45 +14,41 @@ package mondrian.xmla;
 
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
-import mondrian.olap.*;
-import mondrian.tui.*;
-import mondrian.xmla.*;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
+import mondrian.tui.MockHttpServletRequest;
+import mondrian.tui.MockHttpServletResponse;
+import mondrian.tui.XmlaSupport;
 import org.w3c.dom.CharacterData;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Element;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.StringTokenizer;
 import org.xml.sax.SAXException;
-import org.custommonkey.xmlunit.XMLAssert;
+
+import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.Servlet;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 
-/** 
- * This is a test of the XMLA Fault generation - errors occur/are-detected in   
- * in Mondrian XMLA and a SOAP Fault is returned. 
+/**
+ * Test of the XMLA Fault generation - errors occur/are-detected in
+ * in Mondrian XMLA and a SOAP Fault is returned.
  * <p>
  * There is a set of tests dealing with Authorization and HTTP Header
  * Expect and Continue dialog. These are normally done at the webserver
- * level and can be removed here if desired. (I wrote them before I 
+ * level and can be removed here if desired. (I wrote them before I
  * realized that Mondrian XMLA would not handle any Authorization issues
  * if it were in a webserver.)
- * 
- * @author <a>Richard M. Emberson</a>
- * @version 
+ *
+ * @author Richard M. Emberson
+ * @version $Id$
  */
-public class XmlaErrorTest extends FoodMartTestCase 
+public class XmlaErrorTest extends FoodMartTestCase
         implements XmlaConstants {
 
     private static final String XMLA_DIRECTORY = "testsrc/main/mondrian/xmla/";
@@ -79,7 +75,7 @@ public class XmlaErrorTest extends FoodMartTestCase
 
         public void init(ServletConfig servletConfig) throws ServletException {
         }
-        public boolean processHttpHeader(HttpServletRequest request, 
+        public boolean processHttpHeader(HttpServletRequest request,
                 HttpServletResponse response,
                 Map context) throws Exception {
 
@@ -133,7 +129,7 @@ System.out.println("password=" +password);
                 if (! isEquals(userid, XmlaErrorTest.user)) {
                     throw XmlaRequestCallback.Helper.authorizationException(
                         new Exception(
-                          "Authorization: bad userid: " + 
+                          "Authorization: bad userid: " +
                             userid +
                             " should be: " +
                             XmlaErrorTest.user
@@ -142,7 +138,7 @@ System.out.println("password=" +password);
                 if (! isEquals(password, XmlaErrorTest.password)) {
                     throw XmlaRequestCallback.Helper.authorizationException(
                         new Exception(
-                          "Authorization: bad password: " + 
+                          "Authorization: bad password: " +
                             password +
                             " should be: " +
                             XmlaErrorTest.password
@@ -150,7 +146,7 @@ System.out.println("password=" +password);
                 }
             }
             String expect = request.getHeader(EXPECT);
-            if ((expect != null) && 
+            if ((expect != null) &&
                 expect.equalsIgnoreCase(EXPECT_100_CONTINUE)) {
 
                 XmlaRequestCallback.Helper.generatedExpectResponse(
@@ -209,7 +205,7 @@ System.out.println("password=" +password);
             }
         }
         return null;
-        
+
     }
     static String getNodeContent(Node n) {
         CharacterData cd = getCharacterData(n);
@@ -333,9 +329,9 @@ System.out.println("password=" +password);
             }
             if (! isEquals(this.errorNS, expectedFault.errorNS)) {
                 throw new Exception("For error element namespace " +
-                    " Expected " + 
+                    " Expected " +
                     this.errorNS +
-                    " but Got " + 
+                    " but Got " +
                     expectedFault.errorNS
                     );
             }
@@ -343,13 +339,13 @@ System.out.println("password=" +password);
                 notSame("error.code", this.errorCode, expectedFault.errorCode);
             }
         }
-        private void notSame(String elementName, String expected, String got) 
+        private void notSame(String elementName, String expected, String got)
                 throws Exception {
             throw new Exception("For element " +
                 elementName +
-                " Expected " + 
+                " Expected " +
                 expected +
-                " but Got " + 
+                " but Got " +
                 got
                 );
         }
@@ -387,7 +383,7 @@ System.out.println("password=" +password);
     }
     protected void tearDown() throws Exception {
     }
-    protected void makeServlet() 
+    protected void makeServlet()
             throws IOException, ServletException, SAXException {
 
         XmlaExcelXPTest.sessionId = null;
@@ -420,7 +416,7 @@ System.out.println("password=" +password);
     public void testJunk() throws Exception {
         String reqFileName = "Junk_in.error";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     USM_DOM_PARSE_CODE),
                     USM_DOM_PARSE_FAULT_FS,
                     FAULT_ACTOR,
@@ -433,7 +429,7 @@ System.out.println("password=" +password);
     public void testBadXml01() throws Exception {
         String reqFileName = "BadXml01_in.error";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     USM_DOM_PARSE_CODE),
                     USM_DOM_PARSE_FAULT_FS,
                     FAULT_ACTOR,
@@ -446,7 +442,7 @@ System.out.println("password=" +password);
     public void testBadXml02() throws Exception {
         String reqFileName = "BadXml02_in.error";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     USM_DOM_PARSE_CODE),
                     USM_DOM_PARSE_FAULT_FS,
                     FAULT_ACTOR,
@@ -462,7 +458,7 @@ System.out.println("password=" +password);
     public void testBadAction01() throws Exception {
         String reqFileName = "BadAction01_in.error";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_SOAP_BODY_CODE),
                     HSB_BAD_SOAP_BODY_FAULT_FS,
                     FAULT_ACTOR,
@@ -474,7 +470,7 @@ System.out.println("password=" +password);
     public void testBadAction02() throws Exception {
         String reqFileName = "BadAction02_in.error";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_SOAP_BODY_CODE),
                     HSB_BAD_SOAP_BODY_FAULT_FS,
                     FAULT_ACTOR,
@@ -486,7 +482,7 @@ System.out.println("password=" +password);
     public void testBadAction03() throws Exception {
         String reqFileName = "BadAction03_in.error";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_SOAP_BODY_CODE),
                     HSB_BAD_SOAP_BODY_FAULT_FS,
                     FAULT_ACTOR,
@@ -501,7 +497,7 @@ System.out.println("password=" +password);
     public void testBadSoap01() throws Exception {
         String reqFileName = "DoubleHeader.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     USM_DOM_PARSE_CODE),
                     USM_DOM_PARSE_FAULT_FS,
                     FAULT_ACTOR,
@@ -513,7 +509,7 @@ System.out.println("password=" +password);
     public void testBadSoap02() throws Exception {
         String reqFileName = "DoubleBody.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     USM_DOM_PARSE_CODE),
                     USM_DOM_PARSE_FAULT_FS,
                     FAULT_ACTOR,
@@ -530,7 +526,7 @@ System.out.println("password=" +password);
     public void testAuth01() throws Exception {
         String reqFileName = "EmptyExecute.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     CHH_AUTHORIZATION_CODE),
                     CHH_AUTHORIZATION_FAULT_FS,
                     FAULT_ACTOR,
@@ -548,7 +544,7 @@ System.out.println("password=" +password);
     public void testAuth02() throws Exception {
         String reqFileName = "EmptyExecute.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     CHH_AUTHORIZATION_CODE),
                     CHH_AUTHORIZATION_FAULT_FS,
                     FAULT_ACTOR,
@@ -619,7 +615,7 @@ System.out.println("DO IT AGAIN");
     public void testAuth04() throws Exception {
         String reqFileName = "EmptyExecute.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     CHH_AUTHORIZATION_CODE),
                     CHH_AUTHORIZATION_FAULT_FS,
                     FAULT_ACTOR,
@@ -660,7 +656,7 @@ System.out.println("DO IT AGAIN");
     public void testAuth05() throws Exception {
         String reqFileName = "EmptyExecute.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     CHH_AUTHORIZATION_CODE),
                     CHH_AUTHORIZATION_FAULT_FS,
                     FAULT_ACTOR,
@@ -704,7 +700,7 @@ System.out.println("DO IT AGAIN");
         String reqFileName = "MustUnderstand.xml";
         // remember, errors in headers do not have detail sections
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    MUST_UNDERSTAND_FAULT_FC, 
+                    MUST_UNDERSTAND_FAULT_FC,
                     HSH_MUST_UNDERSTAND_CODE),
                     HSH_MUST_UNDERSTAND_FAULT_FS,
                     FAULT_ACTOR,
@@ -718,7 +714,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody01() throws Exception {
         String reqFileName = "DiscoveryExecute.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_SOAP_BODY_CODE),
                     HSB_BAD_SOAP_BODY_FAULT_FS,
                     FAULT_ACTOR,
@@ -731,7 +727,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody02() throws Exception {
         String reqFileName = "BadMethod.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_SOAP_BODY_CODE),
                     HSB_BAD_SOAP_BODY_FAULT_FS,
                     FAULT_ACTOR,
@@ -743,7 +739,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody03() throws Exception {
         String reqFileName = "BadMethodNS.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_SOAP_BODY_CODE),
                     HSB_BAD_SOAP_BODY_FAULT_FS,
                     FAULT_ACTOR,
@@ -755,7 +751,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody04() throws Exception {
         String reqFileName = "Discovery01.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_REQUEST_TYPE_CODE),
                     HSB_BAD_REQUEST_TYPE_FAULT_FS,
                     FAULT_ACTOR,
@@ -767,7 +763,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody05() throws Exception {
         String reqFileName = "Discovery02.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_RESTRICTIONS_CODE),
                     HSB_BAD_RESTRICTIONS_FAULT_FS,
                     FAULT_ACTOR,
@@ -779,7 +775,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody06() throws Exception {
         String reqFileName = "Discovery03.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_PROPERTIES_CODE),
                     HSB_BAD_PROPERTIES_FAULT_FS,
                     FAULT_ACTOR,
@@ -791,7 +787,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody07() throws Exception {
         String reqFileName = "Execute01.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_COMMAND_CODE),
                     HSB_BAD_COMMAND_FAULT_FS,
                     FAULT_ACTOR,
@@ -803,7 +799,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody08() throws Exception {
         String reqFileName = "Execute02.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_PROPERTIES_CODE),
                     HSB_BAD_PROPERTIES_FAULT_FS,
                     FAULT_ACTOR,
@@ -815,7 +811,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody09() throws Exception {
         String reqFileName = "Discovery04.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_RESTRICTION_LIST_CODE),
                     HSB_BAD_RESTRICTION_LIST_FAULT_FS,
                     FAULT_ACTOR,
@@ -827,7 +823,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody10() throws Exception {
         String reqFileName = "Discovery05.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_PROPERTIES_LIST_CODE),
                     HSB_BAD_PROPERTIES_LIST_FAULT_FS,
                     FAULT_ACTOR,
@@ -839,7 +835,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody11() throws Exception {
         String reqFileName = "Execute03.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_PROPERTIES_LIST_CODE),
                     HSB_BAD_PROPERTIES_LIST_FAULT_FS,
                     FAULT_ACTOR,
@@ -851,7 +847,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody12() throws Exception {
         String reqFileName = "Execute04.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_BAD_STATEMENT_CODE),
                     HSB_BAD_STATEMENT_FAULT_FS,
                     FAULT_ACTOR,
@@ -863,7 +859,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody13() throws Exception {
         String reqFileName = "Execute05.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_DRILLDOWN_BAD_MAXROWS_CODE),
                     HSB_DRILLDOWN_BAD_MAXROWS_FAULT_FS,
                     FAULT_ACTOR,
@@ -875,7 +871,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody14() throws Exception {
         String reqFileName = "Execute06.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_DRILLDOWN_BAD_FIRST_ROWSET_CODE),
                     HSB_DRILLDOWN_BAD_FIRST_ROWSET_FAULT_FS,
                     FAULT_ACTOR,
@@ -887,7 +883,7 @@ System.out.println("DO IT AGAIN");
     public void testBadBody15() throws Exception {
         String reqFileName = "Execute07.xml";
         Fault expectedFault = new Fault(XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC, 
+                    CLIENT_FAULT_FC,
                     HSB_DRILLDOWN_ERROR_CODE),
                     HSB_DRILLDOWN_ERROR_FAULT_FS,
                     FAULT_ACTOR,
@@ -965,7 +961,7 @@ System.out.println("reqFileName="+reqFileName);
         processResults(bytes, expectedFault);
     }
 
-    protected void processResults(byte[] results, Fault expectedFault) 
+    protected void processResults(byte[] results, Fault expectedFault)
             throws Exception {
 
 if (DEBUG) {
@@ -977,7 +973,7 @@ System.out.println("response="+response);
             if (expectedFault != null) {
                  // error
                 fail("Failed to get SOAP Fault element in SOAP Body node");
-            } 
+            }
         }
         if (expectedFault != null) {
             Fault fault = new Fault(fnodes);
@@ -990,3 +986,5 @@ System.out.println("expectedFault="+expectedFault);
         }
     }
 }
+
+// End XmlaErrorTest.java
