@@ -12,6 +12,7 @@ package mondrian.rolap;
 import java.util.Arrays;
 
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianDef;
 
 /**
@@ -51,8 +52,10 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
         String value = childName;
         if (!numeric) {
             // some dbs (like DB2) compare case sensitive
-            column = query.getDialect().toUpper(column);
-            value = value.toUpperCase();
+            if (!MondrianProperties.instance().CaseSensitive.get()) {
+                column = query.getDialect().toUpper(column);
+                value = value.toUpperCase();
+            }
         }
         value = query.quote(numeric, value);
         query.addWhere(column, RolapUtil.sqlNullLiteral.equals(value) ? " is " : " = ", value);
