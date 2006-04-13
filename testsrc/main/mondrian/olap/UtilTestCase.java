@@ -11,6 +11,9 @@ package mondrian.olap;
 
 import junit.framework.TestCase;
 
+import java.util.Map;
+import java.util.HashMap;
+
 /**
  * Tests for methods in {@link mondrian.olap.Util}.
  */
@@ -257,6 +260,46 @@ public class UtilTestCase extends TestCase {
                 Util.explode("[string].[with].[a [bracket]] in it]");
         assertEquals(3, strings.length);
         assertEquals("a [bracket] in it", strings[2]);
+    }
+
+    public void testReplaceProperties() {
+        Map map = new HashMap();
+        map.put("foo", "bar");
+        map.put("empty", "");
+        map.put("null", null);
+        map.put("foobarbaz", "bang!");
+        map.put("nonString", new Object() {
+            public String toString() {
+                return "non string value";
+            }
+        });
+        map.put("malformed${foo", "groovy");
+
+        assertEquals("abarb", Util.replaceProperties("a${foo}b", map));
+        assertEquals("twicebarbar", Util.replaceProperties("twice${foo}${foo}", map));
+        assertEquals("bar at start", Util.replaceProperties("${foo} at start", map));
+        assertEquals("xyz", Util.replaceProperties("x${empty}y${empty}${empty}z", map));
+        assertEquals("x${nonexistent}bar", Util.replaceProperties("x${nonexistent}${foo}", map));
+
+        // malformed tokens are left as is
+        assertEquals("${malformedbarbar", Util.replaceProperties("${malformed${foo}${foo}", map));
+
+        // string can contain '$'
+        assertEquals("x$foo", Util.replaceProperties("x$foo", map));
+
+        // property with empty name is always ignored -- even if it's in the map
+        assertEquals("${}", Util.replaceProperties("${}", map));
+        map.put("", "v");
+        assertEquals("${}", Util.replaceProperties("${}", map));
+
+        // if a property's value is null, it's as if it doesn't exist
+        assertEquals("${null}", Util.replaceProperties("${null}", map));
+
+        // values don't have to be strings
+        assertEquals("non string value", Util.replaceProperties("${nonString}", map));
+
+        // nested properties are expanded, but not recursively
+        assertEquals("${foobarbaz}", Util.replaceProperties("${foo${foo}baz}", map));
     }
 }
 

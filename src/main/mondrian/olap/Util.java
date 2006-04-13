@@ -1425,16 +1425,16 @@ public class Util extends XOMUtil {
      * @throws IOException
      */
     public static String readFully(final Reader rdr, final int bufferSize)
-                 throws IOException {
-    
+            throws IOException {
+
         if (bufferSize <= 0) {
             throw new IllegalArgumentException(
-                        "Buffer size must be greater than 0");
+                    "Buffer size must be greater than 0");
         }
 
         final char[] buffer = new char[bufferSize];
         final StringBuffer buf = new StringBuffer(bufferSize);
-                   
+
         int len = rdr.read(buffer);
         while (len != -1) {
             buf.append(buffer, 0, len);
@@ -1445,8 +1445,7 @@ public class Util extends XOMUtil {
         return (s.length() == 0) ? null : s;
     }
 
-    public static final int BUF_SIZE = 8096;
- 
+
     /**
      * Read URL and return String containing content.
      *
@@ -1459,55 +1458,78 @@ public class Util extends XOMUtil {
             throws MalformedURLException, IOException {
         return readURL(urlStr, null);
     }
-    
-    /** 
-     * Read URL and return String containing content.
-     * Any content of the form "${key}" is replaced with "value"
-     * if the map contains the "key/value" pair.
-     * 
-     * @param urlStr 
-     * @param map 
-     * @return 
-     * @throws MalformedURLException 
-     * @throws IOException 
+
+    /**
+     * Returns the contents of a URL, substituting tokens.
+     *
+     * <p>Replaces the tokens "${key}" if "key" occurs in the key-value map.
+     *
+     * @param urlStr  URL string
+     * @param map Key/value map
+     * @return Contents of URL with tokens substituted
+     * @throws MalformedURLException
+     * @throws IOException
      */
     public static String readURL(final String urlStr, Map map)
             throws MalformedURLException, IOException {
         final URL url = new URL(urlStr);
         return readURL(url, map);
     }
-    public static String readURL(final URL url)
-            throws MalformedURLException, IOException {
+
+    /**
+     * Returns the contents of a URL.
+     *
+     * <p>Replaces the tokens "${key}" if "key" occurs in the key-value map.
+     *
+     * @param url URL
+     * @return Contents of URL
+     * @throws IOException
+     */
+    public static String readURL(final URL url) throws IOException {
         return readURL(url, null);
     }
-    public static String readURL(final URL url, Map map)
-            throws MalformedURLException, IOException {
+
+    /**
+     * Returns the contents of a URL, substituting tokens.
+     *
+     * <p>Replaces the tokens "${key}" if "key" occurs in the key-value map.
+     *
+     * @param url URL
+     * @param map Key/value map
+     * @return Contents of URL with tokens substituted
+     * @throws IOException
+     */
+    public static String readURL(final URL url, Map map) throws IOException {
         final Reader r =
             new BufferedReader(new InputStreamReader(url.openStream()));
+        final int BUF_SIZE = 8096;
         String xmlCatalog = readFully(r, BUF_SIZE);
-        return (map == null) 
-            ? xmlCatalog
-            : Util.replaceProperties(xmlCatalog, map);
+        if (map != null) {
+            xmlCatalog = Util.replaceProperties(xmlCatalog, map);
+        }
+        return xmlCatalog;
     }
 
-
-    /** 
-     * This code is basically does the Ant-like property replacement 
-     * job. Its take from the XmlaTestContext class - nice code btw.
-     * 
-     * @param text 
-     * @return 
+    /**
+     * Replaces tokens in a string.
+     *
+     * <p>Replaces the tokens "${key}" if "key" occurs in the key-value map.
+     * Otherwise "${key}" is left in the string unchanged.
+     *
+     * @param text Source string
+     * @param env Map of key-value pairs
+     * @return String with tokens substituted
      */
     public static String replaceProperties(String text, Map env) {
-        StringBuffer buf = new StringBuffer(text.length()+200);
+        StringBuffer buf = new StringBuffer(text.length() + 200);
 
-        Pattern pattern = Pattern.compile("\\$\\{([^}]+)\\}");
+        Pattern pattern = Pattern.compile("\\$\\{([^${}]+)\\}");
         Matcher matcher = pattern.matcher(text);
         while (matcher.find()) {
             String varName = matcher.group(1);
-            String varValue = (String) env.get(varName);
+            Object varValue = env.get(varName);
             if (varValue != null) {
-                matcher.appendReplacement(buf, varValue);
+                matcher.appendReplacement(buf, varValue.toString());
             } else {
                 matcher.appendReplacement(buf, "\\${$1}");
             }
