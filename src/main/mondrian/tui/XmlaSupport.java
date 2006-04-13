@@ -82,6 +82,156 @@ public class XmlaSupport {
         ENV.put("datasource", DATASOURCE_INFO);
     }
 
+    /**
+     * This is a parameterized XSLT. 
+     * The parameters are:
+     *   "soap" with values "none" or empty
+     *   "content" with values "schemadata", "schema", "data" or empty
+     * With these setting one can extract from an XMLA SOAP message
+     * the soap wrapper plus body or simply the body; the complete
+     * body (schema and data), only the schema of the body, only the 
+     * data of the body or none of the body
+     * 
+     */
+    public static String XMLA_TRANSFORM =
+        "<?xml version='1.0'?>" +
+        "<xsl:stylesheet " +
+        "  xmlns:xsl='http://www.w3.org/1999/XSL/Transform' " +
+        "  xmlns:xalan='http://xml.apache.org/xslt'" +
+        "  xmlns:xsd='http://www.w3.org/2001/XMLSchema'" +
+        "  xmlns:ROW='urn:schemas-microsoft-com:xml-analysis:rowset'" +
+        "  xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/' " +
+        "  xmlns:xmla='urn:schemas-microsoft-com:xml-analysis'" +
+        "  version='1.0'" +
+        ">" +
+        "<xsl:output method='xml' " +
+        "  encoding='UTF-8'" +
+        "  indent='yes' " +
+        "  xalan:indent-amount='2'/>" +
+        "<xsl:param name='content'/>" +
+        "<xsl:param name='soap'/>" +
+        "<!-- consume '/' and apply -->" +
+        "<xsl:template match='/'>" +
+        "  <xsl:apply-templates/>" +
+        "</xsl:template>" +
+        "<!-- copy 'Envelope' unless soap==none --> " +
+        "<xsl:template match='SOAP-ENV:Envelope'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$soap='none'\"> " +
+        "      <xsl:apply-templates/> " +
+        "    </xsl:when> " +
+        "    <xsl:otherwise> " + 
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:otherwise>  " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy 'Header' unless soap==none --> " +
+        "<xsl:template match='SOAP-ENV:Header'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$soap='none'\"> " +
+        "      <xsl:apply-templates/> " +
+        "    </xsl:when> " +
+        "    <xsl:otherwise>  " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:otherwise>  " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy 'Body' unless soap==none --> " +
+        "<xsl:template match='SOAP-ENV:Body'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$soap='none'\"> " +
+        "      <xsl:apply-templates/> " +
+        "    </xsl:when> " +
+        "    <xsl:otherwise>  " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:otherwise>  " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy 'DiscoverResponse' unless soap==none --> " +
+        "<xsl:template match='xmla:DiscoverResponse'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$soap='none'\"> " +
+        "      <xsl:apply-templates/> " +
+        "    </xsl:when> " +
+        "    <xsl:otherwise> " + 
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:otherwise>  " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy 'return' unless soap==none --> " +
+        "<xsl:template match='xmla:return'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$soap='none'\"> " +
+        "      <xsl:apply-templates/> " +
+        "    </xsl:when> " +
+        "    <xsl:otherwise> " + 
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:otherwise>  " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy 'root' unless soap==none --> " +
+        "<xsl:template match='ROW:root'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$soap='none'\"> " +
+        "      <xsl:apply-templates/> " +
+        "    </xsl:when> " +
+        "    <xsl:otherwise> " + 
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:otherwise > " + 
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy 'schema' if content==schema or schemadata --> " +
+        "<xsl:template match='xsd:schema'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$content='schemadata'\"> " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:when> " +
+        "    <xsl:when test=\"$content='schema'\"> " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:when> " +
+        "  <xsl:otherwise/>  " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy 'row' if content==data or schemadata --> " +
+        "<xsl:template match='ROW:row'> " +
+        "  <xsl:choose> " +
+        "    <xsl:when test=\"$content='schemadata'\"> " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:when> " +
+        "    <xsl:when test=\"$content='data'\"> " +
+        "      <xsl:copy> " +
+        "        <xsl:apply-templates select='@*|node()'/> " +
+        "      </xsl:copy> " +
+        "    </xsl:when> " +
+        "    <xsl:otherwise/>  " +
+        "  </xsl:choose> " +
+        "</xsl:template> " +
+        "<!-- copy everything else --> " +
+        "<xsl:template match='*|@*'> " +
+        "  <xsl:copy> " +
+        "    <xsl:apply-templates select='@*|node()'/> " +
+        "  </xsl:copy> " +
+        "</xsl:template> " +
+        "</xsl:stylesheet>";
+
     
     /** 
      * This is the prefix used in xpath and transforms for the xmla rowset
@@ -859,16 +1009,8 @@ public class XmlaSupport {
                 TransformerException,
                 TransformerConfigurationException {
 
-        String fileName = "XMLA.xsl";
-        String dirName = 
-        "/home/emberson/java/mondrian/mondrian/testsrc/main/mondrian/xmla";
-        File dir = new File(dirName);
-        File xslFile = new File(dir, fileName);
-
-        //Document xslDoc = XmlUtil.parse(xslFile);
-
         Node node = XmlUtil.transform(doc, 
-            new BufferedReader(new FileReader(xslFile)),
+            new BufferedReader(new StringReader(XMLA_TRANSFORM)),
             namevalueParameters);
 
         return (node instanceof Document) ? (Document) node : null;
