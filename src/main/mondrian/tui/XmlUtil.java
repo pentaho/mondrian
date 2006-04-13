@@ -45,7 +45,6 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
-import org.w3c.dom.DOMError;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 import org.w3c.dom.Document;
@@ -302,6 +301,11 @@ public class XmlUtil {
         public static final String WARNING_STRING        = "WARNING";
         public static final String ERROR_STRING          = "ERROR";
         public static final String FATAL_ERROR_STRING    = "FATAL";
+
+        // DOMError values
+        public static final short SEVERITY_WARNING      = 1;
+        public static final short SEVERITY_ERROR        = 2;
+        public static final short SEVERITY_FATAL_ERROR  = 3;
         
         public void printErrorInfos(PrintStream out) {
             if (errors != null) {
@@ -331,13 +335,13 @@ public class XmlUtil {
             StringBuffer buf = new StringBuffer(128);
             buf.append("[");
             switch (ei.severity) {
-            case DOMError.SEVERITY_WARNING:
+            case SEVERITY_WARNING:
                 buf.append(WARNING_STRING);
                 break;
-            case DOMError.SEVERITY_ERROR:
+            case SEVERITY_ERROR:
                 buf.append(ERROR_STRING);
                 break;
-            case DOMError.SEVERITY_FATAL_ERROR:
+            case SEVERITY_FATAL_ERROR:
                 buf.append(FATAL_ERROR_STRING);
                 break;
             }
@@ -376,14 +380,14 @@ public class XmlUtil {
             return (this.errors != null);
         }
         public void warning(SAXParseException exception) throws SAXException {
-            addError(new ErrorInfo(DOMError.SEVERITY_WARNING, exception));
+            addError(new ErrorInfo(SEVERITY_WARNING, exception));
         }
         public void error(SAXParseException exception) throws SAXException {
-            addError(new ErrorInfo(DOMError.SEVERITY_ERROR, exception));
+            addError(new ErrorInfo(SEVERITY_ERROR, exception));
         }       
         public void fatalError(SAXParseException exception)
                                                         throws SAXException {
-            addError(new ErrorInfo(DOMError.SEVERITY_FATAL_ERROR, exception));
+            addError(new ErrorInfo(SEVERITY_FATAL_ERROR, exception));
         }   
         protected void addError(ErrorInfo ei) {
             if (this.errors == null) {
