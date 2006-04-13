@@ -6286,6 +6286,63 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
                 "Argument to 'VisualTotals' function must be a set of members; got set of tuples.");
     }
 
+    public void testCalculatedChild() {
+    	// Construct calculated children with the same name for both [Drink] and [Non-Consumable]
+    	// Then, create a metric to select the calculated child based on current product member
+        assertQueryReturns(fold(new String[] {
+                "with",
+                " member [Product].[All Products].[Drink].[Calculated Child] as '[Product].[All Products].[Drink].[Alcoholic Beverages]'",
+                " member [Product].[All Products].[Non-Consumable].[Calculated Child] as '[Product].[All Products].[Non-Consumable].[Carousel]'",
+                " member [Measures].[Unit Sales CC] as '([Measures].[Unit Sales],[Product].currentmember.CalculatedChild(\"Calculated Child\"))'",
+                " select non empty {[Measures].[Unit Sales CC]} on columns,", 
+                " non empty {[Product].[All Products].[Drink], [Product].[All Products].[Non-Consumable]} on rows",
+                " from [Sales]"}),
+                
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales CC]}" + nl +
+                "Axis #2:" + nl +
+                "{[Product].[All Products].[Drink]}" + nl + "{[Product].[All Products].[Non-Consumable]}" + nl +
+                "Row #0: 6,838" + nl +  // Calculated child for [Drink]
+                "Row #1: 841" + nl); // Calculated child for [Non-Consumable]
+        Member member = executeSingletonAxis("[Product].[All Products].CalculatedChild(\"foobar\")");
+        Assert.assertEquals(member, null);
+    }
+    
+    public void testCalculatedChildUsingItem() {
+    	// Construct calculated children with the same name for both [Drink] and [Non-Consumable]
+    	// Then, create a metric to select the first calculated child 
+        assertQueryReturns(fold(new String[] {
+                "with",
+                " member [Product].[All Products].[Drink].[Calculated Child] as '[Product].[All Products].[Drink].[Alcoholic Beverages]'",
+                " member [Product].[All Products].[Non-Consumable].[Calculated Child] as '[Product].[All Products].[Non-Consumable].[Carousel]'",
+                " member [Measures].[Unit Sales CC] as '([Measures].[Unit Sales],AddCalculatedMembers([Product].currentmember.children).Item(\"Calculated Child\"))'",
+                " select non empty {[Measures].[Unit Sales CC]} on columns,", 
+                " non empty {[Product].[All Products].[Drink], [Product].[All Products].[Non-Consumable]} on rows",
+                " from [Sales]"}),
+                
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales CC]}" + nl +
+                "Axis #2:" + nl +
+                "{[Product].[All Products].[Drink]}" + nl + "{[Product].[All Products].[Non-Consumable]}" + nl +
+                "Row #0: 6,838" + nl + 
+                "Row #1: 6,838" + nl); // Note: For [Non-Consumable], the calculated child for [Drink] was selected!
+        Member member = executeSingletonAxis("[Product].[All Products].CalculatedChild(\"foobar\")");
+        Assert.assertEquals(member, null);
+    }
+    
+    public void testCalculatedChildOnMemberWithNoChildren() {
+        Member member = executeSingletonAxis("[Measures].[Store Sales].CalculatedChild(\"foobar\")");
+        Assert.assertEquals(member, null);
+    }
+    
+    public void testCalculatedChildOnNullMember() {
+        Member member = executeSingletonAxis("[Measures].[Store Sales].parent.CalculatedChild(\"foobar\")");
+        Assert.assertEquals(member, null);
+    }
 
     /**
      * Tests {@link mondrian.olap.FunTable#getFunInfoList()}, but more

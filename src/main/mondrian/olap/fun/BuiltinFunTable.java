@@ -2016,6 +2016,8 @@ public class BuiltinFunTable extends FunTableImpl {
         define(NthQuartileFunDef.FirstQResolver);
 
         define(NthQuartileFunDef.ThirdQResolver);
+
+        define(CalculatedChildFunDef.instance);
     }
 
 
