@@ -18,6 +18,7 @@ import mondrian.mdx.DimensionExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.fun.extra.NthQuartileFunDef;
+import mondrian.olap.fun.extra.CalculatedChildFunDef;
 import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
 import mondrian.olap.type.Type;

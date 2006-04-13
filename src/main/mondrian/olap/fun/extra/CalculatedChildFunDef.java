@@ -27,25 +27,25 @@ import java.util.List;
  * @since 2006/4/12
  */
 public class CalculatedChildFunDef extends FunDefBase {
-	static final CalculatedChildFunDef instance = new CalculatedChildFunDef();
+    public static final CalculatedChildFunDef instance = new CalculatedChildFunDef();
 
     CalculatedChildFunDef() {
-    	super("CalculatedChild", "<Member>.CalculatedChild(<String>)",
-    			"Returns an existing calculated child member with name <String> from the specified <Member>.", "mmmS");
+        super("CalculatedChild", "<Member>.CalculatedChild(<String>)",
+                "Returns an existing calculated child member with name <String> from the specified <Member>.", "mmmS");
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-    	final MemberCalc memberCalc = compiler.compileMember(call.getArg(0));
-    	final StringCalc stringCalc = compiler.compileString(call.getArg(1));
+        final MemberCalc memberCalc = compiler.compileMember(call.getArg(0));
+        final StringCalc stringCalc = compiler.compileString(call.getArg(1));
 
         return new AbstractMemberCalc(call,  new Calc[] {memberCalc, stringCalc}) {
-	        public Member evaluateMember(Evaluator evaluator) {
-	        	Member member = memberCalc.evaluateMember(evaluator);
-	        	String name = stringCalc.evaluateString(evaluator);
-	        	Member child = getCalculatedChild(member, name, evaluator);
-	        	return child;
-	        }
-	     };
+            public Member evaluateMember(Evaluator evaluator) {
+                Member member = memberCalc.evaluateMember(evaluator);
+                String name = stringCalc.evaluateString(evaluator);
+                Member child = getCalculatedChild(member, name, evaluator);
+                return child;
+            }
+         };
     }
 
     private Member getCalculatedChild(
@@ -55,17 +55,17 @@ public class CalculatedChildFunDef extends FunDefBase {
                 evaluator.getQuery().getSchemaReader(true);
         Level childLevel = parent.getLevel().getChildLevel();
         if (childLevel == null) {
-        	return parent.getHierarchy().getNullMember();
+            return parent.getHierarchy().getNullMember();
         }
         List calcMemberList = schemaReader.getCalculatedMembers(childLevel);
 
         for (int i = 0; i < calcMemberList.size(); i++) {
             Member child = (Member) calcMemberList.get(i);
-        	// the parent check is required in case there are parallel children
-        	// with the same names
-        	if (child.getParentMember() == parent &&
+            // the parent check is required in case there are parallel children
+            // with the same names
+            if (child.getParentMember() == parent &&
                     child.getName().equals(childName)) {
-        		return child;
+                return child;
             }
         }
 
