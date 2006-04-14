@@ -593,10 +593,6 @@ public class XmlaSupport {
             out.write(dataSourceText.getBytes());
             out.flush();
 
-            // Generate URL
-            String dsFilePath = dsFile.getAbsolutePath();
-            String dsUrl = "file://" + dsFilePath;
-
             byte[] reqBytes = requestText.getBytes();
             // make request
             MockHttpServletRequest req = new MockHttpServletRequest(reqBytes);
@@ -615,7 +611,7 @@ public class XmlaSupport {
             servletConfig.addInitParameter(
                 XmlaServlet.PARAM_CHAR_ENCODING, "UTF-8");
             servletConfig.addInitParameter(
-                XmlaServlet.PARAM_DATASOURCES_CONFIG, dsUrl);
+                XmlaServlet.PARAM_DATASOURCES_CONFIG, dsFile.toURL().toString());
 
             Servlet servlet = new DefaultXmlaServlet();
             servlet.init(servletConfig);
@@ -649,11 +645,6 @@ public class XmlaSupport {
             out.write(dataSourceText.getBytes());
             out.flush();
 
-            // Generate URL
-            String dsFilePath = dsFile.getAbsolutePath();
-            String dsUrl = "file://" + dsFilePath;
-
-
             // process 
             MockServletContext servletContext = new MockServletContext();
             MockServletConfig servletConfig = new MockServletConfig(servletContext);
@@ -661,7 +652,7 @@ public class XmlaSupport {
             servletConfig.addInitParameter(
                 XmlaServlet.PARAM_CHAR_ENCODING, "UTF-8");
             servletConfig.addInitParameter(
-                XmlaServlet.PARAM_DATASOURCES_CONFIG, dsUrl);
+                XmlaServlet.PARAM_DATASOURCES_CONFIG, dsFile.toURL().toString());
 
             Servlet servlet = new DefaultXmlaServlet();
             servlet.init(servletConfig);
