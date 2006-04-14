@@ -205,7 +205,7 @@ This property is deprecated as writeable in XMLA 1.1. To support legacy applicat
             </row>
             <row>
                 <PropertyName>Content</PropertyName>
-                <PropertyDescription>An enumerator that specifies what type of data is returned in the result set. 
+                <PropertyDescription>An enumerator that specifies what type of data is returned in the result set.
 None: Allows the structure of the command to be verified, but not executed. Analogous to using Prepare to check syntax, and so on.
 Schema: Contains the XML schema (which indicates column information, and so on) that relates to the requested query.
 Data: Contains only the data that was requested.
