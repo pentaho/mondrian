@@ -491,6 +491,11 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testLevelMembers() {
+        if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
+            // Dependency testing causes extra SQL reads, and screws up this
+            // test.
+            return;
+        }
         SmartMemberReader smr = getSmartMemberReader("Customers");
         smr.mapLevelToMembers.setCache(new HardSmartCache());
         smr.mapMemberToChildren.setCache(new HardSmartCache());
