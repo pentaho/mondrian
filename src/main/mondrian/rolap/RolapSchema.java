@@ -106,6 +106,15 @@ public class RolapSchema implements Schema {
 
     private MondrianDef.Schema xmlSchema;
 
+    /** 
+     * This is ONLY called by other constructors (and MUST be called
+     * by them) and NEVER by the Pool. 
+     * 
+     * @param key 
+     * @param connectInfo 
+     * @param dataSource 
+     * @param md5Bytes 
+     */
     private RolapSchema(final String key,
                         final Util.PropertyList connectInfo,
                         final DataSource dataSource,
@@ -124,55 +133,7 @@ public class RolapSchema implements Schema {
         this.aggTableManager = new AggTableManager(this);
     }
 
-    /**
-     * Loads a schema using a dynamic loader.
-     *
-     * @param dynProcName
-     * @param catalogName
-     * @param connectInfo
-     */
-    private RolapSchema(
-            final String key,
-            final String catalogName,
-            final Util.PropertyList connectInfo,
-            final String dynProcName,
-            final DataSource dataSource) {
-        this(key, connectInfo, dataSource, (String) null);
 
-        String catalogStr = null;
-
-        try {
-            final URL url = new URL(catalogName);
-
-            final Class clazz = Class.forName(dynProcName);
-            final Constructor ctor = clazz.getConstructor(new Class[0]);
-            final DynamicSchemaProcessor dynProc =
-                    (DynamicSchemaProcessor) ctor.newInstance(new Object[0]);
-            catalogStr = dynProc.processSchema(url, connectInfo);
-
-        } catch (Exception e) {
-            throw Util.newError(e, "loading DynamicSchemaProcessor "
-                    + dynProcName);
-        }
-
-        load(catalogName, catalogStr);
-    }
-
-    /**
-     * Create RolapSchema given the catalog name and string (content) and
-     * the connectInfo object.
-     *
-     * @param catalogName
-     * @param catalogStr
-     * @param connectInfo
-     */
-    private RolapSchema(final String key,
-                        final String catalogName,
-                        final String catalogStr,
-                        final Util.PropertyList connectInfo,
-                        final DataSource dataSource) {
-        this(key, null, catalogName, catalogStr, connectInfo, dataSource);
-    }
     /**
      * Create RolapSchema given the MD5 hash, catalog name and string (content)
      * and the connectInfo object.
@@ -672,31 +633,38 @@ public class RolapSchema implements Schema {
 
             RolapSchema schema = null;
 
-            final String dynProc =
+            final String dynProcName =
                 connectInfo.get(RolapConnectionProperties.DynamicSchemaProcessor);
             // If there is a dynamic processor registered, use it. This
             // implies there is not MD5 based caching, but, as with the previous
             // implementation, if the catalog string is in the connectInfo
             // object as catalog content then it is used.
-            if ( ! Util.isEmpty(dynProc)) {
+            if ( ! Util.isEmpty(dynProcName)) {
                 String catalogStr =
                     connectInfo.get(RolapConnectionProperties.CatalogContent);
 
-                schema = (catalogStr == null)
-                    // If a schema will be dynamically processed, caching is not
-                    // possible.
-                    ? new RolapSchema(key,
-                                      catalogName,
-                                      connectInfo,
-                                      dynProc,
-                                      dataSource)
-                    // Got the catalog string, no need to get it again in the
-                    // constructor
-                    : new RolapSchema(key,
-                                      catalogName,
-                                      catalogStr,
-                                      connectInfo,
-                                      dataSource);
+                if (catalogStr == null) {
+                    try {
+                        final URL url = new URL(catalogName);
+
+                        final Class clazz = Class.forName(dynProcName);
+                        final Constructor ctor = clazz.getConstructor(new Class[0]);
+                        final DynamicSchemaProcessor dynProc =
+                                (DynamicSchemaProcessor) 
+                                ctor.newInstance(new Object[0]);
+                        catalogStr = dynProc.processSchema(url, connectInfo);
+                    } catch (Exception e) {
+                        throw Util.newError(e, "loading DynamicSchemaProcessor "
+                            + dynProcName);
+                    }
+                }
+                schema = new RolapSchema(key,
+                                  null,
+                                  catalogName,
+                                  catalogStr,
+                                  connectInfo,
+                                  dataSource);
+
 
                 if (LOGGER.isDebugEnabled()) {
                     String msg = "Pool.get: create schema \"" +
@@ -704,6 +672,7 @@ public class RolapSchema implements Schema {
                         "\" using dynamic processor";
                     LOGGER.debug(msg);
                 }
+
             } else {
 
                 if (USE_MD5) {
