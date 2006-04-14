@@ -470,6 +470,15 @@
                 <CAPTION>BottomSum</CAPTION>
             </row>
             <row>
+                <FUNCTION_NAME>CalculatedChild</FUNCTION_NAME>
+                <DESCRIPTION>Returns an existing calculated child member with name &lt;String&gt; from the specified &lt;Member&gt;.</DESCRIPTION>
+                <PARAMETER_LIST>Member, String</PARAMETER_LIST>
+                <RETURN_TYPE>12</RETURN_TYPE>
+                <ORIGIN>1</ORIGIN>
+                <INTERFACE_NAME/>
+                <CAPTION>CalculatedChild</CAPTION>
+            </row>
+            <row>
                 <FUNCTION_NAME>Caption</FUNCTION_NAME>
                 <DESCRIPTION>Returns the caption of a dimension.</DESCRIPTION>
                 <PARAMETER_LIST>Dimension</PARAMETER_LIST>
