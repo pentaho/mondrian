@@ -747,7 +747,7 @@ assert is not true.
             // TODO:
             // Currently a virtual cube does not keep a list of all of its
             // base cubes, so we must just flush all of them.
-            schema.flushRolapStarCachedAggregations();
+            schema.flushRolapStarCaches();
         } else {
             star.clearCachedAggregations(false);
         }
