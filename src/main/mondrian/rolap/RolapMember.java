@@ -29,6 +29,61 @@ public class RolapMember extends MemberBase {
 
     private static final Logger LOGGER = Logger.getLogger(RolapMember.class);
 
+    /** 
+     * This does a depth first setting of the complete member hierarchy as
+     * required by the MEMBER_ORDINAL XMLA element. 
+     * For big hierarchies it takes a bunch of time. SQL Server is
+     * relatively fast in comparison so it might be storing such
+     * information in the DB.
+     * 
+     * @param connection 
+     * @param member 
+     */
+    public static void setOrdinals(Connection connection, Member member) {
+        Member parent =
+              connection.getSchemaReader().getMemberParent(member);
+
+        if (parent == null) {
+            // top of the world
+            int ordinal = 0;
+
+            Member[] siblings = connection.getSchemaReader().
+                        getHierarchyRootMembers(member.getHierarchy());
+
+            for (int i = 0; i < siblings.length; i++) {
+                Member sibling = siblings[i];
+                ordinal = setAllChildren(ordinal, connection, sibling);
+            }
+
+        } else {
+            setOrdinals(connection, parent);
+        }
+    }
+    private static int setAllChildren(
+            int ordinal, Connection connection, Member member) {
+
+        if (member instanceof RolapMember) {
+            ((RolapMember) member).setOrdinal(ordinal++);
+        } else {
+            // TODO
+            LOGGER.warn("RolapMember.setAllChildren: NOT RolapMember "+
+                "member.name=" +member.getName()+
+                ", member.class=" +member.getClass().getName()+
+                ", ordinal=" +ordinal
+                );              
+            ordinal++;
+        }
+        
+        Member[] children =
+                connection.getSchemaReader().getMemberChildren(member);
+        for (int i = 0; i < children.length; i++) {
+            Member child = children[i];
+            ordinal = setAllChildren(ordinal, connection, child);
+        }
+        
+        return ordinal;
+    }
+
     /**
      * Converts a key to a string to be used as part of the member's name
      * and unique name.

@@ -184,7 +184,7 @@
                 <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>
                 <LEVEL_UNIQUE_NAME>[Gender].[Gender]</LEVEL_UNIQUE_NAME>
                 <LEVEL_NUMBER>1</LEVEL_NUMBER>
-                <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>
+                <MEMBER_ORDINAL>1</MEMBER_ORDINAL>
                 <MEMBER_NAME>F</MEMBER_NAME>
                 <MEMBER_UNIQUE_NAME>[Gender].[All Gender].[F]</MEMBER_UNIQUE_NAME>
                 <MEMBER_TYPE>1</MEMBER_TYPE>
@@ -203,7 +203,7 @@
                 <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>
                 <LEVEL_UNIQUE_NAME>[Gender].[Gender]</LEVEL_UNIQUE_NAME>
                 <LEVEL_NUMBER>1</LEVEL_NUMBER>
-                <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>
+                <MEMBER_ORDINAL>2</MEMBER_ORDINAL>
                 <MEMBER_NAME>M</MEMBER_NAME>
                 <MEMBER_UNIQUE_NAME>[Gender].[All Gender].[M]</MEMBER_UNIQUE_NAME>
                 <MEMBER_TYPE>1</MEMBER_TYPE>

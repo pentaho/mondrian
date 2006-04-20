@@ -4556,6 +4556,11 @@ boolean restriction, boolean nullable, String description)
         private void unparseMember(final Connection connection, Cube cube,
                 Member member, XmlaResponse response,
                 int treeOp) {
+
+            if (member.getOrdinal() == -1) {
+                RolapMember.setOrdinals(connection, member);
+            }
+
             // Visit node itself.
             if (mask(treeOp, Enumeration.TreeOp.Self.ordinal)) {
                 emitMember(member, connection, cube, response);
@@ -4649,6 +4654,7 @@ boolean restriction, boolean nullable, String description)
             row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
             row.set(LevelUniqueName.name, level.getUniqueName());
             row.set(LevelNumber.name, level.getDepth());
+// XXXXXXXXXXXXXXXXXXX
             row.set(MemberOrdinal.name, member.getOrdinal());
             row.set(MemberName.name, member.getName());
             row.set(MemberUniqueName.name, member.getUniqueName());
