@@ -14,6 +14,8 @@ import mondrian.util.Format;
 
 import java.util.Calendar;
 import java.util.Locale;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 
 /**
  * Test suite for internalization and localization.
@@ -51,6 +53,15 @@ public class I18nTest extends FoodMartTestCase {
         // Dates in German
         dateFormat = new Format("Long Date", german);
         assertEquals("Samstag, Januar 22, 2005", dateFormat.format(date));
+    }
+
+    /**
+     * Runs {@link Format#testFormat(java.io.PrintWriter) Format's own unit
+     * test}.
+     */
+    public void testFormat2() {
+        final StringWriter sw = new StringWriter();
+        Format.testFormat(new PrintWriter(sw));
     }
 }
 

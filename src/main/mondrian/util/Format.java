@@ -116,17 +116,28 @@ public class Format {
     {
         PrintWriter pw = new PrintWriter(
             new java.io.OutputStreamWriter(System.out));
-/*
-        String[] timeZones = TimeZone.getAvailableIDs();
-        for (int i = 0; i < timeZones.length; i++) {
-            TimeZone tz = TimeZone.getTimeZone(timeZones[i]);
-            pw.println(
-                "Id=" + tz.getID() +
-                ", offset=" + tz.getRawOffset() / (60 * 60 * 1000) +
-                ", daylight=" + tz.useDaylightTime());
+
+        testFormat(pw);
+    }
+
+    /**
+     * Runs a unit test.
+     *
+     * @param pw
+     */
+    public static void testFormat(PrintWriter pw) {
+        if (false) {
+            String[] timeZones = TimeZone.getAvailableIDs();
+            for (int i = 0; i < timeZones.length; i++) {
+                TimeZone tz = TimeZone.getTimeZone(timeZones[i]);
+                pw.println(
+                        "Id=" + tz.getID() +
+                        ", offset=" + tz.getRawOffset() / (60 * 60 * 1000) +
+                        ", daylight=" + tz.useDaylightTime());
+            }
+            pw.flush();
         }
-        pw.flush();
-*/
+
         String[] numberFormats = {
             // format                +6          -6           0           .6          null
             // ===================== =========== ============ =========== =========== =========
@@ -193,11 +204,11 @@ public class Format {
             null,
             new Long(6), new Long(-6), new Long(0)};
         Double d = new Double(3141592.653589793);
-        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance();
         calendar.set(1969, 3, 29, 20, 9, 6); // note that month #3 == April
-        java.util.Date date = calendar.getTime();
+        Date date = calendar.getTime();
         calendar.set(2010, 8, 7, 6, 5, 4); // 06:05:04 am, 7th sep 2010
-        java.util.Date date2 = calendar.getTime();
+        Date date2 = calendar.getTime();
 
         pw.println("Start test of mondrian.util.Format.");
 
@@ -221,7 +232,7 @@ public class Format {
             for (int j = 0; j < numbers.length; j++) {
                 int x = (j < 5 ? j + 1 : j - 4);
                 String result = numberFormats[i * 6 + x];
-                testFormat(pw, null, numbers[j], format, result);
+                checkFormat(pw, null, numbers[j], format, result);
             }
         }
 
@@ -229,55 +240,55 @@ public class Format {
         pw.println("Numbers in French.");
         for (int i = 0; i < numberFormats.length / 6; i++) {
             String format = numberFormats[i * 6];
-            testFormat(pw, localeFra, d, format, null);
+            checkFormat(pw, localeFra, d, format, null);
         }
 
         pw.println();
         pw.println("Some tricky numbers.");
-        testFormat(pw, null, new Double(40.385), "##0.0#", "40.38");
-        testFormat(pw, null, new Double(40.386), "##0.0#", "40.39");
-        testFormat(pw, null, new Double(40.384), "##0.0#", "40.38");
-        testFormat(pw, null, new Double(40.385), "##0.#", "40.4");
-        testFormat(pw, null, new Double(40.38), "##0.0#", "40.38");
-        testFormat(pw, null, new Double(-40.38), "##0.0#", "-40.38");
-        testFormat(pw, null, new Double(0.040385), "#0.###", "0.04");
-        testFormat(pw, null, new Double(0.040385), "#0.000", "0.040");
-        testFormat(pw, null, new Double(0.040385), "#0.####", "0.0404");
-        testFormat(pw, null, new Double(0.040385), "00.####", "00.0404");
-        testFormat(pw, null, new Double(0.040385), ".00#", ".04");
-        testFormat(pw, null, new Double(0.040785), ".00#", ".041");
-        testFormat(pw, null, new Double(99.9999), "##.####", "99.9999");
-        testFormat(pw, null, new Double(99.9999), "##.###", "100");
-        testFormat(pw, null, new Double(99.9999), "##.00#", "100.00");
-        testFormat(pw, null, new Double(.00099), "#.00", ".00");
-        testFormat(pw, null, new Double(.00099), "#.00#", ".001");
-        testFormat(pw, null, new Double(12.34), "#.000##", "12.340");
+        checkFormat(pw, null, new Double(40.385), "##0.0#", "40.38");
+        checkFormat(pw, null, new Double(40.386), "##0.0#", "40.39");
+        checkFormat(pw, null, new Double(40.384), "##0.0#", "40.38");
+        checkFormat(pw, null, new Double(40.385), "##0.#", "40.4");
+        checkFormat(pw, null, new Double(40.38), "##0.0#", "40.38");
+        checkFormat(pw, null, new Double(-40.38), "##0.0#", "-40.38");
+        checkFormat(pw, null, new Double(0.040385), "#0.###", "0.04");
+        checkFormat(pw, null, new Double(0.040385), "#0.000", "0.040");
+        checkFormat(pw, null, new Double(0.040385), "#0.####", "0.0404");
+        checkFormat(pw, null, new Double(0.040385), "00.####", "00.0404");
+        checkFormat(pw, null, new Double(0.040385), ".00#", ".04");
+        checkFormat(pw, null, new Double(0.040785), ".00#", ".041");
+        checkFormat(pw, null, new Double(99.9999), "##.####", "99.9999");
+        checkFormat(pw, null, new Double(99.9999), "##.###", "100");
+        checkFormat(pw, null, new Double(99.9999), "##.00#", "100.00");
+        checkFormat(pw, null, new Double(.00099), "#.00", ".00");
+        checkFormat(pw, null, new Double(.00099), "#.00#", ".001");
+        checkFormat(pw, null, new Double(12.34), "#.000##", "12.340");
 
         // "Standard" must use thousands separator, and round
-        testFormat(pw, null, new Double(1234567.89), "Standard", "1,234,568");
+        checkFormat(pw, null, new Double(1234567.89), "Standard", "1,234,568");
 
         // must use correct alternate for 0
-        testFormat(pw, null, new Double(0), "$#,##0;;\\Z\\e\\r\\o", "Zero");
+        checkFormat(pw, null, new Double(0), "$#,##0;;\\Z\\e\\r\\o", "Zero");
 
         // an existing bug
         pw.println(
             "The following case illustrates an outstanding bug.  " +
             "Should be able to override '.' to '-', " +
             "so result should be '3.141.592-65 FF'.");
-        testFormat(pw, localeFra, d, "#.##0-00 FF", null);
+        checkFormat(pw, localeFra, d, "#.##0-00 FF", null);
 
         pw.println();
         pw.println("Test several date formats on one date.");
         for (int i = 0; i < dateFormats.length; i++) {
             String format = dateFormats[i];
-            testFormat(pw, null, date, format, null);
+            checkFormat(pw, null, date, format, null);
         }
 
         pw.println();
         pw.println("Dates in French.");
         for (int i = 0; i < dateFormats.length; i++) {
             String format = dateFormats[i];
-            testFormat(pw, localeFra, date, format, null);
+            checkFormat(pw, localeFra, date, format, null);
         }
 
         pw.println();
@@ -294,35 +305,35 @@ public class Format {
             } else {
                 o = d;
             }
-            testFormat(pw, null, o, fe.token, null);
+            checkFormat(pw, null, o, fe.token, null);
         }
 
         pw.println();
         pw.println("Some tricky dates.");
 
         // must not throw exception
-        testFormat(pw, null, date2, "mm/##/yy", "09/##/10");
+        checkFormat(pw, null, date2, "mm/##/yy", "09/##/10");
 
         // must recognize lowercase "dd"
-        testFormat(pw, null, date2, "mm/dd/yy", "09/07/10");
+        checkFormat(pw, null, date2, "mm/dd/yy", "09/07/10");
 
         // must print '7' not '07'
-        testFormat(pw, null, date2, "mm/d/yy", "09/7/10");
+        checkFormat(pw, null, date2, "mm/d/yy", "09/7/10");
 
         // must not decrement month by one (cuz java.util.Calendar is 0-based)
-        testFormat(pw, null, date2, "mm/dd/yy", "09/07/10");
+        checkFormat(pw, null, date2, "mm/dd/yy", "09/07/10");
 
         // must recognize "mmm"
-        testFormat(pw, null, date2, "mmm/dd/yyyy", "Sep/07/2010");
+        checkFormat(pw, null, date2, "mmm/dd/yyyy", "Sep/07/2010");
 
         // "mm" means minute, not month, when following "hh"
-        testFormat(pw, null, date2, "hh/mm/ss", "06/05/04");
+        checkFormat(pw, null, date2, "hh/mm/ss", "06/05/04");
 
         // must recognize "Long Date" etc.
-        testFormat(pw, null, date2, "Long Date", "Tuesday, September 07, 2010");
+        checkFormat(pw, null, date2, "Long Date", "Tuesday, September 07, 2010");
 
         // international currency symbol
-        testFormat(pw, null, new Double(1.2), "" + intlCurrencySymbol + "#", "$1");
+        checkFormat(pw, null, new Double(1.2), "" + intlCurrencySymbol + "#", "$1");
 
         pw.println();
         pw.println("End of test.");
@@ -330,7 +341,7 @@ public class Format {
         pw.flush();
     }
 
-    static private void testFormat(
+    static private void checkFormat(
         PrintWriter pw, FormatLocale locale, Object o, String f, String result)
     {
         pw.print(
