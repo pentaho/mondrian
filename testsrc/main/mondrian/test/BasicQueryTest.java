@@ -4407,6 +4407,13 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "  {[Product].CHILDREN, [Drink Forecast - Standard], [Drink Forecast - Dynamic]} ON ROWS" + nl +
                 "FROM Warehouse", "");
     }
+    public void _testWarehouseProfit() {
+        assertQueryReturns(
+            "select " +nl +
+            "{[Measures].[Warehouse Cost], [Measures].[Warehouse Sales], [Measures].[Warehouse Profit]}" +nl +
+            " ON COLUMNS from [Warehouse]",
+            "");
+    }
 
     /**
      * <b>How Can I Compare Time Periods in MDX?</b>
