@@ -58,6 +58,9 @@ public class XmlaBasicTest extends FoodMartTestCase {
     // dimension unique name
     public static final String UNIQUE_NAME_PROP     = "unique.name";
 
+    public static final String RESTRICTION_NAME_PROP     = "restriction.name";
+    public static final String RESTRICTION_VALUE_PROP     = "restriction.value";
+
     // content
     public static final String CONTENT_PROP     = "content";
     public static final String CONTENT_NONE     = 
@@ -255,13 +258,28 @@ public class XmlaBasicTest extends FoodMartTestCase {
         doTest(requestType, reqFileName, respFileName, props);
     }
 
-    // good 2/25 : not returning the correct VarType
-    // NOTE: This will be a real pain to keep upto date as
-    // new functions are added to Mondrian
+    // good 4/21
+    public void testMDFunction() throws Exception {
+        String requestType = "MDSCHEMA_FUNCTIONS";
+        String reqFileName = "RT_R_DSI_C_in.xml";
+        String restrictionName = "FUNCTION_NAME";
+        String restrictionValue = "Item";
+        String respFileName = "MDSCHEMA_FUNCTIONS_out.xml";
+
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(RESTRICTION_NAME_PROP, restrictionName);
+        props.setProperty(RESTRICTION_VALUE_PROP, restrictionValue);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+
+        doTest(requestType, reqFileName, respFileName, props);
+    }
+    // good 4/21
+    // only make sure that something is returned
     public void testMDFunctions() throws Exception {
         String requestType = "MDSCHEMA_FUNCTIONS";
         String reqFileName = "RT_DSI_C_in.xml";
-        String respFileName = "MDSCHEMA_FUNCTIONS_out.xml";
+        String respFileName = null;
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -378,26 +396,38 @@ public class XmlaBasicTest extends FoodMartTestCase {
             Properties props) throws Exception {
 
         String requestText = fileToString(reqFileName);
-        Document responseDoc = fileToDocument(respFileName);
+        Document responseDoc = (respFileName != null)
+            ? fileToDocument(respFileName) 
+            : null;
+
         String connectString = getConnectionString();
 
-        Document expectedDoc = XmlaSupport.transformSoapXmla(
-                responseDoc, new String[][] {{"content", "none"}} );
+        Document expectedDoc = (responseDoc != null)
+            ? XmlaSupport.transformSoapXmla(
+                responseDoc, new String[][] {{"content", "none"}} )
+            : null;
+
         props.setProperty(CONTENT_PROP, CONTENT_NONE);
         doTests(requestText, props, null, connectString, expectedDoc);
 
-        expectedDoc = XmlaSupport.transformSoapXmla(
-                responseDoc, new String[][] {{"content", "data"}} );
+        expectedDoc = (responseDoc != null)
+            ? XmlaSupport.transformSoapXmla(
+                responseDoc, new String[][] {{"content", "data"}} )
+            : null;
         props.setProperty(CONTENT_PROP, CONTENT_DATA);
         doTests(requestText, props, null, connectString, expectedDoc);
 
-        expectedDoc = XmlaSupport.transformSoapXmla(
-                responseDoc, new String[][] {{"content", "schema"}} );
+        expectedDoc = (responseDoc != null)
+            ? XmlaSupport.transformSoapXmla(
+                responseDoc, new String[][] {{"content", "schema"}} )
+            : null;
         props.setProperty(CONTENT_PROP, CONTENT_SCHEMA);
         doTests(requestText, props, null, connectString, expectedDoc);
 
-        expectedDoc = XmlaSupport.transformSoapXmla(
-                responseDoc, new String[][] {{"content", "schemadata"}} );
+        expectedDoc = (responseDoc != null)
+            ? XmlaSupport.transformSoapXmla(
+                responseDoc, new String[][] {{"content", "schemadata"}} )
+            : null;
         props.setProperty(CONTENT_PROP, CONTENT_SCHEMADATA);
         doTests(requestText, props, null, connectString, expectedDoc);
     }
@@ -448,13 +478,15 @@ if (DEBUG) {
 
         Document gotDoc = XmlUtil.parse(bytes);
         String gotStr = XmlUtil.toString(gotDoc, true);
-        String expectedStr = XmlUtil.toString(expectedDoc, true);
+        if (expectedDoc != null) {
+            String expectedStr = XmlUtil.toString(expectedDoc, true);
 if (DEBUG) {
 System.out.println("GOT:\n"+gotStr);
 System.out.println("EXPECTED:\n"+expectedStr);
 System.out.println("XXXXXXX");
 }
-        XMLAssert.assertXMLEqual(expectedStr, gotStr);
+            XMLAssert.assertXMLEqual(expectedStr, gotStr);
+        }
 
 
 
