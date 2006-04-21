@@ -30,30 +30,30 @@
 
 <h2>Contents</h2>
 <ul>
-	<li><a href="#What_is_CmdRunner">What is CmdRunner?</a></li>
-	<li><a href="#Building">Building</a></li>
-	<li><a href="#Usage">Usage</a></li>
-	<li><a href="#Properties_file">Properties File</a></li>
-	<li><a href="#Command_line_arguments">Command line arguments</a></li>
-	<li><a href="#CmdRunner_Commands">CmdRunner Commands</a><ul>
-		<li><a href="#help">help</a></li>
-		<li><a href="#set">set</a></li>
-		<li><a href="#log">log</a></li>
-		<li><a href="#file">file</a></li>
-		<li><a href="#list">list</a></li>
-		<li><a href="#func">func</a></li>
-		<li><a href="#param">param</a></li>
-		<li><a href="#cube">cube</a></li>
-		<li><a href="#error">error</a></li>
-		<li><a href="#echo">echo</a></li>
-		<li><a href="#expr">expr</a></li>
-		<li><a href="#equals">=</a></li>
-		<li><a href="#tilde">~</a></li>
-		<li><a href="#exit">exit</a></li>
-		<li><a href="#run_an_MDX_query">run an MDX query</a></li>
-	</ul>
-	</li>
-	<li><a href="#AggGen">AggGen: Aggregate SQL Generator</a></li>
+    <li><a href="#What_is_CmdRunner">What is CmdRunner?</a></li>
+    <li><a href="#Building">Building</a></li>
+    <li><a href="#Usage">Usage</a></li>
+    <li><a href="#Properties_file">Properties File</a></li>
+    <li><a href="#Command_line_arguments">Command line arguments</a></li>
+    <li><a href="#CmdRunner_Commands">CmdRunner Commands</a><ul>
+        <li><a href="#help">help</a></li>
+        <li><a href="#set">set</a></li>
+        <li><a href="#log">log</a></li>
+        <li><a href="#file">file</a></li>
+        <li><a href="#list">list</a></li>
+        <li><a href="#func">func</a></li>
+        <li><a href="#param">param</a></li>
+        <li><a href="#cube">cube</a></li>
+        <li><a href="#error">error</a></li>
+        <li><a href="#echo">echo</a></li>
+        <li><a href="#expr">expr</a></li>
+        <li><a href="#equals">=</a></li>
+        <li><a href="#tilde">~</a></li>
+        <li><a href="#exit">exit</a></li>
+        <li><a href="#run_an_MDX_query">run an MDX query</a></li>
+    </ul>
+    </li>
+    <li><a href="#AggGen">AggGen: Aggregate SQL Generator</a></li>
 </ul>
 
 <h2><a name="What_is_CmdRunner">What is CmdRunner?</a></h2>
@@ -220,71 +220,101 @@ mondrian.rolap.generate.formatted.sql=true<br>
 <code>CmdRunner</code> has the following command line options:</p>
 
 <blockquote>
-	<table style="border-width:0; text-align: left"
+    <table style="border-width:0; text-align: left"
  border="1" cellpadding="2" cellspacing="0">
-		<tbody>
-			<tr>
-				<td style="vertical-align: top; text-align: center;">
-				<span
+        <tbody>
+            <tr>
+                <td style="vertical-align: top; text-align: center;">
+                <span
  style="font-weight: bold;">Option</span><br></td>
-				<td style="vertical-align: top; text-align: center;">
-				<span
+                <td style="vertical-align: top; text-align: center;">
+                <span
  style="font-weight: bold;">Description</span><br></td>
-			</tr>
-			<tr>
-				<td style="vertical-align: top;"><code>-h</code></td>
-				<td style="vertical-align: top;">Print help, the list of command line
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-h</code></td>
+                <td style="vertical-align: top;">Print help, the list of command line
 options.</td>
-			</tr>
-			<tr>
-				<td style="vertical-align: top;"><code>-d</code></td>
-				<td style="vertical-align: top;">Enable CmdRunner debugging. 
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-d</code></td>
+                <td style="vertical-align: top;">Enable CmdRunner debugging. 
         This does not change this log level.</td>
-			</tr>
-			<tr>
-				<td style="vertical-align: top;"><code>-t</code></td>
-				<td style="vertical-align: top;">Time each mdx query's execution.
-				</td>
-			</tr>
-			<tr>
-				<td style="vertical-align: top;"><code>-nocache</code></td>
-				<td style="vertical-align: top;">Regardless of the settings in the
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-t</code></td>
+                <td style="vertical-align: top;">Time each mdx query's execution.
+                </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-nocache</code></td>
+                <td style="vertical-align: top;">Regardless of the settings in the
         Schema file, set each Cube to no in-memory aggregate caching 
         (caching is turned off so each query goes to the database).
         </td>
-			</tr>
-			<tr>
-				<td style="vertical-align: top;"><code>-rc</code></td>
-				<td style="vertical-align: top;">Do not reload the connection
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-rc</code></td>
+                <td style="vertical-align: top;">Do not reload the connection
         after each query (the default is to reload the connection.
         Its safe to just ignore this.
       </td>
-			</tr>
-			<tr>
-				<td style="vertical-align: top;" nowrap><code>-p property-file</code></td>
-				<td style="vertical-align: top;">Specify the Mondrian property
+            </tr>
+            <tr>
+                <td style="vertical-align: top;" nowrap><code>-p property-file</code></td>
+                <td style="vertical-align: top;">Specify the Mondrian property
         file. This argument is basically required for any but the most 
         trivial command interpreter commands. To execute a MDX query or
         request information about a function, the property file must be 
         supplied. On the other hand, to have the CmdRunner print out
         its internal help, then the property file is not needed. </td>
-			</tr>
-			<tr>
-				<td style="vertical-align: top;"><code>-f filename+</code></td>
-				<td style="vertical-align: top;">Specify the name of one or
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-f filename+</code></td>
+                <td style="vertical-align: top;">Specify the name of one or
         more files that contains CmdRunner commands. If this argument 
         is not supplied, then the interpreter starting in the command 
         entry mode. After the <code>-f</code> is seen, all subsequent
         arguments are interpreted as filenames.
       </td>
-			</tr>
-			<tr>
-				<td style="vertical-align: top;"><code>mdx_command</code></td>
-				<td style="vertical-align: top;">A string representing 
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-x xmla_filename+</code></td>
+                <td style="vertical-align: top;">Specify the name of one or
+        more files that contains XMAL request that has no SOAP wrapper.
+        After the <code>-x</code> is seen, all subsequent
+        arguments are interpreted as XMLA filenames.
+      </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-xs soap_xmla_filename+</code></td>
+                <td style="vertical-align: top;">Specify the name of one or
+        more files that contains XMAL request with a SOAP wrapper.
+        After the <code>-xs</code> is seen, all subsequent
+        arguments are interpreted as SOAP XMLA filenames.
+      </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-vt</code></td>
+                <td style="vertical-align: top;">Validate the XMLA 
+        response using XSLT transform. This can only be used with 
+        the <code>-x</code> or <code>-xs</code> flags.
+      </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-vx</code></td>
+                <td style="vertical-align: top;">Validate the XMLA 
+        response using XPaths. This can only be used with 
+        the <code>-x</code> or <code>-xs</code> flags.
+      </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>mdx_command</code></td>
+                <td style="vertical-align: top;">A string representing 
         one or more CmdRunner commands. </td>
-			</tr>
-		</tbody>
-	</table>
+            </tr>
+        </tbody>
+    </table>
 </blockquote>
 
 <h2><a name="CmdRunner_Commands">CmdRunner Commands</a></h2>
