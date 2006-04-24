@@ -12,7 +12,6 @@ package mondrian.xmla;
 import mondrian.olap.*;
 import mondrian.olap.Category;
 import mondrian.olap.FunTable;
-import mondrian.olap.Syntax;
 import mondrian.olap.fun.FunInfo;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapLevel;
@@ -35,7 +34,15 @@ import java.util.*;
  */
 abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     final Column[] columnDefinitions;
-    private static final String nl = Util.nl;
+
+    /**
+     * Date the schema was last modified.
+     *
+     * <p>TODO: currently schema grammar does not support modify date
+     * so we return just some date for now.
+     */
+    private static final String dateModified = "2005-01-25T17:35:32";
+
     /**
      * Returns a list of XML for Analysis data sources
      * available on the server or Web Service. (For an
@@ -114,13 +121,13 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
     /**
      * Generates an XML schema description to the writer.
-     * This is broken into top, Row definition and bottom so that on a 
+     * This is broken into top, Row definition and bottom so that on a
      * case by case basis a RowsetDefinition can redefine the Row
      * definition output. The default assumes a flat set of elements, but
      * for example, SchemaRowsets has a element with child elements.
      *
      * @param writer SAX writer
-     * @see XmlaHandler#writeDatasetXmlSchema(SaxWriter)
+     * @see XmlaHandler#writeDatasetXmlSchema(SaxWriter, int)
      */
     void writeRowsetXmlSchema(SaxWriter writer) {
         writeRowsetXmlSchemaTop(writer);
@@ -187,14 +194,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         "type", xsdType,
                         "minOccurs", "0",
                         "maxOccurs", "unbounded"
-                    }; 
+                    };
                 } else {
                     attrs = new String[] {
                         "sql:field", column.name,
                         "name", name,
                         "type", xsdType,
                         "minOccurs", "0"
-                    }; 
+                    };
                 }
             } else {
                 if (column.unbounded) {
@@ -223,67 +230,67 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
     static class Type extends EnumeratedValues.BasicValue {
         public static final int String_ORDINAL = 0;
-        public static final Type String = 
+        public static final Type String =
             new Type("string", String_ORDINAL, "xsd:string");
 
         public static final int StringArray_ORDINAL = 1;
-        public static final Type StringArray = 
+        public static final Type StringArray =
             new Type("StringArray", StringArray_ORDINAL, "xsd:string");
 
         public static final int Array_ORDINAL = 2;
-        public static final Type Array = 
+        public static final Type Array =
             new Type("Array", Array_ORDINAL, "xsd:string");
 
         public static final int Enumeration_ORDINAL = 3;
-        public static final Type Enumeration = 
+        public static final Type Enumeration =
             new Type("Enumeration", Enumeration_ORDINAL, "xsd:string");
 
         public static final int EnumerationArray_ORDINAL = 4;
-        public static final Type EnumerationArray = 
+        public static final Type EnumerationArray =
             new Type("EnumerationArray", EnumerationArray_ORDINAL, "xsd:string");
 
         public static final int EnumString_ORDINAL = 5;
-        public static final Type EnumString = 
+        public static final Type EnumString =
             new Type("EnumString", EnumString_ORDINAL, "xsd:string");
 
         public static final int Boolean_ORDINAL = 6;
-        public static final Type Boolean = 
+        public static final Type Boolean =
             new Type("Boolean", Boolean_ORDINAL, "xsd:boolean");
 
         public static final int StringSometimesArray_ORDINAL = 7;
-        public static final Type StringSometimesArray = 
+        public static final Type StringSometimesArray =
             new Type("StringSometimesArray", StringSometimesArray_ORDINAL, "xsd:string");
 
         public static final int Integer_ORDINAL = 8;
-        public static final Type Integer = 
+        public static final Type Integer =
             new Type("Integer", Integer_ORDINAL, "xsd:int");
 
         public static final int UnsignedInteger_ORDINAL = 9;
-        public static final Type UnsignedInteger = 
+        public static final Type UnsignedInteger =
             new Type("UnsignedInteger", UnsignedInteger_ORDINAL, "xsd:unsignedInt");
 
         public static final int DataTime_ORDINAL = 10;
-        public static final Type DateTime = 
+        public static final Type DateTime =
             new Type("DateTime", DataTime_ORDINAL, "xsd:dateTime");
 
         public static final int Short_ORDINAL = 11;
-        public static final Type Short = 
+        public static final Type Short =
             new Type("Short", Short_ORDINAL, "xsd:short");
 
         public static final int UUID_ORDINAL = 12;
-        public static final Type UUID = 
+        public static final Type UUID =
             new Type("UUID", UUID_ORDINAL, "uuid");
 
         public static final int UnsignedShort_ORDINAL = 13;
-        public static final Type UnsignedShort = 
+        public static final Type UnsignedShort =
             new Type("UnsignedShort", UnsignedShort_ORDINAL, "xsd:unsignedShort");
 
         public static final int Long_ORDINAL = 14;
-        public static final Type Long = 
+        public static final Type Long =
             new Type("Long", Long_ORDINAL, "xsd:long");
 
         public static final int UnsignedLong_ORDINAL = 15;
-        public static final Type UnsignedLong = 
+        public static final Type UnsignedLong =
             new Type("UnsignedLong", UnsignedLong_ORDINAL, "xsd:unsignedLong");
 
         public final String columnType;
@@ -295,11 +302,11 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
         public static final EnumeratedValues enumeration = new EnumeratedValues(
                 new Type[] {
-                    String, 
-                    StringArray, 
-                    Array, 
-                    Enumeration, 
-                    EnumerationArray, 
+                    String,
+                    StringArray,
+                    Array,
+                    Enumeration,
+                    EnumerationArray,
                     EnumString,
                 });
 
@@ -334,9 +341,9 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         return dbType;
     }
 
-    /** 
+    /**
      * The only OLE DB Types Indicators returned by SQL Server are thoses coded
-     * below. 
+     * below.
      * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/oledbtype_indicators.asp
      */
 
@@ -369,31 +376,31 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             "DBTYPE_BOOL"
             );
 
-        /** 
-         * Used by SQL Server for value. 
+        /**
+         * Used by SQL Server for value.
          */
         public static final int VARIANT_ORDINAL      = 12;
-        public static final DBType VARIANT = new DBType("VARIANT", 
+        public static final DBType VARIANT = new DBType("VARIANT",
             VARIANT_ORDINAL,
             "An Automation VARIANT",
             "DBTYPE_VARIANT"
             );
 
-        /** 
-         * Used by SQL Server for font size. 
+        /**
+         * Used by SQL Server for font size.
          */
         public static final int UI2_ORDINAL      = 18;
-        public static final DBType UI2 = new DBType("UNSIGNED_SHORT", 
+        public static final DBType UI2 = new DBType("UNSIGNED_SHORT",
             UI2_ORDINAL,
             "A two-byte, unsigned integer",
             "DBTYPE_UI2"
             );
 
-        /** 
-         * Used by SQL Server for colors, font flags and cell ordinal. 
+        /**
+         * Used by SQL Server for colors, font flags and cell ordinal.
          */
         public static final int UI4_ORDINAL      = 19;
-        public static final DBType UI4 = new DBType("UNSIGNED_INTEGER", 
+        public static final DBType UI4 = new DBType("UNSIGNED_INTEGER",
             UI4_ORDINAL,
             "A four-byte, unsigned integer",
             "DBTYPE_UI4"
@@ -431,7 +438,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         int columnSize;
          */
 
-        /** 
+        /**
          *  A Boolean that indicates whether the data type is nullable.
          *  VARIANT_TRUE indicates that the data type is nullable.
          *  VARIANT_FALSE indicates that the data type is not nullable.
@@ -449,30 +456,30 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
     }
     static class Column {
-        
-        /** 
+
+        /**
          * This is used as the true value for the restriction parameter.
          */
         static final boolean RESTRICTION = true;
-        /** 
+        /**
          * This is used as the false value for the restriction parameter.
          */
         static final boolean NOT_RESTRICTION = false;
 
-        /** 
+        /**
          * This is used as the false value for the nullable parameter.
          */
         static final boolean REQUIRED = false;
-        /** 
+        /**
          * This is used as the true value for the nullable parameter.
          */
         static final boolean OPTIONAL = true;
 
-        /** 
+        /**
          * This is used as the false value for the unbounded parameter.
          */
         static final boolean ONE_MAX = false;
-        /** 
+        /**
          * This is used as the true value for the unbounded parameter.
          */
         static final boolean UNBOUNDED = true;
@@ -497,17 +504,27 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
          * @param nullable
          * @pre type != null
          * @pre (type == Type.Enumeration || type == Type.EnumerationArray || type == Type.EnumString) == (enumeratedType != null)
+         * @pre description == null || description.indexOf('\r') == -1
          */
         Column(String name, Type type, Enumeration enumeratedType,
                 boolean restriction, boolean nullable, String description) {
-            this(name, type, enumeratedType, 
+            this(name, type, enumeratedType,
                 restriction, nullable, ONE_MAX, description);
         }
+
         Column(String name, Type type, Enumeration enumeratedType,
                 boolean restriction, boolean nullable, boolean unbounded,
                 String description) {
             Util.assertPrecondition(type != null, "Type.instance.isValid(type)");
-            Util.assertPrecondition((type == Type.Enumeration || type == Type.EnumerationArray || type == Type.EnumString) == (enumeratedType != null), "(type == Type.Enumeration || type == Type.EnumerationArray || type == Type.EnumString) == (enumeratedType != null)");
+            Util.assertPrecondition(
+                    (type == Type.Enumeration || type == Type.EnumerationArray || type == Type.EnumString) == (enumeratedType != null),
+                    "(type == Type.Enumeration || type == Type.EnumerationArray || type == Type.EnumString) == (enumeratedType != null)");
+            // Line endings must be UNIX style (LF) not Windows style (LF+CR).
+            // Thus the client will receive the same XML, regardless
+            // of the server O/S.
+            Util.assertPrecondition(
+                    description == null || description.indexOf('\r') == -1,
+                    "description == null || description.indexOf('\r') == -1");
             this.name = name;
             this.type = type;
             this.enumeration = enumeratedType;
@@ -524,7 +541,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
          */
         Object get(Object row) {
             try {
-                String javaFieldName = name.substring(0, 1).toLowerCase() + 
+                String javaFieldName = name.substring(0, 1).toLowerCase() +
                     name.substring(1);
                 Field field = row.getClass().getField(javaFieldName);
                 return field.get(row);
@@ -549,78 +566,78 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     // From this point on, just rowset classess.
 
     static class DiscoverDatasourcesRowset extends Rowset {
-        private static final Column DataSourceName = 
+        private static final Column DataSourceName =
             new Column(
-                "DataSourceName", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
+                "DataSourceName",
+                Type.String,
+                null,
+                Column.RESTRICTION,
                 Column.REQUIRED,
                 "The name of the data source, such as FoodMart 2000.");
-        private static final Column DataSourceDescription = 
+        private static final Column DataSourceDescription =
             new Column(
-                "DataSourceDescription", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
+                "DataSourceDescription",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "A description of the data source, as entered by the publisher.");
-        private static final Column URL = 
+        private static final Column URL =
             new Column(
-                "URL", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
+                "URL",
+                Type.String,
+                null,
+                Column.RESTRICTION,
                 Column.OPTIONAL,
                 "The unique path that shows where to invoke the XML for Analysis methods for that data source.");
-        private static final Column DataSourceInfo = 
+        private static final Column DataSourceInfo =
             new Column(
-                "DataSourceInfo", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
+                "DataSourceInfo",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
-                "A string containing any additional information required to connect to the data source. This can include the Initial Catalog property or other information for the provider." + nl +
+                "A string containing any additional information required to connect to the data source. This can include the Initial Catalog property or other information for the provider.\n" +
                 "Example: \"Provider=MSOLAP;Data Source=Local;\"");
-        private static final Column ProviderName = 
+        private static final Column ProviderName =
             new Column(
-                "ProviderName", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
+                "ProviderName",
+                Type.String,
+                null,
+                Column.RESTRICTION,
                 Column.OPTIONAL,
-                "The name of the provider behind the data source. " + nl +
+                "The name of the provider behind the data source. \n" +
                 "Example: \"MSDASQL\"");
-        private static final Column ProviderType = 
+        private static final Column ProviderType =
             new Column(
-                "ProviderType", 
-                Type.EnumerationArray, 
-                Enumeration.ProviderType.enumeration, 
-                Column.RESTRICTION, 
+                "ProviderType",
+                Type.EnumerationArray,
+                Enumeration.ProviderType.enumeration,
+                Column.RESTRICTION,
                 Column.REQUIRED,
                 Column.UNBOUNDED,
-                "The types of data supported by the provider. May include one or more of the following types. Example follows this table." + nl +
-                "TDP: tabular data provider." + nl +
-                "MDP: multidimensional data provider." + nl +
+                "The types of data supported by the provider. May include one or more of the following types. Example follows this table.\n" +
+                "TDP: tabular data provider.\n" +
+                "MDP: multidimensional data provider.\n" +
                 "DMP: data mining provider. A DMP provider implements the OLE DB for Data Mining specification.");
-        private static final Column AuthenticationMode = 
+        private static final Column AuthenticationMode =
             new Column(
-                "AuthenticationMode", 
-                Type.EnumString, 
-                Enumeration.AuthenticationMode.enumeration, 
-                Column.RESTRICTION, 
+                "AuthenticationMode",
+                Type.EnumString,
+                Enumeration.AuthenticationMode.enumeration,
+                Column.RESTRICTION,
                 Column.REQUIRED,
-                "Specification of what type of security mode the data source uses. Values can be one of the following:" + nl +
-                "Unauthenticated: no user ID or password needs to be sent." + nl +
-                "Authenticated: User ID and Password must be included in the information required for the connection." + nl +
+                "Specification of what type of security mode the data source uses. Values can be one of the following:\n" +
+                "Unauthenticated: no user ID or password needs to be sent.\n" +
+                "Authenticated: User ID and Password must be included in the information required for the connection.\n" +
                 "Integrated: the data source uses the underlying security to determine authorization, such as Integrated Security provided by Microsoft Internet Information Services (IIS).");
         /*
          *  http://msdn2.microsoft.com/en-us/library/ms126129(SQL.90).aspx
-         * 
+         *
          *
          * restrictions
          *
-         * Not supported     
+         * Not supported
          */
         static final RowsetDefinition definition = new RowsetDefinition(
                 "DISCOVER_DATASOURCES", DISCOVER_DATASOURCES,
@@ -668,45 +685,45 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     }
 
     static class DiscoverSchemaRowsetsRowset extends Rowset {
-        private static final Column SchemaName = 
+        private static final Column SchemaName =
             new Column(
-                "SchemaName", 
-                Type.StringArray, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "SchemaName",
+                Type.StringArray,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the schema/request. This returns the values in the RequestTypes enumeration, plus any additional types supported by the provider. The provider defines rowset structures for the additional types");
-        private static final Column SchemaGuid = 
+        private static final Column SchemaGuid =
             new Column(
-                "SchemaGuid", 
-                Type.UUID, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "SchemaGuid",
+                Type.UUID,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "The GUID of the schema.");
-        private static final Column Restrictions = 
+        private static final Column Restrictions =
             new Column(
-                "Restrictions", 
-                Type.Array, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "Restrictions",
+                Type.Array,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "An array of the restrictions suppoted by provider. An example follows this table.");
-        private static final Column Description = 
+        private static final Column Description =
             new Column(
-                "Description", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "Description",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "A localizable description of the schema");
         /*
          * Note that SQL Server also returns the data-mining columns.
-         * 
+         *
          *
          * restrictions
          *
-         * Not supported     
+         * Not supported
          */
         private static RowsetDefinition definition = new RowsetDefinition(
                 "DISCOVER_SCHEMA_ROWSETS", DISCOVER_SCHEMA_ROWSETS,
@@ -765,14 +782,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                                     "type", xsdType,
                                     "minOccurs", "0",
                                     "maxOccurs", "unbounded"
-                                }; 
+                                };
                             } else {
                                 attrs = new String[] {
                                     "sql:field", column.name,
                                     "name", name,
                                     "type", xsdType,
                                     "minOccurs", "0"
-                                }; 
+                                };
                             }
                         } else {
                             if (column.unbounded) {
@@ -855,61 +872,61 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, request, handler);
         }
 
-        private static final Column PropertyName = 
+        private static final Column PropertyName =
             new Column(
-                "PropertyName", 
-                Type.StringSometimesArray, 
-                null, 
+                "PropertyName",
+                Type.StringSometimesArray,
+                null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
                 "The name of the property.");
-        private static final Column PropertyDescription = 
+        private static final Column PropertyDescription =
             new Column(
-                "PropertyDescription", 
-                Type.String, 
-                null, 
+                "PropertyDescription",
+                Type.String,
+                null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
                 "A localizable text description of the property.");
-        private static final Column PropertyType = 
+        private static final Column PropertyType =
             new Column(
-                "PropertyType", 
-                Type.String, 
-                null, 
+                "PropertyType",
+                Type.String,
+                null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
                 "The XML data type of the property.");
-        private static final Column PropertyAccessType = 
+        private static final Column PropertyAccessType =
             new Column(
-                "PropertyAccessType", 
-                Type.EnumString, 
-                Enumeration.Access.enumeration, 
+                "PropertyAccessType",
+                Type.EnumString,
+                Enumeration.Access.enumeration,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
                 "Access for the property. The value can be Read, Write, or ReadWrite.");
-        private static final Column IsRequired = 
+        private static final Column IsRequired =
             new Column(
-                "IsRequired", 
-                Type.Boolean, 
-                null, 
+                "IsRequired",
+                Type.Boolean,
+                null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
                 "True if a property is required, false if it is not required.");
-        private static final Column Value = 
+        private static final Column Value =
             new Column(
-                "Value", 
-                Type.String, 
-                null, 
+                "Value",
+                Type.String,
+                null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
                 "The current value of the property.");
         /*
-         * 
-         * 
+         *
+         *
          *
          * restrictions
          *
-         * Not supported     
+         * Not supported
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "DISCOVER_PROPERTIES", DISCOVER_PROPERTIES,
@@ -956,61 +973,61 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, request, handler);
         }
 
-        private static final Column EnumName =  
+        private static final Column EnumName =
             new Column(
-                "EnumName", 
-                Type.StringArray, 
-                null, 
+                "EnumName",
+                Type.StringArray,
+                null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
                 "The name of the enumerator that contains a set of values.");
-        private static final Column EnumDescription =   
+        private static final Column EnumDescription =
             new Column(
-                "EnumDescription", 
-                Type.String, 
-                null, 
+                "EnumDescription",
+                Type.String,
+                null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "A localizable description of the enumerator.");
-        private static final Column EnumType =  
+        private static final Column EnumType =
             new Column(
-                "EnumType", 
-                Type.String, 
-                null, 
+                "EnumType",
+                Type.String,
+                null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
                 "The data type of the Enum values.");
-        private static final Column ElementName =       
+        private static final Column ElementName =
             new Column(
-                "ElementName", 
-                Type.String, 
-                null, 
+                "ElementName",
+                Type.String,
+                null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
-                "The name of one of the value elements in the enumerator set." + nl + "Example: TDP");
-        private static final Column ElementDescription =        
+                "The name of one of the value elements in the enumerator set.\n" + "Example: TDP");
+        private static final Column ElementDescription =
             new Column(
-                "ElementDescription", 
-                Type.String, 
-                null, 
+                "ElementDescription",
+                Type.String,
+                null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "A localizable description of the element (optional).");
-        private static final Column ElementValue =      
+        private static final Column ElementValue =
             new Column(
-                "ElementValue", 
-                Type.String, 
-                null, 
+                "ElementValue",
+                Type.String,
+                null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
-                "The value of the element." + nl + "Example: 01");
+                "The value of the element.\n" + "Example: 01");
         /*
-         * 
-         * 
+         *
+         *
          *
          * restrictions
          *
-         * Not supported     
+         * Not supported
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "DISCOVER_ENUMERATORS", DISCOVER_ENUMERATORS,
@@ -1100,22 +1117,22 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, request, handler);
         }
 
-        private static final Column Keyword = 
+        private static final Column Keyword =
             new Column(
-                "Keyword", 
-                Type.StringSometimesArray, 
-                null, 
+                "Keyword",
+                Type.StringSometimesArray,
+                null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
-                "A list of all the keywords reserved by a provider." + nl +
+                "A list of all the keywords reserved by a provider.\n" +
                 "Example: AND");
         /*
-         * 
-         * 
+         *
+         *
          *
          * restrictions
          *
-         * Not supported     
+         * Not supported
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "DISCOVER_KEYWORDS", DISCOVER_KEYWORDS,
@@ -1213,49 +1230,49 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
 
         /*
-         * 
-         * 
+         *
+         *
          *
          * restrictions
          *
-         * Not supported     
+         * Not supported
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "DISCOVER_LITERALS", DISCOVER_LITERALS,
                 "Returns information about literals supported by the provider.",
                 new Column[] {
                     new Column(
-                        "LiteralName", 
-                        Type.StringSometimesArray, 
-                        null, 
+                        "LiteralName",
+                        Type.StringSometimesArray,
+                        null,
                         Column.RESTRICTION,
                         Column.REQUIRED,
-                        "The name of the literal described in the row." + nl + "Example: DBLITERAL_LIKE_PERCENT"),
+                        "The name of the literal described in the row.\n" + "Example: DBLITERAL_LIKE_PERCENT"),
                     new Column(
-                        "LiteralValue", 
-                        Type.String, 
-                        null, 
+                        "LiteralValue",
+                        Type.String,
+                        null,
                         Column.NOT_RESTRICTION,
                         Column.REQUIRED,
-                        "Contains the actual literal value." + nl + "Example, if LiteralName is DBLITERAL_LIKE_PERCENT and the percent character (%) is used to match zero or more characters in a LIKE clause, this column's value would be \"%\"."),
+                        "Contains the actual literal value.\n" + "Example, if LiteralName is DBLITERAL_LIKE_PERCENT and the percent character (%) is used to match zero or more characters in a LIKE clause, this column's value would be \"%\"."),
                     new Column(
-                        "LiteralInvalidChars", 
-                        Type.String, 
-                        null, 
+                        "LiteralInvalidChars",
+                        Type.String,
+                        null,
                         Column.NOT_RESTRICTION,
                         Column.REQUIRED,
-                        "The characters, in the literal, that are not valid." + nl + "For example, if table names can contain anything other than a numeric character, this string would be \"0123456789\"."),
+                        "The characters, in the literal, that are not valid.\n" + "For example, if table names can contain anything other than a numeric character, this string would be \"0123456789\"."),
                     new Column(
-                        "LiteralInvalidStartingChars", 
-                        Type.String, 
-                        null, 
+                        "LiteralInvalidStartingChars",
+                        Type.String,
+                        null,
                         Column.NOT_RESTRICTION,
                         Column.REQUIRED,
                         "The characters that are not valid as the first character of the literal. If the literal can start with any valid character, this is null."),
                     new Column(
-                        "LiteralMaxLength", 
-                        Type.Integer, 
-                        null, 
+                        "LiteralMaxLength",
+                        Type.Integer,
+                        null,
                         Column.NOT_RESTRICTION,
                         Column.REQUIRED,
                         "The maximum number of characters in the literal. If there is no maximum or the maximum is unknown, the value is ?1."),
@@ -1284,46 +1301,46 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, request, handler);
         }
 
-        private static final Column CatalogName = 
+        private static final Column CatalogName =
             new Column(
-                "CATALOG_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "CATALOG_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "Catalog name. Cannot be NULL.");
-        private static final Column Description = 
+        private static final Column Description =
             new Column(
-                "DESCRIPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "DESCRIPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Human-readable description of the catalog.");
-        private static final Column Roles = 
+        private static final Column Roles =
             new Column(
-                "ROLES", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "ROLES",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "A comma delimited list of roles to which the current user belongs. An asterisk (*) is included as a role if the current user is a server or database administrator. Username is appended to ROLES if one of the roles uses dynamic security.");
-        private static final Column DateModified = 
+        private static final Column DateModified =
             new Column(
-                "DATE_MODIFIED", 
-                Type.DateTime, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DATE_MODIFIED",
+                Type.DateTime,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "The date that the catalog was last modified.");
 
         /*
-         * 
-         * 
+         *
+         *
          *
          * restrictions
          *
-         * Not supported     
+         * Not supported
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "DBSCHEMA_CATALOGS", DBSCHEMA_CATALOGS,
@@ -1367,7 +1384,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
             // TODO: currently schema grammar does not support modify date
             // so we return just some date for now.
-            //row.set(DateModified.name, "2005-01-25T17:35:32");
+            if (false) row.set(DateModified.name, dateModified);
             emit(row, response);
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
@@ -1385,128 +1402,128 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, request, handler);
         }
 
-        private static final Column TableCatalog = 
+        private static final Column TableCatalog =
             new Column(
-                "TABLE_CATALOG", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "TABLE_CATALOG",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the Database.");
-        private static final Column TableSchema = 
+        private static final Column TableSchema =
             new Column(
-                "TABLE_SCHEMA", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "TABLE_SCHEMA",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 null);
-        private static final Column TableName = 
+        private static final Column TableName =
             new Column(
-                "TABLE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "TABLE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the cube.");
-        private static final Column ColumnName = 
+        private static final Column ColumnName =
             new Column(
-                "COLUMN_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "COLUMN_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the attribute hierarchy or measure.");
-        private static final Column OrdinalPosition = 
+        private static final Column OrdinalPosition =
             new Column(
-                "ORDINAL_POSITION", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "ORDINAL_POSITION",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "The position of the column, beginning with 1.");
-        private static final Column ColumnHasDefault = 
+        private static final Column ColumnHasDefault =
             new Column(
-                "COLUMN_HAS_DEFAULT", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "COLUMN_HAS_DEFAULT",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Not supported.");
         /*
-         *  A bitmask indicating the information stored in 
+         *  A bitmask indicating the information stored in
          *      DBCOLUMNFLAGS in OLE DB.
          *  1 = Bookmark
          *  2 = Fixed length
          *  4 = Nullable
          *  8 = Row versioning
-         *  16 = Updateable column 
-         *  
-         * And, of course, MS SQL Server sometimes has the value of 80!!  
+         *  16 = Updateable column
+         *
+         * And, of course, MS SQL Server sometimes has the value of 80!!
         */
-        private static final Column ColumnFlags = 
+        private static final Column ColumnFlags =
             new Column(
-                "COLUMN_FLAGS", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "COLUMN_FLAGS",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "A DBCOLUMNFLAGS bitmask indicating column properties.");
-        private static final Column IsNullable = 
+        private static final Column IsNullable =
             new Column(
-                "IS_NULLABLE", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "IS_NULLABLE",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Always returns false.");
-        private static final Column DataType = 
+        private static final Column DataType =
             new Column(
-                "DATA_TYPE", 
-                Type.UnsignedShort, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "DATA_TYPE",
+                Type.UnsignedShort,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "The data type of the column. Returns a string for dimension columns and a variant for measures.");
-        private static final Column CharacterMaximumLength = 
+        private static final Column CharacterMaximumLength =
             new Column(
-                "CHARACTER_MAXIMUM_LENGTH", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "CHARACTER_MAXIMUM_LENGTH",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "The maximum possible length of a value within the column.");
-        private static final Column CharacterOctetLength = 
+        private static final Column CharacterOctetLength =
             new Column(
-                "CHARACTER_OCTET_LENGTH", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "CHARACTER_OCTET_LENGTH",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "The maximum possible length of a value within the column, in bytes, for character or binary columns.");
-        private static final Column NumericPrecision = 
+        private static final Column NumericPrecision =
             new Column(
-                "NUMERIC_PRECISION", 
-                Type.UnsignedShort, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "NUMERIC_PRECISION",
+                Type.UnsignedShort,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "The maximum precision of the column for numeric data types other than DBTYPE_VARNUMERIC.");
-        private static final Column NumericScale = 
+        private static final Column NumericScale =
             new Column(
-                "NUMERIC_SCALE", 
-                Type.Short, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "NUMERIC_SCALE",
+                Type.Short,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "The number of digits to the right of the decimal point for DBTYPE_DECIMAL, DBTYPE_NUMERIC, DBTYPE_VARNUMERIC. Otherwise, this is NULL.");
         /*
-         * 
-         * 
+         *
+         *
          *
          * restrictions
          *
-         * Not supported     
+         * Not supported
          *    COLUMN_OLAP_TYPE
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
@@ -1559,7 +1576,7 @@ Measures:Unit Sales
                     Hierarchy[] hierarchies = dimension.getHierarchies();
                     for (int h = 0; h < hierarchies.length; h++) {
                         HierarchyBase hierarchy = (HierarchyBase) hierarchies[h];
-                        ordinalPosition = emitHierarchy(response, 
+                        ordinalPosition = emitHierarchy(response,
                             connection, cube, hierarchy, ordinalPosition);
                     }
                 }
@@ -1582,7 +1599,7 @@ Measures:Unit Sales
                     // Measures, aggregate Measures??, maybe they
                     // are all numeric? (or currency)
                     row.set(DataType.name, DBType.R8_ORDINAL);
-                    // TODO: 16/255 seems to be what MS SQL Server 
+                    // TODO: 16/255 seems to be what MS SQL Server
                     // always returns.
                     row.set(NumericPrecision.name, 16);
                     row.set(NumericScale.name, 255);
@@ -1590,8 +1607,9 @@ Measures:Unit Sales
                 }
             }
         }
-        private int emitHierarchy(XmlaResponse response, 
-            Connection connection, 
+
+        private int emitHierarchy(XmlaResponse response,
+            Connection connection,
             RolapCube cube,
             HierarchyBase hierarchy,
             int ordinalPosition) {
@@ -1654,18 +1672,18 @@ TODO: SQLServer outputs this hasall KEY column name - don't know what its for
             Level[] levels = hierarchy.getLevels();
             for (int k = 0; k < levels.length; k++) {
                 Level level = levels[k];
-                ordinalPosition = emitLevel(response, connection, 
-                        cube, hierarchy, level, ordinalPosition);
-
+                ordinalPosition = emitLevel(
+                        response, cube, hierarchy, level, ordinalPosition);
             }
             return ordinalPosition;
         }
-        private int emitLevel(XmlaResponse response, 
-            Connection connection, 
-            Cube cube,
-            HierarchyBase hierarchy,
-            Level level,
-            int ordinalPosition) {
+
+        private int emitLevel(
+                XmlaResponse response,
+                Cube cube,
+                HierarchyBase hierarchy,
+                Level level,
+                int ordinalPosition) {
 
             String schemaName = cube.getSchema().getName();
             String cubeName = cube.getName();
@@ -1675,7 +1693,7 @@ TODO: SQLServer outputs this hasall KEY column name - don't know what its for
             Row row = new Row();
             row.set(TableCatalog.name, schemaName);
             row.set(TableName.name, cubeName);
-            row.set(ColumnName.name, 
+            row.set(ColumnName.name,
                 hierarchyName + ':' + levelName + "!NAME");
             row.set(OrdinalPosition.name, ordinalPosition++);
             row.set(ColumnHasDefault.name, false);
@@ -1690,7 +1708,7 @@ TODO: SQLServer outputs this hasall KEY column name - don't know what its for
             row = new Row();
             row.set(TableCatalog.name, schemaName);
             row.set(TableName.name, cubeName);
-            row.set(ColumnName.name, 
+            row.set(ColumnName.name,
                 hierarchyName + ':' + levelName + "!UNIQUE_NAME");
             row.set(OrdinalPosition.name, ordinalPosition++);
             row.set(ColumnHasDefault.name, false);
@@ -1707,7 +1725,7 @@ TODO: see above
             row = new Row();
             row.set(TableCatalog.name, schemaName);
             row.set(TableName.name, cubeName);
-            row.set(ColumnName.name, 
+            row.set(ColumnName.name,
                 hierarchyName + ":" + levelName + "!KEY");
             row.set(OrdinalPosition.name, ordinalPosition++);
             row.set(ColumnHasDefault.name, false);
@@ -1727,7 +1745,7 @@ TODO: see above
                 row = new Row();
                 row.set(TableCatalog.name, schemaName);
                 row.set(TableName.name, cubeName);
-                row.set(ColumnName.name, 
+                row.set(ColumnName.name,
                     hierarchyName + ':' + levelName + '!' + propName);
                 row.set(OrdinalPosition.name, ordinalPosition++);
                 row.set(ColumnHasDefault.name, false);
@@ -1743,7 +1761,7 @@ TODO: see above
                     row.set(CharacterOctetLength.name, 0);
                     break;
                 case Property.TYPE_NUMERIC :
-                    // TODO: 16/255 seems to be what MS SQL Server 
+                    // TODO: 16/255 seems to be what MS SQL Server
                     // always returns.
                     row.set(NumericPrecision.name, 16);
                     row.set(NumericScale.name, 255);
@@ -1787,117 +1805,117 @@ boolean restriction, boolean nullable, String description)
         /*
          * These are the columns returned by SQL Server.
          */
-        private static final Column TypeName = 
+        private static final Column TypeName =
             new Column(
-                "TYPE_NAME", 
-                Type.String, 
-                null, 
+                "TYPE_NAME",
+                Type.String,
+                null,
                 Column.NOT_RESTRICTION,
-                Column.REQUIRED, 
+                Column.REQUIRED,
                 "The provider-specific data type name.");
-        private static final Column DataType = 
+        private static final Column DataType =
             new Column(
-                "DATA_TYPE", 
-                Type.UnsignedShort, 
-                null, 
+                "DATA_TYPE",
+                Type.UnsignedShort,
+                null,
                 Column.RESTRICTION,
-                Column.REQUIRED, 
+                Column.REQUIRED,
                 "The indicator of the data type.");
-        private static final Column ColumnSize = 
+        private static final Column ColumnSize =
             new Column(
-                "COLUMN_SIZE", 
-                Type.UnsignedInteger, 
-                null, 
+                "COLUMN_SIZE",
+                Type.UnsignedInteger,
+                null,
                 Column.NOT_RESTRICTION,
-                Column.REQUIRED, 
+                Column.REQUIRED,
                 "The length of a non-numeric column. If the data type is numeric, this is the upper bound on the maximum precision of the data type.");
-        private static final Column LiteralPrefix = 
+        private static final Column LiteralPrefix =
             new Column(
-                "LITERAL_PREFIX", 
-                Type.String, 
-                null, 
+                "LITERAL_PREFIX",
+                Type.String,
+                null,
                 Column.NOT_RESTRICTION,
-                Column.OPTIONAL, 
+                Column.OPTIONAL,
                 "The character or characters used to prefix a literal of this type in a text command.");
-        private static final Column LiteralSuffix = 
+        private static final Column LiteralSuffix =
             new Column(
-                "LITERAL_SUFFIX", 
-                Type.String, 
-                null, 
+                "LITERAL_SUFFIX",
+                Type.String,
+                null,
                 Column.NOT_RESTRICTION,
-                Column.OPTIONAL, 
+                Column.OPTIONAL,
                 "The character or characters used to suffix a literal of this type in a text command.");
-        private static final Column IsNullable = 
+        private static final Column IsNullable =
             new Column(
-                "IS_NULLABLE", 
-                Type.Boolean, 
-                null, 
+                "IS_NULLABLE",
+                Type.Boolean,
+                null,
                 Column.NOT_RESTRICTION,
-                Column.OPTIONAL, 
+                Column.OPTIONAL,
                 "A Boolean that indicates whether the data type is nullable. NULL-- indicates that it is not known whether the data type is nullable.");
-        private static final Column CaseSensitive = 
+        private static final Column CaseSensitive =
             new Column(
-                "CASE_SENSITIVE", 
-                Type.Boolean, 
-                null, 
+                "CASE_SENSITIVE",
+                Type.Boolean,
+                null,
                 Column.NOT_RESTRICTION,
-                Column.OPTIONAL, 
+                Column.OPTIONAL,
                 "A Boolean that indicates whether the data type is a characters type and case-sensitive.");
-        private static final Column Searchable = 
+        private static final Column Searchable =
             new Column(
-                "SEARCHABLE", 
-                Type.UnsignedInteger, 
-                null, 
+                "SEARCHABLE",
+                Type.UnsignedInteger,
+                null,
                 Column.NOT_RESTRICTION,
-                Column.OPTIONAL, 
+                Column.OPTIONAL,
                 "An integer indicating how the data type can be used in searches if the provider supports ICommandText; otherwise, NULL.");
-        private static final Column UnsignedAttribute = 
+        private static final Column UnsignedAttribute =
             new Column(
-                "UNSIGNED_ATTRIBUTE", 
-                Type.Boolean, 
-                null, 
+                "UNSIGNED_ATTRIBUTE",
+                Type.Boolean,
+                null,
                 Column.NOT_RESTRICTION,
-                Column.OPTIONAL, 
+                Column.OPTIONAL,
                 "A Boolean that indicates whether the data type is unsigned.");
-        private static final Column FixedPrecScale = 
+        private static final Column FixedPrecScale =
             new Column(
-                "FIXED_PREC_SCALE", 
-                Type.Boolean, 
-                null, 
+                "FIXED_PREC_SCALE",
+                Type.Boolean,
+                null,
                 Column.NOT_RESTRICTION,
-                Column.OPTIONAL, 
+                Column.OPTIONAL,
                 "A Boolean that indicates whether the data type has a fixed precision and scale.");
-        private static final Column AutoUniqueValue = 
+        private static final Column AutoUniqueValue =
             new Column(
-                "AUTO_UNIQUE_VALUE", 
-                Type.Boolean, 
-                null, 
+                "AUTO_UNIQUE_VALUE",
+                Type.Boolean,
+                null,
                 Column.NOT_RESTRICTION,
-                Column.OPTIONAL, 
+                Column.OPTIONAL,
                 "A Boolean that indicates whether the data type is autoincrementing.");
-        private static final Column IsLong = 
+        private static final Column IsLong =
             new Column(
-                "IS_LONG", 
-                Type.Boolean, 
-                null, 
+                "IS_LONG",
+                Type.Boolean,
+                null,
                 Column.NOT_RESTRICTION,
-                Column.OPTIONAL, 
+                Column.OPTIONAL,
                 "A Boolean that indicates whether the data type is a binary large object (BLOB) and has very long data.");
-        private static final Column BestMatch = 
+        private static final Column BestMatch =
             new Column(
-                "BEST_MATCH", 
-                Type.Boolean, 
-                null, 
+                "BEST_MATCH",
+                Type.Boolean,
+                null,
                 Column.RESTRICTION,
-                Column.OPTIONAL, 
+                Column.OPTIONAL,
                 "A Boolean that indicates whether the data type is a best match.");
         /*
-         * 
-         * 
+         *
+         *
          *
          * restrictions
          *
-         * Not supported     
+         * Not supported
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "DBSCHEMA_PROVIDER_TYPES", DBSCHEMA_PROVIDER_TYPES, null, new Column[] {
@@ -2025,101 +2043,101 @@ boolean restriction, boolean nullable, String description)
             super(definition, request, handler);
         }
 
-        private static final Column TableCatalog = 
+        private static final Column TableCatalog =
             new Column(
-                "TABLE_CATALOG", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "TABLE_CATALOG",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the catalog to which this object belongs.");
-        private static final Column TableSchema = 
+        private static final Column TableSchema =
             new Column(
-                "TABLE_SCHEMA", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "TABLE_SCHEMA",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The name of the cube to which this object belongs.");
-        private static final Column TableName = 
+        private static final Column TableName =
             new Column(
-                "TABLE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "TABLE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the object, if TABLE_TYPE is TABLE.");
-        private static final Column TableType = 
+        private static final Column TableType =
             new Column(
-                "TABLE_TYPE", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "TABLE_TYPE",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The type of the table. TABLE indicates the object is a measure group. SYSTEM TABLE indicates the object is a dimension.");
 
-        private static final Column TableGuid = 
+        private static final Column TableGuid =
             new Column(
-                "TABLE_GUID", 
-                Type.UUID, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "TABLE_GUID",
+                Type.UUID,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Not supported.");
-        private static final Column Description = 
+        private static final Column Description =
             new Column(
-                "DESCRIPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DESCRIPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "A human-readable description of the object.");
-        private static final Column TablePropId = 
+        private static final Column TablePropId =
             new Column(
-                "TABLE_PROPID", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "TABLE_PROPID",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Not supported.");
-        private static final Column DateCreated = 
+        private static final Column DateCreated =
             new Column(
-                "DATE_CREATED", 
-                Type.DateTime, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DATE_CREATED",
+                Type.DateTime,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Not supported.");
-        private static final Column DateModified = 
+        private static final Column DateModified =
             new Column(
-                "DATE_MODIFIED", 
-                Type.DateTime, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DATE_MODIFIED",
+                Type.DateTime,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "The date the object was last modified.");
 /*
-        private static final Column TableOlapType = 
+        private static final Column TableOlapType =
             new Column(
-                "TABLE_OLAP_TYPE", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "TABLE_OLAP_TYPE",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The OLAP type of the object.  MEASURE_GROUP indicates the object is a measure group.  CUBE_DIMENSION indicated the object is a dimension.");
 
 */
         /*
          * http://msdn2.microsoft.com/en-us/library/ms126299(SQL.90).aspx
-         * 
-         * restrictions: 
+         *
+         * restrictions:
          *   TABLE_CATALOG Optional
          *   TABLE_SCHEMA Optional
          *   TABLE_NAME Optional
          *   TABLE_TYPE Optional
          *   TABLE_OLAP_TYPE Optional
          *
-         * Not supported     
+         * Not supported
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "DBSCHEMA_TABLES", DBSCHEMA_TABLES, null, new Column[] {
@@ -2148,15 +2166,11 @@ boolean restriction, boolean nullable, String description)
             final String schemaName = schema.getName();
             Cube[] cubes = schema.getCubes();
 
-            // TODO: currently schema grammar does not support modify date
-            // so we return just some date for now.
-            String dateModified = "2005-01-25T17:35:32";
-
             Row row = null;
             for (int i = 0; i < cubes.length; i++) {
                 RolapCube cube = (RolapCube) cubes[i];
                 String cubeName = cube.getName();
-                
+
                 String tableName = cubeName;
 
                 String desc = cube.getDescription();
@@ -2170,9 +2184,9 @@ boolean restriction, boolean nullable, String description)
                 row.set(TableName.name, tableName);
                 row.set(TableType.name, "TABLE");
                 row.set(Description.name, desc);
-                //row.set(DateModified.name, dateModified);
+                if (false) row.set(DateModified.name, dateModified);
                 emit(row, response);
-    
+
 
                 Dimension[] dims = cube.getDimensions();
                 for (int j = 1; j < dims.length; j++) {
@@ -2187,8 +2201,9 @@ boolean restriction, boolean nullable, String description)
                 }
             }
         }
-        private void emitHierarchy(XmlaResponse response, 
-            Connection connection, 
+
+        private void emitHierarchy(XmlaResponse response,
+            Connection connection,
             RolapCube cube,
             HierarchyBase hierarchy) {
 
@@ -2197,8 +2212,6 @@ boolean restriction, boolean nullable, String description)
                 return;
             }
 /*
-            String dateModified = "2005-01-25T17:35:32";
-
             String schemaName = cube.getSchema().getName();
             String cubeName = cube.getName();
             String hierarchyName = hierarchy.getName();
@@ -2206,16 +2219,16 @@ boolean restriction, boolean nullable, String description)
             String desc = hierarchy.getDescription();
             if (desc == null) {
                 //TODO: currently this is always null
-                desc = schemaName + 
-                    " - " + 
-                    cubeName + 
+                desc = schemaName +
+                    " - " +
+                    cubeName +
                     " Cube - " +
                     hierarchyName +
                     " Hierarchy";
             }
 
             if (hierarchy.hasAll()) {
-                String tableName = cubeName + 
+                String tableName = cubeName +
                     ':' + hierarchyName + ':' + "(All)";
 
                 Row row = new Row();
@@ -2230,36 +2243,35 @@ boolean restriction, boolean nullable, String description)
             Level[] levels = hierarchy.getLevels();
             for (int k = 0; k < levels.length; k++) {
                 Level level = levels[k];
-                emitLevel(response, connection, cube, hierarchy, level);
+                emitLevel(response, cube, hierarchy, level);
 
             }
         }
-        private void emitLevel(XmlaResponse response, 
-            Connection connection, 
-            RolapCube cube,
-            HierarchyBase hierarchy,
-            Level level) {
 
-            String dateModified = "2005-01-25T17:35:32";
+        private void emitLevel(
+                XmlaResponse response,
+                RolapCube cube,
+                HierarchyBase hierarchy,
+                Level level) {
 
             String schemaName = cube.getSchema().getName();
             String cubeName = cube.getName();
             String hierarchyName = hierarchy.getName();
             String levelName = level.getName();
 
-            String tableName = cubeName + 
+            String tableName = cubeName +
                 ':' + hierarchyName + ':' + levelName;
 
             String desc = level.getDescription();
             if (desc == null) {
                 //TODO: currently this is always null
-                desc = schemaName + 
-                    " - " + 
-                    cubeName + 
+                desc = schemaName +
+                    " - " +
+                    cubeName +
                     " Cube - " +
-                    hierarchyName + 
+                    hierarchyName +
                     " Hierarchy - " +
-                    levelName + 
+                    levelName +
                     " Level";
             }
 
@@ -2268,7 +2280,7 @@ boolean restriction, boolean nullable, String description)
             row.set(TableName.name, tableName);
             row.set(TableType.name, "SYSTEM TABLE");
             row.set(Description.name, desc);
-            //row.set(DateModified.name, dateModified);
+            if (false) row.set(DateModified.name, dateModified);
             emit(row, response);
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
@@ -2287,127 +2299,127 @@ boolean restriction, boolean nullable, String description)
             super(definition, request, handler);
         }
 
-        private static final Column TableCatalog = 
+        private static final Column TableCatalog =
             new Column(
-                "TABLE_CATALOG", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "TABLE_CATALOG",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "Catalog name. NULL if the provider does not support catalogs.");
-        private static final Column TableSchema = 
+        private static final Column TableSchema =
             new Column(
-                "TABLE_SCHEMA", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "TABLE_SCHEMA",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "Unqualified schema name. NULL if the provider does not support schemas.");
-        private static final Column TableName = 
+        private static final Column TableName =
             new Column(
-                "TABLE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "TABLE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "Table name.");
-        private static final Column TableType = 
+        private static final Column TableType =
             new Column(
-                "TABLE_TYPE", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "TABLE_TYPE",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "Table type. One of the following or a provider-specific value: ALIAS, TABLE, SYNONYM, SYSTEM TABLE, VIEW, GLOBAL TEMPORARY, LOCAL TEMPORARY, EXTERNAL TABLE, SYSTEM VIEW");
-        private static final Column TableGuid = 
+        private static final Column TableGuid =
             new Column(
-                "TABLE_GUID", 
-                Type.UUID, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "TABLE_GUID",
+                Type.UUID,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "GUID that uniquely identifies the table. Providers that do not use GUIDs to identify tables should return NULL in this column.");
 
-        private static final Column Bookmarks = 
+        private static final Column Bookmarks =
             new Column(
-                "BOOKMARKS", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "BOOKMARKS",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Whether this table supports bookmarks. Allways is false.");
-        private static final Column BookmarkType = 
+        private static final Column BookmarkType =
             new Column(
-                "BOOKMARK_TYPE", 
-                Type.Integer, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "BOOKMARK_TYPE",
+                Type.Integer,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Default bookmark type supported on this table.");
-        private static final Column BookmarkDataType = 
+        private static final Column BookmarkDataType =
             new Column(
-                "BOOKMARK_DATATYPE", 
-                Type.UnsignedShort, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "BOOKMARK_DATATYPE",
+                Type.UnsignedShort,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "The indicator of the bookmark's native data type.");
-        private static final Column BookmarkMaximumLength = 
+        private static final Column BookmarkMaximumLength =
             new Column(
-                "BOOKMARK_MAXIMUM_LENGTH", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "BOOKMARK_MAXIMUM_LENGTH",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Maximum length of the bookmark in bytes.");
-        private static final Column BookmarkInformation = 
+        private static final Column BookmarkInformation =
             new Column(
-                "BOOKMARK_INFORMATION", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "BOOKMARK_INFORMATION",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "A bitmask specifying additional information about bookmarks over the rowset. ");
-        private static final Column TableVersion = 
+        private static final Column TableVersion =
             new Column(
-                "TABLE_VERSION", 
-                Type.Long, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "TABLE_VERSION",
+                Type.Long,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Version number for this table or NULL if the provider does not support returning table version information.");
-        private static final Column Cardinality = 
+        private static final Column Cardinality =
             new Column(
-                "CARDINALITY", 
-                Type.UnsignedLong, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "CARDINALITY",
+                Type.UnsignedLong,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Cardinality (number of rows) of the table.");
-        private static final Column Description = 
+        private static final Column Description =
             new Column(
-                "DESCRIPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DESCRIPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Human-readable description of the table.");
-        private static final Column TablePropId = 
+        private static final Column TablePropId =
             new Column(
-                "TABLE_PROPID", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "TABLE_PROPID",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Property ID of the table. Return null.");
 
         /*
          * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/oledbtables_info_rowset.asp
-         * 
+         *
          *
          * restrictions
          *
-         * Not supported     
+         * Not supported
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "DBSCHEMA_TABLES_INFO", DBSCHEMA_TABLES_INFO, null, new Column[] {
@@ -2437,7 +2449,7 @@ boolean restriction, boolean nullable, String description)
                 return;
             }
             final RolapSchema schema = (RolapSchema) connection.getSchema();
-            final String schemaName = schema.getName();
+            final String catalogName = schema.getName();
             Cube[] cubes = schema.getCubes();
 
             //TODO: Is this cubes or tables? SQL Server returns what
@@ -2445,7 +2457,6 @@ boolean restriction, boolean nullable, String description)
             // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/oledbtables_info_rowset.asp
             for (int i = 0; i < cubes.length; i++) {
                 RolapCube cube = (RolapCube) cubes[i];
-                String catalogName = cube.getSchema().getName();
                 String cubeName = cube.getName();
                 String desc = cube.getDescription();
                 if (desc == null) {
@@ -2482,29 +2493,29 @@ boolean restriction, boolean nullable, String description)
             super(definition, request, handler);
         }
 
-        private static final Column CubeName = 
+        private static final Column CubeName =
             new Column(
-                "CUBE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "CUBE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 null);
-        private static final Column Coordinate = 
+        private static final Column Coordinate =
             new Column(
-                "COORDINATE", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "COORDINATE",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 null);
-        private static final Column CoordinateType = 
+        private static final Column CoordinateType =
             new Column(
-                "COORDINATE_TYPE", 
-                Type.Integer, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "COORDINATE_TYPE",
+                Type.Integer,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 null);
         /*
             TODO: optional columns
@@ -2533,13 +2544,13 @@ boolean restriction, boolean nullable, String description)
          *      INVOCATION restriction column.
          *   CUBE_SOURCE
          *      (Optional) A bitmap with one of the following valid values:
-         *   
+         *
          *      1 CUBE
          *      2 DIMENSION
-         *   
+         *
          *      Default restriction is a value of 1.
          *
-         * Not supported     
+         * Not supported
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "MDSCHEMA_ACTIONS", MDSCHEMA_ACTIONS, null, new Column[] {
@@ -2555,7 +2566,7 @@ boolean restriction, boolean nullable, String description)
         public void unparse(XmlaResponse response) throws XmlaException {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
-                HSB_UNSUPPORTED_OPERATION_CODE, 
+                HSB_UNSUPPORTED_OPERATION_CODE,
                 HSB_UNSUPPORTED_OPERATION_FAULT_FS,
                 new UnsupportedOperationException("MDSCHEMA_ACTIONS"));
         }
@@ -2570,125 +2581,125 @@ boolean restriction, boolean nullable, String description)
         private static final String MD_CUBTYPE_CUBE = "CUBE";
         private static final String MD_CUBTYPE_VIRTUAL_CUBE = "VIRTUAL CUBE";
 
-        private static final Column CatalogName = 
+        private static final Column CatalogName =
             new Column(
-                "CATALOG_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "CATALOG_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The name of the catalog to which this cube belongs.");
-        private static final Column SchemaName = 
+        private static final Column SchemaName =
             new Column(
-                "SCHEMA_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "SCHEMA_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The name of the schema to which this cube belongs.");
-        private static final Column CubeName = 
+        private static final Column CubeName =
             new Column(
-                "CUBE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "CUBE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "Name of the cube.");
-        private static final Column CubeType = 
+        private static final Column CubeType =
             new Column(
-                "CUBE_TYPE", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "CUBE_TYPE",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "Cube type.");
-        private static final Column CubeGuid = 
+        private static final Column CubeGuid =
             new Column(
-                "CUBE_GUID", 
-                Type.UUID, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "CUBE_GUID",
+                Type.UUID,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Cube type.");
-        private static final Column CreatedOn = 
+        private static final Column CreatedOn =
             new Column(
-                "CREATED_ON", 
-                Type.DateTime, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "CREATED_ON",
+                Type.DateTime,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Date and time of cube creation.");
-        private static final Column LastSchemaUpdate = 
+        private static final Column LastSchemaUpdate =
             new Column(
-                "LAST_SCHEMA_UPDATE", 
-                Type.DateTime, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "LAST_SCHEMA_UPDATE",
+                Type.DateTime,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Date and time of last schema update.");
-        private static final Column SchemaUpdatedBy = 
+        private static final Column SchemaUpdatedBy =
             new Column(
-                "SCHEMA_UPDATED_BY", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "SCHEMA_UPDATED_BY",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "User ID of the person who last updated the schema.");
-        private static final Column LastDataUpdate = 
+        private static final Column LastDataUpdate =
             new Column(
-                "LAST_DATA_UPDATE", 
-                Type.DateTime, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "LAST_DATA_UPDATE",
+                Type.DateTime,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Date and time of last data update.");
-        private static final Column DataUpdatedBy = 
+        private static final Column DataUpdatedBy =
             new Column(
-                "DATA_UPDATED_BY", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DATA_UPDATED_BY",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "User ID of the person who last updated the data. ");
-        private static final Column IsDrillthroughEnabled = 
+        private static final Column IsDrillthroughEnabled =
             new Column(
-                "IS_DRILLTHROUGH_ENABLED", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "IS_DRILLTHROUGH_ENABLED",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Describes whether DRILLTHROUGH can be performed on the members of a cube");
-        private static final Column IsWriteEnabled = 
+        private static final Column IsWriteEnabled =
             new Column(
-                "IS_WRITE_ENABLED", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "IS_WRITE_ENABLED",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Describes whether a cube is write-enabled");
-        private static final Column IsLinkable = 
+        private static final Column IsLinkable =
             new Column(
-                "IS_LINKABLE", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "IS_LINKABLE",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Describes whether a cube can be used in a linked cube");
-        private static final Column IsSqlEnabled = 
+        private static final Column IsSqlEnabled =
             new Column(
-                "IS_SQL_ENABLED", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "IS_SQL_ENABLED",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Describes whether or not SQL can be used on the cube");
-        private static final Column Description = 
+        private static final Column Description =
             new Column(
-                "DESCRIPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DESCRIPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "A user-friendly description of the dimension.");
 
         /*
@@ -2706,7 +2717,7 @@ boolean restriction, boolean nullable, String description)
          *     Default restriction is a value of 1.
          *   BASE_CUBE_NAME Optional.
          *
-         * Not supported     
+         * Not supported
          *   CREATED_ON
          *   LAST_SCHEMA_UPDATE
          *   SCHEMA_UPDATED_BY
@@ -2757,7 +2768,7 @@ boolean restriction, boolean nullable, String description)
                 if (desc == null) {
                     desc = schema.getName() +
                         " Schema - " +
-                        cube.getName() + 
+                        cube.getName() +
                         " Cube";
                 }
 
@@ -2800,153 +2811,153 @@ boolean restriction, boolean nullable, String description)
         public static final int MD_DIMTYPE_MEASURE = 2;
         public static final int MD_DIMTYPE_TIME = 1;
 
-        private static final Column CatalogName = 
+        private static final Column CatalogName =
             new Column(
-                "CATALOG_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "CATALOG_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The name of the database.");
-        private static final Column SchemaName = 
+        private static final Column SchemaName =
             new Column(
-                "SCHEMA_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "SCHEMA_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "Not supported.");
-        private static final Column CubeName = 
+        private static final Column CubeName =
             new Column(
-                "CUBE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "CUBE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the cube.");
-        private static final Column DimensionName = 
+        private static final Column DimensionName =
             new Column(
-                "DIMENSION_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "DIMENSION_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the dimension. ");
-        private static final Column DimensionUniqueName = 
+        private static final Column DimensionUniqueName =
             new Column(
-                "DIMENSION_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "DIMENSION_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The unique name of the dimension.");
-        private static final Column DimensionGuid = 
+        private static final Column DimensionGuid =
             new Column(
-                "DIMENSION_GUID", 
-                Type.UUID, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DIMENSION_GUID",
+                Type.UUID,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Not supported.");
-        private static final Column DimensionCaption = 
+        private static final Column DimensionCaption =
             new Column(
-                "DIMENSION_CAPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "DIMENSION_CAPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "The caption of the dimension.");
-        private static final Column DimensionOrdinal = 
+        private static final Column DimensionOrdinal =
             new Column(
-                "DIMENSION_ORDINAL", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "DIMENSION_ORDINAL",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "The position of the dimension within the cube.");
         /*
-         * SQL Server returns values: 
-         *   MD_DIMTYPE_TIME (1) 
+         * SQL Server returns values:
+         *   MD_DIMTYPE_TIME (1)
          *   MD_DIMTYPE_MEASURE (2)
          *   MD_DIMTYPE_OTHER (3)
          */
-        private static final Column DimensionType = 
+        private static final Column DimensionType =
             new Column(
-                "DIMENSION_TYPE", 
-                Type.Short, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "DIMENSION_TYPE",
+                Type.Short,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "The type of the dimension.");
-        private static final Column DimensionCardinality = 
+        private static final Column DimensionCardinality =
             new Column(
-                "DIMENSION_CARDINALITY", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "DIMENSION_CARDINALITY",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "The number of members in the key attribute.");
-        private static final Column DefaultHierarchy = 
+        private static final Column DefaultHierarchy =
             new Column(
-                "DEFAULT_HIERARCHY", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "DEFAULT_HIERARCHY",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "A hierarchy from the dimension. Preserved for backwards compatibility.");
-        private static final Column Description = 
+        private static final Column Description =
             new Column(
-                "DESCRIPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DESCRIPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "A user-friendly description of the dimension.");
-        private static final Column IsVirtual = 
+        private static final Column IsVirtual =
             new Column(
-                "IS_VIRTUAL", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "IS_VIRTUAL",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Always FALSE.");
-        private static final Column IsReadWrite = 
-            new Column("IS_READWRITE", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+        private static final Column IsReadWrite =
+            new Column("IS_READWRITE",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "A Boolean that indicates whether the dimension is write-enabled.");
         /*
          * SQL Server returns values: 0 or 1
          */
-        private static final Column DimensionUniqueSettings = 
+        private static final Column DimensionUniqueSettings =
             new Column(
-                "DIMENSION_UNIQUE_SETTINGS", 
-                Type.Integer, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DIMENSION_UNIQUE_SETTINGS",
+                Type.Integer,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "A bitmap that specifies which columns contain unique values if the dimension contains only members with unique names.");
-        private static final Column DimensionMasterUniqueName = 
+        private static final Column DimensionMasterUniqueName =
             new Column(
-                "DIMENSION_MASTER_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DIMENSION_MASTER_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Always NULL.");
-        private static final Column DimensionIsVisible = 
+        private static final Column DimensionIsVisible =
             new Column(
-                "DIMENSION_IS_VISIBLE", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DIMENSION_IS_VISIBLE",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Always TRUE.");
         /*
          * http://msdn2.microsoft.com/en-us/library/ms126180(SQL.90).aspx
-         * 
+         *
          * restrictions
          *    CATALOG_NAME Optional.
          *    SCHEMA_NAME Optional.
@@ -2957,7 +2968,7 @@ boolean restriction, boolean nullable, String description)
          *      1 CUBE
          *      2 DIMENSION
          *    Default restriction is a value of 1.
-         *    
+         *
          *    DIMENSION_VISIBILITY (Optional) A bitmap with one of the following valid values:
          *      1 Visible
          *      2 Not visible
@@ -3005,7 +3016,7 @@ boolean restriction, boolean nullable, String description)
                     }
                     String desc = dimension.getDescription();
                     if (desc == null) {
-                        desc = cubeName + 
+                        desc = cubeName +
                             " Cube - " +
                             dimension.getName() +
                             " Dimension";
@@ -3099,70 +3110,70 @@ boolean restriction, boolean nullable, String description)
             }
 
             public static final int EMPTY_ORDINAL        = 0;
-            public static final VarType Empty = 
+            public static final VarType Empty =
                 new VarType("Empty", EMPTY_ORDINAL, "Uninitialized (default)");
 
             public static final int NULL_ORDINAL        = 1;
-            public static final VarType Null = 
+            public static final VarType Null =
                 new VarType("Null", NULL_ORDINAL, "Contains no valid data");
 
             public static final int INTEGERL_ORDINAL        = 2;
-            public static final VarType Integer = 
+            public static final VarType Integer =
                 new VarType("Integer", INTEGERL_ORDINAL, "Integer subtype");
 
             public static final int LONG_ORDINAL        = 3;
-            public static final VarType Long = 
+            public static final VarType Long =
                 new VarType("Long", LONG_ORDINAL, "Long subtype");
 
             public static final int SINGLE_ORDINAL        = 4;
-            public static final VarType Single = 
+            public static final VarType Single =
                 new VarType("Single", SINGLE_ORDINAL, "Single subtype");
 
             public static final int DOUBLE_ORDINAL        = 5;
-            public static final VarType Double = 
+            public static final VarType Double =
                 new VarType("Double", DOUBLE_ORDINAL, "Double subtype");
 
             public static final int CURRENCY_ORDINAL        = 6;
-            public static final VarType Currency = 
+            public static final VarType Currency =
                 new VarType("Currency", CURRENCY_ORDINAL, "Currency subtype");
 
             public static final int DATE_ORDINAL        = 7;
-            public static final VarType Date = 
+            public static final VarType Date =
                 new VarType("Date", DATE_ORDINAL, "Date subtype");
 
             public static final int STRING_ORDINAL        = 8;
-            public static final VarType String = 
+            public static final VarType String =
                 new VarType("String", STRING_ORDINAL, "String subtype");
 
             public static final int OBJECT_ORDINAL        = 9;
-            public static final VarType Object = 
+            public static final VarType Object =
                 new VarType("Object", OBJECT_ORDINAL, "Object subtype");
 
             public static final int ERROR_ORDINAL        = 10;
-            public static final VarType Error = 
+            public static final VarType Error =
                 new VarType("Error", ERROR_ORDINAL, "Error subtype");
 
             public static final int BOOLEAN_ORDINAL        = 11;
-            public static final VarType Boolean = 
+            public static final VarType Boolean =
                 new VarType("Boolean", BOOLEAN_ORDINAL, "Boolean subtype");
 
             public static final int VARIANT_ORDINAL        = 12;
-            public static final VarType Variant = 
+            public static final VarType Variant =
                 new VarType("Variant", VARIANT_ORDINAL, "Variant subtype");
 
             public static final int DATA_OBJECT_ORDINAL        = 13;
-            public static final VarType DataObject = 
+            public static final VarType DataObject =
                 new VarType("DataObject", DATA_OBJECT_ORDINAL, "DataObject subtype");
             public static final int DECIMAL_ORDINAL        = 14;
-            public static final VarType Decimal = 
+            public static final VarType Decimal =
                 new VarType("Decimal", DECIMAL_ORDINAL, "Decimal subtype");
 
             public static final int BYTE_ORDINAL        = 17;
-            public static final VarType Byte = 
+            public static final VarType Byte =
                 new VarType("Byte", BYTE_ORDINAL, "Byte subtype");
 
             public static final int ARRAY_ORDINAL        = 17;
-            public static final VarType Array = 
+            public static final VarType Array =
                 new VarType("Array", ARRAY_ORDINAL, "Array subtype");
 
             public VarType(String name, int ordinal, String description) {
@@ -3174,69 +3185,69 @@ boolean restriction, boolean nullable, String description)
             super(definition, request, handler);
         }
 
-        private static final Column FunctionName = 
+        private static final Column FunctionName =
             new Column(
-                "FUNCTION_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
-                "The name of the function.");
-        private static final Column Description = 
-            new Column(
-                "DESCRIPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
-                "A description of the function.");
-        private static final Column ParameterList = 
-            new Column(
-                "PARAMETER_LIST", 
+                "FUNCTION_NAME",
                 Type.String,
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
+                "The name of the function.");
+        private static final Column Description =
+            new Column(
+                "DESCRIPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
+                "A description of the function.");
+        private static final Column ParameterList =
+            new Column(
+                "PARAMETER_LIST",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "A comma delimited list of parameters.");
-        private static final Column ReturnType = 
+        private static final Column ReturnType =
             new Column(
-                "RETURN_TYPE", 
-                Type.Integer, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "RETURN_TYPE",
+                Type.Integer,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "The VARTYPE of the return data type of the function.");
-        private static final Column Origin = 
+        private static final Column Origin =
             new Column(
-                "ORIGIN", 
-                Type.Integer, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "ORIGIN",
+                Type.Integer,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The origin of the function:  1 for MDX functions.  2 for user-defined functions.");
-        private static final Column InterfaceName = 
+        private static final Column InterfaceName =
             new Column(
-                "INTERFACE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "INTERFACE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the interface for user-defined functions");
-        private static final Column LibraryName = 
+        private static final Column LibraryName =
             new Column(
-                "LIBRARY_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "LIBRARY_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The name of the type library for user-defined functions. NULL for MDX functions.");
-        private static final Column Caption = 
+        private static final Column Caption =
             new Column(
-                "CAPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "CAPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "The display caption for the function.");
         /*
          * http://msdn2.microsoft.com/en-us/library/ms126257(SQL.90).aspx
@@ -3249,14 +3260,14 @@ boolean restriction, boolean nullable, String description)
          *   ORIGIN Optional.
          *
          * Not supported
-         *  DLL_NAME 
+         *  DLL_NAME
          *    Optional
-         *  HELP_FILE  
+         *  HELP_FILE
          *    Optional
-         *  HELP_CONTEXT 
+         *  HELP_CONTEXT
          *    Optional
          *    - SQL Server xml schema says that this must be present
-         *  OBJECT 
+         *  OBJECT
          *    Optional
          *  CAPTION The display caption for the function.
          */
@@ -3292,10 +3303,13 @@ boolean restriction, boolean nullable, String description)
                 int[][] paramCategories = fi.getParameterCategories();
                 int[] returnCategories = fi.getReturnCategories();
 
+                // Convert Windows newlines in 'description' to UNIX format.
+                final String description =
+                        Util.replace(fi.getDescription(), "\r", "");
                 if ((paramCategories == null) || (paramCategories.length == 0)) {
                     Row row = new Row();
                     row.set(FunctionName.name, fi.getName());
-                    row.set(Description.name, fi.getDescription());
+                    row.set(Description.name, description);
                     row.set(ParameterList.name, "(none)");
                     row.set(ReturnType.name, 1);
                     row.set(Origin.name, 1);
@@ -3312,7 +3326,7 @@ boolean restriction, boolean nullable, String description)
 
                         Row row = new Row();
                         row.set(FunctionName.name, fi.getName());
-                        row.set(Description.name, fi.getDescription());
+                        row.set(Description.name, description);
 
                         buf.setLength(0);
                         for (int j = 0; j < pc.length; j++) {
@@ -3363,186 +3377,186 @@ boolean restriction, boolean nullable, String description)
             super(definition, request, handler);
         }
 
-        private static final Column CatalogName = 
+        private static final Column CatalogName =
             new Column(
-                "CATALOG_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "CATALOG_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The name of the catalog to which this hierarchy belongs.");
-        private static final Column SchemaName = 
+        private static final Column SchemaName =
             new Column(
-                "SCHEMA_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "SCHEMA_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "Not supported");
-        private static final Column CubeName = 
+        private static final Column CubeName =
             new Column(
-                "CUBE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "CUBE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the cube to which this hierarchy belongs.");
-        private static final Column DimensionUniqueName = 
+        private static final Column DimensionUniqueName =
             new Column(
-                "DIMENSION_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "DIMENSION_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The unique name of the dimension to which this hierarchy belongs. ");
-        private static final Column HierarchyName = 
+        private static final Column HierarchyName =
             new Column(
-                "HIERARCHY_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "HIERARCHY_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the hierarchy. Blank if there is only a single hierarchy in the dimension.");
-        private static final Column HierarchyUniqueName = 
+        private static final Column HierarchyUniqueName =
             new Column(
-                "HIERARCHY_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "HIERARCHY_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The unique name of the hierarchy.");
 
-        private static final Column HierarchyGuid = 
+        private static final Column HierarchyGuid =
             new Column(
-                "HIERARCHY_GUID", 
-                Type.UUID, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "HIERARCHY_GUID",
+                Type.UUID,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Hierarchy GUID.");
 
-        private static final Column HierarchyCaption = 
+        private static final Column HierarchyCaption =
             new Column(
-                "HIERARCHY_CAPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "HIERARCHY_CAPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "A label or a caption associated with the hierarchy.");
-        private static final Column DimensionType = 
+        private static final Column DimensionType =
             new Column(
-                "DIMENSION_TYPE", 
-                Type.Short, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "DIMENSION_TYPE",
+                Type.Short,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "The type of the dimension. ");
-        private static final Column HierarchyCardinality = 
+        private static final Column HierarchyCardinality =
             new Column(
-                "HIERARCHY_CARDINALITY", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "HIERARCHY_CARDINALITY",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "The number of members in the hierarchy.");
-        private static final Column DefaultMember = 
+        private static final Column DefaultMember =
             new Column(
-                "DEFAULT_MEMBER", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DEFAULT_MEMBER",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "The default member for this hierarchy. ");
-        private static final Column AllMember = 
+        private static final Column AllMember =
             new Column(
-                "ALL_MEMBER", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "ALL_MEMBER",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "The member at the highest level of rollup in the hierarchy.");
-        private static final Column Description = 
+        private static final Column Description =
             new Column(
-                "DESCRIPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DESCRIPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "A human-readable description of the hierarchy. NULL if no description exists.");
-        private static final Column Structure = 
+        private static final Column Structure =
             new Column(
-                "STRUCTURE", 
-                Type.Short, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "STRUCTURE",
+                Type.Short,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "The structure of the hierarchy.");
-        private static final Column IsVirtual = 
+        private static final Column IsVirtual =
             new Column(
-                "IS_VIRTUAL", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "IS_VIRTUAL",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Always returns False.");
-        private static final Column IsReadWrite = 
+        private static final Column IsReadWrite =
             new Column(
-                "IS_READWRITE", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "IS_READWRITE",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "A Boolean that indicates whether the Write Back to dimension column is enabled.");
-        private static final Column DimensionUniqueSettings = 
+        private static final Column DimensionUniqueSettings =
             new Column(
-                "DIMENSION_UNIQUE_SETTINGS", 
-                Type.Integer, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "DIMENSION_UNIQUE_SETTINGS",
+                Type.Integer,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Always returns MDDIMENSIONS_MEMBER_KEY_UNIQUE (1).");
-        private static final Column DimensionIsVisible = 
+        private static final Column DimensionIsVisible =
             new Column(
-                "DIMENSION_IS_VISIBLE", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "DIMENSION_IS_VISIBLE",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Always returns true.");
-        private static final Column HierarchyOrdinal = 
+        private static final Column HierarchyOrdinal =
             new Column(
-                "HIERARCHY_ORDINAL", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "HIERARCHY_ORDINAL",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "The ordinal number of the hierarchy across all hierarchies of the cube.");
-        private static final Column DimensionIsShared = 
+        private static final Column DimensionIsShared =
             new Column(
-                "DIMENSION_IS_SHARED", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "DIMENSION_IS_SHARED",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Always returns true.");
 
 
         /*
          * NOTE: This is non-standard, where did it come from?
          */
-        private static final Column ParentChild = 
+        private static final Column ParentChild =
             new Column(
-                "PARENT_CHILD", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "PARENT_CHILD",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Is hierarcy a parent.");
 
         /*
          * http://msdn2.microsoft.com/en-us/library/ms126062(SQL.90).aspx
          * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapproperties_rowset.asp
-         * 
+         *
          * restrictions
          *    CATALOG_NAME Optional.
          *    SCHEMA_NAME Optional.
@@ -3550,8 +3564,8 @@ boolean restriction, boolean nullable, String description)
          *    DIMENSION_UNIQUE_NAME Optional.
          *    HIERARCHY_NAME Optional.
          *    HIERARCHY_UNIQUE_NAME Optional.
-         *    HIERARCHY_ORIGIN 
-         *       (Optional) A default restriction is in effect 
+         *    HIERARCHY_ORIGIN
+         *       (Optional) A default restriction is in effect
          *       on MD_USER_DEFINED and MD_SYSTEM_ENABLED.
          *    CUBE_SOURCE
          *      (Optional) A bitmap with one of the following valid values:
@@ -3563,7 +3577,7 @@ boolean restriction, boolean nullable, String description)
          *      1 Visible
          *      2 Not visible
          *      Default restriction is a value of 1.
-         * 
+         *
          * Not supported
          *  HIERARCHY_IS_VISIBLE
          *  HIERARCHY_ORIGIN
@@ -3619,7 +3633,7 @@ boolean restriction, boolean nullable, String description)
                         }
                         String desc = hierarchy.getDescription();
                         if (desc == null) {
-                            desc = cube.getName() + 
+                            desc = cube.getName() +
                                 " Cube - " +
                                 hierarchy.getName() +
                                 " Hierarchy";
@@ -3649,7 +3663,7 @@ boolean restriction, boolean nullable, String description)
 
                         row.set(DefaultMember.name, hierarchy.getDefaultMember());
                         if (hierarchy.hasAll()) {
-                            row.set(AllMember.name, 
+                            row.set(AllMember.name,
                                 Util.makeFqName(hierarchy, hierarchy.getAllMemberName()));
                         }
                         row.set(Description.name, desc);
@@ -3714,117 +3728,117 @@ boolean restriction, boolean nullable, String description)
         public static final int MDLEVEL_TYPE_TIME_SECONDS = 0x0804;
         public static final int MDLEVEL_TYPE_TIME_UNDEFINED = 0x1004;
 
-        private static final Column CatalogName = 
+        private static final Column CatalogName =
             new Column(
-                "CATALOG_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "CATALOG_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The name of the catalog to which this level belongs.");
-        private static final Column SchemaName = 
+        private static final Column SchemaName =
             new Column(
-                "SCHEMA_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "SCHEMA_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The name of the schema to which this level belongs.");
-        private static final Column CubeName = 
+        private static final Column CubeName =
             new Column(
-                "CUBE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "CUBE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the cube to which this level belongs.");
-        private static final Column DimensionUniqueName = 
+        private static final Column DimensionUniqueName =
             new Column(
-                "DIMENSION_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "DIMENSION_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The unique name of the dimension to which this level belongs.");
-        private static final Column HierarchyUniqueName = 
+        private static final Column HierarchyUniqueName =
             new Column(
-                "HIERARCHY_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "HIERARCHY_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The unique name of the hierarchy.");
-        private static final Column LevelName = 
+        private static final Column LevelName =
             new Column(
-                "LEVEL_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "LEVEL_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the level.");
-        private static final Column LevelUniqueName = 
+        private static final Column LevelUniqueName =
             new Column(
-                "LEVEL_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "LEVEL_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The properly escaped unique name of the level.");
-        private static final Column LevelGuid = 
+        private static final Column LevelGuid =
             new Column(
-                "LEVEL_GUID", 
-                Type.UUID, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "LEVEL_GUID",
+                Type.UUID,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Level GUID.");
-        private static final Column LevelCaption = 
+        private static final Column LevelCaption =
             new Column(
-                "LEVEL_CAPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "LEVEL_CAPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "A label or caption associated with the hierarchy.");
-        private static final Column LevelNumber = 
+        private static final Column LevelNumber =
             new Column(
-                "LEVEL_NUMBER", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "LEVEL_NUMBER",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "The distance of the level from the root of the hierarchy. Root level is zero (0).");
-        private static final Column LevelCardinality = 
+        private static final Column LevelCardinality =
             new Column(
-                "LEVEL_CARDINALITY", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "LEVEL_CARDINALITY",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "The number of members in the level. This value can be an approximation of the real cardinality.");
-        private static final Column LevelType = 
+        private static final Column LevelType =
             new Column(
-                "LEVEL_TYPE", 
-                Type.Integer, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "LEVEL_TYPE",
+                Type.Integer,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Type of the level");
-        private static final Column LevelIsVisible = 
+        private static final Column LevelIsVisible =
             new Column(
-                "LEVEL_IS_VISIBLE", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "LEVEL_IS_VISIBLE",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "A Boolean that indicates whether the level is visible.");
-        private static final Column Description = 
+        private static final Column Description =
             new Column(
-                "DESCRIPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DESCRIPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "A human-readable description of the level. NULL if no description exists.");
         /*
          * http://msdn2.microsoft.com/en-us/library/ms126038(SQL.90).aspx
@@ -3839,7 +3853,7 @@ boolean restriction, boolean nullable, String description)
          *   LEVEL_NAME Optional.
          *   LEVEL_UNIQUE_NAME Optional.
          *   LEVEL_ORIGIN
-         *       (Optional) A default restriction is in effect 
+         *       (Optional) A default restriction is in effect
          *       on MD_USER_DEFINED and MD_SYSTEM_ENABLED
          *   CUBE_SOURCE
          *       (Optional) A bitmap with one of the following valid values:
@@ -3851,7 +3865,7 @@ boolean restriction, boolean nullable, String description)
          *       1 Visible
          *       2 Not visible
          *       Default restriction is a value of 1.
-         *       
+         *
          * Not supported
          *  CUSTOM_ROLLUP_SETTINGS
          *  LEVEL_UNIQUE_SETTINGS
@@ -3909,7 +3923,7 @@ boolean restriction, boolean nullable, String description)
                             }
                             String desc = level.getDescription();
                             if (desc == null) {
-                                desc = cube.getName() + 
+                                desc = cube.getName() +
                                     " Cube - " +
                                     hierarchy.getName() +
                                     " Hierarchy" +
@@ -3928,7 +3942,7 @@ boolean restriction, boolean nullable, String description)
                             //row.set(LevelGuid.name, "");
                             row.set(LevelCaption.name, level.getCaption());
                             // see notes on this #getDepth()
-                            row.set(LevelNumber.name, level.getDepth()); 
+                            row.set(LevelNumber.name, level.getDepth());
                             // TODO: get level cardinality
                             row.set(LevelCardinality.name, 1000);
                             row.set(LevelType.name, getLevelType(level));
@@ -3995,107 +4009,107 @@ boolean restriction, boolean nullable, String description)
         public static final int MDMEASURE_AGGR_AVG = 5;
         public static final int MDMEASURE_AGGR_VAR = 6;
         public static final int MDMEASURE_AGGR_STD = 7;
-        public static final int MDMEASURE_AGGR_CALCULATED = 127; 
+        public static final int MDMEASURE_AGGR_CALCULATED = 127;
 
         MdschemaMeasuresRowset(XmlaRequest request, XmlaHandler handler) {
             super(definition, request, handler);
         }
 
-        private static final Column CatalogName = 
+        private static final Column CatalogName =
             new Column(
-                "CATALOG_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "CATALOG_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The name of the catalog to which this measure belongs. ");
-        private static final Column SchemaName = 
+        private static final Column SchemaName =
             new Column(
-                "SCHEMA_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "SCHEMA_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The name of the schema to which this measure belongs.");
-        private static final Column CubeName = 
+        private static final Column CubeName =
             new Column(
-                "CUBE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "CUBE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the cube to which this measure belongs.");
-        private static final Column MeasureName = 
+        private static final Column MeasureName =
             new Column(
-                "MEASURE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "MEASURE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the measure.");
-        private static final Column MeasureUniqueName = 
+        private static final Column MeasureUniqueName =
             new Column(
-                "MEASURE_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "MEASURE_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The Unique name of the measure.");
-        private static final Column MeasureCaption = 
+        private static final Column MeasureCaption =
             new Column(
-                "MEASURE_CAPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "MEASURE_CAPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "A label or caption associated with the measure. ");
-        private static final Column MeasureGuid = 
+        private static final Column MeasureGuid =
             new Column(
-                "MEASURE_GUID", 
-                Type.UUID, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "MEASURE_GUID",
+                Type.UUID,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Measure GUID.");
-        private static final Column MeasureAggregator = 
+        private static final Column MeasureAggregator =
             new Column(
-                "MEASURE_AGGREGATOR", 
-                Type.Integer, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "MEASURE_AGGREGATOR",
+                Type.Integer,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "How a measure was derived. ");
-        private static final Column DataType = 
+        private static final Column DataType =
             new Column(
-                "DATA_TYPE", 
-                Type.UnsignedShort, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "DATA_TYPE",
+                Type.UnsignedShort,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Data type of the measure.");
-        private static final Column MeasureIsVisible = 
+        private static final Column MeasureIsVisible =
             new Column(
-                "MEASURE_IS_VISIBLE", 
-                Type.Boolean, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "MEASURE_IS_VISIBLE",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "A Boolean that always returns True. If the measure is not visible, it will not be included in the schema rowset.");
-        private static final Column LevelsList = 
+        private static final Column LevelsList =
             new Column(
-                "LEVELS_LIST", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "LEVELS_LIST",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "A string that always returns NULL. EXCEPT that SQL Server returns non-null values!!!");
-        private static final Column Description = 
+        private static final Column Description =
             new Column(
-                "DESCRIPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DESCRIPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "A human-readable description of the measure. ");
         /*
          * http://msdn2.microsoft.com/en-us/library/ms126250(SQL.90).aspx
@@ -4118,8 +4132,8 @@ boolean restriction, boolean nullable, String description)
          *     1 Visible
          *     2 Not Visible
          *     Default restriction is a value of 1.
-         *     
-         * Not supported     
+         *
+         * Not supported
          *  MEASURE_GUID
          *  NUMERIC_PRECISION
          *  NUMERIC_SCALE
@@ -4201,8 +4215,8 @@ boolean restriction, boolean nullable, String description)
             }
         }
 
-        private void emitMember(XmlaResponse response, 
-            Connection connection, Member member, 
+        private void emitMember(XmlaResponse response,
+            Connection connection, Member member,
             Cube cube, String levelListStr) {
 
             // Access control
@@ -4213,7 +4227,7 @@ boolean restriction, boolean nullable, String description)
             //TODO: currently this is always null
             String desc = member.getDescription();
             if (desc == null) {
-                desc = cube.getName() + 
+                desc = cube.getName() +
                     " Cube - " +
                     member.getName() +
                     " Memeber";
@@ -4231,7 +4245,7 @@ boolean restriction, boolean nullable, String description)
             row.set(MeasureCaption.name, member.getCaption());
             //row.set(MeasureGuid.name, "");
 
-            Object aggProp = 
+            Object aggProp =
                 member.getPropertyValue(Property.AGGREGATION_TYPE.getName());
             int aggNumber = MDMEASURE_AGGR_UNKNOWN;
             if (aggProp != null) {
@@ -4265,7 +4279,7 @@ boolean restriction, boolean nullable, String description)
                 } else {
                     dbType = DBType.WSTR_ORDINAL;
                 }
-            } 
+            }
             row.set(DataType.name, dbType);
             row.set(MeasureIsVisible.name, true);
 
@@ -4291,167 +4305,167 @@ boolean restriction, boolean nullable, String description)
             super(definition, request, handler);
         }
 
-        private static final Column CatalogName = 
+        private static final Column CatalogName =
             new Column(
-                "CATALOG_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "CATALOG_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The name of the catalog to which this member belongs. ");
-        private static final Column SchemaName = 
+        private static final Column SchemaName =
             new Column(
-                "SCHEMA_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "SCHEMA_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The name of the schema to which this member belongs. ");
-        private static final Column CubeName = 
+        private static final Column CubeName =
             new Column(
-                "CUBE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "CUBE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "Name of the cube to which this member belongs.");
-        private static final Column DimensionUniqueName = 
+        private static final Column DimensionUniqueName =
             new Column(
-                "DIMENSION_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "DIMENSION_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "Unique name of the dimension to which this member belongs. ");
-        private static final Column HierarchyUniqueName = 
+        private static final Column HierarchyUniqueName =
             new Column(
-                "HIERARCHY_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "HIERARCHY_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "Unique name of the hierarchy. If the member belongs to more than one hierarchy, there is one row for each hierarchy to which it belongs.");
-        private static final Column LevelUniqueName = 
+        private static final Column LevelUniqueName =
             new Column(
-                "LEVEL_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "LEVEL_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 " Unique name of the level to which the member belongs.");
-        private static final Column LevelNumber = 
+        private static final Column LevelNumber =
             new Column(
-                "LEVEL_NUMBER", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "LEVEL_NUMBER",
+                Type.UnsignedInteger,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The distance of the member from the root of the hierarchy.");
-        private static final Column MemberOrdinal = 
+        private static final Column MemberOrdinal =
             new Column(
-                "MEMBER_ORDINAL", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "MEMBER_ORDINAL",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Ordinal number of the member. Sort rank of the member when members of this dimension are sorted in their natural sort order. If providers do not have the concept of natural ordering, this should be the rank when sorted by MEMBER_NAME.");
-        private static final Column MemberName = 
+        private static final Column MemberName =
             new Column(
-                "MEMBER_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "MEMBER_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "Name of the member.");
-        private static final Column MemberUniqueName = 
+        private static final Column MemberUniqueName =
             new Column(
-                "MEMBER_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "MEMBER_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 " Unique name of the member.");
-        private static final Column MemberType = 
+        private static final Column MemberType =
             new Column(
-                "MEMBER_TYPE", 
-                Type.Integer, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "MEMBER_TYPE",
+                Type.Integer,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "Type of the member.");
-        private static final Column MemberGuid = 
+        private static final Column MemberGuid =
             new Column(
-                "MEMBER_GUID", 
-                Type.UUID, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "MEMBER_GUID",
+                Type.UUID,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Memeber GUID.");
-        private static final Column MemberCaption = 
+        private static final Column MemberCaption =
             new Column(
-                "MEMBER_CAPTION", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "MEMBER_CAPTION",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "A label or caption associated with the member.");
-        private static final Column ChildrenCardinality = 
+        private static final Column ChildrenCardinality =
             new Column(
-                "CHILDREN_CARDINALITY", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "CHILDREN_CARDINALITY",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Number of children that the member has.");
-        private static final Column ParentLevel = 
+        private static final Column ParentLevel =
             new Column(
-                "PARENT_LEVEL", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "PARENT_LEVEL",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "The distance of the member's parent from the root level of the hierarchy. ");
-        private static final Column ParentUniqueName = 
+        private static final Column ParentUniqueName =
             new Column(
-                "PARENT_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "PARENT_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "Unique name of the member's parent.");
-        private static final Column ParentCount = 
+        private static final Column ParentCount =
             new Column(
-                "PARENT_COUNT", 
-                Type.UnsignedInteger, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "PARENT_COUNT",
+                Type.UnsignedInteger,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Number of parents that this member has.");
-        private static final Column TreeOp = 
+        private static final Column TreeOp =
             new Column(
-                "TREE_OP", 
-                Type.Enumeration, 
-                Enumeration.TreeOp.enumeration, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "TREE_OP",
+                Type.Enumeration,
+                Enumeration.TreeOp.enumeration,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "Tree Operation");
         /* Mondrian specified member properties. */
-        private static final Column Depth = 
+        private static final Column Depth =
             new Column(
-                "DEPTH", 
-                Type.Integer, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DEPTH",
+                Type.Integer,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "depth");
 
         /*
-         * 
-         * 
+         *
+         *
          *
          * restrictions
          *
-         * Not supported     
+         * Not supported
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "MDSCHEMA_MEMBERS", MDSCHEMA_MEMBERS, null, new Column[] {
@@ -4699,9 +4713,9 @@ boolean restriction, boolean nullable, String description)
         private static final Column Scope = new Column("SCOPE", Type.Integer, null, true, false, null);
         private static final Column Description = new Column("DESCRIPTION", Type.String, null, false, true, "A human-readable description of the measure. ");
         /*
-         * http://msdn2.microsoft.com/en-us/library/ms126290(SQL.90).aspx 
+         * http://msdn2.microsoft.com/en-us/library/ms126290(SQL.90).aspx
          * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapproperties_rowset.asp
-         * 
+         *
          * restrictions
          *    CATALOG_NAME Optional.
          *    SCHEMA_NAME Optional.
@@ -4713,8 +4727,8 @@ boolean restriction, boolean nullable, String description)
          *        Note: Only one hierarchy can be included, and only those named
          *        sets whose hierarchies exactly match the restriction are
          *        returned.
-         * 
-         * Not supported     
+         *
+         * Not supported
          *    EXPRESSION
          *    DIMENSIONS
          *    SET_DISPLAY_FOLDER
@@ -4735,7 +4749,7 @@ boolean restriction, boolean nullable, String description)
         public void unparse(XmlaResponse response) throws XmlaException {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
-                HSB_UNSUPPORTED_OPERATION_CODE, 
+                HSB_UNSUPPORTED_OPERATION_CODE,
                 HSB_UNSUPPORTED_OPERATION_FAULT_FS,
                 new UnsupportedOperationException("MDSCHEMA_SETS"));
         }
@@ -4753,113 +4767,113 @@ boolean restriction, boolean nullable, String description)
 
         private static final int MD_PROPTYPE_REGULAR = 0x00;
 
-        private static final Column CatalogName = 
+        private static final Column CatalogName =
             new Column(
-                "CATALOG_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "CATALOG_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The name of the database.");
-        private static final Column SchemaName = 
+        private static final Column SchemaName =
             new Column(
-                "SCHEMA_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "SCHEMA_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The name of the schema to which this property belongs.");
-        private static final Column CubeName = 
+        private static final Column CubeName =
             new Column(
-                "CUBE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "CUBE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The name of the cube.");
-        private static final Column DimensionUniqueName = 
+        private static final Column DimensionUniqueName =
             new Column(
-                "DIMENSION_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "DIMENSION_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The unique name of the dimension.");
-        private static final Column HierarchyUniqueName = 
+        private static final Column HierarchyUniqueName =
             new Column(
-                "HIERARCHY_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "HIERARCHY_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The unique name of the hierarchy.");
-        private static final Column LevelUniqueName = 
+        private static final Column LevelUniqueName =
             new Column(
-                "LEVEL_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "LEVEL_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "The unique name of the level to which this property belongs.");
         // According to MS this should not be nullable
-        private static final Column MemberUniqueName = 
+        private static final Column MemberUniqueName =
             new Column(
-                "MEMBER_UNIQUE_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "MEMBER_UNIQUE_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The unique name of the member to which the property belongs.");
-        private static final Column PropertyName = 
+        private static final Column PropertyName =
             new Column(
-                "PROPERTY_NAME", 
-                Type.String, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "PROPERTY_NAME",
+                Type.String,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "Name of the property.");
-        private static final Column PropertyType = 
+        private static final Column PropertyType =
             new Column(
-                "PROPERTY_TYPE", 
-                Type.Short, 
-                null, 
-                Column.RESTRICTION, 
-                Column.REQUIRED, 
+                "PROPERTY_TYPE",
+                Type.Short,
+                null,
+                Column.RESTRICTION,
+                Column.REQUIRED,
                 "A bitmap that specifies the type of the property");
-        private static final Column PropertyCaption = 
+        private static final Column PropertyCaption =
             new Column(
-                "PROPERTY_CAPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "PROPERTY_CAPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "A label or caption associated with the property, used primarily for display purposes.");
-        private static final Column DataType = 
+        private static final Column DataType =
             new Column(
-                "DATA_TYPE", 
-                Type.UnsignedShort, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.REQUIRED, 
+                "DATA_TYPE",
+                Type.UnsignedShort,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
                 "Data type of the property.");
-        private static final Column PropertyContentType = 
+        private static final Column PropertyContentType =
             new Column(
-                "PROPERTY_CONTENT_TYPE", 
-                Type.Short, 
-                null, 
-                Column.RESTRICTION, 
-                Column.OPTIONAL, 
+                "PROPERTY_CONTENT_TYPE",
+                Type.Short,
+                null,
+                Column.RESTRICTION,
+                Column.OPTIONAL,
                 "The type of the property. ");
-        private static final Column Description = 
+        private static final Column Description =
             new Column(
-                "DESCRIPTION", 
-                Type.String, 
-                null, 
-                Column.NOT_RESTRICTION, 
-                Column.OPTIONAL, 
+                "DESCRIPTION",
+                Type.String,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.OPTIONAL,
                 "A human-readable description of the measure. ");
         /*
-         * http://msdn2.microsoft.com/en-us/library/ms126309(SQL.90).aspx 
+         * http://msdn2.microsoft.com/en-us/library/ms126309(SQL.90).aspx
          * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapproperties_rowset.asp
          *
          * restrictions
@@ -4889,7 +4903,7 @@ boolean restriction, boolean nullable, String description)
          *       2 Not visible
          *       Default restriction is a value of 1.
          *
-         * Not supported     
+         * Not supported
          *    PROPERTY_ORIGIN
          *    CUBE_SOURCE
          *    PROPERTY_VISIBILITY
@@ -4959,13 +4973,13 @@ boolean restriction, boolean nullable, String description)
 
                                 row.set(PropertyName.name, propertyName);
                                 // Only member properties now
-                                row.set(PropertyType.name, MDPROP_MEMBER); 
+                                row.set(PropertyType.name, MDPROP_MEMBER);
                                 row.set(PropertyContentType.name, MD_PROPTYPE_REGULAR);
                                 row.set(PropertyCaption.name, property.getCaption());
                                 DBType dbType = getDBTypeFromProperty(property);
                                 row.set(DataType.name, dbType.getOrdinal());
 
-                                String desc = cubeName + 
+                                String desc = cubeName +
                                     " Cube - " +
                                     hname +
                                     " Hierarchy - " +

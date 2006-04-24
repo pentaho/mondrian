@@ -22,8 +22,6 @@ import mondrian.olap.Util;
  * @version $Id$
  */
 class PropertyDefinition extends EnumeratedValues.BasicValue {
-    private static final String nl = Util.nl;
-
     final RowsetDefinition.Type type;
     final EnumeratedValues typeValues;
     final Enumeration.Access access;
@@ -32,17 +30,28 @@ class PropertyDefinition extends EnumeratedValues.BasicValue {
 
     /**
      * @pre (enumeration != null) == type.isEnum()
+     * @pre value.indexOf('\r') == -1
+     * @pre description.indexOf('\r') == -1
      */
-    public PropertyDefinition(String name, int ordinal, RowsetDefinition.Type type, EnumeratedValues enumeration, Enumeration.Access access, String value, Enumeration.Methods usage, String description) {
+    public PropertyDefinition(
+            String name, int ordinal, RowsetDefinition.Type type,
+            EnumeratedValues enumeration, Enumeration.Access access,
+            String value, Enumeration.Methods usage, String description) {
         super(name, ordinal, description);
         // Line endings must be UNIX style (LF) not Windows style (LF+CR).
         // Thus the client will receive the same XML, regardless
         // of the server O/S.
-        assert description.indexOf('\r') == -1 : description;
-        assert value.indexOf('\r') == -1 : value;
+        Util.assertPrecondition(
+                description.indexOf('\r') == -1,
+                "description.indexOf('\r') == -1");
+        Util.assertPrecondition(
+                value.indexOf('\r') == -1,
+                "value.indexOf('\r') == -1");
+        Util.assertPrecondition(
+                (enumeration != null) == type.isEnum(),
+                "(enumeration != null) == type.isEnum()");
         this.type = type;
         this.typeValues = enumeration;
-        Util.assertPrecondition((enumeration != null) == type.isEnum(), "(enumeration != null) == type.isEnum()");
         this.access = access;
         this.usage = usage;
         this.value = value;
