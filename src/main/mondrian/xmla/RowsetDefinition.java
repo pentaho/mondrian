@@ -3304,8 +3304,10 @@ boolean restriction, boolean nullable, String description)
                 int[] returnCategories = fi.getReturnCategories();
 
                 // Convert Windows newlines in 'description' to UNIX format.
-                final String description =
-                        Util.replace(fi.getDescription(), "\r", "");
+                String description = fi.getDescription();
+                if (description != null) {
+                    description = Util.replace(fi.getDescription(), "\r", "");
+                }
                 if ((paramCategories == null) || (paramCategories.length == 0)) {
                     Row row = new Row();
                     row.set(FunctionName.name, fi.getName());
