@@ -1110,6 +1110,25 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertEquals("1997", result.getCell(new int[]{0}).getValue());
     }
 
+    public void testCurrentMemberMultiHierarchy() {
+        final String queryString = fold(new String[] {
+            "with member [Measures].[Foo] as",
+            " 'IIf(([Time].CurrentMember.Hierarchy.Name = \"Time.Weekly\"), ",
+            "[Measures].[Unit Sales], ",
+            "- [Measures].[Unit Sales])'",
+            "select {[Measures].[Unit Sales], [Measures].[Foo]} ON COLUMNS,",
+            "  {[Product].[Food].[Dairy]} ON ROWS",
+            "from [Sales]"});
+        Result result = executeQuery(
+                queryString + " where [Time].[1997]");
+        final int[] coords = {1, 0};
+        Assert.assertEquals("-12,885", result.getCell(coords).getFormattedValue());
+
+        result = executeQuery(
+                queryString + " where [Time.Weekly].[1997]");
+        Assert.assertEquals("12,885", result.getCell(coords).getFormattedValue());
+    }
+
     public void testDefaultMember() {
         Result result = executeQuery(
             fold(new String[] {
@@ -6294,10 +6313,10 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
                 " member [Product].[All Products].[Drink].[Calculated Child] as '[Product].[All Products].[Drink].[Alcoholic Beverages]'",
                 " member [Product].[All Products].[Non-Consumable].[Calculated Child] as '[Product].[All Products].[Non-Consumable].[Carousel]'",
                 " member [Measures].[Unit Sales CC] as '([Measures].[Unit Sales],[Product].currentmember.CalculatedChild(\"Calculated Child\"))'",
-                " select non empty {[Measures].[Unit Sales CC]} on columns,", 
+                " select non empty {[Measures].[Unit Sales CC]} on columns,",
                 " non empty {[Product].[All Products].[Drink], [Product].[All Products].[Non-Consumable]} on rows",
                 " from [Sales]"}),
-                
+
                 "Axis #0:" + nl +
                 "{}" + nl +
                 "Axis #1:" + nl +
@@ -6309,36 +6328,36 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         Member member = executeSingletonAxis("[Product].[All Products].CalculatedChild(\"foobar\")");
         Assert.assertEquals(member, null);
     }
-    
+
     public void testCalculatedChildUsingItem() {
     	// Construct calculated children with the same name for both [Drink] and [Non-Consumable]
-    	// Then, create a metric to select the first calculated child 
+    	// Then, create a metric to select the first calculated child
         assertQueryReturns(fold(new String[] {
                 "with",
                 " member [Product].[All Products].[Drink].[Calculated Child] as '[Product].[All Products].[Drink].[Alcoholic Beverages]'",
                 " member [Product].[All Products].[Non-Consumable].[Calculated Child] as '[Product].[All Products].[Non-Consumable].[Carousel]'",
                 " member [Measures].[Unit Sales CC] as '([Measures].[Unit Sales],AddCalculatedMembers([Product].currentmember.children).Item(\"Calculated Child\"))'",
-                " select non empty {[Measures].[Unit Sales CC]} on columns,", 
+                " select non empty {[Measures].[Unit Sales CC]} on columns,",
                 " non empty {[Product].[All Products].[Drink], [Product].[All Products].[Non-Consumable]} on rows",
                 " from [Sales]"}),
-                
+
                 "Axis #0:" + nl +
                 "{}" + nl +
                 "Axis #1:" + nl +
                 "{[Measures].[Unit Sales CC]}" + nl +
                 "Axis #2:" + nl +
                 "{[Product].[All Products].[Drink]}" + nl + "{[Product].[All Products].[Non-Consumable]}" + nl +
-                "Row #0: 6,838" + nl + 
+                "Row #0: 6,838" + nl +
                 "Row #1: 6,838" + nl); // Note: For [Non-Consumable], the calculated child for [Drink] was selected!
         Member member = executeSingletonAxis("[Product].[All Products].CalculatedChild(\"foobar\")");
         Assert.assertEquals(member, null);
     }
-    
+
     public void testCalculatedChildOnMemberWithNoChildren() {
         Member member = executeSingletonAxis("[Measures].[Store Sales].CalculatedChild(\"foobar\")");
         Assert.assertEquals(member, null);
     }
-    
+
     public void testCalculatedChildOnNullMember() {
         Member member = executeSingletonAxis("[Measures].[Store Sales].parent.CalculatedChild(\"foobar\")");
         Assert.assertEquals(member, null);
