@@ -1128,6 +1128,27 @@ public class FunctionTest extends FoodMartTestCase {
                 queryString + " where [Time.Weekly].[1997]");
         Assert.assertEquals("12,885", result.getCell(coords).getFormattedValue());
     }
+    public void testCurrentMemberMultiHierarchy2() {
+        final String queryString1 = fold(new String[] {
+            "with member [Measures].[Foo] as",
+            " 'IIf(([Time].CurrentMember.Hierarchy.Name = \"Time.Weekly\"), ",
+            "[Measures].[Unit Sales], ",
+            "- [Measures].[Unit Sales])'",
+            "select {[Measures].[Unit Sales], [Measures].[Foo]} ON COLUMNS,"});
+
+        final String queryString2 = fold(new String[] {
+            "from [Sales]",
+            "  where [Product].[Food].[Dairy] "});
+
+        Result result = executeQuery(
+                queryString1 + " {[Time].[1997]} ON ROWS " + queryString2);
+        final int[] coords = {1, 0};
+        Assert.assertEquals("-12,885", result.getCell(coords).getFormattedValue());
+
+        result = executeQuery(
+                queryString1 + " {[Time.Weekly].[1997]} ON ROWS " + queryString2);
+        Assert.assertEquals("12,885", result.getCell(coords).getFormattedValue());
+    }
 
     public void testDefaultMember() {
         Result result = executeQuery(
