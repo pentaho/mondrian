@@ -80,8 +80,14 @@ public class LastNonEmptyUdf implements UserDefinedFunction {
             return member;
         }
         // Not found. Return the hierarchy's 'null member'.
+        // It is possible that a MemberType has a Dimension but
+        // no hierarchy, so we have to just get the type's Dimension's
+        // default hierarchy and return it's null member.
         final Hierarchy hierarchy = memberListExp.getType().getHierarchy();
-        return hierarchy.getNullMember();
+        return (hierarchy == null)
+            ? memberListExp.getType().getDimension().
+                getHierarchies()[0].getNullMember()
+            : hierarchy.getNullMember();
     }
 
     public String[] getReservedWords() {
