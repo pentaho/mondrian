@@ -441,7 +441,18 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
         try {
             OutputStream outputStream = response.getOutputStream();
-            String encoding = response.getCharacterEncoding();
+
+            // If CharacterEncoding was set in web.xml, use this value
+            String encoding = (charEncoding != null) 
+                    ? charEncoding : response.getCharacterEncoding();
+
+            /*
+             * Since we just reset response, encoding and content-type were
+             * reset too
+             */
+            response.setCharacterEncoding(encoding);
+            response.setContentType("text/xml");
+
             byte[] soapHeader = responseSoapParts[0]; 
             byte[] soapBody = responseSoapParts[1];
 

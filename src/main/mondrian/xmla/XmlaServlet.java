@@ -84,7 +84,7 @@ public abstract class XmlaServlet extends HttpServlet
     protected CatalogLocator catalogLocator = null;
     protected DataSourcesConfig.DataSources dataSources = null;
     protected XmlaHandler xmlaHandler = null;
-    private String charEncoding = null;
+    protected String charEncoding = null;
     private final List callbackList = new ArrayList();
 
     public XmlaServlet() {
