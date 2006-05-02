@@ -189,7 +189,11 @@ public class Formula extends QueryPart {
     {
         if (isMember) {
             pw.print("member ");
-            pw.print(mdxMember.getUniqueName());
+            if (mdxMember != null) {
+                pw.print(mdxMember.getUniqueName());
+            } else {
+                pw.print(Util.quoteMdxIdentifier(names));                
+            }
         } else {
             pw.print("set ");
             pw.print(Util.quoteMdxIdentifier(names));

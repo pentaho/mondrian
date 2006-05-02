@@ -14,10 +14,14 @@ import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.mdx.UnresolvedFunCall;
 import mondrian.test.TestContext;
 
+import java.io.StringWriter;
+import java.io.PrintWriter;
+
 /**
  * Tests the MDX parser.
  *
  * @author gjohnson
+ * @version $Id$
  */
 public class ParserTest extends TestCase {
     public ParserTest(String name) {
@@ -43,13 +47,12 @@ public class ParserTest extends TestCase {
     private void checkAxis(
             String s,
             String expectedName) {
-        ParserData data = new ParserData();
-        Parser p = new TestParser(data);
+        Parser p = new TestParser();
         String q = "select [member] on " + s + " from [cube]";
         Query query = p.parseInternal(null, q, false, funTable);
         assertNull("Test parser should return null query", query);
 
-        QueryAxis[] axes = data.getAxes();
+        QueryAxis[] axes = ((TestParser) p).getAxes();
 
         assertEquals("Number of axes must be 1", 1, axes.length);
         assertEquals("Axis index name must be correct",
@@ -57,8 +60,7 @@ public class ParserTest extends TestCase {
     }
 
     public void testNegativeCases() throws Exception {
-        ParserData data = new ParserData();
-        Parser p = new TestParser(data);
+        Parser p = new TestParser();
 
         checkFails(p, "select [member] on axis(1.7) from sales", "The axis number must be an integer");
         checkFails(p, "select [member] on axis(-1) from sales", "Syntax error at line");
@@ -105,14 +107,13 @@ public class ParserTest extends TestCase {
     }
 
     public void testMultipleAxes() throws Exception {
-        ParserData data = new ParserData();
-        Parser p = new TestParser(data);
+        Parser p = new TestParser();
         String query = "select {[axis0mbr]} on axis(0), "
                 + "{[axis1mbr]} on axis(1) from cube";
 
         assertNull("Test parser should return null query", p.parseInternal(null, query, false, funTable));
 
-        QueryAxis[] axes = data.getAxes();
+        QueryAxis[] axes = ((TestParser) p).getAxes();
 
         assertEquals("Number of axes", 2, axes.length);
         assertEquals("Axis index name must be correct",
@@ -144,31 +145,62 @@ public class ParserTest extends TestCase {
         assertEquals("Correct member on axis", "axis1mbr", id);
     }
 
-    public static class TestParser extends Parser {
-        ParserData parserData;
+    public void testCaseTest() {
+        Parser p = new TestParser();
+        String query = "with member [Measures].[Foo] as " +
+                " ' case when x = y then \"eq\" when x < y then \"lt\" else \"gt\" end '" +
+                "select {[foo]} on axis(0) from cube";
 
-        public TestParser(ParserData pd) {
-            super();
-            parserData = pd;
-        }
-
-        protected Query makeQuery(Formula[] formulae, QueryAxis[] axes, String cube, Exp slicer, QueryPart[] cellProps) {
-            parserData.setFormulae(formulae);
-            parserData.setAxes(axes);
-            parserData.setCube(cube);
-            parserData.setSlicer(slicer);
-            parserData.setCellProps(cellProps);
-
-            return null;
-        }
+        assertNull("Test parser should return null query", p.parseInternal(null, query, false, funTable));
+        final String mdx = ((TestParser) p).toMdxString();
+        assertEquals(TestContext.fold(new String[] {
+            "with member [Measures].[Foo] as 'CASE WHEN ([x] = [y]) THEN \"eq\" WHEN ([x] < [y]) THEN \"lt\" ELSE \"gt\" END'",
+            "select {[foo]} ON COLUMNS",
+            "from [cube]",
+            ""}),
+                mdx);
     }
 
-    public static class ParserData {
-        private Formula[] formulae;
+    public void testCaseSwitch() {
+        Parser p = new TestParser();
+        String query = "with member [Measures].[Foo] as " +
+                " ' case x when 1 then 2 when 3 then 4 else 5 end '" +
+                "select {[foo]} on axis(0) from cube";
+
+        assertNull("Test parser should return null query", p.parseInternal(null, query, false, funTable));
+        final String mdx = ((TestParser) p).toMdxString();
+        assertEquals(TestContext.fold(new String[] {
+            "with member [Measures].[Foo] as 'CASE [x] WHEN 1.0 THEN 2.0 WHEN 3.0 THEN 4.0 ELSE 5.0 END'",
+            "select {[foo]} ON COLUMNS",
+            "from [cube]",
+            ""}),
+                mdx);
+    }
+
+    public static class TestParser extends Parser {
+        private Formula[] formulas;
         private QueryAxis[] axes;
         private String cube;
         private Exp slicer;
         private QueryPart[] cellProps;
+
+        public TestParser() {
+            super();
+        }
+
+        protected Query makeQuery(
+                Formula[] formulae,
+                QueryAxis[] axes,
+                String cube,
+                Exp slicer,
+                QueryPart[] cellProps) {
+            setFormulas(formulae);
+            setAxes(axes);
+            setCube(cube);
+            setSlicer(slicer);
+            setCellProps(cellProps);
+            return null;
+        }
 
         public QueryAxis[] getAxes() {
             return axes;
@@ -194,12 +226,12 @@ public class ParserTest extends TestCase {
             this.cube = cube;
         }
 
-        public Formula[] getFormulae() {
-            return formulae;
+        public Formula[] getFormulas() {
+            return formulas;
         }
 
-        public void setFormulae(Formula[] formulae) {
-            this.formulae = formulae;
+        public void setFormulas(Formula[] formulas) {
+            this.formulas = formulas;
         }
 
         public Exp getSlicer() {
@@ -209,6 +241,49 @@ public class ParserTest extends TestCase {
         public void setSlicer(Exp slicer) {
             this.slicer = slicer;
         }
+
+        public String toMdxString() {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new Query.QueryPrintWriter(sw);
+            unparse(pw);
+            return sw.toString();
+        }
+
+        private void unparse(PrintWriter pw) {
+            if (formulas != null) {
+                for (int i = 0; i < formulas.length; i++) {
+                    if (i == 0) {
+                        pw.print("with ");
+                    } else {
+                        pw.print("  ");
+                    }
+                    formulas[i].unparse(pw);
+                    pw.println();
+                }
+            }
+            pw.print("select ");
+            if (axes != null) {
+                for (int i = 0; i < axes.length; i++) {
+                    axes[i].unparse(pw);
+                    if (i < axes.length - 1) {
+                        pw.println(",");
+                        pw.print("  ");
+                    } else {
+                        pw.println();
+                    }
+                }
+            }
+            if (cube != null) {
+                pw.println("from [" + cube + "]");
+            }
+            if (slicer != null) {
+                pw.print("where ");
+                slicer.unparse(pw);
+                pw.println();
+            }
+        }
+
+
     }
 }
 
