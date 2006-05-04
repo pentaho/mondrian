@@ -182,12 +182,6 @@ public class DefaultXmlaServlet extends XmlaServlet {
             }
             requestSoapParts[1] = childs[0];
 
-            if (LOGGER.isDebugEnabled()) {
-                StringBuffer buf = new StringBuffer();
-                buf.append("XML/A request content").append(nl);
-                buf.append(XmlaUtil.element2Text(envElem));
-                LOGGER.debug(buf.toString());
-            }
         } catch (XmlaException xex) {
             throw xex;
         } catch (Exception ex) {
