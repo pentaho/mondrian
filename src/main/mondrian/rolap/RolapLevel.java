@@ -494,6 +494,12 @@ public class RolapLevel extends LevelBase {
                 request.addConstrainedColumn(nameColumn, null);
             }
 
+            // If member is unique without reference to its parent,
+            // no further constraint is required.
+            if (unique) {
+                return false;
+            }
+
             // Constrain the parent member, if any.
             RolapMember parent = (RolapMember) member.getParentMember();
             while (true) {

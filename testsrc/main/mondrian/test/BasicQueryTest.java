@@ -986,6 +986,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " `product_class`.`product_family` as `Product Family`," +
                 " `promotion`.`media_type` as `Media Type`," +
                 " `promotion`.`promotion_name` as `Promotion Name`," +
+                " `customer`.`customer_id` as `Name (Key)`," +
                 fname_plus_lname +
                 " `customer`.`city` as `City`," +
                 " `customer`.`state_province` as `State Province`," +
@@ -3112,105 +3113,75 @@ public class BasicQueryTest extends FoodMartTestCase {
      *
      */
     public void testMemberWithNullKey() {
-        Result result = executeQuery("select {[Measures].[Unit Sales]} on columns," + nl +
-                        "{[Store Size in SQFT].members} on rows" + nl +
-                        "from Sales");
+        Result result = executeQuery(
+                "select {[Measures].[Unit Sales]} on columns," + nl +
+                "{[Store Size in SQFT].members} on rows" + nl +
+                "from Sales");
         String resultString = TestContext.toString(result);
         resultString = Pattern.compile("\\.0\\]").matcher(resultString).replaceAll("]");
 
-        // There was a test in here to deal with the sorting of nulls by different
-        // DBMSs. With the work on the members function, with the hierarchized
-        // result, nulls always sort high now.
-
-/*        // Try to detect whether nulls are sorted high, such as Postgres and Oracle.
-        // In practice, the different JDBC drivers do not report correctly in all
-        // instances.
-
-        // RolapConnection conn = (RolapConnection) getConnection();
-*/        boolean nullsSortHigh = false;
-
-        // This did not seem to work consistently across drivers, so don't use it
-        // boolean nullsSortedAtEnd = false;
-
-        /*
-        try {
-            DatabaseMetaData dbMetadata = conn.getDataSource().getConnection().getMetaData();
-            nullsSortHigh = dbMetadata.nullsAreSortedHigh();
-
-            // nullsSortedAtEnd = dbMetadata.nullsAreSortedAtEnd();
-        } catch (SQLException e) {
-            fail("Failed to get DatabaseMetaData to check nulls sort order");
-            return;
-        }
-
-        // Oracle apparently does not report the correct metadata for its handling
-        // of sorting nulls, so we have a specific case (yuck!)
-
-        String jdbc_url = conn.getConnectInfo().get("Jdbc");
-        if (jdbc_url.toLowerCase().indexOf("oracle") >= 0 ) {
-            nullsSortHigh = true;
-        }
-        */
-
+        // The members function hierarchizes its results, so nulls should
+        // sort high, regardless of DBMS. Note that Oracle's driver says that
+        // NULLs sort low, but it's lying.
+        final boolean nullsSortHigh = false;
         int row = 0;
 
-        final String expected = "Axis #0:" + nl +
-                        "{}" + nl +
-                        "Axis #1:" + nl +
-                        "{[Measures].[Unit Sales]}" + nl +
-                        "Axis #2:" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs]}" + nl +
+        final String expected =
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs]}" + nl +
 
-                        // null is at the start in order under DBMSs that sort null low
+                // null is at the start in order under DBMSs that sort null low
+                (!nullsSortHigh ? "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}" + nl : "") +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[20319]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[21215]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[22478]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[23112]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[23593]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[23598]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[23688]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[23759]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[24597]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[27694]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[28206]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[30268]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[30584]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[30797]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[33858]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[34452]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[34791]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[36509]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[38382]}" + nl +
+                "{[Store Size in SQFT].[All Store Size in SQFTs].[39696]}" + nl +
 
-                        (!nullsSortHigh ? "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}" + nl : "") +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[20319]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[21215]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[22478]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[23112]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[23593]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[23598]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[23688]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[23759]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[24597]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[27694]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[28206]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[30268]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[30584]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[30797]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[33858]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[34452]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[34791]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[36509]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[38382]}" + nl +
-                        "{[Store Size in SQFT].[All Store Size in SQFTs].[39696]}" + nl +
-
-                        // null is at the end in order for DBMSs that sort nulls high
-
-                        (nullsSortHigh ? "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}" + nl : "") +
-                        "Row #" + row++ + ": 266,773" + nl +
-                        (!nullsSortHigh ? "Row #" + row++ + ": 39,329" + nl : "" ) +
-                        "Row #" + row++ + ": 26,079" + nl +
-                        "Row #" + row++ + ": 25,011" + nl +
-                        "Row #" + row++ + ": 2,117" + nl +
-                        "Row #" + row++ + ": (null)" + nl +
-                        "Row #" + row++ + ": (null)" + nl +
-                        "Row #" + row++ + ": 25,663" + nl +
-                        "Row #" + row++ + ": 21,333" + nl +
-                        "Row #" + row++ + ": (null)" + nl +
-                        "Row #" + row++ + ": (null)" + nl +
-                        "Row #" + row++ + ": 41,580" + nl +
-                        "Row #" + row++ + ": 2,237" + nl +
-                        "Row #" + row++ + ": 23,591" + nl +
-                        "Row #" + row++ + ": (null)" + nl +
-                        "Row #" + row++ + ": (null)" + nl +
-                        "Row #" + row++ + ": 35,257" + nl +
-                        "Row #" + row++ + ": (null)" + nl +
-                        "Row #" + row++ + ": (null)" + nl +
-                        "Row #" + row++ + ": (null)" + nl +
-                        "Row #" + row++ + ": (null)" + nl +
-                        "Row #" + row++ + ": 24,576" + nl +
-                        (nullsSortHigh ? "Row #" + row++ + ": 39,329" + nl : "" );
+                // null is at the end in order for DBMSs that sort nulls high
+                (nullsSortHigh ? "{[Store Size in SQFT].[All Store Size in SQFTs].[#null]}" + nl : "") +
+                "Row #" + row++ + ": 266,773" + nl +
+                (!nullsSortHigh ? "Row #" + row++ + ": 39,329" + nl : "" ) +
+                "Row #" + row++ + ": 26,079" + nl +
+                "Row #" + row++ + ": 25,011" + nl +
+                "Row #" + row++ + ": 2,117" + nl +
+                "Row #" + row++ + ": (null)" + nl +
+                "Row #" + row++ + ": (null)" + nl +
+                "Row #" + row++ + ": 25,663" + nl +
+                "Row #" + row++ + ": 21,333" + nl +
+                "Row #" + row++ + ": (null)" + nl +
+                "Row #" + row++ + ": (null)" + nl +
+                "Row #" + row++ + ": 41,580" + nl +
+                "Row #" + row++ + ": 2,237" + nl +
+                "Row #" + row++ + ": 23,591" + nl +
+                "Row #" + row++ + ": (null)" + nl +
+                "Row #" + row++ + ": (null)" + nl +
+                "Row #" + row++ + ": 35,257" + nl +
+                "Row #" + row++ + ": (null)" + nl +
+                "Row #" + row++ + ": (null)" + nl +
+                "Row #" + row++ + ": (null)" + nl +
+                "Row #" + row++ + ": (null)" + nl +
+                "Row #" + row++ + ": 24,576" + nl +
+                (nullsSortHigh ? "Row #" + row++ + ": 39,329" + nl : "" );
         assertEquals(expected, resultString);
     }
 

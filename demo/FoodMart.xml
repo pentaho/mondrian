@@ -173,8 +173,8 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
       <Level name="Country" column="country" uniqueMembers="true"/>
       <Level name="State Province" column="state_province" uniqueMembers="true"/>
       <Level name="City" column="city" uniqueMembers="false"/>
-      <Level name="Name" uniqueMembers="true">
-        <KeyExpression>
+      <Level name="Name" column="customer_id" type="Numeric" uniqueMembers="true">
+        <NameExpression>
           <SQL dialect="oracle">
 "fname" || ' ' || "lname"
           </SQL>
@@ -199,7 +199,33 @@ CONCAT(CONCAT(fname, ' '), lname)
           <SQL dialect="generic">
 fullname
           </SQL>
-        </KeyExpression>
+        </NameExpression>
+        <OrdinalExpression>
+          <SQL dialect="oracle">
+"fname" || ' ' || "lname"
+          </SQL>
+          <SQL dialect="access">
+fname + ' ' + lname
+          </SQL>
+          <SQL dialect="postgres">
+"fname" || ' ' || "lname"
+          </SQL>
+          <SQL dialect="mysql">
+CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
+          </SQL>
+          <SQL dialect="mssql">
+fname + ' ' + lname
+          </SQL>
+          <SQL dialect="derby">
+"customer"."fullname"
+          </SQL>
+          <SQL dialect="db2">
+CONCAT(CONCAT(fname, ' '), lname)
+          </SQL>
+          <SQL dialect="generic">
+fullname
+          </SQL>
+        </OrdinalExpression>
         <Property name="Gender" column="gender"/>
         <Property name="Marital Status" column="marital_status"/>
         <Property name="Education" column="education"/>

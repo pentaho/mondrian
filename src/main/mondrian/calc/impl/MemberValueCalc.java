@@ -49,6 +49,11 @@ public class MemberValueCalc extends GenericCalc {
             final Member member = memberCalc.evaluateMember(evaluator);
             if (member == null ||
                     member.isNull()) {
+                // This method needs to leave the evaluator in the same state
+                // it found it.
+                for (int j = 0; j < i; j++) {
+                    evaluator.setContext(savedMembers[j]);
+                }
                 return null;
             }
             savedMembers[i] = evaluator.setContext(member);

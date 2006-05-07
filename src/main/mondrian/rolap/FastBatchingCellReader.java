@@ -241,10 +241,15 @@ public class FastBatchingCellReader implements CellReader {
             for (int j = 0; j < columns.length; j++) {
                 Set valueSet = valueSets[j];
 
-                ColumnConstraint[] constraints = (valueSet == null)
-                    ? null
-                    : (ColumnConstraint[]) valueSet.
-                            toArray(new ColumnConstraint[valueSet.size()]);
+                ColumnConstraint[] constraints;
+                if ((valueSet == null)) {
+                    constraints = null;
+                } else {
+                    constraints = new ColumnConstraint[valueSet.size()];
+                    valueSet.toArray(constraints);
+                    // Sort array to achieve determinism in generated SQL.
+                    Arrays.sort(constraints);
+                }
 
                 constraintses[j] = constraints;
             }

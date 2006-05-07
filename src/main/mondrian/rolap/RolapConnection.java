@@ -343,7 +343,7 @@ public class RolapConnection extends ConnectionBase {
             }
             return result;
 
-        } catch (Throwable e) {
+        } catch (Exception e) {
             String queryString;
             try {
                 queryString = query.getQueryString();

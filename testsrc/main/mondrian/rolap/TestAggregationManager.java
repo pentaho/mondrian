@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,12 +12,13 @@
 */
 package mondrian.rolap;
 
-import junit.framework.TestCase;
 import mondrian.olap.Connection;
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.cache.CachePool;
 import mondrian.test.TestContext;
+import mondrian.test.FoodMartTestCase;
 import mondrian.util.DelegatingInvocationHandler;
 
 import javax.sql.DataSource;
@@ -31,7 +32,7 @@ import java.sql.*;
  * @since 21 March, 2002
  * @version $Id$
  */
-public class TestAggregationManager extends TestCase {
+public class TestAggregationManager extends FoodMartTestCase {
     public TestAggregationManager(String name) {
         super(name);
     }
@@ -228,6 +229,60 @@ public class TestAggregationManager extends TestCase {
     // todo: test with 2 dimension columns on the same table, e.g.
     //  (Unit Sales, Gender={F}, MaritalStatus={S}) and make sure that the
     // table only appears once in the from clause.
+
+    /**
+     * Tests that if a level is marked 'unique members', then its parent
+     * is not constrained.
+     */
+    public void testUniqueMembers() {
+        // [Store].[Store State] is unique, so we don't expect to see any
+        // references to country.
+        final String mdxQuery =
+                "select {[Measures].[Unit Sales]} on columns," +
+                " {[Store].[USA].[CA], [Store].[USA].[OR]} on rows " +
+                "from [Sales]";
+        SqlPattern[] patterns;
+        if (MondrianProperties.instance().UseAggregates.get() &&
+                MondrianProperties.instance().ReadAggregates.get()) {
+            patterns = new SqlPattern[] {
+                new SqlPattern(
+                        SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
+                        "select `store`.`store_state` as `c0`," +
+                    " `agg_c_14_sales_fact_1997`.`the_year` as `c1`," +
+                    " sum(`agg_c_14_sales_fact_1997`.`unit_sales`) as `m0` " +
+                    "from `store` as `store`," +
+                    " `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997` " +
+                    "where `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`" +
+                    " and `store`.`store_state` in ('CA', 'OR')" +
+                    " and `agg_c_14_sales_fact_1997`.`the_year` = 1997 " +
+                    "group by `store`.`store_state`," +
+                    " `agg_c_14_sales_fact_1997`.`the_year`",
+                        26
+                )
+            };
+        } else {
+            // Note -- no references to store_country!!
+            patterns = new SqlPattern[] {
+                new SqlPattern(
+                        SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
+                        "select `store`.`store_state` as `c0`," +
+                    " `time_by_day`.`the_year` as `c1`," +
+                    " sum(`sales_fact_1997`.`unit_sales`) as `m0` from `store` as `store`," +
+                    " `sales_fact_1997` as `sales_fact_1997`," +
+                    " `time_by_day` as `time_by_day` " +
+                    "where `sales_fact_1997`.`store_id` = `store`.`store_id`" +
+                    " and `store`.`store_state` in ('CA', 'OR')" +
+                    " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
+                    " and `time_by_day`.`the_year` = 1997 " +
+                    "group by `store`.`store_state`, `time_by_day`.`the_year`",
+                        26
+                )
+            };
+        }
+        assertQuerySql(
+                mdxQuery,
+                patterns);
+    }
 
     /**
      * If a hierarchy lives in the fact table, we should not generate a join.
@@ -499,7 +554,13 @@ public class TestAggregationManager extends TestCase {
 
 
 
-    static class Bomb extends RuntimeException {
+    /**
+     * Fake exception to interrupt the test when we see the desired query.
+     * It is an {@link Error} because we need it to be unchecked
+     * ({@link Exception} is checked), and we don't want handlers to handle
+     * it.
+     */
+    static class Bomb extends Error {
         final String sql;
         Bomb(final String sql) {
             this.sql = sql;
@@ -549,14 +610,70 @@ public class TestAggregationManager extends TestCase {
         assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
     }
 
+    /**
+     * Checks that a given MDX query results in a particular SQL statement
+     * being generated.
+     *
+     * @param mdxQuery MDX query
+     * @param patterns Set of patterns, one for each dialect.
+     */
+    private void assertQuerySql(String mdxQuery, SqlPattern[] patterns) {
+        final TestContext testContext = getTestContext();
+        final Connection connection = testContext.getConnection();
+        final Query query = connection.parseQuery(mdxQuery);
+        final Cube cube = query.getCube();
+        RolapStar star = ((RolapCube) cube).getStar();
+
+        SqlQuery.Dialect dialect = star.getSqlQueryDialect();
+        int d = SqlPattern.getDialect(dialect);
+        SqlPattern sqlPattern = SqlPattern.getPattern(d, patterns);
+        if (sqlPattern == null) {
+            // This is the current behavior: when the dialect is not
+            // Access then do not run the test. We do not print
+            // any warning message.
+            return;
+        }
+
+        String sql = sqlPattern.getSql();
+        String trigger = sqlPattern.getTriggerSql();
+
+        // Create a dummy DataSource which will throw a 'bomb' if it is asked
+        // to execute a particular SQL statement, but will otherwise behave
+        // exactly the same as the current DataSource.
+        DataSource oldDataSource = star.getDataSource();
+        final DataSource dataSource = (DataSource) Proxy.newProxyInstance(
+                null,
+                new Class[] {DataSource.class},
+                new DataSourceHandler(oldDataSource, trigger));
+        star.setDataSource(dataSource);
+        Bomb bomb;
+        try {
+            // Flush the cache, to ensure that the query gets executed.
+            CachePool.instance().flush();
+
+            final Result result = connection.execute(query);
+            Util.discard(result);
+            bomb = null;
+        } catch (Bomb e) {
+            bomb = e;
+        } finally {
+            star.setDataSource(oldDataSource);
+        }
+        if (bomb == null) {
+            fail("expected query [" + sql + "] did not occur");
+        }
+        assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
+    }
+
     private static String replaceQuotes(String s) {
       s = s.replace('`', '\"');
       s = s.replace('\'', '\"');
       return s;
     }
 
-    private CellRequest createRequest(final String cube, final String measure,
-        final String table, final String column, final String value) {
+    private CellRequest createRequest(
+            final String cube, final String measure,
+            final String table, final String column, final String value) {
         final Connection connection =
             TestContext.instance().getFoodMartConnection(false);
         final boolean fail = true;
