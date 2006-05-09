@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -159,6 +159,7 @@ public class Main extends TestSuite {
             suite.addTest(XmlaTest.suite());
             if (isRunOnce()) suite.addTestSuite(TestCalculatedMembers.class);
             suite.addTestSuite(RaggedHierarchyTest.class);
+            suite.addTestSuite(InlineTableTest.class);
             suite.addTestSuite(CompatibilityTest.class);
             suite.addTestSuite(CaptionTest.class);
             suite.addTestSuite(UdfTest.class);
