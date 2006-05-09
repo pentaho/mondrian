@@ -18,6 +18,7 @@ import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.rolap.aggmatcher.AggTableManager;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
 
 import org.apache.log4j.Logger;
@@ -33,6 +34,7 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.sql.*;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
@@ -54,6 +56,7 @@ public class RolapSchema implements Schema {
     private static final int[] memberAllowed = new int[] {Access.NONE, Access.ALL};
 
     private String name;
+
     /**
      * Internal use only.
      */
@@ -106,19 +109,20 @@ public class RolapSchema implements Schema {
 
     private MondrianDef.Schema xmlSchema;
 
-    /** 
+    /**
      * This is ONLY called by other constructors (and MUST be called
-     * by them) and NEVER by the Pool. 
-     * 
-     * @param key 
-     * @param connectInfo 
-     * @param dataSource 
-     * @param md5Bytes 
+     * by them) and NEVER by the Pool.
+     *
+     * @param key
+     * @param connectInfo
+     * @param dataSource
+     * @param md5Bytes
      */
-    private RolapSchema(final String key,
-                        final Util.PropertyList connectInfo,
-                        final DataSource dataSource,
-                        final String md5Bytes) {
+    private RolapSchema(
+            final String key,
+            final Util.PropertyList connectInfo,
+            final DataSource dataSource,
+            final String md5Bytes) {
         this.key = key;
         this.md5Bytes = md5Bytes;
         // the order of the next two lines is important
@@ -143,21 +147,23 @@ public class RolapSchema implements Schema {
      * @param catalogStr may be null
      * @param connectInfo
      */
-    private RolapSchema(final String key,
-                        final String md5Bytes,
-                        final String catalogName,
-                        final String catalogStr,
-                        final Util.PropertyList connectInfo,
-                        final DataSource dataSource) {
+    private RolapSchema(
+            final String key,
+            final String md5Bytes,
+            final String catalogName,
+            final String catalogStr,
+            final Util.PropertyList connectInfo,
+            final DataSource dataSource) {
         this(key, connectInfo, dataSource, md5Bytes);
 
         load(catalogName, catalogStr);
     }
 
-    private RolapSchema(final String key,
-                        final String catalogName,
-                        final Util.PropertyList connectInfo,
-                        final DataSource dataSource) {
+    private RolapSchema(
+            final String key,
+            final String catalogName,
+            final Util.PropertyList connectInfo,
+            final DataSource dataSource) {
 
         this(key, connectInfo, dataSource, null);
 
@@ -170,6 +176,7 @@ public class RolapSchema implements Schema {
             aggTableManager = null;
         }
     }
+
     protected void finalize() throws Throwable {
         finalCleanUp();
     }
@@ -233,6 +240,7 @@ public class RolapSchema implements Schema {
     Role getDefaultRole() {
         return defaultRole;
     }
+
     MondrianDef.Schema getXMLSchema() {
         return xmlSchema;
     }
@@ -241,6 +249,31 @@ public class RolapSchema implements Schema {
         Util.assertPostcondition(name != null, "return != null");
         Util.assertPostcondition(name.length() > 0, "return.length() > 0");
         return name;
+    }
+
+    /**
+     * Returns this schema's SQL dialect.
+     *
+     * <p>NOTE: This method is not cheap. The implementation gets a connection
+     * from the connection pool.
+     */
+    public SqlQuery.Dialect getDialect() {
+        java.sql.Connection conn = null;
+        try {
+            conn = getInternalConnection().getDataSource().getConnection();
+            return SqlQuery.Dialect.create(conn.getMetaData());
+        } catch (SQLException e) {
+            throw Util.newInternal(
+                e, "Error while creating SQL dialect");
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                //ignore
+            }
+        }
     }
 
     private void load(MondrianDef.Schema xmlSchema) {
@@ -446,6 +479,7 @@ public class RolapSchema implements Schema {
         }
         return cube;
     }
+
 /*
     public Cube createCube(String xml) {
         MondrianDef.Cube xmlDimension;
@@ -652,7 +686,7 @@ public class RolapSchema implements Schema {
                         final Class clazz = Class.forName(dynProcName);
                         final Constructor ctor = clazz.getConstructor(new Class[0]);
                         final DynamicSchemaProcessor dynProc =
-                                (DynamicSchemaProcessor) 
+                                (DynamicSchemaProcessor)
                                 ctor.newInstance(new Object[0]);
                         catalogStr = dynProc.processSchema(url, connectInfo);
                         hadDynProc = true;

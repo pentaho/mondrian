@@ -401,7 +401,9 @@ public class SqlTupleReader implements TupleReader {
 
     static SqlQuery newQuery(Connection jdbcConnection, String err) {
         try {
-            return new SqlQuery(jdbcConnection.getMetaData());
+            final SqlQuery.Dialect dialect =
+                    SqlQuery.Dialect.create(jdbcConnection.getMetaData());
+            return new SqlQuery(dialect);
         } catch (SQLException e) {
             throw Util.newInternal(e, err);
         }

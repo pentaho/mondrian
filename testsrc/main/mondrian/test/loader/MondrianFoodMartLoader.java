@@ -119,7 +119,6 @@ public class MondrianFoodMartLoader {
 
     private FileWriter fileOutput = null;
 
-    private SqlQuery sqlQuery;
     private final Map tableMetadataToLoad = new HashMap();
     private final Map aggregateTableMetadataToLoad = new HashMap();
     private SqlQuery.Dialect dialect;
@@ -280,8 +279,7 @@ public class MondrianFoodMartLoader {
 
         LOGGER.info("Output connection is " + productName + ", " + version);
 
-        sqlQuery = new SqlQuery(metaData);
-        dialect = sqlQuery.getDialect();
+        dialect = SqlQuery.Dialect.create(metaData);
 
         try {
             createTables();  // This also initializes tableMetadataToLoad
@@ -643,11 +641,6 @@ public class MondrianFoodMartLoader {
      */
     private int loadTable(String name, Column[] columns) throws Exception {
         int rowsAdded = 0;
-
-        final DatabaseMetaData metaData = inputConnection.getMetaData();
-
-        SqlQuery inputSqlQuery = new SqlQuery(metaData);
-
         StringBuffer buf = new StringBuffer();
 
         buf.append("select ");
@@ -656,10 +649,10 @@ public class MondrianFoodMartLoader {
             if (i > 0) {
                 buf.append(",");
             }
-            buf.append(quoteId(inputSqlQuery.getDialect(), column.name));
+            buf.append(quoteId(dialect, column.name));
         }
         buf.append(" from ")
-            .append(quoteId(inputSqlQuery.getDialect(), name));
+            .append(quoteId(dialect, name));
         String ddl = buf.toString();
         Statement statement = inputConnection.createStatement();
         LOGGER.debug("Input table SQL: " + ddl);

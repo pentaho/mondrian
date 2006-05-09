@@ -23,7 +23,9 @@ import mondrian.mdx.HierarchyExpr;
 import mondrian.mdx.UnresolvedFunCall;
 
 import org.apache.log4j.Logger;
+
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * <code>RolapHierarchy</code> implements {@link Hierarchy} for a ROLAP database.
@@ -117,6 +119,10 @@ class RolapHierarchy extends HierarchyBase {
         }
         this.xmlHierarchy = xmlHierarchy;
         this.relation = xmlHierarchy.relation;
+        if (xmlHierarchy.relation instanceof MondrianDef.InlineTable) {
+            this.relation = convertInlineTableToRelation(
+                    (MondrianDef.InlineTable) xmlHierarchy.relation);
+        }
         this.memberReaderClass = xmlHierarchy.memberReaderClass;
         if (hasAll) {
             if (xmlHierarchy.allMemberName != null) {
@@ -166,6 +172,44 @@ class RolapHierarchy extends HierarchyBase {
             setCaption(xmlHierarchy.caption);
         }
         defaultMemberName = xmlHierarchy.defaultMember;
+    }
+
+    private MondrianDef.Relation convertInlineTableToRelation(
+            MondrianDef.InlineTable inlineTable) {
+        MondrianDef.View view = new MondrianDef.View();
+        view.alias = inlineTable.alias;
+        view.selects = new MondrianDef.SQL[1];
+        final MondrianDef.SQL select = view.selects[0] = new MondrianDef.SQL();
+        select.dialect = "generic";
+        final SqlQuery.Dialect dialect;
+        dialect = getRolapSchema().getDialect();
+
+        final int columnCount = inlineTable.columnDefs.array.length;
+        List columnNames = new ArrayList();
+        List columnTypes = new ArrayList();
+        for (int i = 0; i < columnCount; i++) {
+            columnNames.add(inlineTable.columnDefs.array[i].name);
+            columnTypes.add(inlineTable.columnDefs.array[i].type);
+        }
+        List valueList = new ArrayList();
+        for (int i = 0; i < inlineTable.rows.array.length; i++) {
+            MondrianDef.Row row = inlineTable.rows.array[i];
+            String[] values = new String[columnCount];
+            for (int j = 0; j < row.values.length; j++) {
+                MondrianDef.Value value = row.values[j];
+                final int columnOrdinal = columnNames.indexOf(value.column);
+                if (columnOrdinal < 0) {
+                    throw Util.newError("Unknown column '" + value.column + "'");
+                }
+                values[columnOrdinal] = value.cdata;
+            }
+            valueList.add(values);
+        }
+        select.cdata = dialect.generateInline(
+                columnNames,
+                columnTypes,
+                valueList);
+        return view;
     }
 
     protected Logger getLogger() {

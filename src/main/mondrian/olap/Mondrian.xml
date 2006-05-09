@@ -979,7 +979,7 @@ Revision is $Id$
         <Object name="left" type="Relation" required="true"/>
         <Object name="right" type="Relation" required="true"/>
         <Code>
-            /** Convenience contructor. **/
+            /** Convenience constructor. */
             public Join(String leftAlias, String leftKey, Relation left, 
                 String rightAlias, String rightKey, Relation right) {
                 this.leftAlias = leftAlias;
@@ -992,7 +992,7 @@ Revision is $Id$
             /**
               * Returns the alias of the left join key, defaulting to left's
               * alias if left is a table.
-              **/
+              */
             public String getLeftAlias() {
                 if (leftAlias != null) {
                     return leftAlias;
@@ -1006,7 +1006,7 @@ Revision is $Id$
             /**
               * Returns the alias of the right join key, defaulting to right's
               * alias if right is a table.
-              **/
+              */
             public String getRightAlias() {
                 if (rightAlias != null) {
                     return rightAlias;
@@ -1060,7 +1060,7 @@ Revision is $Id$
         <Array name="aggTables" type="AggTable" required="false"/>
 
         <Code><![CDATA[
-            /** Convenience contructor. **/
+            /** Convenience constructor. */
             public Table(Table table) {
                 this(table.schema, table.name, table.alias);
             }
@@ -1070,7 +1070,7 @@ Revision is $Id$
                 this.name = name;
                 this.alias = alias;
             }
-            /** Returns the alias or, if it is null, the table name. **/
+            /** Returns the alias or, if it is null, the table name. */
             public String getAlias() {
                 return (alias != null) ? alias : name;
             }
@@ -1080,14 +1080,9 @@ Revision is $Id$
                     schema + "." + name;
             }
             public Relation find(String seekAlias) {
-                return (seekAlias.equals(name)) 
-                    ? this 
-                    : ((alias != null) && seekAlias.equals(alias))
-                        ? this : null;
-// RME
-/*
-                return (seekAlias.equals(name)) ? this : null;
-*/
+                return seekAlias.equals(name) ? this :
+                    (alias != null) && seekAlias.equals(alias) ? this : 
+                    null;
             }
             public boolean equals(Object o) {
                 if (o instanceof Table) {
@@ -1112,6 +1107,90 @@ Revision is $Id$
             }
             ]]>
         </Code>
+    </Element>
+
+    <Element type="InlineTable" class="Relation">
+        <Attribute name="alias">
+            <Doc>
+                Alias to be used with this table when it is used to
+                form queries. If not specified, defaults to the table
+                name, but in any case, must be unique within the
+                schema. (You can use the same table in different
+                hierarchies, but it must have different aliases.)
+            </Doc>
+        </Attribute>
+        <Object name="columnDefs" type="ColumnDefs" required="true"/>
+        <Object name="rows" type="Rows" required="true"/>
+        <Code><![CDATA[
+            public String getAlias() {
+                return alias;
+            }
+            public String toString() {
+                return "<inline data>";
+            }
+            public Relation find(String seekAlias) {
+                return seekAlias.equals(this) ? this : null;
+            }
+            public boolean equals(Object o) {
+                if (o instanceof InlineTable) {
+                    InlineTable that = (InlineTable) o;
+                    return this.alias.equals(that.alias);
+                } else {
+                    return false;
+                }
+            }
+            public int hashCode() {
+                return toString().hashCode();
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="ColumnDefs">
+        <Doc>Holder for an array of ColumnDef elements</Doc>
+        <Array name="array" type="ColumnDef"/>
+    </Element>
+
+    <Element type="ColumnDef">
+        <Doc>
+            Column definition for an inline table.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of the column.
+            </Doc>
+        </Attribute>
+        <Attribute name="type" required="true">
+            <Doc>
+                Type of the column (String or Numeric)
+            </Doc>
+        </Attribute>
+    </Element>
+
+    <Element type="Rows">
+        <Doc>Holder for an array of Row elements</Doc>
+        <Array name="array" type="Row"/>
+    </Element>
+
+    <Element type="Row">
+        <Doc>
+            Row definition for an inline table.
+            Must have one Column for each ColumnDef in the InlineTable.
+        </Doc>
+        <Array name="values" type="Value"/>
+    </Element>
+
+    <Element type="Value">
+        <Doc>
+            Column value for an inline table.
+            The CDATA holds the value of the column.
+        </Doc>
+        <Attribute name="column" required="true">
+            <Doc>
+                Name of the column.
+            </Doc>
+        </Attribute>
+        <CData/>
     </Element>
 
     <!-- AggTable ======================================================= -->
@@ -1324,7 +1403,7 @@ Revision is $Id$
             </Doc>
         </Attribute>
         <Code><![CDATA[
-            /** Convenience contructor. **/
+            /** Convenience constructor. */
             public Column(String table, String name) {
                 this();
                 Util.assertTrue(name != null);

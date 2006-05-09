@@ -920,6 +920,153 @@ public class SqlQuery
             return generic;
         }
 
+        /**
+         * Generates a SQL statement to represent an inline dataset.
+         *
+         * <p>For example, for Oracle, generates
+         *
+         * <pre>
+         * SELECT 1 AS FOO, 'a' AS BAR FROM dual
+         * UNION ALL
+         * SELECT 2 AS FOO, 'b' AS BAR FROM dual
+         * </pre>
+         *
+         * <p>For ANSI SQL, generates:
+         *
+         * <pre>
+         * VALUES (1, 'a'), (2, 'b')
+         * </pre>
+         *
+         * @param columnNames List of column names
+         * @param columnTypes List of column types ("String" or "Numeric")
+         * @param valueList List of rows values
+         * @return SQL string
+         */
+        public String generateInline(
+                List/*<String>*/ columnNames,
+                List/*<String>*/ columnTypes,
+                List/*<String[]>*/ valueList) {
+            if (isOracle()) {
+                return generateInlineForOracle(
+                        columnNames, columnTypes, valueList);
+            } else if (isAccess()) {
+                return generateInlineUsingDays(
+                        columnNames, columnTypes, valueList);
+            } else {
+                return generateInlineForAnsi(valueList, columnTypes);
+            }
+        }
+
+        /**
+         * Fallback algorithm for generating inline datasets, assumes there
+         * is a table called 'days' (which is only reasonable in the FoodMart
+         * schema).
+         */ 
+        private String generateInlineUsingDays(
+                List columnNames,
+                List columnTypes,
+                List valueList) {
+            final StringBuffer buf = new StringBuffer();
+            for (int i = 0; i < valueList.size(); i++) {
+                if (i > 0) {
+                    buf.append(" union all ");
+                }
+                String[] values = (String[])  valueList.get(i);
+                buf.append("select ");
+                for (int j = 0; j < values.length; j++) {
+                    String value = values[j];
+                    if (j > 0) {
+                        buf.append(", ");
+                    }
+                    String columnType = (String) columnTypes.get(j);
+                    final String columnName = (String) columnNames.get(j);
+                    if (value == null) {
+                        buf.append("null");
+                    } else if (columnType.equals("String")) {
+                        buf.append(quoteString(value));
+                    } else {
+                        buf.append(value);
+                    }
+                    if (allowsAs()) {
+                        buf.append(" as ");
+                    } else {
+                        buf.append(' ');
+                    }
+                    quoteIdentifier(columnName, buf);
+                }
+                buf.append(" from ");
+                quoteIdentifier("days", buf);
+                buf.append(" where ");
+                quoteIdentifier("day", buf);
+                buf.append(" = 1");
+            }
+            return buf.toString();
+        }
+
+        private String generateInlineForOracle(
+                List columnNames,
+                List columnTypes,
+                List valueList) {
+            final StringBuffer buf = new StringBuffer();
+            for (int i = 0; i < valueList.size(); i++) {
+                if (i > 0) {
+                    buf.append(" union all ");
+                }
+                String[] values = (String[])  valueList.get(i);
+                buf.append("select ");
+                for (int j = 0; j < values.length; j++) {
+                    String value = values[j];
+                    if (j > 0) {
+                        buf.append(", ");
+                    }
+                    String columnType = (String) columnTypes.get(j);
+                    final String columnName = (String) columnNames.get(i);
+                    if (value == null) {
+                        buf.append("null");
+                    } else if (columnType.equals("String")) {
+                        buf.append(quoteString(value));
+                    } else {
+                        buf.append(value);
+                    }
+                    if (allowsAs()) {
+                        buf.append(" as ");
+                    } else {
+                        buf.append(' ');
+                    }
+                    quoteIdentifier(columnName, buf);
+                    buf.append(" from dual");
+                }
+            }
+            return buf.toString();
+        }
+
+        private String generateInlineForAnsi(List valueList, List columnTypes) {
+            final StringBuffer buf = new StringBuffer();
+            buf.append("VALUES");
+            for (int i = 0; i < valueList.size(); i++) {
+                if (i > 0) {
+                    buf.append(", ");
+                }
+                String[] values = (String[])  valueList.get(i);
+                buf.append("(");
+                for (int j = 0; j < values.length; j++) {
+                    String value = values[j];
+                    if (j > 0) {
+                        buf.append(", ");
+                    }
+                    String columnType = (String) columnTypes.get(j);
+                    if (value == null) {
+                        buf.append("NULL");
+                    } else if (columnType.equals("String")) {
+                        buf.append(quoteString(value));
+                    } else {
+                        buf.append(value);
+                    }
+                }
+                buf.append(")");
+            }
+            return buf.toString();
+        }
     }
 
     /**

@@ -21,7 +21,7 @@
 </head>
 <body>
 <h1>How to Design a Mondrian Schema</h1>
-<p>By Julian Hyde and others; last updated February, 2006.</p>
+<p>By Julian Hyde and others; last updated May, 2006.</p>
 <hr color="#000000" noshade="noshade" size="1">
 <h2>Contents</h2>
 <ol>
@@ -44,6 +44,7 @@ Levels</a><br>
         </li>
         <li><a href="#Multiple_hierarchies">Multiple hierarchies</a></li>
         <li><a href="#Degenerate_dimensions">Degenerate dimensions</a></li>
+        <li><a href="#Inline_tables">Inline tables</a></li>
         <li><a href="#Member_properties_and_formatters">Member properties and
         formatters</a><br>
         </li>
@@ -57,35 +58,32 @@ Levels</a><br>
     </ol>
   </li>
   <li><a href="#Advanced_logical_constructs">Advanced logical constructs</a>
-    <ol>
-      <li><a href="#Virtual_cubes">Virtual cubes</a></li>
-      <li><a href="#Shared_dimensions">Shared dimensions</a></li>
-      <li><a href="#Parent_child_hierarchies">Parent-child hierarchies</a></li>
-      <li><a href="#Member_properties">Member properties</a></li>
-      <li><a href="#Calculated_members">Calculated members</a></li>
-      <li><a href="#Named_sets">Named sets</a></li>
-    </ol>
-  </li>
+  <ol>
+    <li><a href="#Virtual_cubes">Virtual cubes</a></li>
+    <li><a href="#Shared_dimensions">Shared dimensions</a></li>
+    <li><a href="#Parent_child_hierarchies">Parent-child hierarchies</a></li>
+    <li><a href="#Member_properties">Member properties</a></li>
+    <li><a href="#Calculated_members">Calculated members</a></li>
+    <li><a href="#Named_sets">Named sets</a></li>
+  </ol></li>
   <li><a href="#Plugins">Plugins</a>
-    <ol>
-      <li><a href="#User-defined_function">User-defined function</a></li>
-      <li><a href="#Member_reader">Member reader</a></li>
-      <li><a href="#Cell_reader">Cell reader</a></li>
-      <li><a href="#Cell_formatter">Cell formatter</a></li>
-      <li><a href="#Member_formatter">Member formatter</a></li>
-      <li><a href="#Property_formatter">Property formatter</a></li>
-      <li><a href="#Schema_processor">Schema processor</a></li>
-    </ol>
-  </li>
+  <ol>
+    <li><a href="#User-defined_function">User-defined function</a></li>
+    <li><a href="#Member_reader">Member reader</a></li>
+    <li><a href="#Cell_reader">Cell reader</a></li>
+    <li><a href="#Cell_formatter">Cell formatter</a></li>
+    <li><a href="#Member_formatter">Member formatter</a></li>
+    <li><a href="#Property_formatter">Property formatter</a></li>
+    <li><a href="#Schema_processor">Schema processor</a></li>
+  </ol></li>
   <li><a href="#I18n">Internationalization</a></li>
   <li><a href="#Aggregate_tables">Aggregate tables</a> </li>
   <li><a href="#Access_control">Access-control</a>
-    <ol>
-      <li><a href="#Defining_roles">Defining a role</a></li>
-      <li><a href="#Setting_a_connections_role">Setting a connection's
+  <ol>
+    <li><a href="#Defining_roles">Defining a role</a></li>
+    <li><a href="#Setting_a_connections_role">Setting a connection's
 role</a></li>
-    </ol>
-  </li>
+  </ol></li>
   <li><a href="#Appendix_A_XML_elements">Appendix A: XML elements</a></li>
 </ol>
 <h2><a name="What_is_a_schema">What is a schema?</a></h2>
@@ -320,7 +318,7 @@ dimension, called 'Measures'.</p>
   <pre>&lt;<a href="#XML_Dimension">Dimension</a> name="Gender" foreignKey="customer_id"&gt;<br>  &lt;<a
  href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="customer_id"&gt;<br>    &lt;<a
  href="#XML_Table">Table</a> name="customer"/&gt;<br>    &lt;<a
- href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"/&gt;<br>  &lt;/<a
+ href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"/&gt;<br>  &lt;/
  href="#XML_Hierarchy">Hierarchy</a>&gt;<br>&lt;/<a
  href="#XML_Dimension">Dimension</a>&gt;</pre>
 </blockquote>
@@ -340,8 +338,9 @@ customer who
 made that purchase. This is expressed by joining from the fact table
 "sales_fact_1997.customer_id" to the dimension table
 "customer.customer_id".</p>
-<h4><a name="Mapping_Hierarchies"></a>Mapping dimensions and
-hierarchies onto tables</h4>
+
+<h4><a name="Mapping_Hierarchies">Mapping dimensions and hierarchies onto tables</a></h4>
+
 <p>A dimension is joined to a cube by means of a pair of columns, one
 in the fact table, the other in the dimension table. The <code>&lt;Dimension&gt;</code>
 element has a
@@ -357,18 +356,18 @@ the
  href="#XML_Table">Table</a> name="sales_fact_1997"/&gt;<br>  ...<br>  &lt;<a
  href="#XML_Dimension">Dimension</a> name="Payment method"&gt;<br>    &lt;<a
  href="#XML_Hierarchy">Hierarchy</a> hasAll="true"&gt;<br>      &lt;<a
- href="#XML_Level">Level</a> name="Payment method" column="payment_method" uniqueMembers="true"/&gt;<br>    &lt;/<a
- href="#XML_Hierarchy">Hierarchy</a>&gt;<br>  &lt;/<a
+ href="#XML_Level">Level</a> name="Payment method" column="payment_method" uniqueMembers="true"/&gt;<br>    &lt;/ href="#XML_Hierarchy">Hierarchy</a>&gt;<br>  &lt;/<a
  href="#XML_Dimension">Dimension</a>&gt;<br>&lt;/<a href="#XML_Cube">Cube</a>&gt;</pre>
 </blockquote>
 <p>You would do this if the dimension has a very simple structure
 (usually just one level) and all of the necessary columns are in the
 fact table. The level columns (such as <code>payment_method</code>
 here) implicitly come from the current row in the fact table. </p>
+
 <p>Note that the hierarchy has no <code>&lt;Table&gt;</code> child
 element, and that there are no <code>primaryKey</code> or <code>foreignKey</code>
-attributes.<br>
-</p>
+attributes.</p>
+
 <p>The uniqueMembers attribute is used to optimize SQL generation. If
 you know that the values of a given level column in the dimension table
 are unique across all the other values in that column across the parent
@@ -380,7 +379,9 @@ Class].[Product Name] hierarchy, and you were sure that [Product Name]
 was unique, then you can set uniqueMembers="true". If you are not sure,
 then always set uniqueMembers="false". At the top level, this will
 always be uniqueMembers="true", as there is no parent level.</p>
+
 <h4><a name="The_all_member">The 'all' member</a></h4>
+
 <p>By default, every hierarchy contains a top level called '<code>(All)</code>',
 which contains a single member called '<code>(All {<i>hierarchyName</i>})</code>'.
 This member is parent of all other members of the hierarchy, and thus
@@ -532,7 +533,7 @@ language enforces common sense, and does not allow you to use them both
 in the
 same query.</p>
 
-<h3><a name="Degenerate_dimensions">Degenerate dimensions</a></h3>
+<h4><a name="Degenerate_dimensions">Degenerate dimensions</a></h4>
 
 <p>A <dfn><font face="Verdana">degenerate dimension</font></dfn> is a dimension
 which is so simple that it isn't worth creating its own dimension table. For
@@ -637,6 +638,89 @@ will assume that the columns come from the fact table. </p>
 <p>Note that because there is no join, the <code>foreignKey</code> attribute of
 <code>Dimension</code>, and the <code>primaryKey</code> attribute of <code>
 Hierarchy</code> are not necessary.</p>
+
+<h4><a name="Inline_tables">Inline tables</a></h4>
+
+<p>The <code>&lt;<a href="#XML_InlineTable">InlineTable</a>&gt;</code> construct allows you to define a dataset in the schema 
+file. You must declare the names of the columns, the column types (&quot;String&quot; or 
+&quot;Numeric&quot;), and a set of rows. As for <code>&lt;<a href="#XML_Table">Table</a>&gt;</code> 
+and <code>&lt;<a href="#XML_View">View</a>&gt;</code>, you must provide a unique alias with 
+which to refer to the dataset.</p>
+
+<p>Here is an example:</p>
+
+<blockquote>
+
+  <p><code>&lt;<a href="#XML_Dimension">Dimension</a> name="Severity"&gt;<br>
+&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true"
+primaryKey="severity_id"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_InlineTable">InlineTable</a> alias="severity"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_ColumnDefs">ColumnDefs</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_ColumnDef">ColumnDef</a> name=&quot;id&quot; type=&quot;Numeric&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_ColumnDef">ColumnDef</a> name=&quot;desc&quot; 
+  type=&quot;String&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_ColumnDefs">ColumnDefs</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Rows">Rows</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Row">Row</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Value">Value</a> 
+  column=&quot;id&quot;&gt;1&lt;/<a href="#XML_Value">Value</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Value">Value</a> column=&quot;desc&quot;&gt;High&lt;/<a href="#XML_Value">Value</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Row">Row</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Row">Row</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Value">Value</a> 
+  column=&quot;id&quot;&gt;2&lt;/<a href="#XML_Value">Value</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Value">Value</a> column=&quot;desc&quot;&gt;Medium&lt;/<a href="#XML_Value">Value</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Row">Row</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Row">Row</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Value">Value</a> 
+  column=&quot;id&quot;&gt;3&lt;/<a href="#XML_Value">Value</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Value">Value</a> column=&quot;desc&quot;&gt;Low&lt;/<a href="#XML_Value">Value</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Row">Row</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Rows">Rows</a>&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_InlineTable">InlineTable</a>&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Severity"
+column="id" nameColumn=&quot;desc&quot; uniqueMembers="true"/&gt;<br>
+&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
+&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code></p>
+</blockquote>
+
+<p>This has the same effect as if you had a table called 'severity' in your database:</p>
+
+<blockquote>
+  <table style="border-collapse: collapse;" border="2"
+ bordercolor="#111111" cellpadding="2" cellspacing="0" id="table7">
+    <tr>
+      <th>id</th>
+      <th>desc</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>High</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Medium</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Low</td>
+    </tr>
+  </table>
+</blockquote>
+
+<p>and the declaration</p>
+
+<blockquote>
+
+  <p><code>&lt;<a href="#XML_Dimension">Dimension</a> name="Severity"&gt;<br>
+&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true"
+primaryKey="severity_id"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_InlineTable">Table</a> name=&quot;severity&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Severity"
+column="id" nameColumn=&quot;desc&quot; uniqueMembers="true"/&gt;<br>
+&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
+&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code></p>
+</blockquote>
 
 <h4><a name="Member_properties_and_formatters">Member properties and formatters</a></h4>
 <p>As we shall see later, a level definition can also define
@@ -762,6 +846,7 @@ Mondrian only joins them once. For example, <code>[Gender]</code> and <code>[Age
 might both be columns in the <code>customers</code> table, joined via <code>
 sales_1997.cust_id = customers.cust_id</code>.</li>
 </ul>
+
 <h2><a name="Advanced_logical_constructs">Advanced logical constructs</a></h2>
 <h3><a name="Virtual_cubes">Virtual cubes</a></h3>
 <p>Defined by the <code><a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a></code>
@@ -2074,6 +2159,10 @@ variants for different underlying databases.</td>
       <td>Defines a 'table' by joining a set of queries.</td>
     </tr>
     <tr>
+      <td><code>&lt;<a name="XML_InlineTable" href="xml_schema.html#InlineTable">InlineTable</a>&gt;</code></td>
+      <td>Defines a table using an inline dataset.</td>
+    </tr>
+    <tr>
       <td><code>&lt;<a name="XML_Closure" href="xml_schema.html#Closure">Closure</a>&gt;</code></td>
       <td>Maps a parent-child hierarchy onto a closure table.</td>
     </tr>
@@ -2180,6 +2269,26 @@ MemberReader, if present.</td>
     <tr>
       <td><code>&lt;<a name="XML_Formula" href="xml_schema.html#Formula">Formula</a>&gt;</code></td>
       <td>Holds the formula text within a NamedSet or CalculatedMember.</td>
+    </tr>
+    <tr>
+      <td><code>&lt;<a name="XML_ColumnDefs">ColumnDefs</a>&gt;</code></td>
+      <td>Holder for &lt;ColumnDef&gt; elements.</td>
+    </tr>
+    <tr>
+      <td><code>&lt;<a name="XML_ColumnDef">ColumnDef</a>&gt;</code></td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><code>&lt;<a name="XML_Rows">Rows</a>&gt;</code></td>
+      <td>Holder for &lt;Row&gt; elements.</td>
+    </tr>
+    <tr>
+      <td><code>&lt;<a name="XML_Row">Row</a>&gt;</code></td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><code>&lt;<a name="XML_Value">Value</a>&gt;</code></td>
+      <td>&nbsp;</td>
     </tr>
   </tbody>
 </table>

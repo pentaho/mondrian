@@ -122,7 +122,7 @@ public class RolapStar {
 
         clearAggStarList();
 
-        sqlQueryDialect = makeSqlQueryDialect();
+        sqlQueryDialect = schema.getDialect();
     }
 
     /**
@@ -226,29 +226,10 @@ public class RolapStar {
     }
 
     /**
-     * Get this RolapStar's RolapSchema's Sql Dialect.
+     * Get this RolapStar's SQL dialect.
      */
     public SqlQuery.Dialect getSqlQueryDialect() {
         return sqlQueryDialect;
-    }
-
-    /**
-     * Make an SqlQuery from a jdbc connection.
-     */
-    private SqlQuery.Dialect makeSqlQueryDialect() {
-        Connection conn = getJdbcConnection();
-        try {
-            return SqlQuery.Dialect.create(conn.getMetaData());
-        } catch (SQLException e) {
-            throw Util.newInternal(
-                e, "Error while creating SqlQuery from connection");
-        } finally {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                //ignore
-            }
-        }
     }
 
     /**
@@ -292,7 +273,7 @@ public class RolapStar {
     /**
      * Clear the aggregate cache. This only does something if this star has
      * caching set to off.
-     * 
+     *
      * @param forced if true, then the cached aggregations are cleared
      * regardless of any other settings.
      */
