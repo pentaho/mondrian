@@ -146,6 +146,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(RolapConnectionTest.class);
             suite.addTest(ResultComparatorTest.suite());
             suite.addTestSuite(BasicQueryTest.class);
+            suite.addTestSuite(DrillThroughTest.class);
             suite.addTestSuite(FunctionTest.class);
             suite.addTestSuite(HierarchyBugTest.class);
             suite.addTestSuite(ScheduleTest.class);

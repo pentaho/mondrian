@@ -483,15 +483,26 @@ public class RolapLevel extends LevelBase {
                 // a value for the 'all' member of the hierarchy.
                 return true;
             }
+
+            final MemberColumnConstraint constraint;
+            if (member.isCalculated()) {
+                constraint = null;
+            } else {
+                constraint = new MemberColumnConstraint(member);
+            }
+
             // use the member as constraint, this will give us some
             //  optimization potential
-            request.addConstrainedColumn(
-                    column, new MemberColumnConstraint(member));
+            request.addConstrainedColumn(column, constraint);
             if (request.extendedContext && getNameExp() != null) {
                 RolapStar.Column nameColumn = column.getNameColumn();
 
                 Util.assertTrue(nameColumn != null);
                 request.addConstrainedColumn(nameColumn, null);
+            }
+
+            if (member.isCalculated()) {
+                return false;
             }
 
             // If member is unique without reference to its parent,
