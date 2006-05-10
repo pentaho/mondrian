@@ -28,10 +28,7 @@ import mondrian.olap.Util;
 import mondrian.olap.UtilTestCase;
 import mondrian.olap.fun.FunctionTest;
 import mondrian.olap.HierarchyBugTest;
-import mondrian.rolap.NonEmptyTest;
-import mondrian.rolap.RolapUtil;
-import mondrian.rolap.TestAggregationManager;
-import mondrian.rolap.VirtualCubeTest;
+import mondrian.rolap.*;
 import mondrian.test.comp.ResultComparatorTest;
 import mondrian.util.ScheduleTest;
 import mondrian.xmla.XmlaBasicTest;
@@ -42,7 +39,13 @@ import mondrian.xmla.test.XmlaTest;
 import org.apache.log4j.Logger;
 
 /**
- * <code>Main</code> is the main test suite for Mondrian.
+ * Main test suite for Mondrian.
+ *
+ * <p>The {@link #suite()} method returns a suite which contains all other
+ * Mondrian tests.
+ *
+ * @author jhyde
+ * @version $Id$
  */
 public class Main extends TestSuite {
     private static final Logger logger = Logger.getLogger(Main.class);
@@ -140,7 +143,7 @@ public class Main extends TestSuite {
                 suite.addTest((Test) o);
             }
         } else {
-            // suite.addTestSuite(RolapConnectionTest.class);
+            suite.addTestSuite(RolapConnectionTest.class);
             suite.addTest(ResultComparatorTest.suite());
             suite.addTestSuite(BasicQueryTest.class);
             suite.addTestSuite(FunctionTest.class);

@@ -35,12 +35,19 @@ public class RolapConnectionTest extends TestCase {
     public void testPooledConnectionWithProperties() throws SQLException {
         final String connectString =
                 MondrianProperties.instance().TestConnectString.get();
-        System.out.println(connectString);
         Util.PropertyList properties = Util.parseConnectString(connectString);
-        //
+
+        // Only the JDBC-ODBC bridge gives the error necessary for this
+        // test to succeed. So trivially succeed for all other JDBC
+        // drivers.
+        final String jdbc = properties.get("Jdbc");
+        if (jdbc != null &&
+                !jdbc.startsWith("jdbc:odbc:")) {
+            return;
+        }
+
         // JDBC-ODBC driver does not support UTF-16, so this test succeeds
         // because creating the connection from the DataSource will fail.
-        //
         properties.put("jdbc.charSet", "UTF-16");
         DataSource dataSource = RolapConnection.createDataSource(properties);
         Connection connection = null;
@@ -70,10 +77,18 @@ public class RolapConnectionTest extends TestCase {
         final String connectString =
                 MondrianProperties.instance().TestConnectString.get();
         Util.PropertyList properties = Util.parseConnectString(connectString);
-        //
+
+        // Only the JDBC-ODBC bridge gives the error necessary for this
+        // test to succeed. So trivially succeed for all other JDBC
+        // drivers.
+        final String jdbc = properties.get("Jdbc");
+        if (jdbc != null &&
+                !jdbc.startsWith("jdbc:odbc:")) {
+            return;
+        }
+
         // This test is just like the test testPooledConnectionWithProperties
         // except with non-pooled connections.
-        //
         properties.put("jdbc.charSet", "UTF-16");
         properties.put(RolapConnectionProperties.PoolNeeded, "false");
         DataSource dataSource = RolapConnection.createDataSource(properties);
@@ -83,7 +98,9 @@ public class RolapConnectionTest extends TestCase {
             connection.close();
             fail("Expected exception");
         } catch (SQLException se) {
-            //this is expected
+            // this is expected
         }
     }
 }
+
+// End RolapConnectionTest.java
