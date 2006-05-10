@@ -494,7 +494,8 @@ public class RolapLevel extends LevelBase {
             // use the member as constraint, this will give us some
             //  optimization potential
             request.addConstrainedColumn(column, constraint);
-            if (request.extendedContext && getNameExp() != null) {
+            if (request.extendedContext &&
+                    getNameExp() != null) {
                 RolapStar.Column nameColumn = column.getNameColumn();
 
                 Util.assertTrue(nameColumn != null);

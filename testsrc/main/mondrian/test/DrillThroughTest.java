@@ -68,7 +68,9 @@ public class DrillThroughTest extends FoodMartTestCase {
 
         if (jdbcUrl.toLowerCase().indexOf("oracle") >= 0) {
             // " + tableQualifier + "
-            expectedSql = expectedSql.replaceAll(" as ", " ");
+            expectedSql = expectedSql.replaceAll(" =as= ", " ");
+        } else {
+            expectedSql = expectedSql.replaceAll(" =as= ", " as ");
         }
 
         assertEquals(expectedSql, actualSql);
@@ -88,10 +90,10 @@ public class DrillThroughTest extends FoodMartTestCase {
                 "select `time_by_day`.`the_year` as `Year`," +
                 " `product_class`.`product_family` as `Product Family`," +
                 " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
-                "from `time_by_day` as `time_by_day`," +
-                " `sales_fact_1997` as `sales_fact_1997`," +
-                " `product_class` as `product_class`," +
-                " `product` as `product` " +
+                "from `time_by_day` =as= `time_by_day`," +
+                " `sales_fact_1997` =as= `sales_fact_1997`," +
+                " `product_class` =as= `product_class`," +
+                " `product` =as= `product` " +
                 "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
                 " and `time_by_day`.`the_year` = 1997" +
                 " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
@@ -140,13 +142,13 @@ public class DrillThroughTest extends FoodMartTestCase {
                 " `customer`.`marital_status` as `Marital Status`," +
                 " `customer`.`yearly_income` as `Yearly Income`," +
                 " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
-                "from `store` as `store`," +
-                " `sales_fact_1997` as `sales_fact_1997`," +
-                " `time_by_day` as `time_by_day`," +
-                " `product` as `product`," +
-                " `product_class` as `product_class`," +
-                " `promotion` as `promotion`," +
-                " `customer` as `customer` " +
+                "from `store` =as= `store`," +
+                " `sales_fact_1997` =as= `sales_fact_1997`," +
+                " `time_by_day` =as= `time_by_day`," +
+                " `product` =as= `product`," +
+                " `product_class` =as= `product_class`," +
+                " `promotion` =as= `promotion`," +
+                " `customer` =as= `customer` " +
                 "where `sales_fact_1997`.`store_id` = `store`.`store_id`" +
                 " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
                 " and `time_by_day`.`the_year` = 1997" +
@@ -173,7 +175,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         Result result = executeQuery(
                 "with set [Date Range] as" + nl +
                 "'{[Time].[1997].[Q1],[Time].[1997].[Q2]}'" + nl +
-                "member [Time].[Date Range] as 'Aggregate([Date Range])'\n" +
+                "member [Time].[Date Range] as 'Aggregate([Date Range])'" + nl +
                 "select {[Store]} on rows," + nl +
                 "{[Measures].[Unit Sales]} on columns" + nl +
                 "from [Sales]" + nl +
@@ -207,13 +209,13 @@ public class DrillThroughTest extends FoodMartTestCase {
                 " `customer`.`marital_status` as `Marital Status`," +
                 " `customer`.`yearly_income` as `Yearly Income`," +
                 " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
-                "from `store` as `store`," +
-                " `sales_fact_1997` as `sales_fact_1997`," +
-                " `time_by_day` as `time_by_day`," +
-                " `product` as `product`," +
-                " `product_class` as `product_class`," +
-                " `promotion` as `promotion`," +
-                " `customer` as `customer` " +
+                "from `store` =as= `store`," +
+                " `sales_fact_1997` =as= `sales_fact_1997`," +
+                " `time_by_day` =as= `time_by_day`," +
+                " `product` =as= `product`," +
+                " `product_class` =as= `product_class`," +
+                " `promotion` =as= `promotion`," +
+                " `customer` =as= `customer` " +
                 "where `sales_fact_1997`.`store_id` = `store`.`store_id` " +
                 "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` " +
                 "and `sales_fact_1997`.`product_id` = `product`.`product_id` " +
