@@ -66,20 +66,14 @@ public class InlineTableTest extends FoodMartTestCase {
                         "from [" + cubeName + "] "}),
                     fold(new String[] {
                         "Axis #0:",
-                        "{[Cities].[All Cities].[Burbank], [Measures].[Store Sales]}",
+                        "{}",
                         "Axis #1:",
-                        "{[Customers].[All Customers].[USA]}",
-                        "{[Customers].[All Customers].[USA].[OR]}",
-                        "{[Customers].[All Customers].[USA].[CA]}",
-                        "{[Customers].[All Customers].[USA].[CA].[Altadena]}",
-                        "{[Customers].[All Customers].[USA].[CA].[Burbank]}",
-                        "{[Customers].[All Customers].[USA].[CA].[Burbank].[Alma Son]}",
-                        "Row #0: 6,577.33",
+                        "{[Alternative Promotion].[All Alternative Promotions]}",
+                        "{[Alternative Promotion].[All Alternative Promotions].[Promo0]}",
+                        "{[Alternative Promotion].[All Alternative Promotions].[Promo1]}",
+                        "Row #0: 266,773",
+                        "Row #0: 195,448",
                         "Row #0: (null)",
-                        "Row #0: 6,577.33",
-                        "Row #0: (null)",
-                        "Row #0: 6,577.33",
-                        "Row #0: 36.50",
                         ""}));
         } finally {
             schema.removeCube(cubeName);

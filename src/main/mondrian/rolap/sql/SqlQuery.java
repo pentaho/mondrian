@@ -343,7 +343,7 @@ public class SqlQuery
     public void addSelect(final String expression) {
         // Some DB2 versions (AS/400) throw an error if a column alias is
         //  *not* used in a subsequent order by (Group by).
-    	// Derby fails on 'SELECT... HAVING' if column has alias.
+        // Derby fails on 'SELECT... HAVING' if column has alias.
         if (dialect.isAS400() || dialect.isDerby()) {
             addSelect(expression, null);
         } else {
@@ -369,9 +369,10 @@ public class SqlQuery
         select.add(buf.toString());
     }
 
-    public void addWhere(final String exprLeft,
-                         final String exprMid,
-                         final String exprRight)
+    public void addWhere(
+            final String exprLeft,
+            final String exprMid,
+            final String exprRight)
     {
         int len = exprLeft.length() + exprMid.length() + exprRight.length();
         StringBuffer buf = new StringBuffer(len);
@@ -382,6 +383,7 @@ public class SqlQuery
 
         addWhere(buf.toString());
     }
+
     public void addWhere(final String expression)
     {
         where.add(expression);
@@ -947,25 +949,31 @@ public class SqlQuery
                 List/*<String>*/ columnTypes,
                 List/*<String[]>*/ valueList) {
             if (isOracle()) {
-                return generateInlineForOracle(
-                        columnNames, columnTypes, valueList);
+                return generateInlineGeneric(
+                        columnNames, columnTypes, valueList, "from dual");
             } else if (isAccess()) {
-                return generateInlineUsingDays(
-                        columnNames, columnTypes, valueList);
+                // Fall back to using the FoodMart 'days' table, because 
+                // Access SQL has no way to generate values not from a table.
+                return generateInlineGeneric(
+                        columnNames, columnTypes, valueList, "from [days] where [day] = 1");
+            } else if (isMySQL()) {
+                return generateInlineGeneric(
+                        columnNames, columnTypes, valueList, null);
             } else {
-                return generateInlineForAnsi(valueList, columnTypes);
+                return generateInlineForAnsi("t", columnNames, columnTypes, valueList);
             }
         }
 
         /**
-         * Fallback algorithm for generating inline datasets, assumes there
-         * is a table called 'days' (which is only reasonable in the FoodMart
-         * schema).
-         */ 
-        private String generateInlineUsingDays(
+          * Generic algorithm to generate inline values list,
+          * using an optional FROM clause, specified by the caller of this
+          * method, appropriate to the dialect of SQL.
+          */
+        private String generateInlineGeneric(
                 List columnNames,
                 List columnTypes,
-                List valueList) {
+                List valueList,
+                String fromClause) {
             final StringBuffer buf = new StringBuffer();
             for (int i = 0; i < valueList.size(); i++) {
                 if (i > 0) {
@@ -978,7 +986,7 @@ public class SqlQuery
                     if (j > 0) {
                         buf.append(", ");
                     }
-                    String columnType = (String) columnTypes.get(j);
+                    final String columnType = (String) columnTypes.get(j);
                     final String columnName = (String) columnNames.get(j);
                     if (value == null) {
                         buf.append("null");
@@ -994,55 +1002,27 @@ public class SqlQuery
                     }
                     quoteIdentifier(columnName, buf);
                 }
-                buf.append(" from ");
-                quoteIdentifier("days", buf);
-                buf.append(" where ");
-                quoteIdentifier("day", buf);
-                buf.append(" = 1");
-            }
-            return buf.toString();
-        }
-
-        private String generateInlineForOracle(
-                List columnNames,
-                List columnTypes,
-                List valueList) {
-            final StringBuffer buf = new StringBuffer();
-            for (int i = 0; i < valueList.size(); i++) {
-                if (i > 0) {
-                    buf.append(" union all ");
-                }
-                String[] values = (String[])  valueList.get(i);
-                buf.append("select ");
-                for (int j = 0; j < values.length; j++) {
-                    String value = values[j];
-                    if (j > 0) {
-                        buf.append(", ");
-                    }
-                    String columnType = (String) columnTypes.get(j);
-                    final String columnName = (String) columnNames.get(i);
-                    if (value == null) {
-                        buf.append("null");
-                    } else if (columnType.equals("String")) {
-                        buf.append(quoteString(value));
-                    } else {
-                        buf.append(value);
-                    }
-                    if (allowsAs()) {
-                        buf.append(" as ");
-                    } else {
-                        buf.append(' ');
-                    }
-                    quoteIdentifier(columnName, buf);
-                    buf.append(" from dual");
+                if (fromClause != null) {
+                    buf.append(fromClause);
                 }
             }
             return buf.toString();
         }
 
-        private String generateInlineForAnsi(List valueList, List columnTypes) {
+        /**
+          * Generates inline values list using ANSI 'VALUES' syntax.
+          * For example,
+          *
+          * <pre>SELECT * FROM (VALUES (1, 'a'), (2, 'b')) AS t(x, y)</pre>
+          *
+          * <p>This syntax is known to work on Derby, but not Oracle 10 or
+          * Access.
+          */
+        private String generateInlineForAnsi(
+                String alias, List columnNames,
+                List columnTypes, List valueList) {
             final StringBuffer buf = new StringBuffer();
-            buf.append("VALUES");
+            buf.append("SELECT * FROM (VALUES");
             for (int i = 0; i < valueList.size(); i++) {
                 if (i > 0) {
                     buf.append(", ");
@@ -1054,7 +1034,7 @@ public class SqlQuery
                     if (j > 0) {
                         buf.append(", ");
                     }
-                    String columnType = (String) columnTypes.get(j);
+                    final String columnType = (String) columnTypes.get(j);
                     if (value == null) {
                         buf.append("NULL");
                     } else if (columnType.equals("String")) {
@@ -1065,6 +1045,17 @@ public class SqlQuery
                 }
                 buf.append(")");
             }
+            buf.append(") AS ");
+            quoteIdentifier(alias, buf);
+            buf.append(" (");
+            for (int j = 0; j < columnNames.size(); j++) {
+                final String columnName = (String) columnNames.get(j);
+                if (j > 0) {
+                    buf.append(", ");
+                }
+                quoteIdentifier(columnName, buf);
+            }
+            buf.append(")");
             return buf.toString();
         }
     }
