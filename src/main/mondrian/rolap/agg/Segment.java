@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -285,6 +285,15 @@ class Segment {
                     Object o = resultSet.getObject(k++);
                     if (o == null) {
                         o = Util.nullValue; // convert to placeholder
+                    } else if (segments[i].measure.isNumeric()) {
+                        if (o instanceof Double) {
+                            // nothing to do
+                        } else if (o instanceof Number) {
+                            o = new Double(((Number) o).doubleValue());
+                        } else {
+                            double d = Double.parseDouble(o.toString());
+                            o = new Double(d);
+                        }
                     }
                     row[arity + i] = o;
                 }
