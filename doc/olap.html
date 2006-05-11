@@ -11,7 +11,7 @@
 
 <head>
 <meta http-equiv="Content-Language" content="en-us">
-<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>Mondrian and OLAP</title>
@@ -25,8 +25,10 @@
 the MDX language, reading data from a relational database (RDBMS), and presents
 the results in a multidimensional format via a Java API. Let's go into what that
 means.</p>
+
 <h2>Online Analytical Processing</h2>
-<p><dfn><font face="Verdana">Online Analytical Processing (OLAP)</font></dfn>
+
+<p><dfn>Online Analytical Processing (OLAP)</dfn>
 means analysing large quantities of data in real-time. Unlike Online Transaction
 Processing (OLTP), where typical operations read and modify individual and small
 numbers of records, OLAP deals with data in bulk, and operations are generally
@@ -35,10 +37,11 @@ are involved — typically many millions of records, occupying several gigabytes
 — the system must respond to queries fast enough to allow an interactive
 exploration of the data. As we shall see, that presents considerable technical
 challenges.</p>
-<p>OLAP employs a technique called <dfn><font face="Verdana">Multidimensional Analysis</font></dfn>. Whereas a
+
+<p>OLAP employs a technique called <dfn>Multidimensional Analysis</dfn>. Whereas a
 relational database stores all data in the form of rows and columns, a
-multidimensional dataset consists of <dfn><font face="Verdana">axes</font></dfn> and
-<dfn><font face="Verdana">cells</font></dfn>. Consider the dataset</p>
+multidimensional dataset consists of <dfn>axes</dfn> and
+<dfn>cells</dfn>. Consider the dataset</p>
 <blockquote>
   <table border="2" style="clsStd; border-collapse:collapse" id="AutoNumber1" cellpadding="2" bordercolor="#111111" cellspacing="0">
     <tr>
@@ -58,20 +61,20 @@ multidimensional dataset consists of <dfn><font face="Verdana">axes</font></dfn>
     </tr>
     <tr>
       <th nowrap align="left">Total</th>
-      <td align="right">$17,165</td>
-      <td align="right">$2,825</td>
-      <td align="right">$18,867</td>
-      <td align="right">3,163</td>
-      <td align="right">10%</td>
+      <td align="right">$7,073</td>
+      <td align="right">2,693</td>
+      <td align="right">$7,636</td>
+      <td align="right">3,008</td>
+      <td align="right">8%</td>
       <td align="right">12%</td>
     </tr>
     <tr>
       <th nowrap align="left">— Books</th>
-      <td align="right">$12,845</td>
-      <td align="right">956</td>
-      <td align="right">$14,562</td>
-      <td align="right">1,121</td>
-      <td align="right">13%</td>
+      <td align="right">$2,753</td>
+      <td align="right">824</td>
+      <td align="right">$3,331</td>
+      <td align="right">966</td>
+      <td align="right">21%</td>
       <td align="right">17%</td>
     </tr>
     <tr>
@@ -80,17 +83,17 @@ multidimensional dataset consists of <dfn><font face="Verdana">axes</font></dfn>
       <td align="right">424</td>
       <td align="right">$1,202</td>
       <td align="right">380</td>
-      <td align="right">16%</td>
-      <td align="right">37%</td>
+      <td align="right">-10%</td>
+      <td align="right">-10%</td>
     </tr>
     <tr>
       <th nowrap align="left">—— Non-fiction</th>
       <td align="right">$1,412</td>
       <td align="right">400</td>
-      <td align="right">$1,224</td>
-      <td align="right">386</td>
-      <td align="right">11%</td>
-      <td align="right">2%</td>
+      <td align="right">$2,129</td>
+      <td align="right">586</td>
+      <td align="right">51%</td>
+      <td align="right">47%</td>
     </tr>
     <tr>
       <th nowrap align="left">— Magazines</th>
@@ -117,10 +120,11 @@ multidimensional dataset consists of <dfn><font face="Verdana">axes</font></dfn>
 <p>The rows axis consists of the members 'All products', 'Books', 'Fiction', and
 so forth,
 and the columns axis consists of the cartesian product of the years '2000' and
-'2001', and the <font face="Verdana">calculation</font> 'Growth', and the
+'2001', and the calculation 'Growth', and the
 <dfn>measures</dfn> 'Unit sales' and 'Dollar sales'. Each cell
 represents the sales of a product category in a particular year; for example,
-the dollar sales of Magazines in 2001 were $2426.</p>
+the dollar sales of Magazines in 2001 were $2,426.</p>
+
 <p>This is a richer view of the data than would be presented by a relational
 database. The members of a multidimensional dataset are not always values
 from a relational column. 'Total', 'Books' and 'Fiction' are members at
@@ -130,15 +134,20 @@ and '2001', 'Growth' is
 a <dfn>calculated member</dfn>, which introduces a
 formula for computing cells from other
 cells.</p>
+
 <p>The dimensions used here — products, time, and measures — are just three of
 many dimensions by which the dataset can be categorized and filtered. The
-collection of dimensions, hierarchies and measures is called a <dfn>
-<font face="Verdana">cube</font></dfn>.</p>
-<p>I hope I have demonstrated that multidimensional  is above all a way of <em>
-<font face="Verdana">presenting</font></em> data. Although some multidimensional
-databases <em><font face="Verdana">store</font></em> the data in multidimensional format,
-I shall argue that it is simpler to store the data in relational format. It's
-time to look at the architecture of an OLAP system.</p>
+collection of dimensions, hierarchies and measures is called a <dfn>cube</dfn>.</p>
+
+<h2>Conclusion</h2>
+
+<p>I hope I have demonstrated that multidimensional  is above all a way of <em>presenting</em> data. Although some multidimensional
+databases <em>store</em> the data in multidimensional format,
+I shall argue that it is simpler to store the data in relational format.</p>
+
+<p>Now it's
+time to look at the architecture of an OLAP system. See
+<a href="architecture.html">Mondrian architecture</a>.</p>
 
 <hr>
 

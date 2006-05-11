@@ -713,14 +713,16 @@ column="id" nameColumn=&quot;desc&quot; uniqueMembers="true"/&gt;<br>
 <blockquote>
 
   <p><code>&lt;<a href="#XML_Dimension">Dimension</a> name="Severity"&gt;<br>
-&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true"
-primaryKey="severity_id"&gt;<br>
+&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="severity_id"&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_InlineTable">Table</a> name=&quot;severity&quot;/&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Severity"
 column="id" nameColumn=&quot;desc&quot; uniqueMembers="true"/&gt;<br>
 &nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
 &lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code></p>
 </blockquote>
+
+<p>To specify a NULL value for a column, omit the <code>&lt;Value&gt;</code> for that 
+column, and the column's value will default to NULL.</p>
 
 <h4><a name="Member_properties_and_formatters">Member properties and formatters</a></h4>
 <p>As we shall see later, a level definition can also define
