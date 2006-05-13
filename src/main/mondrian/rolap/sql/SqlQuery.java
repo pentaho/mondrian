@@ -1068,7 +1068,7 @@ public class SqlQuery
      */
     public String quote(boolean numeric, Object value) throws NumberFormatException {
         String string = String.valueOf(value);
-        if (RolapUtil.mdxNullLiteral.equals(string)) { // for member key is RolapUtil.sqlNullValue
+        if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(string)) { // for member key is RolapUtil.sqlNullValue
             return RolapUtil.sqlNullLiteral;
         } else {
             if (numeric) {

@@ -95,7 +95,11 @@ public class RolapMember extends MemberBase {
      * like it to be "20319".
      */
     private static String keyToString(Object key) {
-        String name = key.toString();
+    	String name = null;
+    	if (key == null)
+    		name = RolapUtil.mdxNullLiteral;
+    	else
+    		name = key.toString();
         if ((key instanceof Number) && name.endsWith(".0")) {
             name = name.substring(0, name.length() - 2);
         }
@@ -234,6 +238,8 @@ public class RolapMember extends MemberBase {
             // the empty map is shared and immutable; create our own
             mapPropertyNameToValue = new HashMap();
         }
+    	if (value == null)
+    		value = RolapUtil.mdxNullLiteral;
         mapPropertyNameToValue.put(name, value);
         if (name.equals(Property.NAME.name)) {
             setUniqueName(value);

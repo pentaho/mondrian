@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/main"/>
-	<classpathentry kind="src" path="testsrc/main"/>
+	<classpathentry output="testclasses" kind="src" path="testsrc/main"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/commons-collections.jar"/>
 	<classpathentry kind="lib" path="lib/javacup.jar"/>
@@ -21,7 +21,8 @@
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="lib/eigenbase-properties.jar"/>
 	<classpathentry kind="lib" path="lib/servlet.jar"/>
-	<classpathentry kind="lib" path="testlib/commons-math-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons-math-1.0.jar"/>
 	<classpathentry kind="lib" path="testlib/derby.jar"/>
+	<classpathentry kind="lib" path="testlib/xmlunit1.0.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

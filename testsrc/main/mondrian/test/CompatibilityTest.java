@@ -11,6 +11,9 @@
 */
 package mondrian.test;
 
+import mondrian.olap.Cube;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Schema;
 import junit.framework.Assert;
 
 /**
@@ -193,6 +196,123 @@ public class CompatibilityTest extends FoodMartTestCase {
         Assert.assertEquals(result, executeSingletonAxis(expression).toString());
     }
 
+    
+    /**
+     * Test that a #null member on a Hiearchy Level of type String can
+     * still be looked up when case sensitive is off. 
+     * 
+     */
+    public void testCaseInSensitiveNullMember() {
+    	boolean old = MondrianProperties.instance().CaseSensitive.get();
+    	MondrianProperties.instance().CaseSensitive.set(false);
+    	
+    	Schema schema = getConnection().getSchema();
+        final String cubeName = "Sales_inline";
+        final Cube cube = schema.createCube(fold(new String[] {
+            "<Cube name=\"" + cubeName + "\">",
+            "  <Table name=\"sales_fact_1997\"/>",
+            "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>",
+            "  <Dimension name=\"Alternative Promotion\" foreignKey=\"promotion_id\">",
+            "    <Hierarchy hasAll=\"true\" primaryKey=\"promo_id\">",
+            "      <InlineTable alias=\"alt_promotion\">",
+            "        <ColumnDefs>",
+            "          <ColumnDef name=\"promo_id\" type=\"Numeric\"/>",
+            "          <ColumnDef name=\"promo_name\" type=\"String\"/>",
+            "        </ColumnDefs>",
+            "        <Rows>",
+            "          <Row>",
+            "            <Value column=\"promo_id\">0</Value>",
+            "            <Value column=\"promo_name\">Promo0</Value>",
+            "          </Row>",
+            "          <Row>",
+            "            <Value column=\"promo_id\">1</Value>",
+            "          </Row>",
+            "        </Rows>",
+            "      </InlineTable>",
+            "      <Level name=\"Alternative Promotion\" column=\"promo_name\" uniqueMembers=\"true\"/> ",
+            "    </Hierarchy>",
+            "  </Dimension>",
+            "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"",
+            "      formatString=\"Standard\" visible=\"false\"/>",
+            "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"",
+            "      formatString=\"#,###.00\"/>",
+            "</Cube>"}));
+        
+        try {
+	    	getTestContext().assertQueryReturns(fold(new String[] {
+		            "select {[Measures].[Unit Sales]} ON COLUMNS,",
+		            "  {[Alternative Promotion].[All Alternative Promotions].[#null]} ON ROWS ",
+		            "  from [Sales_inline]"}), 
+		            fold(new String[] {
+	                        "Axis #0:",
+	                        "{}",
+	                        "Axis #1:",
+	                        "{[Measures].[Unit Sales]}",
+	                        "Axis #2:",
+	                        "{[Alternative Promotion].[All Alternative Promotions].[#null]}",
+	                        "Row #0: (null)",
+	                        ""}));
+        } finally {
+            schema.removeCube(cubeName);
+        	MondrianProperties.instance().CaseSensitive.set(old);
+        }
+    }
+    
+    /**
+     * Test that data in Hiearchy.Level attribute "nameColumn" can be null.  This maps
+     * to the #null memeber.
+     */
+    public void testNullNameColumn() {
+    	Schema schema = getConnection().getSchema();
+        final String cubeName = "Sales_inline";
+        final Cube cube = schema.createCube(fold(new String[] {
+            "<Cube name=\"" + cubeName + "\">",
+            "  <Table name=\"sales_fact_1997\"/>",
+            "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>",
+            "  <Dimension name=\"Alternative Promotion\" foreignKey=\"promotion_id\">",
+            "    <Hierarchy hasAll=\"true\" primaryKey=\"promo_id\">",
+            "      <InlineTable alias=\"alt_promotion\">",
+            "        <ColumnDefs>",
+            "          <ColumnDef name=\"promo_id\" type=\"Numeric\"/>",
+            "          <ColumnDef name=\"promo_name\" type=\"String\"/>",
+            "        </ColumnDefs>",
+            "        <Rows>",
+            "          <Row>",
+            "            <Value column=\"promo_id\">0</Value>",
+            "          </Row>",
+            "          <Row>",
+            "            <Value column=\"promo_id\">1</Value>",
+            "            <Value column=\"promo_name\">Promo1</Value>",
+            "          </Row>",
+            "        </Rows>",
+            "      </InlineTable>",
+            "      <Level name=\"Alternative Promotion\" column=\"promo_id\" nameColumn=\"promo_name\" uniqueMembers=\"true\"/> ",
+            "    </Hierarchy>",
+            "  </Dimension>",
+            "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"",
+            "      formatString=\"Standard\" visible=\"false\"/>",
+            "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"",
+            "      formatString=\"#,###.00\"/>",
+            "</Cube>"}));
+
+        try {
+            getTestContext().assertQueryReturns(
+                    fold(new String[] {
+                        "select {[Alternative Promotion].[All Alternative Promotions].[#null], [Alternative Promotion].[All Alternative Promotions].[Promo1]} ON COLUMNS",
+                        "from [" + cubeName + "] "}),
+                    fold(new String[] {
+                        "Axis #0:",
+                        "{}",
+                        "Axis #1:",
+                        "{[Alternative Promotion].[All Alternative Promotions].[#null]}",
+                        "{[Alternative Promotion].[All Alternative Promotions].[Promo1]}",
+                        "Row #0: 195,448",
+                        "Row #0: (null)",
+                        ""}));
+        } finally {
+            schema.removeCube(cubeName);
+        }
+    }
 }
 
 // End CompatibilityTest.java
