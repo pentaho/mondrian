@@ -26,8 +26,14 @@ public class Id
     private final String[] names;
     private final boolean[] keys;
 
-    Id(String s, boolean key) {
-        names = new String[] {s};
+    /**
+     * Creates an identifier containing a single part.
+     *
+     * @param name Name
+     * @param key Whether the part represents a key value
+     */
+    public Id(String name, boolean key) {
+        names = new String[] {name};
         keys = new boolean[] {key};
     }
 
