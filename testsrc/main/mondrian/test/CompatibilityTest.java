@@ -198,7 +198,7 @@ public class CompatibilityTest extends FoodMartTestCase {
 
     
     /**
-     * Test that a #null member on a Hiearchy Level of type String can
+     * Tests that a #null member on a Hiearchy Level of type String can
      * still be looked up when case sensitive is off. 
      * 
      */
@@ -259,7 +259,7 @@ public class CompatibilityTest extends FoodMartTestCase {
     }
     
     /**
-     * Test that data in Hiearchy.Level attribute "nameColumn" can be null.  This maps
+     * Tests that data in Hiearchy.Level attribute "nameColumn" can be null.  This will map
      * to the #null memeber.
      */
     public void testNullNameColumn() {
