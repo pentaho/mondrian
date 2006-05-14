@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2003-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -118,7 +118,7 @@ public class XmlaUtil implements XmlaConstants {
     }
 
 
-    public static String element2Text(Element elem) 
+    public static String element2Text(Element elem)
             throws XmlaException {
         StringWriter writer = new StringWriter();
         try {
@@ -128,24 +128,24 @@ public class XmlaUtil implements XmlaConstants {
         } catch (Exception e) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
-                USM_DOM_PARSE_CODE, 
+                USM_DOM_PARSE_CODE,
                 USM_DOM_PARSE_FAULT_FS,
                 e);
         }
         return writer.getBuffer().toString();
     }
 
-    public static Element text2Element(String text) 
+    public static Element text2Element(String text)
             throws XmlaException {
         return _2Element(new InputSource(new StringReader(text)));
     }
 
-    public static Element stream2Element(InputStream stream) 
+    public static Element stream2Element(InputStream stream)
             throws XmlaException {
         return _2Element(new InputSource(stream));
     }
 
-    private static Element _2Element(InputSource source) 
+    private static Element _2Element(InputSource source)
             throws XmlaException {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -160,7 +160,7 @@ public class XmlaUtil implements XmlaConstants {
         } catch (Exception e) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
-                USM_DOM_PARSE_CODE, 
+                USM_DOM_PARSE_CODE,
                 USM_DOM_PARSE_FAULT_FS,
                 e);
         }
@@ -262,7 +262,8 @@ way too noisy
         for (int i = 0, nlen = nlst.getLength(); i < nlen ; i++) {
             Node n = nlst.item(i);
             if (n instanceof Text) {
-                buf.append(((Text) n).getData());
+                final String data = ((Text) n).getData();
+                buf.append(data);
             }
         }
         return buf.toString();
@@ -280,15 +281,18 @@ way too noisy
         return throwable;
     }
 
-    public static String normalizeNumricString(String numericStr) {
-        // This is here because different JDBC drivers
-        // use different Number classes to return
-        // numeric values (Double vs BigDecimal) and
-        // these have different toString() behavior.
-        // If it contains a decimal point, then
-        // strip off trailing '0's. After stripping off
-        // the '0's, if there is nothing right of the
-        // decimal point, then strip off decimal point.
+    /**
+     * Corrects for the differences between numeric strings arising because
+     * JDBC drivers use different representations for numbers
+     * ({@link Double} vs. {@link java.math.BigDecimal}) and
+     * these have different toString() behavior.
+     *
+     * <p>If it contains a decimal point, then
+     * strip off trailing '0's. After stripping off
+     * the '0's, if there is nothing right of the
+     * decimal point, then strip off decimal point.
+     */
+    public static String normalizeNumericString(String numericStr) {
         int index = numericStr.indexOf('.');
         if (index > 0) {
             boolean found = false;
@@ -302,8 +306,9 @@ way too noisy
             if (c == '.') {
                 p--;
             }
-            if (found)
+            if (found) {
                 return numericStr.substring(0, p);
+            }
         }
         return numericStr;
     }

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -106,7 +106,7 @@ public class Query extends QueryPart {
             this.slicerAxis =
                     new QueryAxis(
                             false, slicer, AxisOrdinal.Slicer,
-                            QueryAxis.SubtotalVisibility.Undefined);
+                            QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
         }
         this.cellProps = cellProps;
         this.parameters = parameters;

@@ -3561,12 +3561,59 @@ public class BasicQueryTest extends FoodMartTestCase {
      * MDX query can retrieve this member property as part of the returned
      * cellset.
      */
-    public void _testCustomMemberProperties() {
-        assertQueryReturns( // todo: implement "DIMENSION PROPERTIES" syntax
+    public void testCustomMemberProperties() {
+        assertQueryReturns(
                 "SELECT {[Measures].[Units Shipped], [Measures].[Units Ordered]} ON COLUMNS," + nl +
                 "  NON EMPTY [Store].[Store Name].MEMBERS" + nl +
                 "    DIMENSION PROPERTIES [Store].[Store Name].[Store Sqft] ON ROWS" + nl +
-                "FROM Warehouse", "");
+                "FROM Warehouse",
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Units Shipped]}",
+                    "{[Measures].[Units Ordered]}",
+                    "Axis #2:",
+                    "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}",
+                    "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}",
+                    "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}",
+                    "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}",
+                    "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}",
+                    "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}",
+                    "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}",
+                    "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}",
+                    "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}",
+                    "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}",
+                    "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}",
+                    "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}",
+                    "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}",
+                    "Row #0: 10759.0",
+                    "Row #0: 11699.0",
+                    "Row #1: 24587.0",
+                    "Row #1: 26463.0",
+                    "Row #2: 23835.0",
+                    "Row #2: 26270.0",
+                    "Row #3: 1696.0",
+                    "Row #3: 1875.0",
+                    "Row #4: 8515.0",
+                    "Row #4: 9109.0",
+                    "Row #5: 32393.0",
+                    "Row #5: 35797.0",
+                    "Row #6: 2348.0",
+                    "Row #6: 2454.0",
+                    "Row #7: 22734.0",
+                    "Row #7: 24610.0",
+                    "Row #8: 24110.0",
+                    "Row #8: 26703.0",
+                    "Row #9: 11889.0",
+                    "Row #9: 12828.0",
+                    "Row #10: 32411.0",
+                    "Row #10: 35930.0",
+                    "Row #11: 1860.0",
+                    "Row #11: 2074.0",
+                    "Row #12: 10589.0",
+                    "Row #12: 11426.0",
+                    ""}));
     }
 
     /**

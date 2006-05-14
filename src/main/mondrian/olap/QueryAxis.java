@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -47,20 +47,25 @@ public class QueryAxis extends QueryPart {
      * The "(show\hide)Subtotals" operation changes its valud.
      */
     private int  showSubtotals;
+    private final Id[] dimensionProperties;
 
     public QueryAxis(
             boolean nonEmpty,
             Exp set,
             AxisOrdinal axisDef,
-            int showSubtotals) {
+            int showSubtotals,
+            Id[] dimensionProperties) {
+        assert dimensionProperties != null;
         this.nonEmpty = nonEmpty;
         this.exp = set;
         this.axisOrdinal = axisDef;
         this.showSubtotals = showSubtotals;
+        this.dimensionProperties = dimensionProperties;
     }
 
     public Object clone() {
-        return new QueryAxis(nonEmpty, (Exp) exp.clone(), axisOrdinal, showSubtotals);
+        return new QueryAxis(nonEmpty, (Exp) exp.clone(), axisOrdinal,
+                showSubtotals, (Id[]) dimensionProperties.clone());
     }
 
     static QueryAxis[] cloneArray(QueryAxis[] a) {
@@ -173,6 +178,16 @@ public class QueryAxis extends QueryPart {
         if (exp != null) {
             exp.unparse(pw);
         }
+        if (dimensionProperties.length > 0) {
+            pw.print(" DIMENSION PROPERTIES ");
+            for (int i = 0; i < dimensionProperties.length; i++) {
+                Id dimensionProperty = dimensionProperties[i];
+                if (i > 0) {
+                    pw.print(", ");
+                }
+                dimensionProperty.unparse(pw);
+            }
+        }
         if (axisOrdinal != AxisOrdinal.Slicer) {
             pw.print(" ON " + axisOrdinal);
         }
@@ -206,6 +221,10 @@ public class QueryAxis extends QueryPart {
                 exp = validator.validate(exp, false);
             }
         }
+    }
+
+    public Id[] getDimensionProperties() {
+        return dimensionProperties;
     }
 
     /**

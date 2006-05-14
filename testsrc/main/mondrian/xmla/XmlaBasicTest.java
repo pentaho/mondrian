@@ -3,32 +3,31 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 29 March, 2002
 */
 package mondrian.xmla;
 
+import mondrian.olap.Util;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
-import mondrian.olap.*;
-import mondrian.tui.*;
-import mondrian.xmla.*;
+import mondrian.tui.XmlUtil;
+import mondrian.tui.XmlaSupport;
+
+import org.custommonkey.xmlunit.XMLAssert;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
-import org.xml.sax.SAXException;
-import org.custommonkey.xmlunit.XMLAssert;
 
-/** 
- *  
- * 
- * @author <a>Richard M. Emberson</a>
- * @version 
+/**
+ * Test XML/A functionality.
+ *
+ * @author Richard M. Emberson<
+ * @version $Id$
  */
 public class XmlaBasicTest extends FoodMartTestCase {
     // request.type
@@ -63,13 +62,13 @@ public class XmlaBasicTest extends FoodMartTestCase {
 
     // content
     public static final String CONTENT_PROP     = "content";
-    public static final String CONTENT_NONE     = 
+    public static final String CONTENT_NONE     =
                 Enumeration.Content.None.getName();
-    public static final String CONTENT_DATA     = 
+    public static final String CONTENT_DATA     =
                 Enumeration.Content.Data.getName();
-    public static final String CONTENT_SCHEMA   = 
+    public static final String CONTENT_SCHEMA   =
                 Enumeration.Content.Schema.getName();
-    public static final String CONTENT_SCHEMADATA = 
+    public static final String CONTENT_SCHEMADATA =
                 Enumeration.Content.SchemaData.getName();
 
     private static final String XMLA_DIRECTORY = "testsrc/main/mondrian/xmla/";
@@ -98,23 +97,22 @@ public class XmlaBasicTest extends FoodMartTestCase {
         return requestText;
     }
 
-    protected Document fileToDocument(String filename) 
+    protected Document fileToDocument(String filename)
                 throws IOException , SAXException {
         File file = new File(testDir, filename);
         Document doc = XmlUtil.parse(file);
         return doc;
     }
 
-    protected String extractSoapResponse(Document responseDoc, 
-        Enumeration.Content content) {
-
-
+    protected String extractSoapResponse(
+            Document responseDoc,
+            Enumeration.Content content) {
         Document partialDoc = null;
         switch (content.getOrdinal()) {
         case Enumeration.Content.NONE_ORDINAL:
             // return soap and no content
             break;
-            
+
         case Enumeration.Content.SCHEMA_ORDINAL:
             // return soap plus scheam content
             break;
@@ -320,7 +318,7 @@ public class XmlaBasicTest extends FoodMartTestCase {
 
         doTest(requestType, reqFileName, respFileName, props);
     }
-    // good 2/25 
+    // good 2/25
     public void testMDMeasures() throws Exception {
         String requestType = "MDSCHEMA_MEASURES";
         String reqFileName = "MDSCHEMA_MEASURES_in.xml";
@@ -341,7 +339,7 @@ public class XmlaBasicTest extends FoodMartTestCase {
 
         doTest(requestType, reqFileName, respFileName, props);
     }
-    // good 2/25 
+    // good 2/25
     public void testMDMembers() throws Exception {
         String requestType = "MDSCHEMA_MEMBERS";
         String reqFileName = "RT_C_CN_DSI_C_F_C_in.xml";
@@ -360,7 +358,7 @@ public class XmlaBasicTest extends FoodMartTestCase {
         doTest(requestType, reqFileName, respFileName, props);
     }
 
-    // good 2/25 
+    // good 2/25
     public void testMDProperties() throws Exception {
         String requestType = "MDSCHEMA_PROPERTIES";
         String reqFileName = "RT_DSI_C_in.xml";
@@ -378,7 +376,7 @@ public class XmlaBasicTest extends FoodMartTestCase {
      */
 
     public void doTestRT(
-            String requestType, 
+            String requestType,
             String reqFileName,
             String respFileName) throws Exception {
 
@@ -390,14 +388,14 @@ public class XmlaBasicTest extends FoodMartTestCase {
 
     }
     public void doTest(
-            String requestType, 
+            String requestType,
             String reqFileName,
             String respFileName,
             Properties props) throws Exception {
 
         String requestText = fileToString(reqFileName);
         Document responseDoc = (respFileName != null)
-            ? fileToDocument(respFileName) 
+            ? fileToDocument(respFileName)
             : null;
 
         String connectString = getConnectionString();
@@ -432,8 +430,8 @@ public class XmlaBasicTest extends FoodMartTestCase {
         doTests(requestText, props, null, connectString, expectedDoc);
     }
     protected void doTests(
-            String soapRequestText, 
-            Properties props, 
+            String soapRequestText,
+            Properties props,
             String soapResponseText,
             String connectString,
             Document expectedDoc) throws Exception {
@@ -460,7 +458,7 @@ if (DEBUG) {
                 System.out.println("XML Data is Valid");
 }
             }
-        }       
+        }
 
         // do SOAP-XMLA
         bytes = XmlaSupport.processSoapXmla(soapReqDoc, connectString, null);
@@ -474,7 +472,7 @@ if (DEBUG) {
                 System.out.println("XML Data is Valid");
 }
             }
-        }       
+        }
 
         Document gotDoc = XmlUtil.parse(bytes);
         String gotStr = XmlUtil.toString(gotDoc, true);
@@ -499,3 +497,5 @@ System.out.println("EXPECTED:\n"+expectedStr);
     }
 
 }
+
+// End XmlaBasicTest.java

@@ -46,7 +46,15 @@
           </xsd:schema>
           <row>
             <PropertyName>Catalog</PropertyName>
-            <PropertyDescription>Specifies the initial catalog or database on which to connect.</PropertyDescription>
+            <PropertyDescription>When establishing a session
+                            with an Analysis Services instance to send
+                            an XMLA command, this property is equivalent
+                            to the OLE DB property, DBPROP_INIT_CATALOG.
+                            When you set this property during a session
+                            to change the current database for the
+                            session, this property is equivalent to the
+                            OLE DB property, DBPROP_CURRENTCATALOG. The
+                            default value for this property is an empty string.</PropertyDescription>
             <PropertyType>string</PropertyType>
             <PropertyAccessType>ReadWrite</PropertyAccessType>
             <IsRequired>false</IsRequired>

@@ -67,7 +67,7 @@ class PropertyDefinition extends EnumeratedValues.BasicValue {
             Enumeration.Access.write,
             "",
             Enumeration.Methods.execute,
-            "Client asks for the MDDataSet axis to be formatted in one of these ways: TupleFormat, ClusterFormat, CustomFormat.");
+            "Determines the format used within an MDDataSet result set to describe the axes of the multidimensional dataset. This property can have the values listed in the following table: TupleFormat (default), ClusterFormat, CustomFormat.");
 
     public static final int BeginRange_ORDINAL = 1;
     static final PropertyDefinition BeginRange =
@@ -79,7 +79,9 @@ class PropertyDefinition extends EnumeratedValues.BasicValue {
             Enumeration.Access.write,
             "-1",
             Enumeration.Methods.execute,
-            "An integer value corresponding to a CellOrdinal used to restrict an MDDataSet returned by a command to a specific range of cells. Used in conjunction with the EndRange property. If unspecified, all cells are returned in the rowset. The value -1 means unspecified.");
+            "Contains a zero-based integer value corresponding to a CellOrdinal attribute value. (The CellOrdinal attribute is part of the Cell element in the CellData section of MDDataSet.)\n" +
+            "Used together with the EndRange property, the client application can use this property to restrict an OLAP dataset returned by a command to a specific range of cells. If -1 is specified, all cells up to the cell specified in the EndRange property are returned.\n" +
+            "The default value for this property is -1.");
 
     public static final int Catalog_ORDINAL = 2;
     static final PropertyDefinition Catalog =
@@ -87,10 +89,13 @@ class PropertyDefinition extends EnumeratedValues.BasicValue {
             "Catalog",
             Catalog_ORDINAL,
             RowsetDefinition.Type.String,
-            null, Enumeration.Access.readWrite,
+            null,
+            Enumeration.Access.readWrite,
             "",
             Enumeration.Methods.discoverAndExecute,
-            "Specifies the initial catalog or database on which to connect.");
+            "When establishing a session with an Analysis Services instance to send an XMLA command, this property is equivalent to the OLE DB property, DBPROP_INIT_CATALOG.\n" +
+            "When you set this property during a session to change the current database for the session, this property is equivalent to the OLE DB property, DBPROP_CURRENTCATALOG.\n" +
+            "The default value for this property is an empty string.");
 
     public static final int Content_ORDINAL = 3;
     static final PropertyDefinition Content =
@@ -257,6 +262,19 @@ class PropertyDefinition extends EnumeratedValues.BasicValue {
             "Returns the UserName the server associates with the command.\n" +
             "This property is deprecated as writeable in XMLA 1.1. To support legacy applications, servers accept but ignore the password setting when it is used with the Execute method.");
 
+    public static final int VisualMode_ORDINAL = 16;
+    static final PropertyDefinition VisualMode =
+        new PropertyDefinition(
+            "VisualMode",
+            VisualMode_ORDINAL,
+            RowsetDefinition.Type.Enumeration,
+            Enumeration.VisualMode.enumeration,
+            Enumeration.Access.write,
+            String.valueOf(Enumeration.VisualMode.Visual.ordinal),
+            Enumeration.Methods.discoverAndExecute,
+            "This property is equivalent to the OLE DB property, MDPROP_VISUALMODE.\n" +
+            "The default value for this property is zero (0), equivalent to DBPROPVAL_VISUAL_MODE_DEFAULT.");
+
     static final EnumeratedValues enumeration = new EnumeratedValues(new PropertyDefinition[]{
             AxisFormat,
             BeginRange,
@@ -274,6 +292,7 @@ class PropertyDefinition extends EnumeratedValues.BasicValue {
             StateSupport,
             Timeout,
             UserName,
+            VisualMode,
     });
 
     public static PropertyDefinition getValue(final String propertyName) {

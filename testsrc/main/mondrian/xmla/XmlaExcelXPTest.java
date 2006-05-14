@@ -3,43 +3,39 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 29 March, 2002
 */
 package mondrian.xmla;
 
+import mondrian.olap.Util;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
-import mondrian.olap.*;
 import mondrian.tui.*;
-import mondrian.xmla.*;
+
+import org.custommonkey.xmlunit.XMLAssert;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
-import org.xml.sax.SAXException;
-import org.custommonkey.xmlunit.XMLAssert;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.Servlet;
 
 
-/** 
- * These test the compatibility of Mondrian XMLA with Excel XP. 
+/**
+ * These test the compatibility of Mondrian XMLA with Excel XP.
  * Simba (the maker of the O2X bridge) supplied captured request/response
  * soap messages between Excel XP and SQL Server. These form the
  * basis of the output files in the  excel_XP directory.
- * 
- * @author <a>Richard M. Emberson</a>
- * @version 
+ *
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 public class XmlaExcelXPTest extends FoodMartTestCase {
     // session id properpty
@@ -59,11 +55,11 @@ public class XmlaExcelXPTest extends FoodMartTestCase {
 
         public void init(ServletConfig servletConfig) throws ServletException {
         }
-        public boolean processHttpHeader(HttpServletRequest request, 
+        public boolean processHttpHeader(HttpServletRequest request,
                 HttpServletResponse response,
                 Map context) throws Exception {
             String expect = request.getHeader(XmlaRequestCallback.EXPECT);
-            if ((expect != null) && 
+            if ((expect != null) &&
                 expect.equalsIgnoreCase(XmlaRequestCallback.EXPECT_100_CONTINUE)) {
 
                 XmlaRequestCallback.Helper.generatedExpectResponse(
@@ -128,7 +124,7 @@ public class XmlaExcelXPTest extends FoodMartTestCase {
     }
     protected void tearDown() throws Exception {
     }
-    protected void makeServlet() 
+    protected void makeServlet()
             throws IOException, ServletException, SAXException {
 
         XmlaExcelXPTest.sessionId = null;
@@ -144,7 +140,7 @@ public class XmlaExcelXPTest extends FoodMartTestCase {
         return requestText;
     }
 
-    protected Document fileToDocument(String filename) 
+    protected Document fileToDocument(String filename)
                 throws IOException , SAXException {
         File file = new File(testDir, filename);
         Document doc = XmlUtil.parse(file);
@@ -160,104 +156,107 @@ public class XmlaExcelXPTest extends FoodMartTestCase {
 
     // good 3/28
     public void test01() throws Exception {
-        helperTest("01", false); 
+        helperTest("01", false);
     }
 
     // BeginSession
     // good 3/28
     public void test02() throws Exception {
-        helperTest("02", false); 
+        helperTest("02", false);
     }
     // good 3/28
     public void test03() throws Exception {
-        helperTest("03", true); 
+        helperTest("03", true);
     }
     // good 3/28
     public void test04() throws Exception {
-        helperTest("04", true); 
+        helperTest("04", true);
     }
     // good 3/28
     public void test05() throws Exception {
-        helperTest("05", true); 
+        helperTest("05", true);
     }
     // good 3/28
     public void test06() throws Exception {
-        helperTest("06", true); 
+        helperTest("06", true);
     }
 
     // BeginSession
     // good 3/28
     public void test07() throws Exception {
-        helperTest("07", false); 
+        helperTest("07", false);
     }
     // good 3/28
     public void test08() throws Exception {
-        helperTest("08", true); 
+        helperTest("08", true);
     }
     // good 3/28
     public void test09() throws Exception {
-        helperTest("09", true); 
+        helperTest("09", true);
     }
     // good 3/28
     public void test10() throws Exception {
-        helperTest("10", true); 
+        helperTest("10", true);
     }
     // good 3/28
     public void test11() throws Exception {
-        helperTest("11", true); 
+        helperTest("11", true);
     }
     // good 3/28
     public void test12() throws Exception {
-        helperTest("12", true); 
+        helperTest("12", true);
     }
     // good 3/28
     public void test13() throws Exception {
-        helperTest("13", true); 
+        helperTest("13", true);
     }
     // good 3/28
     public void test14() throws Exception {
-        helperTest("14", true); 
+        helperTest("14", true);
     }
     // good 3/28
     public void test15() throws Exception {
-        helperTest("15", true); 
+        helperTest("15", true);
     }
     // good 3/28
     public void test16() throws Exception {
-        helperTest("16", true); 
+        helperTest("16", true);
     }
     // good 3/28
     public void test17() throws Exception {
-        helperTest("17", true); 
+        helperTest("17", true);
     }
     // The slicerAxis is empty in Mondrian by not empty in SQLServer.
     // The xml schema returned by SQL Server is not the version 1.0
     // schema returned by Mondrian.
     // Values are correct.
     public void _test18() throws Exception {
-        helperTest("18", true); 
+        helperTest("18", true);
     }
     // good 3/28
     public void test19() throws Exception {
-        helperTest("19", true); 
+        helperTest("19", true);
     }
     // good 3/28
     public void test20() throws Exception {
-        helperTest("20", true); 
+        helperTest("20", true);
     }
     // Same issue as test18: slicerAxis
     public void _test21() throws Exception {
-        helperTest("21", true); 
+        helperTest("21", true);
     }
     // Same issue as test18: slicerAxis
     public void _test22() throws Exception {
-        helperTest("22", true); 
+        helperTest("22", true);
     }
     // good 3/28
     public void test23() throws Exception {
-        helperTest("23", true); 
+        helperTest("23", true);
     }
-    protected void helperTest(String nos, boolean doSessionId) 
+    public void test24() throws Exception {
+        helperTest("24", true);
+    }
+    protected void helperTest(String nos, boolean doSessionId)
             throws Exception {
         if (doSessionId) {
             if (XmlaExcelXPTest.sessionId == null) {
@@ -289,7 +288,7 @@ public class XmlaExcelXPTest extends FoodMartTestCase {
     public void testExpect06() throws Exception {
         helperTestExpect("06", true);
     }
-    protected void helperTestExpect(String nos, boolean doSessionId) 
+    protected void helperTestExpect(String nos, boolean doSessionId)
             throws Exception {
         if (doSessionId) {
             if (XmlaExcelXPTest.sessionId == null) {
@@ -309,7 +308,7 @@ public class XmlaExcelXPTest extends FoodMartTestCase {
     /////////////////////////////////////////////////////////////////////////
     public void doTest(
             MockHttpServletRequest req,
-            String nos, 
+            String nos,
             Properties props
             ) throws Exception {
         String requestText = generateRequestString(nos, props);
@@ -374,7 +373,7 @@ System.out.println("Got CONTINUE");
         Document expectedDoc = XmlUtil.parseString(expectedStr);
         validate(bytes, expectedDoc);
     }
-    protected void validate(byte[] bytes, Document expectedDoc)         
+    protected void validate(byte[] bytes, Document expectedDoc)
             throws Exception {
 if (DEBUG) {
         String response = new String(bytes);
@@ -386,7 +385,7 @@ if (DEBUG) {
                 System.out.println("XML Data is Valid");
 }
             }
-        }       
+        }
 
         Document gotDoc = XmlUtil.parse(bytes);
         String gotStr = XmlUtil.toString(gotDoc, true);
@@ -398,13 +397,13 @@ System.out.println("EXPECTED:\n"+expectedStr);
 System.out.println("XXXXXXX");
 }
         XMLAssert.assertXMLEqual(expectedStr, gotStr);
-    }       
+    }
 
-    protected String generateRequestString(String nos, Properties props) 
+    protected String generateRequestString(String nos, Properties props)
             throws Exception {
         String reqFileName = "excel_XP_" + nos + "_in.xml";
 if (DEBUG) {
-System.out.println("reqFileName="+reqFileName);        
+System.out.println("reqFileName="+reqFileName);
 }
         String requestText = fileToString(reqFileName);
         if (props != null) {
@@ -414,11 +413,11 @@ System.out.println("reqFileName="+reqFileName);
             requestText = Util.replaceProperties(requestText, props);
         }
 if (DEBUG) {
-System.out.println("requestText="+requestText);        
+System.out.println("requestText="+requestText);
 }
         return requestText;
     }
-    protected String generateExpectedString(String nos, Properties props) 
+    protected String generateExpectedString(String nos, Properties props)
             throws Exception {
         String expectedFileName = "excel_XP_" + nos + "_out.xml";
 
@@ -433,3 +432,5 @@ System.out.println("requestText="+requestText);
         return expectedStr;
     }
 }
+
+// End XmlaExcelXPTest.java

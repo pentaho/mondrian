@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2005 Julian Hyde and others.
+// Copyright (C) 2004-2006 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -146,35 +146,51 @@ public class ParserTest extends TestCase {
     }
 
     public void testCaseTest() {
-        Parser p = new TestParser();
-        String query = "with member [Measures].[Foo] as " +
+        assertParserReturns(
+                "with member [Measures].[Foo] as " +
                 " ' case when x = y then \"eq\" when x < y then \"lt\" else \"gt\" end '" +
-                "select {[foo]} on axis(0) from cube";
-
-        assertNull("Test parser should return null query", p.parseInternal(null, query, false, funTable));
-        final String mdx = ((TestParser) p).toMdxString();
-        assertEquals(TestContext.fold(new String[] {
-            "with member [Measures].[Foo] as 'CASE WHEN ([x] = [y]) THEN \"eq\" WHEN ([x] < [y]) THEN \"lt\" ELSE \"gt\" END'",
-            "select {[foo]} ON COLUMNS",
-            "from [cube]",
-            ""}),
-                mdx);
+                "select {[foo]} on axis(0) from cube",
+                TestContext.fold(new String[] {
+                    "with member [Measures].[Foo] as 'CASE WHEN ([x] = [y]) THEN \"eq\" WHEN ([x] < [y]) THEN \"lt\" ELSE \"gt\" END'",
+                    "select {[foo]} ON COLUMNS",
+                    "from [cube]",
+                    ""}));
     }
 
     public void testCaseSwitch() {
-        Parser p = new TestParser();
-        String query = "with member [Measures].[Foo] as " +
+        assertParserReturns(
+                "with member [Measures].[Foo] as " +
                 " ' case x when 1 then 2 when 3 then 4 else 5 end '" +
-                "select {[foo]} on axis(0) from cube";
+                "select {[foo]} on axis(0) from cube",
+                TestContext.fold(new String[] {
+                    "with member [Measures].[Foo] as 'CASE [x] WHEN 1.0 THEN 2.0 WHEN 3.0 THEN 4.0 ELSE 5.0 END'",
+                    "select {[foo]} ON COLUMNS",
+                    "from [cube]",
+                    ""}));
+    }
 
-        assertNull("Test parser should return null query", p.parseInternal(null, query, false, funTable));
-        final String mdx = ((TestParser) p).toMdxString();
-        assertEquals(TestContext.fold(new String[] {
-            "with member [Measures].[Foo] as 'CASE [x] WHEN 1.0 THEN 2.0 WHEN 3.0 THEN 4.0 ELSE 5.0 END'",
-            "select {[foo]} ON COLUMNS",
-            "from [cube]",
-            ""}),
-                mdx);
+    public void testDimensionProperties() {
+        assertParserReturns(
+                "select {[foo]} properties p1,   p2 on columns from [cube]",
+                TestContext.fold(new String[] {
+                    "select {[foo]} DIMENSION PROPERTIES [p1], [p2] ON COLUMNS",
+                    "from [cube]",
+                    ""}));
+    }
+
+    /**
+     * Parses an MDX query and asserts that the result is as expected when
+     * unparsed.
+     *
+     * @param mdx MDX query
+     * @param expected Expected result of unparsing
+     */
+    private void assertParserReturns(String mdx, final String expected) {
+        Parser p = new TestParser();
+        final Query query = p.parseInternal(null, mdx, false, funTable);
+        assertNull("Test parser should return null query", query);
+        final String actual = ((TestParser) p).toMdxString();
+        TestContext.assertEqualsVerbose(expected, actual);
     }
 
     public static class TestParser extends Parser {

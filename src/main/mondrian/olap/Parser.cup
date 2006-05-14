@@ -15,7 +15,7 @@
 */
 
 import java_cup.runtime.*;
-import java.util.ArrayList;
+import java.util.*;
 import mondrian.resource.MondrianResource;
 import mondrian.mdx.*;
 
@@ -204,6 +204,61 @@ parser code {:
     protected boolean isFunCall(String s) {
        return funTable.isProperty(s);
     }
+
+    static Id[] toIdArray(List idList) {
+        if (idList == null || idList.size() == 0) {
+            return EmptyIdArray;
+        } else {
+            return (Id []) idList.toArray(new Id[idList.size()]);
+        }
+    }
+
+    static Exp[] toExpArray(List expList) {
+        if (expList == null || expList.size() == 0) {
+            return EmptyExpArray;
+        } else {
+            return (Exp []) expList.toArray(new Exp[expList.size()]);
+        }
+    }
+
+    static Formula[] toFormulaArray(List formulaList) {
+        if (formulaList == null || formulaList.size() == 0) {
+            return EmptyFormulaArray;
+        } else {
+            return (Formula []) formulaList.toArray(new Formula[formulaList.size()]);
+        }
+    }
+
+    static MemberProperty[] toMemberPropertyArray(List mpList) {
+        if (mpList == null || mpList.size() == 0) {
+            return EmptyMemberPropertyArray;
+        } else {
+            return (MemberProperty []) mpList.toArray(new MemberProperty[mpList.size()]);
+        }
+    }
+
+    static QueryPart[] toQueryPartArray(List qpList) {
+        if (qpList == null || qpList.size() == 0) {
+            return EmptyQueryPartArray;
+        } else {
+            return (QueryPart []) qpList.toArray(new QueryPart[qpList.size()]);
+        }
+    }
+
+    static QueryAxis[] toQueryAxisArray(List qpList) {
+        if (qpList == null || qpList.size() == 0) {
+            return EmptyQueryAxisArray;
+        } else {
+            return (QueryAxis []) qpList.toArray(new QueryAxis[qpList.size()]);
+        }
+    }
+
+    private static final MemberProperty[] EmptyMemberPropertyArray = new MemberProperty[0];
+    private static final Exp[] EmptyExpArray = new Exp[0];
+    private static final Formula[] EmptyFormulaArray = new Formula[0];
+    private static final Id[] EmptyIdArray = new Id[0];
+    private static final QueryPart[] EmptyQueryPartArray = new QueryPart[0];
+    private static final QueryAxis[] EmptyQueryAxisArray = new QueryAxis[0];
 :};
 init with {:
     scanner.init();
@@ -317,29 +372,29 @@ non terminal
     cell_opt,
     cell_property,
     cell_property_list,
-    dim_props,
-    dim_props_opt,
     dimension_opt,
     mandatory_cell_property,
     optional_cell_property,
     property,
-    property_list,
     provider_specific_cell_property,
     unsigned_integer;
 
 non terminal Boolean
     non_empty_opt;
 
-non terminal ArrayList
+non terminal List
     axis_specification_list,
     axis_specification_list_opt,
     cell_props,
     cell_props_opt,
     comma_member_property_def_list_opt,
+    dim_props,
+    dim_props_opt,
     exp_list,
     exp_list_opt,
     formula_specification,
     member_property_def_list,
+    property_list,
     when_list,
     with_formula_specification_opt;
 
@@ -726,21 +781,21 @@ value_expression_primary ::=
         :}
     |   value_expression_primary:i DOT identifier:j LPAREN exp_list_opt:lis RPAREN {:
             lis.add(0, i);
-            RESULT = new UnresolvedFunCall(j, Syntax.Method, (Exp[]) lis.toArray(new Exp[0]));
+            RESULT = new UnresolvedFunCall(j, Syntax.Method, Parser.toExpArray(lis));
         :}
     |   identifier:i LPAREN exp_list_opt:lis RPAREN {:
             RESULT = new UnresolvedFunCall(
-                i, Syntax.Function, (Exp[]) lis.toArray(new Exp[0]));
+                i, Syntax.Function, Parser.toExpArray(lis));
         :}
     |   LPAREN exp_list:lis RPAREN {:
             // Whereas ([Sales],[Time]) and () are tuples, ([Sales]) and (5)
             // are just expressions.
             RESULT = new UnresolvedFunCall(
-                "()", Syntax.Parentheses, (Exp[]) lis.toArray(new Exp[0]));
+                "()", Syntax.Parentheses, Parser.toExpArray(lis));
         :}
     |   LBRACE exp_list_opt:lis RBRACE {: // set built from sets/tuples
             RESULT = new UnresolvedFunCall(
-                "{}", Syntax.Braces, (Exp[]) lis.toArray(new Exp[0]));
+                "{}", Syntax.Braces, Parser.toExpArray(lis));
         :}
     |   case_expression
     ;
@@ -750,7 +805,7 @@ case_expression ::=
         when_list:y
         else_clause_opt:z
         END {:
-            ArrayList v = new ArrayList();
+            List v = new ArrayList();
             if (x != null) {
                 v.add(x);
             }
@@ -765,10 +820,10 @@ case_expression ::=
             }
             if (x == null) {
                 RESULT = new UnresolvedFunCall(
-                    "_CaseTest", Syntax.Case, (Exp[]) v.toArray(new Exp[0]));
+                    "_CaseTest", Syntax.Case, Parser.toExpArray(v));
             } else {
                 RESULT = new UnresolvedFunCall(
-                    "_CaseMatch", Syntax.Case, (Exp[]) v.toArray(new Exp[0]));
+                    "_CaseMatch", Syntax.Case, Parser.toExpArray(v));
             }
         :}
     ;
@@ -783,7 +838,8 @@ when_list ::=
             RESULT = new ArrayList();
         :}
     |   when_list:x when_clause:y {:
-            RESULT = x; x.add(y);
+            RESULT = x;
+            x.add(y);
         :}
     ;
 
@@ -1054,13 +1110,13 @@ expression ::=
     ;
 exp_list_opt ::=
         /* empty */ {:
-            RESULT = new ArrayList();
+            RESULT = new LinkedList();
         :}
     |   exp_list
     ;
 exp_list ::=
         expression:e {:
-            RESULT = new ArrayList();
+            RESULT = new LinkedList();
             RESULT.add(e);
         :}
     |   expression:e COMMA exp_list:list {:
@@ -1137,16 +1193,16 @@ select_statement ::=
             // yet.
             String cubeName = c.getElement(0);
             RESULT = parser.makeQuery(
-                (Formula[]) f.toArray(new Formula[0]),
-                (QueryAxis[]) a.toArray(new QueryAxis[0]),
+                Parser.toFormulaArray(f),
+                Parser.toQueryAxisArray(a),
                 cubeName,
                 w,
-                (QueryPart[]) cp.toArray(new QueryPart[0]));
+                Parser.toQueryPartArray(cp));
         :};
 
 with_formula_specification_opt ::=
     /* empty */ {:
-            RESULT = new ArrayList();
+            RESULT = new LinkedList();
         :}
     |   WITH formula_specification:f {:
             RESULT = f;
@@ -1154,13 +1210,13 @@ with_formula_specification_opt ::=
     ;
 axis_specification_list_opt ::=
         /* empty */ {:
-            RESULT = new ArrayList();
+            RESULT = new LinkedList();
         :}
     |   axis_specification_list
     ;
 axis_specification_list ::=
         axis_specification:i {:
-            RESULT = new ArrayList();
+            RESULT = new LinkedList();
             RESULT.add(i);
         :}
     |   axis_specification:e COMMA axis_specification_list:list {:
@@ -1173,7 +1229,7 @@ where_clause_opt ::=
     |   WHERE slicer_specification:s {: RESULT = s; :};
 cell_props_opt ::=
         /* empty */ {:
-            RESULT = new ArrayList();
+            RESULT = new LinkedList();
         :}
     |   cell_props;
 
@@ -1183,7 +1239,7 @@ cell_props_opt ::=
 //
 formula_specification ::=
         single_formula_specification:e {:
-            RESULT = new ArrayList();
+            RESULT = new LinkedList();
             RESULT.add(e);
         :}
     |   single_formula_specification:hd formula_specification:tl {:
@@ -1209,19 +1265,19 @@ member_specification ::=
             RESULT = new Formula(
                 m.toStringArray(),
                 e,
-                (MemberProperty[]) l.toArray(new MemberProperty[0]));
+                Parser.toMemberPropertyArray(l));
         :}
     |   MEMBER member_name:m AS value_expression:e
         comma_member_property_def_list_opt:l {:
             RESULT = new Formula(
                 m.toStringArray(),
                 e,
-                (MemberProperty[]) l.toArray(new MemberProperty[0]));
+                Parser.toMemberPropertyArray(l));
         :}
     ;
 comma_member_property_def_list_opt ::=
         /* empty */ {:
-            RESULT = new ArrayList();
+            RESULT = new LinkedList();
         :}
     |   COMMA member_property_def_list:l {:
             RESULT = l;
@@ -1229,7 +1285,7 @@ comma_member_property_def_list_opt ::=
     ;
 member_property_def_list ::=
         member_property_definition:m {:
-            RESULT = new ArrayList();
+            RESULT = new LinkedList();
             RESULT.add(m);
         :}
     |   member_property_definition:hd COMMA member_property_def_list:tl {:
@@ -1289,12 +1345,13 @@ set_name ::= compound_id ;
 //
 // <axis_specification> ::= [NON EMPTY] <set> [<dim_props>] ON <axis_name>
 axis_specification ::=
-        non_empty_opt:b expression:s dim_props_opt ON axis_name:a {:
+        non_empty_opt:b expression:s dim_props_opt:dp ON axis_name:a {:
             AxisOrdinal axis = AxisOrdinal.get(a.toUpperCase());
             RESULT = new QueryAxis(b.booleanValue(), s, axis,
-                    QueryAxis.SubtotalVisibility.Undefined);
+                    QueryAxis.SubtotalVisibility.Undefined,
+                    Parser.toIdArray(dp));
         :}
-    |   non_empty_opt:b expression:s dim_props_opt ON axis_number:n {:
+    |   non_empty_opt:b expression:s dim_props_opt:dp ON axis_number:n {:
             double d = n.doubleValue();
             int index = (int)d;
 
@@ -1307,7 +1364,8 @@ axis_specification ::=
 
             AxisOrdinal axis = AxisOrdinal.get(index);
             RESULT = new QueryAxis(b.booleanValue(), s, axis,
-                    QueryAxis.SubtotalVisibility.Undefined);
+                    QueryAxis.SubtotalVisibility.Undefined,
+                    Parser.toIdArray(dp));
         :}
     ;
 
@@ -1334,15 +1392,21 @@ axis_number ::=
 //
 // <dim_props> ::= [DIMENSION] PROPERTIES <property> [, <property>...]
 dim_props ::=
-    dimension_opt PROPERTIES property_list
+    dimension_opt PROPERTIES property_list:pl {: RESULT = pl; :}
     ;
 dimension_opt ::=
     /* empty */
     |   DIMENSION
     ;
 property_list ::=
-        property
-    |   property COMMA property_list
+        property:p {:
+            RESULT = new LinkedList();
+            RESULT.add(p);
+        :}
+    |   property:p COMMA property_list:pl {:
+            pl.add(0, p);
+            RESULT = pl;
+        :}
     ;
 property ::=
         compound_id

@@ -31,67 +31,67 @@
             <xsd:complexType name="row">
               <xsd:sequence>
                 <xsd:element minOccurs="0"
-                  name="_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_CAPTION_x005D_"
+                  name="_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_"
                   sql:field="[Customers].[Country].[MEMBER_CAPTION]" type="xsd:string"/>
                 <xsd:element minOccurs="0"
-                  name="_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_"
+                  name="_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_"
                   sql:field="[Customers].[Country].[MEMBER_UNIQUE_NAME]" type="xsd:string"/>
                 <xsd:element minOccurs="0"
-                  name="_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_"
+                  name="_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_"
                   sql:field="[Time].[Year].[MEMBER_CAPTION]" type="xsd:string"/>
                 <xsd:element minOccurs="0"
-                  name="_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_"
+                  name="_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_"
                   sql:field="[Time].[Year].[MEMBER_UNIQUE_NAME]" type="xsd:string"/>
                 <xsd:element minOccurs="0"
-                  name="_x005B_Measures_x005D_._x005B_Unit_x0020_Sales_x005D_" sql:field="[Measures].[Unit Sales]"/>
+                  name="_x005b_Measures_x005d_._x005b_Unit_x0020_Sales_x005d_" sql:field="[Measures].[Unit Sales]"/>
               </xsd:sequence>
             </xsd:complexType>
           </xsd:schema>
           <row>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>1997</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>[Time].[1997]</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>
-            <_x005B_Measures_x005D_._x005B_Unit_x0020_Sales_x005D_ xsi:type="xsd:double">266773</_x005B_Measures_x005D_._x005B_Unit_x0020_Sales_x005D_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>1997</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Time].[1997]</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
+            <_x005b_Measures_x005d_._x005b_Unit_x0020_Sales_x005d_ xsi:type="xsd:double">266773</_x005b_Measures_x005d_._x005b_Unit_x0020_Sales_x005d_>
           </row>
           <row>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>1998</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>[Time].[1998]</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>1998</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Time].[1998]</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
           </row>
           <row>
-            <_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_CAPTION_x005D_>Canada</_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_CAPTION_x005D_>
-            <_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>[Customers].[All Customers].[Canada]</_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>1997</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>[Time].[1997]</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>
+            <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>Canada</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+            <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Customers].[All Customers].[Canada]</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>1997</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Time].[1997]</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
           </row>
           <row>
-            <_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_CAPTION_x005D_>Canada</_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_CAPTION_x005D_>
-            <_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>[Customers].[All Customers].[Canada]</_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>1998</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>[Time].[1998]</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>
+            <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>Canada</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+            <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Customers].[All Customers].[Canada]</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>1998</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Time].[1998]</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
           </row>
           <row>
-            <_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_CAPTION_x005D_>Mexico</_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_CAPTION_x005D_>
-            <_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>[Customers].[All Customers].[Mexico]</_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>1997</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>[Time].[1997]</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>
+            <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>Mexico</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+            <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Customers].[All Customers].[Mexico]</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>1997</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Time].[1997]</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
           </row>
           <row>
-            <_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_CAPTION_x005D_>Mexico</_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_CAPTION_x005D_>
-            <_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>[Customers].[All Customers].[Mexico]</_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>1998</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>[Time].[1998]</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>
+            <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>Mexico</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+            <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Customers].[All Customers].[Mexico]</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>1998</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Time].[1998]</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
           </row>
           <row>
-            <_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_CAPTION_x005D_>USA</_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_CAPTION_x005D_>
-            <_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>[Customers].[All Customers].[USA]</_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>1997</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>[Time].[1997]</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>
-            <_x005B_Measures_x005D_._x005B_Unit_x0020_Sales_x005D_ xsi:type="xsd:double">266773</_x005B_Measures_x005D_._x005B_Unit_x0020_Sales_x005D_>
+            <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+            <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Customers].[All Customers].[USA]</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>1997</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Time].[1997]</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
+            <_x005b_Measures_x005d_._x005b_Unit_x0020_Sales_x005d_ xsi:type="xsd:double">266773</_x005b_Measures_x005d_._x005b_Unit_x0020_Sales_x005d_>
           </row>
           <row>
-            <_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_CAPTION_x005D_>USA</_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_CAPTION_x005D_>
-            <_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>[Customers].[All Customers].[USA]</_x005B_Customers_x005D_._x005B_Country_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>1998</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_CAPTION_x005D_>
-            <_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>[Time].[1998]</_x005B_Time_x005D_._x005B_Year_x005D_._x005B_MEMBER_UNIQUE_NAME_x005D_>
+            <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+            <_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Customers].[All Customers].[USA]</_x005b_Customers_x005d_._x005b_Country_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>1998</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_CAPTION_x005d_>
+            <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Time].[1998]</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
           </row>
         </root>
       </xmla:return>

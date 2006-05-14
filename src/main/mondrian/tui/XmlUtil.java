@@ -3,75 +3,40 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde and others
+// Copyright (C) 2005-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 
 package mondrian.tui;
 
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TooManyListenersException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.IOException;
-import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.URIResolver;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.dom.DOMSource;
-import org.xml.sax.InputSource;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.w3c.dom.Node;
-import org.w3c.dom.Element;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Text;
-import org.w3c.dom.Attr;
-import org.w3c.dom.xpath.XPathResult;
-import org.w3c.dom.xpath.XPathEvaluator;
-import org.w3c.dom.xpath.XPathException;
-import org.w3c.dom.xpath.XPathNSResolver;
-import org.apache.xml.serialize.XMLSerializer;
-import org.apache.xml.serialize.OutputFormat;
+import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.parsers.DOMParser;
-import org.apache.xerces.dom.DocumentImpl;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
 import org.apache.xpath.domapi.XPathEvaluatorImpl;
+import org.w3c.dom.*;
+import org.w3c.dom.xpath.*;
+import org.xml.sax.*;
 
-/** 
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import java.io.*;
+import java.util.*;
+
+/**
  * Some XML parsing, validation and transform utility methods used
  * to valiate XMLA responses.
- * 
- * @author <a>Richard M. Emberson</a>
- * @version 
+ *
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 public class XmlUtil {
 
-    public static final String LINE_SEP = 
+    public static final String LINE_SEP =
             System.getProperty("line.separator", "\n");
 
 
@@ -97,7 +62,7 @@ public class XmlUtil {
                 Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_LOCATION;
 
     /**
-     * This is the xslt that can extract the "data" part of a SOAP 
+     * This is the xslt that can extract the "data" part of a SOAP
      * XMLA response.
      */
     public static final String SOAP_XMLA_XDS2XD =
@@ -294,8 +259,8 @@ public class XmlUtil {
             "</xsl:template> " + LINE_SEP +
         "</xsl:stylesheet>";
 
-    /** 
-     * Error handler plus helper methods.  
+    /**
+     * Error handler plus helper methods.
      */
     public static class SAXErrorHandler implements ErrorHandler {
         public static final String WARNING_STRING        = "WARNING";
@@ -306,7 +271,7 @@ public class XmlUtil {
         public static final short SEVERITY_WARNING      = 1;
         public static final short SEVERITY_ERROR        = 2;
         public static final short SEVERITY_FATAL_ERROR  = 3;
-        
+
         public void printErrorInfos(PrintStream out) {
             if (errors != null) {
                 Iterator it = errors.iterator();
@@ -384,23 +349,23 @@ public class XmlUtil {
         }
         public void error(SAXParseException exception) throws SAXException {
             addError(new ErrorInfo(SEVERITY_ERROR, exception));
-        }       
+        }
         public void fatalError(SAXParseException exception)
                                                         throws SAXException {
             addError(new ErrorInfo(SEVERITY_FATAL_ERROR, exception));
-        }   
+        }
         protected void addError(ErrorInfo ei) {
             if (this.errors == null) {
                 this.errors = new ArrayList();
             }
             this.errors.add(ei);
         }
-            
+
         public String getFirstError() {
             return (hasErrors())
                 ? formatErrorInfo((ErrorInfo) errors.get(0))
                 : "";
-        }   
+        }
     }
 
     public static Document newDocument(Node firstElement, boolean deepcopy) {
@@ -414,16 +379,16 @@ public class XmlUtil {
     // parse
     //////////////////////////////////////////////////////////////////////////
 
-    /** 
+    /**
      * Get your non-cached DOM parser which can be configured to do schema
      * based validation of the instance Document.
-     * 
-     * @param schemaLocationPropertyValue 
-     * @param entityResolver 
-     * @param validate 
-     * @return 
-     * @throws SAXNotRecognizedException 
-     * @throws SAXNotSupportedException 
+     *
+     * @param schemaLocationPropertyValue
+     * @param entityResolver
+     * @param validate
+     * @return
+     * @throws SAXNotRecognizedException
+     * @throws SAXNotSupportedException
      */
     public static DOMParser getParser(
             String schemaLocationPropertyValue,
@@ -444,18 +409,18 @@ public class XmlUtil {
         parser.setFeature(VALIDATION_FEATURE_ID, doingValidation);
 
         if (schemaLocationPropertyValue != null) {
-            parser.setProperty(SCHEMA_LOCATION, 
+            parser.setProperty(SCHEMA_LOCATION,
                 schemaLocationPropertyValue.replace('\\', '/'));
         }
 
         return parser;
     }
 
-    /** 
+    /**
      * See if the DOMParser after parsing a Document has any errors and,
      * if so, throw a RuntimeException exception containing the errors.
-     * 
-     * @param parser 
+     *
+     * @param parser
      */
     private static void checkForParseError(final DOMParser parser, Throwable t) {
         final ErrorHandler errorHandler = parser.getErrorHandler();
@@ -477,54 +442,54 @@ public class XmlUtil {
     }
 
 
-    /** 
+    /**
      * Parse a String into a Document (no validation).
-     * 
-     * @param s 
-     * @return 
+     *
+     * @param s
+     * @return
      */
-    public static Document parseString(String s) 
+    public static Document parseString(String s)
             throws SAXException, IOException {
         // Hack to workaround bug #622 until 1.4.2_08
         final int length = s.length();
-        
+
         if (length > 16777216 && length % 4 == 1) {
             final StringBuffer buf = new StringBuffer(length + 1);
 
             buf.append(s);
             buf.append('\n');
             s = buf.toString();
-        }   
-            
-        return XmlUtil.parse(s.getBytes());
-    }   
+        }
 
-    /** 
-     * Parse a byte array into a Document (no validation). 
-     * 
-     * @param bytes 
-     * @return 
+        return XmlUtil.parse(s.getBytes());
+    }
+
+    /**
+     * Parse a byte array into a Document (no validation).
+     *
+     * @param bytes
+     * @return
      */
-    public static Document parse(byte[] bytes) 
+    public static Document parse(byte[] bytes)
             throws SAXException, IOException {
         return XmlUtil.parse(new ByteArrayInputStream(bytes));
     }
 
-    public static Document parse(File file) 
+    public static Document parse(File file)
             throws SAXException, IOException {
 
         return parse(new FileInputStream(file));
     }
 
-    /** 
-     * Parse a stream into a Document (no validation). 
-     * 
-     * @param in 
-     * @return 
-     * @throws SAXException 
-     * @throws IOException 
+    /**
+     * Parse a stream into a Document (no validation).
+     *
+     * @param in
+     * @return
+     * @throws SAXException
+     * @throws IOException
      */
-    public static Document parse(InputStream in) 
+    public static Document parse(InputStream in)
             throws SAXException, IOException {
 
         InputSource source = new InputSource(in);
@@ -545,23 +510,23 @@ public class XmlUtil {
     //////////////////////////////////////////////////////////////////////////
     // xpath
     //////////////////////////////////////////////////////////////////////////
-    /** 
-     * Create a context document for use in performing XPath operations. 
+    /**
+     * Create a context document for use in performing XPath operations.
      * An array of prefix/namespace-urls are provided as input. These
      * namespace-urls should be all of those that will appear in the
      * document against which an xpath is to be applied.
      * Importantly, it is, in fact, each element of the Document that
-     * has a default namespace these namespaces MUST have 
+     * has a default namespace these namespaces MUST have
      * prefix/namespace-urls pairs in the context document and the prefix
-     * provided MUST also be used in the xpath. 
+     * provided MUST also be used in the xpath.
      * Elements with explicit namespaces don't have to have pairs in the
      * context Document as long as the xpath uses the same prefixes
      * that appear in the target Document.
-     * 
-     * @param nsArray 
-     * @return 
-     * @throws SAXException 
-     * @throws IOException 
+     *
+     * @param nsArray
+     * @return
+     * @throws SAXException
+     * @throws IOException
      */
     public static Document createContextDocument(String[][] nsArray)
             throws SAXException, IOException {
@@ -606,9 +571,11 @@ public class XmlUtil {
 
         return buf.toString();
     }
+
     public static String makeRootPathInSoapBody() {
         return makeRootPathInSoapBody(XSD_PREFIX);
     }
+
     // '/xmla:DiscoverResponse/xmla:return/ROW/root/*'
     public static String makeRootPathInSoapBody(String prefix) {
         StringBuffer buf = new StringBuffer(20);
@@ -631,7 +598,7 @@ public class XmlUtil {
     public static String selectAsString(Node node, String xpath)
                                             throws XPathException {
         return XmlUtil.selectAsString(node, xpath, node);
-    }   
+    }
     public static String selectAsString(Node node, String xpath,
                         Node namespaceNode) throws XPathException {
 
@@ -642,7 +609,7 @@ public class XmlUtil {
     public static Node[] selectAsNodes(Node node, String xpath)
                                             throws XPathException {
         return XmlUtil.selectAsNodes(node, xpath, node);
-    }   
+    }
     public static Node[] selectAsNodes(Node node, String xpath,
                         Node namespaceNode) throws XPathException {
 
@@ -659,12 +626,12 @@ public class XmlUtil {
                 XPathResult.ANY_TYPE, null);
     }
 
-    /** 
-     * Convert an XPathResult object to String. 
-     * 
-     * @param xpathResult 
-     * @param prettyPrint 
-     * @return 
+    /**
+     * Convert an XPathResult object to String.
+     *
+     * @param xpathResult
+     * @param prettyPrint
+     * @return
      */
     public static String convertToString(XPathResult xpathResult,
                                          boolean prettyPrint) {
@@ -672,23 +639,23 @@ public class XmlUtil {
         case XPathResult.NUMBER_TYPE:
             double d = xpathResult.getNumberValue();
             return Double.toString(d);
-            
+
         case XPathResult.STRING_TYPE:
             String s = xpathResult.getStringValue();
             return s;
-            
+
         case XPathResult.BOOLEAN_TYPE:
             boolean b = xpathResult.getBooleanValue();
             return String.valueOf(b);
-            
+
         case XPathResult.FIRST_ORDERED_NODE_TYPE:
         case XPathResult.ANY_UNORDERED_NODE_TYPE: {
             Node node = xpathResult.getSingleNodeValue();
             return XmlUtil.toString(node, prettyPrint);
-        }   
+        }
         case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
         case XPathResult.UNORDERED_NODE_ITERATOR_TYPE: {
-            StringBuffer buf = new StringBuffer(512); 
+            StringBuffer buf = new StringBuffer(512);
             Node node = xpathResult.iterateNext();
             while (node != null) {
                 buf.append(XmlUtil.toString(node, prettyPrint));
@@ -715,28 +682,28 @@ public class XmlUtil {
 
     private static final Node[] NULL_NODE_ARRAY = new Node[0];
 
-    /** 
-     * Convert an XPathResult to an array of Nodes. 
-     * 
-     * @param xpathResult 
-     * @return 
+    /**
+     * Convert an XPathResult to an array of Nodes.
+     *
+     * @param xpathResult
+     * @return
      */
     public static Node[] convertToNodes(XPathResult xpathResult) {
         switch (xpathResult.getResultType()) {
         case XPathResult.NUMBER_TYPE:
             return NULL_NODE_ARRAY;
-            
+
         case XPathResult.STRING_TYPE:
             return NULL_NODE_ARRAY;
-            
+
         case XPathResult.BOOLEAN_TYPE:
             return NULL_NODE_ARRAY;
-            
+
         case XPathResult.FIRST_ORDERED_NODE_TYPE:
         case XPathResult.ANY_UNORDERED_NODE_TYPE: {
             Node node = xpathResult.getSingleNodeValue();
             return new Node[] { node };
-        }   
+        }
         case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
         case XPathResult.UNORDERED_NODE_ITERATOR_TYPE: {
             List list = new ArrayList();
@@ -764,25 +731,24 @@ public class XmlUtil {
         }
     }
 
-    /** 
+    /**
      * Convert a Node to a String.
-     * 
-     * @param node 
+     *
+     * @param node
      * @param prettyPrint add CRs
-     * @return 
+     * @return
      */
     public static String toString(Node node, boolean prettyPrint) {
         if (node == null) {
             return null;
         }
-        String str = null;
         try {
             Document doc = node.getOwnerDocument();
             OutputFormat format  = null;
             if (doc != null) {
-                format  = new OutputFormat(doc, null, true);
+                format = new OutputFormat(doc, null, prettyPrint);
             } else {
-                format  = new OutputFormat("xml", null, true);
+                format = new OutputFormat("xml", null, prettyPrint);
             }
             if (prettyPrint) {
                 format.setLineSeparator(LINE_SEP);
@@ -827,19 +793,19 @@ public class XmlUtil {
                     writer.write(LINE_SEP);
                 }
             }
-            str = writer.toString();
+            return writer.toString();
         } catch (Exception ex) {
             // ignore
+            return null;
         }
-        return str;
     }
 
     //////////////////////////////////////////////////////////////////////////
     // validate
     //////////////////////////////////////////////////////////////////////////
-    
-    /** 
-     * This can be extened to have a map from publicId/systemId  
+
+    /**
+     * This can be extened to have a map from publicId/systemId
      * to InputSource.
      */
     public static class Resolver implements EntityResolver {
@@ -869,10 +835,10 @@ System.err.println("    systemId="+systemId);
         }
     }
 
-    /** 
-     * Get the Xerces version being used. 
-     * 
-     * @return 
+    /**
+     * Get the Xerces version being used.
+     *
+     * @return
      */
     public static String getXercesVersion() {
         try {
@@ -881,11 +847,11 @@ System.err.println("    systemId="+systemId);
             return "Xerces-J 2.2.0";
         }
     }
-    
-    /** 
-     * Get the number part of the Xerces Version string. 
-     * 
-     * @return 
+
+    /**
+     * Get the number part of the Xerces Version string.
+     *
+     * @return
      */
     public static String getXercesVersionNumberString() {
         String version = getXercesVersion();
@@ -896,12 +862,12 @@ System.err.println("    systemId="+systemId);
 
     protected static int[] versionNumbers = null;
 
-    /** 
-     * Get the Xerces numbers as a three part array of ints where 
+    /**
+     * Get the Xerces numbers as a three part array of ints where
      * the first element is the major release number, the second is the
      * minor release number, and the third is the patch number.
-     * 
-     * @return 
+     *
+     * @return
      */
     public static int[] getXercesVersionNumbers() {
         if (versionNumbers == null) {
@@ -921,10 +887,10 @@ System.err.println("    systemId="+systemId);
         }
 
         return versionNumbers;
-        
+
     }
-    
-    /** 
+
+    /**
      * I could not get Xerces 2.2 to validate. So, I hard coded allowing
      * Xerces 2.6 and above to validate and by setting the following
      * System property one can test validating with earlier versions
@@ -934,28 +900,28 @@ System.err.println("    systemId="+systemId);
                 "mondrian.xml.always.attempt.validation";
     private static final boolean alwaysAttemptValidation;
     static {
-        alwaysAttemptValidation = 
+        alwaysAttemptValidation =
             Boolean.getBoolean(ALWAYS_ATTEMPT_VALIDATION);
     }
-    /** 
+    /**
      * I could not get validation to work with Xerces 2.2 so I put in
      * this check. If you want to test on an earlier version of Xerces
-     * simply define the above property: 
+     * simply define the above property:
      *   "mondrian.xml.always.attempt.validation",
      * to true.
-     * 
-     * @return 
+     *
+     * @return
      */
     public static boolean supportsValidation() {
         if (alwaysAttemptValidation) {
             return true;
         } else {
             int[] verNums = getXercesVersionNumbers();
-            return ((verNums[0] >= 3) || 
+            return ((verNums[0] >= 3) ||
                 ((verNums[0] == 2) && (verNums[1] >= 6)));
         }
     }
-    public static void validate(Document doc, 
+    public static void validate(Document doc,
                     String schemaLocationPropertyValue,
                     EntityResolver resolver)
             throws IOException ,
@@ -985,7 +951,7 @@ System.err.println("    systemId="+systemId);
         }
         DOMParser parser =
             getParser(schemaLocationPropertyValue, resolver, true);
-                    
+
         parser.parse(new InputSource(new StringReader(docStr)));
         checkForParseError(parser);
 
@@ -1031,7 +997,7 @@ System.out.println("XmlUtil.validate: docString=" +docString);
 
         String schemaStr = XmlUtil.toString(xsdDoc, false);
 System.out.println("XmlUtil.validate: schemaStr=" +schemaStr);
-        Resolver resolver = 
+        Resolver resolver =
             new Resolver(new InputSource(new StringReader(schemaStr)));
 
         String schemaLocationPropertyValue = xmlns + " bar";
@@ -1045,51 +1011,51 @@ System.out.println("XmlUtil.validate: schemaLocationPropertyValue=" +schemaLocat
     }
 */
 
-    /** 
-     * This is used to get a Document's namespace attribute value. 
-     * 
-     * @param doc 
-     * @return 
+    /**
+     * This is used to get a Document's namespace attribute value.
+     *
+     * @param doc
+     * @return
      */
     public static String getNamespaceAttributeValue(Document doc) {
-        Element el = doc.getDocumentElement(); 
+        Element el = doc.getDocumentElement();
         String prefix = el.getPrefix();
         Attr attr = (prefix == null)
                     ? el.getAttributeNode(XMLNS)
                     : el.getAttributeNode(XMLNS + ':' + prefix);
         return (attr == null) ? null : attr.getValue();
-    }   
+    }
 
     //////////////////////////////////////////////////////////////////////////
     // transform
     //////////////////////////////////////////////////////////////////////////
 
     private static TransformerFactory tfactory = null;
-    public static TransformerFactory getTransformerFactory() 
+    public static TransformerFactory getTransformerFactory()
             throws TransformerFactoryConfigurationError {
         if (tfactory == null) {
             tfactory = TransformerFactory.newInstance();
         }
         return tfactory;
     }
-    
-    /** 
-     * Transform a Document and return the transformed Node. 
-     * 
-     * @param inDoc 
-     * @param xslFileName 
-     * @return 
-     * @throws ParserConfigurationException 
-     * @throws SAXException 
-     * @throws IOException 
-     * @throws TransformerConfigurationException 
-     * @throws TransformerException 
+
+    /**
+     * Transform a Document and return the transformed Node.
+     *
+     * @param inDoc
+     * @param xslFileName
+     * @return
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     * @throws IOException
+     * @throws TransformerConfigurationException
+     * @throws TransformerException
      */
-    public static Node transform(Document inDoc, 
+    public static Node transform(Document inDoc,
         String xslFileName,
-        String[][] namevalueParameters) 
-            throws ParserConfigurationException, 
-                SAXException, 
+        String[][] namevalueParameters)
+            throws ParserConfigurationException,
+                SAXException,
                 IOException,
                 TransformerConfigurationException,
                 TransformerException {
@@ -1103,7 +1069,7 @@ System.out.println("XmlUtil.validate: schemaLocationPropertyValue=" +schemaLocat
         TransformerFactory tfactory = getTransformerFactory();
         Templates stylesheet = tfactory.newTemplates(
                             new DOMSource(xslDOM, xslFileName));
-        Transformer transformer = stylesheet.newTransformer();                                                                   
+        Transformer transformer = stylesheet.newTransformer();
         if (namevalueParameters != null) {
             for (int i = 0; i < namevalueParameters.length; i++) {
                 String name = namevalueParameters[i][0];
@@ -1117,34 +1083,34 @@ System.out.println("XmlUtil.validate: schemaLocationPropertyValue=" +schemaLocat
 
         return domResult.getNode();
     }
-    public static Node transform(Document inDoc, 
-        String xslFileName) 
-            throws ParserConfigurationException, 
-                SAXException, 
+    public static Node transform(Document inDoc,
+        String xslFileName)
+            throws ParserConfigurationException,
+                SAXException,
                 IOException,
                 TransformerConfigurationException,
                 TransformerException {
         return transform(inDoc, xslFileName, null);
     }
 
-    /** 
-     * Transform a Document and return the transformed Node. 
-     * 
-     * @param inDoc 
-     * @param xslReader 
-     * @param namevalueParameters 
-     * @return 
-     * @throws ParserConfigurationException 
-     * @throws SAXException 
-     * @throws IOException 
-     * @throws TransformerConfigurationException 
-     * @throws TransformerException 
+    /**
+     * Transform a Document and return the transformed Node.
+     *
+     * @param inDoc
+     * @param xslReader
+     * @param namevalueParameters
+     * @return
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     * @throws IOException
+     * @throws TransformerConfigurationException
+     * @throws TransformerException
      */
-    public static Node transform(Document inDoc, 
+    public static Node transform(Document inDoc,
         Reader xslReader,
-        String[][] namevalueParameters) 
-            throws ParserConfigurationException, 
-                SAXException, 
+        String[][] namevalueParameters)
+            throws ParserConfigurationException,
+                SAXException,
                 IOException,
                 TransformerConfigurationException,
                 TransformerException {
@@ -1157,7 +1123,7 @@ System.out.println("XmlUtil.validate: schemaLocationPropertyValue=" +schemaLocat
 
         TransformerFactory tfactory = getTransformerFactory();
         Templates stylesheet = tfactory.newTemplates(new DOMSource(xslDOM));
-        Transformer transformer = stylesheet.newTransformer();                                                                   
+        Transformer transformer = stylesheet.newTransformer();
         if (namevalueParameters != null) {
             for (int i = 0; i < namevalueParameters.length; i++) {
                 String name = namevalueParameters[i][0];
@@ -1172,96 +1138,18 @@ System.out.println("XmlUtil.validate: schemaLocationPropertyValue=" +schemaLocat
 
         return domResult.getNode();
     }
-    public static Node transform(Document inDoc, 
-        Reader xslReader) 
-            throws ParserConfigurationException, 
-                SAXException, 
+    public static Node transform(Document inDoc,
+        Reader xslReader)
+            throws ParserConfigurationException,
+                SAXException,
                 IOException,
                 TransformerConfigurationException,
                 TransformerException {
-        return transform(inDoc, xslReader, null);                
+        return transform(inDoc, xslReader, null);
     }
-
-
-
-/*
-    private static TransformerFactory tFactory;
-    static {
-        // cache the transformer factory.
-                        
-        tFactory = TransformerFactory.newInstance();
-//tFactory.setURIResolver(StandardResolver.INSTANCE);
-        if(! tFactory.getFeature(DOMSource.FEATURE)) {
-            System.err.println(
-                    "XMLUtil: DOM source node processing not supported");
-            tFactory = null;
-        }
-        if(! tFactory.getFeature(DOMResult.FEATURE)) {
-            System.err.println(
-                "XMLUtil: DOM result node processing not supported");
-            tFactory = null;
-        }               
-    }   
-
-    public static Node transform(
-                    Document inDoc, String inDocSystemID,
-                    Document xslDoc, String xslDocSystemID,
-                    boolean trace, URIResolver resolver)
-            throws TransformerConfigurationException,
-                   TransformerException,
-                   TooManyListenersException {
-        DOMSource xslDomSource = new DOMSource(xslDoc, xslDocSystemID);
-        DOMSource xmlDomSource = new DOMSource(inDoc, inDocSystemID);
-        DOMResult domResult = new DOMResult();
-
-        transform(xslDomSource, resolver, xmlDomSource, domResult, trace);
-        
-        return domResult.getNode();
-    }
-    public static void transform(Source xslSource, URIResolver resolver,
-             Source xmlSource, Result result, boolean trace)
-             throws TransformerConfigurationException, TransformerException,
-                        TooManyListenersException {
-
-        TransformerFactory factory = null;
-        if (resolver != null) {
-            factory = TransformerFactory.newInstance();
-            factory.setURIResolver(resolver);
-        } else {
-            factory = tFactory;
-        }
-
-        Transformer transformer = factory.newTransformer(xslSource);
-
-        if (trace) {
-            addTracer(transformer);
-        }
-        transformer.transform(xmlSource, result);
-    }
-
-    public static void addTracer(Transformer transformer)
-            throws TooManyListenersException {
-        addTracer(transformer, new PrintWriter(System.out, true));
-    }   
-
-    public static void addTracer(Transformer transformer, PrintWriter pw)
-                        throws TooManyListenersException {
-        if (transformer instanceof TransformerImpl) {
-            TransformerImpl transformerImpl = (TransformerImpl) transformer;
-            
-            PrintTraceListener ptl = new PrintTraceListener(pw);
-            ptl.m_traceElements = true;
-            ptl.m_traceGeneration = true;
-            ptl.m_traceSelection = true;
-            ptl.m_traceTemplates = true;
-            
-            TraceManager trMgr = transformerImpl.getTraceManager();
-            trMgr.addTraceListener(ptl);
-        }
-    }
-
-*/
 
 
     private XmlUtil() {}
 }
+
+// End XmlUtil.java

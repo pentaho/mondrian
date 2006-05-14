@@ -9,21 +9,20 @@
 */
 package mondrian.xmla.test;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.*;
 
 import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
 import mondrian.xmla.XmlaServlet;
+import mondrian.olap.Util;
 
 /**
  * Dummy request for testing XmlaServlet. Provides a 'text/xml' content stream
  * from a post from xmlaTest.jsp. Assumes that the SOAPRequest parameter
  * contains XML/A SOAP request body.
- *  
+ *
  * @author Sherman Wood
  * @version $Id$
  */
@@ -31,58 +30,73 @@ public class XmlaTestServletRequestWrapper extends HttpServletRequestWrapper {
 
 	private HttpServletRequest originalRequest;
 	private ServletInputStream servletInStream;
-	
+
 	public XmlaTestServletRequestWrapper(HttpServletRequest req) {
 		super(req);
 		originalRequest = req;
 		init();
 	}
-	
+
 	/**
 	 * Extract the data from the HTTP request and create an XML/A request
 	 */
 	private void init() {
 		String soapRequest = originalRequest.getParameter("SOAPRequest");
-		
-		if (soapRequest == null || soapRequest.length() == 0) {
-			throw new RuntimeException("SOAPRequest not set");
+
+        if (soapRequest == null || soapRequest.length() == 0) {
+            // Parameter not set. Look for the request in the body of the http
+            // request.
+
+            try {
+                final ServletInputStream inputStream =
+                        originalRequest.getInputStream();
+                soapRequest = Util.readFully(
+                        new InputStreamReader(inputStream), 2048);
+            } catch (IOException e) {
+                throw Util.newInternal(e, "error reading body of soap request");
+            }
+
+            if (soapRequest == null || soapRequest.length() == 0) {
+                throw new RuntimeException("SOAPRequest not set");
+            }
 		}
-        
+
         /*
          * Strip the XML premable if it is there
          */
         if (soapRequest.indexOf("<?") == 0 ) {
         	soapRequest = soapRequest.substring(soapRequest.indexOf("?>") + 2);
         }
-		
+
 		/*
 		 * Make a SOAP message
 		 */
-        StringBuffer buf = new StringBuffer();
-        buf.append("<?xml version=\"1.0\"?>\r\n");
-        buf.append("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"").append(XmlaServlet.NS_SOAP_ENV_1_1).
-            append("\" SOAP-ENV:encodingStyle=\"").
-            append(XmlaServlet.NS_SOAP_ENC_1_1).append("\">\r\n");
-        buf.append("<SOAP-ENV:Header/>\r\n");
-        buf.append("<SOAP-ENV:Body>\r\n");
-        buf.append(soapRequest);
-        buf.append("</SOAP-ENV:Body>\r\n</SOAP-ENV:Envelope>\r\n");
-		
-		servletInStream = new XmlaTestServletInputStream(buf.toString());
+        String request =
+                "<?xml version=\"1.0\"?>\r\n" +
+                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"" +
+                XmlaServlet.NS_SOAP_ENV_1_1 +
+                "\" SOAP-ENV:encodingStyle=\"" +
+                XmlaServlet.NS_SOAP_ENC_1_1 + "\">\r\n" +
+                "<SOAP-ENV:Header/>\r\n" +
+                "<SOAP-ENV:Body>\r\n" +
+                soapRequest +
+        "</SOAP-ENV:Body>\r\n</SOAP-ENV:Envelope>\r\n";
+
+		servletInStream = new XmlaTestServletInputStream(request);
 	}
-	
+
 	public String getContentType() {
 		return "text/xml";
 	}
-	
+
 	public ServletInputStream getInputStream() {
 		return servletInStream;
 	}
-	
+
 	private class XmlaTestServletInputStream extends ServletInputStream {
-		
+
 		private ByteArrayInputStream bais;
-		
+
 		XmlaTestServletInputStream(String source) {
 			bais = new ByteArrayInputStream(source.getBytes());
 		}

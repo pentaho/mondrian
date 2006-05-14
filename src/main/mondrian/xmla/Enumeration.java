@@ -82,12 +82,12 @@ class Enumeration extends EnumeratedValues {
     }
 
     public static final class AxisFormat extends BasicValue {
-        public AxisFormat(String name, int ordinal) {
-            super(name, ordinal, null);
+        public AxisFormat(String name, int ordinal, String description) {
+            super(name, ordinal, description);
         }
-        public static final AxisFormat TupleFormat = new AxisFormat("TupleFormat", 0);
-        public static final AxisFormat ClusterFormat = new AxisFormat("ClusterFormat", 1);
-        public static final AxisFormat CustomFormat = new AxisFormat("CustomFormat", 2);
+        public static final AxisFormat TupleFormat = new AxisFormat("TupleFormat", 0, "The MDDataSet axis is made up of one or more CrossProduct elements.");
+        public static final AxisFormat ClusterFormat = new AxisFormat("ClusterFormat", 1, "Analysis Services uses the TupleFormat format for this setting.");
+        public static final AxisFormat CustomFormat = new AxisFormat("CustomFormat", 2, "The MDDataSet axis contains one or more Tuple elements.");
         public static final EnumeratedValues enumeration = new EnumeratedValues(
                 new AxisFormat[] {TupleFormat, ClusterFormat, CustomFormat});
         public static AxisFormat getValue(String name) {
@@ -100,20 +100,20 @@ class Enumeration extends EnumeratedValues {
         public static final int SCHEMA_ORDINAL      = 1;
         public static final int DATA_ORDINAL        = 2;
         public static final int SCHEMA_DATA_ORDINAL = 3;
-        
+
         public static final Content None = new Content("None", NONE_ORDINAL, "none");
         public static final Content Schema = new Content("Schema", SCHEMA_ORDINAL, "schema");
         public static final Content Data = new Content("Data", DATA_ORDINAL, "data");
         public static final Content SchemaData = new Content("SchemaData", SCHEMA_DATA_ORDINAL, "schemadata");
-        
+
         public Content(String name, int ordinal, String description) {
             super(name, ordinal, description);
         }
-        
+
         public static final EnumeratedValues enumeration = new EnumeratedValues(
             new Content[] {None, Schema, Data, SchemaData}
         );
-        
+
         public static Content getValue(String name) {
             return (Content) enumeration.getValue(name, true);
         }
@@ -257,6 +257,25 @@ class Enumeration extends EnumeratedValues {
                     Self,
                     Descendants,
                     Ancestors,
+                }
+        );
+    }
+
+    public static class VisualMode extends BasicValue {
+        VisualMode(String name, int ordinal, String description) {
+            super(name, ordinal, description);
+        }
+        public static final VisualMode Default = new VisualMode("DBPROPVAL_VISUAL_MODE_DEFAULT", 0, "Provider-dependent. In Microsoft SQL Server 2000 Analysis Services, this is equivalent to DBPROPVAL_VISUAL_MODE_ORIGINAL.");
+        public static final VisualMode Visual = new VisualMode("DBPROPVAL_VISUAL_MODE_VISUAL", 1, "Visual totals are enabled.");
+        public static final VisualMode Original = new VisualMode("DBPROPVAL_VISUAL_MODE_ORIGINAL", 2, "Visual totals are not enabled.");
+        static final Enumeration enumeration = new Enumeration(
+                "VisualMode",
+                "This property determines the default behavior for visual totals.",
+                RowsetDefinition.Type.Integer,
+                new VisualMode[] {
+                    Default,
+                    Visual,
+                    Original,
                 }
         );
     }

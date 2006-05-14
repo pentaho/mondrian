@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2003-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -4504,9 +4504,10 @@ boolean restriction, boolean nullable, String description)
                 if (!passesRestriction(CubeName, cube.getName())) {
                     continue;
                 }
-                if (isRestricted(MemberUniqueName)) {
-                    final String memberUniqueName = (String)
-                            restrictions.get(MemberUniqueName.name);
+                final String memberUniqueName = (String)
+                        restrictions.get(MemberUniqueName.name);
+                if (memberUniqueName != null &&
+                        !memberUniqueName.equals("")) {
                     final String[] nameParts = Util.explode(memberUniqueName);
                     Member member = cube.getSchemaReader(null).
                             getMemberByUniqueName(nameParts, false);
