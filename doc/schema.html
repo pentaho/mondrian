@@ -35,19 +35,16 @@
 Hierarchies, Levels</a></li>
       <ol>
         <li><a href="#Mapping_Hierarchies">Mapping dimensions and
-hierarchies on to tables</a><br>
-        </li>
+hierarchies onto tables</a></li>
         <li><a href="#The_all_member">The 'All' member</a></li>
         <li><a href="#Time_dimensions">Time dimensions</a></li>
         <li><a href="#Level_Order_and_Display">Order and Display of
-Levels</a><br>
-        </li>
+Levels</a></li>
         <li><a href="#Multiple_hierarchies">Multiple hierarchies</a></li>
         <li><a href="#Degenerate_dimensions">Degenerate dimensions</a></li>
         <li><a href="#Inline_tables">Inline tables</a></li>
         <li><a href="#Member_properties_and_formatters">Member properties and
-        formatters</a><br>
-        </li>
+        formatters</a></li>
       </ol>
     </ol>
   </li>
@@ -344,41 +341,25 @@ made that purchase. This is expressed by joining from the fact table
 <p>A dimension is joined to a cube by means of a pair of columns, one
 in the fact table, the other in the dimension table. The <code>&lt;Dimension&gt;</code>
 element has a
-<code>primaryKey</code> attribute, which is the name of a column in the
-fact table; the <code>&lt;Hierarchy&gt;</code> element has <code>foreignKey</code>
+<code>foreignKey</code> attribute, which is the name of a column in the
+fact table; the <code>&lt;Hierarchy&gt;</code> element has <code>primaryKey</code>
 attribute.</p>
+
 <p>If the hierarchy has more than one table, you can disambiguate using
 the
 <code>primaryKeyTable</code> attribute. </p>
-<p>A dimension can live in the fact table, like this: </p>
-<blockquote>
-  <pre>&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;<br>  &lt;<a
- href="#XML_Table">Table</a> name="sales_fact_1997"/&gt;<br>  ...<br>  &lt;<a
- href="#XML_Dimension">Dimension</a> name="Payment method"&gt;<br>    &lt;<a
- href="#XML_Hierarchy">Hierarchy</a> hasAll="true"&gt;<br>      &lt;<a
- href="#XML_Level">Level</a> name="Payment method" column="payment_method" uniqueMembers="true"/&gt;<br>    &lt;/ href="#XML_Hierarchy">Hierarchy</a>&gt;<br>  &lt;/<a
- href="#XML_Dimension">Dimension</a>&gt;<br>&lt;/<a href="#XML_Cube">Cube</a>&gt;</pre>
-</blockquote>
-<p>You would do this if the dimension has a very simple structure
-(usually just one level) and all of the necessary columns are in the
-fact table. The level columns (such as <code>payment_method</code>
-here) implicitly come from the current row in the fact table. </p>
 
-<p>Note that the hierarchy has no <code>&lt;Table&gt;</code> child
-element, and that there are no <code>primaryKey</code> or <code>foreignKey</code>
-attributes.</p>
-
-<p>The uniqueMembers attribute is used to optimize SQL generation. If
+<p>The <code>uniqueMembers</code> attribute is used to optimize SQL generation. If
 you know that the values of a given level column in the dimension table
 are unique across all the other values in that column across the parent
 levels, then set&nbsp; uniqueMembers="true", otherwise, set to
-"false".&nbsp; For example, a time dimension like [Year].[Month] will
-have the Month level uniqueMembers="false", as the same Month appears
-in different years. On the other hand, if you had a [Product
-Class].[Product Name] hierarchy, and you were sure that [Product Name]
-was unique, then you can set uniqueMembers="true". If you are not sure,
-then always set uniqueMembers="false". At the top level, this will
-always be uniqueMembers="true", as there is no parent level.</p>
+"false".&nbsp; For example, a time dimension like <code>[Year].[Month]</code> will
+have <code>uniqueMembers="false"</code> at the Month level, as the same month appears
+in different years. On the other hand, if you had a <code>[Product
+Class].[Product Name]</code> hierarchy, and you were sure that <code>[Product Name]</code>
+was unique, then you can set <code>uniqueMembers="true"</code>. If you are not sure,
+then always set <code>uniqueMembers="false"</code>. At the top level, this will
+always be <code>uniqueMembers="true"</code>, as there is no parent level.</p>
 
 <h4><a name="The_all_member">The 'all' member</a></h4>
 
@@ -471,20 +452,21 @@ whose allowable values are as follows:</p>
 </p>
 </blockquote>
 <h4><a name="Level_Order_and_Display">Order and display of levels</a></h4>
-<p>Notice that in the time hierarchy example above the ordinalColumn
-and nameColumn attributes on the Level tag. These effect how levels are
-displsyed in a result. The ordinalColumn specifies a column in the
+<p>Notice that in the time hierarchy example above the <code>ordinalColumn</code>
+and <code>nameColumn</code> attributes on the <code>&lt;Level&gt;</code> element.
+These effect how levels are
+displsyed in a result. The <code>ordinalColumn</code> attribute specifies a column in the
 Hierarchy table that provides the order of the members in a given
-Level, while the nameColumn specifies a column that will be displayed.<br>
-</p>
-<p>For example, in the Month Level above, the datehierarchy table has
-month (1..12) and month_name (January, February, ...) columns. The
+Level, while the <code>nameColumn</code> specifies a column that will be displayed.</p>
+
+<p>For example, in the Month Level above, the <code>datehierarchy</code> table has
+month (1 .. 12) and month_name (January, February, ...) columns. The
 column value that will be used internally within MDX is the month
 column, so valid member specifications will be of the form:
-[Time].[2005].[Q1].[<span style="font-weight: bold;">1</span>].&nbsp;
-When Month Levels display, they will be in month order, and show as
-January, February etc.<br>
-</p>
+<code>[Time].[2005].[Q1].[<b><i>1</i></b>]</code>.
+Members of the <code>[Month]</code> level will displayed in the order
+January, February, etc.</p>
+
 <h4><a name="Multiple_hierarchies">Multiple hierarchies</a></h4>
 <p>A dimension can contain more than one hierarchy:</p>
 
@@ -544,7 +526,7 @@ example, consider following the fact table:</p>
     <tr>
       <th>product_id</th>
       <th>time_id</th>
-      <th>payment_type</th>
+      <th>payment_method</th>
       <th>customer_id</th>
       <th>store_id</th>
       <th>item_count</th>
@@ -589,13 +571,13 @@ example, consider following the fact table:</p>
   </table>
 </blockquote>
 
-<p>and suppose we created a dimension table for the values in the <code>payment_type</code>
+<p>and suppose we created a dimension table for the values in the <code>payment_method</code>
 column:</p>
 
 <blockquote>
   <table border="2" id="table6" style="border-collapse: collapse">
     <tr>
-      <th>payment_type</th>
+      <th>payment_method</th>
     </tr>
     <tr>
       <td>Credit</td>
@@ -612,21 +594,22 @@ column:</p>
 <p>This dimension table is fairly pointless. It only has 3 values, adds no
 additional information, and incurs the cost of an extra join.</p>
 
-<p>Instead, you can create a degenerate dimension. To do this, declare a dimension without a table, and Mondrian
-will assume that the columns come from the fact table. </p>
+<p>Instead, you can create a degenerate dimension. To do this, declare
+a dimension without a table, and Mondrian will assume that the columns
+come from the fact table. </p>
 
 <blockquote>
 
   <p><code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Checkout&quot;&gt;<br>
 &nbsp; &lt;!-- The fact table is always necessary. --&gt;<br>
 &nbsp; &lt;<a href="#XML_Table">Table</a> name=&quot;checkout&quot;&gt;<br>
-&nbsp; &lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Payment type&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Payment method&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a
- href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
+ href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- No table element here. Fact table is
   assumed. --&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a
- href="#XML_Level">Level</a> name=&quot;Payment type&quot; column=&quot;payment_type&quot;/&gt;<br>
+ href="#XML_Level">Level</a> name=&quot;Payment method&quot; column=&quot;payment_method&quot; uniqueMembers=&quot;true&quot; /&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;/<a
  href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
 &nbsp; &lt;/<a href="#XML_Dimension">Dimension</a>&gt;<br>
@@ -635,9 +618,11 @@ will assume that the columns come from the fact table. </p>
   &lt;/<a href="#XML_Cube">Cube</a>&gt;</code></p>
 </blockquote>
 
-<p>Note that because there is no join, the <code>foreignKey</code> attribute of
-<code>Dimension</code>, and the <code>primaryKey</code> attribute of <code>
-Hierarchy</code> are not necessary.</p>
+<p>Note that because there is no join, the <code>foreignKey</code>
+attribute of <code>Dimension</code> is not necessary, and the
+<code>Hierarchy</code> element has no <code>&lt;Table&gt;</code> child
+element or <code>primaryKey</code> attribute.</p>
+
 
 <h4><a name="Inline_tables">Inline tables</a></h4>
 
@@ -2270,15 +2255,15 @@ MemberReader, if present.</td>
     </tr>
     <tr>
       <td><code>&lt;<a name="XML_Formula" href="xml_schema.html#Formula">Formula</a>&gt;</code></td>
-      <td>Holds the formula text within a NamedSet or CalculatedMember.</td>
+      <td>Holds the formula text within a <code>&lt;NamedSet&gt;</code> or <code>&lt;CalculatedMember&gt;</code>.</td>
     </tr>
     <tr>
       <td><code>&lt;<a name="XML_ColumnDefs">ColumnDefs</a>&gt;</code></td>
-      <td>Holder for &lt;ColumnDef&gt; elements.</td>
+      <td>Holder for <code>&lt;ColumnDef&gt;</code> elements.</td>
     </tr>
     <tr>
       <td><code>&lt;<a name="XML_ColumnDef">ColumnDef</a>&gt;</code></td>
-      <td>&nbsp;</td>
+      <td>Definition of a column in an <code>&lt;InlineTable&gt;</code> dataset.</td>
     </tr>
     <tr>
       <td><code>&lt;<a name="XML_Rows">Rows</a>&gt;</code></td>
@@ -2286,11 +2271,11 @@ MemberReader, if present.</td>
     </tr>
     <tr>
       <td><code>&lt;<a name="XML_Row">Row</a>&gt;</code></td>
-      <td>&nbsp;</td>
+      <td>Row in an &lt;InlineTable&gt; dataset.</td>
     </tr>
     <tr>
       <td><code>&lt;<a name="XML_Value">Value</a>&gt;</code></td>
-      <td>&nbsp;</td>
+      <td>Value of a column in an &lt;InlineTable&gt; dataset.</td>
     </tr>
   </tbody>
 </table>
