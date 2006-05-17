@@ -31,7 +31,7 @@ import org.eigenbase.util.property.Trigger;
 
 /**
  * <code>SqlQuery</code> allows us to build a <code>select</code>
- * statement and generate it in database-specific sql syntax.
+ * statement and generate it in database-specific SQL syntax.
  *
  * <p> Notable differences in database syntax are:<dl>
  *
@@ -670,8 +670,9 @@ public class SqlQuery
         }
 
         public String caseWhenElse(String cond, String thenExpr, String elseExpr) {
-            if (isAccess())
+            if (isAccess()) {
                 return "IIF(" + cond + "," + thenExpr + "," + elseExpr + ")";
+            }
             return "CASE WHEN " + cond + " THEN " + thenExpr + " ELSE " + elseExpr + " END";
         }
 
@@ -1010,19 +1011,28 @@ public class SqlQuery
         }
 
         /**
-          * Generates inline values list using ANSI 'VALUES' syntax.
-          * For example,
-          *
-          * <pre>SELECT * FROM (VALUES (1, 'a'), (2, 'b')) AS t(x, y)</pre>
-          *
-          * <p>This syntax is known to work on Derby, but not Oracle 10 or
-          * Access.
-          */
+         * Generates inline values list using ANSI 'VALUES' syntax.
+         * For example,
+         *
+         * <blockquote><code>SELECT * FROM
+         *   (VALUES (1, 'a'), (2, 'b')) AS t(x, y)</code></blockquote>
+         *
+         * We use a a baroque construct to ensure that NULL values
+         * have the same type as other columns:
+         *
+         * <blockquote><code>SELECT * FROM (VALUES
+         * (1, 'a'),
+         * (2, (CASE 0 WHEN 1 THEN 'a' ELSE NULL END))) AS t(x, y)
+         * </code></blockquote>
+         *
+         * <p>This syntax is known to work on Derby, but not Oracle 10 or
+         * Access.
+         */
         private String generateInlineForAnsi(
                 String alias, List columnNames,
                 List columnTypes, List valueList) {
             final StringBuffer buf = new StringBuffer();
-            buf.append("SELECT * FROM (VALUES");
+            buf.append("SELECT * FROM (VALUES ");
             for (int i = 0; i < valueList.size(); i++) {
                 if (i > 0) {
                     buf.append(", ");
@@ -1036,11 +1046,18 @@ public class SqlQuery
                     }
                     final String columnType = (String) columnTypes.get(j);
                     if (value == null) {
-                        buf.append("NULL");
-                    } else if (columnType.equals("String")) {
-                        buf.append(quoteString(value));
+                        String sqlType = guessSqlType(columnType, valueList, j);
+                        if (sqlType == null) {
+                            throw Util.newError(
+                                    "Inline data set must contain at least " +
+                                    "one non-NULL sqlType for column '" +
+                                    columnNames.get(j) + "'");
+                        }
+                        buf.append("CAST(NULL AS ")
+                                .append(sqlType)
+                                .append(")");
                     } else {
-                        buf.append(value);
+                        buf.append(quote(value, columnType));
                     }
                 }
                 buf.append(")");
@@ -1057,6 +1074,38 @@ public class SqlQuery
             }
             buf.append(")");
             return buf.toString();
+        }
+
+        /**
+         * Returns a value quoted for its type.
+         */
+        private String quote(String value, String type) {
+            if (type.equals("String")) {
+                value = quoteString(value);
+            }
+            return value;
+        }
+
+        /**
+         * Guesses the type of a column based upon (a) its basic type,
+         * (b) a list of values.
+         */
+        private static String guessSqlType(
+                String basicType, List valueList, int column) {
+            if (basicType.equals("String")) {
+                int maxLen = 1;
+                for (int i = 0; i < valueList.size(); i++) {
+                    String[] values = (String[]) valueList.get(i);
+                    final String value = values[column];
+                    if (value == null) {
+                        continue;
+                    }
+                    maxLen = Math.max(maxLen, value.length());
+                }
+                return "VARCHAR(" + maxLen + ")";
+            } else {
+                return "INTEGER";
+            }
         }
     }
 
