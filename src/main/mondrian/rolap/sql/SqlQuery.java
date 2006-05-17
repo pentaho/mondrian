@@ -1017,12 +1017,11 @@ public class SqlQuery
          * <blockquote><code>SELECT * FROM
          *   (VALUES (1, 'a'), (2, 'b')) AS t(x, y)</code></blockquote>
          *
-         * We use a a baroque construct to ensure that NULL values
+	 * <p>If NULL values are present, we use a CAST to ensure that they
          * have the same type as other columns:
          *
-         * <blockquote><code>SELECT * FROM (VALUES
-         * (1, 'a'),
-         * (2, (CASE 0 WHEN 1 THEN 'a' ELSE NULL END))) AS t(x, y)
+         * <blockquote><code>SELECT * FROM
+         * (VALUES (1, 'a'), (2, CASE(NULL AS VARCHAR(1)))) AS t(x, y)
          * </code></blockquote>
          *
          * <p>This syntax is known to work on Derby, but not Oracle 10 or
