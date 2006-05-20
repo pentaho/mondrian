@@ -92,28 +92,38 @@ a physical model.</p>
 <p>The logical model consists of the constructs used to write queries
 in MDX
 language: cubes, dimensions, hierarchies, levels, and members.</p>
+
 <p>The physical model is the source of the data which is presented
 through the
 logical model. It is typically a star schema, which is a set of tables
 in a
 relational database; later, we shall see examples of other kinds of
 mappings.</p>
+
 <h2><a name="Schema_files">Schema files</a></h2>
+
 <p>Mondrian schemas are represented in an XML file. An example schema,
 containing almost all of the constructs we discuss here, is supplied as
 <code><a href="../demo/FoodMart.xml">demo/ dMart.xml</a></code>. The
 dataset
 to populate this schema is available as part of the
 <a href="install.html#3_Set_up_test_data">mondrian distribution</a>.</p>
+
 <p>Currently, the only way to create a schema is to edit a schema XML
 file in a
 text editor. The XML syntax is not too complicated, so this is not as
 difficult
-as it sounds, particularly if you use the&nbsp; dMart schema as a
-guiding example.
-We are also developing a graphical workbench (written in Swing) to
-create and modify
-schemas.</p>
+as it sounds, particularly if you use the FoodMart schema as a
+guiding example.</p>
+
+<p><b>NOTE</b>: The order of XML elements is important. For example, <code>&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a>&gt;</code>
+element has to occur inside the <code>&lt;<a href="#XML_Schema">Schema</a>&gt;</code> element after all
+collections of <code>&lt;<a href="#XML_Cube">Cube</a>&gt;</code>,
+<code>&lt;<a href="#XML_VirtualCube">VirtualCube</a>&gt;,</code> <code>&lt;<a href="#XML_NamedSet">NamedSet</a>&gt;</code>
+and <code>&lt;<a href="#XML_Role">Role</a>&gt;</code> elements. If you include it before the first 
+<code>&lt;<a href="#XML_Cube">Cube</a>&gt;</code> element,
+the rest of the schema will be ignored.</p>
+
 <h2><a name="Cubes_and_dimensions">Logical model</a></h2>
 <p>The most important components of a schema are cubes, measures, and
 dimensions:</p>
