@@ -110,6 +110,7 @@ public class XmlaExcelXPTest extends FoodMartTestCase {
 
     protected File testDir;
     protected Servlet servlet;
+    protected String[][] catalogNameUrls = null;
 
     public XmlaExcelXPTest() {
     }
@@ -130,7 +131,8 @@ public class XmlaExcelXPTest extends FoodMartTestCase {
         XmlaExcelXPTest.sessionId = null;
 
         String connectString = getConnectionString();
-        servlet = XmlaSupport.makeServlet(connectString, CallBack.class.getName());
+        String[][] catalogNameUrls = getCatalogNameUrls();
+        servlet = XmlaSupport.makeServlet(connectString, catalogNameUrls, CallBack.class.getName());
     }
 
 
@@ -152,6 +154,18 @@ public class XmlaExcelXPTest extends FoodMartTestCase {
     }
     protected String getConnectionString() {
         return getTestContext().getConnectString();
+    }
+    protected String[][] getCatalogNameUrls() {
+        if (catalogNameUrls == null) {
+            String connectString = getConnectionString();
+            Util.PropertyList connectProperties =
+                        Util.parseConnectString(connectString);
+            String catalog = connectProperties.get("catalog");
+            catalogNameUrls = new String[][] {
+                { "FoodMart", catalog }
+            };
+        }
+        return catalogNameUrls;
     }
 
     // good 3/28

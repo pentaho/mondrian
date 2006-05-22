@@ -251,8 +251,7 @@
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
-                            Name Level - $name Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy - Name Level - $name Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -322,8 +321,7 @@
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube -
-                            Customers Hierarchy - Name Level - $name Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Customers Hierarchy - Name Level - $name Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>

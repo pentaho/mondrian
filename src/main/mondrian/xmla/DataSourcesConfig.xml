@@ -22,7 +22,7 @@ This is the XML model for XMLA DataSources Configuration.
 Revision is $Id$
     </Doc>
 
-	
+    
     <!-- DataSources ====================================================== -->
     <Element type="DataSources">
         <Doc>
@@ -35,92 +35,119 @@ Revision is $Id$
         </Array>
     </Element>
 
-    <!-- DataSource ============================================================ -->
+    <!-- DataSource ======================================================= -->
     <Element type="DataSource">
         <Doc>
             Definition of a data source.
         </Doc>
         <Object name="name" type="DataSourceName" required="true">
             <Doc>
-				Name.
+                Name.
             </Doc>
         </Object>
-		<Object name="description" type="DataSourceDescription" required="true">
+        <Object name="description" type="DataSourceDescription" required="true">
             <Doc>
-				Description.
+                Description.
             </Doc>
         </Object>
-		<Object name="url" type="URL" required="true">
+        <Object name="url" type="URL" required="true">
             <Doc>
-				URL of Web Services invocation.
+                URL of Web Services invocation.
             </Doc>
         </Object>
-		<Object name="dataSourceInfo" type="DataSourceInfo" required="true">
+        <Object name="dataSourceInfo" type="DataSourceInfo" required="true">
             <Doc>
-				ConnectString of Mondrian.
+                ConnectString of Mondrian (minus the catalog entry).
             </Doc>
         </Object>
-		<Object name="providerName" type="ProviderName" required="true">
+        <Object name="catalogs" type="Catalogs" required="true">
             <Doc>
-				Customized Service Provider Name.
+                One or more Catalogs.
             </Doc>
         </Object>
-		<Object name="providerType" type="ProviderType" required="true">
+        <Object name="providerName" type="ProviderName" required="true">
             <Doc>
-				Ignored. Only return &quot;MDP&quot; for DISCOVER_DATASOURCES.
+                Customized Service Provider Name.
             </Doc>
         </Object>
-		<Object name="authenticationMode" type="AuthenticationMode" required="true">
+        <Object name="providerType" type="ProviderType" required="true">
             <Doc>
-				Ignored. Only return &quot;Unauthenticated&quot; for DISCOVER_DATASOURCES.
+                Ignored. Only return &quot;MDP&quot; for DISCOVER_DATASOURCES.
             </Doc>
         </Object>
-		<Code><![CDATA[
-			public static final String PROVIDER_TYPE_TDP = "TDP";
-			public static final String PROVIDER_TYPE_MDP = "MDP";
-			public static final String PROVIDER_TYPE_DMP = "DMP";
-			public static final String AUTH_MODE_UNAUTHENTICATED = "Unauthenticated";
-			public static final String AUTH_MODE_AUTHENTICATED = "Authenticated";
-			public static final String AUTH_MODE_INTEGRATED = "Integrated";
-		
-			public String getDataSourceName() {
-				return name;
-			}
-		
-			public String getDataSourceDescription() {
-				return description;
-			}
-		
-			public String getURL() {
-				return url;
-			}
-		
-			public String getDataSourceInfo() {
-				return dataSourceInfo;
-			}
-		
-			public String getProviderName() {
-				return providerName;
-			}
-		
-			public String[] getProviderType() {
-				return new String[] {PROVIDER_TYPE_MDP};
-			}
-		
-			public String getAuthenticationMode() {
-				return authenticationMode;
-			}
-			]]>
-		</Code>
+        <Object name="authenticationMode" type="AuthenticationMode" required="true">
+            <Doc>
+                Ignored. Only return &quot;Unauthenticated&quot; for DISCOVER_DATASOURCES.
+            </Doc>
+        </Object>
+        <Code><![CDATA[
+            public static final String PROVIDER_TYPE_TDP = "TDP";
+            public static final String PROVIDER_TYPE_MDP = "MDP";
+            public static final String PROVIDER_TYPE_DMP = "DMP";
+            public static final String AUTH_MODE_UNAUTHENTICATED = "Unauthenticated";
+            public static final String AUTH_MODE_AUTHENTICATED = "Authenticated";
+            public static final String AUTH_MODE_INTEGRATED = "Integrated";
+        
+            public String getDataSourceName() {
+                return name;
+            }
+        
+            public String getDataSourceDescription() {
+                return description;
+            }
+        
+            public String getURL() {
+                return url;
+            }
+        
+            public String getDataSourceInfo() {
+                return dataSourceInfo;
+            }
+        
+            public String getProviderName() {
+                return providerName;
+            }
+        
+            public String[] getProviderType() {
+                return new String[] {PROVIDER_TYPE_MDP};
+            }
+        
+            public String getAuthenticationMode() {
+                return authenticationMode;
+            }
+            ]]>
+        </Code>
     </Element>
 
-	<StringElement type="DataSourceName"/>
-	<StringElement type="DataSourceDescription"/>
-	<StringElement type="URL"/>
-	<StringElement type="DataSourceInfo"/>
-	<StringElement type="ProviderName"/>
-	<StringElement type="ProviderType"/>
-	<StringElement type="AuthenticationMode"/>
+    <StringElement type="DataSourceName"/>
+    <StringElement type="DataSourceDescription"/>
+    <StringElement type="URL"/>
+    <StringElement type="DataSourceInfo"/>
+    <StringElement type="ProviderName"/>
+    <StringElement type="ProviderType"/>
+    <StringElement type="AuthenticationMode"/>
+
+    <!-- Catalogs ========================================================= -->
+    <Element type="Catalogs">
+        <Doc>
+            <p>The list of catalogs associated with a data source.</p>
+        </Doc>
+        <Array name="catalogs" type="Catalog" required="true">
+            <Doc>
+                The list of catalogs.
+            </Doc>
+        </Array>
+    </Element>
+
+    <!-- Catalog ========================================================== -->
+    <Element type="Catalog">
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of the catalog.
+            </Doc>
+        </Attribute>
+        <CData/>
+    </Element>
 
 </Model>
 

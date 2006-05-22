@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 
+import mondrian.olap.Util;
 import mondrian.olap.MondrianProperties;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.CatalogLocatorImpl;
@@ -48,7 +49,7 @@ public class XmlaTestContext {
     private static final Logger LOGGER =
             Logger.getLogger(XmlaTestContext.class);
 
-	public static final String CATALOG_NAME = "FoodMart";
+    public static final String CATALOG_NAME = "FoodMart";
     public static final String DATASOURCE_NAME = "MondrianFoodMart";
     public static final String DATASOURCE_DESCRIPTION = "Mondrian FoodMart Test data source";
     public static final String DATASOURCE_INFO = "Provider=Mondrian;DataSource=MondrianFoodMart;";
@@ -70,23 +71,23 @@ public class XmlaTestContext {
     private String connectString;
 
     public XmlaTestContext() {
-    	super();
+        super();
     }
 
     public XmlaTestContext(ServletContext context) {
-    	super();
-    	this.servletContext = context;
+        super();
+        this.servletContext = context;
     }
 
     public String getConnectString() {
-    	if (connectString != null) {
-    		return connectString;
-    	}
+        if (connectString != null) {
+            return connectString;
+        }
 
-    	if (servletContext != null) {
-    		MondrianProperties.instance().populate();
-    	}
-    	connectString = TestContext.getConnectString();
+        if (servletContext != null) {
+            MondrianProperties.instance().populate();
+        }
+        connectString = TestContext.getConnectString();
 
         // Deal with MySQL and other connect strings with & in them
         connectString = connectString.replaceAll("&", "&amp;");
@@ -95,9 +96,13 @@ public class XmlaTestContext {
     }
 
     public DataSourcesConfig.DataSources dataSources() {
-    	if (DATASOURCES != null) {
-    		return DATASOURCES;
-    	}
+        if (DATASOURCES != null) {
+            return DATASOURCES;
+        }
+
+        Util.PropertyList connectProperties =
+            Util.parseConnectString(getConnectString());
+        String catalogUrl = connectProperties.get("catalog");
 
         StringReader dsConfigReader = new StringReader(
                 "<?xml version=\"1.0\"?>" +
@@ -107,20 +112,25 @@ public class XmlaTestContext {
                 "       <DataSourceDescription>" + DATASOURCE_DESCRIPTION + "</DataSourceDescription>" +
                 "       <URL>http://localhost:8080/mondrian/xmla</URL>" +
                 "       <DataSourceInfo>" + getConnectString() + "</DataSourceInfo>" +
+                "       <Catalogs>" + 
+                "          <Catalog name='FoodMart'><![CDATA[" + 
+                catalogUrl +
+                "]]></Catalog>" + 
+                "       </Catalogs>" + 
                 "       <ProviderName>Mondrian</ProviderName>" +
                 "       <ProviderType>MDP</ProviderType>" +
                 "       <AuthenticationMode>Unauthenticated</AuthenticationMode>" +
                 "   </DataSource>" +
                 "</DataSources>");
         try {
-	        final Parser xmlParser = XOMUtil.createDefaultParser();
-	        final DOMWrapper def = xmlParser.parse(dsConfigReader);
-	        DATASOURCES = new DataSourcesConfig.DataSources(def);
+            final Parser xmlParser = XOMUtil.createDefaultParser();
+            final DOMWrapper def = xmlParser.parse(dsConfigReader);
+            DATASOURCES = new DataSourcesConfig.DataSources(def);
         } catch (Exception e) {
 
         }
 
-		return DATASOURCES;
+        return DATASOURCES;
     }
 
 
@@ -131,7 +141,7 @@ public class XmlaTestContext {
         final Pattern pattern = filePattern == null ? null : Pattern.compile(filePattern);
 
         File queryFilesDir = servletContext != null ? new File(XmlaTestContext.class.getResource("./queryFiles").getFile())
-        										   : new File("testsrc/main/mondrian/xmla/test/queryFiles");
+                                                   : new File("testsrc/main/mondrian/xmla/test/queryFiles");
         LOGGER.debug("Loading XML/A test data from queryFilesDir=" + queryFilesDir.getAbsolutePath() +
                 " (exists=" + queryFilesDir.exists() + ")");
         File[] files = queryFilesDir.listFiles(new FilenameFilter() {
@@ -225,10 +235,10 @@ public class XmlaTestContext {
     }
 
     public Object[] defaultRequestResponsePairs() {
-    	if (DEFAULT_REQUEST_RESPONSE_PAIRS == null) {
-    		DEFAULT_REQUEST_RESPONSE_PAIRS = fileRequestResponsePairs(ENV);
-    	}
-    	return DEFAULT_REQUEST_RESPONSE_PAIRS;
+        if (DEFAULT_REQUEST_RESPONSE_PAIRS == null) {
+            DEFAULT_REQUEST_RESPONSE_PAIRS = fileRequestResponsePairs(ENV);
+        }
+        return DEFAULT_REQUEST_RESPONSE_PAIRS;
     }
 
 }

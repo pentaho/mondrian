@@ -779,8 +779,13 @@ public class XmlaHandler implements XmlaConstants {
 
         checkFormat(request);
 
+        DataSourcesConfig.DataSource ds = getDataSource(request);
+        DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds);
+        String role = request.getRole();
+
+        final Connection connection = getConnection(ds, dsCatalog.cdata, role);
+
         final String statement = request.getStatement();
-        final Connection connection = getConnection(request);
         final Query query = connection.parseQuery(statement);
         final Result result = connection.execute(query);
         Cell dtCell = result.getCell(new int[] {0, 0});
@@ -948,7 +953,13 @@ public class XmlaHandler implements XmlaConstants {
         } else {
             checkFormat(request);
 
-            final Connection connection = getConnection(request);
+            DataSourcesConfig.DataSource ds = getDataSource(request);
+            DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds);
+            String role = request.getRole();
+
+            final Connection connection = 
+                getConnection(ds, dsCatalog.cdata, role);
+
             final Query query;
             try {
                 query = connection.parseQuery(statement);
@@ -1850,11 +1861,60 @@ public class XmlaHandler implements XmlaConstants {
         writer.endDocument();
     }
 
-    /**
-     * Returns a Mondrian connection as specified by a set of properties
-     * (especially the "Connect string" property).
+    /** 
+     * Get a Connection given the Datasource, catalogUrl and user role. 
+     * 
+     * @param ds 
+     * @param catalogUrl 
+     * @param role 
+     * @return 
+     * @throws XmlaException 
      */
-    Connection getConnection(XmlaRequest request)
+    Connection getConnection(DataSourcesConfig.DataSource ds,
+        String catalogUrl, String role) 
+            throws XmlaException {
+
+        Util.PropertyList connectProperties =
+            Util.parseConnectString(ds.getDataSourceInfo());
+
+        catalogUrl = catalogLocator.locate(catalogUrl);
+
+        if (LOGGER.isDebugEnabled()) {
+            if (catalogUrl == null) {
+                LOGGER.debug("XmlaHandler.getConnection: catalogUrl is null");
+            } else {
+                LOGGER.debug("XmlaHandler.getConnection: catalogUrl=" + catalogUrl);
+            }
+        }
+
+        connectProperties.put("catalog", catalogUrl);
+
+        // Checking access
+        if (!DataSourcesConfig.DataSource.AUTH_MODE_UNAUTHENTICATED.equalsIgnoreCase(ds.getAuthenticationMode()) && null == role) {
+            throw new XmlaException(
+                CLIENT_FAULT_FC,
+                HSB_ACCESS_DENIED_CODE,
+                HSB_ACCESS_DENIED_FAULT_FS,
+                new SecurityException("Access denied for data source needing authentication")
+                );
+        }
+
+        connectProperties.put("role", role);
+        RolapConnection conn =
+            (RolapConnection) DriverManager.getConnection(connectProperties, null, false);
+
+        return conn;
+    }
+    
+    /** 
+     * Get the DataSource associated with the request property or null if
+     * one was not specified. 
+     * 
+     * @param request 
+     * @return 
+     * @throws XmlaException 
+     */
+    public DataSourcesConfig.DataSource getDataSource(XmlaRequest request)
                 throws XmlaException {
         Map properties = request.getProperties();
         final String dataSourceInfo =
@@ -1867,52 +1927,98 @@ public class XmlaHandler implements XmlaConstants {
                 Util.newError("no data source is configured with name '" + dataSourceInfo + "'"));
         }
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("XmlaHandler.getConnection: dataSourceInfo=" +
+            LOGGER.debug("XmlaHandler.getDataSource: dataSourceInfo=" +
                     dataSourceInfo);
         }
 
-        DataSourcesConfig.DataSource ds =
+        final DataSourcesConfig.DataSource ds =
             (DataSourcesConfig.DataSource) dataSourcesMap.get(dataSourceInfo);
         if (LOGGER.isDebugEnabled()) {
             if (ds == null) {
-                LOGGER.debug("XmlaHandler.getConnection: ds is null");
+                // TODO: this if a failure situation
+                LOGGER.debug("XmlaHandler.getDataSource: ds is null");
             } else {
-                LOGGER.debug("XmlaHandler.getConnection: ds.dataSourceInfo=" +
+                LOGGER.debug("XmlaHandler.getDataSource: ds.dataSourceInfo=" +
                     ds.getDataSourceInfo());
             }
         }
-        Util.PropertyList connectProperties =
-            Util.parseConnectString(ds.getDataSourceInfo());
+        return ds;
+    }
+    
+    /** 
+     * Get the DataSourcesConfig.Catalog with the given catalog name from the
+     * DataSource's catalogs if there is a match and otherwise return null. 
+     * 
+     * @param ds 
+     * @param catalogName 
+     * @return DataSourcesConfig.Catalog or null
+     */
+    public DataSourcesConfig.Catalog getCatalog(
+            DataSourcesConfig.DataSource ds, 
+            String catalogName) {
+        DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
+        for (int i = 0; i < catalogs.length; i++) {
+            DataSourcesConfig.Catalog dsCatalog = catalogs[i];
 
-        String catalog =
-                catalogLocator.locate(connectProperties.get("catalog"));
-
-        if (LOGGER.isDebugEnabled()) {
-            if (catalog == null) {
-                LOGGER.debug("XmlaHandler.getConnection: catalog is null");
-            } else {
-                LOGGER.debug("XmlaHandler.getConnection: catalog=" + catalog);
+            if (catalogName.equals(dsCatalog.name)) {
+                return dsCatalog;
             }
         }
+        return null;
+    }
+    
+    /** 
+     * Get array of DataSourcesConfig.Catalog returning only one entry if the
+     * catalog was specified as a property in the request or all catalogs
+     * associated with the Datasource if there was no catalog property. 
+     * 
+     * @param request 
+     * @param ds 
+     * @return Array of DataSourcesConfig.Catalog
+     */
+    public DataSourcesConfig.Catalog[] getCatalogs(
+            XmlaRequest request,
+            DataSourcesConfig.DataSource ds) {
 
-        connectProperties.put("catalog", catalog);
+        Map properties = request.getProperties();
+        final String catalogName =
+            (String) properties.get(PropertyDefinition.Catalog.name);
+        if (catalogName != null) {
+            DataSourcesConfig.Catalog dsCatalog = getCatalog(ds, catalogName);
+            return new DataSourcesConfig.Catalog[] { dsCatalog };
+        } else {
+            // no catalog specified in Properties so return them all
+            return ds.catalogs.catalogs;
+        }
+    }
+    
+    /** 
+     * Returns the DataSourcesConfig.Catalog associated with the
+     * catalog name that is part of the request properties or
+     * null if there is no catalog with that name.
+     * 
+     * @param request 
+     * @param ds 
+     * @return DataSourcesConfig Catalog or null
+     * @throws XmlaException 
+     */
+    public DataSourcesConfig.Catalog getCatalog(
+            XmlaRequest request,
+            DataSourcesConfig.DataSource ds) 
+                throws XmlaException {
 
-        // Checking access
-        if (!DataSourcesConfig.DataSource.AUTH_MODE_UNAUTHENTICATED.equalsIgnoreCase(ds.getAuthenticationMode()) &&
-                null == request.getRole()) {
+        Map properties = request.getProperties();
+        final String catalogName =
+            (String) properties.get(PropertyDefinition.Catalog.name);
+        if (catalogName == null) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
-                HSB_ACCESS_DENIED_CODE,
-                HSB_ACCESS_DENIED_FAULT_FS,
-                new SecurityException("Access denied for data source needing authentication")
-                );
+                HSB_CONNECTION_DATA_SOURCE_CODE,
+                HSB_CONNECTION_DATA_SOURCE_FAULT_FS,
+                Util.newError("no catalog named '" + catalogName + "'"));
         }
-
-        connectProperties.put("role", request.getRole());
-        RolapConnection conn =
-            (RolapConnection) DriverManager.getConnection(connectProperties, null, false);
-
-        return conn;
+        DataSourcesConfig.Catalog dsCatalog = getCatalog(ds, catalogName);
+        return dsCatalog;
     }
 
 }

@@ -37,15 +37,15 @@ public class XmlaTest extends TestCase {
     private static final Logger LOGGER =
             Logger.getLogger(XmlaTest.class);
 
-	static {
+    static {
         XMLUnit.setControlParser("org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
         XMLUnit.setTestParser("org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
         XMLUnit.setIgnoreWhitespace(true);
-	}
+    }
 
-	private final static XmlaTestContext context = new XmlaTestContext();
+    private final static XmlaTestContext context = new XmlaTestContext();
 
-	private final File testFile;
+    private final File testFile;
 
     public XmlaTest(String name) {
         super(name);

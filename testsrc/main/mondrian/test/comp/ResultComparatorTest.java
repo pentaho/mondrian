@@ -95,6 +95,7 @@ public class ResultComparatorTest extends TestCase {
 
     public ResultComparatorTest(String name) {
         super(name);
+        file = new File(name);
     }
 
     public ResultComparatorTest() {

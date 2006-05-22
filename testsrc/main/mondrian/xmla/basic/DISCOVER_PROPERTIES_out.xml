@@ -115,15 +115,9 @@ Sessions - Provider supports sessions.</PropertyDescription>
             </row>
             <row>
                 <PropertyName>Catalog</PropertyName>
-                <PropertyDescription>When establishing a session
-                            with an Analysis Services instance to send
-                            an XMLA command, this property is equivalent
-                            to the OLE DB property, DBPROP_INIT_CATALOG.
-                            When you set this property during a session
-                            to change the current database for the
-                            session, this property is equivalent to the
-                            OLE DB property, DBPROP_CURRENTCATALOG. The
-                            default value for this property is an empty string.</PropertyDescription>
+                <PropertyDescription>When establishing a session with an Analysis Services instance to send an XMLA command, this property is equivalent to the OLE DB property, DBPROP_INIT_CATALOG.
+When you set this property during a session to change the current database for the session, this property is equivalent to the OLE DB property, DBPROP_CURRENTCATALOG.
+The default value for this property is an empty string.</PropertyDescription>
                 <PropertyType>string</PropertyType>
                 <PropertyAccessType>ReadWrite</PropertyAccessType>
                 <IsRequired>false</IsRequired>
@@ -188,12 +182,7 @@ For the complete hexadecimal list of language identifiers, search on "Language I
             </row>
             <row>
                 <PropertyName>AxisFormat</PropertyName>
-                <PropertyDescription>Determines the format used
-                            within an MDDataSet result set to describe
-                            the axes of the multidimensional dataset.
-                            This property can have the values listed in
-                            the following table: TupleFormat (default),
-                            ClusterFormat, CustomFormat.</PropertyDescription>
+                <PropertyDescription>Determines the format used within an MDDataSet result set to describe the axes of the multidimensional dataset. This property can have the values listed in the following table: TupleFormat (default), ClusterFormat, CustomFormat.</PropertyDescription>
                 <PropertyType>Enumeration</PropertyType>
                 <PropertyAccessType>Write</PropertyAccessType>
                 <IsRequired>false</IsRequired>
@@ -201,10 +190,8 @@ For the complete hexadecimal list of language identifiers, search on "Language I
             </row>
                     <row>
                         <PropertyName>VisualMode</PropertyName>
-                        <PropertyDescription>This property is equivalent
-                            to the OLE DB property, MDPROP_VISUALMODE.
-                            The default value for this property is zero
-                            (0), equivalent to DBPROPVAL_VISUAL_MODE_DEFAULT.</PropertyDescription>
+                        <PropertyDescription>This property is equivalent to the OLE DB property, MDPROP_VISUALMODE.
+The default value for this property is zero (0), equivalent to DBPROPVAL_VISUAL_MODE_DEFAULT.</PropertyDescription>
                         <PropertyType>Enumeration</PropertyType>
                         <PropertyAccessType>Write</PropertyAccessType>
                         <IsRequired>false</IsRequired>
@@ -212,19 +199,9 @@ For the complete hexadecimal list of language identifiers, search on "Language I
                     </row>
             <row>
                 <PropertyName>BeginRange</PropertyName>
-                <PropertyDescription>Contains a zero-based
-                            integer value corresponding to a CellOrdinal
-                            attribute value. (The CellOrdinal attribute
-                            is part of the Cell element in the CellData
-                            section of MDDataSet.) Used together with
-                            the EndRange property, the client
-                            application can use this property to
-                            restrict an OLAP dataset returned by a
-                            command to a specific range of cells. If -1
-                            is specified, all cells up to the cell
-                            specified in the EndRange property are
-                            returned. The default value for this
-                            property is -1.</PropertyDescription>
+                <PropertyDescription>Contains a zero-based integer value corresponding to a CellOrdinal attribute value. (The CellOrdinal attribute is part of the Cell element in the CellData section of MDDataSet.)
+Used together with the EndRange property, the client application can use this property to restrict an OLAP dataset returned by a command to a specific range of cells. If -1 is specified, all cells up to the cell specified in the EndRange property are returned.
+The default value for this property is -1.</PropertyDescription>
                 <PropertyType>Integer</PropertyType>
                 <PropertyAccessType>Write</PropertyAccessType>
                 <IsRequired>false</IsRequired>

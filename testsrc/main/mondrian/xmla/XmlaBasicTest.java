@@ -26,7 +26,7 @@ import java.util.Properties;
 /**
  * Test XML/A functionality.
  *
- * @author Richard M. Emberson<
+ * @author Richard M. Emberson
  * @version $Id$
  */
 public class XmlaBasicTest extends FoodMartTestCase {
@@ -76,6 +76,7 @@ public class XmlaBasicTest extends FoodMartTestCase {
     private static final boolean DEBUG = false;
 
     protected File testDir;
+    protected String[][] catalogNameUrls = null;
 
     public XmlaBasicTest() {
     }
@@ -136,6 +137,18 @@ public class XmlaBasicTest extends FoodMartTestCase {
     }
     protected String getConnectionString() {
         return getTestContext().getConnectString();
+    }
+    protected String[][] getCatalogNameUrls() {
+        if (catalogNameUrls == null) {
+            String connectString = getConnectionString();
+            Util.PropertyList connectProperties =
+                        Util.parseConnectString(connectString);
+            String catalog = connectProperties.get("catalog");
+            catalogNameUrls = new String[][] {
+                { "FoodMart", catalog }
+            };
+        }
+        return catalogNameUrls;
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -399,6 +412,7 @@ public class XmlaBasicTest extends FoodMartTestCase {
             : null;
 
         String connectString = getConnectionString();
+        String[][] catalogNameUrls = getCatalogNameUrls();
 
         Document expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
@@ -406,34 +420,35 @@ public class XmlaBasicTest extends FoodMartTestCase {
             : null;
 
         props.setProperty(CONTENT_PROP, CONTENT_NONE);
-        doTests(requestText, props, null, connectString, expectedDoc);
+        doTests(requestText, props, null, connectString, catalogNameUrls, expectedDoc);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
                 responseDoc, new String[][] {{"content", "data"}} )
             : null;
         props.setProperty(CONTENT_PROP, CONTENT_DATA);
-        doTests(requestText, props, null, connectString, expectedDoc);
+        doTests(requestText, props, null, connectString, catalogNameUrls, expectedDoc);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
                 responseDoc, new String[][] {{"content", "schema"}} )
             : null;
         props.setProperty(CONTENT_PROP, CONTENT_SCHEMA);
-        doTests(requestText, props, null, connectString, expectedDoc);
+        doTests(requestText, props, null, connectString, catalogNameUrls, expectedDoc);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
                 responseDoc, new String[][] {{"content", "schemadata"}} )
             : null;
         props.setProperty(CONTENT_PROP, CONTENT_SCHEMADATA);
-        doTests(requestText, props, null, connectString, expectedDoc);
+        doTests(requestText, props, null, connectString, catalogNameUrls, expectedDoc);
     }
     protected void doTests(
             String soapRequestText,
             Properties props,
             String soapResponseText,
             String connectString,
+            String[][] catalogNameUrls,
             Document expectedDoc) throws Exception {
 
         if (props != null) {
@@ -447,7 +462,8 @@ System.out.println("soapRequestText="+soapRequestText);
         Document xmlaReqDoc = XmlaSupport.extractBodyFromSoap(soapReqDoc);
 
         // do XMLA
-        byte[] bytes = XmlaSupport.processXmla(xmlaReqDoc, connectString);
+        byte[] bytes = 
+            XmlaSupport.processXmla(xmlaReqDoc, connectString, catalogNameUrls);
         String response = new String(bytes);
 if (DEBUG) {
 System.out.println("xmla response="+response);
@@ -461,7 +477,7 @@ if (DEBUG) {
         }
 
         // do SOAP-XMLA
-        bytes = XmlaSupport.processSoapXmla(soapReqDoc, connectString, null);
+        bytes = XmlaSupport.processSoapXmla(soapReqDoc, connectString, catalogNameUrls, null);
         response = new String(bytes);
 if (DEBUG) {
 System.out.println("soap response="+response);

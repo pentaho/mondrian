@@ -12,6 +12,7 @@
 */
 package mondrian.xmla;
 
+import mondrian.olap.Util;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import mondrian.tui.MockHttpServletRequest;
@@ -369,6 +370,7 @@ System.out.println("password=" +password);
 
     protected File testDir;
     protected Servlet servlet;
+    protected String[][] catalogNameUrls = null;
 
     public XmlaErrorTest() {
     }
@@ -389,13 +391,26 @@ System.out.println("password=" +password);
         XmlaExcelXPTest.sessionId = null;
 
         String connectString = getConnectionString();
-        servlet = XmlaSupport.makeServlet(connectString, CallBack.class.getName());
+        String[][] catalogNameUrls = getCatalogNameUrls();
+        servlet = XmlaSupport.makeServlet(connectString, catalogNameUrls, CallBack.class.getName());
     }
     public TestContext getTestContext() {
         return TestContext.instance();
     }
     protected String getConnectionString() {
         return getTestContext().getConnectString();
+    }
+    protected String[][] getCatalogNameUrls() {
+        if (catalogNameUrls == null) {
+            String connectString = getConnectionString();
+            Util.PropertyList connectProperties =
+                        Util.parseConnectString(connectString);
+            String catalog = connectProperties.get("catalog");
+            catalogNameUrls = new String[][] {
+                { "TestCatalog", catalog }
+            };
+        }
+        return catalogNameUrls;
     }
 
     protected String fileToString(String filename) throws IOException {

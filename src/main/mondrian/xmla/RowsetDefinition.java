@@ -1357,35 +1357,44 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         };
 
         public void unparse(XmlaResponse response) throws XmlaException {
-            Connection connection = handler.getConnection(request);
-            if (connection == null) {
-                return;
-            }
-            final RolapSchema schema = (RolapSchema) connection.getSchema();
+            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
+            DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
+            String role = request.getRole();
+            for (int i = 0; i < catalogs.length; i++) {
+                DataSourcesConfig.Catalog dsCatalog = catalogs[i];
 
-            Row row = new Row();
-            row.set(CatalogName.name, schema.getName());
+                String catalog = dsCatalog.cdata;
 
-            // TODO: currently schema grammar does not support a description
-            row.set(Description.name, "No description available");
-
-            // get Role names
-            // TODO: this returns ALL roles, no the current user's roles
-            StringBuffer buf = new StringBuffer(100);
-            Iterator roleNamesIt = schema.roleNames().iterator();
-            while (roleNamesIt.hasNext()) {
-                String roleName = (String) roleNamesIt.next();
-                buf.append(roleName);
-                if (roleNamesIt.hasNext()) {
-                    buf.append(',');
+                Connection connection = handler.getConnection(ds, catalog, role);
+                if (connection == null) {
+                    continue;
                 }
-            }
-            row.set(Roles.name, buf.toString());
+                final RolapSchema schema = (RolapSchema) connection.getSchema();
 
-            // TODO: currently schema grammar does not support modify date
-            // so we return just some date for now.
-            if (false) row.set(DateModified.name, dateModified);
-            emit(row, response);
+                Row row = new Row();
+                row.set(CatalogName.name, dsCatalog.name);
+
+                // TODO: currently schema grammar does not support a description
+                row.set(Description.name, "No description available");
+
+                // get Role names
+                // TODO: this returns ALL roles, no the current user's roles
+                StringBuffer buf = new StringBuffer(100);
+                Iterator roleNamesIt = schema.roleNames().iterator();
+                while (roleNamesIt.hasNext()) {
+                    String roleName = (String) roleNamesIt.next();
+                    buf.append(roleName);
+                    if (roleNamesIt.hasNext()) {
+                        buf.append(',');
+                    }
+                }
+                row.set(Roles.name, buf.toString());
+
+                // TODO: currently schema grammar does not support modify date
+                // so we return just some date for now.
+                if (false) row.set(DateModified.name, dateModified);
+                emit(row, response);
+            }
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
             switch (propertyDef.ordinal) {
@@ -1548,62 +1557,65 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         };
 
         public void unparse(XmlaResponse response) throws XmlaException {
-            Connection connection = handler.getConnection(request);
-            if (connection == null) {
-                return;
-            }
-            final RolapSchema schema = (RolapSchema) connection.getSchema();
-            final String schemaName = schema.getName();
-            Cube[] cubes = schema.getCubes();
+            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
+            DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
+            String role = request.getRole();
+            for (int g = 0; g < catalogs.length; g++) {
+                DataSourcesConfig.Catalog dsCatalog = catalogs[g];
 
-            int ordinalPosition = 1;
-            Row row = null;
+                String catalog = dsCatalog.cdata;
 
-            for (int i = 0; i < cubes.length; i++) {
-                RolapCube cube = (RolapCube) cubes[i];
-                String cubeName = cube.getName();
-/*
-Dimensions
-    Store
-    Time
-    ...
-Measures:Unit Sales
-*/
-                Dimension[] dims = cube.getDimensions();
-                for (int j = 1; j < dims.length; j++) {
-                    Dimension dimension = dims[j];
-
-                    Hierarchy[] hierarchies = dimension.getHierarchies();
-                    for (int h = 0; h < hierarchies.length; h++) {
-                        HierarchyBase hierarchy = (HierarchyBase) hierarchies[h];
-                        ordinalPosition = emitHierarchy(response,
-                            connection, cube, hierarchy, ordinalPosition);
-                    }
+                Connection connection = handler.getConnection(ds, catalog, role);
+                if (connection == null) {
+                    continue;
                 }
+                final RolapSchema schema = (RolapSchema) connection.getSchema();
+                String catalogName = dsCatalog.name;
+                //final String schemaName = schema.getName();
+                Cube[] cubes = schema.getCubes();
 
-                RolapMember[] rms = cube.getMeasuresMembers();
-                for (int k = 1; k < rms.length; k++) {
-                    RolapMember member = rms[k];
-                    String memberName = member.getName();
+                int ordinalPosition = 1;
+                Row row = null;
 
-                    row = new Row();
-                    row.set(TableCatalog.name, schemaName);
-                    row.set(TableName.name, cubeName);
-                    row.set(ColumnName.name, "Measures:" + memberName);
-                    row.set(OrdinalPosition.name, ordinalPosition++);
-                    row.set(ColumnHasDefault.name, false);
-                    row.set(ColumnFlags.name, 0);
-                    row.set(IsNullable.name, false);
-                    // TODO: here is where one tries to determine the
-                    // type of the column - since these are all
-                    // Measures, aggregate Measures??, maybe they
-                    // are all numeric? (or currency)
-                    row.set(DataType.name, DBType.R8_ORDINAL);
-                    // TODO: 16/255 seems to be what MS SQL Server
-                    // always returns.
-                    row.set(NumericPrecision.name, 16);
-                    row.set(NumericScale.name, 255);
-                    emit(row, response);
+                for (int i = 0; i < cubes.length; i++) {
+                    RolapCube cube = (RolapCube) cubes[i];
+                    String cubeName = cube.getName();
+                    Dimension[] dims = cube.getDimensions();
+                    for (int j = 1; j < dims.length; j++) {
+                        Dimension dimension = dims[j];
+
+                        Hierarchy[] hierarchies = dimension.getHierarchies();
+                        for (int h = 0; h < hierarchies.length; h++) {
+                            HierarchyBase hierarchy = (HierarchyBase) hierarchies[h];
+                            ordinalPosition = emitHierarchy(response,
+                                connection, cube, hierarchy, ordinalPosition);
+                        }
+                    }
+
+                    RolapMember[] rms = cube.getMeasuresMembers();
+                    for (int k = 1; k < rms.length; k++) {
+                        RolapMember member = rms[k];
+                        String memberName = member.getName();
+
+                        row = new Row();
+                        row.set(TableCatalog.name, catalogName);
+                        row.set(TableName.name, cubeName);
+                        row.set(ColumnName.name, "Measures:" + memberName);
+                        row.set(OrdinalPosition.name, ordinalPosition++);
+                        row.set(ColumnHasDefault.name, false);
+                        row.set(ColumnFlags.name, 0);
+                        row.set(IsNullable.name, false);
+                        // TODO: here is where one tries to determine the
+                        // type of the column - since these are all
+                        // Measures, aggregate Measures??, maybe they
+                        // are all numeric? (or currency)
+                        row.set(DataType.name, DBType.R8_ORDINAL);
+                        // TODO: 16/255 seems to be what MS SQL Server
+                        // always returns.
+                        row.set(NumericPrecision.name, 16);
+                        row.set(NumericScale.name, 255);
+                        emit(row, response);
+                    }
                 }
             }
         }
@@ -2158,45 +2170,57 @@ boolean restriction, boolean nullable, String description)
         };
 
         public void unparse(XmlaResponse response) throws XmlaException {
-            Connection connection = handler.getConnection(request);
-            if (connection == null) {
-                return;
-            }
-            final RolapSchema schema = (RolapSchema) connection.getSchema();
-            final String schemaName = schema.getName();
-            Cube[] cubes = schema.getCubes();
+            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
+            DataSourcesConfig.Catalog[] catalogs = 
+                            handler.getCatalogs(request, ds);
+            String role = request.getRole();
 
-            Row row = null;
-            for (int i = 0; i < cubes.length; i++) {
-                RolapCube cube = (RolapCube) cubes[i];
-                String cubeName = cube.getName();
+            for (int i = 0; i < catalogs.length; i++) {
+                DataSourcesConfig.Catalog dsCatalog = catalogs[i];
 
-                String tableName = cubeName;
+                Connection connection = 
+                    handler.getConnection(ds, dsCatalog.cdata, role);
 
-                String desc = cube.getDescription();
-                if (desc == null) {
-                    //TODO: currently this is always null
-                    desc = schemaName + " - " + cubeName + " Cube";
+                if (connection == null) {
+                    continue;
                 }
+                final RolapSchema schema = (RolapSchema) connection.getSchema();
+                String catalogName = dsCatalog.name;
+                //final String schemaName = schema.getName();
+                Cube[] cubes = schema.getCubes();
 
-                row = new Row();
-                row.set(TableCatalog.name, schemaName);
-                row.set(TableName.name, tableName);
-                row.set(TableType.name, "TABLE");
-                row.set(Description.name, desc);
-                if (false) row.set(DateModified.name, dateModified);
-                emit(row, response);
+                Row row = null;
+                for (int j = 0; j < cubes.length; j++) {
+                    RolapCube cube = (RolapCube) cubes[j];
+                    String cubeName = cube.getName();
+
+                    String tableName = cubeName;
+
+                    String desc = cube.getDescription();
+                    if (desc == null) {
+                        //TODO: currently this is always null
+                        desc = catalogName + " - " + cubeName + " Cube";
+                    }
+
+                    row = new Row();
+                    row.set(TableCatalog.name, catalogName);
+                    row.set(TableName.name, tableName);
+                    row.set(TableType.name, "TABLE");
+                    row.set(Description.name, desc);
+                    if (false) row.set(DateModified.name, dateModified);
+                    emit(row, response);
 
 
-                Dimension[] dims = cube.getDimensions();
-                for (int j = 1; j < dims.length; j++) {
-                    Dimension dimension = dims[j];
+                    Dimension[] dims = cube.getDimensions();
+                    for (int k = 1; k < dims.length; k++) {
+                        Dimension dimension = dims[k];
 
-                    Hierarchy[] hierarchies = dimension.getHierarchies();
-                    for (int h = 0; h < hierarchies.length; h++) {
-                        HierarchyBase hierarchy = (HierarchyBase) hierarchies[h];
-                        emitHierarchy(response, connection, cube, hierarchy);
+                        Hierarchy[] hierarchies = dimension.getHierarchies();
+                        for (int h = 0; h < hierarchies.length; h++) {
+                            HierarchyBase hierarchy = (HierarchyBase) hierarchies[h];
+                            emitHierarchy(response, connection, cube, hierarchy);
 
+                        }
                     }
                 }
             }
@@ -2444,38 +2468,49 @@ boolean restriction, boolean nullable, String description)
         };
 
         public void unparse(XmlaResponse response) throws XmlaException {
-            Connection connection = handler.getConnection(request);
-            if (connection == null) {
-                return;
-            }
-            final RolapSchema schema = (RolapSchema) connection.getSchema();
-            final String catalogName = schema.getName();
-            Cube[] cubes = schema.getCubes();
+            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
+            DataSourcesConfig.Catalog[] catalogs = 
+                            handler.getCatalogs(request, ds);
+            String role = request.getRole();
 
-            //TODO: Is this cubes or tables? SQL Server returns what
-            // in foodmart are cube names for TABLE_NAME
-            // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/oledbtables_info_rowset.asp
-            for (int i = 0; i < cubes.length; i++) {
-                RolapCube cube = (RolapCube) cubes[i];
-                String cubeName = cube.getName();
-                String desc = cube.getDescription();
-                if (desc == null) {
-                    //TODO: currently this is always null
-                    desc = catalogName + " - " + cubeName + " Cube";
+            for (int h = 0; h < catalogs.length; h++) {
+                DataSourcesConfig.Catalog dsCatalog = catalogs[h];
+
+                Connection connection = 
+                    handler.getConnection(ds, dsCatalog.cdata, role);
+                if (connection == null) {
+                    continue;
                 }
-                //TODO: SQL Server returns 1000000 for all tables
-                int cardinality = 1000000;
-                String version = "null";
+                final RolapSchema schema = (RolapSchema) connection.getSchema();
+                String catalogName = dsCatalog.name;
+                //final String catalogName = schema.getName();
+                Cube[] cubes = schema.getCubes();
 
-                Row row = new Row();
-                row.set(TableCatalog.name, catalogName);
-                row.set(TableName.name, cubeName);
-                row.set(TableType.name, "TABLE");
-                row.set(Bookmarks.name, false);
-                row.set(TableVersion.name, version);
-                row.set(Cardinality.name, cardinality);
-                row.set(Description.name, desc);
-                emit(row, response);
+                //TODO: Is this cubes or tables? SQL Server returns what
+                // in foodmart are cube names for TABLE_NAME
+                // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/oledbtables_info_rowset.asp
+                for (int i = 0; i < cubes.length; i++) {
+                    RolapCube cube = (RolapCube) cubes[i];
+                    String cubeName = cube.getName();
+                    String desc = cube.getDescription();
+                    if (desc == null) {
+                        //TODO: currently this is always null
+                        desc = catalogName + " - " + cubeName + " Cube";
+                    }
+                    //TODO: SQL Server returns 1000000 for all tables
+                    int cardinality = 1000000;
+                    String version = "null";
+
+                    Row row = new Row();
+                    row.set(TableCatalog.name, catalogName);
+                    row.set(TableName.name, cubeName);
+                    row.set(TableType.name, "TABLE");
+                    row.set(Bookmarks.name, false);
+                    row.set(TableVersion.name, version);
+                    row.set(Cardinality.name, cardinality);
+                    row.set(Description.name, desc);
+                    emit(row, response);
+                }
             }
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
@@ -2749,46 +2784,59 @@ boolean restriction, boolean nullable, String description)
         };
 
         public void unparse(XmlaResponse response) throws XmlaException {
-            Connection connection = handler.getConnection(request);
-            if (connection == null) {
-                return;
-            }
-            final RolapSchema schema = (RolapSchema) connection.getSchema();
+            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
+            DataSourcesConfig.Catalog[] catalogs = 
+                            handler.getCatalogs(request, ds);
+            String role = request.getRole();
 
-            final Cube[] cubes = schema.getCubes();
-            for (int i = 0; i < cubes.length; i++) {
-                Cube cube = cubes[i];
+            for (int h = 0; h < catalogs.length; h++) {
+                DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
-                // Access control
-                if (!canAccess(connection, cube)) {
+                Connection connection = 
+                    handler.getConnection(ds, dsCatalog.cdata, role);
+                if (connection == null) {
                     continue;
                 }
+                String catalogName = dsCatalog.name;
+                //String catalogName = schema.getName();
 
-                String desc = cube.getDescription();
-                if (desc == null) {
-                    desc = schema.getName() +
-                        " Schema - " +
-                        cube.getName() +
-                        " Cube";
+                final RolapSchema schema = (RolapSchema) connection.getSchema();
+
+                final Cube[] cubes = schema.getCubes();
+                for (int i = 0; i < cubes.length; i++) {
+                    Cube cube = cubes[i];
+
+                    // Access control
+                    if (!canAccess(connection, cube)) {
+                        continue;
+                    }
+
+                    String desc = cube.getDescription();
+                    if (desc == null) {
+                        desc = catalogName +
+                            " Schema - " +
+                            cube.getName() +
+                            " Cube";
+                    }
+
+                    Row row = new Row();
+                    row.set(CatalogName.name, catalogName);
+                    //row.set(SchemaName.name, catalogName);
+                    row.set(CubeName.name, cube.getName());
+                    row.set(CubeType.name, ((RolapCube) cube).isVirtual() ? MD_CUBTYPE_VIRTUAL_CUBE : MD_CUBTYPE_CUBE);
+                    //row.set(CubeGuid.name, "");
+                    //row.set(CreatedOn.name, "");
+                    //row.set(LastSchemaUpdate.name, "");
+                    //row.set(SchemaUpdatedBy.name, "");
+                    //row.set(LastDataUpdate.name, "");
+                    //row.set(DataUpdatedBy.name, "");
+                    row.set(IsDrillthroughEnabled.name, true);
+                    row.set(IsWriteEnabled.name, false);
+                    row.set(IsLinkable.name, false);
+                    row.set(IsSqlEnabled.name, false);
+                    row.set(Description.name, desc);
+                    emit(row, response);
                 }
-
-                Row row = new Row();
-                row.set(CatalogName.name, schema.getName());
-                //row.set(SchemaName.name, schema.getName());
-                row.set(CubeName.name, cube.getName());
-                row.set(CubeType.name, ((RolapCube) cube).isVirtual() ? MD_CUBTYPE_VIRTUAL_CUBE : MD_CUBTYPE_CUBE);
-                //row.set(CubeGuid.name, "");
-                //row.set(CreatedOn.name, "");
-                //row.set(LastSchemaUpdate.name, "");
-                //row.set(SchemaUpdatedBy.name, "");
-                //row.set(LastDataUpdate.name, "");
-                //row.set(DataUpdatedBy.name, "");
-                row.set(IsDrillthroughEnabled.name, true);
-                row.set(IsWriteEnabled.name, false);
-                row.set(IsLinkable.name, false);
-                row.set(IsSqlEnabled.name, false);
-                row.set(Description.name, desc);
-                emit(row, response);
             }
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
@@ -3000,54 +3048,69 @@ boolean restriction, boolean nullable, String description)
         };
 
         public void unparse(XmlaResponse response) throws XmlaException {
-            final Connection connection = handler.getConnection(request);
-            final Cube[] cubes = connection.getSchema().getCubes();
-            for (int i = 0; i < cubes.length; i++) {
-                Cube cube = cubes[i];
-                String cubeName = cube.getName();
+            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
+            DataSourcesConfig.Catalog[] catalogs = 
+                            handler.getCatalogs(request, ds);
+            String role = request.getRole();
 
-                final Dimension[] dimensions = cube.getDimensions();
-                for (int j = 0; j < dimensions.length; j++) {
-                    Dimension dimension = dimensions[j];
+            for (int h = 0; h < catalogs.length; h++) {
+                DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
-                    // Access control
-                    if (!canAccess(connection, dimension)) {
-                        continue;
+                Connection connection = 
+                    handler.getConnection(ds, dsCatalog.cdata, role);
+                if (connection == null) {
+                    continue;
+                }
+                String catalogName = dsCatalog.name;
+
+                final Cube[] cubes = connection.getSchema().getCubes();
+                for (int i = 0; i < cubes.length; i++) {
+                    Cube cube = cubes[i];
+                    String cubeName = cube.getName();
+
+                    final Dimension[] dimensions = cube.getDimensions();
+                    for (int j = 0; j < dimensions.length; j++) {
+                        Dimension dimension = dimensions[j];
+
+                        // Access control
+                        if (!canAccess(connection, dimension)) {
+                            continue;
+                        }
+                        String desc = dimension.getDescription();
+                        if (desc == null) {
+                            desc = cubeName +
+                                " Cube - " +
+                                dimension.getName() +
+                                " Dimension";
+                        }
+
+                        Row row = new Row();
+                        row.set(CatalogName.name, catalogName); 
+                        // NOTE: SQL Server does not return this
+                        //row.set(SchemaName.name, cube.getSchema().getName());
+                        row.set(CubeName.name, cube.getName());
+                        row.set(DimensionName.name, dimension.getName());
+                        row.set(DimensionUniqueName.name, dimension.getUniqueName());
+                        row.set(DimensionCaption.name, dimension.getCaption());
+                        row.set(DimensionOrdinal.name, dimension.getOrdinal(cube));
+                        row.set(DimensionType.name, getDimensionType(dimension));
+
+                        //TODO: Is this the number of primaryKey members there are??
+                        row.set(DimensionCardinality.name, 0);
+                        // TODO: I think that this is just the dimension name
+                        row.set(DefaultHierarchy.name, dimension.getUniqueName());
+                        row.set(Description.name, desc);
+                        row.set(IsVirtual.name, false);
+                        // SQL Server always returns false
+                        row.set(IsReadWrite.name, false);
+                        // TODO: don't know what to do here
+                        // Are these the levels with uniqueMembers == true?
+                        // How are they mapped to specific column numbers?
+                        row.set(DimensionUniqueSettings.name, 0);
+                        row.set(DimensionIsVisible.name, true);
+
+                        emit(row, response);
                     }
-                    String desc = dimension.getDescription();
-                    if (desc == null) {
-                        desc = cubeName +
-                            " Cube - " +
-                            dimension.getName() +
-                            " Dimension";
-                    }
-
-                    Row row = new Row();
-                    row.set(CatalogName.name, cube.getSchema().getName());
-                    // NOTE: SQL Server does not return this
-                    //row.set(SchemaName.name, cube.getSchema().getName());
-                    row.set(CubeName.name, cube.getName());
-                    row.set(DimensionName.name, dimension.getName());
-                    row.set(DimensionUniqueName.name, dimension.getUniqueName());
-                    row.set(DimensionCaption.name, dimension.getCaption());
-                    row.set(DimensionOrdinal.name, dimension.getOrdinal(cube));
-                    row.set(DimensionType.name, getDimensionType(dimension));
-
-                    //TODO: Is this the number of primaryKey members there are??
-                    row.set(DimensionCardinality.name, 0);
-                    // TODO: I think that this is just the dimension name
-                    row.set(DefaultHierarchy.name, dimension.getUniqueName());
-                    row.set(Description.name, desc);
-                    row.set(IsVirtual.name, false);
-                    // SQL Server always returns false
-                    row.set(IsReadWrite.name, false);
-                    // TODO: don't know what to do here
-                    // Are these the levels with uniqueMembers == true?
-                    // How are they mapped to specific column numbers?
-                    row.set(DimensionUniqueSettings.name, 0);
-                    row.set(DimensionIsVisible.name, true);
-
-                    emit(row, response);
                 }
             }
         }
@@ -3288,79 +3351,88 @@ boolean restriction, boolean nullable, String description)
         };
 
         public void unparse(XmlaResponse response) throws XmlaException {
-            Connection connection = handler.getConnection(request);
-            if (connection == null) {
-                return;
-            }
-            final RolapSchema schema = (RolapSchema) connection.getSchema();
-            FunTable funTable = schema.getFunTable();
+            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
+            DataSourcesConfig.Catalog[] catalogs = 
+                            handler.getCatalogs(request, ds);
+            String role = request.getRole();
 
-            StringBuffer buf = new StringBuffer(50);
-            List functions = funTable.getFunInfoList();
-            for (Iterator it  = functions.iterator(); it.hasNext(); ) {
-                FunInfo fi = (FunInfo) it.next();
+            for (int h = 0; h < catalogs.length; h++) {
+                DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
-                int[][] paramCategories = fi.getParameterCategories();
-                int[] returnCategories = fi.getReturnCategories();
-
-                // Convert Windows newlines in 'description' to UNIX format.
-                String description = fi.getDescription();
-                if (description != null) {
-                    description = Util.replace(fi.getDescription(), "\r", "");
+                Connection connection = 
+                    handler.getConnection(ds, dsCatalog.cdata, role);
+                if (connection == null) {
+                    continue;
                 }
-                if ((paramCategories == null) || (paramCategories.length == 0)) {
-                    Row row = new Row();
-                    row.set(FunctionName.name, fi.getName());
-                    row.set(Description.name, description);
-                    row.set(ParameterList.name, "(none)");
-                    row.set(ReturnType.name, 1);
-                    row.set(Origin.name, 1);
-                    //row.set(LibraryName.name, "");
-                    // TODO WHAT VALUE should this have
-                    row.set(InterfaceName.name, "");
-                    row.set(Caption.name, fi.getName());
-                    emit(row, response);
+                final RolapSchema schema = (RolapSchema) connection.getSchema();
+                FunTable funTable = schema.getFunTable();
 
-                } else {
-                    for (int i = 0; i < paramCategories.length; i++) {
-                        int[] pc = paramCategories[i];
-                        int returnCategory = returnCategories[i];
+                StringBuffer buf = new StringBuffer(50);
+                List functions = funTable.getFunInfoList();
+                for (Iterator it  = functions.iterator(); it.hasNext(); ) {
+                    FunInfo fi = (FunInfo) it.next();
 
+                    int[][] paramCategories = fi.getParameterCategories();
+                    int[] returnCategories = fi.getReturnCategories();
+
+                    // Convert Windows newlines in 'description' to UNIX format.
+                    String description = fi.getDescription();
+                    if (description != null) {
+                        description = Util.replace(fi.getDescription(), "\r", "");
+                    }
+                    if ((paramCategories == null) || (paramCategories.length == 0)) {
                         Row row = new Row();
                         row.set(FunctionName.name, fi.getName());
                         row.set(Description.name, description);
-
-                        buf.setLength(0);
-                        for (int j = 0; j < pc.length; j++) {
-                            int v = pc[j];
-                            if (j > 0) {
-                                buf.append(", ");
-                            }
-                            buf.append(Category.instance.getDescription(v & Category.Mask));
-                        }
-                        row.set(ParameterList.name, buf.toString());
-
-                        int varType = VarType.convertCategory(returnCategory);
-                        row.set(ReturnType.name, varType);
-
-                        //TODO: currently FunInfo can not tell us which
-                        // functions are MDX and which are UDFs.
+                        row.set(ParameterList.name, "(none)");
+                        row.set(ReturnType.name, 1);
                         row.set(Origin.name, 1);
-
-                        // TODO: Name of the type library for UDFs. NULL for MDX
-                        // functions.
                         //row.set(LibraryName.name, "");
-
-                        // TODO: Name of the interface for UDF and Group name
-                        // for the MDX functions.
                         // TODO WHAT VALUE should this have
                         row.set(InterfaceName.name, "");
-
                         row.set(Caption.name, fi.getName());
                         emit(row, response);
+
+                    } else {
+                        for (int i = 0; i < paramCategories.length; i++) {
+                            int[] pc = paramCategories[i];
+                            int returnCategory = returnCategories[i];
+
+                            Row row = new Row();
+                            row.set(FunctionName.name, fi.getName());
+                            row.set(Description.name, description);
+
+                            buf.setLength(0);
+                            for (int j = 0; j < pc.length; j++) {
+                                int v = pc[j];
+                                if (j > 0) {
+                                    buf.append(", ");
+                                }
+                                buf.append(Category.instance.getDescription(v & Category.Mask));
+                            }
+                            row.set(ParameterList.name, buf.toString());
+
+                            int varType = VarType.convertCategory(returnCategory);
+                            row.set(ReturnType.name, varType);
+
+                            //TODO: currently FunInfo can not tell us which
+                            // functions are MDX and which are UDFs.
+                            row.set(Origin.name, 1);
+
+                            // TODO: Name of the type library for UDFs. NULL for MDX
+                            // functions.
+                            //row.set(LibraryName.name, "");
+
+                            // TODO: Name of the interface for UDF and Group name
+                            // for the MDX functions.
+                            // TODO WHAT VALUE should this have
+                            row.set(InterfaceName.name, "");
+
+                            row.set(Caption.name, fi.getName());
+                            emit(row, response);
+                        }
                     }
                 }
-
             }
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
@@ -3616,84 +3688,98 @@ boolean restriction, boolean nullable, String description)
         };
 
         public void unparse(XmlaResponse response) throws XmlaException {
-            final Connection connection = handler.getConnection(request);
-            final Cube[] cubes = connection.getSchema().getCubes();
-            int ordinalPosition = 0;
-            for (int i = 0; i < cubes.length; i++) {
-                Cube cube = cubes[i];
-                final Dimension[] dimensions = cube.getDimensions();
-                for (int j = 0; j < dimensions.length; j++) {
-                    Dimension dimension = dimensions[j];
-                    final Hierarchy[] hierarchies = dimension.getHierarchies();
-                    for (int k = 0; k < hierarchies.length; k++) {
-                        HierarchyBase hierarchy = (HierarchyBase) hierarchies[k];
-                        ordinalPosition++;
+            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
+            DataSourcesConfig.Catalog[] catalogs = 
+                            handler.getCatalogs(request, ds);
+            String role = request.getRole();
 
-                        // Access control
-                        if (!canAccess(connection, hierarchy)) {
-                            continue;
+            for (int h = 0; h < catalogs.length; h++) {
+                DataSourcesConfig.Catalog dsCatalog = catalogs[h];
+
+                Connection connection = 
+                    handler.getConnection(ds, dsCatalog.cdata, role);
+                if (connection == null) {
+                    continue;
+                }
+                String catalogName = dsCatalog.name;
+                final Cube[] cubes = connection.getSchema().getCubes();
+                int ordinalPosition = 0;
+                for (int i = 0; i < cubes.length; i++) {
+                    Cube cube = cubes[i];
+                    final Dimension[] dimensions = cube.getDimensions();
+                    for (int j = 0; j < dimensions.length; j++) {
+                        Dimension dimension = dimensions[j];
+                        final Hierarchy[] hierarchies = dimension.getHierarchies();
+                        for (int k = 0; k < hierarchies.length; k++) {
+                            HierarchyBase hierarchy = (HierarchyBase) hierarchies[k];
+                            ordinalPosition++;
+
+                            // Access control
+                            if (!canAccess(connection, hierarchy)) {
+                                continue;
+                            }
+                            String desc = hierarchy.getDescription();
+                            if (desc == null) {
+                                desc = cube.getName() +
+                                    " Cube - " +
+                                    hierarchy.getName() +
+                                    " Hierarchy";
+                            }
+
+                            Row row = new Row();
+                            row.set(CatalogName.name, catalogName);
+
+                            // SQL Server does not return Schema name
+                            //row.set(SchemaName.name, cube.getSchema().getName());
+
+                            row.set(CubeName.name, cube.getName());
+                            row.set(DimensionUniqueName.name, dimension.getUniqueName());
+                            row.set(HierarchyName.name, hierarchy.getName());
+                            row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
+                            //row.set(HierarchyGuid.name, "");
+
+                            row.set(HierarchyCaption.name, hierarchy.getCaption());
+                            row.set(DimensionType.name, getDimensionType(dimension));
+                            // TODO: The number of members in the hierarchy. Because
+                            // of the presence of multiple hierarchies, this number
+                            // might not be the same as DIMENSION_CARDINALITY. This
+                            // value can be an approximation of the real
+                            // cardinality. Consumers should not assume that this
+                            // value is accurate.
+                            row.set(HierarchyCardinality.name, 1000);
+
+                            row.set(DefaultMember.name, hierarchy.getDefaultMember());
+                            if (hierarchy.hasAll()) {
+                                row.set(AllMember.name,
+                                    Util.makeFqName(hierarchy, hierarchy.getAllMemberName()));
+                            }
+                            row.set(Description.name, desc);
+
+                            //TODO: only support:
+                            // MD_STRUCTURE_FULLYBALANCED (0)
+                            // MD_STRUCTURE_RAGGEDBALANCED (1)
+                            row.set(Structure.name, hierarchy.isRagged() ? 1 : 0);
+
+                            row.set(IsVirtual.name, false);
+                            row.set(IsReadWrite.name, false);
+
+                            // NOTE that SQL Server returns '0' not '1'.
+                            row.set(DimensionUniqueSettings.name, 0);
+
+                            // always true
+                            row.set(DimensionIsVisible.name, true);
+
+                            row.set(HierarchyOrdinal.name, ordinalPosition);
+
+                            // always true
+                            row.set(DimensionIsShared.name, true);
+
+                            RolapLevel nonAllFirstLevel =
+                                    (RolapLevel) hierarchy.getLevels()[
+                                    (hierarchy.hasAll() ? 1 : 0)];
+                            row.set(ParentChild.name, nonAllFirstLevel.isParentChild());
+                            emit(row, response);
                         }
-                        String desc = hierarchy.getDescription();
-                        if (desc == null) {
-                            desc = cube.getName() +
-                                " Cube - " +
-                                hierarchy.getName() +
-                                " Hierarchy";
-                        }
-
-                        Row row = new Row();
-                        row.set(CatalogName.name, cube.getSchema().getName());
-
-                        // SQL Server does not return Schema name
-                        //row.set(SchemaName.name, cube.getSchema().getName());
-
-                        row.set(CubeName.name, cube.getName());
-                        row.set(DimensionUniqueName.name, dimension.getUniqueName());
-                        row.set(HierarchyName.name, hierarchy.getName());
-                        row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
-                        //row.set(HierarchyGuid.name, "");
-
-                        row.set(HierarchyCaption.name, hierarchy.getCaption());
-                        row.set(DimensionType.name, getDimensionType(dimension));
-                        // TODO: The number of members in the hierarchy. Because
-                        // of the presence of multiple hierarchies, this number
-                        // might not be the same as DIMENSION_CARDINALITY. This
-                        // value can be an approximation of the real
-                        // cardinality. Consumers should not assume that this
-                        // value is accurate.
-                        row.set(HierarchyCardinality.name, 1000);
-
-                        row.set(DefaultMember.name, hierarchy.getDefaultMember());
-                        if (hierarchy.hasAll()) {
-                            row.set(AllMember.name,
-                                Util.makeFqName(hierarchy, hierarchy.getAllMemberName()));
-                        }
-                        row.set(Description.name, desc);
-
-                        //TODO: only support:
-                        // MD_STRUCTURE_FULLYBALANCED (0)
-                        // MD_STRUCTURE_RAGGEDBALANCED (1)
-                        row.set(Structure.name, hierarchy.isRagged() ? 1 : 0);
-
-                        row.set(IsVirtual.name, false);
-                        row.set(IsReadWrite.name, false);
-
-                        // NOTE that SQL Server returns '0' not '1'.
-                        row.set(DimensionUniqueSettings.name, 0);
-
-                        // always true
-                        row.set(DimensionIsVisible.name, true);
-
-                        row.set(HierarchyOrdinal.name, ordinalPosition);
-
-                        // always true
-                        row.set(DimensionIsShared.name, true);
-
-                        RolapLevel nonAllFirstLevel =
-                                (RolapLevel) hierarchy.getLevels()[
-                                (hierarchy.hasAll() ? 1 : 0)];
-                        row.set(ParentChild.name, nonAllFirstLevel.isParentChild());
-                        emit(row, response);
                     }
                 }
             }
@@ -3905,52 +3991,66 @@ boolean restriction, boolean nullable, String description)
         };
 
         public void unparse(XmlaResponse response) throws XmlaException {
-            final Connection connection = handler.getConnection(request);
-            final Cube[] cubes = connection.getSchema().getCubes();
-            for (int i = 0; i < cubes.length; i++) {
-                Cube cube = cubes[i];
-                final Dimension[] dimensions = cube.getDimensions();
-                for (int j = 0; j < dimensions.length; j++) {
-                    Dimension dimension = dimensions[j];
-                    final Hierarchy[] hierarchies = dimension.getHierarchies();
-                    for (int k = 0; k < hierarchies.length; k++) {
-                        Hierarchy hierarchy = hierarchies[k];
-                        final Level[] levels = hierarchy.getLevels();
-                        for (int m = 0; m < levels.length; m++) {
-                            Level level = levels[m];
+            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
+            DataSourcesConfig.Catalog[] catalogs = 
+                            handler.getCatalogs(request, ds);
+            String role = request.getRole();
 
-                            // Access control
-                            if (!canAccess(connection, level)) {
-                                continue;
-                            }
-                            String desc = level.getDescription();
-                            if (desc == null) {
-                                desc = cube.getName() +
-                                    " Cube - " +
-                                    hierarchy.getName() +
-                                    " Hierarchy" +
-                                    level.getName() +
-                                    " Level";
-                            }
+            for (int h = 0; h < catalogs.length; h++) {
+                DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
-                            Row row = new Row();
-                            row.set(CatalogName.name, cube.getSchema().getName());
-                            row.set(SchemaName.name, cube.getSchema().getName());
-                            row.set(CubeName.name, cube.getName());
-                            row.set(DimensionUniqueName.name, dimension.getUniqueName());
-                            row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
-                            row.set(LevelName.name, level.getName());
-                            row.set(LevelUniqueName.name, level.getUniqueName());
-                            //row.set(LevelGuid.name, "");
-                            row.set(LevelCaption.name, level.getCaption());
-                            // see notes on this #getDepth()
-                            row.set(LevelNumber.name, level.getDepth());
-                            // TODO: get level cardinality
-                            row.set(LevelCardinality.name, 1000);
-                            row.set(LevelType.name, getLevelType(level));
-                            row.set(LevelIsVisible.name, true);
-                            row.set(Description.name, desc);
-                            emit(row, response);
+                Connection connection = 
+                    handler.getConnection(ds, dsCatalog.cdata, role);
+                if (connection == null) {
+                    continue;
+                }
+                String catalogName = dsCatalog.name;
+                final Cube[] cubes = connection.getSchema().getCubes();
+                for (int i = 0; i < cubes.length; i++) {
+                    Cube cube = cubes[i];
+                    final Dimension[] dimensions = cube.getDimensions();
+                    for (int j = 0; j < dimensions.length; j++) {
+                        Dimension dimension = dimensions[j];
+                        final Hierarchy[] hierarchies = dimension.getHierarchies();
+                        for (int k = 0; k < hierarchies.length; k++) {
+                            Hierarchy hierarchy = hierarchies[k];
+                            final Level[] levels = hierarchy.getLevels();
+                            for (int m = 0; m < levels.length; m++) {
+                                Level level = levels[m];
+
+                                // Access control
+                                if (!canAccess(connection, level)) {
+                                    continue;
+                                }
+                                String desc = level.getDescription();
+                                if (desc == null) {
+                                    desc = cube.getName() +
+                                        " Cube - " +
+                                        hierarchy.getName() +
+                                        " Hierarchy" +
+                                        level.getName() +
+                                        " Level";
+                                }
+
+                                Row row = new Row();
+                                row.set(CatalogName.name, catalogName);
+                                row.set(SchemaName.name, catalogName);
+                                row.set(CubeName.name, cube.getName());
+                                row.set(DimensionUniqueName.name, dimension.getUniqueName());
+                                row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
+                                row.set(LevelName.name, level.getName());
+                                row.set(LevelUniqueName.name, level.getUniqueName());
+                                //row.set(LevelGuid.name, "");
+                                row.set(LevelCaption.name, level.getCaption());
+                                // see notes on this #getDepth()
+                                row.set(LevelNumber.name, level.getDepth());
+                                // TODO: get level cardinality
+                                row.set(LevelCardinality.name, 1000);
+                                row.set(LevelType.name, getLevelType(level));
+                                row.set(LevelIsVisible.name, true);
+                                row.set(Description.name, desc);
+                                emit(row, response);
+                            }
                         }
                     }
                 }
@@ -4169,56 +4269,74 @@ boolean restriction, boolean nullable, String description)
 
         public void unparse(XmlaResponse response) throws XmlaException {
             // return both stored and calculated members on hierarchy [Measures]
-            final Connection connection = handler.getConnection(request);
-            final Role role = connection.getRole();
-            final Cube[] cubes = connection.getSchema().getCubes();
+            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
+            DataSourcesConfig.Catalog[] catalogs = 
+                            handler.getCatalogs(request, ds);
+            String role = request.getRole();
 
-            // SQL Server actually includes the LEVELS_LIST row
-            StringBuffer buf = new StringBuffer(100);
+            for (int h = 0; h < catalogs.length; h++) {
+                DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
-            for (int i = 0; i < cubes.length; i++) {
-                Cube cube = cubes[i];
-                SchemaReader schemaReader = cube.getSchemaReader(role);
-                final Dimension measuresDimension = cube.getDimensions()[0];
-                final Hierarchy measuresHierarchy = measuresDimension.getHierarchies()[0];
-                final Level measuresLevel = measuresHierarchy.getLevels()[0];
+                Connection connection = 
+                    handler.getConnection(ds, dsCatalog.cdata, role);
+                if (connection == null) {
+                    continue;
+                }
+                String catalogName = dsCatalog.name;
+                final Role roleObj = connection.getRole();
+                final Cube[] cubes = connection.getSchema().getCubes();
 
-                buf.setLength(0);
-                Dimension[] dims = cube.getDimensions();
-                for (int j = 1; j < dims.length; j++) {
-                    Hierarchy[] hierarchies = dims[j].getHierarchies();
-                    for (int k = 0; k < hierarchies.length; k++) {
-                        Level[] levels = hierarchies[k].getLevels();
-                        Level lastLevel = levels[levels.length-1];
-                        buf.append(lastLevel.getUniqueName());
-                        if (k +1 < hierarchies.length) {
+                // SQL Server actually includes the LEVELS_LIST row
+                StringBuffer buf = new StringBuffer(100);
+
+                for (int i = 0; i < cubes.length; i++) {
+                    Cube cube = cubes[i];
+                    SchemaReader schemaReader = cube.getSchemaReader(roleObj);
+                    final Dimension measuresDimension = cube.getDimensions()[0];
+                    final Hierarchy measuresHierarchy = measuresDimension.getHierarchies()[0];
+                    final Level measuresLevel = measuresHierarchy.getLevels()[0];
+
+                    buf.setLength(0);
+                    Dimension[] dims = cube.getDimensions();
+                    for (int j = 1; j < dims.length; j++) {
+                        Hierarchy[] hierarchies = dims[j].getHierarchies();
+                        for (int k = 0; k < hierarchies.length; k++) {
+                            Level[] levels = hierarchies[k].getLevels();
+                            Level lastLevel = levels[levels.length-1];
+                            buf.append(lastLevel.getUniqueName());
+                            if (k +1 < hierarchies.length) {
+                                buf.append(',');
+                            }
+                        }
+                        if (j +1 < dims.length) {
                             buf.append(',');
                         }
                     }
-                    if (j +1 < dims.length) {
-                        buf.append(',');
+                    String levelListStr = buf.toString();
+
+                    Member[] storedMembers =
+                            schemaReader.getLevelMembers(measuresLevel, false);
+                    for (int j = 0; j < storedMembers.length; j++) {
+                        emitMember(response, connection, catalogName,
+                            storedMembers[j], cube,
+                            levelListStr);
                     }
-                }
-                String levelListStr = buf.toString();
-//System.out.println("LEVELS_LIST="+buf.toString());
 
-                Member[] storedMembers =
-                        schemaReader.getLevelMembers(measuresLevel, false);
-                for (int j = 0; j < storedMembers.length; j++) {
-                    emitMember(response, connection, storedMembers[j], cube,
-                        levelListStr);
-                }
-
-                List calMembers = schemaReader.getCalculatedMembers(measuresHierarchy);
-                for (Iterator it = calMembers.iterator(); it.hasNext();) {
-                    emitMember(response, connection, (Member) it.next(), cube,
-                        null);
+                    List calMembers = schemaReader.getCalculatedMembers(measuresHierarchy);
+                    for (Iterator it = calMembers.iterator(); it.hasNext();) {
+                        emitMember(response, connection, catalogName,
+                            (Member) it.next(), 
+                            cube,
+                            null);
+                    }
                 }
             }
         }
 
         private void emitMember(XmlaResponse response,
-            Connection connection, Member member,
+            Connection connection, 
+            String catalogName,
+            Member member,
             Cube cube, String levelListStr) {
 
             // Access control
@@ -4236,7 +4354,7 @@ boolean restriction, boolean nullable, String description)
             }
 
             Row row = new Row();
-            row.set(CatalogName.name, cube.getSchema().getName());
+            row.set(CatalogName.name, catalogName);
 
             // SQL Server does not return this
             //row.set(SchemaName.name, cube.getSchema().getName());
@@ -4497,61 +4615,77 @@ boolean restriction, boolean nullable, String description)
         };
 
         public void unparse(XmlaResponse response) throws XmlaException {
-            final Connection connection = handler.getConnection(request);
-            final Cube[] cubes = connection.getSchema().getCubes();
-            for (int i = 0; i < cubes.length; i++) {
-                Cube cube = cubes[i];
-                if (!passesRestriction(CubeName, cube.getName())) {
+            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
+            DataSourcesConfig.Catalog[] catalogs = 
+                            handler.getCatalogs(request, ds);
+            String role = request.getRole();
+
+            for (int h = 0; h < catalogs.length; h++) {
+                DataSourcesConfig.Catalog dsCatalog = catalogs[h];
+
+                Connection connection = 
+                    handler.getConnection(ds, dsCatalog.cdata, role);
+                if (connection == null) {
                     continue;
                 }
-                final String memberUniqueName = (String)
-                        restrictions.get(MemberUniqueName.name);
-                if (memberUniqueName != null &&
-                        !memberUniqueName.equals("")) {
-                    final String[] nameParts = Util.explode(memberUniqueName);
-                    Member member = cube.getSchemaReader(null).
-                            getMemberByUniqueName(nameParts, false);
-                    if (member != null) {
-                        String treeOp0 = (String) restrictions.get(TreeOp.name);
-                        int treeOp = Enumeration.TreeOp.Self.ordinal;
-                        if (treeOp0 != null) {
-                            try {
-                                treeOp = Integer.parseInt(treeOp0);
-                            } catch (NumberFormatException e) {
-                                // stay with default value
-                            }
-                        }
-                        unparseMember(connection, cube, member, response, treeOp);
-                    }
-                    continue;
-                }
-                final Dimension[] dimensions = cube.getDimensions();
-                for (int j = 0; j < dimensions.length; j++) {
-                    Dimension dimension = dimensions[j];
-                    if (!passesRestriction(DimensionUniqueName,
-                            dimension.getUniqueName())) {
+                String catalogName = dsCatalog.name;
+                final Cube[] cubes = connection.getSchema().getCubes();
+                for (int i = 0; i < cubes.length; i++) {
+                    Cube cube = cubes[i];
+                    if (!passesRestriction(CubeName, cube.getName())) {
                         continue;
                     }
-                    final Hierarchy[] hierarchies = dimension.getHierarchies();
-                    for (int k = 0; k < hierarchies.length; k++) {
-                        Hierarchy hierarchy = hierarchies[k];
-                        if (!passesRestriction(HierarchyUniqueName,
-                                hierarchy.getUniqueName())) {
+                    final String memberUniqueName = (String)
+                            restrictions.get(MemberUniqueName.name);
+                    if (memberUniqueName != null &&
+                            !memberUniqueName.equals("")) {
+                        final String[] nameParts = Util.explode(memberUniqueName);
+                        Member member = cube.getSchemaReader(null).
+                                getMemberByUniqueName(nameParts, false);
+                        if (member != null) {
+                            String treeOp0 = (String) restrictions.get(TreeOp.name);
+                            int treeOp = Enumeration.TreeOp.Self.ordinal;
+                            if (treeOp0 != null) {
+                                try {
+                                    treeOp = Integer.parseInt(treeOp0);
+                                } catch (NumberFormatException e) {
+                                    // stay with default value
+                                }
+                            }
+                            unparseMember(connection, catalogName,
+                                    cube, member, response, treeOp);
+                        }
+                        continue;
+                    }
+                    final Dimension[] dimensions = cube.getDimensions();
+                    for (int j = 0; j < dimensions.length; j++) {
+                        Dimension dimension = dimensions[j];
+                        if (!passesRestriction(DimensionUniqueName,
+                                dimension.getUniqueName())) {
                             continue;
                         }
-                        final Member[] rootMembers =
-                                connection.getSchemaReader().
-                                getHierarchyRootMembers(hierarchy);
-                        for (int m = 0; m < rootMembers.length; m++) {
-                            Member member = rootMembers[m];
-                            // Note that we ignore treeOp, because
-                            // MemberUniqueName was not restricted, and
-                            // therefore we have nothing to work relative to.
-                            // We supply our own treeOp expression here, for
-                            // our own devious purposes.
-                            unparseMember(connection, cube, member, response,
-                                    Enumeration.TreeOp.Self.ordinal |
-                                    Enumeration.TreeOp.Descendants.ordinal);
+                        final Hierarchy[] hierarchies = dimension.getHierarchies();
+                        for (int k = 0; k < hierarchies.length; k++) {
+                            Hierarchy hierarchy = hierarchies[k];
+                            if (!passesRestriction(HierarchyUniqueName,
+                                    hierarchy.getUniqueName())) {
+                                continue;
+                            }
+                            final Member[] rootMembers =
+                                    connection.getSchemaReader().
+                                    getHierarchyRootMembers(hierarchy);
+                            for (int m = 0; m < rootMembers.length; m++) {
+                                Member member = rootMembers[m];
+                                // Note that we ignore treeOp, because
+                                // MemberUniqueName was not restricted, and
+                                // therefore we have nothing to work relative to.
+                                // We supply our own treeOp expression here, for
+                                // our own devious purposes.
+                                unparseMember(connection, catalogName,
+                                        cube, member, response,
+                                        Enumeration.TreeOp.Self.ordinal |
+                                        Enumeration.TreeOp.Descendants.ordinal);
+                            }
                         }
                     }
                 }
@@ -4570,7 +4704,8 @@ boolean restriction, boolean nullable, String description)
          * parameter, other relatives of the member. This method recursively
          * invokes itself to walk up, down, or across the hierarchy.
          */
-        private void unparseMember(final Connection connection, Cube cube,
+        private void unparseMember(final Connection connection, 
+                String catalogName, Cube cube,
                 Member member, XmlaResponse response,
                 int treeOp) {
 
@@ -4580,7 +4715,7 @@ boolean restriction, boolean nullable, String description)
 
             // Visit node itself.
             if (mask(treeOp, Enumeration.TreeOp.Self.ordinal)) {
-                emitMember(member, connection, cube, response);
+                emitMember(member, connection, catalogName, cube, response);
             }
             // Visit node's siblings (not including itself).
             if (mask(treeOp, Enumeration.TreeOp.Siblings.ordinal)) {
@@ -4599,7 +4734,8 @@ boolean restriction, boolean nullable, String description)
                     if (sibling == member) {
                         continue;
                     }
-                    unparseMember(connection, cube, sibling, response,
+                    unparseMember(connection, catalogName, 
+                            cube, sibling, response,
                             Enumeration.TreeOp.Self.ordinal);
                 }
             }
@@ -4609,7 +4745,8 @@ boolean restriction, boolean nullable, String description)
                         connection.getSchemaReader().getMemberChildren(member);
                 for (int i = 0; i < children.length; i++) {
                     Member child = children[i];
-                    unparseMember(connection, cube, child, response,
+                    unparseMember(connection, catalogName,
+                            cube, child, response,
                             Enumeration.TreeOp.Self.ordinal |
                             Enumeration.TreeOp.Descendants.ordinal);
                 }
@@ -4618,7 +4755,8 @@ boolean restriction, boolean nullable, String description)
                         connection.getSchemaReader().getMemberChildren(member);
                 for (int i = 0; i < children.length; i++) {
                     Member child = children[i];
-                    unparseMember(connection, cube, child, response,
+                    unparseMember(connection, catalogName,
+                            cube, child, response,
                             Enumeration.TreeOp.Self.ordinal);
                 }
             }
@@ -4627,7 +4765,8 @@ boolean restriction, boolean nullable, String description)
                 final Member parent =
                         connection.getSchemaReader().getMemberParent(member);
                 if (parent != null) {
-                    unparseMember(connection, cube, parent, response,
+                    unparseMember(connection, catalogName,
+                            cube, parent, response,
                             Enumeration.TreeOp.Self.ordinal |
                             Enumeration.TreeOp.Ancestors.ordinal);
                 }
@@ -4635,7 +4774,8 @@ boolean restriction, boolean nullable, String description)
                 final Member parent =
                         connection.getSchemaReader().getMemberParent(member);
                 if (parent != null) {
-                    unparseMember(connection, cube, parent, response,
+                    unparseMember(connection, catalogName,
+                            cube, parent, response,
                             Enumeration.TreeOp.Self.ordinal);
                 }
             }
@@ -4653,7 +4793,9 @@ boolean restriction, boolean nullable, String description)
             return list;
         }
 
-        private void emitMember(Member member, final Connection connection,
+        private void emitMember(Member member, 
+                final Connection connection,
+                final String catalogName,
                 Cube cube, XmlaResponse response) {
             // Access control
             if (!canAccess(connection, member)) {
@@ -4664,8 +4806,8 @@ boolean restriction, boolean nullable, String description)
             final Hierarchy hierarchy = level.getHierarchy();
             final Dimension dimension = hierarchy.getDimension();
             Row row = new Row();
-            row.set(CatalogName.name, cube.getSchema().getName());
-            row.set(SchemaName.name, cube.getSchema().getName());
+            row.set(CatalogName.name, catalogName);
+            row.set(SchemaName.name, catalogName);
             row.set(CubeName.name, cube.getName());
             row.set(DimensionUniqueName.name, dimension.getUniqueName());
             row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
@@ -4943,56 +5085,70 @@ boolean restriction, boolean nullable, String description)
             }
         };
         public void unparse(XmlaResponse response) throws XmlaException {
-            final Connection connection = handler.getConnection(request);
-            final Cube[] cubes = connection.getSchema().getCubes();
-            for (int i = 0; i < cubes.length; i++) {
-                Cube cube = cubes[i];
-                String cubeName = cube.getName();
-                final Dimension[] dimensions = cube.getDimensions();
-                for (int j = 0; j < dimensions.length; j++) {
-                    final Dimension dimension = dimensions[j];
-                    final Hierarchy[] hierarchies = dimension.getHierarchies();
-                    for (int k = 0; k < hierarchies.length; k++) {
-                        Hierarchy hierarchy = hierarchies[k];
-                        String hname = hierarchy.getName();
-                        Level[] levels = hierarchy.getLevels();
-                        for (int l = 0; l < levels.length; l++) {
-                            Level level = levels[l];
-                            String levelName = level.getName();
-                            Property[] properties = level.getProperties();
-                            for (int m = 0; m < properties.length; m++) {
-                                Property property = properties[m];
-                                String propertyName = property.getName();
+            DataSourcesConfig.DataSource ds = handler.getDataSource(request);
+            DataSourcesConfig.Catalog[] catalogs = 
+                            handler.getCatalogs(request, ds);
+            String role = request.getRole();
 
-                                Row row = new Row();
-                                row.set(CatalogName.name, cube.getSchema().getName());
-                                row.set(SchemaName.name, cube.getSchema().getName());
-                                row.set(CubeName.name, cube.getName());
-                                row.set(DimensionUniqueName.name, dimension.getUniqueName());
-                                row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
-                                row.set(LevelUniqueName.name, level.getUniqueName());
-                                //TODO: what is the correct value here
-                                //row.set(MemberUniqueName.name, "");
+            for (int h = 0; h < catalogs.length; h++) {
+                DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
-                                row.set(PropertyName.name, propertyName);
-                                // Only member properties now
-                                row.set(PropertyType.name, MDPROP_MEMBER);
-                                row.set(PropertyContentType.name, MD_PROPTYPE_REGULAR);
-                                row.set(PropertyCaption.name, property.getCaption());
-                                DBType dbType = getDBTypeFromProperty(property);
-                                row.set(DataType.name, dbType.getOrdinal());
+                Connection connection = 
+                    handler.getConnection(ds, dsCatalog.cdata, role);
+                if (connection == null) {
+                    continue;
+                }
+                String catalogName = dsCatalog.name;
+                final Cube[] cubes = connection.getSchema().getCubes();
+                for (int i = 0; i < cubes.length; i++) {
+                    Cube cube = cubes[i];
+                    String cubeName = cube.getName();
+                    final Dimension[] dimensions = cube.getDimensions();
+                    for (int j = 0; j < dimensions.length; j++) {
+                        final Dimension dimension = dimensions[j];
+                        final Hierarchy[] hierarchies = dimension.getHierarchies();
+                        for (int k = 0; k < hierarchies.length; k++) {
+                            Hierarchy hierarchy = hierarchies[k];
+                            String hname = hierarchy.getName();
+                            Level[] levels = hierarchy.getLevels();
+                            for (int l = 0; l < levels.length; l++) {
+                                Level level = levels[l];
+                                String levelName = level.getName();
+                                Property[] properties = level.getProperties();
+                                for (int m = 0; m < properties.length; m++) {
+                                    Property property = properties[m];
+                                    String propertyName = property.getName();
 
-                                String desc = cubeName +
-                                    " Cube - " +
-                                    hname +
-                                    " Hierarchy - " +
-                                    level.getName() +
-                                    " Level - " +
-                                    property.getName() +
-                                    " Property";
-                                row.set(Description.name, desc);
+                                    Row row = new Row();
+                                    row.set(CatalogName.name, catalogName);
+                                    row.set(SchemaName.name, catalogName);
+                                    row.set(CubeName.name, cube.getName());
+                                    row.set(DimensionUniqueName.name, dimension.getUniqueName());
+                                    row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
+                                    row.set(LevelUniqueName.name, level.getUniqueName());
+                                    //TODO: what is the correct value here
+                                    //row.set(MemberUniqueName.name, "");
 
-                                emit(row, response);
+                                    row.set(PropertyName.name, propertyName);
+                                    // Only member properties now
+                                    row.set(PropertyType.name, MDPROP_MEMBER);
+                                    row.set(PropertyContentType.name, MD_PROPTYPE_REGULAR);
+                                    row.set(PropertyCaption.name, property.getCaption());
+                                    DBType dbType = getDBTypeFromProperty(property);
+                                    row.set(DataType.name, dbType.getOrdinal());
+
+                                    String desc = cubeName +
+                                        " Cube - " +
+                                        hname +
+                                        " Hierarchy - " +
+                                        level.getName() +
+                                        " Level - " +
+                                        property.getName() +
+                                        " Property";
+                                    row.set(Description.name, desc);
+
+                                    emit(row, response);
+                                }
                             }
                         }
                     }

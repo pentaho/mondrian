@@ -444,8 +444,7 @@
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Store">
-                                    <UName>[Store].[All
-                                    Stores].[USA].[OR].[Salem].[Store 13]</UName>
+                                    <UName>[Store].[All Stores].[USA].[OR].[Salem].[Store 13]</UName>
                                     <Caption>Store 13</Caption>
                                     <LName>[Store].[Store Name]</LName>
                                     <LNum>4</LNum>
@@ -469,8 +468,7 @@
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Store Size in SQFT">
-                                    <UName>[Store Size in SQFT].[All
-                                    Store Size in SQFTs]</UName>
+                                    <UName>[Store Size in SQFT].[All Store Size in SQFTs]</UName>
                                     <Caption>All Store Size in SQFTs</Caption>
                                     <LName>[Store Size in SQFT].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -526,8 +524,7 @@
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Education Level">
-                                    <UName>[Education Level].[All
-                                    Education Levels]</UName>
+                                    <UName>[Education Level].[All Education Levels]</UName>
                                     <Caption>All Education Levels</Caption>
                                     <LName>[Education Level].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -541,16 +538,14 @@
                                     <DisplayInfo>2</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All
-                                    Marital Status]</UName>
+                                    <UName>[Marital Status].[All Marital Status]</UName>
                                     <Caption>All Marital Status</Caption>
                                     <LName>[Marital Status].[(All)]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>2</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Yearly Income">
-                                    <UName>[Yearly Income].[All
-                                    Yearly Incomes]</UName>
+                                    <UName>[Yearly Income].[All Yearly Incomes]</UName>
                                     <Caption>All Yearly Incomes</Caption>
                                     <LName>[Yearly Income].[(All)]</LName>
                                     <LNum>0</LNum>

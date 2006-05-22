@@ -1152,8 +1152,14 @@ for (int i = 0; i < len; i++) {
      */
     protected void processSoapXmla(File file, int validateXmlaResponce) 
             throws Exception {
+        String catalogURL = CmdRunner.getCatalogURLProperty();
+        String[][] catalogNameUrls = new String[][] {
+                            { "CMD_RUNNER_CATALOG", catalogURL }
+                        };
         byte[] bytes = XmlaSupport.processSoapXmla(file, 
-                        getConnectString(), null);
+                        getConnectString(), 
+                        catalogNameUrls,
+                        null);
 
         String response = new String(bytes);
         System.out.println(response);
@@ -1182,8 +1188,13 @@ for (int i = 0; i < len; i++) {
     protected void processXmla(File file, int validateXmlaResponce) 
             throws Exception {
 
+        String catalogURL = CmdRunner.getCatalogURLProperty();
+        String[][] catalogNameUrls = new String[][] {
+                            { "CMD_RUNNER_CATALOG", catalogURL }
+                        };
         byte[] bytes = XmlaSupport.processXmla(file, 
-                        getConnectString());
+                        getConnectString(),
+                        catalogNameUrls);
 
         String response = new String(bytes);
         System.out.println(response);
