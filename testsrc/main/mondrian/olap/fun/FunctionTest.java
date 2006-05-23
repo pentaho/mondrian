@@ -3136,6 +3136,43 @@ public class FunctionTest extends FoodMartTestCase {
                 "MemberValueCalc([Gender].[All Gender].[M], Item(Children(CurrentMember([Time])), 2.0), [Measures].[Unit Sales])");
     }
 
+    /**
+     * Tests whether the tuple operator can be applied to arguments of various
+     * types. See bug 1491699
+     * "ClassCastException in mondrian.calc.impl.GenericCalc.evaluat".
+     */
+    public void testTupleArgTypes() {
+        // can coerce dims to members
+        assertExprReturns(
+                "([Gender], [Time])",
+                "266,773");
+
+        // can coerce hierarchy to member
+        assertExprReturns(
+                "([Gender].[M], [Time.Weekly])",
+                "135,215");
+
+        // cannot coerce level to member
+        assertAxisThrows(
+                "{([Gender].[M], [Store].[Store City])}",
+                "No function matches signature '(<Member>, <Level>)'");
+
+        // coerce args (hierarchy, member, member, dimension)
+        assertAxisReturns(
+                "{([Time.Weekly], [Measures].[Store Sales], [Marital Status].[M], [Promotion Media])}",
+                "{[Time.Weekly].[All Time.Weeklys].[1997], [Measures].[Store Sales], [Marital Status].[All Marital Status].[M], [Promotion Media].[All Media]}");
+
+        // two usages of the [Time] dimension
+        assertAxisThrows(
+                "{([Time.Weekly], [Measures].[Store Sales], [Marital Status].[M], [Time])}",
+                "Tuple contains more than one member of dimension '[Time]'.");
+
+        // cannot coerce integer to member
+        assertAxisThrows(
+                "{([Gender].[M], 123)}",
+                "No function matches signature '(<Member>, <Numeric Expression>)'");
+    }
+
     public void testTupleItem() {
         assertAxisReturns(
                 "([Time].[1997].[Q1].[1], [Customers].[All Customers].[USA].[OR], [Gender].[All Gender].[M]).item(2)",

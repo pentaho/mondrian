@@ -155,7 +155,18 @@ public class TupleFunDef extends FunDefBase {
                 return new ParenthesesFunDef(args[0].getCategory());
             } else {
                 final int[] argTypes = new int[args.length];
-                Arrays.fill(argTypes, Category.Member);
+                for (int i = 0; i < args.length; i++) {
+                    Exp arg = args[i];
+                    // Arg must be a member:
+                    //  OK: ([Gender].[S], [Time].[1997])   (member, member)
+                    //  OK: ([Gender], [Time])           (dimension, dimension)
+                    // Not OK: ([Gender].[S], [Store].[Store City]) (member, level)
+                    if (!validator.canConvert(
+                            arg, Category.Member, conversionCount)) {
+                        return null;
+                    }
+                    argTypes[i] = Category.Member;
+                }
                 return (FunDef) new TupleFunDef(argTypes);
             }
         }

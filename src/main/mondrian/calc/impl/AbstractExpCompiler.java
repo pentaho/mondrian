@@ -46,11 +46,14 @@ public class AbstractExpCompiler implements ExpCompiler {
 
     public MemberCalc compileMember(Exp exp) {
         final Type type = exp.getType();
-        if (type instanceof DimensionType ||
-                type instanceof HierarchyType) {
+        if (type instanceof DimensionType) {
             final DimensionCalc dimensionCalc = compileDimension(exp);
             return new DimensionCurrentMemberFunDef.CalcImpl(
                     new DummyExp(TypeUtil.toMemberType(type)), dimensionCalc);
+        } else if (type instanceof HierarchyType) {
+            final HierarchyCalc hierarchyCalc = compileHierarchy(exp);
+            return new HierarchyCurrentMemberFunDef.CalcImpl(
+                    new DummyExp(TypeUtil.toMemberType(type)), hierarchyCalc);
         }
         assert type instanceof MemberType;
         return (MemberCalc) compile(exp);

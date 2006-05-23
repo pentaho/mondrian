@@ -1355,6 +1355,8 @@ public class FunUtil extends Util {
         case Category.Hierarchy:
             switch (to) {
             case Category.Dimension:
+            case Category.Member:
+            case Category.Tuple:
                 conversionCount[0]++;
                 return true;
             default:
