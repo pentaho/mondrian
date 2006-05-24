@@ -434,8 +434,6 @@ public class DefaultXmlaServlet extends XmlaServlet {
         response.setStatus(HttpServletResponse.SC_OK);
 
         try {
-            OutputStream outputStream = response.getOutputStream();
-
             // If CharacterEncoding was set in web.xml, use this value
             String encoding = (charEncoding != null) 
                     ? charEncoding : response.getCharacterEncoding();
@@ -448,6 +446,15 @@ public class DefaultXmlaServlet extends XmlaServlet {
                 response.setCharacterEncoding(charEncoding);
             }
             response.setContentType("text/xml");
+
+            /*
+             * The setCharacterEncoding, setContentType, or setLocale method 
+             * must be called BEFORE getWriter or getOutputStream and before 
+             * committing the response for the character encoding to be used.
+             * http://tomcat.apache.org/tomcat-5.5-doc/servletapi/javax/servlet/ServletResponse.html
+             */
+            OutputStream outputStream = response.getOutputStream();
+
 
             byte[] soapHeader = responseSoapParts[0]; 
             byte[] soapBody = responseSoapParts[1];

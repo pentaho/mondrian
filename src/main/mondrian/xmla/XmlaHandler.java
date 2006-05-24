@@ -1870,8 +1870,8 @@ public class XmlaHandler implements XmlaConstants {
      * @return 
      * @throws XmlaException 
      */
-    Connection getConnection(DataSourcesConfig.DataSource ds,
-        String catalogUrl, String role) 
+    protected Connection getConnection(DataSourcesConfig.DataSource ds,
+				       String catalogUrl, String role) 
             throws XmlaException {
 
         Util.PropertyList connectProperties =
