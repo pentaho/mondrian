@@ -132,8 +132,7 @@ public class DiffRepository
      * in the same class to share the same diff-repository: if the
      * repos gets loaded once per testcase, then only one diff is recorded.
      */
-    private static final Map<Class, DiffRepository> mapClassToRepos =
-        new HashMap<Class, DiffRepository>();
+    private static final Map mapClassToRepos = new HashMap();
 
 
     private static File findFile(Class clazz, final String suffix)
@@ -631,7 +630,7 @@ public class DiffRepository
      */
     public static DiffRepository lookup(Class clazz, DiffRepository baseRepos)
     {
-        DiffRepository diffRepos = mapClassToRepos.get(clazz);
+        DiffRepository diffRepos = (DiffRepository) mapClassToRepos.get(clazz);
         if (diffRepos == null) {
             final File refFile = findFile(clazz, ".ref.xml");
             final File logFile = findFile(clazz, ".log.xml");
