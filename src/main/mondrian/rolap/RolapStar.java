@@ -159,28 +159,32 @@ public class RolapStar {
     }
 
     /**
-     * Internally the AggStars are added in sort order, smallest row count
-     * to biggest where ties do not matter.
+     * Adds an {@link AggStar} to this star.
+     *
+     * <p>Internally the AggStars are added in sort order, smallest row count
+     * to biggest, so that the most efficient AggStar is encountered first;
+     * ties do not matter.
      */
     public void addAggStar(AggStar aggStar) {
         if (aggStars == Collections.EMPTY_LIST) {
             // if this is NOT a LinkedList, then the insertion time is longer.
             aggStars = new LinkedList();
-            aggStars.add(aggStar);
-
-        } else {
-            // size
-            int size = aggStar.getSize();
-            ListIterator lit = aggStars.listIterator();
-            while (lit.hasNext()) {
-                AggStar as = (AggStar) lit.next();
-                if (as.getSize() >= size) {
-                    break;
-                }
-            }
-            lit.previous();
-            lit.add(aggStar);
         }
+
+        // Add it before the first AggStar which is larger, if there is one.
+        int size = aggStar.getSize();
+        ListIterator lit = aggStars.listIterator();
+        while (lit.hasNext()) {
+            AggStar as = (AggStar) lit.next();
+            if (as.getSize() >= size) {
+                lit.previous();
+                lit.add(aggStar);
+                return;
+            }
+        }
+
+        // There is no larger star. Add at the end of the list.
+        aggStars.add(aggStar);
     }
 
     /**
