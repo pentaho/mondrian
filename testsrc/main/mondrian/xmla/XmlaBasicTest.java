@@ -12,6 +12,7 @@ package mondrian.xmla;
 import mondrian.olap.Util;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
+import mondrian.test.DiffRepository;
 import mondrian.tui.XmlUtil;
 import mondrian.tui.XmlaSupport;
 
@@ -21,7 +22,10 @@ import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.util.Properties;
+
+import junit.framework.AssertionFailedError;
 
 /**
  * Test XML/A functionality.
@@ -75,22 +79,26 @@ public class XmlaBasicTest extends FoodMartTestCase {
 
     private static final boolean DEBUG = false;
 
-    protected File testDir;
+    protected final File testDir = new File(XMLA_DIRECTORY, "basic");
+
     protected String[][] catalogNameUrls = null;
 
     public XmlaBasicTest() {
     }
+
     public XmlaBasicTest(String name) {
         super(name);
     }
 
-
     protected void setUp() throws Exception {
-        testDir = new File(XMLA_DIRECTORY + "/basic");
     }
+
     protected void tearDown() throws Exception {
     }
 
+    DiffRepository getDiffRepos() {
+        return DiffRepository.lookup(XmlaBasicTest.class);
+    }
 
     protected String fileToString(String filename) throws IOException {
         File file = new File(testDir, filename);
@@ -100,8 +108,17 @@ public class XmlaBasicTest extends FoodMartTestCase {
 
     protected Document fileToDocument(String filename)
                 throws IOException , SAXException {
-        File file = new File(testDir, filename);
-        Document doc = XmlUtil.parse(file);
+        Document doc;
+        if (filename.startsWith("$")) {
+            String s = getDiffRepos().expand(null, filename);
+            if (s.equals(filename)) {
+                s = "<?xml version='1.0'?><Empty/>";
+            }
+            doc = XmlUtil.parse(new ByteArrayInputStream(s.getBytes()));
+        } else {
+            File file = new File(testDir, filename);
+            doc = XmlUtil.parse(file);
+        }
         return doc;
     }
 
@@ -135,9 +152,11 @@ public class XmlaBasicTest extends FoodMartTestCase {
     public TestContext getTestContext() {
         return TestContext.instance();
     }
+
     protected String getConnectionString() {
         return getTestContext().getConnectString();
     }
+
     protected String[][] getCatalogNameUrls() {
         if (catalogNameUrls == null) {
             String connectString = getConnectionString();
@@ -158,43 +177,37 @@ public class XmlaBasicTest extends FoodMartTestCase {
     public void testDDatasource() throws Exception {
         String requestType = "DISCOVER_DATASOURCES";
         String reqFileName = "RT_C_in.xml";
-        String respFileName = "DISCOVER_DATASOURCES_out.xml";
-        doTestRT(requestType, reqFileName, respFileName);
+        doTestRT(requestType, reqFileName, "${response}");
     }
     // good 2/25
     public void testDEnumerators() throws Exception {
         String requestType = "DISCOVER_ENUMERATORS";
         String reqFileName = "RT_DSI_C_in.xml";
-        String respFileName = "DISCOVER_ENUMERATORS_out.xml";
-        doTestRT(requestType, reqFileName, respFileName);
+        doTestRT(requestType, reqFileName, "${response}");
     }
     // good 2/25
     public void testDKeywords() throws Exception {
         String requestType = "DISCOVER_KEYWORDS";
         String reqFileName = "RT_DSI_C_in.xml";
-        String respFileName = "DISCOVER_KEYWORDS_out.xml";
-        doTestRT(requestType, reqFileName, respFileName);
+        doTestRT(requestType, reqFileName, "${response}");
     }
     // good 2/25
     public void testDLiterals() throws Exception {
         String requestType = "DISCOVER_LITERALS";
         String reqFileName = "RT_DSI_C_in.xml";
-        String respFileName = "DISCOVER_LITERALS_out.xml";
-        doTestRT(requestType, reqFileName, respFileName);
+        doTestRT(requestType, reqFileName, "${response}");
     }
     // good 2/25
     public void testDProperties() throws Exception {
         String requestType = "DISCOVER_PROPERTIES";
         String reqFileName = "RT_C_in.xml";
-        String respFileName = "DISCOVER_PROPERTIES_out.xml";
-        doTestRT(requestType, reqFileName, respFileName);
+        doTestRT(requestType, reqFileName, "${response}");
     }
     // good 2/25
     public void testDSchemaRowsets() throws Exception {
         String requestType = "DISCOVER_SCHEMA_ROWSETS";
         String reqFileName = "RT_DSI_C_in.xml";
-        String respFileName = "DISCOVER_SCHEMA_ROWSETS_out.xml";
-        doTestRT(requestType, reqFileName, respFileName);
+        doTestRT(requestType, reqFileName, "${response}");
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -204,37 +217,32 @@ public class XmlaBasicTest extends FoodMartTestCase {
     public void testDBCatalogs() throws Exception {
         String requestType = "DBSCHEMA_CATALOGS";
         String reqFileName = "RT_DSI_C_in.xml";
-        String respFileName = "DBSCHEMA_CATALOGS_out.xml";
-        doTestRT(requestType, reqFileName, respFileName);
+        doTestRT(requestType, reqFileName, "${response}");
     }
     // passes 2/25 - I think that this is good but not sure
     public void _testDBColumns() throws Exception {
         String requestType = "DBSCHEMA_COLUMNS";
         String reqFileName = "RT_DSI_C_in.xml";
-        String respFileName = "DBSCHEMA_COLUMNS_out.xml";
-        doTestRT(requestType, reqFileName, respFileName);
+        doTestRT(requestType, reqFileName, "${response}");
     }
     // passes 2/25 - I think that this is good but not sure
     public void _testDBProviderTypes() throws Exception {
         String requestType = "DBSCHEMA_PROVIDER_TYPES";
         String reqFileName = "RT_DSI_C_in.xml";
-        String respFileName = "DBSCHEMA_PROVIDER_TYPES_out.xml";
-        doTestRT(requestType, reqFileName, respFileName);
+        doTestRT(requestType, reqFileName, "${response}");
     }
     // passes 2/25 - I think that this is good but not sure
     // Should this even be here
     public void _testDBTablesInfo() throws Exception {
         String requestType = "DBSCHEMA_TABLES_INFO";
         String reqFileName = "RT_DSI_C_in.xml";
-        String respFileName = "DBSCHEMA_TABLES_INFO_out.xml";
-        doTestRT(requestType, reqFileName, respFileName);
+        doTestRT(requestType, reqFileName, "${response}");
     }
     // passes 2/25 - I think that this is good but not sure
     public void testDBTables() throws Exception {
         String requestType = "DBSCHEMA_TABLES";
         String reqFileName = "RT_DSI_C_in.xml";
-        String respFileName = "DBSCHEMA_TABLES_out.xml";
-        doTestRT(requestType, reqFileName, respFileName);
+        doTestRT(requestType, reqFileName, "${response}");
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -244,7 +252,6 @@ public class XmlaBasicTest extends FoodMartTestCase {
     public void testMDCubes() throws Exception {
         String requestType = "MDSCHEMA_CUBES";
         String reqFileName = "RT_DSI_C_F_C_in.xml";
-        String respFileName = "MDSCHEMA_CUBES_out.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -252,13 +259,12 @@ public class XmlaBasicTest extends FoodMartTestCase {
         props.setProperty(CATALOG_PROP, CATALOG);
         props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
 
-        doTest(requestType, reqFileName, respFileName, props);
+        doTest(requestType, reqFileName, "${response}", props);
     }
     // good 2/25
     public void testMDimensions() throws Exception {
         String requestType = "MDSCHEMA_DIMENSIONS";
         String reqFileName = "RT_DSI_C_F_C_in.xml";
-        String respFileName = "MDSCHEMA_DIMENSIONS_out.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -266,7 +272,7 @@ public class XmlaBasicTest extends FoodMartTestCase {
         props.setProperty(CATALOG_PROP, CATALOG);
         props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
 
-        doTest(requestType, reqFileName, respFileName, props);
+        doTest(requestType, reqFileName, "${response}", props);
     }
 
     // good 4/21
@@ -275,7 +281,6 @@ public class XmlaBasicTest extends FoodMartTestCase {
         String reqFileName = "RT_R_DSI_C_in.xml";
         String restrictionName = "FUNCTION_NAME";
         String restrictionValue = "Item";
-        String respFileName = "MDSCHEMA_FUNCTIONS_out.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -283,27 +288,25 @@ public class XmlaBasicTest extends FoodMartTestCase {
         props.setProperty(RESTRICTION_VALUE_PROP, restrictionValue);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, respFileName, props);
+        doTest(requestType, reqFileName, "${response}", props);
     }
     // good 4/21
     // only make sure that something is returned
     public void testMDFunctions() throws Exception {
         String requestType = "MDSCHEMA_FUNCTIONS";
         String reqFileName = "RT_DSI_C_in.xml";
-        String respFileName = null;
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, respFileName, props);
+        doTest(requestType, reqFileName, "${response}", props);
     }
 
     // good 2/25 : (partial implementation)
     public void testMDHierarchies() throws Exception {
         String requestType = "MDSCHEMA_HIERARCHIES";
         String reqFileName = "RT_C_CN_DSI_in.xml";
-        String respFileName = "MDSCHEMA_HIERARCHIES_out.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -311,13 +314,12 @@ public class XmlaBasicTest extends FoodMartTestCase {
         props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, respFileName, props);
+        doTest(requestType, reqFileName, "${response}", props);
     }
     // good 2/25 : (partial implementation)
     public void testMDLevels() throws Exception {
         String requestType = "MDSCHEMA_LEVELS";
         String reqFileName = "RT_C_CN_DSI_C_F_C_in.xml";
-        String respFileName = "MDSCHEMA_LEVELS_out.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -329,13 +331,12 @@ public class XmlaBasicTest extends FoodMartTestCase {
         props.setProperty(UNIQUE_NAME_ELEMENT, "DIMENSION_UNIQUE_NAME");
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, respFileName, props);
+        doTest(requestType, reqFileName, "${response}", props);
     }
     // good 2/25
     public void testMDMeasures() throws Exception {
         String requestType = "MDSCHEMA_MEASURES";
         String reqFileName = "MDSCHEMA_MEASURES_in.xml";
-        String respFileName = "MDSCHEMA_MEASURES_out.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -350,13 +351,12 @@ public class XmlaBasicTest extends FoodMartTestCase {
 
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, respFileName, props);
+        doTest(requestType, reqFileName, "${response}", props);
     }
     // good 2/25
     public void testMDMembers() throws Exception {
         String requestType = "MDSCHEMA_MEMBERS";
         String reqFileName = "RT_C_CN_DSI_C_F_C_in.xml";
-        String respFileName = "MDSCHEMA_MEMBERS_out.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -368,20 +368,19 @@ public class XmlaBasicTest extends FoodMartTestCase {
         props.setProperty(UNIQUE_NAME_ELEMENT, "HIERARCHY_UNIQUE_NAME");
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, respFileName, props);
+        doTest(requestType, reqFileName, "${response}", props);
     }
 
     // good 2/25
     public void testMDProperties() throws Exception {
         String requestType = "MDSCHEMA_PROPERTIES";
         String reqFileName = "RT_DSI_C_in.xml";
-        String respFileName = "MDSCHEMA_PROPERTIES_out.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, respFileName, props);
+        doTest(requestType, reqFileName, "${response}", props);
     }
 
     /*
@@ -397,9 +396,10 @@ public class XmlaBasicTest extends FoodMartTestCase {
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, respFileName, props);
+        doTest(requestType, reqFileName, "${response}", props);
 
     }
+
     public void doTest(
             String requestType,
             String reqFileName,
@@ -414,46 +414,55 @@ public class XmlaBasicTest extends FoodMartTestCase {
         String connectString = getConnectionString();
         String[][] catalogNameUrls = getCatalogNameUrls();
 
-        Document expectedDoc = (responseDoc != null)
+        Document expectedDoc;
+
+        // Test 'schemadata' first, so that if it fails, we will be able to
+        // amend the ref file with the fullest XML response.
+        expectedDoc = (responseDoc != null)
+            ? XmlaSupport.transformSoapXmla(
+                responseDoc, new String[][] {{"content", "schemadata"}} )
+            : null;
+        doTests(requestText, props, null, connectString, catalogNameUrls,
+                expectedDoc, CONTENT_SCHEMADATA);
+
+        expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
                 responseDoc, new String[][] {{"content", "none"}} )
             : null;
 
-        props.setProperty(CONTENT_PROP, CONTENT_NONE);
-        doTests(requestText, props, null, connectString, catalogNameUrls, expectedDoc);
+        doTests(requestText, props, null, connectString, catalogNameUrls,
+                expectedDoc, CONTENT_NONE);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
                 responseDoc, new String[][] {{"content", "data"}} )
             : null;
-        props.setProperty(CONTENT_PROP, CONTENT_DATA);
-        doTests(requestText, props, null, connectString, catalogNameUrls, expectedDoc);
+        doTests(requestText, props, null, connectString, catalogNameUrls,
+                expectedDoc, CONTENT_DATA);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
                 responseDoc, new String[][] {{"content", "schema"}} )
             : null;
-        props.setProperty(CONTENT_PROP, CONTENT_SCHEMA);
-        doTests(requestText, props, null, connectString, catalogNameUrls, expectedDoc);
+        doTests(requestText, props, null, connectString, catalogNameUrls,
+                expectedDoc, CONTENT_SCHEMA);
 
-        expectedDoc = (responseDoc != null)
-            ? XmlaSupport.transformSoapXmla(
-                responseDoc, new String[][] {{"content", "schemadata"}} )
-            : null;
-        props.setProperty(CONTENT_PROP, CONTENT_SCHEMADATA);
-        doTests(requestText, props, null, connectString, catalogNameUrls, expectedDoc);
     }
+
     protected void doTests(
             String soapRequestText,
             Properties props,
             String soapResponseText,
             String connectString,
             String[][] catalogNameUrls,
-            Document expectedDoc) throws Exception {
+            Document expectedDoc,
+            String content) throws Exception {
 
-        if (props != null) {
-            soapRequestText = Util.replaceProperties(soapRequestText, props);
+        if (content != null) {
+            props.setProperty(CONTENT_PROP, content);
         }
+        soapRequestText = Util.replaceProperties(soapRequestText, props);
+
 if (DEBUG) {
 System.out.println("soapRequestText="+soapRequestText);
 }
@@ -462,7 +471,7 @@ System.out.println("soapRequestText="+soapRequestText);
         Document xmlaReqDoc = XmlaSupport.extractBodyFromSoap(soapReqDoc);
 
         // do XMLA
-        byte[] bytes = 
+        byte[] bytes =
             XmlaSupport.processXmla(xmlaReqDoc, connectString, catalogNameUrls);
         String response = new String(bytes);
 if (DEBUG) {
@@ -499,19 +508,25 @@ System.out.println("GOT:\n"+gotStr);
 System.out.println("EXPECTED:\n"+expectedStr);
 System.out.println("XXXXXXX");
 }
-            XMLAssert.assertXMLEqual(expectedStr, gotStr);
+            try {
+                XMLAssert.assertXMLEqual(expectedStr, gotStr);
+            } catch (AssertionFailedError e) {
+                if (content.equals(CONTENT_SCHEMADATA)) {
+                    // Let DiffRepository do the comparison. It will output
+                    // a textual difference, and will update the logfile,
+                    // XmlaBasicTest.log.xml. If you agree with the change,
+                    // copy this file to XmlaBasicTest.ref.xml.
+                    getDiffRepos().assertEquals("response", "${response}", gotStr);
+                } else {
+                    throw e;
+                }
+            }
+        } else {
+            if (content.equals(CONTENT_SCHEMADATA)) {
+                getDiffRepos().amend("${response}", gotStr);
+            }
         }
-
-
-
-/*
-        if (! gotStr.equals(expectedStr)) {
-System.out.println("GOT:\n"+gotStr);
-System.out.println("EXPECTED:\n"+expectedStr);
-        }
-*/
     }
-
 }
 
 // End XmlaBasicTest.java
