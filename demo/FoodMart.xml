@@ -619,6 +619,57 @@ fullname
       formatString="#,###"/>
 </Cube>
 
+<!-- a simpler version of "Sales" (with MEMBER_ORDINAL-properties) -->
+<Cube name="Sales 2">
+   <Table name="sales_fact_1997"/>
+
+   <DimensionUsage name="Time" source="Time" foreignKey="time_id"/>
+   <DimensionUsage name="Product" source="Product" foreignKey="product_id"/>
+
+   <Dimension name="Gender" foreignKey="customer_id">
+     <Hierarchy hasAll="true" allMemberName="All Gender" primaryKey="customer_id">
+       <Table name="customer"/>
+       <Level name="Gender" column="gender" uniqueMembers="true"/>
+     </Hierarchy>
+   </Dimension>
+
+   <Measure name="Sales Count" column="product_id" aggregator="count" formatString="#,###">
+     <CalculatedMemberProperty name="MEMBER_ORDINAL" value="1"/>
+   </Measure>
+   
+   <Measure name="Unit Sales" column="unit_sales" aggregator="sum"    formatString="Standard">
+     <CalculatedMemberProperty name="MEMBER_ORDINAL" value="2"/>
+   </Measure>
+   
+   <Measure name="Store Sales" column="store_sales" aggregator="sum"  formatString="#,###.00">
+      <CalculatedMemberProperty name="MEMBER_ORDINAL" value="3"/>
+    </Measure>
+   
+   <Measure name="Store Cost" column="store_cost" aggregator="sum"    formatString="#,###.00">
+      <CalculatedMemberProperty name="MEMBER_ORDINAL" value="6"/>
+    </Measure>
+ 
+   <Measure name="Customer Count" column="customer_id" aggregator="distinct count" formatString="#,###">
+      <CalculatedMemberProperty name="MEMBER_ORDINAL" value="7"/>
+    </Measure>
+
+   <CalculatedMember
+       name="Profit"
+       dimension="Measures">
+     <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>
+     <CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
+     <CalculatedMemberProperty name="MEMBER_ORDINAL" value="4"/>      
+   </CalculatedMember>
+
+   <CalculatedMember
+       name="Profit last Period"
+       dimension="Measures"
+       formula="COALESCEEMPTY((Measures.[Profit], [Time].PREVMEMBER),    Measures.[Profit])"
+       visible="false">
+      <CalculatedMemberProperty name="MEMBER_ORDINAL" value="5"/>
+   </CalculatedMember>
+</Cube>   
+
 <VirtualCube name="Warehouse and Sales">
   <VirtualCubeDimension cubeName="Sales" name="Customers"/>
   <VirtualCubeDimension cubeName="Sales" name="Education Level"/>

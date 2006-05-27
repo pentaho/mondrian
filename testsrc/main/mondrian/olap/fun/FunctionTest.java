@@ -677,11 +677,11 @@ public class FunctionTest extends FoodMartTestCase {
         // Note -- no cube-level calculated members are present
         assertAxisReturns("{[Measures].[MeasuresLevel].Members}",
                 fold(new String[] {
-                    "[Measures].[Sales Count]",
+                    "[Measures].[Unit Sales]",
                     "[Measures].[Store Cost]",
                     "[Measures].[Store Sales]",
-                    "[Measures].[Unit Sales]",
-                    "[Measures].[Customer Count]",
+                    "[Measures].[Sales Count]",
+                    "[Measures].[Customer Count]"
                 }));
 
         // <Dimension>.members applied to Measures
@@ -698,20 +698,20 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns("with member [Measures].[Xxx] AS ' [Measures].[Unit Sales] '" +
                 "select {[Measures].members} on columns from [Sales]",
                 fold(new String[] {
-                "Axis #0:",
-                "{}",
-                "Axis #1:",
-                "{[Measures].[Unit Sales]}",
-                "{[Measures].[Store Cost]}",
-                "{[Measures].[Store Sales]}",
-                "{[Measures].[Sales Count]}",
-                "{[Measures].[Customer Count]}",
-                "Row #0: 266,773",
-                "Row #0: 225,627.23",
-                "Row #0: 565,238.13",
-                "Row #0: 86,837",
-                "Row #0: 5,581",
-                ""}));
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Unit Sales]}",
+                    "{[Measures].[Store Cost]}",
+                    "{[Measures].[Store Sales]}",
+                    "{[Measures].[Sales Count]}",
+                    "{[Measures].[Customer Count]}",
+                    "Row #0: 266,773",
+                    "Row #0: 225,627.23",
+                    "Row #0: 565,238.13",
+                    "Row #0: 86,837",
+                    "Row #0: 5,581",
+                    ""}));
     }
 
     public void testAllMembers() {
@@ -731,14 +731,14 @@ public class FunctionTest extends FoodMartTestCase {
         // Note -- cube-level calculated members ARE present
         assertAxisReturns("{[Measures].[MeasuresLevel].allmembers}",
                 fold(new String[] {
-                    "[Measures].[Sales Count]",
+                    "[Measures].[Unit Sales]",
                     "[Measures].[Store Cost]",
                     "[Measures].[Store Sales]",
-                    "[Measures].[Unit Sales]",
+                    "[Measures].[Sales Count]",
                     "[Measures].[Customer Count]",
                     "[Measures].[Profit]",
-                    "[Measures].[Profit Growth]",
-                    "[Measures].[Profit last Period]"}));
+                    "[Measures].[Profit last Period]",
+                    "[Measures].[Profit Growth]"}));
 
         // <Dimension>.allmembers applied to Measures
         assertAxisReturns("{[Measures].allmembers}",
@@ -781,6 +781,58 @@ public class FunctionTest extends FoodMartTestCase {
                     ""}));
 
         // Calc measure members from schema and from query
+        assertQueryReturns("WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', FORMAT_STRING='0.0%' " +
+                "SELECT {[Measures].AllMembers} ON COLUMNS," +
+                "non empty({[Store].[Store State].Members}) ON ROWS " +
+                "FROM Sales " +
+                "WHERE ([1997].[Q1])",
+                fold(new String[] {
+                    "Axis #0:",
+                    "{[Time].[1997].[Q1]}",
+                    "Axis #1:",
+                    "{[Measures].[Unit Sales]}",
+                    "{[Measures].[Store Cost]}",
+                    "{[Measures].[Store Sales]}",
+                    "{[Measures].[Sales Count]}",
+                    "{[Measures].[Customer Count]}",
+                    "{[Measures].[Profit]}",
+                    "{[Measures].[Profit last Period]}",
+                    "{[Measures].[Profit Growth]}",
+                    "{[Measures].[Unit to Sales ratio]}",
+                    "Axis #2:",
+                    "{[Store].[All Stores].[USA].[CA]}",
+                    "{[Store].[All Stores].[USA].[OR]}",
+                    "{[Store].[All Stores].[USA].[WA]}",
+                    "Row #0: 16,890",
+                    "Row #0: 14,431.09",
+                    "Row #0: 36,175.20",
+                    "Row #0: 5,498",
+                    "Row #0: 1,110",
+                    "Row #0: $21,744.11",
+                    "Row #0: $21,744.11",
+                    "Row #0: 0.0%",
+                    "Row #0: 46.7%",
+                    "Row #1: 19,287",
+                    "Row #1: 16,081.07",
+                    "Row #1: 40,170.29",
+                    "Row #1: 6,184",
+                    "Row #1: 767",
+                    "Row #1: $24,089.22",
+                    "Row #1: $24,089.22",
+                    "Row #1: 0.0%",
+                    "Row #1: 48.0%",
+                    "Row #2: 30,114",
+                    "Row #2: 25,240.08",
+                    "Row #2: 63,282.86",
+                    "Row #2: 9,906",
+                    "Row #2: 1,104",
+                    "Row #2: $38,042.78",
+                    "Row #2: $38,042.78",
+                    "Row #2: 0.0%",
+                    "Row #2: 47.6%",
+                    ""}));
+
+        // Calc member in query and schema not seen
         assertQueryReturns("WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', FORMAT_STRING='0.0%' " +
                 "SELECT {[Measures].AllMembers} ON COLUMNS," +
                 "non empty({[Store].[Store State].Members}) ON ROWS " +
@@ -1879,6 +1931,7 @@ public class FunctionTest extends FoodMartTestCase {
         // We do not allow FORMATTED_VALUE.
         assertExprThrows("[Measures].[Store Sales].FORMATTED_VALUE",
                 "MDX object '[Measures].[Store Sales].[FORMATTED_VALUE]' not found in cube 'Sales'");
+
         assertExprReturns("[Measures].[Store Sales].NAME", "Store Sales");
         // MS says that ID and KEY are standard member properties for
         // OLE DB for OLAP, but not for XML/A. We don't support them.
@@ -3326,7 +3379,8 @@ public class FunctionTest extends FoodMartTestCase {
         assertAxisReturns("[Time].[Month].[1]", "[Time].[1997].[Q1].[1]");
 
         // Shouldn't be able to find a member named "Q1" on the month level.
-        assertAxisThrows("[Time].[Month].[Q1]", "object '[Time].[Month].[Q1]' not found in cube");
+        assertAxisThrows("[Time].[Month].[Q1]",
+                "MDX object '[Time].[Month].[Q1]' not found in cube");
     }
 
     public void testCaseTestMatch() {

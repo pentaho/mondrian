@@ -2126,10 +2126,7 @@ public class BuiltinFunTable extends FunTableImpl {
         if (!includeCalcMembers && memberList != null) {
             FunUtil.removeCalculatedMembers(memberList);
         }
-        if (!dimension.isMeasures()) {
-            // leave measures in their natural order (calculated members last)
-            FunUtil.hierarchize(memberList, false);
-        }
+        FunUtil.hierarchize(memberList, false);
         return memberList;
     }
 }

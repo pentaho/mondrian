@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,6 +12,7 @@
 */
 
 package mondrian.rolap;
+
 import mondrian.olap.*;
 
 import org.apache.log4j.Logger;
@@ -29,15 +30,15 @@ public class RolapMember extends MemberBase {
 
     private static final Logger LOGGER = Logger.getLogger(RolapMember.class);
 
-    /** 
+    /**
      * This does a depth first setting of the complete member hierarchy as
-     * required by the MEMBER_ORDINAL XMLA element. 
+     * required by the MEMBER_ORDINAL XMLA element.
      * For big hierarchies it takes a bunch of time. SQL Server is
      * relatively fast in comparison so it might be storing such
      * information in the DB.
-     * 
-     * @param connection 
-     * @param member 
+     *
+     * @param connection
+     * @param member
      */
     public static void setOrdinals(Connection connection, Member member) {
         Member parent =
@@ -70,17 +71,17 @@ public class RolapMember extends MemberBase {
                 "member.name=" +member.getName()+
                 ", member.class=" +member.getClass().getName()+
                 ", ordinal=" +ordinal
-                );              
+                );
             ordinal++;
         }
-        
+
         Member[] children =
                 connection.getSchemaReader().getMemberChildren(member);
         for (int i = 0; i < children.length; i++) {
             Member child = children[i];
             ordinal = setAllChildren(ordinal, connection, child);
         }
-        
+
         return ordinal;
     }
 
@@ -245,8 +246,17 @@ public class RolapMember extends MemberBase {
             }
         	setUniqueName(value);
         }
-    	mapPropertyNameToValue.put(name, value);
-        
+
+        if (name.equals(Property.MEMBER_ORDINAL.name)) {
+            String ordinal = (String) value;
+            if (ordinal.startsWith("\"") && ordinal.endsWith("\"")) {
+                ordinal = ordinal.substring(1, ordinal.length() - 1);
+            }
+            final double d = Double.parseDouble(ordinal);
+            setOrdinal((int) d);
+        }
+
+        mapPropertyNameToValue.put(name, value);
     }
 
     public Object getPropertyValue(String name) {
@@ -364,13 +374,14 @@ public class RolapMember extends MemberBase {
     }
 
     void setOrdinal(int ordinal) {
-        this.ordinal = ordinal;
+        if (this.ordinal == -1) {
+            this.ordinal = ordinal;
+        }
     }
 
     Object getKey() {
         return this.key;
     }
-
 
     /**
      * Compares this member to another {@link RolapMember}.
@@ -407,7 +418,11 @@ public class RolapMember extends MemberBase {
         //  any key object should be "Comparable"
         // anyway - keys should be of the same class
         if (this.key.getClass().equals(other.key.getClass())) {
-            return ((Comparable)this.key).compareTo(other.key);
+            if (this.key instanceof String) {
+                return Util.compareName((String) this.key, (String) other.key);
+            } else {
+                return ((Comparable) this.key).compareTo(other.key);
+            }
         }
         // Compare by unique name in case of different key classes.
         // This is possible, if a new calculated member is created
@@ -427,6 +442,7 @@ public class RolapMember extends MemberBase {
             final String name = getName();
             return name.equals(RolapUtil.mdxNullLiteral) || name.equals("");
         }
+
         case RolapLevel.HideMemberCondition.IfParentsNameORDINAL: {
             final Member parentMember = getParentMember();
             if (parentMember == null) {
@@ -437,6 +453,7 @@ public class RolapMember extends MemberBase {
             return (parentName == null ? "" : parentName).equals(
                     name == null ? "" : name);
         }
+
         default:
             throw rolapLevel.getHideMemberCondition().unexpected();
         }
@@ -451,14 +468,15 @@ public class RolapMember extends MemberBase {
     }
 
     /**
-     * Returns the formatted value of the property named <code>propertyName</code>.
+     * Returns the formatted value of the property named
+     * <code>propertyName</code>.
      */
-    public String getPropertyFormattedValue(String propertyName){
+    public String getPropertyFormattedValue(String propertyName) {
         // do we have a formatter ? if yes, use it
         Property[] props = getLevel().getProperties();
         Property prop = null;
-        for(int i = 0; i < props.length; i++){
-            if(props[i].getName().equals(propertyName)){
+        for (int i = 0; i < props.length; i++) {
+            if (props[i].getName().equals(propertyName)) {
                 prop = props[i];
                 break;
             }

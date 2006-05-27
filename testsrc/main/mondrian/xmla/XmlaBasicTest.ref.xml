@@ -99,6 +99,16 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <CUBE_NAME>Sales 2</CUBE_NAME>
+                        <CUBE_TYPE>CUBE</CUBE_TYPE>
+                        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+                        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+                        <IS_LINKABLE>false</IS_LINKABLE>
+                        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
+                        <DESCRIPTION>FoodMart Schema - Sales 2 Cube</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
@@ -790,6 +800,124 @@
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
                         <DESCRIPTION>FoodMart - Warehouse and Sales Cube
                             - Warehouse Hierarchy - Warehouse Name Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2</TABLE_NAME>
+                        <TABLE_TYPE>TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Time:Year</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Time
+                            Hierarchy - Year Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Time:Quarter</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Time
+                            Hierarchy - Quarter Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Time:Month</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Time
+                            Hierarchy - Month Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Time.Weekly:(All)</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube -
+                            Time.Weekly Hierarchy - (All) Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Time.Weekly:Year</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube -
+                            Time.Weekly Hierarchy - Year Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Time.Weekly:Week</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube -
+                            Time.Weekly Hierarchy - Week Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Time.Weekly:Day</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube -
+                            Time.Weekly Hierarchy - Day Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Product:(All)</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product
+                            Hierarchy - (All) Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Product:Product Family</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product
+                            Hierarchy - Product Family Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Product:Product Department</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product
+                            Hierarchy - Product Department Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Product:Product Category</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product
+                            Hierarchy - Product Category Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Product:Product Subcategory</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product
+                            Hierarchy - Product Subcategory Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Product:Brand Name</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product
+                            Hierarchy - Brand Name Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Product:Product Name</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product
+                            Hierarchy - Product Name Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Gender:(All)</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Gender
+                            Hierarchy - (All) Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2:Gender:Gender</TABLE_NAME>
+                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Gender
+                            Hierarchy - Gender Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
@@ -2008,6 +2136,70 @@
                         <DEFAULT_HIERARCHY>[Warehouse]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>Warehouse and Sales Cube -
                             Warehouse Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <CUBE_NAME>Sales 2</CUBE_NAME>
+                        <DIMENSION_NAME>Measures</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>2</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION>Sales 2 Cube - Measures Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <CUBE_NAME>Sales 2</CUBE_NAME>
+                        <DIMENSION_NAME>Time</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>1</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>1</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Time]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION>Sales 2 Cube - Time Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <CUBE_NAME>Sales 2</CUBE_NAME>
+                        <DIMENSION_NAME>Product</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Product</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Product]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION>Sales 2 Cube - Product Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <CUBE_NAME>Sales 2</CUBE_NAME>
+                        <DIMENSION_NAME>Gender</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Gender</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Gender]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION>Sales 2 Cube - Gender Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>

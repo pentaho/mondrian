@@ -1125,7 +1125,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "   MEMBER [Customers].[Calc] AS '2'" + nl +
                 "SELECT" + nl +
                 "   { [Promotions].[Calc] } ON COLUMNS," + nl +
-                "   {  Customers].[Calc] } ON ROWS" + nl +
+                "   {  [Customers].[Calc] } ON ROWS" + nl +
                 "FROM Sales",
 
                 "Axis #0:" + nl +

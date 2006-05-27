@@ -425,6 +425,9 @@
     <text>Named set ''{0}'' has bad formula</text>
 </exception>
 
+<exception id="40250" name="MeasureOrdinalsNotUnique">
+    <text>Cube ''{0}'': Ordinal {1} is not unique: ''{2}'' and ''{3}''</text>
+</exception>
 
 <!-- ====================================================================== -->
 <!-- Loader -->

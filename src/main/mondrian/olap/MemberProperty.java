@@ -43,6 +43,14 @@ public class MemberProperty extends QueryPart {
         exp = validator.validate(exp, false);
     }
 
+    public Exp getExp() {
+        return exp;
+    }
+
+    public String getName() {
+        return name;
+    }
+    
     public Object[] getChildren() {
         return new Exp[] {exp};
     }

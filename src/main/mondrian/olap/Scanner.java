@@ -692,8 +692,20 @@ public class Scanner {
             case -1:
                 // we're done
                 return makeToken(ParserSym.EOF, "EOF");
+
             default:
-                /* ignore everything else */
+                // everything else is an error
+                if (Character.isWhitespace(nextChar)) {
+                    // fall through
+                } else {
+                    throw new RuntimeException("Unexpected character '" + (char) nextChar + "'");
+                }
+
+            case ' ':
+            case '\t':
+            case '\n':
+            case '\r':
+                // whitespace can be ignored
                 iPrevChar = iChar;
                 advance();
                 break;
@@ -701,7 +713,5 @@ public class Scanner {
         }
     }
 }
-
-
 
 // End Scanner.java

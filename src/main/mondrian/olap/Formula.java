@@ -17,6 +17,8 @@ import mondrian.resource.MondrianResource;
 import mondrian.mdx.MemberExpr;
 
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A <code>Formula</code> is a clause in an MDX query which defines a Set or a
@@ -119,6 +121,22 @@ public class Formula extends QueryPart {
             if (formatExp != null) {
                 mdxMember.setProperty(Property.FORMAT_EXP.name, formatExp);
             }
+
+            // For each property of the formula, make it a property of the
+            // member.
+            final List formatPropertyList =
+                    Arrays.asList(Property.FORMAT_PROPERTIES);
+            for (int i = 0; i < memberProperties.length; i++) {
+                MemberProperty memberProperty = memberProperties[i];
+                if (formatPropertyList.contains(memberProperty.getName())) {
+                    continue; // we already dealt with format_string props
+                }
+                final Exp exp = memberProperty.getExp();
+                if (exp instanceof Literal) {
+                    String value = String.valueOf(((Literal) exp).getValue());
+                    mdxMember.setProperty(memberProperty.getName(), value);
+                }
+            }
         }
     }
 
@@ -192,7 +210,7 @@ public class Formula extends QueryPart {
             if (mdxMember != null) {
                 pw.print(mdxMember.getUniqueName());
             } else {
-                pw.print(Util.quoteMdxIdentifier(names));                
+                pw.print(Util.quoteMdxIdentifier(names));
             }
         } else {
             pw.print("set ");

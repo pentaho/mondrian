@@ -70,6 +70,24 @@ public class ParserTest extends TestCase {
         checkFails(p, "select [member] on 555 from sales", "The axis number must be an integer");
     }
 
+    public void testScannerPunc() {
+        // '$' is OK inside brackets but not outside
+        Parser p = new TestParser();
+        assertParserReturns(
+                "select [measures].[$foo] on columns from sales",
+                TestContext.fold(new String[] {
+                    "select [measures].[$foo] ON COLUMNS",
+                    "from [sales]",
+                    ""}));
+        checkFails(p,
+                "select [measures].$foo on columns from sales",
+                "Unexpected character '$'");
+
+        // ']' unexcpected
+        checkFails(p, "select { Customers].Children } on columns from [Sales]",
+                "Unexpected character ']'");
+    }
+
     public void testUnparse() {
         checkUnparse(
                 TestContext.fold(new String[] {

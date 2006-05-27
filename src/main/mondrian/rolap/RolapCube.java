@@ -222,6 +222,7 @@ public class RolapCube extends CubeBase {
         init(xmlCube.dimensions);
         init(xmlCube);
 
+        checkOrdinals(xmlCube.name, measures, xmlCube.calculatedMembers);
         loadAggGroup(xmlCube);
     }
 
@@ -371,6 +372,65 @@ public class RolapCube extends CubeBase {
         createCalcMembersAndNamedSets(
                 xmlCube.calculatedMembers, xmlCube.namedSets,
                 memberList, formulaList);
+    }
+
+
+    /**
+     * Checks whether the ordinals of Measures and calculated measures are
+     * unique.
+     *
+     * @param cubeName        the name of the cube (required for error-messages only)
+     * @param measures        the stored measures
+     * @param xmlCalcMembers  the calculate members (only members of dimension Measures are checked)
+     */
+    private void checkOrdinals(
+            String cubeName,
+            RolapStoredMeasure measures[],
+            MondrianDef.CalculatedMember[] xmlCalcMembers)
+    {
+        Map ordinals = new HashMap();
+
+        // step 1: check the stored measures
+        for (int i = 0; i < measures.length; i++) {
+            Integer ordinal = new Integer(measures[i].getOrdinal());
+            if (!ordinals.containsKey(ordinal)) {
+                ordinals.put(ordinal, measures[i].getUniqueName());
+            } else {
+                throw MondrianResource.instance().MeasureOrdinalsNotUnique.ex(
+                        cubeName,
+                        ordinal.toString(),
+                        (String) ordinals.get(ordinal),
+                        measures[i].getUniqueName());
+            }
+        }
+
+        // step 2: check the calculated measures
+        for (int i = 0; i < xmlCalcMembers.length; i++) {
+            if (xmlCalcMembers[i].dimension.equalsIgnoreCase("Measures")) {
+                MondrianDef.CalculatedMemberProperty[] properties =
+                        xmlCalcMembers[i].memberProperties;
+
+                for (int j = 0; j < properties.length; j++) {
+                    if (properties[j].name.equals(
+                            Property.MEMBER_ORDINAL.getName())) {
+                        Integer ordinal = new Integer(properties[j].value);
+
+                        final String uname =
+                                "[Measures].[" + xmlCalcMembers[i].name + "]";
+                        if (!ordinals.containsKey(ordinal)) {
+                            ordinals.put(ordinal, uname);
+                        } else {
+                            throw MondrianResource.instance().
+                                    MeasureOrdinalsNotUnique.ex(
+                                            cubeName,
+                                            ordinal.toString(),
+                                            (String)ordinals.get(ordinal),
+                                            uname);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -546,6 +606,9 @@ public class RolapCube extends CubeBase {
         validateMemberProps(xmlProperties, propNames, propExprs,
                 xmlCalcMember.name);
 
+        final int measureCount =
+                this.measuresHierarchy.memberReader.getMemberCount();
+
         // Generate SQL.
         assert memberUniqueName.startsWith("[");
         buf.append("MEMBER ").append(memberUniqueName)
@@ -563,8 +626,16 @@ public class RolapCube extends CubeBase {
         }
         // Flag that the calc members are defined against a cube; will
         // determine the value of Member.isCalculatedInQuery
-        buf.append(",").append(Util.nl)
-                .append(Property.MEMBER_SCOPE).append(" = 'CUBE'");
+        buf.append(",").append(Util.nl).
+                append(Util.quoteMdxIdentifier(Property.MEMBER_SCOPE.name)).
+                append(" = 'CUBE'");
+
+        // Assign the member an ordinal higher than all of the stored measures.
+        if (!propNames.contains(Property.MEMBER_ORDINAL)) {
+            buf.append(",").append(Util.nl).
+                    append(Property.MEMBER_ORDINAL).append(" = ").
+                    append(measureCount + j);
+        }
         buf.append(Util.nl);
     }
 
@@ -716,21 +787,21 @@ assert is not true.
         return this.cellReader;
     }
 
-    /** 
+    /**
      * Returns true if this Cube is either virtual or if the Cube's
      * RolapStar is caching aggregates.
-     * 
-     * @return 
+     *
+     * @return
      */
     public boolean isCacheAggregations() {
         return (isVirtual()) ? true : star.isCacheAggregations();
     }
 
-    /** 
+    /**
      * Set if this (non-virtual) Cube's RolapStar should cache
      * aggregations.
-     * 
-     * @param cache 
+     *
+     * @param cache
      */
     public void setCacheAggregations(boolean cache) {
         if (! isVirtual()) {
@@ -738,7 +809,7 @@ assert is not true.
         }
     }
 
-    /** 
+    /**
      * Clear the in memory aggregate cache associated with this Cube, but
      * only if Disabling Caching has been enabled.
      */

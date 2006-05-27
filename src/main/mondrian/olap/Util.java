@@ -251,6 +251,17 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Compares two names.
+     * Takes into account the {@link MondrianProperties#CaseSensitive case
+     * sensitive option}.
+     * Names must not be null.
+     */
+    public static int compareName(String s, String t) {
+        boolean caseSensitive = MondrianProperties.instance().CaseSensitive.get();
+        return caseSensitive ? s.compareTo(t) : s.compareToIgnoreCase(t);
+    }
+
+    /**
      * Generates a normalized form of a name, for use as a key into a map.
      * Returns the upper case name if
      * {@link MondrianProperties#CaseSensitive} is true, the name unchanged

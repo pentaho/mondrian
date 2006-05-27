@@ -69,7 +69,7 @@ public class XmlaTest extends TestCase {
     }
 
     protected void runTest() throws Exception {
-        Element[] xmlaCyclePair = 
+        Element[] xmlaCyclePair =
             XmlaTestContext.extractXmlaCycle(testFile, XmlaTestContext.ENV);
         Element requestElem = xmlaCyclePair[0];
         Element expectedResponseElem = xmlaCyclePair[1];
@@ -102,11 +102,10 @@ public class XmlaTest extends TestCase {
         try {
             XMLAssert.assertXMLEqual(expectedText, actualText);
         } catch (AssertionFailedError e) {
-            System.out.println("expected:");
-            System.out.println(expectedText);
-            System.out.println("actual:");
-            System.out.println(actualText);
-            throw e;
+            // Use junit's comparison method. We know it will fail, but it will
+            // print the expected/actual, and some IDEs can even display visual
+            // diffs.
+            assertEquals(expectedText, actualText);
         }
     }
 
