@@ -694,11 +694,16 @@ public class Scanner {
                 return makeToken(ParserSym.EOF, "EOF");
 
             default:
-                // everything else is an error
-                if (Character.isWhitespace(nextChar)) {
+                // If it's whitespace, skip over it.
+                // (When we switch to JDK 1.5, use Character.isWhitespace(int);
+                // til then, there's just Character.isWhitespace(char).)
+                if (nextChar <= Character.MAX_VALUE &&
+                        Character.isWhitespace((char) nextChar)) {
                     // fall through
                 } else {
-                    throw new RuntimeException("Unexpected character '" + (char) nextChar + "'");
+                    // everything else is an error
+                    throw new RuntimeException(
+                            "Unexpected character '" + (char) nextChar + "'");
                 }
 
             case ' ':
