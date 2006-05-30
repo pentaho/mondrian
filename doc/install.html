@@ -43,17 +43,18 @@ configure Mondrian as an XML/A provider</a><ol>
   XmlaServlet</code> in your <code>web.xml</code></a></li>
 </ol>
   </li>
-  <li><a href="#7_Miscellaneous">Miscellaneous</a></li>
+  <li><a href="#6_Miscellaneous">Miscellaneous</a></li>
   <ol>
     <li><a href="install.html#6_1_mondrian_properties">Configuring <code>mondrian.properties</code></a></li>
     <li><a href="#7_1_Cache_setup">Cache setup</a></li>
   </ol>
-  <li><a href="#Appendix_A_Compatibility_issues">Compatibility issues</a></li>
+  <li><a href="#7_Database_compatibility">Database compatibility</a></li>
+  <li><a href="#8_Compatibility_issues">Compatibility issues</a></li>
   <ol>
-    <li><a href="#Appendix_A_1_Weblogic_6_1_and_Xerces">Weblogic 6.1
+    <li><a href="#7_1_Weblogic_6_1_and_Xerces">Weblogic 6.1
 and Xerces</a></li>
     <li><a href="#Appendix_A_2_Xalan_and_Tomcat">Xalan and Tomcat</a></li>
-    <li><a href="#Appendix_A_3_Log4j_and_Tomcat">Log4j and Tomcat</a>
+    <li><a href="#7_3_Log4j_and_Tomcat">Log4j and Tomcat</a>
     </li>
   </ol>
 </ol>
@@ -464,7 +465,7 @@ For example:</p>
 &lt;/servlet&gt;</code></p>
 </blockquote>
 <h2>
-<a name="7_Miscellaneous">6. Miscellaneous</a></h2>
+<a name="6_Miscellaneous">6. Miscellaneous</a></h2>
 <h3><a name="6_1_mondrian_properties">6.1. Configuring <code>mondrian.properties</code></a></h3>
 
 <p>Properties are described in the <a href="configuration.html">Configuration 
@@ -476,9 +477,49 @@ Guide</a>.</p>
 using the -Xms Java VM option, for example -Xms256m for 256 megs of ram
 for the Java VM.</p>
 
-<h2><a name="Appendix_A_Compatibility_issues">7. Compatibility issues</a></h2>
+<h2><a name="7_Database_compatibility">7. Database compatibility</a></h2>
 
-<h3><a name="Appendix_A_1_Weblogic_6_1_and_Xerces">7.1. Weblogic 6.1 and Xerces</a></h3>
+<p>Mondrian is known to run on the following databases. (It probably runs on 
+others too.)</p>
+<ol>
+  <li>Apache Derby</li>
+  <li>Firebird</li>
+  <li>hsqldb</li>
+  <li>IBM DB2</li>
+  <li>Microsoft Access</li>
+  <li>Microsoft SQL Server</li>
+  <li>MySQL</li>
+  <li>Oracle</li>
+  <li>PostgreSQL</li>
+  <li>Sybase</li>
+</ol>
+
+<h3>Sybase</h3>
+
+<p><a href="https://sourceforge.net/forum/message.php?msg_id=3755994">mizar_sf 
+  writes</a>:</p>
+
+<blockquote>
+
+  <p>I tried some solutions to get mondrian (I used 2.1RC) connected with a Sybase 
+  ASE [version 12.5] server. Finally I found this solutions:</p>
+  <ul>
+    <li>Downloaded a jdbc3 compliant driver like jtds-1.2.jar from sourceforge.</li>
+    <li>Placed the driver in TOMCAT_HOME/common/endorsed</li>
+    <li>In configuration files like <ul>
+        <li>mondrian/WEB-INF/datasources.xml</li>
+        <li>mondrian/WEB-INF/web.xml</li></ul>
+    I modified the parameters line in this way:<blockquote>
+      <code>Provider=mondrian;jdbcuser=userName;jdbcpassword=userPass;Jdbc=jdbc:jtds:sybase://xxx.xxx.xxx.xxx:port/dbName;JdbcDrivers=net.sourceforge.jtds.jdbc.Driver;Catalog=/WEB-INF/queries/myCatalog.xml</code>
+    </blockquote>
+    (The datasources.xml doesn't need to be modified if you are only testing 
+    the db, but if you are using something like OPENI you have to.)</li>
+  </ul>
+</blockquote>
+
+<h2><a name="8_Compatibility_issues">8. Compatibility issues</a></h2>
+
+<h3><a name="7_1_Weblogic_6_1_and_Xerces">8.1. Weblogic 6.1 and Xerces</a></h3>
 
 <p>Weblogic 6.1 ships with an older, incompatible, version of Xerces.
 The symptom is the error</p>
@@ -497,7 +538,7 @@ explicitly uses Xerces.&nbsp; Fyi,
 <a href="http://xml.apache.org/soap/faq/faq-for-WL6.1beta.html">this
 note</a>
 describes how to change Weblogic's default XML parser.</p>
-<h3><a name="Appendix_C_2_Xalan_and_Tomcat"><font color="#990000">7.2.
+<h3><a name="7_2_Xalan_and_Tomcat"><font color="#990000">8.2.
 JDK, Xalan
 and Tomcat</font></a></h3>
 <p>Mondrian binaries, as shipped, require JDK 1.4.x, Xalan 2.6.0, and
@@ -556,8 +597,8 @@ and
 <code>xercesImpl.jar</code> from <code>mondrian.war</code>, or (b)
 revert to Xalan 2.3.1.<br>
 </p>
-<h3><a name="Appendix_A_3_Log4j_and_Tomcat"><font color="#990000">
-7.3. Log4j and Tomcat</font></a></h3>
+<h3><a name="7_3_Log4j_and_Tomcat"><font color="#990000">
+8.3. Log4j and Tomcat</font></a></h3>
 <p>The Mondrian WARs come packaged with a version of log4j.jar. This
 may conflict with your app server, such as JBoss, and cause errors in
 the
