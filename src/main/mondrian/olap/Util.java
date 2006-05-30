@@ -91,6 +91,7 @@ public class Util extends XOMUtil {
                 String currencySymbol = res.FormatCurrencySymbol.str();
                 String currencyFormat = res.FormatCurrencyFormat.str();
                 String[] daysOfWeekShort = {
+                    "",
                     res.FormatShortDaysSun.str(),
                     res.FormatShortDaysMon.str(),
                     res.FormatShortDaysTue.str(),
@@ -100,6 +101,7 @@ public class Util extends XOMUtil {
                     res.FormatShortDaysSat.str(),
                 };
                 String[] daysOfWeekLong = {
+                    "",
                     res.FormatLongDaysSunday.str(),
                     res.FormatLongDaysMonday.str(),
                     res.FormatLongDaysTuesday.str(),
@@ -121,6 +123,7 @@ public class Util extends XOMUtil {
                     res.FormatShortMonthsOct.str(),
                     res.FormatShortMonthsNov.str(),
                     res.FormatShortMonthsDec.str(),
+                    "",
                 };
                 String[] monthsLong = {
                     res.FormatLongMonthsJanuary.str(),
@@ -135,6 +138,7 @@ public class Util extends XOMUtil {
                     res.FormatLongMonthsOctober.str(),
                     res.FormatLongMonthsNovember.str(),
                     res.FormatLongMonthsDecember.str(),
+                    "",
                 };
                 return Format.createLocale(
                         thousandSeparator, decimalPlaceholder, dateSeparator,

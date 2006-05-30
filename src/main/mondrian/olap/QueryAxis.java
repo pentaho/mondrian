@@ -49,6 +49,16 @@ public class QueryAxis extends QueryPart {
     private int  showSubtotals;
     private final Id[] dimensionProperties;
 
+    /**
+     * Creates an axis.
+     *
+     * @param nonEmpty Whether to filter out members of this axis whose cells
+     *    are all empty
+     * @param set Expression to populate the axis
+     * @param axisDef Which axis (ROWS, COLUMNS, etc.)
+     * @param showSubtotals Whether to show subtotals
+     * @param dimensionProperties List of dimension properties
+     */
     public QueryAxis(
             boolean nonEmpty,
             Exp set,
@@ -61,6 +71,19 @@ public class QueryAxis extends QueryPart {
         this.axisOrdinal = axisDef;
         this.showSubtotals = showSubtotals;
         this.dimensionProperties = dimensionProperties;
+    }
+
+    /**
+     * Creates an axis with no dimension properties.
+     *
+     * @see #QueryAxis(boolean, Exp, AxisOrdinal, int, Id[])
+     */
+    public QueryAxis(
+            boolean nonEmpty,
+            Exp set,
+            AxisOrdinal axisDef,
+            int showSubtotals) {
+        this(nonEmpty, set, axisDef, showSubtotals, new Id[0]);
     }
 
     public Object clone() {

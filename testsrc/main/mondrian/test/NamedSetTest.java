@@ -28,43 +28,43 @@ public class NamedSetTest extends FoodMartTestCase {
      */
     public void testNamedSet() {
         assertQueryReturns(
-                "WITH" + nl +
-                "    SET [Top Sellers]" + nl +
-                "AS " + nl +
-                "    'TopCount([Warehouse].[Warehouse Name].MEMBERS, 10, " + nl +
-                "        [Measures].[Warehouse Sales])'" + nl +
-                "SELECT " + nl +
-                "    {[Measures].[Warehouse Sales]} ON COLUMNS," + nl +
-                "        {[Top Sellers]} ON ROWS" + nl +
-                "FROM " + nl +
-                "    [Warehouse]" + nl +
-                "WHERE " + nl +
+                "WITH\n" +
+                "    SET [Top Sellers]\n" +
+                "AS \n" +
+                "    'TopCount([Warehouse].[Warehouse Name].MEMBERS, 10, \n" +
+                "        [Measures].[Warehouse Sales])'\n" +
+                "SELECT \n" +
+                "    {[Measures].[Warehouse Sales]} ON COLUMNS,\n" +
+                "        {[Top Sellers]} ON ROWS\n" +
+                "FROM \n" +
+                "    [Warehouse]\n" +
+                "WHERE \n" +
                 "    [Time].[Year].[1997]",
-                "Axis #0:" + nl +
-                "{[Time].[1997]}" + nl +
-                "Axis #1:" + nl +
-                "{[Measures].[Warehouse Sales]}" + nl +
-                "Axis #2:" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[OR].[Salem].[Treehouse Distribution]}" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[WA].[Tacoma].[Jorge Garcia, Inc.]}" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[CA].[Los Angeles].[Artesia Warehousing, Inc.]}" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[CA].[San Diego].[Jorgensen Service Storage]}" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[WA].[Bremerton].[Destination, Inc.]}" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[WA].[Seattle].[Quality Warehousing and Trucking]}" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[WA].[Spokane].[Jones International]}" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[WA].[Yakima].[Maddock Stored Foods]}" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse]}" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[OR].[Portland].[Quality Distribution, Inc.]}" + nl +
-                "Row #0: 31116.3749" + nl +
-                "Row #1: 30743.7722" + nl +
-                "Row #2: 22907.9591" + nl +
-                "Row #3: 22869.7904" + nl +
-                "Row #4: 22187.4183" + nl +
-                "Row #5: 22046.9416" + nl +
-                "Row #6: 10879.6737" + nl +
-                "Row #7: 10212.2007" + nl +
-                "Row #8: 10156.4955" + nl +
-                "Row #9: 7718.6783" + nl);
+                fold("Axis #0:\n" +
+                "{[Time].[1997]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Warehouse Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Warehouse].[All Warehouses].[USA].[OR].[Salem].[Treehouse Distribution]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[WA].[Tacoma].[Jorge Garcia, Inc.]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[CA].[Los Angeles].[Artesia Warehousing, Inc.]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[CA].[San Diego].[Jorgensen Service Storage]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[WA].[Bremerton].[Destination, Inc.]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[WA].[Seattle].[Quality Warehousing and Trucking]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[WA].[Spokane].[Jones International]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[WA].[Yakima].[Maddock Stored Foods]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[OR].[Portland].[Quality Distribution, Inc.]}\n" +
+                "Row #0: 31,116.375\n" +
+                "Row #1: 30,743.772\n" +
+                "Row #2: 22,907.959\n" +
+                "Row #3: 22,869.79\n" +
+                "Row #4: 22,187.418\n" +
+                "Row #5: 22,046.942\n" +
+                "Row #6: 10,879.674\n" +
+                "Row #7: 10,212.201\n" +
+                "Row #8: 10,156.496\n" +
+                "Row #9: 7,718.678\n"));
     }
 
     /**
@@ -72,81 +72,82 @@ public class NamedSetTest extends FoodMartTestCase {
      */
     public void testNamedSetOnMember() {
         assertQueryReturns(
-                "WITH" + nl +
-                "    MEMBER [Measures].[Profit]" + nl +
-                "AS '[Measures].[Warehouse Sales] - [Measures].[Warehouse Cost] '" + nl +
-                "    SET [Top Performers]" + nl +
-                "AS " + nl +
-                "    'TopCount([Warehouse].[Warehouse Name].MEMBERS, 5, " + nl +
-                "        [Measures].[Profit])'" + nl +
-                "SELECT " + nl +
-                "    {[Measures].[Profit]} ON COLUMNS," + nl +
-                "        {[Top Performers]} ON ROWS" + nl +
-                "FROM " + nl +
-                "    [Warehouse]" + nl +
-                "WHERE " + nl +
+                "WITH\n" +
+                "    MEMBER [Measures].[Profit]\n" +
+                "AS '[Measures].[Warehouse Sales] - [Measures].[Warehouse Cost] '\n" +
+                "    SET [Top Performers]\n" +
+                "AS \n" +
+                "    'TopCount([Warehouse].[Warehouse Name].MEMBERS, 5, \n" +
+                "        [Measures].[Profit])'\n" +
+                "SELECT \n" +
+                "    {[Measures].[Profit]} ON COLUMNS,\n" +
+                "        {[Top Performers]} ON ROWS\n" +
+                "FROM \n" +
+                "    [Warehouse]\n" +
+                "WHERE \n" +
                 "    [Time].[Year].[1997].[Q2]",
-                "Axis #0:" + nl +
-                "{[Time].[1997].[Q2]}" + nl +
-                "Axis #1:" + nl +
-                "{[Measures].[Profit]}" + nl +
-                "Axis #2:" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[WA].[Bremerton].[Destination, Inc.]}" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[CA].[San Diego].[Jorgensen Service Storage]}" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[OR].[Salem].[Treehouse Distribution]}" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[CA].[Los Angeles].[Artesia Warehousing, Inc.]}" + nl +
-                "{[Warehouse].[All Warehouses].[USA].[WA].[Seattle].[Quality Warehousing and Trucking]}" + nl +
-                "Row #0: 4516.7561" + nl +
-                "Row #1: 4189.3604" + nl +
-                "Row #2: 4169.318499999999" + nl +
-                "Row #3: 3848.6467" + nl +
-                "Row #4: 3708.717" + nl);
+                fold(
+                        "Axis #0:\n" +
+                "{[Time].[1997].[Q2]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Profit]}\n" +
+                "Axis #2:\n" +
+                "{[Warehouse].[All Warehouses].[USA].[WA].[Bremerton].[Destination, Inc.]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[CA].[San Diego].[Jorgensen Service Storage]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[OR].[Salem].[Treehouse Distribution]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[CA].[Los Angeles].[Artesia Warehousing, Inc.]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[WA].[Seattle].[Quality Warehousing and Trucking]}\n" +
+                "Row #0: 4,516.756\n" +
+                "Row #1: 4,189.36\n" +
+                "Row #2: 4,169.318\n" +
+                "Row #3: 3,848.647\n" +
+                "Row #4: 3,708.717\n"));
     }
 
     /**
      * Set defined by explicit tlist in query.
      */
     public void testNamedSetAsList() {
-        assertQueryReturns("WITH SET [ChardonnayChablis] AS" + nl +
-                "   '{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Good].[Good Chardonnay]," + nl +
-                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl].[Pearl Chardonnay]," + nl +
-                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Chardonnay]," + nl +
-                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure].[Top Measure Chardonnay]," + nl +
-                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus].[Walrus Chardonnay]," + nl +
-                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Good].[Good Chablis Wine]," + nl +
-                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl].[Pearl Chablis Wine]," + nl +
-                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Chablis Wine]," + nl +
-                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure].[Top Measure Chablis Wine]," + nl +
-                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus].[Walrus Chablis Wine]}'" + nl +
-                "SELECT" + nl +
-                "   [ChardonnayChablis] ON COLUMNS," + nl +
-                "   {Measures.[Unit Sales]} ON ROWS" + nl +
+        assertQueryReturns("WITH SET [ChardonnayChablis] AS\n" +
+                "   '{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Good].[Good Chardonnay],\n" +
+                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl].[Pearl Chardonnay],\n" +
+                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Chardonnay],\n" +
+                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure].[Top Measure Chardonnay],\n" +
+                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus].[Walrus Chardonnay],\n" +
+                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Good].[Good Chablis Wine],\n" +
+                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl].[Pearl Chablis Wine],\n" +
+                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Chablis Wine],\n" +
+                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure].[Top Measure Chablis Wine],\n" +
+                "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus].[Walrus Chablis Wine]}'\n" +
+                "SELECT\n" +
+                "   [ChardonnayChablis] ON COLUMNS,\n" +
+                "   {Measures.[Unit Sales]} ON ROWS\n" +
                 "FROM Sales",
-                "Axis #0:" + nl +
-                "{}" + nl +
-                "Axis #1:" + nl +
-                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Good].[Good Chardonnay]}" + nl +
-                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl].[Pearl Chardonnay]}" + nl +
-                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Chardonnay]}" + nl +
-                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure].[Top Measure Chardonnay]}" + nl +
-                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus].[Walrus Chardonnay]}" + nl +
-                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Good].[Good Chablis Wine]}" + nl +
-                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl].[Pearl Chablis Wine]}" + nl +
-                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Chablis Wine]}" + nl +
-                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure].[Top Measure Chablis Wine]}" + nl +
-                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus].[Walrus Chablis Wine]}" + nl +
-                "Axis #2:" + nl +
-                "{[Measures].[Unit Sales]}" + nl +
-                "Row #0: 192" + nl +
-                "Row #0: 189" + nl +
-                "Row #0: 170" + nl +
-                "Row #0: 164" + nl +
-                "Row #0: 173" + nl +
-                "Row #0: 163" + nl +
-                "Row #0: 209" + nl +
-                "Row #0: 136" + nl +
-                "Row #0: 140" + nl +
-                "Row #0: 185" + nl);
+                fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Good].[Good Chardonnay]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl].[Pearl Chardonnay]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Chardonnay]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure].[Top Measure Chardonnay]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus].[Walrus Chardonnay]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Good].[Good Chablis Wine]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl].[Pearl Chablis Wine]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Chablis Wine]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure].[Top Measure Chablis Wine]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus].[Walrus Chablis Wine]}\n" +
+                "Axis #2:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Row #0: 192\n" +
+                "Row #0: 189\n" +
+                "Row #0: 170\n" +
+                "Row #0: 164\n" +
+                "Row #0: 173\n" +
+                "Row #0: 163\n" +
+                "Row #0: 209\n" +
+                "Row #0: 136\n" +
+                "Row #0: 140\n" +
+                "Row #0: 185\n"));
     }
 
     /**
@@ -155,11 +156,11 @@ public class NamedSetTest extends FoodMartTestCase {
      * <p>Probably doesn't work because we don't support the InStr VB function.
      */
     public void _testIntrinsic() {
-        assertQueryReturns("WITH SET [ChardonnayChablis] AS" + nl +
-                "   'Filter([Product].Members, (InStr(1, [Product].CurrentMember.Name, \"chardonnay\") <> 0) OR (InStr(1, [Product].CurrentMember.Name, \"chablis\") <> 0))'" + nl +
-                "SELECT" + nl +
-                "   [ChardonnayChablis] ON COLUMNS," + nl +
-                "   {Measures.[Unit Sales]} ON ROWS" + nl +
+        assertQueryReturns("WITH SET [ChardonnayChablis] AS\n" +
+                "   'Filter([Product].Members, (InStr(1, [Product].CurrentMember.Name, \"chardonnay\") <> 0) OR (InStr(1, [Product].CurrentMember.Name, \"chablis\") <> 0))'\n" +
+                "SELECT\n" +
+                "   [ChardonnayChablis] ON COLUMNS,\n" +
+                "   {Measures.[Unit Sales]} ON ROWS\n" +
                 "FROM Sales",
                 "xxxx");
     }
@@ -168,29 +169,29 @@ public class NamedSetTest extends FoodMartTestCase {
      * Tests a named set defined in a query which consists of tuples.
      */
     public void testNamedSetCrossJoin() {
-        assertQueryReturns("WITH" + nl +
-                "    SET [Store Types by Country]" + nl +
-                "AS" + nl +
-                "    'CROSSJOIN({[Store].[Store Country].MEMBERS}," + nl +
-                "               {[Store Type].[Store Type].MEMBERS})'" + nl +
-                "SELECT" + nl +
-                "    {[Measures].[Units Ordered]} ON COLUMNS," + nl +
-                "    NON EMPTY {[Store Types by Country]} ON ROWS" + nl +
-                "FROM" + nl +
-                "    [Warehouse]" + nl +
-                "WHERE" + nl +
+        assertQueryReturns("WITH\n" +
+                "    SET [Store Types by Country]\n" +
+                "AS\n" +
+                "    'CROSSJOIN({[Store].[Store Country].MEMBERS},\n" +
+                "               {[Store Type].[Store Type].MEMBERS})'\n" +
+                "SELECT\n" +
+                "    {[Measures].[Units Ordered]} ON COLUMNS,\n" +
+                "    NON EMPTY {[Store Types by Country]} ON ROWS\n" +
+                "FROM\n" +
+                "    [Warehouse]\n" +
+                "WHERE\n" +
                 "    [Time].[1997].[Q2]",
-                "Axis #0:" + nl +
-                "{[Time].[1997].[Q2]}" + nl +
-                "Axis #1:" + nl +
-                "{[Measures].[Units Ordered]}" + nl +
-                "Axis #2:" + nl +
-                "{[Store].[All Stores].[USA], [Store Type].[All Store Types].[Deluxe Supermarket]}" + nl +
-                "{[Store].[All Stores].[USA], [Store Type].[All Store Types].[Mid-Size Grocery]}" + nl +
-                "{[Store].[All Stores].[USA], [Store Type].[All Store Types].[Supermarket]}" + nl +
-                "Row #0: 16843.0" + nl +
-                "Row #1: 2295.0" + nl +
-                "Row #2: 34856.0" + nl);
+                fold("Axis #0:\n" +
+                "{[Time].[1997].[Q2]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Units Ordered]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA], [Store Type].[All Store Types].[Deluxe Supermarket]}\n" +
+                "{[Store].[All Stores].[USA], [Store Type].[All Store Types].[Mid-Size Grocery]}\n" +
+                "{[Store].[All Stores].[USA], [Store Type].[All Store Types].[Supermarket]}\n" +
+                "Row #0: 16843.0\n" +
+                "Row #1: 2295.0\n" +
+                "Row #2: 34856.0\n"));
     }
 
     // Disabled because fails with error '<Value> = <String> is not a function'
@@ -198,12 +199,12 @@ public class NamedSetTest extends FoodMartTestCase {
     // [Store Type].[oNormal].
     public void _testXxx() {
         assertQueryReturns(
-                "WITH MEMBER [Store Type].[All Store Type].[oNormal] AS 'Aggregate(Filter( [Customers].[Name].Members, [Customers].CurrentMember.Properties(\"Member Card\") = \"Normal\") * {[Store Type].[All Store Type]} )'" + nl +
-                "MEMBER [Store Type].[All Store Type].[oBronze] AS 'Aggregate(Filter( [Customers].[Name].Members, [Customers].CurrentMember.Properties(\"Member Card\") = \"Bronze\") * {[Store Type].[All Store Type]} )'" + nl +
-                "MEMBER [Store Type].[All Store Type].[oGolden] AS 'Aggregate(Filter( [Customers].[Name].Members, [Customers].CurrentMember.Properties(\"Member Card\") = \"Golden\") * {[Store Type].[All Store Type]} )'" + nl +
-                "MEMBER [Store Type].[All Store Type].[oSilver] AS 'Aggregate(Filter( [Customers].[Name].Members, [Customers].CurrentMember.Properties(\"Member Card\") = \"Silver\") * {[Store Type].[All Store Type]} )'" + nl +
-                "SET CardTypes AS '{[oNormal], [oBronze], [oGolden], [oSilver]}'" + nl +
-                "SELECT {[Unit Sales]} ON COLUMNS, CardTypes ON ROWS" + nl +
+                "WITH MEMBER [Store Type].[All Store Type].[oNormal] AS 'Aggregate(Filter( [Customers].[Name].Members, [Customers].CurrentMember.Properties(\"Member Card\") = \"Normal\") * {[Store Type].[All Store Type]} )'\n" +
+                "MEMBER [Store Type].[All Store Type].[oBronze] AS 'Aggregate(Filter( [Customers].[Name].Members, [Customers].CurrentMember.Properties(\"Member Card\") = \"Bronze\") * {[Store Type].[All Store Type]} )'\n" +
+                "MEMBER [Store Type].[All Store Type].[oGolden] AS 'Aggregate(Filter( [Customers].[Name].Members, [Customers].CurrentMember.Properties(\"Member Card\") = \"Golden\") * {[Store Type].[All Store Type]} )'\n" +
+                "MEMBER [Store Type].[All Store Type].[oSilver] AS 'Aggregate(Filter( [Customers].[Name].Members, [Customers].CurrentMember.Properties(\"Member Card\") = \"Silver\") * {[Store Type].[All Store Type]} )'\n" +
+                "SET CardTypes AS '{[oNormal], [oBronze], [oGolden], [oSilver]}'\n" +
+                "SELECT {[Unit Sales]} ON COLUMNS, CardTypes ON ROWS\n" +
                 "FROM Sales",
                 "xxxx");
     }
@@ -213,336 +214,337 @@ public class NamedSetTest extends FoodMartTestCase {
      */
     public void testNamedSetUsedInCrossJoin() {
         assertQueryReturns(
-                "WITH" + nl +
-                "  SET [TopMedia] AS 'TopCount([Promotion Media].children, 5, [Measures].[Store Sales])' " + nl +
-                "SELECT {[Time].[1997].[Q1], [Time].[1997].[Q2]} ON COLUMNS," + nl +
-                " {CrossJoin([TopMedia], [Product].children)} ON ROWS" + nl +
+                "WITH\n" +
+                "  SET [TopMedia] AS 'TopCount([Promotion Media].children, 5, [Measures].[Store Sales])' \n" +
+                "SELECT {[Time].[1997].[Q1], [Time].[1997].[Q2]} ON COLUMNS,\n" +
+                " {CrossJoin([TopMedia], [Product].children)} ON ROWS\n" +
                 "FROM [Sales]",
-                "Axis #0:" + nl +
-                "{}" + nl +
-                "Axis #1:" + nl +
-                "{[Time].[1997].[Q1]}" + nl +
-                "{[Time].[1997].[Q2]}" + nl +
-                "Axis #2:" + nl +
-                "{[Promotion Media].[All Media].[No Media], [Product].[All Products].[Drink]}" + nl +
-                "{[Promotion Media].[All Media].[No Media], [Product].[All Products].[Food]}" + nl +
-                "{[Promotion Media].[All Media].[No Media], [Product].[All Products].[Non-Consumable]}" + nl +
-                "{[Promotion Media].[All Media].[Daily Paper, Radio, TV], [Product].[All Products].[Drink]}" + nl +
-                "{[Promotion Media].[All Media].[Daily Paper, Radio, TV], [Product].[All Products].[Food]}" + nl +
-                "{[Promotion Media].[All Media].[Daily Paper, Radio, TV], [Product].[All Products].[Non-Consumable]}" + nl +
-                "{[Promotion Media].[All Media].[Daily Paper], [Product].[All Products].[Drink]}" + nl +
-                "{[Promotion Media].[All Media].[Daily Paper], [Product].[All Products].[Food]}" + nl +
-                "{[Promotion Media].[All Media].[Daily Paper], [Product].[All Products].[Non-Consumable]}" + nl +
-                "{[Promotion Media].[All Media].[Product Attachment], [Product].[All Products].[Drink]}" + nl +
-                "{[Promotion Media].[All Media].[Product Attachment], [Product].[All Products].[Food]}" + nl +
-                "{[Promotion Media].[All Media].[Product Attachment], [Product].[All Products].[Non-Consumable]}" + nl +
-                "{[Promotion Media].[All Media].[Cash Register Handout], [Product].[All Products].[Drink]}" + nl +
-                "{[Promotion Media].[All Media].[Cash Register Handout], [Product].[All Products].[Food]}" + nl +
-                "{[Promotion Media].[All Media].[Cash Register Handout], [Product].[All Products].[Non-Consumable]}" + nl +
-                "Row #0: 3,970" + nl +
-                "Row #0: 4,287" + nl +
-                "Row #1: 32,939" + nl +
-                "Row #1: 33,238" + nl +
-                "Row #2: 8,650" + nl +
-                "Row #2: 9,057" + nl +
-                "Row #3: 142" + nl +
-                "Row #3: 364" + nl +
-                "Row #4: 975" + nl +
-                "Row #4: 2,523" + nl +
-                "Row #5: 250" + nl +
-                "Row #5: 603" + nl +
-                "Row #6: 464" + nl +
-                "Row #6: 66" + nl +
-                "Row #7: 3,173" + nl +
-                "Row #7: 464" + nl +
-                "Row #8: 862" + nl +
-                "Row #8: 121" + nl +
-                "Row #9: 171" + nl +
-                "Row #9: 106" + nl +
-                "Row #10: 1,344" + nl +
-                "Row #10: 814" + nl +
-                "Row #11: 362" + nl +
-                "Row #11: 165" + nl +
-                "Row #12: (null)" + nl +
-                "Row #12: 92" + nl +
-                "Row #13: (null)" + nl +
-                "Row #13: 933" + nl +
-                "Row #14: (null)" + nl +
-                "Row #14: 229" + nl);
+                fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1997].[Q1]}\n" +
+                "{[Time].[1997].[Q2]}\n" +
+                "Axis #2:\n" +
+                "{[Promotion Media].[All Media].[No Media], [Product].[All Products].[Drink]}\n" +
+                "{[Promotion Media].[All Media].[No Media], [Product].[All Products].[Food]}\n" +
+                "{[Promotion Media].[All Media].[No Media], [Product].[All Products].[Non-Consumable]}\n" +
+                "{[Promotion Media].[All Media].[Daily Paper, Radio, TV], [Product].[All Products].[Drink]}\n" +
+                "{[Promotion Media].[All Media].[Daily Paper, Radio, TV], [Product].[All Products].[Food]}\n" +
+                "{[Promotion Media].[All Media].[Daily Paper, Radio, TV], [Product].[All Products].[Non-Consumable]}\n" +
+                "{[Promotion Media].[All Media].[Daily Paper], [Product].[All Products].[Drink]}\n" +
+                "{[Promotion Media].[All Media].[Daily Paper], [Product].[All Products].[Food]}\n" +
+                "{[Promotion Media].[All Media].[Daily Paper], [Product].[All Products].[Non-Consumable]}\n" +
+                "{[Promotion Media].[All Media].[Product Attachment], [Product].[All Products].[Drink]}\n" +
+                "{[Promotion Media].[All Media].[Product Attachment], [Product].[All Products].[Food]}\n" +
+                "{[Promotion Media].[All Media].[Product Attachment], [Product].[All Products].[Non-Consumable]}\n" +
+                "{[Promotion Media].[All Media].[Cash Register Handout], [Product].[All Products].[Drink]}\n" +
+                "{[Promotion Media].[All Media].[Cash Register Handout], [Product].[All Products].[Food]}\n" +
+                "{[Promotion Media].[All Media].[Cash Register Handout], [Product].[All Products].[Non-Consumable]}\n" +
+                "Row #0: 3,970\n" +
+                "Row #0: 4,287\n" +
+                "Row #1: 32,939\n" +
+                "Row #1: 33,238\n" +
+                "Row #2: 8,650\n" +
+                "Row #2: 9,057\n" +
+                "Row #3: 142\n" +
+                "Row #3: 364\n" +
+                "Row #4: 975\n" +
+                "Row #4: 2,523\n" +
+                "Row #5: 250\n" +
+                "Row #5: 603\n" +
+                "Row #6: 464\n" +
+                "Row #6: 66\n" +
+                "Row #7: 3,173\n" +
+                "Row #7: 464\n" +
+                "Row #8: 862\n" +
+                "Row #8: 121\n" +
+                "Row #9: 171\n" +
+                "Row #9: 106\n" +
+                "Row #10: 1,344\n" +
+                "Row #10: 814\n" +
+                "Row #11: 362\n" +
+                "Row #11: 165\n" +
+                "Row #12: \n" +
+                "Row #12: 92\n" +
+                "Row #13: \n" +
+                "Row #13: 933\n" +
+                "Row #14: \n" +
+                "Row #14: 229\n"));
     }
 
     public void testAggOnCalcMember() {
         assertQueryReturns(
-                "WITH" + nl +
-                "  SET [TopMedia] AS 'TopCount([Promotion Media].children, 5, [Measures].[Store Sales])' " + nl +
-                "  MEMBER [Measures].[California sales for Top Media] AS 'Sum([TopMedia], ([Store].[USA].[CA], [Measures].[Store Sales]))'" + nl +
-                "SELECT {[Time].[1997].[Q1], [Time].[1997].[Q2]} ON COLUMNS," + nl +
-                " {[Product].children} ON ROWS" + nl +
-                "FROM [Sales]" + nl +
+                "WITH\n" +
+                "  SET [TopMedia] AS 'TopCount([Promotion Media].children, 5, [Measures].[Store Sales])' \n" +
+                "  MEMBER [Measures].[California sales for Top Media] AS 'Sum([TopMedia], ([Store].[USA].[CA], [Measures].[Store Sales]))'\n" +
+                "SELECT {[Time].[1997].[Q1], [Time].[1997].[Q2]} ON COLUMNS,\n" +
+                " {[Product].children} ON ROWS\n" +
+                "FROM [Sales]\n" +
                 "WHERE [Measures].[California sales for Top Media]",
-                "Axis #0:" + nl +
-                "{[Measures].[California sales for Top Media]}" + nl +
-                "Axis #1:" + nl +
-                "{[Time].[1997].[Q1]}" + nl +
-                "{[Time].[1997].[Q2]}" + nl +
-                "Axis #2:" + nl +
-                "{[Product].[All Products].[Drink]}" + nl +
-                "{[Product].[All Products].[Food]}" + nl +
-                "{[Product].[All Products].[Non-Consumable]}" + nl +
-                "Row #0: 2,725.85" + nl +
-                "Row #0: 2,715.56" + nl +
-                "Row #1: 21,200.84" + nl +
-                "Row #1: 23,263.72" + nl +
-                "Row #2: 5,598.71" + nl +
-                "Row #2: 6,111.74" + nl);
+                fold("Axis #0:\n" +
+                "{[Measures].[California sales for Top Media]}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1997].[Q1]}\n" +
+                "{[Time].[1997].[Q2]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products].[Drink]}\n" +
+                "{[Product].[All Products].[Food]}\n" +
+                "{[Product].[All Products].[Non-Consumable]}\n" +
+                "Row #0: 2,725.85\n" +
+                "Row #0: 2,715.56\n" +
+                "Row #1: 21,200.84\n" +
+                "Row #1: 23,263.72\n" +
+                "Row #2: 5,598.71\n" +
+                "Row #2: 6,111.74\n"));
     }
 
     public void testContextSensitiveNamedSet() {
         // For reference.
-        assertQueryReturns("SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
-                "Order([Promotion Media].Children, [Measures].[Unit Sales], DESC) ON ROWS" + nl +
-                "FROM [Sales]" + nl +
+        assertQueryReturns("SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n" +
+                "Order([Promotion Media].Children, [Measures].[Unit Sales], DESC) ON ROWS\n" +
+                "FROM [Sales]\n" +
                 "WHERE [Time].[1997]",
 
-                "Axis #0:" + nl +
-                "{[Time].[1997]}" + nl +
-                "Axis #1:" + nl +
-                "{[Measures].[Unit Sales]}" + nl +
-                "Axis #2:" + nl +
-                "{[Promotion Media].[All Media].[No Media]}" + nl +
-                "{[Promotion Media].[All Media].[Daily Paper, Radio, TV]}" + nl +
-                "{[Promotion Media].[All Media].[Daily Paper]}" + nl +
-                "{[Promotion Media].[All Media].[Product Attachment]}" + nl +
-                "{[Promotion Media].[All Media].[Daily Paper, Radio]}" + nl +
-                "{[Promotion Media].[All Media].[Cash Register Handout]}" + nl +
-                "{[Promotion Media].[All Media].[Sunday Paper, Radio]}" + nl +
-                "{[Promotion Media].[All Media].[Street Handout]}" + nl +
-                "{[Promotion Media].[All Media].[Sunday Paper]}" + nl +
-                "{[Promotion Media].[All Media].[Bulk Mail]}" + nl +
-                "{[Promotion Media].[All Media].[In-Store Coupon]}" + nl +
-                "{[Promotion Media].[All Media].[TV]}" + nl +
-                "{[Promotion Media].[All Media].[Sunday Paper, Radio, TV]}" + nl +
-                "{[Promotion Media].[All Media].[Radio]}" + nl +
-                "Row #0: 195,448" + nl +
-                "Row #1: 9,513" + nl +
-                "Row #2: 7,738" + nl +
-                "Row #3: 7,544" + nl +
-                "Row #4: 6,891" + nl +
-                "Row #5: 6,697" + nl +
-                "Row #6: 5,945" + nl +
-                "Row #7: 5,753" + nl +
-                "Row #8: 4,339" + nl +
-                "Row #9: 4,320" + nl +
-                "Row #10: 3,798" + nl +
-                "Row #11: 3,607" + nl +
-                "Row #12: 2,726" + nl +
-                "Row #13: 2,454" + nl);
+                fold("Axis #0:\n" +
+                "{[Time].[1997]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Promotion Media].[All Media].[No Media]}\n" +
+                "{[Promotion Media].[All Media].[Daily Paper, Radio, TV]}\n" +
+                "{[Promotion Media].[All Media].[Daily Paper]}\n" +
+                "{[Promotion Media].[All Media].[Product Attachment]}\n" +
+                "{[Promotion Media].[All Media].[Daily Paper, Radio]}\n" +
+                "{[Promotion Media].[All Media].[Cash Register Handout]}\n" +
+                "{[Promotion Media].[All Media].[Sunday Paper, Radio]}\n" +
+                "{[Promotion Media].[All Media].[Street Handout]}\n" +
+                "{[Promotion Media].[All Media].[Sunday Paper]}\n" +
+                "{[Promotion Media].[All Media].[Bulk Mail]}\n" +
+                "{[Promotion Media].[All Media].[In-Store Coupon]}\n" +
+                "{[Promotion Media].[All Media].[TV]}\n" +
+                "{[Promotion Media].[All Media].[Sunday Paper, Radio, TV]}\n" +
+                "{[Promotion Media].[All Media].[Radio]}\n" +
+                "Row #0: 195,448\n" +
+                "Row #1: 9,513\n" +
+                "Row #2: 7,738\n" +
+                "Row #3: 7,544\n" +
+                "Row #4: 6,891\n" +
+                "Row #5: 6,697\n" +
+                "Row #6: 5,945\n" +
+                "Row #7: 5,753\n" +
+                "Row #8: 4,339\n" +
+                "Row #9: 4,320\n" +
+                "Row #10: 3,798\n" +
+                "Row #11: 3,607\n" +
+                "Row #12: 2,726\n" +
+                "Row #13: 2,454\n"));
+
         // For reference.
-        assertQueryReturns("SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
-                "Order([Promotion Media].Children, [Measures].[Unit Sales], DESC) ON ROWS" + nl +
-                "FROM [Sales]" + nl +
+        assertQueryReturns("SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n" +
+                "Order([Promotion Media].Children, [Measures].[Unit Sales], DESC) ON ROWS\n" +
+                "FROM [Sales]\n" +
                 "WHERE [Time].[1997].[Q2]",
 
-                "Axis #0:" + nl +
-                "{[Time].[1997].[Q2]}" + nl +
-                "Axis #1:" + nl +
-                "{[Measures].[Unit Sales]}" + nl +
-                "Axis #2:" + nl +
-                "{[Promotion Media].[All Media].[No Media]}" + nl +
-                "{[Promotion Media].[All Media].[Daily Paper, Radio, TV]}" + nl +
-                "{[Promotion Media].[All Media].[Daily Paper, Radio]}" + nl +
-                "{[Promotion Media].[All Media].[Sunday Paper, Radio]}" + nl +
-                "{[Promotion Media].[All Media].[TV]}" + nl +
-                "{[Promotion Media].[All Media].[Cash Register Handout]}" + nl +
-                "{[Promotion Media].[All Media].[Sunday Paper, Radio, TV]}" + nl +
-                "{[Promotion Media].[All Media].[Product Attachment]}" + nl +
-                "{[Promotion Media].[All Media].[Sunday Paper]}" + nl +
-                "{[Promotion Media].[All Media].[Bulk Mail]}" + nl +
-                "{[Promotion Media].[All Media].[Daily Paper]}" + nl +
-                "{[Promotion Media].[All Media].[Street Handout]}" + nl +
-                "{[Promotion Media].[All Media].[Radio]}" + nl +
-                "{[Promotion Media].[All Media].[In-Store Coupon]}" + nl +
-                "Row #0: 46,582" + nl +
-                "Row #1: 3,490" + nl +
-                "Row #2: 2,704" + nl +
-                "Row #3: 2,327" + nl +
-                "Row #4: 1,344" + nl +
-                "Row #5: 1,254" + nl +
-                "Row #6: 1,108" + nl +
-                "Row #7: 1,085" + nl +
-                "Row #8: 784" + nl +
-                "Row #9: 733" + nl +
-                "Row #10: 651" + nl +
-                "Row #11: 473" + nl +
-                "Row #12: 40" + nl +
-                "Row #13: 35" + nl);
+                fold("Axis #0:\n" +
+                "{[Time].[1997].[Q2]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Promotion Media].[All Media].[No Media]}\n" +
+                "{[Promotion Media].[All Media].[Daily Paper, Radio, TV]}\n" +
+                "{[Promotion Media].[All Media].[Daily Paper, Radio]}\n" +
+                "{[Promotion Media].[All Media].[Sunday Paper, Radio]}\n" +
+                "{[Promotion Media].[All Media].[TV]}\n" +
+                "{[Promotion Media].[All Media].[Cash Register Handout]}\n" +
+                "{[Promotion Media].[All Media].[Sunday Paper, Radio, TV]}\n" +
+                "{[Promotion Media].[All Media].[Product Attachment]}\n" +
+                "{[Promotion Media].[All Media].[Sunday Paper]}\n" +
+                "{[Promotion Media].[All Media].[Bulk Mail]}\n" +
+                "{[Promotion Media].[All Media].[Daily Paper]}\n" +
+                "{[Promotion Media].[All Media].[Street Handout]}\n" +
+                "{[Promotion Media].[All Media].[Radio]}\n" +
+                "{[Promotion Media].[All Media].[In-Store Coupon]}\n" +
+                "Row #0: 46,582\n" +
+                "Row #1: 3,490\n" +
+                "Row #2: 2,704\n" +
+                "Row #3: 2,327\n" +
+                "Row #4: 1,344\n" +
+                "Row #5: 1,254\n" +
+                "Row #6: 1,108\n" +
+                "Row #7: 1,085\n" +
+                "Row #8: 784\n" +
+                "Row #9: 733\n" +
+                "Row #10: 651\n" +
+                "Row #11: 473\n" +
+                "Row #12: 40\n" +
+                "Row #13: 35\n"));
 
         // The bottom medium in 1997 is Radio, with $2454 in sales.
         // The bottom medium in 1997.Q2 is In-Store Coupon, with $35 in sales,
         //  whereas Radio has $40 in sales in 1997.Q2.
 
         assertQueryReturns(
-                "WITH" + nl +
-                "  SET [Bottom Media] AS 'BottomCount([Promotion Media].children, 1, [Measures].[Unit Sales])' " + nl +
-                "  MEMBER [Measures].[Unit Sales for Bottom Media] AS 'Sum([Bottom Media], [Measures].[Unit Sales])'" + nl +
-                "SELECT {[Measures].[Unit Sales for Bottom Media]} ON COLUMNS," + nl +
-                " {[Time].[1997], [Time].[1997].[Q2]} ON ROWS" + nl +
+                "WITH\n" +
+                "  SET [Bottom Media] AS 'BottomCount([Promotion Media].children, 1, [Measures].[Unit Sales])' \n" +
+                "  MEMBER [Measures].[Unit Sales for Bottom Media] AS 'Sum([Bottom Media], [Measures].[Unit Sales])'\n" +
+                "SELECT {[Measures].[Unit Sales for Bottom Media]} ON COLUMNS,\n" +
+                " {[Time].[1997], [Time].[1997].[Q2]} ON ROWS\n" +
                 "FROM [Sales]",
                 // Note that Row #1 gives 40. 35 would be wrong.
                 // [In-Store Coupon], which was bottom for 1997.Q2 but not for
                 // 1997.
-                "Axis #0:" + nl +
-                "{}" + nl +
-                "Axis #1:" + nl +
-                "{[Measures].[Unit Sales for Bottom Media]}" + nl +
-                "Axis #2:" + nl +
-                "{[Time].[1997]}" + nl +
-                "{[Time].[1997].[Q2]}" + nl +
-                "Row #0: 2,454" + nl +
-                "Row #1: 40" + nl);
+                fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales for Bottom Media]}\n" +
+                "Axis #2:\n" +
+                "{[Time].[1997]}\n" +
+                "{[Time].[1997].[Q2]}\n" +
+                "Row #0: 2,454\n" +
+                "Row #1: 40\n"));
 
         assertQueryReturns(
-                "WITH" + nl +
-                "  SET [TopMedia] AS 'TopCount([Promotion Media].children, 3, [Measures].[Store Sales])' " + nl +
-                "  MEMBER [Measures].[California sales for Top Media] AS 'Sum([TopMedia], [Measures].[Store Sales])'" + nl +
-                "SELECT " + nl +
-                "  CrossJoin({[Store], [Store].[USA].[CA]}," + nl +
-                "    {[Time].[1997].[Q1], [Time].[1997].[Q2]}) ON COLUMNS," + nl +
-                " {[Product], [Product].children} ON ROWS" + nl +
-                "FROM [Sales]" + nl +
+                "WITH\n" +
+                "  SET [TopMedia] AS 'TopCount([Promotion Media].children, 3, [Measures].[Store Sales])' \n" +
+                "  MEMBER [Measures].[California sales for Top Media] AS 'Sum([TopMedia], [Measures].[Store Sales])'\n" +
+                "SELECT \n" +
+                "  CrossJoin({[Store], [Store].[USA].[CA]},\n" +
+                "    {[Time].[1997].[Q1], [Time].[1997].[Q2]}) ON COLUMNS,\n" +
+                " {[Product], [Product].children} ON ROWS\n" +
+                "FROM [Sales]\n" +
                 "WHERE [Measures].[California sales for Top Media]",
 
-                "Axis #0:" + nl +
-                "{[Measures].[California sales for Top Media]}" + nl +
-                "Axis #1:" + nl +
-                "{[Store].[All Stores], [Time].[1997].[Q1]}" + nl +
-                "{[Store].[All Stores], [Time].[1997].[Q2]}" + nl +
-                "{[Store].[All Stores].[USA].[CA], [Time].[1997].[Q1]}" + nl +
-                "{[Store].[All Stores].[USA].[CA], [Time].[1997].[Q2]}" + nl +
-                "Axis #2:" + nl +
-                "{[Product].[All Products]}" + nl +
-                "{[Product].[All Products].[Drink]}" + nl +
-                "{[Product].[All Products].[Food]}" + nl +
-                "{[Product].[All Products].[Non-Consumable]}" + nl +
-                "Row #0: 108,249.52" + nl +
-                "Row #0: 107,649.93" + nl +
-                "Row #0: 29,482.53" + nl +
-                "Row #0: 28,953.02" + nl +
-                "Row #1: 8,930.95" + nl +
-                "Row #1: 9,551.93" + nl +
-                "Row #1: 2,721.23" + nl +
-                "Row #1: 2,444.78" + nl +
-                "Row #2: 78,375.66" + nl +
-                "Row #2: 77,219.13" + nl +
-                "Row #2: 21,165.50" + nl +
-                "Row #2: 20,924.43" + nl +
-                "Row #3: 20,942.91" + nl +
-                "Row #3: 20,878.87" + nl +
-                "Row #3: 5,595.80" + nl +
-                "Row #3: 5,583.81" + nl);
+                fold("Axis #0:\n" +
+                "{[Measures].[California sales for Top Media]}\n" +
+                "Axis #1:\n" +
+                "{[Store].[All Stores], [Time].[1997].[Q1]}\n" +
+                "{[Store].[All Stores], [Time].[1997].[Q2]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Time].[1997].[Q1]}\n" +
+                "{[Store].[All Stores].[USA].[CA], [Time].[1997].[Q2]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products]}\n" +
+                "{[Product].[All Products].[Drink]}\n" +
+                "{[Product].[All Products].[Food]}\n" +
+                "{[Product].[All Products].[Non-Consumable]}\n" +
+                "Row #0: 108,249.52\n" +
+                "Row #0: 107,649.93\n" +
+                "Row #0: 29,482.53\n" +
+                "Row #0: 28,953.02\n" +
+                "Row #1: 8,930.95\n" +
+                "Row #1: 9,551.93\n" +
+                "Row #1: 2,721.23\n" +
+                "Row #1: 2,444.78\n" +
+                "Row #2: 78,375.66\n" +
+                "Row #2: 77,219.13\n" +
+                "Row #2: 21,165.50\n" +
+                "Row #2: 20,924.43\n" +
+                "Row #3: 20,942.91\n" +
+                "Row #3: 20,878.87\n" +
+                "Row #3: 5,595.80\n" +
+                "Row #3: 5,583.81\n"));
     }
 
     public void testOrderedNamedSet() {
         // From http://www.developersdex.com
         assertQueryReturns(
-                "WITH SET [SET1] AS" + nl +
-                "'ORDER ({[Education Level].[Education Level].Members}, [Gender].[All Gender].[F], ASC)'" + nl +
-                "MEMBER [Gender].[RANK1] AS 'rank([Education Level].currentmember, [SET1])'" + nl +
-                "select" + nl +
-                "{[Gender].[All Gender].[F], [Gender].[RANK1]} on columns," + nl +
-                "{[Education Level].[Education Level].Members} on rows" + nl +
-                "from Sales" + nl +
+                "WITH SET [SET1] AS\n" +
+                "'ORDER ({[Education Level].[Education Level].Members}, [Gender].[All Gender].[F], ASC)'\n" +
+                "MEMBER [Gender].[RANK1] AS 'rank([Education Level].currentmember, [SET1])'\n" +
+                "select\n" +
+                "{[Gender].[All Gender].[F], [Gender].[RANK1]} on columns,\n" +
+                "{[Education Level].[Education Level].Members} on rows\n" +
+                "from Sales\n" +
                 "where ([Measures].[Store Sales])",
                 // MSAS gives results as below, except ranks are displayed as
                 // integers, e.g. '1'.
-                "Axis #0:" + nl +
-                "{[Measures].[Store Sales]}" + nl +
-                "Axis #1:" + nl +
-                "{[Gender].[All Gender].[F]}" + nl +
-                "{[Gender].[RANK1]}" + nl +
-                "Axis #2:" + nl +
-                "{[Education Level].[All Education Levels].[Bachelors Degree]}" + nl +
-                "{[Education Level].[All Education Levels].[Graduate Degree]}" + nl +
-                "{[Education Level].[All Education Levels].[High School Degree]}" + nl +
-                "{[Education Level].[All Education Levels].[Partial College]}" + nl +
-                "{[Education Level].[All Education Levels].[Partial High School]}" + nl +
-                "Row #0: 72,119.26" + nl +
-                "Row #0: 3" + nl +
-                "Row #1: 17,641.64" + nl +
-                "Row #1: 1" + nl +
-                "Row #2: 81,112.23" + nl +
-                "Row #2: 4" + nl +
-                "Row #3: 27,175.97" + nl +
-                "Row #3: 2" + nl +
-                "Row #4: 82,177.11" + nl +
-                "Row #4: 5" + nl);
+                fold("Axis #0:\n" +
+                "{[Measures].[Store Sales]}\n" +
+                "Axis #1:\n" +
+                "{[Gender].[All Gender].[F]}\n" +
+                "{[Gender].[RANK1]}\n" +
+                "Axis #2:\n" +
+                "{[Education Level].[All Education Levels].[Bachelors Degree]}\n" +
+                "{[Education Level].[All Education Levels].[Graduate Degree]}\n" +
+                "{[Education Level].[All Education Levels].[High School Degree]}\n" +
+                "{[Education Level].[All Education Levels].[Partial College]}\n" +
+                "{[Education Level].[All Education Levels].[Partial High School]}\n" +
+                "Row #0: 72,119.26\n" +
+                "Row #0: 3\n" +
+                "Row #1: 17,641.64\n" +
+                "Row #1: 1\n" +
+                "Row #2: 81,112.23\n" +
+                "Row #2: 4\n" +
+                "Row #3: 27,175.97\n" +
+                "Row #3: 2\n" +
+                "Row #4: 82,177.11\n" +
+                "Row #4: 5\n"));
 
         assertQueryReturns(
-                "WITH SET [SET1] AS" + nl +
-                "'ORDER ({[Education Level].[Education Level].Members}, [Gender].[All Gender].[F], ASC)'" + nl +
-                "MEMBER [Gender].[RANK1] AS 'rank([Education Level].currentmember, [SET1])'" + nl +
-                "select" + nl +
-                "{[Gender].[All Gender].[F], [Gender].[RANK1]} on columns," + nl +
-                "{[Education Level].[Education Level].Members} on rows" + nl +
-                "from Sales" + nl +
+                "WITH SET [SET1] AS\n" +
+                "'ORDER ({[Education Level].[Education Level].Members}, [Gender].[All Gender].[F], ASC)'\n" +
+                "MEMBER [Gender].[RANK1] AS 'rank([Education Level].currentmember, [SET1])'\n" +
+                "select\n" +
+                "{[Gender].[All Gender].[F], [Gender].[RANK1]} on columns,\n" +
+                "{[Education Level].[Education Level].Members} on rows\n" +
+                "from Sales\n" +
                 "where ([Measures].[Profit])",
                 // MSAS gives results as below. The ranks are (correctly) 0
                 // because profit is a calc member.
-                "Axis #0:" + nl +
-                "{[Measures].[Profit]}" + nl +
-                "Axis #1:" + nl +
-                "{[Gender].[All Gender].[F]}" + nl +
-                "{[Gender].[RANK1]}" + nl +
-                "Axis #2:" + nl +
-                "{[Education Level].[All Education Levels].[Bachelors Degree]}" + nl +
-                "{[Education Level].[All Education Levels].[Graduate Degree]}" + nl +
-                "{[Education Level].[All Education Levels].[High School Degree]}" + nl +
-                "{[Education Level].[All Education Levels].[Partial College]}" + nl +
-                "{[Education Level].[All Education Levels].[Partial High School]}" + nl +
-                "Row #0: $43,382.33" + nl +
-                "Row #0: $0.00" + nl +
-                "Row #1: $10,599.59" + nl +
-                "Row #1: $0.00" + nl +
-                "Row #2: $48,766.50" + nl +
-                "Row #2: $0.00" + nl +
-                "Row #3: $16,306.05" + nl +
-                "Row #3: $0.00" + nl +
-                "Row #4: $49,394.27" + nl +
-                "Row #4: $0.00" + nl);
+                fold("Axis #0:\n" +
+                "{[Measures].[Profit]}\n" +
+                "Axis #1:\n" +
+                "{[Gender].[All Gender].[F]}\n" +
+                "{[Gender].[RANK1]}\n" +
+                "Axis #2:\n" +
+                "{[Education Level].[All Education Levels].[Bachelors Degree]}\n" +
+                "{[Education Level].[All Education Levels].[Graduate Degree]}\n" +
+                "{[Education Level].[All Education Levels].[High School Degree]}\n" +
+                "{[Education Level].[All Education Levels].[Partial College]}\n" +
+                "{[Education Level].[All Education Levels].[Partial High School]}\n" +
+                "Row #0: $43,382.33\n" +
+                "Row #0: $0.00\n" +
+                "Row #1: $10,599.59\n" +
+                "Row #1: $0.00\n" +
+                "Row #2: $48,766.50\n" +
+                "Row #2: $0.00\n" +
+                "Row #3: $16,306.05\n" +
+                "Row #3: $0.00\n" +
+                "Row #4: $49,394.27\n" +
+                "Row #4: $0.00\n"));
 
         // Solve order fixes the problem.
         assertQueryReturns(
-                "WITH SET [SET1] AS" + nl +
-                "'ORDER ({[Education Level].[Education Level].Members}, [Gender].[All Gender].[F], ASC)'" + nl +
-                "MEMBER [Gender].[RANK1] AS 'rank([Education Level].currentmember, [SET1])', " + nl +
-                "  SOLVE_ORDER = 10" + nl +
-                "select" + nl +
-                "{[Gender].[All Gender].[F], [Gender].[RANK1]} on columns," + nl +
-                "{[Education Level].[Education Level].Members} on rows" + nl +
-                "from Sales" + nl +
+                "WITH SET [SET1] AS\n" +
+                "'ORDER ({[Education Level].[Education Level].Members}, [Gender].[All Gender].[F], ASC)'\n" +
+                "MEMBER [Gender].[RANK1] AS 'rank([Education Level].currentmember, [SET1])', \n" +
+                "  SOLVE_ORDER = 10\n" +
+                "select\n" +
+                "{[Gender].[All Gender].[F], [Gender].[RANK1]} on columns,\n" +
+                "{[Education Level].[Education Level].Members} on rows\n" +
+                "from Sales\n" +
                 "where ([Measures].[Profit])",
                 // MSAS gives results as below.
-                "Axis #0:" + nl +
-                "{[Measures].[Profit]}" + nl +
-                "Axis #1:" + nl +
-                "{[Gender].[All Gender].[F]}" + nl +
-                "{[Gender].[RANK1]}" + nl +
-                "Axis #2:" + nl +
-                "{[Education Level].[All Education Levels].[Bachelors Degree]}" + nl +
-                "{[Education Level].[All Education Levels].[Graduate Degree]}" + nl +
-                "{[Education Level].[All Education Levels].[High School Degree]}" + nl +
-                "{[Education Level].[All Education Levels].[Partial College]}" + nl +
-                "{[Education Level].[All Education Levels].[Partial High School]}" + nl +
-                "Row #0: $43,382.33" + nl +
-                "Row #0: 3" + nl +
-                "Row #1: $10,599.59" + nl +
-                "Row #1: 1" + nl +
-                "Row #2: $48,766.50" + nl +
-                "Row #2: 4" + nl +
-                "Row #3: $16,306.05" + nl +
-                "Row #3: 2" + nl +
-                "Row #4: $49,394.27" + nl +
-                "Row #4: 5" + nl);
+                fold("Axis #0:\n" +
+                "{[Measures].[Profit]}\n" +
+                "Axis #1:\n" +
+                "{[Gender].[All Gender].[F]}\n" +
+                "{[Gender].[RANK1]}\n" +
+                "Axis #2:\n" +
+                "{[Education Level].[All Education Levels].[Bachelors Degree]}\n" +
+                "{[Education Level].[All Education Levels].[Graduate Degree]}\n" +
+                "{[Education Level].[All Education Levels].[High School Degree]}\n" +
+                "{[Education Level].[All Education Levels].[Partial College]}\n" +
+                "{[Education Level].[All Education Levels].[Partial High School]}\n" +
+                "Row #0: $43,382.33\n" +
+                "Row #0: 3\n" +
+                "Row #1: $10,599.59\n" +
+                "Row #1: 1\n" +
+                "Row #2: $48,766.50\n" +
+                "Row #2: 4\n" +
+                "Row #3: $16,306.05\n" +
+                "Row #3: 2\n" +
+                "Row #4: $49,394.27\n" +
+                "Row #4: 5\n"));
 
 
     }
@@ -550,20 +552,20 @@ public class NamedSetTest extends FoodMartTestCase {
     // TODO: Implement Generate function.
     public void _testGenerate() {
         assertQueryReturns(
-                "with " + nl +
-                "  member [Measures].[DateName] as " + nl +
-                "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].CurrentMember.Name) '" + nl +
-                "select {[Measures].[DateName]} on columns," + nl +
-                " {[Time].[1997].[Q1], [Time].[1997].[Q2]} on rows" + nl +
+                "with \n" +
+                "  member [Measures].[DateName] as \n" +
+                "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].CurrentMember.Name) '\n" +
+                "select {[Measures].[DateName]} on columns,\n" +
+                " {[Time].[1997].[Q1], [Time].[1997].[Q2]} on rows\n" +
                 "from [Sales]",
                 "two rows q1, q2; q1q2 for each cell");
 
         assertQueryReturns(
-                "with " + nl +
-                "  member [Measures].[DateName] as " + nl +
-                "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].CurrentMember.Name, \" and \") '" + nl +
-                "select {[Measures].[DateName]} on columns," + nl +
-                " {[Time].[1997].[Q1], [Time].[1997].[Q2]} on rows" + nl +
+                "with \n" +
+                "  member [Measures].[DateName] as \n" +
+                "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].CurrentMember.Name, \" and \") '\n" +
+                "select {[Measures].[DateName]} on columns,\n" +
+                " {[Time].[1997].[Q1], [Time].[1997].[Q2]} on rows\n" +
                 "from [Sales]",
                 "two rows q1, q2; q1q2 for each cell");
     }
@@ -576,69 +578,72 @@ public class NamedSetTest extends FoodMartTestCase {
         };
         // Set defined against cube, using 'formula' attribute.
         tc.assertQueryReturns(
-                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
-                " {[CA Cities]} ON ROWS" + nl +
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n" +
+                " {[CA Cities]} ON ROWS\n" +
                 "FROM [Sales]",
-                "Axis #0:" + nl +
-                "{}" + nl +
-                "Axis #1:" + nl +
-                "{[Measures].[Unit Sales]}" + nl +
-                "Axis #2:" + nl +
-                "{[Store].[All Stores].[USA].[CA].[Alameda]}" + nl +
-                "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}" + nl +
-                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}" + nl +
-                "{[Store].[All Stores].[USA].[CA].[San Diego]}" + nl +
-                "{[Store].[All Stores].[USA].[CA].[San Francisco]}" + nl +
-                "Row #0: (null)" + nl +
-                "Row #1: 21,333" + nl +
-                "Row #2: 25,663" + nl +
-                "Row #3: 25,635" + nl +
-                "Row #4: 2,117" + nl);
+                fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA].[CA].[Alameda]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" +
+                "Row #0: \n" +
+                "Row #1: 21,333\n" +
+                "Row #2: 25,663\n" +
+                "Row #3: 25,635\n" +
+                "Row #4: 2,117\n"));
+
         // Set defined against cube, in terms of another set, and using
         // '<Formula>' element.
         tc.assertQueryReturns(
-                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
-                " {[Top CA Cities]} ON ROWS" + nl +
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n" +
+                " {[Top CA Cities]} ON ROWS\n" +
                 "FROM [Sales]",
-                "Axis #0:" + nl +
-                "{}" + nl +
-                "Axis #1:" + nl +
-                "{[Measures].[Unit Sales]}" + nl +
-                "Axis #2:" + nl +
-                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}" + nl +
-                "{[Store].[All Stores].[USA].[CA].[San Diego]}" + nl +
-                "Row #0: 25,663" + nl +
-                "Row #1: 25,635" + nl);
+                fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego]}\n" +
+                "Row #0: 25,663\n" +
+                "Row #1: 25,635\n"));
+
         // Override named set in query.
         tc.assertQueryReturns(
                 "WITH SET [CA Cities] AS '{[Store].[USA].[OR].[Portland]}' " +
-                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
-                " {[CA Cities]} ON ROWS" + nl +
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n" +
+                " {[CA Cities]} ON ROWS\n" +
                 "FROM [Sales]",
-                "Axis #0:" + nl +
-                "{}" + nl +
-                "Axis #1:" + nl +
-                "{[Measures].[Unit Sales]}" + nl +
-                "Axis #2:" + nl +
-                "{[Store].[All Stores].[USA].[OR].[Portland]}" + nl +
-                "Row #0: 26,079" + nl);
+                fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA].[OR].[Portland]}\n" +
+                "Row #0: 26,079\n"));
+
         // When [CA Cities] is overridden, does the named set [Top CA Cities],
         // which is derived from it, use the new definition? No. It stays
         // bound to the original definition.
         tc.assertQueryReturns(
                 "WITH SET [CA Cities] AS '{[Store].[USA].[OR].[Portland]}' " +
-                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
-                " {[Top CA Cities]} ON ROWS" + nl +
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n" +
+                " {[Top CA Cities]} ON ROWS\n" +
                 "FROM [Sales]",
-                "Axis #0:" + nl +
-                "{}" + nl +
-                "Axis #1:" + nl +
-                "{[Measures].[Unit Sales]}" + nl +
-                "Axis #2:" + nl +
-                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}" + nl +
-                "{[Store].[All Stores].[USA].[CA].[San Diego]}" + nl +
-                "Row #0: 25,663" + nl +
-                "Row #1: 25,635" + nl);
+                fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego]}\n" +
+                "Row #0: 25,663\n" +
+                "Row #1: 25,635\n"));
     }
 
     public void testNamedSetAgainstSchema() {
@@ -648,20 +653,20 @@ public class NamedSetTest extends FoodMartTestCase {
             }
         };
         tc.assertQueryReturns(
-                "SELECT {[Measures].[Store Sales]} on columns," + nl +
-                " Intersect([Top CA Cities], [Top USA Stores]) on rows" + nl +
+                "SELECT {[Measures].[Store Sales]} on columns,\n" +
+                " Intersect([Top CA Cities], [Top USA Stores]) on rows\n" +
                 "FROM [Sales]",
-                "Axis #0:" + nl +
-                "{}" + nl +
-                "Axis #1:" + nl +
-                "{[Measures].[Store Sales]}" + nl +
-                "Axis #2:" + nl +
-                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}" + nl +
-                "Row #0: 54,545.28" + nl);
+                fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Store Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n" +
+                "Row #0: 54,545.28\n"));
         // Use non-existent set.
         tc.assertThrows(
-                "SELECT {[Measures].[Store Sales]} on columns," + nl +
-                " Intersect([Top CA Cities], [Top Ukrainian Cities]) on rows" + nl +
+                "SELECT {[Measures].[Store Sales]} on columns,\n" +
+                " Intersect([Top CA Cities], [Top Ukrainian Cities]) on rows\n" +
                 "FROM [Sales]",
                 "MDX object '[Top Ukrainian Cities]' not found in cube 'Sales'");
     }
@@ -673,8 +678,8 @@ public class NamedSetTest extends FoodMartTestCase {
             }
         };
         tc.assertThrows(
-                "SELECT {[Measures].[Store Sales]} on columns," + nl +
-                " {[Bad]} on rows" + nl +
+                "SELECT {[Measures].[Store Sales]} on columns,\n" +
+                " {[Bad]} on rows\n" +
                 "FROM [Sales]",
                 "Named set 'Bad' has bad formula");
     }
@@ -839,7 +844,7 @@ public class NamedSetTest extends FoodMartTestCase {
                     "Row #1: 7,583.71",
                     ""}));
     }
-    
+
     /**
      * Dynamic schema processor which adds two named sets to a the first cube
      * in a schema.

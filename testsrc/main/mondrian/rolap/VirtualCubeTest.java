@@ -25,34 +25,6 @@ public class VirtualCubeTest extends FoodMartTestCase {
     public VirtualCubeTest(String name) {
         super(name);
     }
-    static class QueryAndResult {
-        String query;
-        String result;
-        QueryAndResult(String query, String result) {
-            this.query = query;
-            this.result = result;
-        }
-    }
-    private static final QueryAndResult simpleQuery =
-            new QueryAndResult(
-                "select" + nl +
-                "{ [Measures].[Warehouse Sales], [Measures].[Unit Sales] }" + nl +
-                "ON COLUMNS," + nl +
-                "{[Product].[All Products]}" + nl +
-                "ON ROWS" + nl +
-                "from [Sales vs Warehouse]",
-
-                "Axis #0:" + nl +
-                "{}" + nl +
-                "Axis #1:" + nl +
-                "{[Measures].[Warehouse Sales]}" + nl +
-                "{[Measures].[Unit Sales]}" + nl +
-                "Axis #2:" + nl +
-                "{[Product].[All Products]}" + nl +
-                "Row #0: 196770.8876" + nl +
-                "Row #0: 266,773" + nl
-
-            );
 
     /**
      * This method demonstrates bug 1449929
@@ -67,7 +39,7 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "</VirtualCube>"}));
 
         try  {
-            assertQueryReturns(simpleQuery.query, simpleQuery.result);
+            checkXxx();
         } finally {
             schema.removeCube(cube.getName());
         }
@@ -87,10 +59,33 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "</VirtualCube>"}));
 
         try  {
-            assertQueryReturns(simpleQuery.query, simpleQuery.result);
+            checkXxx();
+
         } finally {
             schema.removeCube(cube.getName());
         }
+    }
+
+
+    private void checkXxx() {
+        // I do not know/believe that the return values are correct.
+
+        assertQueryReturns(
+                "select\n" +
+                "{ [Measures].[Warehouse Sales], [Measures].[Unit Sales] }\n" +
+                "ON COLUMNS,\n" +
+                "{[Product].[All Products]}\n" +
+                "ON ROWS\n" +
+                "from [Sales vs Warehouse]",
+                fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Warehouse Sales]}\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products]}\n" +
+                "Row #0: 196,770.888\n" +
+                "Row #0: 266,773\n"));
     }
 }
 

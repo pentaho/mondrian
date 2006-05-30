@@ -31,6 +31,7 @@ import mondrian.olap.HierarchyBugTest;
 import mondrian.rolap.*;
 import mondrian.test.comp.ResultComparatorTest;
 import mondrian.util.ScheduleTest;
+import mondrian.util.FormatTest;
 import mondrian.xmla.XmlaBasicTest;
 import mondrian.xmla.XmlaExcel2000Test;
 import mondrian.xmla.XmlaExcelXPTest;
@@ -86,6 +87,7 @@ public class Main extends TestSuite {
         }
         MondrianTestRunner runner = new MondrianTestRunner();
         runner.setIterations(properties.Iterations.get());
+        System.out.println("Iterations=" + properties.Iterations.get());
         runner.setVUsers(properties.VUsers.get());
         runner.setTimeLimit(properties.TimeLimit.get());
         TestResult tres = runner.doRun(test);
@@ -171,6 +173,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(PropertiesTest.class);
             suite.addTestSuite(MultipleHierarchyTest.class);
             suite.addTestSuite(I18nTest.class);
+            suite.addTestSuite(FormatTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get())

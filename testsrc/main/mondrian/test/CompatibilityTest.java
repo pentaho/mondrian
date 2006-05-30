@@ -196,16 +196,16 @@ public class CompatibilityTest extends FoodMartTestCase {
         Assert.assertEquals(result, executeSingletonAxis(expression).toString());
     }
 
-    
+
     /**
      * Tests that a #null member on a Hiearchy Level of type String can
-     * still be looked up when case sensitive is off. 
-     * 
+     * still be looked up when case sensitive is off.
+     *
      */
-    public void testCaseInSensitiveNullMember() {
+    public void testCaseInsensitiveNullMember() {
     	boolean old = MondrianProperties.instance().CaseSensitive.get();
     	MondrianProperties.instance().CaseSensitive.set(false);
-    	
+
     	Schema schema = getConnection().getSchema();
         final String cubeName = "Sales_inline";
         final Cube cube = schema.createCube(fold(new String[] {
@@ -237,12 +237,12 @@ public class CompatibilityTest extends FoodMartTestCase {
             "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"",
             "      formatString=\"#,###.00\"/>",
             "</Cube>"}));
-        
+
         try {
 	    	getTestContext().assertQueryReturns(fold(new String[] {
 		            "select {[Measures].[Unit Sales]} ON COLUMNS,",
 		            "  {[Alternative Promotion].[All Alternative Promotions].[#null]} ON ROWS ",
-		            "  from [Sales_inline]"}), 
+		            "  from [Sales_inline]"}),
 		            fold(new String[] {
 	                        "Axis #0:",
 	                        "{}",
@@ -250,14 +250,14 @@ public class CompatibilityTest extends FoodMartTestCase {
 	                        "{[Measures].[Unit Sales]}",
 	                        "Axis #2:",
 	                        "{[Alternative Promotion].[All Alternative Promotions].[#null]}",
-	                        "Row #0: (null)",
+	                        "Row #0: ",
 	                        ""}));
         } finally {
             schema.removeCube(cubeName);
         	MondrianProperties.instance().CaseSensitive.set(old);
         }
     }
-    
+
     /**
      * Tests that data in Hiearchy.Level attribute "nameColumn" can be null.  This will map
      * to the #null memeber.
@@ -307,7 +307,7 @@ public class CompatibilityTest extends FoodMartTestCase {
                         "{[Alternative Promotion].[All Alternative Promotions].[#null]}",
                         "{[Alternative Promotion].[All Alternative Promotions].[Promo1]}",
                         "Row #0: 195,448",
-                        "Row #0: (null)",
+                        "Row #0: ",
                         ""}));
         } finally {
             schema.removeCube(cubeName);

@@ -15,9 +15,9 @@ package mondrian.util;
 import mondrian.olap.Util;
 
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.*;
 import java.util.*;
 
 /**
@@ -64,10 +64,43 @@ public class Format {
     private String formatString;
     private BasicFormat format;
     private FormatLocale locale;
+    private static final FieldPosition dummyFieldPos = createDummyFieldPos();
+
     /**
-     * Maps (formatString, locale) pairs to Format objects.
+     * Maximum number of entries in the format cache used by
+     * {@link #get(String, java.util.Locale)}.
      */
-    private static Map cache = new HashMap();
+    public static final int CacheLimit = 1000;
+
+    /**
+     * Gets the dummy implementation of {@link FieldPosition} which the JDK
+     * uses when you don't care about the status of a call to
+     * {@link Format#format}.
+     */
+    private static FieldPosition createDummyFieldPos() {
+        final FieldPosition[] pos = {null};
+        new DecimalFormat() {
+            public StringBuffer format(
+                    double number,
+                    StringBuffer result,
+                    FieldPosition fieldPosition) {
+                pos[0] = fieldPosition;
+                return result;
+            }
+        }.format(0.0);
+        return pos[0];
+    }
+
+    /**
+     * Maps (formatString, locale) pairs to {@link Format} objects.
+     *
+     * <p>If the number of entries in the cache exceeds 1000,
+     */
+    private static Map cache = new LinkedHashMap() {
+        public boolean removeEldestEntry(Map.Entry entry) {
+            return size() > CacheLimit;
+        }
+    };
 
     static final char[] digits = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
@@ -80,19 +113,19 @@ public class Format {
     static final String currencySymbol_en = "$";
     static final String currencyFormat_en = "$#,##0.00";
     static final String[] daysOfWeekShort_en = {
-        "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+        "", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
     };
     static final String[] daysOfWeekLong_en = {
-        "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
+        "", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
         "Saturday"
     };
     static final String[] monthsShort_en = {
         "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "",
     };
     static final String[] monthsLong_en = {
         "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
+        "July", "August", "September", "October", "November", "December", "",
     };
     static final char intlCurrencySymbol = '\u08a4';
 
@@ -112,256 +145,6 @@ public class Format {
 
     private static LocaleFormatFactory localeFormatFactory;
 
-    public static void main(String[] args)
-    {
-        PrintWriter pw = new PrintWriter(
-            new java.io.OutputStreamWriter(System.out));
-
-        testFormat(pw);
-    }
-
-    /**
-     * Runs a unit test.
-     *
-     * @param pw
-     */
-    public static void testFormat(PrintWriter pw) {
-        if (false) {
-            String[] timeZones = TimeZone.getAvailableIDs();
-            for (int i = 0; i < timeZones.length; i++) {
-                TimeZone tz = TimeZone.getTimeZone(timeZones[i]);
-                pw.println(
-                        "Id=" + tz.getID() +
-                        ", offset=" + tz.getRawOffset() / (60 * 60 * 1000) +
-                        ", daylight=" + tz.useDaylightTime());
-            }
-            pw.flush();
-        }
-
-        String[] numberFormats = {
-            // format                +6          -6           0           .6          null
-            // ===================== =========== ============ =========== =========== =========
-            "",                      "6",        "-6",        "0",        "0.6",      "",
-            "0",                     "6",        "-6",        "0",        "1",        "",
-            "0.00",                  "6.00",     "-6.00",     "0.00",     "0.60",     "",
-            "#,##0",                 "6",        "-6",        "0",        "1",        "",
-            "#,##0.00;;;Nil",        "6.00",     "-6.00",     "0.00",     "0.60",     "Nil",
-            "$#,##0;($#,##0)",       "$6",       "($6)",      "$0",       "$1",       "",
-            "$#,##0.00;($#,##0.00)", "$6.00",    "($6.00)",   "$0.00",    "$0.60",    "",
-            "0%",                    "600%",     "-600%",     "0%",       "60%",      "",
-            "0.00%",                 "600.00%",  "-600.00%",  "0.00%",    "60.00%",   "",
-            "0.00E+00",              "6.00E+00", "-6.00E+00", "0.00E+00", "6.00E-01", "",
-            "0.00E-00",              "6.00E00",  "-6.00E00",  "0.00E00",  "6.00E-01", "",
-            "$#,##0;;\\Z\\e\\r\\o",  "$6",       "$-6",       "Zero",     "$1",       "",
-            "#,##0.0 USD",           "6.0 USD",  "-6.0 USD",  "0.0 USD",  "0.6 USD",  "",
-            "General Number",        "6",        "-6",        "0",        "0.6",      "",
-            "Currency",              "$6.00",    "($6.00)",   "$0.00",    "$0.60",    "",
-            "Fixed",                 "6",        "-6",        "0",        "1",        "",
-            "Standard",              "6",        "-6",        "0",        "1",      "",
-            "Percent",               "600%",     "-600%",     "0%",       "60%",      "",
-            "Scientific",            "6.00e+00", "-6.00e+00", "0.00e+00", "6.00e-01", "",
-            "True/False",            "True",     "True",      "False",    "True",     "False",
-            "On/Off",                "On",       "On",        "Off",      "On",       "Off",
-            "Yes/No",                "Yes",      "Yes",       "No",       "Yes",      "No",
-        };
-
-        String[] dateFormats = {
-            "dd-mmm-yy",
-            "h:mm:ss AM/PM",
-            "hh:mm",
-            "Long Date",
-            "Medium Date",
-            "Short Date",
-            "Long Time",
-            "Medium Time",
-            "Short Time",
-        };
-
-        FormatLocale localeFra = createLocale(
-            '.', // thousandSeparator = ',' in en
-            ',', // decimalPlaceholder = '.' in en
-            "-", // dateSeparator = "/" in en
-            "#", // timeSeparator = ":" in en
-            "FF", // currencySymbol = "$" in en
-            "#.##0-00FF", // currencyFormat = "$#,##0.##" in en
-            new String[] {
-                "Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"},
-            new String[] {
-                "Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi",
-                "Samedi"},
-            new String[] {
-                "Jan", "Fev", "Mar", "Avr", "Mai", "Jui", "Jui", "Aou", "Sep",
-                "Oct", "Nov", "Dec"},
-            new String[] {
-                "Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin",
-                "Juillet", "Aout", "Septembre", "Octobre", "Novembre",
-                "Decembre"},
-            Locale.FRENCH);
-
-
-        Object[] numbers = {
-            new Double(6), new Double(-6), new Double(0), new Double(.6),
-            null,
-            new Long(6), new Long(-6), new Long(0)};
-        Double d = new Double(3141592.653589793);
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(1969, 3, 29, 20, 9, 6); // note that month #3 == April
-        Date date = calendar.getTime();
-        calendar.set(2010, 8, 7, 6, 5, 4); // 06:05:04 am, 7th sep 2010
-        Date date2 = calendar.getTime();
-
-        pw.println("Start test of mondrian.util.Format.");
-
-//      testFormat(pw, null, date2, "mm/##/yy", "09/##/10");
-//      testFormat(pw, null, new Double(123.45), "E+", "1E2");
-//      testFormat(pw, null, new Long(0), "0.00E+00", "0.00E+00");
-//      testFormat(pw, null, new Double(0), "0.00E+00", "0.00E+00");
-//      testFormat(pw, null, new Double(0), "0.00", "0.00");
-//      testFormat(pw, new Double(-5.0), "#,##0.00;;;Nil", "1");
-//      testFormat(pw, date, "m", null);
-//      testFormat(pw, date, "", null);
-//      testFormat(pw, null, new Double(0), "0%", "0%");
-//      testFormat(pw, null, new Double(1.2), "" + intlCurrencySymbol + "#", "$1");
-//      testFormat(pw, localeFra, d, "Currency", null);
-
-
-        pw.println();
-        pw.println("Exhaustive tests on various numbers.");
-        for (int i = 0; i < numberFormats.length / 6; i++) {
-            String format = numberFormats[i * 6];
-            for (int j = 0; j < numbers.length; j++) {
-                int x = (j < 5 ? j + 1 : j - 4);
-                String result = numberFormats[i * 6 + x];
-                checkFormat(pw, null, numbers[j], format, result);
-            }
-        }
-
-        pw.println();
-        pw.println("Numbers in French.");
-        for (int i = 0; i < numberFormats.length / 6; i++) {
-            String format = numberFormats[i * 6];
-            checkFormat(pw, localeFra, d, format, null);
-        }
-
-        pw.println();
-        pw.println("Some tricky numbers.");
-        checkFormat(pw, null, new Double(40.385), "##0.0#", "40.38");
-        checkFormat(pw, null, new Double(40.386), "##0.0#", "40.39");
-        checkFormat(pw, null, new Double(40.384), "##0.0#", "40.38");
-        checkFormat(pw, null, new Double(40.385), "##0.#", "40.4");
-        checkFormat(pw, null, new Double(40.38), "##0.0#", "40.38");
-        checkFormat(pw, null, new Double(-40.38), "##0.0#", "-40.38");
-        checkFormat(pw, null, new Double(0.040385), "#0.###", "0.04");
-        checkFormat(pw, null, new Double(0.040385), "#0.000", "0.040");
-        checkFormat(pw, null, new Double(0.040385), "#0.####", "0.0404");
-        checkFormat(pw, null, new Double(0.040385), "00.####", "00.0404");
-        checkFormat(pw, null, new Double(0.040385), ".00#", ".04");
-        checkFormat(pw, null, new Double(0.040785), ".00#", ".041");
-        checkFormat(pw, null, new Double(99.9999), "##.####", "99.9999");
-        checkFormat(pw, null, new Double(99.9999), "##.###", "100");
-        checkFormat(pw, null, new Double(99.9999), "##.00#", "100.00");
-        checkFormat(pw, null, new Double(.00099), "#.00", ".00");
-        checkFormat(pw, null, new Double(.00099), "#.00#", ".001");
-        checkFormat(pw, null, new Double(12.34), "#.000##", "12.340");
-
-        // "Standard" must use thousands separator, and round
-        checkFormat(pw, null, new Double(1234567.89), "Standard", "1,234,568");
-
-        // must use correct alternate for 0
-        checkFormat(pw, null, new Double(0), "$#,##0;;\\Z\\e\\r\\o", "Zero");
-
-        // an existing bug
-        pw.println(
-            "The following case illustrates an outstanding bug.  " +
-            "Should be able to override '.' to '-', " +
-            "so result should be '3.141.592-65 FF'.");
-        checkFormat(pw, localeFra, d, "#.##0-00 FF", null);
-
-        pw.println();
-        pw.println("Test several date formats on one date.");
-        for (int i = 0; i < dateFormats.length; i++) {
-            String format = dateFormats[i];
-            checkFormat(pw, null, date, format, null);
-        }
-
-        pw.println();
-        pw.println("Dates in French.");
-        for (int i = 0; i < dateFormats.length; i++) {
-            String format = dateFormats[i];
-            checkFormat(pw, localeFra, date, format, null);
-        }
-
-        pw.println();
-        pw.println("Test all possible tokens.");
-        for (int i = 0; i < tokens.length; i++) {
-            Token fe = tokens[i];
-            Object o;
-            if (fe.isNumeric()) {
-                o = d;
-            } else if (fe.isDate()) {
-                o = date;
-            } else if (fe.isString()) {
-                o = "mondrian";
-            } else {
-                o = d;
-            }
-            checkFormat(pw, null, o, fe.token, null);
-        }
-
-        pw.println();
-        pw.println("Some tricky dates.");
-
-        // must not throw exception
-        checkFormat(pw, null, date2, "mm/##/yy", "09/##/10");
-
-        // must recognize lowercase "dd"
-        checkFormat(pw, null, date2, "mm/dd/yy", "09/07/10");
-
-        // must print '7' not '07'
-        checkFormat(pw, null, date2, "mm/d/yy", "09/7/10");
-
-        // must not decrement month by one (cuz java.util.Calendar is 0-based)
-        checkFormat(pw, null, date2, "mm/dd/yy", "09/07/10");
-
-        // must recognize "mmm"
-        checkFormat(pw, null, date2, "mmm/dd/yyyy", "Sep/07/2010");
-
-        // "mm" means minute, not month, when following "hh"
-        checkFormat(pw, null, date2, "hh/mm/ss", "06/05/04");
-
-        // must recognize "Long Date" etc.
-        checkFormat(pw, null, date2, "Long Date", "Tuesday, September 07, 2010");
-
-        // international currency symbol
-        checkFormat(pw, null, new Double(1.2), "" + intlCurrencySymbol + "#", "$1");
-
-        pw.println();
-        pw.println("End of test.");
-
-        pw.flush();
-    }
-
-    static private void checkFormat(
-        PrintWriter pw, FormatLocale locale, Object o, String f, String result)
-    {
-        pw.print(
-            "format(" + o + "," +
-            (f == null ? "null" : "'" + f + "'") +
-            ")");
-        pw.flush();
-        Format format = new Format(f, locale);
-        String s = format.format(o);
-        pw.print(" --> '" + s + "'");
-        if (result == null) {
-            pw.println();
-        } else if (s.equals(result)) {
-            pw.println(" CORRECT");
-        } else {
-            pw.println(" INCORRECT - should be '" + result + "'");
-        }
-        pw.flush();
-    }
-
     /**
      * Formats an object using a format string, according to a given locale.
      *
@@ -375,7 +158,7 @@ public class Format {
         return format.format(o);
     }
 
-    private static class Token {
+    static class Token {
         int code;
         int flags;
         String token;
@@ -419,7 +202,7 @@ public class Format {
                 return new LiteralFormat(token);
             }
         }
-    };
+    }
 
     /**
      * BasicFormat is the interface implemented by the classes which do all
@@ -431,7 +214,7 @@ public class Format {
      * The base implementation of most of these methods throws an error, there
      * is no requirement that a derived class implements all of these methods.
      * It is up to {@link Format#parseFormatString} to ensure that, for example,
-     * the {@link #format(double,PrintWriter)} method is never called for
+     * the {@link #format(double,StringBuffer)} method is never called for
      * {@link DateFormat}.
      */
     static class BasicFormat {
@@ -440,67 +223,78 @@ public class Format {
         BasicFormat() {
             this(0);
         }
+
         BasicFormat(int code) {
             this.code = code;
         }
+
         boolean isNumeric() {
             return false;
         }
+
         boolean isDate() {
             return false;
         }
+
         boolean isString() {
             return false;
         }
-        void format(Object o, PrintWriter pw) {
-            if (o == null) {
-                formatNull(pw);
-            } else if (o instanceof Double) {
-                format(((Double) o).doubleValue(), pw);
-            } else if (o instanceof Float) {
-                format(((Float) o).floatValue(), pw);
-            } else if (o instanceof Integer) {
-                format(((Integer) o).intValue(), pw);
-            } else if (o instanceof Long) {
-                format(((Long) o).longValue(), pw);
-            } else if (o instanceof Short) {
-                format(((Short) o).shortValue(), pw);
-            } else if (o instanceof Byte) {
-                format(((Byte) o).byteValue(), pw);
-            } else if (o instanceof BigDecimal) {
-                format(((BigDecimal) o).doubleValue(), pw);
-            } else if (o instanceof BigInteger) {
-                format(((BigInteger) o).longValue(), pw);
-            } else if (o instanceof String) {
-                format((String) o, pw);
-            } else if (o instanceof java.util.Date) {
-                // includes java.sql.Date, java.sql.Time and java.sql.Timestamp
-                format((Date) o, pw);
-            } else {
-                pw.print(o.toString());
-            }
+
+        void formatNull(StringBuffer buf) {
         }
-        void formatNull(PrintWriter pw) {
-            pw.print("(null)");
-        }
-        void format(double d, PrintWriter pw) {
+
+        void format(double d, StringBuffer buf) {
             throw new Error();
         }
-        void format(long n, PrintWriter pw) {
+
+        void format(long n, StringBuffer buf) {
             throw new Error();
         }
-        void format(String s, PrintWriter pw) {
+
+        void format(String s, StringBuffer buf) {
             throw new Error();
         }
-        void format(Date date, PrintWriter pw) {
+
+        void format(Date date, StringBuffer buf) {
             Calendar calendar = Calendar.getInstance(); // todo: use locale
             calendar.setTime(date);
-            format(calendar, pw);
+            format(calendar, buf);
         }
-        void format(Calendar calendar, PrintWriter pw) {
+
+        void format(Calendar calendar, StringBuffer buf) {
             throw new Error();
         }
-    };
+
+        /**
+         * Returns whether this format can handle a given value.
+         *
+         * <p>Usually returns true;
+         * one notable exception is a format for negative numbers which
+         * causes the number to be underflow to zero and therefore be
+         * ineligible for the negative format.
+         *
+         * @param n value
+         * @return Whether this format is applicable for a given value
+         */
+        boolean isApplicableTo(double n) {
+            return true;
+        }
+
+        /**
+         * Returns whether this format can handle a given value.
+         *
+         * <p>Usually returns true;
+         * one notable exception is a format for negative numbers which
+         * causes the number to be underflow to zero and therefore be
+         * ineligible for the negative format.
+         *
+         * @param n value
+         * @return Whether this format is applicable for a given value
+         */
+        boolean isApplicableTo(long n) {
+            return true;
+        }
+    }
 
     /**
      * AlternateFormat is an implementation of {@link Format.BasicFormat} which
@@ -517,23 +311,25 @@ public class Format {
      * visual basic format specification</a> for more details.
      */
     static class AlternateFormat extends BasicFormat {
-        BasicFormat[] formats;
+        final BasicFormat[] formats;
 
         AlternateFormat(BasicFormat[] formats)
         {
             this.formats = formats;
+            assert formats.length >= 2;
         }
 
-        void formatNull(PrintWriter pw) {
+        void formatNull(StringBuffer buf) {
             if (formats.length >= 4) {
-                formats[3].format(0, pw);
+                formats[3].format(0, buf);
             } else {
-                super.formatNull(pw);
+                super.formatNull(buf);
             }
         }
-        void format(double n, PrintWriter pw) {
+
+        void format(double n, StringBuffer buf) {
             if (formats.length == 0) {
-                pw.print(n);
+                buf.append(n);
             } else {
                 int i;
                 if (n == 0 &&
@@ -543,17 +339,25 @@ public class Format {
                 } else if (n < 0 &&
                            formats.length >= 2 &&
                            formats[1] != null) {
-                    n = -n;
-                    i = 1;
+                    if (formats[1].isApplicableTo(n)) {
+                        n = -n;
+                        i = 1;
+                    } else {
+                        // Does not fit into the negative mask, so use the nil
+                        // mask. For example, "#.0;(#.0);Nil" formats -0.0001
+                        // as "Nil".
+                        i = 2;
+                    }
                 } else {
                     i = 0;
                 }
-                formats[i].format(n, pw);
+                formats[i].format(n, buf);
             }
         }
-        void format(long n, PrintWriter pw) {
+
+        void format(long n, StringBuffer buf) {
             if (formats.length == 0) {
-                pw.print(n);
+                buf.append(n);
             } else {
                 int i;
                 if (n == 0 &&
@@ -562,25 +366,29 @@ public class Format {
                     i = 2;
                 } else if (n < 0 &&
                            formats.length >= 2 &&
-                           formats[1] != null) {
+                           formats[1] != null &&
+                           formats[1].isApplicableTo(n)) {
                     n = -n;
                     i = 1;
                 } else {
                     i = 0;
                 }
-                formats[i].format(n, pw);
+                formats[i].format(n, buf);
             }
         }
-        void format(String s, PrintWriter pw) {
-            formats[0].format(s, pw);
+
+        void format(String s, StringBuffer buf) {
+            formats[0].format(s, buf);
         }
-        void format(Date date, PrintWriter pw) {
-            formats[0].format(date, pw);
+
+        void format(Date date, StringBuffer buf) {
+            formats[0].format(date, buf);
         }
-        void format(Calendar calendar, PrintWriter pw) {
-            formats[0].format(calendar, pw);
+
+        void format(Calendar calendar, StringBuffer buf) {
+            formats[0].format(calendar, buf);
         }
-    };
+    }
 
     /**
      * LiteralFormat is an implementation of {@link Format.BasicFormat} which
@@ -603,26 +411,26 @@ public class Format {
             this.s = s;
         }
 
-        // override Format
-        void format(Object o, PrintWriter pw) {
-            pw.print(s);
+        void format(double d, StringBuffer buf) {
+            buf.append(s);
         }
-        void format(double d, PrintWriter pw) {
-            pw.print(s);
+
+        void format(long n, StringBuffer buf) {
+            buf.append(s);
         }
-        void format(long n, PrintWriter pw) {
-            pw.print(s);
+
+        void format(String s, StringBuffer buf) {
+            buf.append(s);
         }
-        void format(String s, PrintWriter pw) {
-            pw.print(s);
+
+        void format(Date date, StringBuffer buf) {
+            buf.append(s);
         }
-        void format(Date date, PrintWriter pw) {
-            pw.print(s);
+
+        void format(Calendar calendar, StringBuffer buf) {
+            buf.append(s);
         }
-        void format(Calendar calendar, PrintWriter pw) {
-            pw.print(s);
-        }
-    };
+    }
 
     /**
      * CompoundFormat is an implementation of {@link Format.BasicFormat} where
@@ -633,44 +441,59 @@ public class Format {
      */
     static class CompoundFormat extends BasicFormat
     {
-        BasicFormat[] formats;
+        final BasicFormat[] formats;
         CompoundFormat(BasicFormat[] formats)
         {
             this.formats = formats;
+            assert formats.length >= 2;
         }
 
-        public void format(Object v, PrintWriter pw)
-        {
+        void formatNull(StringBuffer buf) {
             for (int i = 0; i < formats.length; i++) {
-                formats[i].format(v, pw);
+                formats[i].formatNull(buf);
             }
         }
-        void format(double v, PrintWriter pw) {
+
+        void format(double v, StringBuffer buf) {
             for (int i = 0; i < formats.length; i++) {
-                formats[i].format(v, pw);
+                formats[i].format(v, buf);
             }
         }
-        void format(long v, PrintWriter pw) {
+
+        void format(long v, StringBuffer buf) {
             for (int i = 0; i < formats.length; i++) {
-                formats[i].format(v, pw);
+                formats[i].format(v, buf);
             }
         }
-        void format(String v, PrintWriter pw) {
+
+        void format(String v, StringBuffer buf) {
             for (int i = 0; i < formats.length; i++) {
-                formats[i].format(v, pw);
+                formats[i].format(v, buf);
             }
         }
-        void format(Date v, PrintWriter pw) {
+
+        void format(Date v, StringBuffer buf) {
             for (int i = 0; i < formats.length; i++) {
-                formats[i].format(v, pw);
+                formats[i].format(v, buf);
             }
         }
-        void format(Calendar v, PrintWriter pw) {
+
+        void format(Calendar v, StringBuffer buf) {
             for (int i = 0; i < formats.length; i++) {
-                formats[i].format(v, pw);
+                formats[i].format(v, buf);
             }
         }
-    };
+
+        boolean isApplicableTo(double n) {
+            for (int i = 0; i < formats.length; i++) {
+                if (!formats[i].isApplicableTo(n)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+    }
 
     /**
      * JavaFormat is an implementation of {@link Format.BasicFormat} which
@@ -679,24 +502,35 @@ public class Format {
      */
     static class JavaFormat extends BasicFormat
     {
-        JavaFormat()
+        private final NumberFormat numberFormat;
+        private final java.text.DateFormat dateFormat;
+
+        JavaFormat(Locale locale)
         {
+            this.numberFormat = NumberFormat.getNumberInstance(locale);
+            this.dateFormat = java.text.DateFormat.getDateInstance(
+                    java.text.DateFormat.SHORT, locale);
         }
+
         // No need to override format(Object,PrintWriter) or
         // format(Date,PrintWriter).
-        void format(double d, PrintWriter pw) {
-            pw.print(d);
+
+        void format(double d, StringBuffer buf) {
+            numberFormat.format(d, buf, dummyFieldPos);
         }
-        void format(long n, PrintWriter pw) {
-            pw.print(n);
+
+        void format(long n, StringBuffer buf) {
+            numberFormat.format(n, buf, dummyFieldPos);
         }
-        void format(String s, PrintWriter pw) {
-            pw.print(s);
+
+        void format(String s, StringBuffer buf) {
+            buf.append(s);
         }
-        void format(Calendar calendar, PrintWriter pw) {
-            pw.print(calendar.getTime());
+
+        void format(Calendar calendar, StringBuffer buf) {
+            dateFormat.format(calendar.getTime(), buf, dummyFieldPos);
         }
-    };
+    }
 
     /**
      * FallbackFormat catches un-handled datatypes and prints the original
@@ -713,23 +547,22 @@ public class Format {
             this.token = token;
         }
 
-        private void printToken(PrintWriter pw) {
-            pw.print(token);
+        void format(double d, StringBuffer buf) {
+            buf.append(token);
         }
 
-        void format(double d, PrintWriter pw) {
-            printToken(pw);
+        void format(long n, StringBuffer buf) {
+            buf.append(token);
         }
-        void format(long n, PrintWriter pw) {
-            printToken(pw);
+
+        void format(String s, StringBuffer buf) {
+            buf.append(token);
         }
-        void format(String s, PrintWriter pw) {
-            printToken(pw);
+
+        void format(Calendar calendar, StringBuffer buf) {
+            buf.append(token);
         }
-        void format(Calendar calendar, PrintWriter pw) {
-            printToken(pw);
-        }
-    };
+    }
 
     /**
      * NumericFormat is an implementation of {@link Format.BasicFormat} which
@@ -802,12 +635,69 @@ public class Format {
             this.decimalShift = 0; // set later
         }
 
-        void format(Double n, PrintWriter pw)
+        void format(double n, StringBuffer buf)
         {
-            format(n.doubleValue(), pw);
+            FloatingDecimal fd = new FloatingDecimal(n);
+            fd.shift(decimalShift);
+            final int formatDigitsRightOfPoint =
+                    zeroesRightOfPoint + digitsRightOfPoint;
+            if (n < 0 && !shows(fd, formatDigitsRightOfPoint)) {
+                // Underflow of negative number. Make it zero, so there is no
+                // '-' sign.
+                n = 0;
+                fd = new FloatingDecimal(0);
+            }
+            String s = fd.toJavaFormatString(
+                zeroesLeftOfPoint,
+                locale.decimalPlaceholder,
+                zeroesRightOfPoint,
+                    formatDigitsRightOfPoint,
+                expChar,
+                expSign,
+                zeroesRightOfExp,
+                useThouSep ? locale.thousandSeparator : '\0');
+            buf.append(s);
         }
 
-        void format(double n, PrintWriter pw)
+        boolean isApplicableTo(double n) {
+            if (n >= 0) {
+                return true;
+            }
+            FloatingDecimal fd = new FloatingDecimal(n);
+            fd.shift(decimalShift);
+            final int formatDigitsRightOfPoint =
+                    zeroesRightOfPoint + digitsRightOfPoint;
+            return shows(fd, formatDigitsRightOfPoint);
+        }
+
+        private static boolean shows(
+                FloatingDecimal fd, int formatDigitsRightOfPoint) {
+            final int i0 = - fd.decExponent - formatDigitsRightOfPoint;
+            if (i0 < 0) {
+                return true;
+            }
+            if (i0 > 0) {
+                return false;
+            }
+            for (int i = i0; i < fd.nDigits; ++i) {
+                final char digit = fd.digits[i];
+                if (i == i0) {
+                    if (digit > '5') {
+                        return true;
+                    }
+                    if (digit < '5') {
+                        return false;
+                    }
+                } else {
+                    if (digit > '0') {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        void format(long n, StringBuffer buf)
         {
             mondrian.util.Format.FloatingDecimal fd
                 = new mondrian.util.Format.FloatingDecimal(n);
@@ -821,37 +711,15 @@ public class Format {
                 expSign,
                 zeroesRightOfExp,
                 useThouSep ? locale.thousandSeparator : '\0');
-            pw.print(s);
+            buf.append(s);
         }
-
-        void format(Long n, PrintWriter pw)
-        {
-            format(n.longValue(), pw);
-        }
-
-        void format(long n, PrintWriter pw)
-        {
-            mondrian.util.Format.FloatingDecimal fd
-                = new mondrian.util.Format.FloatingDecimal(n);
-            fd.shift(decimalShift);
-            String s = fd.toJavaFormatString(
-                zeroesLeftOfPoint,
-                locale.decimalPlaceholder,
-                zeroesRightOfPoint,
-                zeroesRightOfPoint + digitsRightOfPoint,
-                expChar,
-                expSign,
-                zeroesRightOfExp,
-                useThouSep ? locale.thousandSeparator : '\0');
-            pw.print(s);
-        }
-    };
+    }
 
     /**
      * DateFormat is an element of a {@link Format.CompoundFormat} which has a
      * value when applied to a {@link Calendar} object.  (Values of type {@link
      * Date} are automatically converted into {@link Calendar}s when you call
-     * {@link Format.BasicFormat#format(Date, PrintWriter)} calls to format
+     * {@link Format.BasicFormat#format(Date, StringBuffer)} calls to format
      * other kinds of values give a runtime error.)
      *
      * <p>In a typical use of this class, a format string such as "m/d/yy" is
@@ -870,15 +738,18 @@ public class Format {
             this.locale = locale;
             this.twelveHourClock = twelveHourClock;
         }
+
         void setTwelveHourClock(boolean twelveHourClock)
         {
             this.twelveHourClock = twelveHourClock;
         }
-        void format(Calendar calendar, PrintWriter pw)
+
+        void format(Calendar calendar, StringBuffer buf)
         {
-            format(code, calendar, pw);
+            format(code, calendar, buf);
         }
-        private void format(int code, Calendar calendar, PrintWriter pw)
+
+        private void format(int code, Calendar calendar, StringBuffer buf)
         {
             switch (code) {
             case FORMAT_C:
@@ -891,40 +762,41 @@ public class Format {
                     calendar.get(Calendar.MINUTE) == 0 &&
                     calendar.get(Calendar.HOUR) == 0);
                 if (dateSet) {
-                    format(FORMAT_DDDDD, calendar, pw);
+                    format(FORMAT_DDDDD, calendar, buf);
                 }
                 if (dateSet && timeSet) {
-                    pw.print(" ");
+                    buf.append(' ');
                 }
                 if (timeSet) {
-                    format(FORMAT_TTTTT, calendar, pw);
+                    format(FORMAT_TTTTT, calendar, buf);
                 }
                 break;
             }
             case FORMAT_D:
             {
                 int d = calendar.get(Calendar.DAY_OF_MONTH);
-                pw.print(d);
+                buf.append(d);
                 break;
             }
             case FORMAT_DD:
             {
                 int d = calendar.get(Calendar.DAY_OF_MONTH);
-                if (d < 10)
-                    pw.print("0");
-                pw.print(d);
+                if (d < 10) {
+                    buf.append('0');
+                }
+                buf.append(d);
                 break;
             }
             case FORMAT_DDD:
             {
                 int dow = calendar.get(Calendar.DAY_OF_WEEK);
-                pw.print(locale.daysOfWeekShort[dow - 1]); // e.g. Sun
+                buf.append(locale.daysOfWeekShort[dow]); // e.g. Sun
                 break;
             }
             case FORMAT_DDDD:
             {
                 int dow = calendar.get(Calendar.DAY_OF_WEEK);
-                pw.print(locale.daysOfWeekLong[dow - 1]); // e.g. Sunday
+                buf.append(locale.daysOfWeekLong[dow]); // e.g. Sunday
                 break;
             }
             case FORMAT_DDDDD:
@@ -932,60 +804,61 @@ public class Format {
                 // Officially, we should use the system's short date
                 // format. But for now, we always print using the default
                 // format, m/d/yy.
-                format(FORMAT_M, calendar,pw);
-                pw.print(locale.dateSeparator);
-                format(FORMAT_D, calendar,pw);
-                pw.print(locale.dateSeparator);
-                format(FORMAT_YY, calendar,pw);
+                format(FORMAT_M, calendar,buf);
+                buf.append(locale.dateSeparator);
+                format(FORMAT_D, calendar,buf);
+                buf.append(locale.dateSeparator);
+                format(FORMAT_YY, calendar,buf);
                 break;
             }
             case FORMAT_DDDDDD:
             {
-                format(FORMAT_MMMM_UPPER, calendar, pw);
-                pw.print(" ");
-                format(FORMAT_DD, calendar, pw);
-                pw.print(", ");
-                format(FORMAT_YYYY, calendar, pw);
+                format(FORMAT_MMMM_UPPER, calendar, buf);
+                buf.append(" ");
+                format(FORMAT_DD, calendar, buf);
+                buf.append(", ");
+                format(FORMAT_YYYY, calendar, buf);
                 break;
             }
             case FORMAT_W:
             {
                 int dow = calendar.get(Calendar.DAY_OF_WEEK);
-                pw.print(dow);
+                buf.append(dow);
                 break;
             }
             case FORMAT_WW:
             {
                 int woy = calendar.get(Calendar.WEEK_OF_YEAR);
-                pw.print(woy);
+                buf.append(woy);
                 break;
             }
             case FORMAT_M:
             {
                 int m = calendar.get(Calendar.MONTH) + 1; // 0-based
-                pw.print(m);
+                buf.append(m);
                 break;
             }
             case FORMAT_MM:
             {
                 int mm = calendar.get(Calendar.MONTH) + 1; // 0-based
-                if (mm < 10)
-                    pw.print("0");
-                pw.print(mm);
+                if (mm < 10) {
+                    buf.append('0');
+                }
+                buf.append(mm);
                 break;
             }
             case FORMAT_MMM_LOWER:
             case FORMAT_MMM_UPPER:
             {
-                int m = calendar.get(Calendar.MONTH) + 1;
-                pw.print(locale.monthsShort[m - 1]); // e.g. Jan
+                int m = calendar.get(Calendar.MONTH); // 0-based
+                buf.append(locale.monthsShort[m]); // e.g. Jan
                 break;
             }
             case FORMAT_MMMM_LOWER:
             case FORMAT_MMMM_UPPER:
             {
-                int m = calendar.get(Calendar.MONTH) + 1;
-                pw.print(locale.monthsLong[m - 1]); // e.g. January
+                int m = calendar.get(Calendar.MONTH); // 0-based
+                buf.append(locale.monthsLong[m]); // e.g. January
                 break;
             }
             case FORMAT_Q:
@@ -993,115 +866,118 @@ public class Format {
                 int m = calendar.get(Calendar.MONTH);
                 // 0(Jan) -> q1, 1(Feb) -> q1, 2(Mar) -> q1, 3(Apr) -> q2
                 int q = m / 3 + 1;
-                pw.print(q);
+                buf.append(q);
                 break;
             }
             case FORMAT_Y:
             {
                 int doy = calendar.get(Calendar.DAY_OF_YEAR);
-                pw.print(doy);
+                buf.append(doy);
                 break;
             }
             case FORMAT_YY:
             {
                 int y = calendar.get(Calendar.YEAR) % 100;
                 if (y < 10) {
-                    pw.print("0");
+                    buf.append('0');
                 }
-                pw.print(y);
+                buf.append(y);
                 break;
             }
             case FORMAT_YYYY:
             {
                 int y = calendar.get(Calendar.YEAR);
-                pw.print(y);
+                buf.append(y);
                 break;
             }
             case FORMAT_H:
             {
                 int h = calendar.get(
                     twelveHourClock ? Calendar.HOUR : Calendar.HOUR_OF_DAY);
-                pw.print(h);
+                buf.append(h);
                 break;
             }
             case FORMAT_HH:
             {
                 int h = calendar.get(
                     twelveHourClock ? Calendar.HOUR : Calendar.HOUR_OF_DAY);
-                if (h < 10)
-                    pw.print("0");
-                pw.print(h);
+                if (h < 10) {
+                    buf.append('0');
+                }
+                buf.append(h);
                 break;
             }
             case FORMAT_N:
             {
                 int n = calendar.get(Calendar.MINUTE);
-                pw.print(n);
+                buf.append(n);
                 break;
             }
             case FORMAT_NN:
             {
                 int n = calendar.get(Calendar.MINUTE);
-                if (n < 10)
-                    pw.print("0");
-                pw.print(n);
+                if (n < 10) {
+                    buf.append('0');
+                }
+                buf.append(n);
                 break;
             }
             case FORMAT_S:
             {
                 int s = calendar.get(Calendar.SECOND);
-                pw.print(s);
+                buf.append(s);
                 break;
             }
             case FORMAT_SS:
             {
                 int s = calendar.get(Calendar.SECOND);
-                if (s < 10)
-                    pw.print("0");
-                pw.print(s);
+                if (s < 10) {
+                    buf.append('0');
+                }
+                buf.append(s);
                 break;
             }
             case FORMAT_TTTTT:
             {
                 // Officially, we should use the system's time format. But
                 // for now, we always print using the default format, h:mm:ss.
-                format(FORMAT_H, calendar,pw);
-                pw.print(locale.timeSeparator);
-                format(FORMAT_NN, calendar,pw);
-                pw.print(locale.timeSeparator);
-                format(FORMAT_SS, calendar,pw);
+                format(FORMAT_H, calendar,buf);
+                buf.append(locale.timeSeparator);
+                format(FORMAT_NN, calendar,buf);
+                buf.append(locale.timeSeparator);
+                format(FORMAT_SS, calendar,buf);
                 break;
             }
             case FORMAT_AMPM:
             case FORMAT_UPPER_AM_SOLIDUS_PM:
             {
                 boolean isAm = calendar.get(Calendar.AM_PM) == Calendar.AM;
-                pw.print(isAm ? "AM" : "PM");
+                buf.append(isAm ? "AM" : "PM");
                 break;
             }
             case FORMAT_LOWER_AM_SOLIDUS_PM:
             {
                 boolean isAm = calendar.get(Calendar.AM_PM) == Calendar.AM;
-                pw.print(isAm ? "am" : "pm");
+                buf.append(isAm ? "am" : "pm");
                 break;
             }
             case FORMAT_UPPER_A_SOLIDUS_P:
             {
                 boolean isAm = calendar.get(Calendar.AM_PM) == Calendar.AM;
-                pw.print(isAm ? "A" : "P");
+                buf.append(isAm ? "A" : "P");
                 break;
             }
             case FORMAT_LOWER_A_SOLIDUS_P:
             {
                 boolean isAm = calendar.get(Calendar.AM_PM) == Calendar.AM;
-                pw.print(isAm ? "a" : "p");
+                buf.append(isAm ? "a" : "p");
                 break;
             }
             default:
                 throw new Error();
             }
         }
-    };
+    }
 
     /**
      * A FormatLocale contains all information necessary to format objects
@@ -1120,19 +996,22 @@ public class Format {
         String[] daysOfWeekLong;
         String[] monthsShort;
         String[] monthsLong;
+        private final Locale locale;
 
         private FormatLocale(
-            char thousandSeparator,
-            char decimalPlaceholder,
-            String dateSeparator,
-            String timeSeparator,
-            String currencySymbol,
-            String currencyFormat,
-            String[] daysOfWeekShort,
-            String[] daysOfWeekLong,
-            String[] monthsShort,
-            String[] monthsLong)
+                char thousandSeparator,
+                char decimalPlaceholder,
+                String dateSeparator,
+                String timeSeparator,
+                String currencySymbol,
+                String currencyFormat,
+                String[] daysOfWeekShort,
+                String[] daysOfWeekLong,
+                String[] monthsShort,
+                String[] monthsLong,
+                Locale locale)
         {
+            this.locale = locale;
             if (thousandSeparator == '\0') {
                 thousandSeparator = thousandSeparator_en;
             }
@@ -1173,10 +1052,10 @@ public class Format {
                 monthsLong = monthsLong_en;
             }
             this.monthsLong = monthsLong;
-            if (daysOfWeekShort.length != 7 ||
-                daysOfWeekLong.length != 7 ||
-                monthsShort.length != 12 ||
-                monthsLong.length != 12) {
+            if (daysOfWeekShort.length != 8 ||
+                daysOfWeekLong.length != 8 ||
+                monthsShort.length != 13 ||
+                monthsLong.length != 13) {
                 throw new IllegalArgumentException(
                     "Format: day or month array has incorrect length");
             }
@@ -1264,7 +1143,7 @@ public class Format {
 //              return ret;
 //          }
 
-    };
+    }
 
     private static class StringFormat extends BasicFormat
     {
@@ -1273,7 +1152,7 @@ public class Format {
         StringFormat(int stringCase) {
             this.stringCase = stringCase;
         }
-    };
+    }
 
     /** Values for {@link StringFormat#stringCase}. */
     private static final int CASE_ASIS = 0;
@@ -1355,7 +1234,12 @@ public class Format {
         return new Token(code,flags,token);
     }
 
-    private static final Token[] tokens = {
+    public static final List getTokenList()
+    {
+        return Collections.unmodifiableList(Arrays.asList(tokens));
+    }
+
+    static final Token[] tokens = {
         nfe(FORMAT_NULL                , NUMERIC, null, "No formatting", "Display the number with no formatting."),
         nfe(FORMAT_C                   , DATE, "C", null, "Display the date as ddddd and display the time as t t t t t, in that order. Display only date information if there is no fractional part to the date serial number; display only time information if there is no integer portion."),
         nfe(FORMAT_D                   , DATE, "d", null, "Display the day as a number without a leading zero (1 - 31)."),
@@ -1430,7 +1314,7 @@ public class Format {
             this.translation = translation;
             this.description = description;
         }
-    };
+    }
 
     // Named formats.  todo: Supply the translation strings.
     private static final MacroToken[] macroTokens = {
@@ -1501,16 +1385,17 @@ public class Format {
                 formatString, alternateFormatList);
         }
 
-        BasicFormat[] alternateFormats = (BasicFormat[])
-            alternateFormatList.toArray(new BasicFormat[alternateFormatList.size()]);
-        if (alternateFormats.length == 0) {
-            format = new JavaFormat();
+        // If the format string is empty, use a Java format.
+        // Later entries in the formats list default to the first (e.g.
+        // "#.00;;Nil"), but the first entry must be set.
+        if (alternateFormatList.size() == 0 || alternateFormatList.get(0) == null) {
+            format = new JavaFormat(locale.locale);
+        } else if (alternateFormatList.size() == 1) {
+            format = (BasicFormat) alternateFormatList.get(0);
         } else {
-            if (alternateFormats[0] == null) {
-                // Later entries in the formats list default to the first (e.g.
-                // "#.00;;Nil"), but the first entry must be set.
-                alternateFormats[0] = new JavaFormat();
-            }
+            BasicFormat[] alternateFormats =
+                    (BasicFormat[]) alternateFormatList.toArray(
+                            new BasicFormat[alternateFormatList.size()]);
             format = new AlternateFormat(alternateFormats);
         }
     }
@@ -1518,6 +1403,9 @@ public class Format {
     /**
      * Constructs a <code>Format</code> in a specific locale, or retrieves
      * one from the cache if one already exists.
+     *
+     * <p>If the number of entries in the cache exceeds {@link #CacheLimit},
+     * replaces the eldest entry in the cache.
      *
      * @param formatString the format string; see
      *   <a href="http://www.apostate.com/programming/vb-format.html">this
@@ -1532,9 +1420,6 @@ public class Format {
                 if (format == null) {
                     format = new Format(formatString, locale);
                     cache.put(key, format);
-                    Util.assertTrue(
-                        cache.size() < 100,
-                        "todo: implement format cache flushing");
                 }
             }
         }
@@ -1555,10 +1440,24 @@ public class Format {
      *   day of a date such as '12/07/2001', or '/' by default.
      * @param timeSeparator the character placed between the hour, minute and
      *   second value of a time such as '1:23:45 AM', or ':' by default.
-     * @param daysOfWeekShort for example {"Mon", ..., "Sunday"}.
-     * @param daysOfWeekLong for example {"Monday", ..., "Sunday"}.
-     * @param monthsShort for example {"Jan", ..., "Dec"}.
-     * @param monthsLong for example {"January", ..., "December"}.
+     * @param daysOfWeekShort Short forms of the days of the week.
+     *            The array is 1-based, because position
+     *            {@link Calendar#SUNDAY} (= 1) must hold Sunday, etc.
+     *            The array must have 8 elements.
+     *            For example {"", "Sun", "Mon", ..., "Sat"}.
+     * @param daysOfWeekLong Long forms of the days of the week.
+     *            The array is 1-based, because position
+     *            {@link Calendar#SUNDAY} must hold Sunday, etc.
+     *            The array must have 8 elements.
+     *            For example {"", "Sunday", ..., "Saturday"}.
+     * @param monthsShort Short forms of the months of the year.
+     *            The array is 0-based, because position
+     *            {@link Calendar#JANUARY} (= 0) holds January, etc.
+     *            For example {"Jan", ..., "Dec", ""}.
+     * @param monthsLong Long forms of the months of the year.
+     *            The array is 0-based, because position
+     *            {@link Calendar#JANUARY} (= 0) holds January, etc.
+     *            For example {"January", ..., "December", ""}.
      * @param locale if this is not null, register that the constructed
      *     <code>FormatLocale</code> is the default for <code>locale</code>
      */
@@ -1578,11 +1477,76 @@ public class Format {
         FormatLocale formatLocale = new FormatLocale(
             thousandSeparator, decimalPlaceholder, dateSeparator,
             timeSeparator, currencySymbol, currencyFormat, daysOfWeekShort,
-            daysOfWeekLong, monthsShort, monthsLong);
+            daysOfWeekLong, monthsShort, monthsLong, locale);
         if (locale != null) {
             registerFormatLocale(formatLocale, locale);
         }
         return formatLocale;
+    }
+
+    public static FormatLocale createLocale(Locale locale)
+    {
+        final DecimalFormatSymbols decimalSymbols =
+                new DecimalFormatSymbols(locale);
+        final DateFormatSymbols dateSymbols = new DateFormatSymbols(locale);
+
+        Calendar calendar = Calendar.getInstance(locale);
+        calendar.set(1969, 11, 31);
+        final Date date = calendar.getTime();
+
+        final java.text.DateFormat dateFormat =
+                java.text.DateFormat.getDateInstance(
+                        java.text.DateFormat.SHORT, locale);
+        final String dateValue = dateFormat.format(date); // "12/31/69"
+        String dateSeparator = dateValue.substring(2, 3); // "/"
+
+        final java.text.DateFormat timeFormat =
+                java.text.DateFormat.getTimeInstance(
+                        java.text.DateFormat.SHORT, locale);
+        final String timeValue = timeFormat.format(date); // "12:00:00"
+        String timeSeparator = timeValue.substring(2, 3); // ":"
+
+        // Deduce the locale's currency format.
+        // For example, US is "$#,###.00"; France is "#,###-00FF".
+        // TODO: Grouping separator.
+        final NumberFormat currencyFormat =
+                NumberFormat.getCurrencyInstance(locale);
+        final String currencyValue = currencyFormat.format(123456.78);
+        String currencyLeft =
+                currencyValue.substring(0, currencyValue.indexOf("1"));
+        String currencyRight =
+                currencyValue.substring(currencyValue.indexOf("8") + 1);
+        StringBuffer buf = new StringBuffer();
+        buf.append(currencyLeft);
+        appendTimes(buf, '#', currencyFormat.getMinimumIntegerDigits());
+        if (currencyFormat.getMaximumFractionDigits() > 0) {
+            buf.append('.');
+            appendTimes(buf, '0', currencyFormat.getMinimumFractionDigits());
+            appendTimes(buf, '#',
+                    currencyFormat.getMaximumFractionDigits() -
+                    currencyFormat.getMinimumFractionDigits());
+        }
+        buf.append(currencyRight);
+        String currencyFormatString = buf.toString();
+
+        return createLocale(
+                decimalSymbols.getGroupingSeparator(),
+                decimalSymbols.getDecimalSeparator(),
+                dateSeparator,
+                timeSeparator,
+                decimalSymbols.getCurrencySymbol(),
+                currencyFormatString,
+                dateSymbols.getShortWeekdays(),
+                dateSymbols.getWeekdays(),
+                dateSymbols.getShortMonths(),
+                dateSymbols.getMonths(),
+                locale);
+    }
+
+    private static void appendTimes(StringBuffer buf, char c, int i) {
+        while (i-- > 0) {
+            buf.append(c);
+        }
     }
 
     /**
@@ -1695,7 +1659,8 @@ public class Format {
     {
         // Where we are in a numeric format.
         int numberState = NOT_IN_A_NUMBER;
-        String ignored = "", prevIgnored = null;
+        StringBuffer ignored = new StringBuffer();
+        String prevIgnored = null;
         boolean haveSeenNumber = false;
         int digitsLeftOfPoint = 0,
             digitsRightOfPoint = 0,
@@ -1943,13 +1908,13 @@ loop:
 
                         case FORMAT_GENERAL_NUMBER:
                         {
-                            format = new JavaFormat();
+                            format = new JavaFormat(locale.locale);
                             break;
                         }
 
                         case FORMAT_GENERAL_DATE:
                         {
-                            format = new JavaFormat();
+                            format = new JavaFormat(locale.locale);
                             break;
                         }
 
@@ -1967,10 +1932,10 @@ loop:
                             // we should not create a format element.  (The
                             // token probably caused some flag to be set.)
                             ignoreToken = true;
-                            ignored += matched;
+                            ignored.append(matched);
                         } else {
-                            prevIgnored = ignored;
-                            ignored = "";
+                            prevIgnored = ignored.toString();
+                            ignored.setLength(0);
                         }
                     } else {
                         format = token.makeFormat(locale);
@@ -2083,20 +2048,53 @@ loop:
 
         // Create a CompoundFormat containing all of the format elements.
         BasicFormat alternateFormat =
-            formats.length > 0
-            ? new CompoundFormat(formats)
-            : null;
+                formats.length == 0 ? null :
+                formats.length == 1 ? formats[0] :
+                new CompoundFormat(formats);
         alternateFormatList.add(alternateFormat);
         return formatString;
     }
 
     public String format(Object o)
     {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        format.format(o, pw);
-        pw.flush();
-        return sw.toString();
+        StringBuffer buf = new StringBuffer();
+        format(o, buf);
+        return buf.toString();
+    }
+
+    private StringBuffer format(Object o, StringBuffer buf) {
+        if (o == null) {
+            format.formatNull(buf);
+        } else {
+            // For final classes, it is more efficient to switch using
+            // class equality than using 'instanceof'.
+            Class clazz = o.getClass();
+            if (clazz == Double.class) {
+                format.format(((Double) o).doubleValue(), buf);
+            } else if (clazz == Float.class) {
+                format.format(((Float) o).floatValue(), buf);
+            } else if (clazz == Integer.class) {
+                format.format(((Integer) o).intValue(), buf);
+            } else if (clazz == Long.class) {
+                format.format(((Long) o).longValue(), buf);
+            } else if (clazz == Short.class) {
+                format.format(((Short) o).shortValue(), buf);
+            } else if (clazz == Byte.class) {
+                format.format(((Byte) o).byteValue(), buf);
+            } else if (o instanceof BigDecimal) {
+                format.format(((BigDecimal) o).doubleValue(), buf);
+            } else if (o instanceof BigInteger) {
+                format.format(((BigInteger) o).longValue(), buf);
+            } else if (clazz == String.class) {
+                format.format((String) o, buf);
+            } else if (o instanceof java.util.Date) {
+                // includes java.sql.Date, java.sql.Time and java.sql.Timestamp
+                format.format((Date) o, buf);
+            } else {
+                buf.append(o.toString());
+            }
+        }
+        return buf;
     }
 
     public String getFormatString()

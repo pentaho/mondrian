@@ -414,12 +414,12 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                     "{[Store].[All Stores].[USA].[WA].[Tacoma]}",
                     "{[Store].[All Stores].[USA].[WA].[Walla Walla]}",
                     "{[Store].[All Stores].[USA].[WA].[Yakima]}",
-                    "Row #0: (null)",
-                    "Row #0: (null)",
+                    "Row #0: ",
+                    "Row #0: ",
                     "Row #0: 0.5",
-                    "Row #0: (null)",
+                    "Row #0: ",
                     "Row #0: |0.1|style=red",
-                    "Row #0: (null)",
+                    "Row #0: ",
                     "Row #0: |0.2|style=red",
                     ""}));
     }

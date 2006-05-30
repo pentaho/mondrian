@@ -73,7 +73,7 @@ public class InlineTableTest extends FoodMartTestCase {
                         "{[Alternative Promotion].[All Alternative Promotions].[Promo1]}",
                         "Row #0: 266,773",
                         "Row #0: 195,448",
-                        "Row #0: (null)",
+                        "Row #0: ",
                         ""}));
         } finally {
             schema.removeCube(cubeName);

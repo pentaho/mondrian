@@ -76,7 +76,7 @@ public class UdfTest extends FoodMartTestCase {
                 "{[Store Type].[All Store Types].[Supermarket]}" + nl +
                 "Row #0: 146,046" + nl +
                 "Row #1: 47,448" + nl +
-                "Row #2: (null)" + nl +
+                "Row #2: " + nl +
                 "Row #3: 109,344" + nl +
                 "Row #4: 75,282" + nl +
                 "Row #5: 193,481" + nl);
@@ -127,23 +127,23 @@ public class UdfTest extends FoodMartTestCase {
                     "Row #0: 2",
                     "Row #1: 7",
                     "Row #2: 6",
-                    "Row #3: (null)",
+                    "Row #3: ",
                     "Row #4: 4",
                     "Row #5: 3",
                     "Row #6: 4",
                     "Row #7: 3",
                     "Row #8: 4",
                     "Row #9: 2",
-                    "Row #10: (null)",
+                    "Row #10: ",
                     "Row #11: 4",
-                    "Row #12: (null)",
+                    "Row #12: ",
                     "Row #13: 2",
-                    "Row #14: (null)",
-                    "Row #15: (null)",
+                    "Row #14: ",
+                    "Row #15: ",
                     "Row #16: 2",
-                    "Row #17: (null)",
+                    "Row #17: ",
                     "Row #18: 4",
-                    "Row #19: (null)",
+                    "Row #19: ",
                     "Row #20: 3",
                     "Row #21: 4",
                     "Row #22: 3",
@@ -190,7 +190,7 @@ public class UdfTest extends FoodMartTestCase {
                 "{[Store Type].[All Store Types].[Supermarket]}" + nl +
                 "Row #0: 0.467" + nl +
                 "Row #1: 0.463" + nl +
-                "Row #2: (null)" + nl +
+                "Row #2: " + nl +
                 "Row #3: 0.625" + nl +
                 "Row #4: 0.521" + nl +
                 "Row #5: 0.504" + nl);

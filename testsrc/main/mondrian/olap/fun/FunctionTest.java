@@ -1610,33 +1610,33 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Time].[1st Half Sales]}",
                     "{[Time].[2nd Half Sales]}",
                     "{[Time].[Difference]}",
-                    "Row #0: (null)",
-                    "Row #0: (null)",
-                    "Row #0: (null)",
-                    "Row #0: (null)",
-                    "Row #0: (null)",
-                    "Row #0: (null)",
-                    "Row #0: (null)",
+                    "Row #0: ",
+                    "Row #0: ",
+                    "Row #0: ",
+                    "Row #0: ",
+                    "Row #0: ",
+                    "Row #0: ",
+                    "Row #0: ",
                     "Row #0: 74,571.95",
                     "Row #0: 71,943.17",
                     "Row #0: 125,779.50",
-                    "Row #1: (null)",
-                    "Row #1: (null)",
-                    "Row #1: (null)",
-                    "Row #1: (null)",
-                    "Row #1: (null)",
-                    "Row #1: (null)",
-                    "Row #1: (null)",
+                    "Row #1: ",
+                    "Row #1: ",
+                    "Row #1: ",
+                    "Row #1: ",
+                    "Row #1: ",
+                    "Row #1: ",
+                    "Row #1: ",
                     "Row #1: 84,595.89",
                     "Row #1: 70,333.90",
                     "Row #1: 138,013.72",
-                    "Row #2: (null)",
-                    "Row #2: (null)",
-                    "Row #2: (null)",
-                    "Row #2: (null)",
-                    "Row #2: (null)",
-                    "Row #2: (null)",
-                    "Row #2: (null)",
+                    "Row #2: ",
+                    "Row #2: ",
+                    "Row #2: ",
+                    "Row #2: ",
+                    "Row #2: ",
+                    "Row #2: ",
+                    "Row #2: ",
                     "Row #2: 10,023.94",
                     "Row #2: -1,609.27",
                     "Row #2: 12,234.22" + nl}));
@@ -1672,33 +1672,33 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Time].[1st Half Sales]}",
                     "{[Time].[2nd Half Sales]}",
                     "{[Time].[Difference]}",
-                    "Row #0: (null)",
-                    "Row #0: (null)",
-                    "Row #0: (null)",
-                    "Row #0: (null)",
-                    "Row #0: (null)",
-                    "Row #0: (null)",
-                    "Row #0: (null)",
+                    "Row #0: ",
+                    "Row #0: ",
+                    "Row #0: ",
+                    "Row #0: ",
+                    "Row #0: ",
+                    "Row #0: ",
+                    "Row #0: ",
                     "Row #0: 74,571.95",
                     "Row #0: 71,943.17",
                     "Row #0: 125,779.50",
-                    "Row #1: (null)",
-                    "Row #1: (null)",
-                    "Row #1: (null)",
-                    "Row #1: (null)",
-                    "Row #1: (null)",
-                    "Row #1: (null)",
-                    "Row #1: (null)",
+                    "Row #1: ",
+                    "Row #1: ",
+                    "Row #1: ",
+                    "Row #1: ",
+                    "Row #1: ",
+                    "Row #1: ",
+                    "Row #1: ",
                     "Row #1: 84,595.89",
                     "Row #1: 70,333.90",
                     "Row #1: 138,013.72",
-                    "Row #2: (null)",
-                    "Row #2: (null)",
-                    "Row #2: (null)",
-                    "Row #2: (null)",
-                    "Row #2: (null)",
-                    "Row #2: (null)",
-                    "Row #2: (null)",
+                    "Row #2: ",
+                    "Row #2: ",
+                    "Row #2: ",
+                    "Row #2: ",
+                    "Row #2: ",
+                    "Row #2: ",
+                    "Row #2: ",
                     "Row #2: 10,023.94",
                     "Row #2: -1,609.27",
                     "Row #2: 12,234.22" + nl}));
@@ -2241,30 +2241,30 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #4: 40",
                     "Row #4: 40",
                     "Row #4: 40",
-                    "Row #5: (null)",
-                    "Row #5: (null)",
-                    "Row #5: (null)",
-                    "Row #5: (null)",
-                    "Row #5: (null)",
-                    "Row #5: (null)",
-                    "Row #5: (null)",
-                    "Row #5: (null)",
-                    "Row #5: (null)",
-                    "Row #5: (null)",
-                    "Row #5: (null)",
-                    "Row #5: (null)",
-                    "Row #6: (null)",
-                    "Row #6: (null)",
-                    "Row #6: (null)",
-                    "Row #6: (null)",
-                    "Row #6: (null)",
-                    "Row #6: (null)",
-                    "Row #6: (null)",
-                    "Row #6: (null)",
-                    "Row #6: (null)",
-                    "Row #6: (null)",
-                    "Row #6: (null)",
-                    "Row #6: (null)",
+                    "Row #5: ",
+                    "Row #5: ",
+                    "Row #5: ",
+                    "Row #5: ",
+                    "Row #5: ",
+                    "Row #5: ",
+                    "Row #5: ",
+                    "Row #5: ",
+                    "Row #5: ",
+                    "Row #5: ",
+                    "Row #5: ",
+                    "Row #5: ",
+                    "Row #6: ",
+                    "Row #6: ",
+                    "Row #6: ",
+                    "Row #6: ",
+                    "Row #6: ",
+                    "Row #6: ",
+                    "Row #6: ",
+                    "Row #6: ",
+                    "Row #6: ",
+                    "Row #6: ",
+                    "Row #6: ",
+                    "Row #6: ",
                     "Row #7: $1,343.62",
                     "Row #7: $1,342.61",
                     "Row #7: $1,342.57",
@@ -2301,30 +2301,30 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #9: 33",
                     "Row #9: 33",
                     "Row #9: 33",
-                    "Row #10: (null)",
-                    "Row #10: (null)",
-                    "Row #10: (null)",
-                    "Row #10: (null)",
-                    "Row #10: (null)",
-                    "Row #10: (null)",
-                    "Row #10: (null)",
-                    "Row #10: (null)",
-                    "Row #10: (null)",
-                    "Row #10: (null)",
-                    "Row #10: (null)",
-                    "Row #10: (null)",
-                    "Row #11: (null)",
-                    "Row #11: (null)",
-                    "Row #11: (null)",
-                    "Row #11: (null)",
-                    "Row #11: (null)",
-                    "Row #11: (null)",
-                    "Row #11: (null)",
-                    "Row #11: (null)",
-                    "Row #11: (null)",
-                    "Row #11: (null)",
-                    "Row #11: (null)",
-                    "Row #11: (null)",
+                    "Row #10: ",
+                    "Row #10: ",
+                    "Row #10: ",
+                    "Row #10: ",
+                    "Row #10: ",
+                    "Row #10: ",
+                    "Row #10: ",
+                    "Row #10: ",
+                    "Row #10: ",
+                    "Row #10: ",
+                    "Row #10: ",
+                    "Row #10: ",
+                    "Row #11: ",
+                    "Row #11: ",
+                    "Row #11: ",
+                    "Row #11: ",
+                    "Row #11: ",
+                    "Row #11: ",
+                    "Row #11: ",
+                    "Row #11: ",
+                    "Row #11: ",
+                    "Row #11: ",
+                    "Row #11: ",
+                    "Row #11: ",
                     "Row #12: $2,768.60",
                     "Row #12: $2,769.18",
                     "Row #12: $2,766.78",
@@ -3256,22 +3256,22 @@ public class FunctionTest extends FoodMartTestCase {
         // empty set
         assertExprReturns(
                 "Filter([Gender].members, 1 = 0).Item(0)",
-                "(null)");
+                "");
 
         // empty set of unknown type
         assertExprReturns(
                 "{}.Item(3)",
-                "(null)");
+                "");
 
         // past end of set
         assertExprReturns(
                 "{[Gender].members}.Item(4)",
-                "(null)");
+                "");
 
         // negative index
         assertExprReturns(
                 "{[Gender].members}.Item(-50)",
-                "(null)");
+                "");
     }
 
     public void testItemNull()
@@ -3297,7 +3297,7 @@ public class FunctionTest extends FoodMartTestCase {
         // MSAS returns error here.
         assertExprReturns(
                 "Filter([Gender].members, 1 = 0).Item(0).Parent",
-                "(null)");
+                "");
     }
 
     public void testTupleNull() {
@@ -3395,7 +3395,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testCaseTestMatchNoElse() {
         assertExprReturns("CASE WHEN 1=0 THEN \"first\" END",
-            "(null)");
+            "");
     }
 
     public void testCaseMatch() {
@@ -3410,7 +3410,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testCaseMatchNoElse() {
         assertExprReturns("CASE 8 WHEN 0 THEN \"first\" END",
-            "(null)");
+            "");
     }
 
     public void testCaseTypeMismatch() {
@@ -3473,9 +3473,9 @@ public class FunctionTest extends FoodMartTestCase {
         member = result.getAxes()[1].positions[3].members[0];
         Assert.assertEquals("[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]", member.getUniqueName());
         cell = result.getCell(new int[]{0, 3});
-        Assert.assertEquals("(null)", cell.getFormattedValue());
+        Assert.assertEquals("", cell.getFormattedValue());
         cell = result.getCell(new int[]{1, 3});
-        Assert.assertEquals("(null)", cell.getFormattedValue());
+        Assert.assertEquals("", cell.getFormattedValue());
     }
 
     public void testOpeningPeriod() {
@@ -3807,7 +3807,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         assertExprReturns("1+2", "3");
         assertExprReturns("5 + " + NullNumericExpr, "5"); // 5 + null --> 5
-        assertExprReturns(NullNumericExpr + " + " + NullNumericExpr, "(null)");
+        assertExprReturns(NullNumericExpr + " + " + NullNumericExpr, "");
         assertExprReturns(NullNumericExpr + " + 0", "0");
     }
 
@@ -3815,7 +3815,7 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns("1-3", "-2");
         assertExprReturns("5 - " + NullNumericExpr, "5"); // 5 - null --> 5
         assertExprReturns(NullNumericExpr + " - - 2", "2");
-        assertExprReturns(NullNumericExpr + " - " + NullNumericExpr, "(null)");
+        assertExprReturns(NullNumericExpr + " - " + NullNumericExpr, "");
     }
 
     public void testMinus_bug1234759()
@@ -3838,7 +3838,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Customers].[All Customers].[Mexico]}",
                     "{[Customers].[USAMinusMexico]}",
                     "Row #0: 266,773",
-                    "Row #1: (null)",
+                    "Row #1: ",
                     "Row #2: 266,773", // with bug 1234759, this was null
                     ""}));
     }
@@ -3850,9 +3850,9 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testMultiply() {
         assertExprReturns("4*7", "28");
-        assertExprReturns("5 * " + NullNumericExpr, "(null)"); // 5 * null --> null
-        assertExprReturns(NullNumericExpr + " * - 2", "(null)");
-        assertExprReturns(NullNumericExpr + " - " + NullNumericExpr, "(null)");
+        assertExprReturns("5 * " + NullNumericExpr, ""); // 5 * null --> null
+        assertExprReturns(NullNumericExpr + " * - 2", "");
+        assertExprReturns(NullNumericExpr + " - " + NullNumericExpr, "");
     }
 
     public void testMultiplyPrecedence() {
@@ -3906,9 +3906,9 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testDivide() {
         assertExprReturns("10 / 5", "2");
-        assertExprReturns("-2 / " + NullNumericExpr, "(null)");
-        assertExprReturns(NullNumericExpr + " / - 2", "(null)");
-        assertExprReturns(NullNumericExpr + " / " + NullNumericExpr, "(null)");
+        assertExprReturns("-2 / " + NullNumericExpr, "");
+        assertExprReturns(NullNumericExpr + " / - 2", "");
+        assertExprReturns(NullNumericExpr + " / " + NullNumericExpr, "");
     }
 
     public void testDivideByZero() {
@@ -4851,7 +4851,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "Axis #1:",
                     "{[Time].[1998]}",
                     "{[Time].[1997]}",
-                    "Row #0: (null)",
+                    "Row #0: ",
                     "Row #0: 266,773" + nl}));
     }
 
@@ -5593,12 +5593,12 @@ public class FunctionTest extends FoodMartTestCase {
                 "{[Store].[USA].[OR]," +
                 " [Store].[USA].[CA]," +
                 " [Store].[USA]})",
-                "(null)");
+                "");
         // Null member in empty set. (MSAS returns an error "Formula error -
         // dimension count is not valid - in the Rank function" but I think
         // null is the correct behavior.)
         assertExprReturns("Rank([Gender].Parent, {})",
-                "(null)");
+                "");
         // Member occurs twice in set -- pick first
         assertExprReturns(
                 fold(new String[] {
@@ -5637,7 +5637,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "{([Gender].[F], [Marital Status].[S]),",
                     " ([Gender].[M], [Marital Status].[S]),",
                     " ([Gender].[F], [Marital Status].[M])})"}),
-                "(null)");
+                "");
     }
 
     public void testRankWithExpr() {
@@ -5666,7 +5666,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 5",
                     "Row #0: 1",
                     "Row #0: 1",
-                    "Row #1: (null)",
+                    "Row #1: ",
                     "Row #1: 5",
                     "Row #1: 5",
                     "Row #2: 3",
@@ -5706,13 +5706,13 @@ public class FunctionTest extends FoodMartTestCase {
                 "Rank([Gender].[All Gender].Parent," +
                 " {[Gender].Members}," +
                 " [Measures].[Unit Sales])",
-                "(null)");
+                "");
         // Empty set. Value never appears in the set, therefore rank is null.
         assertExprReturns(
                 "Rank([Gender].[M]," +
                 " {}," +
                 " [Measures].[Unit Sales])",
-                "(null)");
+                "");
         // Member is not in set
         assertExprReturns(
                 "Rank([Gender].[M]," +

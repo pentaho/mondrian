@@ -539,7 +539,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                     "{[Measures].[Employee Salary]}",
                     "Axis #2:",
                     "{[Employees].[All Employees]}",
-                    "Row #0: (null)",
+                    "Row #0: ",
                     ""}));
 
         assertQueryReturns(
@@ -554,7 +554,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                     "{[Position].[All Position]}",
                     "Axis #2:",
                     "{[Measures].[Employee Salary]}",
-                    "Row #0: (null)",
+                    "Row #0: ",
                     ""}));
     }
 }

@@ -55,6 +55,8 @@ public class TestContext {
 
     protected static final String nl = Util.nl;
     private static final String lineBreak = "\"," + nl + "\"";
+    private static final String lineBreak2 = "\\\\n\" +" + nl + "\"";
+    private static final String lineBreak3 = "\\n\" +" + nl + "\"";
     private static final Pattern LineBreakPattern =
         Pattern.compile("\r\n|\r|\n");
     private static final Pattern TabPattern = Pattern.compile("\t");
@@ -461,7 +463,7 @@ public class TestContext {
         throw new ComparisonFailure(message, expected, actual);
     }
 
-    private static String toJavaString(String s) {
+    private static String toJavaStringWithNl(String s) {
 
         // Convert [string with "quotes" split
         // across lines]
@@ -478,6 +480,27 @@ public class TestContext {
 //        }
         if (s.indexOf(lineBreak) >= 0) {
             s = "fold(new String[] {" + nl + s + "})";
+        }
+        return s;
+    }
+
+    private static String toJavaString(String s) {
+
+        // Convert [string with "quotes" split
+        // across lines]
+        // into ["string with \"quotes\" split\n" +
+        // "across lines
+        //
+        s = Util.replace(s, "\"", "\\\"");
+        s = LineBreakPattern.matcher(s).replaceAll(lineBreak2);
+        s = TabPattern.matcher(s).replaceAll("\\\\t");
+        s = "\"" + s + "\"";
+        String spurious = " +" + nl + "\"\"";
+        if (s.endsWith(spurious)) {
+            s = s.substring(0, s.length() - spurious.length());
+        }
+        if (s.indexOf(lineBreak3) >= 0) {
+            s = "fold(" + nl + s + ")";
         }
         return s;
     }

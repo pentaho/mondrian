@@ -191,13 +191,22 @@ public class FoodMartTestCase extends TestCase {
         return TestContext.fold(strings);
     }
 
+    /**
+     * Converts a string constant into locale-specific line endings.
+     */
+    public static String fold(String string) {
+        if (!nl.equals("\n")) {
+            string = string.replace("\n", nl);
+        }
+        return string;
+    }
 
     static class QueryAndResult {
         String query;
         String result;
         QueryAndResult(String query, String result) {
-            this.query = query;
-            this.result = result;
+            this.query = fold(query);
+            this.result = fold(result);
         }
     }
 }
