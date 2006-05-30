@@ -196,7 +196,7 @@ public class FoodMartTestCase extends TestCase {
      */
     public static String fold(String string) {
         if (!nl.equals("\n")) {
-            string = string.replace("\n", nl);
+            string = Util.replace(string, "\n", nl);
         }
         return string;
     }
