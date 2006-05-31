@@ -24,41 +24,38 @@
 <p>By Julian Hyde and others; last updated May, 2006.</p>
 <hr color="#000000" noshade="noshade" size="1">
 <ol>
-  <li><a href="#2_Download_the_code">Introduction</a></li>
-  <li><a href="#3_Set_up_test_data">Set up test data with a
-non-embedded database</a><ol>
-    <li><a href="#4_1_Microsoft_Access">Microsoft Access</a></li>
-    <li><a href="#3_2_Non_Access_setup">Other database</a></li>
+  <li><a href="#1_Introduction">Introduction</a></li>
+  <li><a href="#2_Set_up_test_data">Set up test data with a non-embedded database</a><ol>
+    <li><a href="#2_1_Microsoft_Access">Microsoft Access</a></li>
+    <li><a href="#2_2_Non_Access_setup">Other database</a></li>
   </ol>
-  <li><a href="#5_Deploy_and_run_the_web_app">Run the web application
+  <li><a href="#3_Deploy_and_run_the_web_app">Deploy and run the web application
 with a non-embedded database</a></li>
-  <li><a href="#5_Deploy_and_run_the_embedded_web_app">Run the web
+  <li><a href="#4_Deploy_and_run_the_embedded_web_app">Deploy and run the web
 application with the embedded test database</a>
   </li>
-  <li><a href="#6_How_to_configure_Mondrian_as_an_XMLA_provider">How to
+  <li><a href="#5_How_to_configure_Mondrian_as_an_XMLA_provider">How to
 configure Mondrian as an XML/A provider</a><ol>
-  <li><a href="#1._Describe_the_data_sources_in_datasources.xml">Describe the 
+  <li><a href="#5_1_Describe_the_data_sources_in_datasources.xml">Describe the 
   data sources in <code>datasources.xml</code></a></li>
-  <li><a href="#2._Configure_XmlaServlet_in_your_web.xml">Configure <code>
+  <li><a href="#5_2_Configure_XmlaServlet_in_your_web.xml">Configure <code>
   XmlaServlet</code> in your <code>web.xml</code></a></li>
 </ol>
   </li>
   <li><a href="#6_Miscellaneous">Miscellaneous</a></li>
   <ol>
     <li><a href="install.html#6_1_mondrian_properties">Configuring <code>mondrian.properties</code></a></li>
-    <li><a href="#7_1_Cache_setup">Cache setup</a></li>
+    <li><a href="#6_2_Cache_setup">Cache setup</a></li>
   </ol>
   <li><a href="#7_Database_compatibility">Database compatibility</a></li>
   <li><a href="#8_Compatibility_issues">Compatibility issues</a></li>
   <ol>
-    <li><a href="#7_1_Weblogic_6_1_and_Xerces">Weblogic 6.1
-and Xerces</a></li>
-    <li><a href="#Appendix_A_2_Xalan_and_Tomcat">Xalan and Tomcat</a></li>
-    <li><a href="#7_3_Log4j_and_Tomcat">Log4j and Tomcat</a>
-    </li>
+    <li><a href="#8_1_Weblogic_6_1_and_Xerces">Weblogic 6.1 and Xerces</a></li>
+    <li><a href="#8_2_Xalan_and_Tomcat">Xalan and Tomcat</a></li>
+    <li><a href="#8_3_Log4j_and_Tomcat">Log4j and Tomcat</a></li>
   </ol>
 </ol>
-<h2><a name="2_Download_the_code">1. Introduction</a></h2>
+<h2><a name="1_Introduction">1. Introduction</a></h2>
 <p>The core of Mondrian is a JAR that acts as "JDBC for OLAP":
 providing connections and executing SQL against underlying relational
 databases. This can be run within a surrounding application. Mondrian
@@ -82,15 +79,15 @@ release <code>mondrian-<i>version</i>.zip</code> from <a
  href="http://sourceforge.net/projects/mondrian">SourceForge</a>, and
 unzip it.</li>
   <li>For the non-embedded distribution, set up the FoodMart dataset,
-as described in <a href="#3_Set_up_test_data"> section 2</a>.</li>
+as described in <a href="#2_Set_up_test_data">section 2</a>.</li>
   <li>Set up and start the web application, as described in <a
- href="#5_Deploy_and_run_the_web_app">section 4 or 5</a>.</li>
+ href="#3_Deploy_and_run_the_web_app">section 3 or 4</a>.</li>
 </ol>
 <p>If you are Mondrian developer, there are additional instructions for
 accessing the Perforce source-control server and building the code in
 <a href="developer.html">the Developer's Guide</a>.</p>
-<h2><a name="3_Set_up_test_data">2. Set up test data in a
-non-embedded database</a></h2>
+
+<h2><a name="2_Set_up_test_data">2. Set up test data in a non-embedded database</a></h2>
 <p>The 'FoodMart' test dataset is part of the non-embedded binary
 distribution. It is shipped in two formats: a Microsoft Access database
 (<code>demo/access/MondrianFoodMart.mdb</code>) and in
@@ -102,7 +99,8 @@ non Access database, or if you are not using Windows, you will need to
 create your own empty database and load it using the
 MondrianFoodMartLoader utility.</p>
 
-<h3><a name="3_1_Access_setup">2.1. Microsoft Access</a></h3>
+<h3><a name="2_1_Microsoft_Access">2.1. Microsoft Access</a></h3>
+
 <p>If you are using Windows, Microsoft Access is the easiest database
 to use for the test dataset. You just need to set up an ODBC datasource
 for
@@ -116,7 +114,9 @@ pointing to
 <code><i>MONDRIAN_HOME</i>/demo/access/MondrianFoodMart.mdb</code>.
 (This allows Mondrian to access this data source using the
 JDBC connect string "<code>jdbc:odbc:MondrianFoodMart</code>".</p>
-<h3><a name="3_2_Non_Access_setup">2.2. Other database</a></h3>
+
+<h3><a name="2_2_Non_Access_setup">2.2. Other database</a></h3>
+
 <p>If not using Access, use the MondrianFoodMartLoader utility to
 create a database, and load data from a SQL script.</p>
 <h4>Syntax</h4>
@@ -307,7 +307,7 @@ dataset in the Access database:</p>
 &nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcPassword=password</code></p>
 </blockquote>
 
-<h2><a name="5_Deploy_and_run_the_web_app">3. Deploy and run the web
+<h2><a name="3_Deploy_and_run_the_web_app">3. Deploy and run the web
 application with a non-embedded database</a></h2>
 
 <ol>
@@ -364,21 +364,24 @@ catalogUri="/WEB-INF/queries/FoodMart.xml"&gt;</code></blockquote>
   <li>Start your database, if needed.</li>
   <li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li>
 </ol>
-<h2><a name="5_Deploy_and_run_the_embedded_web_app">4. Deploy and run
-the web
-application with the embedded test database</a></h2>
+
+<h2><a name="4_Deploy_and_run_the_embedded_web_app">4. Deploy and run
+the web application with the embedded test database</a></h2>
+
 <ol>
   <li>From the unzipped embedded database binary release, explode <code>lib/mondrian-embedded.war</code>
 to <code><i>TOMCAT_HOME</i>/webapps/mondrian-embedded</code></li>
   <li>Start up Tomcat</li>
   <li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian-embedded</a></li>
 </ol>
-<h2><a name="6_How_to_configure_Mondrian_as_an_XMLA_provider">5. How to
+<h2><a name="5_How_to_configure_Mondrian_as_an_XMLA_provider">5. How to
 configure Mondrian as an XML/A provider</a></h2>
 <p>
-To will setup XMLA service, follow the following steps.</p>
-<h3><a name="1._Describe_the_data_sources_in_datasources.xml">1. Describe the data sources 
+To will setup XMLA service, follow these steps.</p>
+
+<h3><a name="5_1_Describe_the_data_sources_in_datasources.xml">1. Describe the data sources 
 in <code>datasources.xml</code></a></h3>
+
 <p>In WEB-INF directory of your webapp, create a file called <code>
 datasources.xml</code>, with content like this:</p>
 <blockquote>
@@ -447,10 +450,9 @@ file. The name of the catalog must match the name attribute in the schema file
 <p>Whether&nbsp; you use one data source or several, the catalogs in the <code>datasources.xml</code> file must 
 have unique names.</p>
 
-<h3>
-<a name="2._Configure_XmlaServlet_in_your_web.xml">2. Configure XmlaServlet in your <code>web.xml</code></a></h3>
-<p>
-For example:</p>
+<h3><a name="5_2_Configure_XmlaServlet_in_your_web.xml">2. Configure XmlaServlet in your <code>web.xml</code></a></h3>
+
+<p>For example:</p>
 <blockquote>
   <p><code>&lt;servlet&gt;<br>
 &nbsp; &lt;servlet-name&gt;MondrianXmlaServlet&lt;/servlet-name&gt;<br>
@@ -471,7 +473,7 @@ For example:</p>
 <p>Properties are described in the <a href="configuration.html">Configuration 
 Guide</a>.</p>
 
-<h3><a name="7_1_Cache_setup">6.2. Cache setup</a></h3>
+<h3><a name="6_2_Cache_setup">6.2. Cache setup</a></h3>
 
 <p>You will need to specify the amount of memory available to the cache
 using the -Xms Java VM option, for example -Xms256m for 256 megs of ram
@@ -479,8 +481,7 @@ for the Java VM.</p>
 
 <h2><a name="7_Database_compatibility">7. Database compatibility</a></h2>
 
-<p>Mondrian is known to run on the following databases. (It probably runs on 
-others too.)</p>
+<p>Mondrian is known to run on the following databases.</p>
 <ol>
   <li>Apache Derby</li>
   <li>Firebird</li>
@@ -493,6 +494,21 @@ others too.)</p>
   <li>PostgreSQL</li>
   <li>Sybase</li>
 </ol>
+
+<p>Mondrian can work on almost any JDBC data source, so even if your
+database doesn't appear in the above list, give it a try. Mondrian can
+generally figure out the capabilities of the database from the JDBC
+driver, and generate SQL accordingly.</p>
+
+<p>If you get Mondrian working on another database, drop us a
+line. Let us know which driver you used, the version of your database,
+property settings, and any other tweaks which were required.</p>
+
+<h3>General database tips</h3>
+
+<p>For sample connect strings, look in
+<code>mondrian.properties</code>.  There are are sample connect
+strings for most databases in there.</p>
 
 <h3>Sybase</h3>
 
@@ -510,7 +526,7 @@ others too.)</p>
         <li>mondrian/WEB-INF/datasources.xml</li>
         <li>mondrian/WEB-INF/web.xml</li></ul>
     I modified the parameters line in this way:<blockquote>
-      <code>Provider=mondrian;jdbcuser=userName;jdbcpassword=userPass;Jdbc=jdbc:jtds:sybase://xxx.xxx.xxx.xxx:port/dbName;JdbcDrivers=net.sourceforge.jtds.jdbc.Driver;Catalog=/WEB-INF/queries/myCatalog.xml</code>
+      <code>Provider=mondrian;JdbcUser=userName;JdbcPassword=userPass;Jdbc=jdbc:jtds:sybase://xxx.xxx.xxx.xxx:port/dbName;JdbcDrivers=net.sourceforge.jtds.jdbc.Driver;Catalog=/WEB-INF/queries/myCatalog.xml</code>
     </blockquote>
     (The datasources.xml doesn't need to be modified if you are only testing 
     the db, but if you are using something like OPENI you have to.)</li>
@@ -519,7 +535,7 @@ others too.)</p>
 
 <h2><a name="8_Compatibility_issues">8. Compatibility issues</a></h2>
 
-<h3><a name="7_1_Weblogic_6_1_and_Xerces">8.1. Weblogic 6.1 and Xerces</a></h3>
+<h3><a name="8_1_Weblogic_6_1_and_Xerces">8.1. Weblogic 6.1 and Xerces</a></h3>
 
 <p>Weblogic 6.1 ships with an older, incompatible, version of Xerces.
 The symptom is the error</p>
@@ -538,9 +554,9 @@ explicitly uses Xerces.&nbsp; Fyi,
 <a href="http://xml.apache.org/soap/faq/faq-for-WL6.1beta.html">this
 note</a>
 describes how to change Weblogic's default XML parser.</p>
-<h3><a name="7_2_Xalan_and_Tomcat"><font color="#990000">8.2.
-JDK, Xalan
-and Tomcat</font></a></h3>
+
+<h3><a name="8_2_Xalan_and_Tomcat">8.2. JDK, Xalan and Tomcat</a></h3>
+
 <p>Mondrian binaries, as shipped, require JDK 1.4.x, Xalan 2.6.0, and
 Tomcat
 5.0.25 or later. Things work better that way.</p>
@@ -597,8 +613,9 @@ and
 <code>xercesImpl.jar</code> from <code>mondrian.war</code>, or (b)
 revert to Xalan 2.3.1.<br>
 </p>
-<h3><a name="7_3_Log4j_and_Tomcat"><font color="#990000">
-8.3. Log4j and Tomcat</font></a></h3>
+
+<h3><a name="8_3_Log4j_and_Tomcat">8.3. Log4j and Tomcat</a></h3>
+
 <p>The Mondrian WARs come packaged with a version of log4j.jar. This
 may conflict with your app server, such as JBoss, and cause errors in
 the

@@ -3,8 +3,8 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2001-2004 Kana Software, Inc.
-  == (C) Copyright 2001-2006 Julian Hyde and others.
+  == Copyright (C) 2001-2003 Kana Software, Inc.
+  == Copyright (C) 2001-2006 Julian Hyde and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -17,7 +17,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="2.1-RC"/>
+  <property name="version" value="2.1.1"/>
 
   <!--
     ===================================================================
@@ -628,7 +628,7 @@ doc/deployDoc.sh" />
     <touch file="demo/derby/foodmart/service.properties"/>
   </target>
 
-  <target name="release" depends="binzip"/>
+  <target name="release" depends="binzip, binDerbyzip"/>
 
   <target name="binzip"
       depends="version,war,srczip,javadoc,xml_schema,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
