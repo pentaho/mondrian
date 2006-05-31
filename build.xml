@@ -776,16 +776,17 @@ META-INF/**"/>
         author="true"
         source="1.4"
         access="package"
-        additionalparam="-linksource">
+        Windowtitle="Mondrian OLAP Server, version ${version}"
+        additionalparam="-linksource"
+      >
+      <!--
+        -->
       <tag name="pre" description="Pre-condition:"
            scope="constructors,methods"/>
       <tag name="post" description="Post-condition:"
            scope="constructors,methods"/>
       <tag name="testcase" description="Test-case:"
            scope="constructors,methods,types"/>
-<!--
-      <link href="http://javadoc.dyndns.org/joogle/api"/>
- -->
       <link href="http://java.sun.com/j2se/1.4/docs/api/"/>
       <link href="http://www.junit.org/junit/javadoc/3.8/"/>
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
