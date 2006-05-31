@@ -13,8 +13,28 @@
 set -e
 set -v
 
+generate=true
+if [ "$1" == --nogen ]; then
+  shift
+  generate=
+fi
+
+# Prefix is usually "release" or "head"
+prefix="$1"
+# Directory at sf.net
+docdir=
+case "$prefix" in
+2.1.1) export docdir=htdocs;;
+head) export docdir=head;;
+*) echo "Bad prefix '$prefix'"; exit 1;;
+esac
+
 cd $(dirname $0)/..
-ant doczip
+if [ "$generate" ]; then
+  ant doczip
+else
+  echo Skipping generation...
+fi
 
 scp dist/doc.tar.gz jhyde@shell.sf.net:
 
@@ -28,9 +48,11 @@ mv doc.tar.gz $GROUP_DIR
 cd $GROUP_DIR
 tar xzf doc.tar.gz
 rm -rf old
-mv htdocs old
-mv doc htdocs
+if [ -d $docdir ]; then mv $docdir old; fi
+mv doc $docdir
 rm -rf old
+rm -f doc.tar.gz
+./makeLinks
 EOF
 
 # End deployDoc.sh
