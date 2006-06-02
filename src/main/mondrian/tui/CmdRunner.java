@@ -32,16 +32,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.LogManager;
 import org.eigenbase.util.property.Property;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.Reader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -71,8 +62,10 @@ public class CmdRunner {
 
     private static final Map paraNameValues = new HashMap();
 
+    private static String[][] commentDelim;
+    private static boolean allowNestedComments;
 
-    private boolean timeQueries;
+    private final Options options;
     private long queryTime;
     private long totalQueryTime;
     private String filename;
@@ -82,26 +75,39 @@ public class CmdRunner {
     private String stack;
     private String connectString;
     private Connection connection;
-    private static String[][] commentDelim;
-    private static boolean allowNestedComments;
-    
+    private final PrintWriter out;
+
+    static {
+        setDefaultCommentState();
+    }
+
     /**
      * Creates a <code>CmdRunner</code>.
+     *
+     * @param options Option set, or null to use default options
+     * @param out Output writer, or null to use {@link System#out}.
      */
-    public CmdRunner() {
+    public CmdRunner(Options options, PrintWriter out) {
+        if (options == null) {
+            options = new Options();
+        }
+        this.options = options;
         this.filename = null;
-        this.mdxCmd = null;
         this.mdxResult = null;
         this.error = null;
         this.queryTime = -1;
+        if (out == null) {
+            out = new PrintWriter(System.out);
+        }
+        this.out = out;
     }
 
     public void setTimeQueries(boolean timeQueries) {
-        this.timeQueries = timeQueries;
+        this.options.timeQueries = timeQueries;
     }
 
     public boolean getTimeQueries() {
-        return timeQueries;
+        return options.timeQueries;
     }
 
     public long getQueryTime() {
@@ -214,7 +220,6 @@ public class CmdRunner {
             Parameter param = params[i];
             loadParameter(query, param);
         }
-
     }
 
     /**
@@ -313,7 +318,7 @@ public class CmdRunner {
         int category = param.getCategory();
         String name = param.getName();
         String value = (String) CmdRunner.paraNameValues.get(name);
-        CmdRunner.debug("loadParameter: name=" +name+ ", value=" + value);
+        debug("loadParameter: name=" +name+ ", value=" + value);
         if (value == null) {
             return;
         }
@@ -373,12 +378,12 @@ public class CmdRunner {
         String trimmed = value.trim();
         int len = trimmed.length();
         if (trimmed.charAt(0) == '"' && trimmed.charAt(len - 1) == '"') {
-            CmdRunner.debug("parseParameter. STRING_TYPE: " +trimmed);
+            debug("parseParameter. STRING_TYPE: " +trimmed);
             return new Expr(trimmed.substring(1, trimmed.length() - 1),
                             Expr.STRING_TYPE);
         }
         if (trimmed.charAt(0) == '\'' && trimmed.charAt(len - 1) == '\'') {
-            CmdRunner.debug("parseParameter. STRING_TYPE: " +trimmed);
+            debug("parseParameter. STRING_TYPE: " +trimmed);
             return new Expr(trimmed.substring(1, trimmed.length() - 1),
                             Expr.STRING_TYPE);
         }
@@ -391,11 +396,11 @@ public class CmdRunner {
             // nothing to do, should be member
         }
         if (number != null) {
-            CmdRunner.debug("parseParameter. NUMERIC_TYPE: " +number);
+            debug("parseParameter. NUMERIC_TYPE: " +number);
             return new Expr(number, Expr.NUMERIC_TYPE);
         }
 
-        CmdRunner.debug("parseParameter. MEMBER_TYPE: " +trimmed);
+        debug("parseParameter. MEMBER_TYPE: " +trimmed);
         Query query = this.connection.parseQuery(this.mdxCmd);
         // dont have to execute
         //this.connection.execute(query);
@@ -403,7 +408,7 @@ public class CmdRunner {
         // assume member, dimension, hierarchy, level
         OlapElement element = Util.lookup(query, Util.explode(trimmed));
 
-        CmdRunner.debug("parseParameter. exp="
+        debug("parseParameter. exp="
             +((element == null) ? "null" : element.getClass().getName()));
 
         if (element instanceof Member) {
@@ -571,14 +576,14 @@ public class CmdRunner {
      * @return a {@link Result} object
      */
     public Result runQuery(String queryString, boolean loadParams) {
-        CmdRunner.debug("CmdRunner.runQuery: TOP");
+        debug("CmdRunner.runQuery: TOP");
         Result result = null;
         long start = 0;
         try {
             this.connection = getConnection();
-            CmdRunner.debug("CmdRunner.runQuery: AFTER getConnection");
+            debug("CmdRunner.runQuery: AFTER getConnection");
             Query query = this.connection.parseQuery(queryString);
-            CmdRunner.debug("CmdRunner.runQuery: AFTER parseQuery");
+            debug("CmdRunner.runQuery: AFTER parseQuery");
             if (loadParams) {
                 loadParameters(query);
             }
@@ -587,19 +592,19 @@ public class CmdRunner {
 /*
 // RME START
 int len = query.axes.length;
-System.out.println("CmdRunner.runQuery: len=" +len);
+out.println("CmdRunner.runQuery: len=" +len);
 for (int i = 0; i < len; i++) {
     Hierarchy[] hs = query.getMdxHierarchiesOnAxis(i);
     if (hs == null) {
-        System.out.println("CmdRunner.runQuery: got null i=" +i);
+        out.println("CmdRunner.runQuery: got null i=" +i);
     } else {
         for (int j = 0; j < hs.length; j++) {
             Hierarchy h = hs[j];
-            System.out.print("CmdRunner.runQuery: j=" +j);
+            out.print("CmdRunner.runQuery: j=" +j);
             if (h == null) {
-                System.out.println(": got null");
+                out.println(": got null");
             } else {
-                System.out.println(": h=" +h.getName());
+                out.println(": h=" +h.getName());
             }
         }
     }
@@ -607,7 +612,7 @@ for (int i = 0; i < len; i++) {
 // RME END
 */
         } finally {
-            CmdRunner.debug("CmdRunner.runQuery: BOTTOM");
+            debug("CmdRunner.runQuery: BOTTOM");
         }
         queryTime = (System.currentTimeMillis() - start);
         totalQueryTime += queryTime;
@@ -632,7 +637,7 @@ for (int i = 0; i < len; i++) {
 
     public void makeConnectString() {
         String connectString = CmdRunner.getConnectStringProperty();
-        CmdRunner.debug("CmdRunner.makeConnectString: connectString="+connectString);
+        debug("CmdRunner.makeConnectString: connectString="+connectString);
 
         Util.PropertyList connectProperties = null;
         if (connectString == null || connectString.equals("")) {
@@ -647,7 +652,7 @@ for (int i = 0; i < len; i++) {
         // override jdbc url
         String jdbcURL = CmdRunner.getJdbcURLProperty();
 
-        CmdRunner.debug("CmdRunner.makeConnectString: jdbcURL="+jdbcURL);
+        debug("CmdRunner.makeConnectString: jdbcURL="+jdbcURL);
 
         if (jdbcURL != null) {
             // add jdbc url to connect string
@@ -657,7 +662,7 @@ for (int i = 0; i < len; i++) {
         // override jdbc drivers
         String jdbcDrivers = CmdRunner.getJdbcDriversProperty();
 
-        CmdRunner.debug("CmdRunner.makeConnectString: jdbcDrivers="+jdbcDrivers);
+        debug("CmdRunner.makeConnectString: jdbcDrivers="+jdbcDrivers);
         if (jdbcDrivers != null) {
             // add jdbc drivers to connect string
             connectProperties.put(RolapConnectionProperties.JdbcDrivers, jdbcDrivers);
@@ -666,7 +671,7 @@ for (int i = 0; i < len; i++) {
         // override catalog url
         String catalogURL = CmdRunner.getCatalogURLProperty();
 
-        CmdRunner.debug("CmdRunner.makeConnectString: catalogURL="+catalogURL);
+        debug("CmdRunner.makeConnectString: catalogURL="+catalogURL);
 
         if (catalogURL != null) {
             // add catalog url to connect string
@@ -676,7 +681,7 @@ for (int i = 0; i < len; i++) {
         // override JDBC user
         String jdbcUser = CmdRunner.getJdbcUserProperty();
 
-        CmdRunner.debug("CmdRunner.makeConnectString: jdbcUser="+jdbcUser);
+        debug("CmdRunner.makeConnectString: jdbcUser="+jdbcUser);
 
         if (jdbcUser != null) {
             // add user to connect string
@@ -686,14 +691,14 @@ for (int i = 0; i < len; i++) {
         // override JDBC password
         String jdbcPassword = CmdRunner.getJdbcPasswordProperty();
 
-        CmdRunner.debug("CmdRunner.makeConnectString: jdbcPassword="+jdbcPassword);
+        debug("CmdRunner.makeConnectString: jdbcPassword="+jdbcPassword);
 
         if (jdbcPassword != null) {
             // add password to connect string
             connectProperties.put(RolapConnectionProperties.JdbcPassword, jdbcPassword);
         }
 
-        CmdRunner.debug("CmdRunner.makeConnectString: connectProperties="+connectProperties);
+        debug("CmdRunner.makeConnectString: connectProperties="+connectProperties);
 
         this.connectString = connectProperties.toString();
     }
@@ -742,11 +747,10 @@ for (int i = 0; i < len; i++) {
     //
     /////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////
-    private static boolean debug = false;
 
-    protected static void debug(String msg) {
-        if (CmdRunner.debug) {
-            System.out.println(msg);
+    protected void debug(String msg) {
+        if (options.debug) {
+            out.println(msg);
         }
     }
 
@@ -779,14 +783,17 @@ for (int i = 0; i < len; i++) {
     /////////////////////////////////////////////////////////////////////////
 
     protected void commandLoop(boolean interactive) throws IOException {
-        commandLoop(System.in, interactive);
+        commandLoop(
+                new BufferedReader(
+                        new InputStreamReader(System.in)),
+                interactive);
     }
 
     protected void commandLoop(File file) throws IOException {
         // If we open a stream, then we close it.
-        InputStream in = new FileInputStream(file);
+        FileReader in = new FileReader(file);
         try {
-            commandLoop(in, false);
+            commandLoop(new BufferedReader(in), false);
         } finally {
             if (in != null) {
                 try {
@@ -801,7 +808,7 @@ for (int i = 0; i < len; i++) {
     protected void commandLoop(String mdxCmd, boolean interactive)
         throws IOException {
 
-        InputStream is = new ByteArrayInputStream(mdxCmd.getBytes());
+        StringReader is = new StringReader(mdxCmd);
         commandLoop(is, interactive);
     }
 
@@ -812,18 +819,15 @@ for (int i = 0; i < len; i++) {
      * The Command Loop where lines are read from the InputStream and
      * interpreted. If interactive then prompts are printed.
      *
-     * @param in Input stream
+     * @param in Input reader (preferably buffered)
      * @param interactive Whether the session is interactive
-     * @throws IOException if stream can not be accessed
      */
-    protected void commandLoop(InputStream in, boolean interactive)
-        throws IOException {
+    protected void commandLoop(Reader in, boolean interactive) {
 
         StringBuffer buf = new StringBuffer(2048);
-        BufferedReader br = new BufferedReader(new InputStreamReader(in));
-        boolean inMDXCmd = false;
+        boolean inMdxCmd = false;
         String resultString = null;
-                
+
         for(;;) {
             if (resultString != null) {
                 printResults(resultString);
@@ -832,22 +836,28 @@ for (int i = 0; i < len; i++) {
                 printResults(error);
             }
             if (interactive) {
-                if (inMDXCmd)
-                    System.out.print(COMMAND_PROMPT_MID);
-                else
-                    System.out.print(COMMAND_PROMPT_START);
+                if (inMdxCmd) {
+                    out.print(COMMAND_PROMPT_MID);
+                } else {
+                    out.print(COMMAND_PROMPT_START);
+                }
             }
-            if (!inMDXCmd) {
+            if (!inMdxCmd) {
                 buf.setLength(0);
-                //buf = new StringBuffer(2048);
             }
-            String line = readLine(br, inMDXCmd);
+            String line;
+            try {
+                line = readLine(in, inMdxCmd);
+            } catch (IOException e) {
+                throw new RuntimeException(
+                        "Exception while reading command line", e);
+            }
             if (line != null) {
                 line = line.trim();
             }
             debug("line="+line);
 
-            if (! inMDXCmd) {
+            if (! inMdxCmd) {
                 // If not in the middle of reading an mdx query and
                 // we reach end of file on the stream, then we are over.
                 if (line == null) {
@@ -857,7 +867,7 @@ for (int i = 0; i < len; i++) {
 
             // If not reading an mdx query, then check if the line is a
             // user command.
-            if (! inMDXCmd) {
+            if (! inMdxCmd) {
                 String cmd = line;
                 if (cmd.startsWith("help")) {
                     resultString = executeHelp(cmd);
@@ -882,12 +892,12 @@ for (int i = 0; i < len; i++) {
                 } else if (cmd.startsWith("expr")) {
                     resultString = executeExpr(cmd);
                 } else if (cmd.equals("=")) {
-                    resultString = reexecuteMDXCmd();
+                    resultString = reExecuteMdxCmd();
                 } else if (cmd.startsWith("exit")) {
                     break;
                 }
                 if (resultString != null) {
-                    inMDXCmd = false;
+                    inMdxCmd = false;
                     continue;
                 }
             }
@@ -903,21 +913,21 @@ for (int i = 0; i < len; i++) {
                 if ((line == null) || (line.charAt(0) == EXECUTE_CHAR)) {
                     String mdxCmd = buf.toString().trim();
                     debug("mdxCmd=\""+mdxCmd+"\"");
-                    resultString = executeMDXCmd(mdxCmd);
+                    resultString = executeMdxCmd(mdxCmd);
                 }
 
-                inMDXCmd = false;
+                inMdxCmd = false;
 
             } else if (line.length() > 0) {
                 // OK, just add the line to the mdx query we are building.
-                inMDXCmd = true;
+                inMdxCmd = true;
                 if (line.endsWith(SEMI_COLON_STRING)) {
                     // Remove the ';' character.
-                    buf.append(line.substring(0, line.length()-1));
+                    buf.append(line.substring(0, line.length() - 1));
                     String mdxCmd = buf.toString().trim();
-                    debug("mdxCmd=\""+mdxCmd+"\"");
-                    resultString = executeMDXCmd(mdxCmd);
-                    inMDXCmd = false;
+                    debug("mdxCmd=\"" + mdxCmd + "\"");
+                    resultString = executeMdxCmd(mdxCmd);
+                    inMdxCmd = false;
                 } else {
                     buf.append(line);
                     // add carriage return so that query keeps formatting
@@ -931,10 +941,10 @@ for (int i = 0; i < len; i++) {
         if (resultString != null) {
             resultString = resultString.trim();
             if (resultString.length() > 0) {
-                System.out.println(resultString);
+                out.println(resultString);
             }
-            if (timeQueries && (queryTime != -1)) {
-                System.out.println("time[" +queryTime+ "ms]");
+            if (options.timeQueries && (queryTime != -1)) {
+                out.println("time[" +queryTime+ "ms]");
                 queryTime = -1;
             }
         }
@@ -952,9 +962,9 @@ for (int i = 0; i < len; i++) {
      * If an escape character is seen '\\', then it and the next character
      * is added to the line regardless of what the next character is.
      */
-    protected static String readLine(Reader reader, boolean inMDXCmd)
+    protected static String readLine(Reader reader, boolean inMdxCmd)
         throws IOException {
-        
+
         StringBuffer buf = new StringBuffer(128);
         StringBuffer line = new StringBuffer(128);
         int offset;
@@ -962,7 +972,7 @@ for (int i = 0; i < len; i++) {
 
         for (offset = 0; offset < line.length(); offset++) {
             char c = line.charAt(offset);
-            
+
             if (c == ESCAPE_CHAR) {
                 buf.append(ESCAPE_CHAR);
                 buf.append(line.charAt(++offset));
@@ -973,15 +983,15 @@ for (int i = 0; i < len; i++) {
             }
             else {
                 int commentType=-1;
-                
-                // check if we have the start of a comment block 
+
+                // check if we have the start of a comment block
                 for (int x = 0; x < commentDelim.length; x++) {
                     if (line.substring(offset).startsWith(commentDelim[x][0])) {
                         commentType = x;
                         break;
                     }
                 }
-                
+
                 // -1 means no comment
                 if (commentType == -1) {
                     buf.append(c);
@@ -989,61 +999,62 @@ for (int i = 0; i < len; i++) {
                 else {
                     // check for comment to end of line comment
                     if (commentDelim[commentType][1] == null) {
-                        if (inMDXCmd) {
-                            buf.append(line.substring(offset));   
+                        if (inMdxCmd) {
+                            buf.append(line.substring(offset));
                         }
                         break;
                     }
                     else {
                         // handle delimited comment block
-                        i = readBlock(reader, line, offset, 
-                                commentDelim[commentType][0], 
+                        i = readBlock(reader, line, offset,
+                                commentDelim[commentType][0],
                                 commentDelim[commentType][1],
-                                false, inMDXCmd, buf, i); 
+                                false, inMdxCmd, buf, i);
                         offset = 0;
                     }
                 }
             }
         }
-        
-        if (i == -1 && buf.length() == 0)
+
+        if (i == -1 && buf.length() == 0) {
             return null;
-        else
+        } else {
             return buf.toString();
+        }
     }
-    
+
    /**
      * Read the next line of input.  Return the terminating character,
      * -1 for end of file, or \n or \r.  Add \n and \r to the end of the
      * buffer to be included in strings and comment blocks.
      */
-    protected static int getLine(Reader reader, StringBuffer line) 
+    protected static int getLine(Reader reader, StringBuffer line)
         throws IOException {
-        
+
         line.setLength(0);
         for (;;) {
             int i = reader.read();
-            
+
             if (i == -1) {
                 return i;
             }
-            
+
             line.append((char)i);
-            
+
             if (i == '\n' || i == '\r') {
                 return i;
             }
         }
     }
-     
+
     /**
      * Start of a string, read all of it even if it spans
      * more than one line adding each line's <cr> to the
      * buffer.
      */
     protected static int readString(
-            Reader reader, 
-            StringBuffer line, 
+            Reader reader,
+            StringBuffer line,
             int offset,
             StringBuffer buf,
             int i)
@@ -1051,7 +1062,7 @@ for (int i = 0; i < len; i++) {
 
         String delim=line.substring(offset, offset + 1);
         return readBlock(reader, line, offset, delim, delim, true, true, buf, i);
-    }   
+    }
 
     /**
      * Start of a delimted block, read all of it even if it spans
@@ -1062,7 +1073,7 @@ for (int i = 0; i < len; i++) {
      */
     protected static int readBlock(
             Reader reader,
-            StringBuffer line, 
+            StringBuffer line,
             int offset,
             final String startDelim,
             final String endDelim,
@@ -1071,7 +1082,7 @@ for (int i = 0; i < len; i++) {
             StringBuffer buf,
             int i)
             throws IOException {
-           
+
         int depth=1;
         if (addToBuf) {
             buf.append(startDelim);
@@ -1116,14 +1127,14 @@ for (int i = 0; i < len; i++) {
                 else if (addToBuf) {
                     buf.append(c);
                 }
-            }            
+            }
             else {
                 // finished a line; read in the next one and continue
                 if (i == -1) {
                     break;
                 }
                 i = getLine(reader, line);
-                
+
                 // line will always contain EOL marker at least, unless at EOF
                 offset = 0;
                if (line.length() == 0) {
@@ -1131,86 +1142,86 @@ for (int i = 0; i < len; i++) {
                 }
             }
         }
-        
+
         // remove to the end of the string, so caller starts at offset 0
         if (offset > 0) {
             line.delete(0, offset - 1);
         }
-        
+
         return i;
-    }   
-       
+    }
+
     /////////////////////////////////////////////////////////////////////////
     // xmla file
     /////////////////////////////////////////////////////////////////////////
-    
-    /** 
+
+    /**
      * This is called to process a file containing XMLA as the contents
      * of SOAP xml.
-     * 
-     * @param file 
-     * @param validateXmlaResponce 
-     * @throws Exception 
+     *
+     * @param file
+     * @param validateXmlaResponse
+     * @throws Exception
      */
-    protected void processSoapXmla(File file, int validateXmlaResponce) 
+    protected void processSoapXmla(File file, int validateXmlaResponse)
             throws Exception {
         String catalogURL = CmdRunner.getCatalogURLProperty();
         String[][] catalogNameUrls = new String[][] {
                             { "CMD_RUNNER_CATALOG", catalogURL }
                         };
-        byte[] bytes = XmlaSupport.processSoapXmla(file, 
-                        getConnectString(), 
+        byte[] bytes = XmlaSupport.processSoapXmla(file,
+                        getConnectString(),
                         catalogNameUrls,
                         null);
 
         String response = new String(bytes);
-        System.out.println(response);
+        out.println(response);
 
-        switch (validateXmlaResponce) {
+        switch (validateXmlaResponse) {
         case VALIDATE_NONE:
             break;
         case VALIDATE_TRANSFORM:
             XmlaSupport.validateSchemaSoapXmla(bytes);
-            System.out.println("XML Data is Valid");
+            out.println("XML Data is Valid");
             break;
         case VALIDATE_XPATH:
             XmlaSupport.validateSoapXmlaUsingXpath(bytes);
-            System.out.println("XML Data is Valid");
+            out.println("XML Data is Valid");
             break;
         }
     }
 
-    /** 
+    /**
      * This is called to process a file containing XMLA xml.
-     * 
-     * @param file 
-     * @param validateXmlaResponce 
-     * @throws Exception 
+     *
+     * @param file
+     * @param validateXmlaResponce
+     * @throws Exception
      */
-    protected void processXmla(File file, int validateXmlaResponce) 
+    protected void processXmla(File file, int validateXmlaResponce)
             throws Exception {
 
         String catalogURL = CmdRunner.getCatalogURLProperty();
         String[][] catalogNameUrls = new String[][] {
                             { "CMD_RUNNER_CATALOG", catalogURL }
                         };
-        byte[] bytes = XmlaSupport.processXmla(file, 
+        byte[] bytes = XmlaSupport.processXmla(file,
                         getConnectString(),
                         catalogNameUrls);
 
         String response = new String(bytes);
-        System.out.println(response);
+        out.println(response);
 
         switch (validateXmlaResponce) {
         case VALIDATE_NONE:
             break;
         case VALIDATE_TRANSFORM:
             XmlaSupport.validateSchemaXmla(bytes);
-            System.out.println("XML Data is Valid");
+            out.println("XML Data is Valid");
             break;
         case VALIDATE_XPATH:
             XmlaSupport.validateXmlaUsingXpath(bytes);
-            System.out.println("XML Data is Valid");
+            out.println("XML Data is Valid");
             break;
         }
     }
@@ -2217,14 +2228,15 @@ for (int i = 0; i < len; i++) {
     }
 
 
-    protected String reexecuteMDXCmd() {
+    protected String reExecuteMdxCmd() {
         if (this.mdxCmd == null) {
             return "No command to execute";
         } else {
-            return executeMDXCmd(this.mdxCmd);
+            return executeMdxCmd(this.mdxCmd);
         }
     }
-    protected String executeMDXCmd(String mdxCmd) {
+
+    protected String executeMdxCmd(String mdxCmd) {
 
         this.mdxCmd = mdxCmd;
         try {
@@ -2253,7 +2265,14 @@ for (int i = 0; i < len; i++) {
     /////////////////////////////////////////////////////////////////////////
     // main
     /////////////////////////////////////////////////////////////////////////
-    protected static void usage(String msg) {
+
+    /**
+     * Prints a usage message.
+     *
+     * @param msg Prefix to the message
+     * @param out Output stream
+     */
+    protected static void usage(String msg, PrintStream out) {
         StringBuffer buf = new StringBuffer(256);
         if (msg != null) {
             buf.append(msg);
@@ -2299,10 +2318,9 @@ for (int i = 0; i < len; i++) {
         buf.append("  mdx_cmd          : execute mdx_cmd");
         buf.append(nl);
 
-        System.out.println(buf.toString());
-        System.exit(0);
+        out.println(buf.toString());
     }
-    
+
     /**
      * Set the default comment delimiters for CmdRunner.  These defaults are
      * # to end of line
@@ -2316,14 +2334,14 @@ for (int i = 0; i < len; i++) {
         // CmdRunner has extra delimiter; # to end of line
         commentDelim[0][0] = "#";
         commentDelim[0][1] = null;
-        
+
         // copy all the rest of the delimiters
         for (int x = 0; x < scannerCommentsDelimiters.length; x++) {
             commentDelim[x + 1][0] = scannerCommentsDelimiters[x][0];
             commentDelim[x + 1][1] = scannerCommentsDelimiters[x][1];
         }
     }
-    
+
     private static final int DO_MDX             = 1;
     private static final int DO_XMLA            = 2;
     private static final int DO_SOAP_XMLA       = 3;
@@ -2332,108 +2350,51 @@ for (int i = 0; i < len; i++) {
     private static final int VALIDATE_TRANSFORM = 2;
     private static final int VALIDATE_XPATH     = 3;
 
+    protected static class Options {
+        private boolean debug = false;
+        private boolean timeQueries;
+        private boolean noCache = false;
+        private int validateXmlaResponse = VALIDATE_NONE;
+        private final List filenames = new ArrayList();
+        private int doingWhat = DO_MDX;
+        private String singleMdxCmd;
+    }
+
     public static void main(String[] args) throws Exception {
-        List filenames = null;
-        int doingWhat = DO_MDX;
-        String mdxCmd = null;
-        boolean timeQueries = false;
-        boolean noCache = false;
-        int validateXmlaResponce = VALIDATE_NONE;
 
-        setDefaultCommentState();
-        
-        for (int i = 0; i < args.length; i++) {
-            String arg = args[i];
-
-            if (arg.equals("-h")) {
-                usage(null);
-
-            } else if (arg.equals("-d")) {
-                CmdRunner.debug = true;
-
-            } else if (arg.equals("-t")) {
-                timeQueries = true;
-
-            } else if (arg.equals("-nocache")) {
-                noCache = true;
-
-            } else if (arg.equals("-rc")) {
-                CmdRunner.RELOAD_CONNECTION = false;
-
-            } else if (arg.equals("-vt")) {
-                validateXmlaResponce = VALIDATE_TRANSFORM;
-
-            } else if (arg.equals("-vx")) {
-                validateXmlaResponce = VALIDATE_XPATH;
-
-            } else if (arg.equals("-f")) {
-                i++;
-                if (i == args.length) {
-                    usage("no mdx filename given");
-                }
-                if (filenames == null) {
-                    filenames = new ArrayList();
-                }
-                filenames.add(args[i]);
-
-            } else if (arg.equals("-x")) {
-                i++;
-                if (i == args.length) {
-                    usage("no XMLA filename given");
-                }
-                if (filenames == null) {
-                    filenames = new ArrayList();
-                }
-                doingWhat = DO_XMLA;
-                filenames.add(args[i]);
-
-            } else if (arg.equals("-xs")) {
-                i++;
-                if (i == args.length) {
-                    usage("no XMLA filename given");
-                }
-                if (filenames == null) {
-                    filenames = new ArrayList();
-                }
-                doingWhat = DO_SOAP_XMLA;
-                filenames.add(args[i]);
-
-            } else if (arg.equals("-p")) {
-                i++;
-                if (i == args.length) {
-                    usage("no mondrian properties file given");
-                }
-                String propFile = args[i];
-                loadPropertiesFromFile(propFile);
-
-            } else if (filenames != null) {
-                filenames.add(arg);
-            } else {
-                mdxCmd = arg;
-            }
+        Options options;
+        try {
+            options = parseOptions(args);
+        } catch (BadOption badOption) {
+            usage(badOption.getMessage(), System.out);
+            return;
         }
 
-        CmdRunner cmdRunner = new CmdRunner();
-        cmdRunner.setTimeQueries(timeQueries);
-        if (noCache) {
+        CmdRunner cmdRunner =
+                new CmdRunner(options, new PrintWriter(System.out));
+        if (options.noCache) {
             cmdRunner.noCubeCaching();
         }
 
-        if (filenames != null) {
-            for (Iterator it = filenames.iterator(); it.hasNext(); ) {
-                String filename = (String) it.next();
+        if (!options.filenames.isEmpty()) {
+            for (int i = 0; i < options.filenames.size(); i++) {
+                String filename = (String) options.filenames.get(i);
                 cmdRunner.filename = filename;
-                if (doingWhat == DO_MDX) {
+                switch (options.doingWhat) {
+                case DO_MDX:
                     // its a file containing mdx
                     cmdRunner.commandLoop(new File(filename));
-                } else if (doingWhat == DO_XMLA) {
+                    break;
+                case DO_XMLA:
                     // its a file containing XMLA
                     cmdRunner.processXmla(new File(filename),
-                        validateXmlaResponce);
-                } else {
+                            options.validateXmlaResponse);
+                    break;
+                default:
                     // its a file containing SOAP XMLA
                     cmdRunner.processSoapXmla(new File(filename),
-                        validateXmlaResponce);
+                            options.validateXmlaResponse);
+                    break;
                 }
                 if (cmdRunner.error != null) {
                     System.err.println(filename);
@@ -2444,8 +2405,8 @@ for (int i = 0; i < len; i++) {
                     cmdRunner.clearError();
                 }
             }
-        } else if (mdxCmd != null) {
-            cmdRunner.commandLoop(mdxCmd, false);
+        } else if (options.singleMdxCmd != null) {
+            cmdRunner.commandLoop(options.singleMdxCmd, false);
             if (cmdRunner.error != null) {
                 System.err.println(cmdRunner.error);
                 if (cmdRunner.stack != null) {
@@ -2455,13 +2416,88 @@ for (int i = 0; i < len; i++) {
         } else {
             cmdRunner.commandLoop(true);
         }
-        if (timeQueries) {
-            long total = cmdRunner.getTotalQueryTime();
+        cmdRunner.printTotalQueryTime();
+    }
 
+    private void printTotalQueryTime() {
+        if (options.timeQueries) {
             // only print if different
-            if (total != cmdRunner.getQueryTime()) {
-                System.out.println("total[" +total+ "ms]");
+            if (totalQueryTime != queryTime) {
+                out.println("total[" + totalQueryTime + "ms]");
             }
+        }
+    }
+
+    private static Options parseOptions(String[] args)
+            throws BadOption, IOException {
+        final Options options = new Options();
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+
+            if (arg.equals("-h")) {
+                throw new BadOption(null);
+
+            } else if (arg.equals("-d")) {
+                options.debug = true;
+
+            } else if (arg.equals("-t")) {
+                options.timeQueries = true;
+
+            } else if (arg.equals("-nocache")) {
+                options.noCache = true;
+
+            } else if (arg.equals("-rc")) {
+                CmdRunner.RELOAD_CONNECTION = false;
+
+            } else if (arg.equals("-vt")) {
+                options.validateXmlaResponse = VALIDATE_TRANSFORM;
+
+            } else if (arg.equals("-vx")) {
+                options.validateXmlaResponse = VALIDATE_XPATH;
+
+            } else if (arg.equals("-f")) {
+                i++;
+                if (i == args.length) {
+                    throw new BadOption("no mdx filename given");
+                }
+                options.filenames.add(args[i]);
+
+            } else if (arg.equals("-x")) {
+                i++;
+                if (i == args.length) {
+                    throw new BadOption("no XMLA filename given");
+                }
+                options.doingWhat = DO_XMLA;
+                options.filenames.add(args[i]);
+
+            } else if (arg.equals("-xs")) {
+                i++;
+                if (i == args.length) {
+                    throw new BadOption("no XMLA filename given");
+                }
+                options.doingWhat = DO_SOAP_XMLA;
+                options.filenames.add(args[i]);
+
+            } else if (arg.equals("-p")) {
+                i++;
+                if (i == args.length) {
+                    throw new BadOption("no mondrian properties file given");
+                }
+                String propFile = args[i];
+                loadPropertiesFromFile(propFile);
+
+            } else if (!options.filenames.isEmpty()) {
+                options.filenames.add(arg);
+            } else {
+                options.singleMdxCmd = arg;
+            }
+        }
+        return options;
+    }
+
+    private static class BadOption extends Exception {
+        BadOption(String msg) {
+            super(msg);
         }
     }
 }
