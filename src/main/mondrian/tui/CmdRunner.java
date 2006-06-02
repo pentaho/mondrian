@@ -911,13 +911,15 @@ for (int i = 0; i < len; i++) {
             } else if (line.length() > 0) {
                 // OK, just add the line to the mdx query we are building.
                 inMDXCmd = true;
-                buf.append(line);
                 if (line.endsWith(SEMI_COLON_STRING)) {
+                    // Remove the ';' character.
+                    buf.append(line.substring(0, line.length()-1));
                     String mdxCmd = buf.toString().trim();
                     debug("mdxCmd=\""+mdxCmd+"\"");
                     resultString = executeMDXCmd(mdxCmd);
                     inMDXCmd = false;
                 } else {
+                    buf.append(line);
                     // add carriage return so that query keeps formatting
                     buf.append(nl);
                 }
