@@ -174,6 +174,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(MultipleHierarchyTest.class);
             suite.addTestSuite(I18nTest.class);
             suite.addTestSuite(FormatTest.class);
+            suite.addTestSuite(CmdRunnerTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get())
