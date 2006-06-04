@@ -699,7 +699,7 @@ ${doc.dir}/api/src-html/**/*"/>
   </target>
 
   <target name="doczip"
-      depends="javadoc"
+      depends="javadoc, xml_schema"
       description="Builds a zipfile of the documentation, which can then be
                    deployed to sf.net. See also doc/deployDoc.sh.">
     <mkdir dir="${dist.dir}" />
