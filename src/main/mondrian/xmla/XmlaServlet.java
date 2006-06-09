@@ -250,6 +250,26 @@ public abstract class XmlaServlet extends HttpServlet
                 return;
             }
 
+            phase = PROCESS_HEADER_PHASE;
+
+            try {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Handling XML/A message header");
+                }
+
+                // process application specified SOAP header here
+                handleSoapHeader(response,
+                                 requestSoapParts,
+                                 responseSoapParts,
+                                 context);
+            } catch (XmlaException xex) {
+                LOGGER.error("Errors when handling XML/A message", xex);
+                handleFault(response, responseSoapParts, phase, xex);
+                phase = SEND_ERROR_PHASE;
+                marshallSoapMessage(response, responseSoapParts);
+                return;
+            }
+
             phase = CALLBACK_PRE_ACTION_PHASE;
 
 
@@ -278,29 +298,6 @@ public abstract class XmlaServlet extends HttpServlet
                                 CPREA_CODE, 
                                 CPREA_FAULT_FS,
                                 ex));
-                phase = SEND_ERROR_PHASE;
-                marshallSoapMessage(response, responseSoapParts);
-                return;
-            }
-
-            phase = PROCESS_HEADER_PHASE;
-
-            // freeze context binding
-            // context = Collections.unmodifiableMap(context);
-
-            try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Handling XML/A message header");
-                }
-
-                // process application specified SOAP header here
-                handleSoapHeader(response,
-                                 requestSoapParts,
-                                 responseSoapParts,
-                                 context);
-            } catch (XmlaException xex) {
-                LOGGER.error("Errors when handling XML/A message", xex);
-                handleFault(response, responseSoapParts, phase, xex);
                 phase = SEND_ERROR_PHASE;
                 marshallSoapMessage(response, responseSoapParts);
                 return;

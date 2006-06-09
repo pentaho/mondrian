@@ -77,7 +77,9 @@ public class XmlaExcel2000Test extends FoodMartTestCase {
                 HttpServletRequest request,
                 Element[] requestSoapParts,
                 Map context) throws Exception {
+        }
 
+        private void setSessionId(Map context) {
             if (XmlaExcel2000Test.sessionId == null) {
                 makeSessionId();
             }
@@ -86,6 +88,7 @@ public class XmlaExcel2000Test extends FoodMartTestCase {
         }
 
         public String generateSessionId(Map context) {
+            setSessionId(context);
             return (String) context.get(MY_SESSION_ID);
         }
         public void postAction(

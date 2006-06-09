@@ -87,12 +87,39 @@ X-Powered-By: ASP.NET
                 HttpServletResponse response,
                 Map context) throws Exception;
 
+    /** 
+     * This is called after the headers have been process but before the
+     * body (DISCOVER/EXECUTE) has been processed.
+     * 
+     * @param request 
+     * @param requestSoapParts 
+     * @param context 
+     * @throws Exception 
+     */
     void preAction(HttpServletRequest request,
                 Element[] requestSoapParts,
                 Map context) throws Exception;
 
+    /** 
+     * The Callback is requested to generate a sequence id string. This
+     * sequence id was requested by the XMLA client and will be used 
+     * for all subsequent communications in the Soap Header block.
+     * 
+     * @param context 
+     * @return 
+     */
     String generateSessionId(Map context); 
 
+    /** 
+     * This is called after all Mondrian processing (DISCOVER/EXECUTE) has
+     * occurred.
+     * 
+     * @param request 
+     * @param response 
+     * @param responseSoapParts 
+     * @param context 
+     * @throws Exception 
+     */
     void postAction(HttpServletRequest request,
                 HttpServletResponse response,
                 byte[][] responseSoapParts,

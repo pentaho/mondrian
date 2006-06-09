@@ -170,6 +170,12 @@ public interface XmlaConstants {
     public static final String HSH_MUST_UNDERSTAND_FAULT_FS = 
             "SOAP Header must understand element not recognized";
 
+    // This is used to signal XMLA clients supporting Soap header session ids
+    // that the client's metadata may no longer be valid.
+    public static final String HSH_BAD_SESSION_ID_CODE = "00HSHB01";
+    public static final String HSH_BAD_SESSION_ID_FAULT_FS = 
+            "Bad Session Id, re-start session";
+
     // unknown error while handle soap header
     public static final String HSH_UNKNOWN_CODE = "00HSHU01";
     public static final String HSH_UNKNOWN_FAULT_FS = 
