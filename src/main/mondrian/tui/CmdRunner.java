@@ -942,6 +942,7 @@ for (int i = 0; i < len; i++) {
             resultString = resultString.trim();
             if (resultString.length() > 0) {
                 out.println(resultString);
+                out.flush();
             }
             if (options.timeQueries && (queryTime != -1)) {
                 out.println("time[" +queryTime+ "ms]");
