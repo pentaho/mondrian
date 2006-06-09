@@ -47,6 +47,13 @@ public class NonEmptyTest extends FoodMartTestCase {
     private static Logger logger = Logger.getLogger(NonEmptyTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
 
+
+    public NonEmptyTest() {
+        super();
+    }
+    public NonEmptyTest(String name) {
+        super(name);
+    }
     /**
      * must not use native sql optimization because it chooses the wrong RolapStar
      * in SqlContextConstraint/SqlConstraintUtils.
