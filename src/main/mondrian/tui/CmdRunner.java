@@ -841,6 +841,7 @@ for (int i = 0; i < len; i++) {
                 } else {
                     out.print(COMMAND_PROMPT_START);
                 }
+                out.flush();
             }
             if (!inMdxCmd) {
                 buf.setLength(0);
