@@ -2069,6 +2069,8 @@ public class BuiltinFunTable extends FunTableImpl {
 
     protected Member[] getNonEmptyMemberChildren(Evaluator evaluator, Member member) {
         SchemaReader sr = evaluator.getSchemaReader();
+try {
+//System.out.println("BuiltinFunTable.getNonEmptyMemberChildren: TOP");
 /*
 RME: ORIGINAL CODE 
         if (evaluator.isNonEmpty()) {
@@ -2076,7 +2078,7 @@ RME: ORIGINAL CODE
         }
         return sr.getMemberChildren(member);
 */
-
+/*
         // RME: This is a hack.
         // The SqlMemberSource makeMember takes a parent member
         // and all next level down elements and creates "children"
@@ -2084,6 +2086,7 @@ RME: ORIGINAL CODE
         // Time].[All Times].[2006] a child would be
         // [Time].[All Times].[2006].[Q1 2004] which is clearly
         // not a valid child member.
+*/
         Member[] ms = null;
         if (evaluator.isNonEmpty()) {
             ms = sr.getMemberChildren(member, evaluator);
@@ -2121,6 +2124,9 @@ RME: ORIGINAL CODE
             ms =  sr.getMemberChildren(member);
         }
         return ms;
+} finally {
+//System.out.println("BuiltinFunTable.getNonEmptyMemberChildren: BOTTOM");
+}
     }
 
     /**

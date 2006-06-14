@@ -359,6 +359,7 @@ public class RolapLevel extends LevelBase {
         } else if (xmlClosure != null) {
             final RolapDimension dimension = ((RolapHierarchy) hierarchy)
                 .createClosedPeerDimension(this, xmlClosure, cube, xmlDimension);
+
             dimension.init(cube, xmlDimension);
             cube.registerDimension(dimension);
             RolapLevel closedPeer =

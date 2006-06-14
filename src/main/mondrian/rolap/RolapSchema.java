@@ -1081,6 +1081,21 @@ public class RolapSchema implements Schema {
     }
 
     RolapHierarchy getSharedHierarchy(final String name) {
+/*
+        RolapHierarchy rh = (RolapHierarchy) mapSharedHierarchyNameToHierarchy.get(name);
+        if (rh == null) {
+System.out.println("RolapSchema.getSharedHierarchy: "+
+" name=" + name +
+", hierarchy is NULL"
+);
+        } else {
+System.out.println("RolapSchema.getSharedHierarchy: "+
+" name=" + name +
+", hierarchy=" +  rh.getName()
+);
+        }
+        return rh;
+*/
         return (RolapHierarchy) mapSharedHierarchyNameToHierarchy.get(name);
     }
 
@@ -1242,7 +1257,23 @@ public class RolapSchema implements Schema {
                 reader = createMemberReader(hierarchy, memberReaderClass);
                 // share, for other uses of the same shared hierarchy
                 if (false) mapSharedHierarchyToReader.put(sharedName, reader);
+/*
+System.out.println("RolapSchema.createMemberReader: "+
+"add to sharedHierName->Hier map"+
+" sharedName=" + sharedName +
+", hierarchy=" + hierarchy.getName() +
+", hierarchy.dim=" + hierarchy.getDimension().getName()
+);
+if (mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
+System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
+} else {
                 mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
+}
+*/
+if (! mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
+    mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
+}
+                //mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
             } else {
 //                final RolapHierarchy sharedHierarchy = (RolapHierarchy)
 //                        mapSharedHierarchyNameToHierarchy.get(sharedName);

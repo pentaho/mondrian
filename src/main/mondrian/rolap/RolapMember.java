@@ -276,7 +276,7 @@ public class RolapMember extends MemberBase {
 
             case Property.CONTRIBUTING_CHILDREN_ORDINAL:
                 list = new ArrayList();
-                getRolapHierarchy().memberReader.getMemberChildren(this, list);
+                getRolapHierarchy().getMemberReader().getMemberChildren(this, list);
                 return list;
 
             case Property.CATALOG_NAME_ORDINAL:
@@ -324,7 +324,7 @@ public class RolapMember extends MemberBase {
 
             case Property.CHILDREN_CARDINALITY_ORDINAL:
                 list = new ArrayList();
-                getRolapHierarchy().memberReader.getMemberChildren(this, list);
+                getRolapHierarchy().getMemberReader().getMemberChildren(this, list);
                 return new Integer(list.size());
 
             case Property.PARENT_LEVEL_ORDINAL:

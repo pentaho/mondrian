@@ -43,7 +43,7 @@ class RolapHierarchy extends HierarchyBase {
      * control and deals with hidden members (if the hierarchy is ragged), use
      * {@link #getMemberReader(Role)}.
      */
-    MemberReader memberReader;
+    private MemberReader memberReader;
     MondrianDef.Hierarchy xmlHierarchy;
     private String memberReaderClass;
     private MondrianDef.Relation relation;
@@ -54,14 +54,15 @@ class RolapHierarchy extends HierarchyBase {
     /**
      * If this hierarchy is a public -- that is, it belongs to a dimension
      * which is a usage of a shared dimension -- then
-     * <code>sharedHierarchy</code> holds the unique name of the shared
+     * <code>sharedHierarchyName</code> holds the unique name of the shared
      * hierarchy; otherwise it is null.
      *
      * <p> Suppose this hierarchy is "Weekly" in the dimension "Order Date" of
      * cube "Sales", and that "Order Date" is a usage of the "Time"
-     * dimension. Then <code>sharedHierarchy</code> will be "[Time].[Weekly]".
+     * dimension. Then <code>sharedHierarchyName</code> will be 
+     * "[Time].[Weekly]".
      */
-    private String sharedHierarchy;
+    private String sharedHierarchyName;
 
     private Exp aggregateChildrenExpression;
 
@@ -156,12 +157,12 @@ class RolapHierarchy extends HierarchyBase {
         if (xmlCubeDimension instanceof MondrianDef.DimensionUsage) {
             String sharedDimensionName =
                 ((MondrianDef.DimensionUsage) xmlCubeDimension).source;
-            this.sharedHierarchy = sharedDimensionName;
+            this.sharedHierarchyName = sharedDimensionName;
             if (subName != null) {
-                this.sharedHierarchy += "." + subName; // e.g. "Time.Weekly"
+                this.sharedHierarchyName += "." + subName; // e.g. "Time.Weekly"
             }
         } else {
-            this.sharedHierarchy = null;
+            this.sharedHierarchyName = null;
         }
         if (xmlHierarchy.relation != null &&
                 xmlHierarchy.memberReaderClass != null) {
@@ -225,28 +226,29 @@ class RolapHierarchy extends HierarchyBase {
         }
 
         RolapHierarchy that = (RolapHierarchy)o;
-        return ((sharedHierarchy == null) || (that.sharedHierarchy == null))
+        return ((sharedHierarchyName == null) || (that.sharedHierarchyName == null))
             ? false
-            : (sharedHierarchy.equals(that.sharedHierarchy) &&
+            : (sharedHierarchyName.equals(that.sharedHierarchyName) &&
                 getUniqueName().equals(that.getUniqueName()));
     }
 
     public int hashCode() {
-        return super.hashCode() ^ (sharedHierarchy == null
+        return super.hashCode() ^ (sharedHierarchyName == null
             ? 0
-            : sharedHierarchy.hashCode());
+            : sharedHierarchyName.hashCode());
     }
 
     /**
      * Initializes a hierarchy within the context of a cube.
      */
     void init(RolapCube cube, MondrianDef.CubeDimension xmlDimension) {
-        for (int i = 0; i < levels.length; i++) {
-            ((RolapLevel) levels[i]).init(cube, xmlDimension);
-        }
+        // first create memberReader
         if (this.memberReader == null) {
             this.memberReader = getRolapSchema().createMemberReader(
-                sharedHierarchy, this, memberReaderClass);
+                sharedHierarchyName, this, memberReaderClass);
+        }
+        for (int i = 0; i < levels.length; i++) {
+            ((RolapLevel) levels[i]).init(cube, xmlDimension);
         }
         if (defaultMemberName != null) {
             String[] uniqueNameParts = Util.explode(defaultMemberName);
@@ -272,6 +274,16 @@ class RolapHierarchy extends HierarchyBase {
                         getName() + "\"");
             }
         }
+/*
+System.out.println("RolapHierarchy.init: "+
+"BOTTOM name=" +getName());
+*/
+    }
+    void setMemberReader(MemberReader memberReader) {
+        this.memberReader = memberReader;
+    }
+    MemberReader getMemberReader() {
+        return this.memberReader;
     }
 
     RolapLevel newLevel(String name, int flags) {
@@ -576,7 +588,7 @@ class RolapHierarchy extends HierarchyBase {
         RolapHierarchy peerHier = peerDimension.newHierarchy(subName, true);
         peerHier.allMemberName = allMemberName;
         peerHier.allLevelName = allLevelName;
-        peerHier.sharedHierarchy = sharedHierarchy;
+        peerHier.sharedHierarchyName = sharedHierarchyName;
         peerHier.primaryKey = primaryKey;
         MondrianDef.Join join = new MondrianDef.Join();
         peerHier.relation = join;

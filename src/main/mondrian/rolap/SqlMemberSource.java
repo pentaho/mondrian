@@ -979,7 +979,7 @@ RME is this right
                 List list = new ArrayList();
                 list.add(dataMember);
                 RolapHierarchy hierarchy = (RolapHierarchy) getHierarchy();
-                hierarchy.memberReader.getMemberChildren(this, list);
+                hierarchy.getMemberReader().getMemberChildren(this, list);
                 return list;
             } else {
                 return super.getPropertyValue(name);

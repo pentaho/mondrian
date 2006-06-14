@@ -217,8 +217,8 @@ public class RolapCube extends CubeBase {
             }
         }
 
-        this.measuresHierarchy.memberReader = new CacheMemberReader(
-                new MeasureMemberSource(this.measuresHierarchy, measures));
+        this.measuresHierarchy.setMemberReader(new CacheMemberReader(
+                new MeasureMemberSource(this.measuresHierarchy, measures)));
         init(xmlCube.dimensions);
         init(xmlCube);
 
@@ -293,8 +293,8 @@ public class RolapCube extends CubeBase {
         } else {
             measures = new RolapMeasure[0];
         }
-        this.measuresHierarchy.memberReader = new CacheMemberReader(
-                  new MeasureMemberSource(this.measuresHierarchy,  measures));
+        this.measuresHierarchy.setMemberReader(new CacheMemberReader(
+                  new MeasureMemberSource(this.measuresHierarchy,  measures)));
 
         // Must init the dimensions before dealing with calculated members
         init(xmlVirtualCube.dimensions);
@@ -349,11 +349,24 @@ public class RolapCube extends CubeBase {
             final RolapHierarchy sharedHierarchy =
                 schema.getSharedHierarchy(usage.source);
             if (sharedHierarchy != null) {
+/*
+System.out.println("RolapCube.getOrCreateDimension: " +
+" cube="+getName()+
+" sharedHierarchy.dimension=" + sharedHierarchy.getDimension().getName());
+*/
                 return (RolapDimension) sharedHierarchy.getDimension();
             }
         }
         MondrianDef.Dimension xmlDimension =
             xmlCubeDimension.getDimension(xmlSchema);
+/*
+        RolapDimension dim = new RolapDimension(schema, this, xmlDimension,
+            xmlCubeDimension);
+System.out.println("RolapCube.getOrCreateDimension: " +
+" cube="+getName()+
+" new dimension=" + dim.getName());
+return dim;
+*/
         return new RolapDimension(schema, this, xmlDimension,
             xmlCubeDimension);
     }
@@ -607,7 +620,7 @@ public class RolapCube extends CubeBase {
                 xmlCalcMember.name);
 
         final int measureCount =
-                this.measuresHierarchy.memberReader.getMemberCount();
+                this.measuresHierarchy.getMemberReader().getMemberCount();
 
         // Generate SQL.
         assert memberUniqueName.startsWith("[");
@@ -729,6 +742,11 @@ public class RolapCube extends CubeBase {
         int max = -1;
         for (int i = 0; i < dimensions.length; i++) {
             final RolapDimension dimension = (RolapDimension) dimensions[i];
+/*
+System.out.println("RolapCube.init: "+
+"cube=" +getName() +
+", dimension=" +dimension.getName());
+*/
             dimension.init(this, lookup(xmlDimensions, dimension.getName()));
             max = Math.max(max, dimension.getGlobalOrdinal());
         }
@@ -895,6 +913,12 @@ assert is not true.
             MondrianDef.CubeDimension cubeDim) {
         HierarchyUsage usage = new HierarchyUsage(this, hierarchy, cubeDim);
 
+/*
+System.out.println("RolapCube.createUsage: "+
+"cube=" +getName()+
+", hierarchy=" +hierarchy.getName()+
+", usage=" +usage);
+*/
         for (Iterator it = hierarchyUsages.iterator(); it.hasNext(); ) {
             HierarchyUsage hierUsage = (HierarchyUsage) it.next();
             if (hierUsage.equals(usage)) {
@@ -1905,7 +1929,7 @@ assert is not true.
     }
     // RME
     public RolapMember[] getMeasuresMembers(){
-        return measuresHierarchy.memberReader.getMembers();
+        return measuresHierarchy.getMemberReader().getMembers();
     }
 
     public Member createCalculatedMember(String xml) {
