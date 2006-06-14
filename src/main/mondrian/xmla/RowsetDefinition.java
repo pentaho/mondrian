@@ -1363,7 +1363,13 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             for (int i = 0; i < catalogs.length; i++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[i];
 
+                if (dsCatalog == null) {
+                    continue;
+                }
                 String catalog = dsCatalog.cdata;
+                if (catalog == null) {
+                    continue;
+                }
 
                 Connection connection = handler.getConnection(ds, catalog, role);
                 if (connection == null) {
@@ -1563,7 +1569,13 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             for (int g = 0; g < catalogs.length; g++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[g];
 
+                if (dsCatalog == null) {
+                    continue;
+                }
                 String catalog = dsCatalog.cdata;
+                if (catalog == null) {
+                    continue;
+                }
 
                 Connection connection = handler.getConnection(ds, catalog, role);
                 if (connection == null) {
@@ -2178,8 +2190,15 @@ boolean restriction, boolean nullable, String description)
             for (int i = 0; i < catalogs.length; i++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[i];
 
+                if (dsCatalog == null) {
+                    continue;
+                }
+                String catalog = dsCatalog.cdata;
+                if (catalog == null) {
+                    continue;
+                }
                 Connection connection = 
-                    handler.getConnection(ds, dsCatalog.cdata, role);
+                    handler.getConnection(ds, catalog, role);
 
                 if (connection == null) {
                     continue;
@@ -2476,8 +2495,15 @@ boolean restriction, boolean nullable, String description)
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
+                if (dsCatalog == null) {
+                    continue;
+                }
+                String catalog = dsCatalog.cdata;
+                if (catalog == null) {
+                    continue;
+                }
                 Connection connection = 
-                    handler.getConnection(ds, dsCatalog.cdata, role);
+                    handler.getConnection(ds, catalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -2792,8 +2818,15 @@ boolean restriction, boolean nullable, String description)
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
+                if (dsCatalog == null) {
+                    continue;
+                }
+                String catalog = dsCatalog.cdata;
+                if (catalog == null) {
+                    continue;
+                }
                 Connection connection = 
-                    handler.getConnection(ds, dsCatalog.cdata, role);
+                    handler.getConnection(ds, catalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -3056,8 +3089,15 @@ boolean restriction, boolean nullable, String description)
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
+                if (dsCatalog == null) {
+                    continue;
+                }
+                String catalog = dsCatalog.cdata;
+                if (catalog == null) {
+                    continue;
+                }
                 Connection connection = 
-                    handler.getConnection(ds, dsCatalog.cdata, role);
+                    handler.getConnection(ds, catalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -3359,8 +3399,15 @@ boolean restriction, boolean nullable, String description)
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
+                if (dsCatalog == null) {
+                    continue;
+                }
+                String catalog = dsCatalog.cdata;
+                if (catalog == null) {
+                    continue;
+                }
                 Connection connection = 
-                    handler.getConnection(ds, dsCatalog.cdata, role);
+                    handler.getConnection(ds, catalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -3696,8 +3743,15 @@ boolean restriction, boolean nullable, String description)
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
+                if (dsCatalog == null) {
+                    continue;
+                }
+                String catalog = dsCatalog.cdata;
+                if (catalog == null) {
+                    continue;
+                }
                 Connection connection = 
-                    handler.getConnection(ds, dsCatalog.cdata, role);
+                    handler.getConnection(ds, catalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -3999,8 +4053,15 @@ boolean restriction, boolean nullable, String description)
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
+                if (dsCatalog == null) {
+                    continue;
+                }
+                String catalog = dsCatalog.cdata;
+                if (catalog == null) {
+                    continue;
+                }
                 Connection connection = 
-                    handler.getConnection(ds, dsCatalog.cdata, role);
+                    handler.getConnection(ds, catalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -4277,8 +4338,15 @@ boolean restriction, boolean nullable, String description)
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
+                if (dsCatalog == null) {
+                    continue;
+                }
+                String catalog = dsCatalog.cdata;
+                if (catalog == null) {
+                    continue;
+                }
                 Connection connection = 
-                    handler.getConnection(ds, dsCatalog.cdata, role);
+                    handler.getConnection(ds, catalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -4623,8 +4691,15 @@ boolean restriction, boolean nullable, String description)
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
+                if (dsCatalog == null) {
+                    continue;
+                }
+                String catalog = dsCatalog.cdata;
+                if (catalog == null) {
+                    continue;
+                }
                 Connection connection = 
-                    handler.getConnection(ds, dsCatalog.cdata, role);
+                    handler.getConnection(ds, catalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -5093,8 +5168,15 @@ boolean restriction, boolean nullable, String description)
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
 
+                if (dsCatalog == null) {
+                    continue;
+                }
+                String catalog = dsCatalog.cdata;
+                if (catalog == null) {
+                    continue;
+                }
                 Connection connection = 
-                    handler.getConnection(ds, dsCatalog.cdata, role);
+                    handler.getConnection(ds, catalog, role);
                 if (connection == null) {
                     continue;
                 }
