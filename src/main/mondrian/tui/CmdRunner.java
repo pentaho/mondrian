@@ -947,6 +947,7 @@ for (int i = 0; i < len; i++) {
             }
             if (options.timeQueries && (queryTime != -1)) {
                 out.println("time[" +queryTime+ "ms]");
+                out.flush();
                 queryTime = -1;
             }
         }
@@ -2428,6 +2429,7 @@ for (int i = 0; i < len; i++) {
                 out.println("total[" + totalQueryTime + "ms]");
             }
         }
+        out.flush();
     }
 
     private static Options parseOptions(String[] args)
