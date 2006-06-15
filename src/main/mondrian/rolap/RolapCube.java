@@ -911,14 +911,14 @@ assert is not true.
     synchronized void createUsage(
             RolapHierarchy hierarchy,
             MondrianDef.CubeDimension cubeDim) {
-        HierarchyUsage usage = new HierarchyUsage(this, hierarchy, cubeDim);
 
-/*
-System.out.println("RolapCube.createUsage: "+
-"cube=" +getName()+
-", hierarchy=" +hierarchy.getName()+
-", usage=" +usage);
-*/
+        HierarchyUsage usage = new HierarchyUsage(this, hierarchy, cubeDim);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("RolapCube.createUsage: "+
+                "cube=" +getName()+
+                ", hierarchy=" +hierarchy.getName() +
+                ", usage=" +usage);
+        }
         for (Iterator it = hierarchyUsages.iterator(); it.hasNext(); ) {
             HierarchyUsage hierUsage = (HierarchyUsage) it.next();
             if (hierUsage.equals(usage)) {

@@ -274,10 +274,6 @@ class RolapHierarchy extends HierarchyBase {
                         getName() + "\"");
             }
         }
-/*
-System.out.println("RolapHierarchy.init: "+
-"BOTTOM name=" +getName());
-*/
     }
     void setMemberReader(MemberReader memberReader) {
         this.memberReader = memberReader;

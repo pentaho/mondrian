@@ -2069,64 +2069,11 @@ public class BuiltinFunTable extends FunTableImpl {
 
     protected Member[] getNonEmptyMemberChildren(Evaluator evaluator, Member member) {
         SchemaReader sr = evaluator.getSchemaReader();
-try {
-//System.out.println("BuiltinFunTable.getNonEmptyMemberChildren: TOP");
-/*
-RME: ORIGINAL CODE 
         if (evaluator.isNonEmpty()) {
             return sr.getMemberChildren(member, evaluator);
-        }
-        return sr.getMemberChildren(member);
-*/
-/*
-        // RME: This is a hack.
-        // The SqlMemberSource makeMember takes a parent member
-        // and all next level down elements and creates "children"
-        // of the parent member, i.e., with parent
-        // Time].[All Times].[2006] a child would be
-        // [Time].[All Times].[2006].[Q1 2004] which is clearly
-        // not a valid child member.
-*/
-        Member[] ms = null;
-        if (evaluator.isNonEmpty()) {
-            ms = sr.getMemberChildren(member, evaluator);
-            if (ms != null) {
-                org.eigenbase.util.property.IntegerProperty monLimit = 
-                        mondrian.olap.MondrianProperties.instance().ResultLimit;
-                int oldLimit = monLimit.get();
-                Member[] allms = null;
-                try {
-                    monLimit.set(0);
-                    allms = sr.getMemberChildren(member);
-                } finally {
-                    monLimit.set(oldLimit);
-                }
-
-                // take intersection of both arrays
-                List l = new ArrayList();
-                for (int i = 0; i < ms.length; i++) {
-                    Member m = ms[i];
-                    boolean add = false;
-                    for (int j = 0; j < allms.length; j++) {
-                        Member x = allms[j];
-                        if (m.getUniqueName().equals(x.getUniqueName())) {
-                            add = true;
-                            break;
-                        }
-                    }
-                    if (add) {
-                        l.add(m);
-                    }
-                }
-                ms = (Member[]) l.toArray(new Member[0]);
-            }
         } else {
-            ms =  sr.getMemberChildren(member);
+            return sr.getMemberChildren(member);
         }
-        return ms;
-} finally {
-//System.out.println("BuiltinFunTable.getNonEmptyMemberChildren: BOTTOM");
-}
     }
 
     /**

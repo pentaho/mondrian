@@ -81,6 +81,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
             throw Util.newInternal("cannot restrict SQL to calculated member");
         Evaluator e = evaluator.push(parent);
         SqlConstraintUtils.addContextConstraint(sqlQuery, e, strict);
+        SqlConstraintUtils.addMemberConstraint(sqlQuery, parent, true);
     }
 
     public void addMemberConstraint(SqlQuery sqlQuery, List parents) {
