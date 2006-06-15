@@ -102,15 +102,15 @@ public class Test {
         RolapCube salesCube = (RolapCube) connection.getSchema().lookupCube("Sales", true);
         RolapHierarchy measuresHierarchy = 
                 (RolapHierarchy) salesCube.getMeasuresHierarchy();
-        testMemberReader(measuresHierarchy.memberReader);
+        testMemberReader(measuresHierarchy.getMemberReader());
 
         RolapHierarchy genderHierarchy = (RolapHierarchy)
             salesCube.lookupHierarchy("Gender", false);
-        testMemberReader(genderHierarchy.memberReader);
+        testMemberReader(genderHierarchy.getMemberReader());
 
         RolapHierarchy customerHierarchy = (RolapHierarchy)
             salesCube.lookupHierarchy("Customers", false);
-        testMemberReader(customerHierarchy.memberReader);
+        testMemberReader(customerHierarchy.getMemberReader());
     }
     void testMemberReader(MemberReader reader)
     {
