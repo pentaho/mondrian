@@ -16,10 +16,12 @@ CLASSPATH=$CLASSPATH:$MONDRIAN_LIB/javacup.jar
 CLASSPATH=$CLASSPATH:$MONDRIAN_LIB/commons-dbcp.jar
 CLASSPATH=$CLASSPATH:$MONDRIAN_LIB/commons-collections.jar
 CLASSPATH=$CLASSPATH:$MONDRIAN_LIB/commons-pool.jar
+CLASSPATH=$CLASSPATH:$MONDRIAN_LIB/commons-math-1.0.jar
 
 CLASSPATH=$CLASSPATH:$MONDRIAN_TEST_LIB/mysql-connector-java-3.1.7-bin.jar
 CLASSPATH=$CLASSPATH:$MONDRIAN_TEST_LIB/ojdbc14.jar
 CLASSPATH=$CLASSPATH:$MONDRIAN_TEST_LIB/junit.jar
+CLASSPATH=$CLASSPATH:$MONDRIAN_TEST_LIB/derby.jar
 
 CLASSPATH="$CLASSPATH:$MONDRIAN_HOME/testclasses"
 
@@ -35,6 +37,9 @@ CATALOG_URL="file://localhost${MONDRIAN_HOME}/demo/FoodMart.xml"
 JDBC_DRIVER=com.mysql.jdbc.Driver
 JDBC_URL="jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart"
 
+# Derby
+#JDBC_DRIVER=org.apache.derby.jdbc.EmbeddedDriver
+#JDBC_URL="jdbc:derby:demo/derby/foodmart;JdbcUser=sa;JdbcPassword=sa"
 
 P="-Dmondrian.jdbcDrivers=$JDBC_DRIVER"
 P="$P -Dmondrian.foodmart.jdbcURL=$JDBC_URL"
