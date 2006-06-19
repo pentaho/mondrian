@@ -1559,6 +1559,7 @@ one:</p>
 &nbsp;&nbsp;&nbsp; salary,<br>
 &nbsp;&nbsp;&nbsp; time<br>
 	WHERE ec.supervisor_id = salary.employee_id<br>
+	AND ec.supervisor_id &lt;&gt; ec.employee_id<br>
 	AND time.time_id = salary.time_id<br>
 	GROUP BY ec.employee_id, ec.supervisor_id, time.year</code></p>
 </blockquote>
