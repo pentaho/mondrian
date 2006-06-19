@@ -28,6 +28,9 @@
     </wildcardResourcePatterns>
   </component>
   <component name="DataSourceManagerImpl" />
+  <component name="DependenciesAnalyzeManager">
+    <option name="myForwardDirection" value="false" />
+  </component>
   <component name="DependencyValidationManager" />
   <component name="EntryPointsManager">
     <entry_points />
@@ -44,7 +47,6 @@
     <option name="DEPRECATION" value="true" />
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
     <option name="MAXIMUM_HEAP_SIZE" value="128" />
-    <option name="USE_GENERICS_COMPILER" value="false" />
   </component>
   <component name="JavadocGenerationManager">
     <option name="OUTPUT_DIRECTORY" />
@@ -180,7 +182,7 @@
       <module fileurl="file://$PROJECT_DIR$/mondrianTest.iml" filepath="$PROJECT_DIR$/mondrianTest.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="JDK1.5" />
+  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="false" project-jdk-name="JDK 1.4.2_02" />
   <component name="RmicSettings">
     <option name="IS_EANABLED" value="false" />
     <option name="DEBUGGING_INFO" value="true" />
@@ -204,6 +206,9 @@
         <root url="jar://$PROJECT_DIR$/../lib/xml-apis.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/javacup.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/jpivot.war!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/eigenbase-xom.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/eigenbase-resgen.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/servlet.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
@@ -240,10 +245,19 @@
       <JAVADOC />
       <SOURCES />
     </library>
+    <library name="jdbcDrivers">
+      <CLASSES>
+        <root url="jar:///usr/lib/oracle/xe/app/oracle/product/10.2.0/server/jdbc/lib/ojdbc14.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../testlib/derby.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
   </component>
   <component name="uidesigner-configuration">
     <option name="INSTRUMENT_CLASSES" value="true" />
     <option name="COPY_FORMS_RUNTIME_TO_OUTPUT" value="true" />
   </component>
+  <UsedPathMacros />
 </project>
 
