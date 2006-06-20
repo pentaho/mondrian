@@ -11,7 +11,7 @@
 package mondrian.tui;
 
 import mondrian.spi.CatalogLocator;
-import mondrian.spi.impl.CatalogLocatorImpl;                                    
+import mondrian.spi.impl.CatalogLocatorImpl;
 import mondrian.xmla.DataSourcesConfig;
 import mondrian.olap.Util;
 import mondrian.xmla.XmlaConstants;
@@ -52,12 +52,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerConfigurationException;
 
-/** 
- * This files provide support for making XMLA requests and looking at 
+/**
+ * This files provide support for making XMLA requests and looking at
  * the responses.
- * 
+ *
  * @author <a>Richard M. Emberson</a>
- * @version 
+ * @version
  */
 public class XmlaSupport {
     private static final Logger LOGGER = Logger.getLogger(XmlaSupport.class);
@@ -67,9 +67,9 @@ public class XmlaSupport {
 
     public static final String CATALOG_NAME = "FoodMart";
     public static final String DATASOURCE_NAME = "MondrianFoodMart";
-    public static final String DATASOURCE_DESCRIPTION = 
+    public static final String DATASOURCE_DESCRIPTION =
             "Mondrian FoodMart data source";
-    public static final String DATASOURCE_INFO = 
+    public static final String DATASOURCE_INFO =
             "Provider=Mondrian;DataSource=MondrianFoodMart;";
 
     public static final Map ENV;
@@ -83,15 +83,15 @@ public class XmlaSupport {
     }
 
     /**
-     * This is a parameterized XSLT. 
+     * This is a parameterized XSLT.
      * The parameters are:
      *   "soap" with values "none" or empty
      *   "content" with values "schemadata", "schema", "data" or empty
      * With these setting one can extract from an XMLA SOAP message
      * the soap wrapper plus body or simply the body; the complete
-     * body (schema and data), only the schema of the body, only the 
+     * body (schema and data), only the schema of the body, only the
      * data of the body or none of the body
-     * 
+     *
      */
     public static String XMLA_TRANSFORM =
         "<?xml version='1.0'?>" +
@@ -120,7 +120,7 @@ public class XmlaSupport {
         "    <xsl:when test=\"$soap='none'\"> " +
         "      <xsl:apply-templates/> " +
         "    </xsl:when> " +
-        "    <xsl:otherwise> " + 
+        "    <xsl:otherwise> " +
         "      <xsl:copy> " +
         "        <xsl:apply-templates select='@*|node()'/> " +
         "      </xsl:copy> " +
@@ -159,7 +159,7 @@ public class XmlaSupport {
         "    <xsl:when test=\"$soap='none'\"> " +
         "      <xsl:apply-templates/> " +
         "    </xsl:when> " +
-        "    <xsl:otherwise> " + 
+        "    <xsl:otherwise> " +
         "      <xsl:copy> " +
         "        <xsl:apply-templates select='@*|node()'/> " +
         "      </xsl:copy> " +
@@ -172,7 +172,7 @@ public class XmlaSupport {
         "    <xsl:when test=\"$soap='none'\"> " +
         "      <xsl:apply-templates/> " +
         "    </xsl:when> " +
-        "    <xsl:otherwise> " + 
+        "    <xsl:otherwise> " +
         "      <xsl:copy> " +
         "        <xsl:apply-templates select='@*|node()'/> " +
         "      </xsl:copy> " +
@@ -185,11 +185,11 @@ public class XmlaSupport {
         "    <xsl:when test=\"$soap='none'\"> " +
         "      <xsl:apply-templates/> " +
         "    </xsl:when> " +
-        "    <xsl:otherwise> " + 
+        "    <xsl:otherwise> " +
         "      <xsl:copy> " +
         "        <xsl:apply-templates select='@*|node()'/> " +
         "      </xsl:copy> " +
-        "    </xsl:otherwise > " + 
+        "    </xsl:otherwise > " +
         "  </xsl:choose> " +
         "</xsl:template> " +
         "<!-- copy 'schema' if content==schema or schemadata --> " +
@@ -232,8 +232,8 @@ public class XmlaSupport {
         "</xsl:template> " +
         "</xsl:stylesheet>";
 
-    
-    /** 
+
+    /**
      * This is the prefix used in xpath and transforms for the xmla rowset
      * namespace "urn:schemas-microsoft-com:xml-analysis:rowset".
      */
@@ -267,74 +267,75 @@ public class XmlaSupport {
         final Parser xmlParser = XOMUtil.createDefaultParser();
         final DOMWrapper def = xmlParser.parse(dsConfigReader);
 
-        DataSourcesConfig.DataSources datasources = 
+        DataSourcesConfig.DataSources datasources =
             new DataSourcesConfig.DataSources(def);
 
         return datasources;
     }
-    
-    /** 
+
+    /**
      * With a connection string, generate the DataSource xml. Since this
      * is used by directly, same process, communicating with XMLA
      * Mondrian, the fact that the URL contains "localhost" is not
      * important.
-     * 
-     * @param connectString 
-     * @param catalogNameUrls array of catalog names, catalog url pairs 
-     * @return 
+     *
+     * @param connectString
+     * @param catalogNameUrls array of catalog names, catalog url pairs
+     * @return
      */
-    public static String getDataSourcesText(String connectString,
+    public static String getDataSourcesText(
+            String connectString,
             String[][] catalogNameUrls) {
         StringBuffer buf = new StringBuffer(500);
-            buf.append("<?xml version=\"1.0\"?>");
-            buf.append(nl);
-            buf.append("<DataSources>");
-            buf.append(nl);
-            buf.append("   <DataSource>");
-            buf.append(nl);
-            buf.append("       <DataSourceName>");
-            buf.append(DATASOURCE_NAME);
-            buf.append("</DataSourceName>");
-            buf.append(nl);
-            buf.append("       <DataSourceDescription>"); 
-            buf.append(DATASOURCE_DESCRIPTION); 
-            buf.append("</DataSourceDescription>");
-            buf.append(nl);
-            buf.append("       <URL>http://localhost:8080/mondrian/xmla</URL>"); 
-            buf.append(nl);
-            buf.append("       <DataSourceInfo><![CDATA["); 
-            buf.append(connectString); 
-            buf.append("]]></DataSourceInfo>");
-            buf.append(nl);
-            buf.append("       <Catalogs>"); 
-            buf.append(nl);
-            for (int i = 0; i < catalogNameUrls.length; i++) {
-                String[] catalogNameUrl = catalogNameUrls[i];
-                String name = catalogNameUrl[0];
-                String url = catalogNameUrl[1];
-                buf.append("           <Catalog name='"); 
-                buf.append(name); 
-                buf.append("'><![CDATA["); 
-                buf.append(url); 
-                buf.append("]]></Catalog>"); 
-            }
-            buf.append("       </Catalogs>"); 
-            buf.append(nl);
+        buf.append("<?xml version=\"1.0\"?>");
+        buf.append(nl);
+        buf.append("<DataSources>");
+        buf.append(nl);
+        buf.append("   <DataSource>");
+        buf.append(nl);
+        buf.append("       <DataSourceName>");
+        buf.append(DATASOURCE_NAME);
+        buf.append("</DataSourceName>");
+        buf.append(nl);
+        buf.append("       <DataSourceDescription>");
+        buf.append(DATASOURCE_DESCRIPTION);
+        buf.append("</DataSourceDescription>");
+        buf.append(nl);
+        buf.append("       <URL>http://localhost:8080/mondrian/xmla</URL>");
+        buf.append(nl);
+        buf.append("       <DataSourceInfo><![CDATA[");
+        buf.append(connectString);
+        buf.append("]]></DataSourceInfo>");
+        buf.append(nl);
 
-            buf.append("       <ProviderName>Mondrian</ProviderName>");
-            buf.append(nl);
-            buf.append("       <ProviderType>MDP</ProviderType>");
-            buf.append(nl);
-            buf.append("       <AuthenticationMode>Unauthenticated</AuthenticationMode>"); 
-            buf.append(nl);
-            buf.append("   </DataSource>");
-            buf.append(nl);
-            buf.append("</DataSources>");
-            buf.append(nl);
+        buf.append("       <ProviderName>Mondrian</ProviderName>");
+        buf.append(nl);
+        buf.append("       <ProviderType>MDP</ProviderType>");
+        buf.append(nl);
+        buf.append("       <AuthenticationMode>Unauthenticated</AuthenticationMode>");
+        buf.append(nl);
+        buf.append("       <Catalogs>");
+        buf.append(nl);
+        for (int i = 0; i < catalogNameUrls.length; i++) {
+            String[] catalogNameUrl = catalogNameUrls[i];
+            String name = catalogNameUrl[0];
+            String url = catalogNameUrl[1];
+            buf.append("           <Catalog name='");
+            buf.append(name);
+            buf.append("'><Definition>");
+            buf.append(url);
+            buf.append("</Definition></Catalog>");
+        }
+        buf.append("       </Catalogs>");
+        buf.append(nl);
+        buf.append("   </DataSource>");
+        buf.append(nl);
+        buf.append("</DataSources>");
+        buf.append(nl);
         String datasources = buf.toString();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("XmlaSupport.getDataSources: datasources="+
-                datasources);
+                    datasources);
         }
         return datasources;
     }
@@ -528,25 +529,25 @@ public class XmlaSupport {
         return (nodes.length == 1)
             ? XmlUtil.newDocument(nodes[0], true) : null;
     }
-    
-    /** 
+
+    /**
      * Given a Document and an xpath/namespace-array pair, extract and return
      * the Nodes resulting from applying the xpath.
-     * 
-     * @param doc 
-     * @param xpath 
-     * @param nsArray 
-     * @return 
-     * @throws SAXException 
-     * @throws IOException 
+     *
+     * @param doc
+     * @param xpath
+     * @param nsArray
+     * @return
+     * @throws SAXException
+     * @throws IOException
      */
     public static Node[] extractNodes(
-            Node node, String xpath, String[][] nsArray) 
+            Node node, String xpath, String[][] nsArray)
             throws SAXException, IOException {
 
         Document contextDoc = XmlUtil.createContextDocument(nsArray);
         Node[] nodes = XmlUtil.selectAsNodes(node, xpath, contextDoc);
-        
+
         if (LOGGER.isDebugEnabled()) {
             StringBuffer buf = new StringBuffer(1024);
             buf.append("XmlaSupport.extractNodes: ");
@@ -567,36 +568,36 @@ public class XmlaSupport {
     /////////////////////////////////////////////////////////////////////////
     // soap xmla file
     /////////////////////////////////////////////////////////////////////////
-    /** 
+    /**
      * Process the given input file as a SOAP-XMLA request.
-     * 
-     * @param file 
-     * @param connectString 
-     * @return 
-     * @throws IOException 
-     * @throws ServletException 
-     * @throws SAXException 
+     *
+     * @param file
+     * @param connectString
+     * @return
+     * @throws IOException
+     * @throws ServletException
+     * @throws SAXException
      */
-    public static byte[] processSoapXmla(File file, 
-            String connectString, 
+    public static byte[] processSoapXmla(File file,
+            String connectString,
             String[][] catalogNameUrls,
-            String cbClassName) 
+            String cbClassName)
                 throws IOException, ServletException, SAXException {
 
         String requestText = XmlaSupport.readFile(file);
         return processSoapXmla(requestText, connectString, catalogNameUrls, cbClassName);
     }
-    public static byte[] processSoapXmla(Document doc, 
-            String connectString, 
+    public static byte[] processSoapXmla(Document doc,
+            String connectString,
             String[][] catalogNameUrls,
-            String cbClassName) 
+            String cbClassName)
                 throws IOException, ServletException, SAXException {
 
         String requestText = XmlUtil.toString(doc, false);
         return processSoapXmla(requestText, connectString, catalogNameUrls, cbClassName);
     }
-    public static byte[] processSoapXmla(String requestText, 
-            String connectString, 
+    public static byte[] processSoapXmla(String requestText,
+            String connectString,
             String[][] catalogNameUrls,
             String cbClassName)
             throws IOException, ServletException, SAXException {
@@ -608,7 +609,7 @@ public class XmlaSupport {
 
             // Create datasource file and put datasource xml into it.
             // Mark it as delete on exit.
-            String dataSourceText = 
+            String dataSourceText =
                 XmlaSupport.getDataSourcesText(connectString, catalogNameUrls);
 
             dsFile = File.createTempFile("datasources.xml", null);
@@ -627,7 +628,7 @@ public class XmlaSupport {
             MockHttpServletResponse res = new MockHttpServletResponse();
             res.setCharacterEncoding("UTF-8");
 
-            // process 
+            // process
             MockServletContext servletContext = new MockServletContext();
             MockServletConfig servletConfig = new MockServletConfig(servletContext);
 
@@ -649,14 +650,14 @@ public class XmlaSupport {
         }
     }
 
-    public static Servlet makeServlet(String connectString, 
+    public static Servlet makeServlet(String connectString,
             String[][] catalogNameUrls,
             String cbClassName)
             throws IOException, ServletException, SAXException {
 
             // Create datasource file and put datasource xml into it.
             // Mark it as delete on exit.
-            String dataSourceText = 
+            String dataSourceText =
                 XmlaSupport.getDataSourcesText(connectString, catalogNameUrls);
 
             File dsFile = File.createTempFile("datasources.xml", null);
@@ -671,7 +672,7 @@ public class XmlaSupport {
             out.write(dataSourceText.getBytes());
             out.flush();
 
-            // process 
+            // process
             MockServletContext servletContext = new MockServletContext();
             MockServletConfig servletConfig = new MockServletConfig(servletContext);
             servletConfig.addInitParameter(XmlaServlet.PARAM_CALLBACKS, cbClassName);
@@ -685,19 +686,19 @@ public class XmlaSupport {
 
             return servlet;
     }
-    public static byte[] processSoapXmla(File file, Servlet servlet) 
+    public static byte[] processSoapXmla(File file, Servlet servlet)
             throws IOException, ServletException, SAXException {
 
         String requestText = XmlaSupport.readFile(file);
         return processSoapXmla(requestText, servlet);
     }
-    public static byte[] processSoapXmla(Document doc, Servlet servlet) 
+    public static byte[] processSoapXmla(Document doc, Servlet servlet)
             throws IOException, ServletException, SAXException {
 
         String requestText = XmlUtil.toString(doc, false);
         return processSoapXmla(requestText, servlet);
     }
-    public static byte[] processSoapXmla(String requestText, Servlet servlet) 
+    public static byte[] processSoapXmla(String requestText, Servlet servlet)
             throws IOException, ServletException, SAXException {
 
         byte[] reqBytes = requestText.getBytes();
@@ -717,75 +718,75 @@ public class XmlaSupport {
 
 
 
-    /** 
+    /**
      * Check is a byte array containing a SOAP-XMLA response method is valid.
      * Schema validation occurs if the XMLA response contains both a content
      * and schmema section. This includes both the SOAP elements and the
      * SOAP body content, the XMLA response.
-     * 
-     * @param bytes 
-     * @throws SAXException 
-     * @throws IOException 
-     * @throws ParserConfigurationException 
-     * @throws TransformerException 
-     * @throws TransformerConfigurationException 
+     *
+     * @param bytes
+     * @throws SAXException
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws TransformerException
+     * @throws TransformerConfigurationException
      */
-    public static boolean validateSchemaSoapXmla(byte[] bytes) 
+    public static boolean validateSchemaSoapXmla(byte[] bytes)
             throws SAXException, IOException,
                 ParserConfigurationException,
                 TransformerException,
                 TransformerConfigurationException {
 
-        return validateEmbeddedSchema(bytes, 
+        return validateEmbeddedSchema(bytes,
             XmlUtil.SOAP_XMLA_XDS2XS,
-            XmlUtil.SOAP_XMLA_XDS2XD); 
+            XmlUtil.SOAP_XMLA_XDS2XD);
     }
 
 
     /////////////////////////////////////////////////////////////////////////
     // xmla file
     /////////////////////////////////////////////////////////////////////////
-    
-    /** 
-     * Process the given input file as an XMLA request (no SOAP elements). 
-     * 
-     * @param file 
-     * @param connectString 
-     * @return 
-     * @throws IOException 
-     * @throws XOMException 
+
+    /**
+     * Process the given input file as an XMLA request (no SOAP elements).
+     *
+     * @param file
+     * @param connectString
+     * @return
+     * @throws IOException
+     * @throws XOMException
      */
-    public static byte[] processXmla(File file, 
-            String connectString, 
+    public static byte[] processXmla(File file,
+            String connectString,
             String[][] catalogNameUrls)
             throws IOException, SAXException, XOMException {
 
         String requestText = XmlaSupport.readFile(file);
         return processXmla(requestText, connectString, catalogNameUrls);
     }
-    public static byte[] processXmla(String requestText, 
-            String connectString, 
+    public static byte[] processXmla(String requestText,
+            String connectString,
             String[][] catalogNameUrls)
                 throws IOException, SAXException, XOMException {
 
         Document requestDoc = XmlUtil.parseString(requestText);
         return processXmla(requestDoc, connectString, catalogNameUrls);
     }
-    public static byte[] processXmla(Document requestDoc, 
-            String connectString, 
+    public static byte[] processXmla(Document requestDoc,
+            String connectString,
             String[][] catalogNameUrls)
                 throws IOException, XOMException {
 
         Element requestElem = requestDoc.getDocumentElement();
         return processXmla(requestElem, connectString, catalogNameUrls);
     }
-    public static byte[] processXmla(Element requestElem, 
-            String connectString, 
+    public static byte[] processXmla(Element requestElem,
+            String connectString,
             String[][] catalogNameUrls)
                 throws IOException, XOMException {
         // make request
         CatalogLocator cl = getCatalogLocator();
-        DataSourcesConfig.DataSources dataSources = 
+        DataSourcesConfig.DataSources dataSources =
             getDataSources(connectString, catalogNameUrls);
         XmlaHandler handler = new XmlaHandler(dataSources, cl);
         XmlaRequest request = new DefaultXmlaRequest(requestElem, null);
@@ -799,44 +800,44 @@ public class XmlaSupport {
         return resBuf.toByteArray();
     }
 
-    /** 
+    /**
      * Check is a byte array containing a XMLA response method is valid.
      * Schema validation occurs if the XMLA response contains both a content
      * and schmema section. This should not be used when the byte array
      * contains both the SOAP elements and content, but only for the content.
-     * 
-     * @param bytes 
-     * @throws SAXException 
-     * @throws IOException 
-     * @throws ParserConfigurationException 
-     * @throws TransformerException 
-     * @throws TransformerConfigurationException 
+     *
+     * @param bytes
+     * @throws SAXException
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws TransformerException
+     * @throws TransformerConfigurationException
      */
-    public static boolean validateSchemaXmla(byte[] bytes) 
+    public static boolean validateSchemaXmla(byte[] bytes)
             throws SAXException, IOException,
                 ParserConfigurationException,
                 TransformerException,
                 TransformerConfigurationException {
 
-        return validateEmbeddedSchema(bytes, 
-            XmlUtil.XMLA_XDS2XS, 
+        return validateEmbeddedSchema(bytes,
+            XmlUtil.XMLA_XDS2XS,
             XmlUtil.XMLA_XDS2XD);
     }
 
     /////////////////////////////////////////////////////////////////////////
     // helpers
     /////////////////////////////////////////////////////////////////////////
-    
-    /** 
+
+    /**
      * This validates a SOAP-XMLA response using xpaths to extract the
      * schema and data parts. In addition, it does a little surgery on
      * the DOMs removing the schema nodes from the XMLA root node.
-     * 
-     * @param bytes 
-     * @throws SAXException 
-     * @throws IOException 
+     *
+     * @param bytes
+     * @throws SAXException
+     * @throws IOException
      */
-    public static boolean validateSoapXmlaUsingXpath(byte[] bytes) 
+    public static boolean validateSoapXmlaUsingXpath(byte[] bytes)
             throws SAXException, IOException {
 
         if (! XmlUtil.supportsValidation()) {
@@ -846,16 +847,16 @@ public class XmlaSupport {
         return validateNodes(nodes);
     }
 
-    /** 
+    /**
      * This validates a XMLA response using xpaths to extract the
      * schema and data parts. In addition, it does a little surgery on
      * the DOMs removing the schema nodes from the XMLA root node.
-     * 
-     * @param bytes 
-     * @throws SAXException 
-     * @throws IOException 
+     *
+     * @param bytes
+     * @throws SAXException
+     * @throws IOException
      */
-    public static boolean validateXmlaUsingXpath(byte[] bytes) 
+    public static boolean validateXmlaUsingXpath(byte[] bytes)
             throws SAXException, IOException {
 
         if (! XmlUtil.supportsValidation()) {
@@ -865,17 +866,17 @@ public class XmlaSupport {
         return validateNodes(nodes);
     }
 
-    /** 
+    /**
      * Validate Nodes with throws an error if validation was attempted but
      * failed, returns true if validation was successful and false if
      * validation was not tried.
-     * 
-     * @param nodes 
+     *
+     * @param nodes
      * @return  true if validation succeeded, false if validation was not tried
-     * @throws SAXException 
-     * @throws IOException 
+     * @throws SAXException
+     * @throws IOException
      */
-    public static boolean validateNodes(Node[] nodes) 
+    public static boolean validateNodes(Node[] nodes)
             throws SAXException, IOException {
 
         if (! XmlUtil.supportsValidation()) {
@@ -891,9 +892,9 @@ public class XmlaSupport {
             // TODO: error
             return false;
         }
-        
-        Node schemaNode = nodes[0]; 
-        Node rowNode = nodes[1]; 
+
+        Node schemaNode = nodes[0];
+        Node rowNode = nodes[1];
 
         // This is the "root" node that contains both the schemaNode and
         // the rowNode.
@@ -914,22 +915,22 @@ public class XmlaSupport {
     }
 
 
-    /** 
+    /**
      * See next method for JavaDoc {@link #validateEmbeddedSchema()}.
-     * 
-     * @param bytes 
-     * @param schemaTransform 
-     * @param dataTransform 
-     * @throws SAXException 
-     * @throws IOException 
-     * @throws ParserConfigurationException 
-     * @throws TransformerException 
-     * @throws TransformerConfigurationException 
+     *
+     * @param bytes
+     * @param schemaTransform
+     * @param dataTransform
+     * @throws SAXException
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws TransformerException
+     * @throws TransformerConfigurationException
      */
     public static boolean validateEmbeddedSchema(
-            byte[] bytes, 
-            String schemaTransform, 
-            String dataTransform) 
+            byte[] bytes,
+            String schemaTransform,
+            String dataTransform)
             throws SAXException, IOException,
                 ParserConfigurationException,
                 TransformerException,
@@ -943,13 +944,13 @@ public class XmlaSupport {
         return validateEmbeddedSchema(doc, schemaTransform, dataTransform);
     }
 
-    /** 
+    /**
      * A given Document has both content and an embedded schema (where
      * the schema has a single root node and the content has a single
      * root node - they are not interwoven). A single xsl transform is
      * provided to extract the schema part of the Document and another
      * xsl transform is provided to extract the content part and then
-     * the content is validated against the schema. 
+     * the content is validated against the schema.
      * <p>
      * If the content is valid, then nothing happens, but if the content
      * is not valid an execption is thrown (currently a RuntimeException).
@@ -957,20 +958,20 @@ public class XmlaSupport {
      * When Mondrian moves to Java 5 or includes the JAXP 1.3 jar, then
      * there is a utility in JAXP that does something like this (but allows
      * for multiple schema/content parts).
-     * 
-     * @param doc 
-     * @param schemaTransform 
-     * @param dataTransform 
-     * @throws SAXException 
-     * @throws IOException 
-     * @throws ParserConfigurationException 
-     * @throws TransformerException 
-     * @throws TransformerConfigurationException 
+     *
+     * @param doc
+     * @param schemaTransform
+     * @param dataTransform
+     * @throws SAXException
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws TransformerException
+     * @throws TransformerConfigurationException
      */
     public static boolean validateEmbeddedSchema(
             Document doc,
-            String schemaTransform, 
-            String dataTransform) 
+            String schemaTransform,
+            String dataTransform)
             throws SAXException, IOException,
                 ParserConfigurationException,
                 TransformerException,
@@ -980,7 +981,7 @@ public class XmlaSupport {
             return false;
         }
 
-        Node dataDoc = XmlUtil.transform(doc, 
+        Node dataDoc = XmlUtil.transform(doc,
             new BufferedReader(new StringReader(dataTransform)));
         if (dataDoc == null) {
             LOGGER.debug("XmlaSupport.validateEmbeddedSchema: dataDoc is null");
@@ -1000,7 +1001,7 @@ public class XmlaSupport {
         }
 
 
-        Node schemaDoc = XmlUtil.transform(doc, 
+        Node schemaDoc = XmlUtil.transform(doc,
             new BufferedReader(new StringReader(schemaTransform)));
         if (schemaDoc == null) {
             LOGGER.debug("XmlaSupport.validateEmbeddedSchema: schemaDoc is null");
@@ -1034,7 +1035,7 @@ public class XmlaSupport {
                 TransformerException,
                 TransformerConfigurationException {
 
-        Node node = XmlUtil.transform(doc, 
+        Node node = XmlUtil.transform(doc,
             new BufferedReader(new StringReader(XMLA_TRANSFORM)),
             namevalueParameters);
 
@@ -1042,13 +1043,13 @@ public class XmlaSupport {
     }
 
 
-    /** 
-     * Reads a file line by line, adds a '\n' after each line and 
+    /**
+     * Reads a file line by line, adds a '\n' after each line and
      * returns in a String.
-     * 
-     * @param file 
-     * @return 
-     * @throws IOException 
+     *
+     * @param file
+     * @return
+     * @throws IOException
      */
     public static String readFile(File file) throws IOException {
         StringBuffer buf = new StringBuffer(1024);
@@ -1072,12 +1073,12 @@ public class XmlaSupport {
         return buf.toString();
     }
 
-    /** 
-     * This code is basically does the Ant-like property replacement 
+    /**
+     * This code is basically does the Ant-like property replacement
      * job. Its take from the XmlaTestContext class - nice code btw.
-     * 
-     * @param text 
-     * @return 
+     *
+     * @param text
+     * @return
     public static String replaceProperties(String text, Map env) {
         StringBuffer buf = new StringBuffer(text.length()+200);
 
@@ -1098,5 +1099,5 @@ public class XmlaSupport {
     }
      */
 
-    private XmlaSupport() {} 
+    private XmlaSupport() {}
 }

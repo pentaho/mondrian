@@ -104,24 +104,24 @@ public class XmlaTestContext {
             Util.parseConnectString(getConnectString());
         String catalogUrl = connectProperties.get("catalog");
 
-        StringReader dsConfigReader = new StringReader(
-                "<?xml version=\"1.0\"?>" +
-                "<DataSources>" +
-                "   <DataSource>" +
-                "       <DataSourceName>" + DATASOURCE_INFO + "</DataSourceName>" +
-                "       <DataSourceDescription>" + DATASOURCE_DESCRIPTION + "</DataSourceDescription>" +
-                "       <URL>http://localhost:8080/mondrian/xmla</URL>" +
-                "       <DataSourceInfo>" + getConnectString() + "</DataSourceInfo>" +
-                "       <Catalogs>" + 
-                "          <Catalog name='FoodMart'><![CDATA[" + 
-                catalogUrl +
-                "]]></Catalog>" + 
-                "       </Catalogs>" + 
-                "       <ProviderName>Mondrian</ProviderName>" +
-                "       <ProviderType>MDP</ProviderType>" +
-                "       <AuthenticationMode>Unauthenticated</AuthenticationMode>" +
-                "   </DataSource>" +
-                "</DataSources>");
+        StringReader dsConfigReader =
+                new StringReader("<?xml version=\"1.0\"?>" +
+                        "<DataSources>" +
+                        "   <DataSource>" +
+                        "       <DataSourceName>" + DATASOURCE_INFO + "</DataSourceName>" +
+                        "       <DataSourceDescription>" + DATASOURCE_DESCRIPTION + "</DataSourceDescription>" +
+                        "       <URL>http://localhost:8080/mondrian/xmla</URL>" +
+                        "       <DataSourceInfo>" + getConnectString() + "</DataSourceInfo>" +
+                        "       <ProviderName>Mondrian</ProviderName>" +
+                        "       <ProviderType>MDP</ProviderType>" +
+                        "       <AuthenticationMode>Unauthenticated</AuthenticationMode>" +
+                        "       <Catalogs>" +
+                        "          <Catalog name='FoodMart'><Definition>" +
+                        catalogUrl +
+                        "</Definition></Catalog>" +
+                        "       </Catalogs>" +
+                        "   </DataSource>" +
+                        "</DataSources>");
         try {
             final Parser xmlParser = XOMUtil.createDefaultParser();
             final DOMWrapper def = xmlParser.parse(dsConfigReader);
