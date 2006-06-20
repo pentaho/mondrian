@@ -309,7 +309,7 @@ public class Model {
 
         public Object getValue(Object o) {
             try {
-                return getMethod().invoke(o, null);
+                return getMethod().invoke(o, (Object []) null);
             } catch (IllegalAccessException e) {
                 throw Util.newInternal(e, "Error while getting attribute value");
             } catch (IllegalArgumentException e) {
@@ -406,7 +406,7 @@ public class Model {
 
         public Collection getTargets(Object o) {
             try {
-                Object result = getMethod.invoke(o, null);
+                Object result = getMethod.invoke(o, (Object []) null);
                 if (result instanceof Collection) {
                     return (Collection) result;
                 } else {
