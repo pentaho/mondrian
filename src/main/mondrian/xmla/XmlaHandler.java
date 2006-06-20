@@ -85,6 +85,10 @@ public class XmlaHandler implements XmlaConstants {
                         "duplicated data source name '" +
                         ds.getDataSourceName() + "'");
             }
+            // Set parent pointers.
+            for (int j = 0; j < ds.catalogs.catalogs.length; j++) {
+                 ds.catalogs.catalogs[j].setDataSource(ds);
+            }
             map.put(ds.getDataSourceName(), ds);
         }
         dataSourcesMap = Collections.unmodifiableMap(map);
@@ -783,7 +787,7 @@ public class XmlaHandler implements XmlaConstants {
         DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds);
         String role = request.getRole();
 
-        final Connection connection = getConnection(ds, dsCatalog.cdata, role);
+        final Connection connection = getConnection(dsCatalog, role);
 
         final String statement = request.getStatement();
         final Query query = connection.parseQuery(statement);
@@ -957,8 +961,7 @@ public class XmlaHandler implements XmlaConstants {
             DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds);
             String role = request.getRole();
 
-            final Connection connection = 
-                getConnection(ds, dsCatalog.cdata, role);
+            final Connection connection = getConnection(dsCatalog, role);
 
             final Query query;
             try {
@@ -1861,23 +1864,25 @@ public class XmlaHandler implements XmlaConstants {
         writer.endDocument();
     }
 
-    /** 
-     * Get a Connection given the Datasource, catalogUrl and user role. 
-     * 
-     * @param ds 
-     * @param catalogUrl 
-     * @param role 
-     * @return 
-     * @throws XmlaException 
+    /**
+     * Gets a Connection given a catalog (and implicitly the catalog's data
+     * source) and a user role.
+     *
+     * @param catalog Catalog
+     * @param role User role
+     * @return Connection
+     * @throws XmlaException
      */
-    protected Connection getConnection(DataSourcesConfig.DataSource ds,
-				       String catalogUrl, String role) 
+    protected Connection getConnection(
+            DataSourcesConfig.Catalog catalog,
+            String role)
             throws XmlaException {
+        DataSourcesConfig.DataSource ds = catalog.getDataSource();
 
         Util.PropertyList connectProperties =
-            Util.parseConnectString(ds.getDataSourceInfo());
+            Util.parseConnectString(catalog.getDataSourceInfo());
 
-        catalogUrl = catalogLocator.locate(catalogUrl);
+        String catalogUrl = catalogLocator.locate(catalog.definition);
 
         if (LOGGER.isDebugEnabled()) {
             if (catalogUrl == null) {
@@ -1905,14 +1910,14 @@ public class XmlaHandler implements XmlaConstants {
 
         return conn;
     }
-    
-    /** 
+
+    /**
      * Get the DataSource associated with the request property or null if
-     * one was not specified. 
-     * 
-     * @param request 
-     * @return 
-     * @throws XmlaException 
+     * one was not specified.
+     *
+     * @param request
+     * @return
+     * @throws XmlaException
      */
     public DataSourcesConfig.DataSource getDataSource(XmlaRequest request)
                 throws XmlaException {
@@ -1944,17 +1949,17 @@ public class XmlaHandler implements XmlaConstants {
         }
         return ds;
     }
-    
-    /** 
+
+    /**
      * Get the DataSourcesConfig.Catalog with the given catalog name from the
-     * DataSource's catalogs if there is a match and otherwise return null. 
-     * 
-     * @param ds 
-     * @param catalogName 
+     * DataSource's catalogs if there is a match and otherwise return null.
+     *
+     * @param ds
+     * @param catalogName
      * @return DataSourcesConfig.Catalog or null
      */
     public DataSourcesConfig.Catalog getCatalog(
-            DataSourcesConfig.DataSource ds, 
+            DataSourcesConfig.DataSource ds,
             String catalogName) {
         DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
         for (int i = 0; i < catalogs.length; i++) {
@@ -1966,14 +1971,14 @@ public class XmlaHandler implements XmlaConstants {
         }
         return null;
     }
-    
-    /** 
+
+    /**
      * Get array of DataSourcesConfig.Catalog returning only one entry if the
      * catalog was specified as a property in the request or all catalogs
-     * associated with the Datasource if there was no catalog property. 
-     * 
-     * @param request 
-     * @param ds 
+     * associated with the Datasource if there was no catalog property.
+     *
+     * @param request
+     * @param ds
      * @return Array of DataSourcesConfig.Catalog
      */
     public DataSourcesConfig.Catalog[] getCatalogs(
@@ -1991,20 +1996,20 @@ public class XmlaHandler implements XmlaConstants {
             return ds.catalogs.catalogs;
         }
     }
-    
-    /** 
+
+    /**
      * Returns the DataSourcesConfig.Catalog associated with the
      * catalog name that is part of the request properties or
      * null if there is no catalog with that name.
-     * 
-     * @param request 
-     * @param ds 
+     *
+     * @param request
+     * @param ds
      * @return DataSourcesConfig Catalog or null
-     * @throws XmlaException 
+     * @throws XmlaException
      */
     public DataSourcesConfig.Catalog getCatalog(
             XmlaRequest request,
-            DataSourcesConfig.DataSource ds) 
+            DataSourcesConfig.DataSource ds)
                 throws XmlaException {
 
         Map properties = request.getProperties();

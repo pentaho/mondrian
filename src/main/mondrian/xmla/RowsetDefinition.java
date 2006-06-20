@@ -1362,16 +1362,10 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             String role = request.getRole();
             for (int i = 0; i < catalogs.length; i++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[i];
-
-                if (dsCatalog == null) {
+                if (dsCatalog == null || dsCatalog.definition == null) {
                     continue;
                 }
-                String catalog = dsCatalog.cdata;
-                if (catalog == null) {
-                    continue;
-                }
-
-                Connection connection = handler.getConnection(ds, catalog, role);
+                Connection connection = handler.getConnection(dsCatalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -1568,16 +1562,10 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             String role = request.getRole();
             for (int g = 0; g < catalogs.length; g++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[g];
-
-                if (dsCatalog == null) {
-                    continue;
+                if (dsCatalog == null || dsCatalog.definition == null) {
+                     continue;
                 }
-                String catalog = dsCatalog.cdata;
-                if (catalog == null) {
-                    continue;
-                }
-
-                Connection connection = handler.getConnection(ds, catalog, role);
+                Connection connection = handler.getConnection(dsCatalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -2183,23 +2171,16 @@ boolean restriction, boolean nullable, String description)
 
         public void unparse(XmlaResponse response) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs = 
+            DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
             String role = request.getRole();
 
             for (int i = 0; i < catalogs.length; i++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[i];
-
-                if (dsCatalog == null) {
-                    continue;
+                if (dsCatalog == null || dsCatalog.definition == null) {
+                     continue;
                 }
-                String catalog = dsCatalog.cdata;
-                if (catalog == null) {
-                    continue;
-                }
-                Connection connection = 
-                    handler.getConnection(ds, catalog, role);
-
+                Connection connection = handler.getConnection(dsCatalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -2488,22 +2469,16 @@ boolean restriction, boolean nullable, String description)
 
         public void unparse(XmlaResponse response) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs = 
+            DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
             String role = request.getRole();
 
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
-
-                if (dsCatalog == null) {
-                    continue;
+                if (dsCatalog == null || dsCatalog.definition == null) {
+                     continue;
                 }
-                String catalog = dsCatalog.cdata;
-                if (catalog == null) {
-                    continue;
-                }
-                Connection connection = 
-                    handler.getConnection(ds, catalog, role);
+                Connection connection = handler.getConnection(dsCatalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -2811,22 +2786,16 @@ boolean restriction, boolean nullable, String description)
 
         public void unparse(XmlaResponse response) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs = 
+            DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
             String role = request.getRole();
 
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
-
-                if (dsCatalog == null) {
-                    continue;
+                if (dsCatalog == null || dsCatalog.definition == null) {
+                     continue;
                 }
-                String catalog = dsCatalog.cdata;
-                if (catalog == null) {
-                    continue;
-                }
-                Connection connection = 
-                    handler.getConnection(ds, catalog, role);
+                Connection connection = handler.getConnection(dsCatalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -3082,22 +3051,16 @@ boolean restriction, boolean nullable, String description)
 
         public void unparse(XmlaResponse response) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs = 
+            DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
             String role = request.getRole();
 
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
-
-                if (dsCatalog == null) {
-                    continue;
+                if (dsCatalog == null || dsCatalog.definition == null) {
+                     continue;
                 }
-                String catalog = dsCatalog.cdata;
-                if (catalog == null) {
-                    continue;
-                }
-                Connection connection = 
-                    handler.getConnection(ds, catalog, role);
+                Connection connection = handler.getConnection(dsCatalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -3125,7 +3088,7 @@ boolean restriction, boolean nullable, String description)
                         }
 
                         Row row = new Row();
-                        row.set(CatalogName.name, catalogName); 
+                        row.set(CatalogName.name, catalogName);
                         // NOTE: SQL Server does not return this
                         //row.set(SchemaName.name, cube.getSchema().getName());
                         row.set(CubeName.name, cube.getName());
@@ -3392,22 +3355,16 @@ boolean restriction, boolean nullable, String description)
 
         public void unparse(XmlaResponse response) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs = 
+            DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
             String role = request.getRole();
 
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
-
-                if (dsCatalog == null) {
-                    continue;
+                if (dsCatalog == null || dsCatalog.definition == null) {
+                     continue;
                 }
-                String catalog = dsCatalog.cdata;
-                if (catalog == null) {
-                    continue;
-                }
-                Connection connection = 
-                    handler.getConnection(ds, catalog, role);
+                Connection connection = handler.getConnection(dsCatalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -3736,22 +3693,16 @@ boolean restriction, boolean nullable, String description)
 
         public void unparse(XmlaResponse response) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs = 
+            DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
             String role = request.getRole();
 
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
-
-                if (dsCatalog == null) {
-                    continue;
+                if (dsCatalog == null || dsCatalog.definition == null) {
+                     continue;
                 }
-                String catalog = dsCatalog.cdata;
-                if (catalog == null) {
-                    continue;
-                }
-                Connection connection = 
-                    handler.getConnection(ds, catalog, role);
+                Connection connection = handler.getConnection(dsCatalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -4046,22 +3997,16 @@ boolean restriction, boolean nullable, String description)
 
         public void unparse(XmlaResponse response) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs = 
+            DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
             String role = request.getRole();
 
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
-
-                if (dsCatalog == null) {
-                    continue;
+                if (dsCatalog == null || dsCatalog.definition == null) {
+                     continue;
                 }
-                String catalog = dsCatalog.cdata;
-                if (catalog == null) {
-                    continue;
-                }
-                Connection connection = 
-                    handler.getConnection(ds, catalog, role);
+                Connection connection = handler.getConnection(dsCatalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -4331,22 +4276,16 @@ boolean restriction, boolean nullable, String description)
         public void unparse(XmlaResponse response) throws XmlaException {
             // return both stored and calculated members on hierarchy [Measures]
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs = 
+            DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
             String role = request.getRole();
 
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
-
-                if (dsCatalog == null) {
-                    continue;
+                if (dsCatalog == null || dsCatalog.definition == null) {
+                     continue;
                 }
-                String catalog = dsCatalog.cdata;
-                if (catalog == null) {
-                    continue;
-                }
-                Connection connection = 
-                    handler.getConnection(ds, catalog, role);
+                Connection connection = handler.getConnection(dsCatalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -4393,7 +4332,7 @@ boolean restriction, boolean nullable, String description)
                     List calMembers = schemaReader.getCalculatedMembers(measuresHierarchy);
                     for (Iterator it = calMembers.iterator(); it.hasNext();) {
                         emitMember(response, connection, catalogName,
-                            (Member) it.next(), 
+                            (Member) it.next(),
                             cube,
                             null);
                     }
@@ -4402,7 +4341,7 @@ boolean restriction, boolean nullable, String description)
         }
 
         private void emitMember(XmlaResponse response,
-            Connection connection, 
+            Connection connection,
             String catalogName,
             Member member,
             Cube cube, String levelListStr) {
@@ -4684,22 +4623,16 @@ boolean restriction, boolean nullable, String description)
 
         public void unparse(XmlaResponse response) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs = 
+            DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
             String role = request.getRole();
 
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
-
-                if (dsCatalog == null) {
-                    continue;
+                if (dsCatalog == null || dsCatalog.definition == null) {
+                     continue;
                 }
-                String catalog = dsCatalog.cdata;
-                if (catalog == null) {
-                    continue;
-                }
-                Connection connection = 
-                    handler.getConnection(ds, catalog, role);
+                Connection connection = handler.getConnection(dsCatalog, role);
                 if (connection == null) {
                     continue;
                 }
@@ -4779,7 +4712,7 @@ boolean restriction, boolean nullable, String description)
          * parameter, other relatives of the member. This method recursively
          * invokes itself to walk up, down, or across the hierarchy.
          */
-        private void unparseMember(final Connection connection, 
+        private void unparseMember(final Connection connection,
                 String catalogName, Cube cube,
                 Member member, XmlaResponse response,
                 int treeOp) {
@@ -4809,7 +4742,7 @@ boolean restriction, boolean nullable, String description)
                     if (sibling == member) {
                         continue;
                     }
-                    unparseMember(connection, catalogName, 
+                    unparseMember(connection, catalogName,
                             cube, sibling, response,
                             Enumeration.TreeOp.Self.ordinal);
                 }
@@ -4868,7 +4801,7 @@ boolean restriction, boolean nullable, String description)
             return list;
         }
 
-        private void emitMember(Member member, 
+        private void emitMember(Member member,
                 final Connection connection,
                 final String catalogName,
                 Cube cube, XmlaResponse response) {
@@ -5161,22 +5094,16 @@ boolean restriction, boolean nullable, String description)
         };
         public void unparse(XmlaResponse response) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
-            DataSourcesConfig.Catalog[] catalogs = 
+            DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
             String role = request.getRole();
 
             for (int h = 0; h < catalogs.length; h++) {
                 DataSourcesConfig.Catalog dsCatalog = catalogs[h];
-
-                if (dsCatalog == null) {
-                    continue;
+                if (dsCatalog == null || dsCatalog.definition == null) {
+                     continue;
                 }
-                String catalog = dsCatalog.cdata;
-                if (catalog == null) {
-                    continue;
-                }
-                Connection connection = 
-                    handler.getConnection(ds, catalog, role);
+                Connection connection = handler.getConnection(dsCatalog, role);
                 if (connection == null) {
                     continue;
                 }

@@ -396,33 +396,35 @@ Warehouse From MS Analysis Services&lt;/DataSourceDescription&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian;
 Jdbc=jdbc:odbc:MondrianFoodMart;
 JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver&lt;/DataSourceInfo&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;Catalogs&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;FoodMart&quot;&gt;/WEB-INF/schema/FoodMart.xml&lt;/Catalog&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;Markating&quot;&gt;/WEB-INF/schema/Marketing.xml&lt;/Catalog&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;/Catalogs&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;ProviderType&gt;MDP&lt;/ProviderType&gt;<br>
-&nbsp;&nbsp;&nbsp;
-&lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;Catalogs&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;FoodMart&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Definition&gt;/WEB-INF/schema/FoodMart.xml&lt;/Definition&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/Catalog&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;Marketing&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian;
+Jdbc=jdbc:odbc:MarketingDB;
+JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver&lt;/DataSourceInfo&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Definition&gt;/WEB-INF/schema/Marketing.xml&lt;/Definition&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/Catalog&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/Catalogs&gt;<br>
 &nbsp; &lt;/DataSource&gt;<br>
   <br>
 &nbsp; &lt;DataSource&gt;<br>
-&nbsp;&nbsp;&nbsp;
-&lt;DataSourceName&gt;PostgreSQLTest&lt;/DataSourceName&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;DataSourceDescription&gt;Test Data Warehouse On
-PostgreSQL&lt;/DataSourceDescription&gt;<br>
-&nbsp;&nbsp;&nbsp;
-&lt;URL&gt;http://localhost:8080/mondrian/xmla&lt;/URL&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian;
-Jdbc=jdbc:postgresql://localhost/olap; 
-JdbcDrivers=org.postgresql.Driver; JdbcUser=pgsql;
-JdbcPassword=pgsql&lt;/DataSourceInfo&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;Catalogs&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;Test&quot;&gt;/WEB-INF/schema/TestPgsql.xml&lt;Catalog&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;/Catalogs&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DataSourceName&gt;PostgreSQLTest&lt;/DataSourceName&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DataSourceDescription&gt;Test Data Warehouse On PostgreSQL&lt;/DataSourceDescription&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;URL&gt;http://localhost:8080/mondrian/xmla&lt;/URL&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian; Jdbc=jdbc:postgresql://localhost/olap; JdbcDrivers=org.postgresql.Driver; JdbcUser=pgsql; JdbcPassword=pgsql&lt;/DataSourceInfo&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;ProviderName&gt;Mondrian&lt;/ProviderName&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;ProviderType&gt;MDP&lt;/ProviderType&gt;<br>
-&nbsp;&nbsp;&nbsp;
-&lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;Catalogs&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;Test&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Definition&gt;/WEB-INF/schema/TestPgsql.xml&lt;/Definition&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/Catalogs&gt;<br>
 &nbsp; &lt;/DataSource&gt;<br>
 &lt;/DataSources&gt;</code></p>
 </blockquote>
