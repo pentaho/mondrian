@@ -158,6 +158,26 @@ public class RolapConnection extends ConnectionBase {
         if (role == null) {
             role = schema.getDefaultRole();
         }
+
+        // Set the locale.
+        String localeString = connectInfo.get(RolapConnectionProperties.Locale);
+        if (localeString != null) {
+            String[] strings = localeString.split("_");
+            switch (strings.length) {
+            case 1:
+                this.locale = new Locale(strings[0]);
+                break;
+            case 2:
+                this.locale = new Locale(strings[0], strings[1]);
+                break;
+            case 3:
+                this.locale = new Locale(strings[0], strings[1], strings[2]);
+                break;
+            default:
+                throw Util.newInternal("bad locale string '" + localeString + "'");
+            }
+        }
+
         this.schema = schema;
         setRole(role);
     }

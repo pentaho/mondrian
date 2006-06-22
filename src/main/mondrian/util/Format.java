@@ -1491,7 +1491,7 @@ public class Format {
         final DateFormatSymbols dateSymbols = new DateFormatSymbols(locale);
 
         Calendar calendar = Calendar.getInstance(locale);
-        calendar.set(1969, 11, 31);
+        calendar.set(1969, 11, 31, 0, 0, 0);
         final Date date = calendar.getTime();
 
         final java.text.DateFormat dateFormat =
@@ -1508,7 +1508,6 @@ public class Format {
 
         // Deduce the locale's currency format.
         // For example, US is "$#,###.00"; France is "#,###-00FF".
-        // TODO: Grouping separator.
         final NumberFormat currencyFormat =
                 NumberFormat.getCurrencyInstance(locale);
         final String currencyValue = currencyFormat.format(123456.78);
@@ -1518,7 +1517,13 @@ public class Format {
                 currencyValue.substring(currencyValue.indexOf("8") + 1);
         StringBuffer buf = new StringBuffer();
         buf.append(currencyLeft);
-        appendTimes(buf, '#', currencyFormat.getMinimumIntegerDigits());
+        int minimumIntegerDigits = currencyFormat.getMinimumIntegerDigits();
+        for (int i = Math.max(minimumIntegerDigits, 4) - 1; i >= 0; --i) {
+            buf.append(i < minimumIntegerDigits ? '0' : '#');
+            if (i % 3 == 0 && i > 0) {
+                buf.append(',');
+            }
+        }
         if (currencyFormat.getMaximumFractionDigits() > 0) {
             buf.append('.');
             appendTimes(buf, '0', currencyFormat.getMinimumFractionDigits());

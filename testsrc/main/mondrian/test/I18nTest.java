@@ -9,7 +9,7 @@
 */
 package mondrian.test;
 
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.util.Format;
 
 import java.util.Calendar;
@@ -39,7 +39,7 @@ public class I18nTest extends FoodMartTestCase {
 
         // Currency too
         Format currencyFormat = new Format("Currency", spanish);
-        assertEquals("1.234.567,79EUR", currencyFormat.format(new Double(1234567.789)));
+        assertEquals("1.234.567,79 €", currencyFormat.format(new Double(1234567.789)));
 
         // Dates
         Format dateFormat = new Format("Medium Date", spanish);
@@ -48,11 +48,49 @@ public class I18nTest extends FoodMartTestCase {
         calendar.set(Calendar.MONTH, 0); // January, 0-based
         calendar.set(Calendar.DATE, 22);
         java.util.Date date = calendar.getTime();
-        assertEquals("22-Ene-05", dateFormat.format(date));
+        assertEquals("22-ene-05", dateFormat.format(date));
 
         // Dates in German
         dateFormat = new Format("Long Date", german);
         assertEquals("Samstag, Januar 22, 2005", dateFormat.format(date));
+    }
+
+    public void testAutoFrench() {
+        // Create a connection in French.
+        String localeName = "fr_FR";
+        String resultString = "12\u00A0345,67";
+        assertFormatNumber(localeName, resultString);
+    }
+
+    public void testAutoSpanish() {
+        // Format a number in (Peninsular) spanish.
+        assertFormatNumber("es", "12.345,67");
+    }
+
+    public void testAutoMexican() {
+        // Format a number in Mexican spanish.
+        assertFormatNumber("es_MX", "12,345.67");
+    }
+
+    private void assertFormatNumber(String localeName, String resultString) {
+        String connectString =
+            TestContext.getConnectString() + ";Locale=" + localeName;
+        Connection connection =
+            DriverManager.getConnection(connectString, null, true);
+        Query query = connection.parseQuery(
+            "WITH MEMBER [Measures].[Foo] AS ' 12345.67 ',\n" +
+                " FORMAT_STRING='#,###.00'\n" +
+                "SELECT {[Measures].[Foo]} ON COLUMNS\n" +
+                "FROM [Sales]");
+        Result result = connection.execute(query);
+        String actual = TestContext.toString(result);
+        assertEquals(fold("Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[Foo]}\n" +
+            "Row #0: " +
+            resultString +
+            "\n"), actual);
     }
 }
 

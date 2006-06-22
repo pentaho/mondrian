@@ -62,22 +62,21 @@ public class Util extends XOMUtil {
             createRandom(MondrianProperties.instance().TestSeed.get());
 
     /**
-     * Store of format-locales culled from various locales' instances of
-     * {@link mondrian.resource.MondrianResource}.
-     *
-     * <p>Initializing it here should ensure that the callback is set before
+     * Set default method to create a {@link mondrian.util.Format.FormatLocale}
+     * from a {@link Locale}. Hopefully this location is initialized before
      * {@link mondrian.util.Format} is first used for the first time.
      */
-    private static final Format.LocaleFormatFactory localeFormatFactory =
-            createLocaleFormatFactory();
+    static {
+        Format.setLocaleFormatFactory(createLocaleFormatFactory());
+    }
 
     /**
      * Creates a {@link Format.LocaleFormatFactory} which derives locale
      * information from {@link MondrianResource}, and registers it as the
      * default factory.
      */
-    private static Format.LocaleFormatFactory createLocaleFormatFactory() {
-        Format.LocaleFormatFactory factory = new Format.LocaleFormatFactory() {
+    private static Format.LocaleFormatFactory createLocaleFormatFactory0() {
+        return new Format.LocaleFormatFactory() {
             public Format.FormatLocale get(Locale locale) {
                 MondrianResource res = MondrianResource.instance(locale);
                 if (res == null ||
@@ -147,8 +146,19 @@ public class Util extends XOMUtil {
                         monthsLong, locale);
             }
         };
-        Format.setLocaleFormatFactory(factory);
-        return factory;
+    }
+
+    /**
+     * Creates a {@link Format.LocaleFormatFactory} which derives locale
+     * information from {@link MondrianResource}, and registers it as the
+     * default factory.
+     */
+    private static Format.LocaleFormatFactory createLocaleFormatFactory() {
+        return new Format.LocaleFormatFactory() {
+            public Format.FormatLocale get(Locale locale) {
+                return Format.createLocale(locale);
+            }
+        };
     }
 
     /**
@@ -379,8 +389,7 @@ public class Util extends XOMUtil {
             }
             i = j +  2;
         }
-        String[] names = (String[]) list.toArray(new String[list.size()]);
-        return names;
+        return (String[]) list.toArray(new String[list.size()]);
     }
 
     /**

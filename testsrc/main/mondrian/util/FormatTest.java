@@ -14,6 +14,7 @@ import junit.framework.TestCase;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Arrays;
 
 import mondrian.olap.Util;
 
@@ -25,33 +26,6 @@ import mondrian.olap.Util;
  * @since May 26, 2006
  */
 public class FormatTest extends TestCase {
-
-    private static final String[] numberFormats = {
-        // format                +6          -6           0           .6          null
-        // ===================== =========== ============ =========== =========== =========
-        "",                      "6",        "-6",        "0",        "0.6",      "",
-        "0",                     "6",        "-6",        "0",        "1",        "",
-        "0.00",                  "6.00",     "-6.00",     "0.00",     "0.60",     "",
-        "#,##0",                 "6",        "-6",        "0",        "1",        "",
-        "#,##0.00;;;Nil",        "6.00",     "-6.00",     "0.00",     "0.60",     "Nil",
-        "$#,##0;($#,##0)",       "$6",       "($6)",      "$0",       "$1",       "",
-        "$#,##0.00;($#,##0.00)", "$6.00",    "($6.00)",   "$0.00",    "$0.60",    "",
-        "0%",                    "600%",     "-600%",     "0%",       "60%",      "",
-        "0.00%",                 "600.00%",  "-600.00%",  "0.00%",    "60.00%",   "",
-        "0.00E+00",              "6.00E+00", "-6.00E+00", "0.00E+00", "6.00E-01", "",
-        "0.00E-00",              "6.00E00",  "-6.00E00",  "0.00E00",  "6.00E-01", "",
-        "$#,##0;;\\Z\\e\\r\\o",  "$6",       "$-6",       "Zero",     "$1",       "",
-        "#,##0.0 USD",           "6.0 USD",  "-6.0 USD",  "0.0 USD",  "0.6 USD",  "",
-        "General Number",        "6",        "-6",        "0",        "0.6",      "",
-        "Currency",              "$6.00",    "($6.00)",   "$0.00",    "$0.60",    "",
-        "Fixed",                 "6",        "-6",        "0",        "1",        "",
-        "Standard",              "6",        "-6",        "0",        "1",        "",
-        "Percent",               "600.00%",  "-600.00%",  "0.00%",    "60.00%",   "",
-        "Scientific",            "6.00e+00", "-6.00e+00", "0.00e+00", "6.00e-01", "",
-        "True/False",            "True",     "True",      "False",    "True",     "False",
-        "On/Off",                "On",       "On",        "Off",      "On",       "Off",
-        "Yes/No",                "Yes",      "Yes",       "No",       "Yes",      "No",
-    };
 
     private final Format.FormatLocale localeFra = Format.createLocale(
             '.', // thousandSeparator = ',' in en
@@ -318,6 +292,28 @@ public class FormatTest extends TestCase {
 
         // international currency symbol
         checkFormat(null, new Double(1.2), "" + Format.intlCurrencySymbol + "#", "$1");
+    }
+
+    public void testFrenchLocale() {
+        Format.FormatLocale fr = Format.createLocale(Locale.FRANCE);
+        assertEquals("#,##0.00 €", fr.currencyFormat);
+        assertEquals("€", fr.currencySymbol);
+        assertEquals("/", fr.dateSeparator);
+        assertEquals(
+            "[, dimanche, lundi, mardi, mercredi, jeudi, vendredi, samedi]",
+            Arrays.asList(fr.daysOfWeekLong).toString());
+        assertEquals(
+            "[, dim., lun., mar., mer., jeu., ven., sam.]",
+            Arrays.asList(fr.daysOfWeekShort).toString());
+        assertEquals("[janvier, février, mars, avril, mai, juin," +
+            " juillet, août, septembre, octobre, novembre, décembre, ]",
+            Arrays.asList(fr.monthsLong).toString());
+        assertEquals("[janv., févr., mars, avr., mai, juin," +
+            " juil., août, sept., oct., nov., déc., ]",
+            Arrays.asList(fr.monthsShort).toString());
+        assertEquals(',', fr.decimalPlaceholder);
+        assertEquals('\u00a0', fr.thousandSeparator);
+        assertEquals(":", fr.timeSeparator);
     }
 
     private void checkFormat(
