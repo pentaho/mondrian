@@ -270,6 +270,9 @@ fullname
       aggregator="distinct count" formatString="#,###"/>
   <Measure name="Promotion Sales" aggregator="sum" formatString="#,###.00">
     <MeasureExpression>
+      <SQL dialect="access">
+Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
+      </SQL>
       <SQL dialect="oracle">
 (case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
       </SQL>
