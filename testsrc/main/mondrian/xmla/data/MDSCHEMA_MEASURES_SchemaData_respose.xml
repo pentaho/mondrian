@@ -169,6 +169,22 @@
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Sales Average</MEASURE_NAME_SQL_COLUMN_NAME>
     </row>
+    <row>
+        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Promotion Sales</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Promotion Sales]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Promotion Sales</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
+        <DATA_TYPE>5</DATA_TYPE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Promotion Sales</MEASURE_NAME_SQL_COLUMN_NAME>
+    </row>
     <row
         xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

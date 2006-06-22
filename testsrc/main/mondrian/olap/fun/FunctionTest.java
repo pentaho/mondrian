@@ -681,7 +681,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Measures].[Store Cost]",
                     "[Measures].[Store Sales]",
                     "[Measures].[Sales Count]",
-                    "[Measures].[Customer Count]"
+                    "[Measures].[Customer Count]",
+                    "[Measures].[Promotion Sales]"
                 }));
 
         // <Dimension>.members applied to Measures
@@ -691,7 +692,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Measures].[Store Cost]",
                     "[Measures].[Store Sales]",
                     "[Measures].[Sales Count]",
-                    "[Measures].[Customer Count]"}));
+                    "[Measures].[Customer Count]",
+                    "[Measures].[Promotion Sales]"}));
 
         // <Dimension>.members applied to a query with calc measures
         // Again, no calc measures are returned
@@ -706,11 +708,13 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Measures].[Store Sales]}",
                     "{[Measures].[Sales Count]}",
                     "{[Measures].[Customer Count]}",
+                    "{[Measures].[Promotion Sales]}",
                     "Row #0: 266,773",
                     "Row #0: 225,627.23",
                     "Row #0: 565,238.13",
                     "Row #0: 86,837",
                     "Row #0: 5,581",
+                    "Row #0: 151,211.21",
                     ""}));
     }
 
@@ -736,6 +740,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Measures].[Store Sales]",
                     "[Measures].[Sales Count]",
                     "[Measures].[Customer Count]",
+                    "[Measures].[Promotion Sales]",
                     "[Measures].[Profit]",
                     "[Measures].[Profit last Period]",
                     "[Measures].[Profit Growth]"}));
@@ -748,6 +753,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Measures].[Store Sales]",
                     "[Measures].[Sales Count]",
                     "[Measures].[Customer Count]",
+                    "[Measures].[Promotion Sales]",
                     "[Measures].[Profit]",
                     "[Measures].[Profit last Period]",
                     "[Measures].[Profit Growth]"}));
@@ -765,6 +771,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Measures].[Store Sales]}",
                     "{[Measures].[Sales Count]}",
                     "{[Measures].[Customer Count]}",
+                    "{[Measures].[Promotion Sales]}",
                     "{[Measures].[Profit]}",
                     "{[Measures].[Profit last Period]}",
                     "{[Measures].[Profit Growth]}",
@@ -774,6 +781,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 565,238.13",
                     "Row #0: 86,837",
                     "Row #0: 5,581",
+                    "Row #0: 151,211.21",
                     "Row #0: $339,610.90",
                     "Row #0: $339,610.90",
                     "Row #0: 0.0%",
@@ -795,6 +803,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Measures].[Store Sales]}",
                     "{[Measures].[Sales Count]}",
                     "{[Measures].[Customer Count]}",
+                    "{[Measures].[Promotion Sales]}",
                     "{[Measures].[Profit]}",
                     "{[Measures].[Profit last Period]}",
                     "{[Measures].[Profit Growth]}",
@@ -808,6 +817,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 36,175.20",
                     "Row #0: 5,498",
                     "Row #0: 1,110",
+                    "Row #0: 14,447.16",
                     "Row #0: $21,744.11",
                     "Row #0: $21,744.11",
                     "Row #0: 0.0%",
@@ -817,6 +827,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #1: 40,170.29",
                     "Row #1: 6,184",
                     "Row #1: 767",
+                    "Row #1: 10,829.64",
                     "Row #1: $24,089.22",
                     "Row #1: $24,089.22",
                     "Row #1: 0.0%",
@@ -826,6 +837,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #2: 63,282.86",
                     "Row #2: 9,906",
                     "Row #2: 1,104",
+                    "Row #2: 18,459.60",
                     "Row #2: $38,042.78",
                     "Row #2: $38,042.78",
                     "Row #2: 0.0%",
@@ -847,6 +859,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "{[Measures].[Store Sales]}",
                     "{[Measures].[Sales Count]}",
                     "{[Measures].[Customer Count]}",
+                    "{[Measures].[Promotion Sales]}",
                     "{[Measures].[Profit]}",
                     "{[Measures].[Profit last Period]}",
                     "{[Measures].[Profit Growth]}",
@@ -860,6 +873,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 36,175.20",
                     "Row #0: 5,498",
                     "Row #0: 1,110",
+                    "Row #0: 14,447.16",
                     "Row #0: $21,744.11",
                     "Row #0: $21,744.11",
                     "Row #0: 0.0%",
@@ -869,6 +883,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #1: 40,170.29",
                     "Row #1: 6,184",
                     "Row #1: 767",
+                    "Row #1: 10,829.64",
                     "Row #1: $24,089.22",
                     "Row #1: $24,089.22",
                     "Row #1: 0.0%",
@@ -878,6 +893,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #2: 63,282.86",
                     "Row #2: 9,906",
                     "Row #2: 1,104",
+                    "Row #2: 18,459.60",
                     "Row #2: $38,042.78",
                     "Row #2: $38,042.78",
                     "Row #2: 0.0%",
@@ -899,6 +915,7 @@ public class FunctionTest extends FoodMartTestCase {
                 "{[Measures].[Store Sales]}",
                 "{[Measures].[Sales Count]}",
                 "{[Measures].[Customer Count]}",
+                "{[Measures].[Promotion Sales]}",
                 "Axis #2:",
                 "{[Store].[All Stores].[USA].[CA]}",
                 "{[Store].[All Stores].[USA].[OR]}",
@@ -908,16 +925,19 @@ public class FunctionTest extends FoodMartTestCase {
                 "Row #0: 36,175.20",
                 "Row #0: 5,498",
                 "Row #0: 1,110",
+                "Row #0: 14,447.16",
                 "Row #1: 19,287",
                 "Row #1: 16,081.07",
                 "Row #1: 40,170.29",
                 "Row #1: 6,184",
                 "Row #1: 767",
+                "Row #1: 10,829.64",
                 "Row #2: 30,114",
                 "Row #2: 25,240.08",
                 "Row #2: 63,282.86",
                 "Row #2: 9,906",
                 "Row #2: 1,104",
+                "Row #2: 18,459.60",
                 ""}));
 
         // Calc member in dimension based on level
@@ -1080,7 +1100,8 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Measures].[Store Cost]",
                     "[Measures].[Store Sales]",
                     "[Measures].[Sales Count]",
-                    "[Measures].[Customer Count]"}));
+                    "[Measures].[Customer Count]",
+                    "[Measures].[Promotion Sales]"}));
 
         // applied to empty set
         assertAxisReturns("StripCalculatedMembers({[Gender].Parent})", "");

@@ -691,8 +691,11 @@ Revision is $Id$
         <Attribute name="name" required="true">
             <Doc>Name of this measure.</Doc>
         </Attribute>
-        <Attribute name="column" required="true">
-            <Doc>Column which is source of this measure's values.</Doc>
+        <Attribute name="column" required="false">
+            <Doc>
+                Column which is source of this measure's values.
+                If not specified, a measure expression must be specified.
+            </Doc>
         </Attribute>
         <Attribute name="datatype" required="false">
             <Doc>
@@ -739,6 +742,12 @@ Revision is $Id$
                 Default true.
             </Doc>
         </Attribute>
+        <Object name="measureExp" type="MeasureExpression" required="false">
+            <Doc>
+                The SQL expression used to calculate a measure.
+                Must be specified if a source column is not specified.
+            </Doc>
+        </Object>
         <Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
     </Element>
 
@@ -1495,6 +1504,7 @@ Revision is $Id$
     <Element type="OrdinalExpression" class="ExpressionView"/>
     <Element type="NameExpression" class="ExpressionView"/>
     <Element type="CaptionExpression" class="ExpressionView"/>
+    <Element type="MeasureExpression" class="ExpressionView"/>
 
     <!-- Access control =================================================== -->
     <Element type="Role">

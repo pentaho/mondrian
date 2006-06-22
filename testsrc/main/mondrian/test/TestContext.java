@@ -389,7 +389,7 @@ public class TestContext {
         checkThrowable(throwable, pattern);
     }
 
-    private static void checkThrowable(Throwable throwable, String pattern) {
+    public static void checkThrowable(Throwable throwable, String pattern) {
         if (throwable == null) {
             Assert.fail("query did not yield an exception");
         }

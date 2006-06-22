@@ -429,6 +429,10 @@
     <text>Cube ''{0}'': Ordinal {1} is not unique: ''{2}'' and ''{3}''</text>
 </exception>
 
+<exception id="40260" name="BadMeasureSource">
+    <text>Cube ''{0}'': Measure ''{1}'' must contain either a source column or a source expression, but not both</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Loader -->
 

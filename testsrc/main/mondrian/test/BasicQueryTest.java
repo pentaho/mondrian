@@ -416,6 +416,17 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Row #10: 508,272.49\n" +
             "Row #11: 56,965.64\n" +
             "Row #11: 565,238.13\n"),
+           
+        // 8
+        new QueryAndResult(
+                "select {[Measures].[Promotion Sales]} on columns\n" +
+                " from Sales",
+                
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Promotion Sales]}\n" +
+                "Row #0: 151,211.21\n"),
     };
 
     public void testSample0() {
@@ -448,6 +459,10 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testSample7() {
         assertQueryReturns(sampleQueries[7].query, sampleQueries[7].result);
+    }
+    
+    public void testSample8() {
+        assertQueryReturns(sampleQueries[8].query, sampleQueries[8].result);
     }
 
     public void testGoodComments() {
@@ -5113,6 +5128,56 @@ public class BasicQueryTest extends FoodMartTestCase {
                     "Row #0: 66,291\n" +
                     "Row #0: 66,291\n"));
     }
+    
+    public void testBadMeasure1() {
+        Schema schema = getConnection().getSchema();
+        final String cubeName = "SalesWithBadMeasure";
+        Throwable throwable = null;
+        try {
+            schema.createCube(
+                "<Cube name=\"" + cubeName + "\">\n" +
+                "  <Table name=\"sales_fact_1997\"/>\n" +
+                "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
+                "  <Measure name=\"Bad Measure\" aggregator=\"sum\"\n" +
+                "      formatString=\"Standard\"/>\n" +
+                "</Cube>");
+        } catch (Throwable e) {
+            throwable = e;
+        }
+        // neither a source column or source expression specified
+        TestContext.checkThrowable(
+            throwable,
+            "must contain either a source column or a source expression, but not both");
+        schema.removeCube(cubeName);
+    }
+    
+    public void testBadMeasure2() {
+        Schema schema = getConnection().getSchema();
+        final String cubeName = "SalesWithBadMeasure";
+        Throwable throwable = null;
+        try {
+            schema.createCube(
+                "<Cube name=\"" + cubeName + "\">\n" +
+                "  <Table name=\"sales_fact_1997\"/>\n" +
+                "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
+                "  <Measure name=\"Bad Measure\" column=\"unit_sales\" aggregator=\"sum\"\n" +
+                "      formatString=\"Standard\">\n" +
+                "    <MeasureExpression>\n" +
+                "       <SQL dialect=\"generic\">\n" +
+                "         unit_sales\n" +
+                "       </SQL>\n" +
+                "    </MeasureExpression>\n" +
+                "  </Measure>\n" +
+                "</Cube>");
+        } catch (Throwable e) {
+            throwable = e;
+        }
+        // both a source column and source expression specified
+        TestContext.checkThrowable(
+            throwable,
+            "must contain either a source column or a source expression, but not both");
+        schema.removeCube(cubeName);
+    }   
 }
 
 // End BasicQueryTest.java

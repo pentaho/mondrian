@@ -120,6 +120,18 @@
             <row>
                 <CATALOG_NAME>FoodMart</CATALOG_NAME>
                 <CUBE_NAME>Sales</CUBE_NAME>
+                <MEASURE_NAME>Promotion Sales</MEASURE_NAME>
+                <MEASURE_UNIQUE_NAME>[Measures].[Promotion Sales]</MEASURE_UNIQUE_NAME>
+                <MEASURE_CAPTION>Promotion Sales</MEASURE_CAPTION>
+                <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
+                <DATA_TYPE>5</DATA_TYPE>
+                <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+                <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+                <DESCRIPTION>Sales Cube - Promotion Sales Memeber</DESCRIPTION>
+            </row>
+            <row>
+                <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                <CUBE_NAME>Sales</CUBE_NAME>
                 <MEASURE_NAME>Profit</MEASURE_NAME>
                 <MEASURE_UNIQUE_NAME>[Measures].[Profit]</MEASURE_UNIQUE_NAME>
                 <MEASURE_CAPTION>Profit</MEASURE_CAPTION>
