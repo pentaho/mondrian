@@ -17,6 +17,7 @@ import java.util.Locale;
 import java.util.Arrays;
 
 import mondrian.olap.Util;
+import mondrian.test.I18nTest;
 
 /**
  * Unit test for {@link Format}.
@@ -296,8 +297,8 @@ public class FormatTest extends TestCase {
 
     public void testFrenchLocale() {
         Format.FormatLocale fr = Format.createLocale(Locale.FRANCE);
-        assertEquals("#,##0.00 €", fr.currencyFormat);
-        assertEquals("€", fr.currencySymbol);
+        assertEquals("#,##0.00 " + I18nTest.Euro, fr.currencyFormat);
+        assertEquals(I18nTest.Euro + "", fr.currencySymbol);
         assertEquals("/", fr.dateSeparator);
         assertEquals(
             "[, dimanche, lundi, mardi, mercredi, jeudi, vendredi, samedi]",
@@ -305,14 +306,14 @@ public class FormatTest extends TestCase {
         assertEquals(
             "[, dim., lun., mar., mer., jeu., ven., sam.]",
             Arrays.asList(fr.daysOfWeekShort).toString());
-        assertEquals("[janvier, février, mars, avril, mai, juin," +
-            " juillet, août, septembre, octobre, novembre, décembre, ]",
+        assertEquals("[janvier, f" + I18nTest.EA + "vrier, mars, avril, mai, juin," +
+            " juillet, ao" + I18nTest.UC + "t, septembre, octobre, novembre, d" + I18nTest.EA + "cembre, ]",
             Arrays.asList(fr.monthsLong).toString());
-        assertEquals("[janv., févr., mars, avr., mai, juin," +
-            " juil., août, sept., oct., nov., déc., ]",
+        assertEquals("[janv., f" + I18nTest.EA + "vr., mars, avr., mai, juin," +
+            " juil., ao" + I18nTest.UC + "t, sept., oct., nov., d" + I18nTest.EA + "c., ]",
             Arrays.asList(fr.monthsShort).toString());
         assertEquals(',', fr.decimalPlaceholder);
-        assertEquals('\u00a0', fr.thousandSeparator);
+        assertEquals(I18nTest.Nbsp, fr.thousandSeparator);
         assertEquals(":", fr.timeSeparator);
     }
 

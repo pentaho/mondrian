@@ -25,6 +25,11 @@ import java.util.Locale;
  * @version $Id$
  */
 public class I18nTest extends FoodMartTestCase {
+    public static final char Euro = '\u20AC';
+    public static final char Nbsp = '\u00A0';
+    public static final char EA = '\u00e9'; // e acute
+    public static final char UC = '\u00FB'; // u circumflex
+
     public void testFormat() {
         // Make sure Util is loaded, so that the LocaleFormatFactory gets
         // registered.
@@ -39,7 +44,8 @@ public class I18nTest extends FoodMartTestCase {
 
         // Currency too
         Format currencyFormat = new Format("Currency", spanish);
-        assertEquals("1.234.567,79 €", currencyFormat.format(new Double(1234567.789)));
+        assertEquals("1.234.567,79 " + Euro,
+                currencyFormat.format(new Double(1234567.789)));
 
         // Dates
         Format dateFormat = new Format("Medium Date", spanish);
@@ -58,7 +64,7 @@ public class I18nTest extends FoodMartTestCase {
     public void testAutoFrench() {
         // Create a connection in French.
         String localeName = "fr_FR";
-        String resultString = "12\u00A0345,67";
+        String resultString = "12" + Nbsp + "345,67";
         assertFormatNumber(localeName, resultString);
     }
 
