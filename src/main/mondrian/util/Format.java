@@ -143,8 +143,6 @@ public class Format {
         '\0', '\0', null, null, null, null, null, null, null, null,
         Locale.US);
 
-    private static LocaleFormatFactory localeFormatFactory;
-
     /**
      * Formats an object using a format string, according to a given locale.
      *
@@ -1594,14 +1592,10 @@ public class Format {
 
     private static FormatLocale getFormatLocaleUsingFactory(Locale locale)
     {
-        LocaleFormatFactory factory = getLocaleFormatFactory();
-        if (factory == null) {
-            return null;
-        }
         FormatLocale formatLocale;
         // Lookup full locale, e.g. "en-US-Boston"
         if (!locale.getVariant().equals("")) {
-            formatLocale = factory.get(locale);
+            formatLocale = createLocale(locale);
             if (formatLocale != null) {
                 return formatLocale;
             }
@@ -1609,14 +1603,14 @@ public class Format {
         }
         // Lookup language and country, e.g. "en-US"
         if (!locale.getCountry().equals("")) {
-            formatLocale = factory.get(locale);
+            formatLocale = createLocale(locale);
             if (formatLocale != null) {
                 return formatLocale;
             }
             locale = new Locale(locale.getLanguage());
         }
         // Lookup language, e.g. "en"
-        formatLocale = factory.get(locale);
+        formatLocale = createLocale(locale);
         if (formatLocale != null) {
             return formatLocale;
         }
@@ -2105,24 +2099,6 @@ loop:
     public String getFormatString()
     {
         return formatString;
-    }
-
-    /**
-     * Defines the factory used to create a {@link FormatLocale} for locales.
-     *
-     * <p>Also clears the cache, so that locales from the previous factory (if
-     * any) are no longer used.
-     */
-    public static void setLocaleFormatFactory(LocaleFormatFactory factory) {
-        localeFormatFactory = factory;
-        mapLocaleToFormatLocale.clear(); // clear cache
-    }
-
-    /**
-     * Returns the factory used to create a {@link FormatLocale} for locales.
-     */
-    public static LocaleFormatFactory getLocaleFormatFactory() {
-        return localeFormatFactory;
     }
 
     /**
