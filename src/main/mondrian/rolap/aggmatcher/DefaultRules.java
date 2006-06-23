@@ -249,6 +249,7 @@ public class DefaultRules {
     private final DefaultDef.AggRules rules;
     private final Map factToPattern;
     private final Map foreignKeyMatcherMap;
+    private Recognizer.Matcher ignoreMatcherMap;
     private Recognizer.Matcher factCountMatcher;
     private String tag;
 
@@ -323,6 +324,22 @@ public class DefaultRules {
     /**
      * Gets the {@link mondrian.rolap.aggmatcher.Recognizer.Matcher} for the
      * fact count column.
+     */
+    public Recognizer.Matcher getIgnoreMatcher() {
+        if (ignoreMatcherMap == null) {
+            // get default AggRule
+            DefaultDef.AggRule rule = getAggRule();
+            DefaultDef.IgnoreMap ignoreMatch = rule.getIgnoreMap();
+            ignoreMatcherMap = ignoreMatch.getMatcher();
+        }
+        return ignoreMatcherMap;
+    }
+    
+    /** 
+     * Gets the {@link mondrian.rolap.aggmatcher.Recognizer.Matcher} for
+     * columns that should be ignored.
+     * 
+     * @return 
      */
     public Recognizer.Matcher getFactCountMatcher() {
         if (factCountMatcher == null) {

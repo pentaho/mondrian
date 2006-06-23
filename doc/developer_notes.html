@@ -171,7 +171,7 @@ The default Mondrian rules for recognizing aggregate tables
 are specified by creating an instance of the rule schema
 found in the file:
 <code>
-MONDRIAN_HOME/src/main/rolap.aggmatcher/DefaultRulesSchema.xml.
+MONDRIAN_HOME/src/main/rolap/aggmatcher/DefaultRulesSchema.xml.
 </code>
 The instance of this schema that is built into the 
 <code>
@@ -179,15 +179,18 @@ mondrian.jar
 </code>
 after a build is in the same directory,
 <code>
-MONDRIAN_HOME/src/main/rolap.aggmatcher/DefaultRules.xml.
+MONDRIAN_HOME/src/main/rolap/aggmatcher/DefaultRules.xml.
 </code>
 </p>
 <p>
-There are five different default rules that are used to match and map 
+There are six different default rules that are used to match and map 
 a candidate
-aggregate table: table name, fact count column, foreign key column,
-level column and measure column. All of these rules are defined
-by creating an instance of the DefaultRulesSchema.xml grammar.
+aggregate table: table name, ignore column, fact count column, foreign 
+key column, level column and measure column. All of these rules are 
+defined by creating an instance of the DefaultRulesSchema.xml grammar.
+The DefaultRulesSchema.xml instance, the DefaultRules.xml file mentioned
+above, that by default is built as part of the mondrian.jar does not
+contain an ignore column rule.
 This grammar has base/supporting classes that are common to the above
 rules. In 
 <code>
@@ -323,13 +326,16 @@ matcher, its the fact table's foreign key that is used
 as the regular expression.
 </p>
 <p>
-Both the level and measure column matching elements have one or more
+The ignore, asdf level and measure column matching elements have one or more
 <code>
 Regex
 </code>
 child elements. These allow for specifying multiple possible matches
 (if any match, then its a match).
 The
+<code>
+IgnoreMap,
+</code>
 <code>
 LevelMap
 </code>
@@ -379,6 +385,83 @@ CaseMatcher
 </code>
 mapping to lower case
 ) this would become "unit_sales_case".
+</p>
+<p>
+The 
+<code>
+IgnoreMap
+</code>
+element has NO template parameter names. Each
+<code>
+Regex
+</code>
+value is simply a regular expression. As an example (Mondrian by
+default does not include an 
+<code>
+IgnoreMap
+</code>
+by default), a regular expression that matches all aggregate table columns
+then end with '_DO_NOT_USE' would be:
+</p>
+<blockquote>
+    .*_DO_NOT_USE<br>
+</blockquote>
+</p>
+<p>
+One might want to use an
+<code>
+IgnoreMap
+</code>
+element to filter out aggregate columns if, for example, the aggregate
+table is a materialized view, since with each "normal" column
+of such a materialized view there is an associated support column
+used by the database which has no significance to Mondrian.
+In the process of recognizing aggregate tables, Mondrian logs
+a warning message for each column whose use can not be determined.
+Materialized views have so many of these support columns
+that if, in fact, there was a column whose use was desired
+but was not recognized (for instance, the column name is 
+misspelt) all of the materialized view column warning message
+mask the one warning message that one really needs to see.
+</p>
+<p>
+The 
+<code>
+IgnoreMap
+</code>
+regular expressions are applied before any of the other column
+matching actions. If one sets the 
+<code>
+IgnoreMap
+</code>
+regular expression to, for example,
+<blockquote>
+    .*<br>
+</blockquote>
+</p>
+<p>
+then all columns are marked as "ignore" and there are no other
+columns left to match anything else. One must be very careful
+when choosing 
+<code>
+IgnoreMap
+</code>
+regular expressions not just for your current columns but for
+columns that might be created in the future. Its best to document
+this usage in your organization.
+</p>
+<p>
+The following is what the element might look like in a
+DefaultRules.xml file:
+<blockquote>
+<pre>
+    &lt;IgnoreMap id="ixx" &gt;
+      &lt;Regex id="physical" charcase="ignore"&gt;
+          .*_DO_NOT_USE
+      &lt;/Regex&gt;
+    &lt;/IgnoreMap&gt;
+</pre>
+</blockquote>
 </p>
 <p>
 The 

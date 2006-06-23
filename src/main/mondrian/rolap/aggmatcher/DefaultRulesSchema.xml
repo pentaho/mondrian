@@ -55,6 +55,9 @@ Revision is $Id$
         <Array name="measureMaps" type="MeasureMap">
             <Doc>All shared MeasureMap.</Doc>
         </Array>
+        <Array name="ignoreMaps" type="IgnoreMap">
+            <Doc>All shared IgnoreMap.</Doc>
+        </Array>
         <Array name="aggRules" type="AggRule" min="1">
             <Doc>
                 All AggRules (at least one).
@@ -90,6 +93,7 @@ Revision is $Id$
                     validate(tableMatches, msgRecorder);
                     validate(levelMaps, msgRecorder);
                     validate(measureMaps, msgRecorder);
+                    validate(ignoreMaps, msgRecorder);
                     validate(aggRules, msgRecorder);
                 } finally {
                     msgRecorder.popContextName();
@@ -103,6 +107,13 @@ Revision is $Id$
                         base.validate(this, msgRecorder);
                     }
                 }
+            }
+
+            public boolean hasIgnoreMap(String id) {
+                return (lookupIgnoreMap(id) != null);
+            }
+            public IgnoreMap lookupIgnoreMap(String id) {
+                return (IgnoreMap) lookupBase(id, ignoreMaps);
             }
 
             public boolean hasFactCountMatch(String id) {
@@ -157,6 +168,9 @@ Revision is $Id$
                 return null;
             }
 
+            public IgnoreMap[] getIgnoreMaps() {
+                return ignoreMaps;
+            }
             public FactCountMatch[] getFactCountMatches() {
                 return factCountMatches;
             }
@@ -873,6 +887,23 @@ Revision is $Id$
                     int end = 0;
                     int previousEnd = 0;
                     int start = template.indexOf("${", end);
+                    // if no templateNames, then there better not be
+                    // any ${}s
+                    if (templateNames.length == 0) {
+                        if (start == -1) {
+                            // everything is ok
+                            templateParts = new String[1];
+                            templateParts[0] = template;
+                            templateNamePos = new int[0];
+                        } else {
+                            String msg = "Bad template \"" +
+                                template +
+                                "\", no ${} entries but there are "+
+                                "template names" ;
+                            msgRecorder.reportError(msg);
+                        }
+                        return;
+                    }
                     while (count < MAX_SIZE) {
                         if (start == -1) {
                             if (count == 0) {
@@ -1231,6 +1262,26 @@ Revision is $Id$
         </Code>
     </Element>
 
+    <!-- IgnoreMapRef ================================================== -->
+    <Element type="IgnoreMapRef" class="Ref" >
+        <Code>
+            public void validate(final AggRules rules, 
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
+                msgRecorder.pushContextName(getName());
+                try {
+                    if (! rules.hasIgnoreMap(getRefId())) {
+                        String msg = "No IgnoreMap has id equal to refid \"" +
+                            getRefId() +
+                            "\"";
+                        msgRecorder.reportError(msg);
+                    }
+                } finally {
+                    msgRecorder.popContextName();
+                }
+            }
+        </Code>
+    </Element>
+
     <!-- FactCountMatchRef =============================================== -->
     <Element type="FactCountMatchRef" class="Ref" >
         <Code>
@@ -1355,6 +1406,23 @@ Revision is $Id$
         ]]></Code>
     </Element>
 
+    <Element type="IgnoreMap" class="RegexMapper" >
+        <Doc>
+            This is the template used to specify columns to be ignored.
+            There are NO template names. One simply uses a regular
+            expression.
+        </Doc>
+        <Code><![CDATA[
+            private static final String[] TEMPLATE_NAMES = new String[] { };
+            protected String[] getTemplateNames() {
+                return TEMPLATE_NAMES;
+            }
+            protected Recognizer.Matcher getMatcher() {
+                return getMatcher(new String[]{});
+            }
+        ]]></Code>
+    </Element>
+
     <!-- AggRule ===================================================== -->
     <Element type="AggRule" class="Base">
         <Doc>
@@ -1379,6 +1447,15 @@ Revision is $Id$
                 the row.
             </Doc>
         </Attribute>
+
+        <Object name="ignoreMap" type="IgnoreMap" required="false">
+            <Doc>
+            </Doc>
+        </Object>
+        <Object name="ignoreMapRef" type="IgnoreMapRef" required="false">
+            <Doc>
+            </Doc>
+        </Object>
 
         <Object name="factCountMatch" type="FactCountMatch" required="false">
             <Doc>
@@ -1467,6 +1544,11 @@ Revision is $Id$
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
+                    if (isRef(rules, msgRecorder, ignoreMap, 
+                            ignoreMapRef, "IgnoreMap")) {
+                        ignoreMap = 
+                            rules.lookupIgnoreMap(ignoreMapRef.getRefId());
+                    }
                     if (isRef(rules, msgRecorder, factCountMatch,
                             factCountMatchRef, "FactCountMatch")) {
                         factCountMatch = rules.lookupFactCountMatch(
@@ -1515,6 +1597,9 @@ Revision is $Id$
             }
             public MeasureMap getMeasureMap() {
                 return measureMap;
+            }
+            public IgnoreMap getIgnoreMap() {
+                return ignoreMap;
             }
             ]]></Code>
     </Element>

@@ -53,11 +53,25 @@ class DefaultRecognizer extends Recognizer {
      * Get the Matcher to be used to match columns to be ignored.
      */
     protected Recognizer.Matcher getIgnoreMatcher() {
+        Recognizer.Matcher matcher = getRules().getIgnoreMatcher();
+        if (matcher != null) {
+            // an ignore matcher was defined in the recognizer xml file.
+            return matcher;
+        } else {
+            // return a do-noting matcher
+            return new Recognizer.Matcher() {
+                public boolean matches(String name) {
+                    return false;
+                }
+            };
+        }
+/*
         return new Recognizer.Matcher() {
             public boolean matches(String name) {
                 return false;
             }
         };
+*/
     }
 
     /**
