@@ -246,7 +246,8 @@ and <code>
 complicated SQL
 statements.</p>
 <h3><a name="Measures">Measures</a></h3>
-<p>The Sales cube defines two measures, "Unit Sales" and "Store Sales".</p>
+<p>The Sales cube defines several measures, including "Unit Sales" and
+"Store Sales".</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Measure">Measure</a> name="Unit Sales" column="unit_sales"<br>    aggregator="sum" datatype="Integer" formatString="#,###"/&gt;<br>&lt;<a
  href="#XML_Measure">Measure</a> name="Store Sales" column="store_sales"<br>    aggregator="sum" datatype="Numeric" formatString="#,###.00"/&gt;</pre>
@@ -285,7 +286,27 @@ if special letters (e.g. &#931; or &#928;) are to be displayed:</p>
   <pre>&lt;<a href="#XML_Measure">Measure</a> name="Sum X" column="sum_x" aggregator="sum" caption="&amp;#931; X"/&gt;<br></pre>
 </blockquote>
 <p>Rather than coming from a column, a measure can use a
-<a href="#Cell_reader">cell reader</a>.</p>
+<a href="#Cell_reader">cell reader</a>, or a measure can use a SQL expression
+to calculate its value.
+The measure "Promotion Sales" is an example of this.
+</p>
+<blockquote>
+  <pre>&lt;<a href="#XML_Measure">Measure</a> name="Promotion Sales" aggregator="sum" formatString="#,###.00"&gt;
+ &nbsp;  &lt;MeasureExpression&gt;
+ &nbsp;    &lt;SQL dialect="generic"&gt;
+ &nbsp;      (case when sales_fact_1997.promotion_id = 0 then 0 else sales_fact_1997.store_sales end)
+ &nbsp;    &lt;/SQL&gt;
+ &nbsp;  &lt;/MeasureExpression&gt;<br>&lt;/<a
+ href="#XML_Measure">Measure</a>&gt;</pre>
+</blockquote>
+<p>In this case, sales are only included in the summation if they correspond
+to a promotion sales.
+Arbitrary SQL expressions can be used, including subqueries.
+However, the underlying database must be able to support that SQL expression
+in the context of an aggregate.
+Variations in syntax between different databases is handled by specifying the
+dialect in the SQL tag.
+</p>
 <p>In order to provide a specific formatting of the cell values, a
 measure can use a
 <a href="#Cell_formatter">cell formatter</a>.</p>

@@ -233,7 +233,7 @@ public class DrillThroughTest extends FoodMartTestCase {
                 " {[Product].Children} on rows" + nl +
                 "from Sales");
         String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(false);
-
+     
         String expectedSql =
                 "select `time_by_day`.`the_year` as `Year`," +
                 " `product_class`.`product_family` as `Product Family`," +
@@ -249,6 +249,18 @@ public class DrillThroughTest extends FoodMartTestCase {
                 " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
                 " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
                 " and `product_class`.`product_family` = 'Drink'";
+
+        RolapConnection conn = (RolapConnection) getConnection();
+        String jdbcUrl = conn.getConnectInfo().get("Jdbc");
+        if (jdbcUrl.toLowerCase().indexOf("access") >= 0) {
+            String caseStmt =
+                " \\(case when `sales_fact_1997`.`promotion_id` = 0 then 0" +
+                " else `sales_fact_1997`.`store_sales` end\\)";
+            expectedSql = expectedSql.replaceAll(
+                caseStmt,
+                " Iif(`sales_fact_1997`.`promotion_id` = 0, 0," +
+                " `sales_fact_1997`.`store_sales`)");
+        }
 
         assertSqlEquals(expectedSql, sql);
     }
