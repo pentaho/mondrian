@@ -11,8 +11,14 @@
 */
 package mondrian.test;
 
+import mondrian.olap.Connection;
+import mondrian.olap.Cube;
+import mondrian.olap.Query;
 import mondrian.olap.Result;
 import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapStar;
+import mondrian.rolap.sql.SqlQuery;
 
 /**
  * Test generation of SQL to access the fact table data underlying an MDX
@@ -250,9 +256,11 @@ public class DrillThroughTest extends FoodMartTestCase {
                 " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
                 " and `product_class`.`product_family` = 'Drink'";
 
-        RolapConnection conn = (RolapConnection) getConnection();
-        String jdbcUrl = conn.getConnectInfo().get("Jdbc");
-        if (jdbcUrl.toLowerCase().indexOf("access") >= 0) {
+        final Cube cube = result.getQuery().getCube();
+        RolapStar star = ((RolapCube) cube).getStar();
+
+        SqlQuery.Dialect dialect = star.getSqlQueryDialect();
+        if (dialect.isAccess()) {
             String caseStmt =
                 " \\(case when `sales_fact_1997`.`promotion_id` = 0 then 0" +
                 " else `sales_fact_1997`.`store_sales` end\\)";
