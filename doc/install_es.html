@@ -1,0 +1,493 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == Copyright (C) 2001-2002 Kana Software, Inc.
+  == Copyright (C) 2002-2006 Julian Hyde and others
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  -->
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta name="GENERATOR" content="Microsoft FrontPage 6.0">
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=windows-1252">
+  <title>How to install Mondrian</title>
+  <link rel="stylesheet" href="stylesheet.css" type="text/css">
+</head>
+<body>
+<div><font face="Default Sans Serif, Verdana, Arial, Helvetica, sans-serif" size="2">
+<div>
+<div>
+<h1 style="MARGIN: auto 0cm"><span lang="ES-TRAD"><font color="#990000" size="5">Cómo instalar Mondrian</font></span></h1>
+<p><font color="#333333"><span lang="ES-TRAD">Traducido por Félix Alberto Martín</span>. 
+Based on install.html version ???.</font></p>
+<div style="MARGIN: 0cm 0cm 0pt; TEXT-ALIGN: center" align="center"><span lang="ES-TRAD"><font color="#333333">
+<hr align="center" width="100%" color="black" noshade size="1">
+</font></span></div>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+1.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#1_Introduction%231_Introduction" target="_blank"><font color="#800080">Introducción</font></a> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span><span lang="ES-TRAD" style="FONT-SIZE: 8pt"><font face="Times New Roman"><font color="#990000">2.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></font></font></span></span>
+<span><span lang="ES-TRAD" style="FONT-SIZE: 8pt"><a onclick="return top.js.OpenExtLink(window,event,this)" href="#2_Set_up_test_data%232_Set_up_test_data" target="_blank"><span style="FONT-FAMILY: Verdana">
+<font color="#800080">Configuración de los datos de test sobre una base de datos no embebida </font></span></a></span></span></p>
+<p style="MARGIN: 0cm 0cm 0pt 72pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">1.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#2_1_Microsoft_Access%232_1_Microsoft_Access" target="_blank"><font color="#800080">Microsoft Access</font></a> </span>
+</p>
+<p style="MARGIN: 0cm 0cm 0pt 72pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">2.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#2_2_Non_Access_setup%232_2_Non_Access_setup" target="_blank"><font color="#800080">Otras bases de datos</font></a>
+ </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">3.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#3_Deploy_and_run_the_web_app%233_Deploy_and_run_the_web_app" target="_blank"><font color="#800080">Despliegue y ejecución de una aplicación web con una base de datos no embebida
+</font></a> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">4.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#4_Deploy_and_run_the_embedded_web_app%234_Deploy_and_run_the_embedded_web_app" target="_blank"><font color="#800080">
+Despliegue y ejecución de una aplicación web con una base de datos embebida</font></a> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">5.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#5_How_to_configure_Mondrian_as_an_XMLA_provider%235_How_to_configure_Mondrian_as_an_XMLA_provider" target="_blank">
+<font color="#800080">Cómo configurar Mondrian como un servidor XML/A</font></a> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 72pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">1.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#5_1_Describe_the_data_sources_in_datasources.xml%235_1_Describe_the_data_sources_in_datasources.xml" target="_blank">
+<font color="#800080">Descripción de las fuentes de datos (datasources) en </font><code><span style="FONT-SIZE: 10pt; COLOR: windowtext">datasources.xml</span></code></a> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 72pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">2.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#5_2_Configure_XmlaServlet_in_your_web.xml%235_2_Configure_XmlaServlet_in_your_web.xml" target="_blank"><font color="#800080">
+Configuración de<span>&nbsp; </span></font><code><span style="FONT-SIZE: 10pt; COLOR: windowtext">XmlaServlet</span></code><font color="#800080"> en el archivo </font><code><span style="FONT-SIZE: 10pt; COLOR: windowtext">web.xml
+</span></code></a> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">6.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#6_Miscellaneous%236_Miscellaneous" target="_blank"><font color="#800080">Miscelánea</font></a> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 72pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">1.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#6_1_mondrian_properties" target="_blank"><font color="#800080">Configuración de </font><code><span style="FONT-SIZE: 10pt; COLOR: windowtext">
+mondrian.properties</span></code></a> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 72pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">2.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#6_2_Cache_setup%236_2_Cache_setup" target="_blank"><font color="#800080">Configuración de la caché</font></a> </span>
+</p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">7.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#7_Database_compatibility%237_Database_compatibility" target="_blank"><font color="#800080">Bases de datos compatibles
+</font></a> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">8.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#8_Compatibility_issues%238_Compatibility_issues" target="_blank"><font color="#800080">Aspectos de compatibilidad
+</font></a> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 72pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">1.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#8_1_Weblogic_6_1_and_Xerces%238_1_Weblogic_6_1_and_Xerces" target="_blank"><font color="#800080">Weblogic 6.1 y Xerces
+</font></a> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 72pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">2.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#8_2_Xalan_and_Tomcat%238_2_Xalan_and_Tomcat" target="_blank"><font color="#800080">Xalan y Tomcat</font></a> </span>
+</p>
+<p style="MARGIN: 0cm 0cm 0pt 72pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">3.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+<a onclick="return top.js.OpenExtLink(window,event,this)" href="#8_3_Log4j_and_Tomcat%238_3_Log4j_and_Tomcat" target="_blank"><font color="#800080">Log4j y Tomcat</font></a> </span>
+</p>
+<h2 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_1_Introduction"><span lang="EN-GB"><font color="#990000" size="4">1. </font></span></a><font size="4"><font color="#990000"><span lang="ES-TRAD">Introducción</span><span lang="EN-GB">
+</span></font></font></h2>
+<p style="TEXT-ALIGN: justify"><span lang="ES-TRAD"><font color="#333333">El núcleo de Mondrian es un JAR que actúa como "JDBC para OLAP": proporcionando conexiones y ejecutando consultas SQL contra la base de datos relacional que sirve los datos. Los binarios de Mondrian vienen empaquetados de diferentes maneras:
+</font></span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">1.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Como un paquete WAR que contiene Jpivot, un <i>framework</i> para trabajo con aplicaciones web y tecnología OLAP, junto con un ejemplo de datos que pueden ser cargados en una base de datos de su elección.</span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">2.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Como un paquete WAR que además de contener a Jpivot, incluye una base de datos Derby, con lo que no se requiere ninguna configuración extra, aparte del despliegue sobre el servidor de aplicaciones.</span></p>
+<p><span lang="ES-TRAD"><font color="#333333">Ambas distribuciones contienen los fuentes de Mondrian. Además, todos los JARs necesarios para la ejecución de Mondrian están incluidos en la distribución, en el directorio WAR /WEB-INF/lib.
+</font></span></p>
+<p><span lang="ES-TRAD"><font color="#333333">A continuación se detallan una serie de indicaciones para realizar la instalación del binario:</font></span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">1.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Instalar Java SDK (1.4.2 o superior). </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">2.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Descargar la última versión del binario de Mondrian: </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">mondrian-<i>version</i>.zip</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+ desde <a onclick="return top.js.OpenExtLink(window,event,this)" href="http://sourceforge.net/projects/mondrian" target="_blank"><font color="#990000">SourceForge</font></a>, y descomprímalo. </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">3.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Para la distribución sin datos embebidos, configure la base de datos FoodMart, tal y como se describe en el <a onclick="return top.js.OpenExtLink(window,event,this)" href="#2_Set_up_test_data%232_Set_up_test_data" target="_blank">
+<font color="#800080">apartado 2</font></a>. </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">4.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Configure y ejecute la aplicación web, tal y como se describe en los <a onclick="return top.js.OpenExtLink(window,event,this)" href="#3_Deploy_and_run_the_web_app%233_Deploy_and_run_the_web_app" target="_blank">
+<font color="#800080">apartados 3 o 4</font></a>. </span></p>
+<p><span lang="ES-TRAD"><font color="#333333">Si su objetivo es desarrollar con Mondrian, existen instrucciones adicionales para el acceso al servidor de control de fuentes Perforce y<span>&nbsp; </span>para compilar el código fuente en 
+</font><a onclick="return top.js.OpenExtLink(window,event,this)" href="developer.html" target="_blank"><font color="#990000">the Developer's Guide</font></a><font color="#333333">.</font></span>
+</p>
+<h2 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_2_Set_up_test_data"><span lang="ES-TRAD"><font color="#990000" size="4">2. Configuración de los datos de test sobre una base de datos no embebida.</font></span></a></h2>
+
+<p><font color="#333333"><span lang="ES-TRAD">La base de datos 'FoodMart' forma parte de la distribución binaria sin base de datos embebida (<i>non-embedded</i>). Se proporciona en dos formatos: como base de datos Microsoft Access (
+</span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">demo/access/MondrianFoodMart.mdb</span></code><span lang="ES-TRAD">) y como un script SQL de sentencias de inserción (</span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">
+demo/FoodMartCreateData.sql</span></code><span lang="ES-TRAD">).</span></font></p>
+<p><span lang="EN-GB"><font color="#333333">&nbsp;</font></span></p>
+<p><span lang="ES-TRAD"><font color="#333333">Bajo Windows, utilizar la base de datos Access es lo mas sencillo de configurar, ya que sólo es necesario definir una fuente de datos ODBC. Si se quiere probar a utilizar una fuente de datos que no sea Access, o si no está utilizando Windows, será necesario crear una base de datos vacía y cargar sobre la misma los datos proporcionado en el script, utilizando la utilidad MondrianFoodMartLoader.
+</font></span></p>
+<h3 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_2_1_Microsoft_Access"><span lang="EN-GB"><font color="#333333" size="2">2.1. Microsoft Access</font></span></a><span lang="EN-GB"></span></h3>
+<p><span lang="ES-TRAD"><font color="#333333">Si está utilizando Windows, utilizar Microsoft Access es la manera más sencilla de configurar la base de datos de prueba. Sólo será necesario configurar una fuente de datos ODBC para los datos de prueba.
+</font></span></p>
+<p><span lang="ES-TRAD"><font color="#333333">La base de datos de pruebe debe ser accesibles para las prueba unitarias si está realizando pruebas con esta base de datos, o cargados en otra base de datos.</font></span></p>
+
+<p><font color="#333333"><span lang="ES-TRAD">Bajo el menú 'Herramientas Administrativas', situado en el Panel de Control de su equipo, haga click sobre<span>&nbsp; </span>'Orígenes de datos (ODBC)' para abrir el administrados de fuentes de datos ODBC. A continuación cree un DSN de sistema llamado 
+</span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">MondrianFoodMart</span></code><span lang="ES-TRAD"> apuntando a </span><code><i><span lang="ES-TRAD" style="FONT-SIZE: 10pt">MONDRIAN_HOME</span></i></code><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">
+/demo/access/MondrianFoodMart.mdb</span></code><span lang="ES-TRAD">. (Esto permitirá que Mondrian acceda a los datos utilizando la cadena de conexión JDBC &quot;</span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">jdbc:odbc:MondrianFoodMart
+</span></code><span lang="ES-TRAD">&quot;.</span></font></p>
+<h3 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_2_2_Non_Access_setup"><span lang="ES-TRAD"><font color="#333333" size="2">2.2. Ot</font></span></a><span lang="ES-TRAD"><font color="#333333" size="2">ras bases de datos
+</font></span></h3>
+<p><span lang="ES-TRAD"><font color="#333333">Si no utiliza Microsoft Access, utilice la utilidad MondrianFoodMartLoader para crear una base de datos y cargar los datos a partir del script SQL.</font></span></p>
+<h4 style="MARGIN: auto 0cm"><span lang="EN-GB"><font size="1"><font color="#333333">Sintaxis</font></font></span></h4>
+<p><code><span lang="EN-GB" style="FONT-SIZE: 10pt"><font color="#333333">MondrianFoodMartLoader</font></span></code><span lang="EN-GB" style="FONT-SIZE: 10pt"><br><font color="#333333"><code>&nbsp;&nbsp;&nbsp; [-verbose] [-tables] [-data] [-indexes]
+</code><br><code>&nbsp;&nbsp;&nbsp; -jdbcDrivers=&lt;jdbcDrivers&gt;</code><br><code>&nbsp;&nbsp;&nbsp; -outputJdbcURL=&lt;jdbcURL&gt;</code><br><code>&nbsp;&nbsp;&nbsp; [ [ [-outputJdbcUser=user] [-outputJdbcPassword=password] [-outputJdbcBatchSize=&lt;batch size&gt;] ]
+</code><br><code>&nbsp;&nbsp;&nbsp; | -outputDirectory=&lt;directory name&gt;</code><br><code>&nbsp;&nbsp;&nbsp; ]</code><br><code>&nbsp;&nbsp;&nbsp; [ [-inputJdbcURL=&lt;jdbcURL&gt; [-inputJdbcUser=user] [-inputJdbcPassword=password] ]</code><br><code>&nbsp;&nbsp;&nbsp; | [-inputFile=&lt;file name&gt;]
+</code><br><code>&nbsp;&nbsp;&nbsp; ]</code></font></span><span lang="EN-GB"></span></p>
+<h4 style="MARGIN: auto 0cm"><span lang="EN-GB"><font size="1"><font color="#333333">Options</font></font></span></h4>
+<table style="BORDER-RIGHT: medium none; BORDER-TOP: medium none; BORDER-LEFT: medium none; BORDER-BOTTOM: medium none; BORDER-COLLAPSE: collapse" cellspacing="0" cellpadding="0" border="1">
+<tbody>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt; TEXT-ALIGN: center" align="center"><b><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Opción</span></b><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+</span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt; TEXT-ALIGN: center" align="center"><b><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Descripción</span></b><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+</span></p></td></tr>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt"><code><span lang="EN-GB" style="FONT-SIZE: 10pt; COLOR: #333333">-verbose</span></code><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"></span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Modo de eco de pantalla.</span></p></td></tr>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt"><code><span lang="EN-GB" style="FONT-SIZE: 10pt; COLOR: #333333">-tables</span></code><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"></span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Creación de tablas a través de JDBC, o generación de un fichero con sentencias CREATE TABLE en un directorio de salida para todas las tablas FoodMart, en función de la base de datos de salida. Si no se especifica este parámetro, se asume que las tablas existe y que se borrarán primero de cargar los datos.
+</span></p></td></tr>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt"><code><span lang="EN-GB" style="FONT-SIZE: 10pt; COLOR: #333333">-data</span></code><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"></span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Carga de datos desde una entrada (JDBC, fichero con sentencias insert) a uno de salida (JDBC, fichero de sentencias insert). Cualquier dato existente se borrará primero.
+</span></p></td></tr>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt"><code><span lang="EN-GB" style="FONT-SIZE: 10pt; COLOR: #333333">-indexes</span></code><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"></span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Crea índice en la salida JDBC, o genera un fichero con sentencias CREATE INDEX en un directorio de salida, para todas las tables de FoodMart, en funcón de la base de datos de salida
+</span></p></td></tr>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt"><code><span lang="EN-GB" style="FONT-SIZE: 10pt; COLOR: #333333">-jdbcDrivers=<i>&lt;driver list&gt;</i></span></code><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+</span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Lista separarada por comas de drivers JDBC necesarios para la conexión con las fuentes de datos origen y destino. Los ficheros JAR que contienen estos drivers deben de estar en el directorio especificado en la variable classpath (argumento 
+</span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">-cp</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"> del comando </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">
+java</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">).</span></p></td></tr>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top" nowrap>
+
+<p style="MARGIN: 0cm 0cm 0pt"><code><span lang="EN-GB" style="FONT-SIZE: 10pt; COLOR: #333333">-outputJdbcURL<i>=&lt;jdbcURL&gt;</i></span></code><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+</span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p><span lang="ES-TRAD"><font color="#333333" size="2">URL JDBC para la base de datos destino</font></span></p></td></tr>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt"><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">-outputJdbcUser=<i>&lt;user&gt;</i></span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+</span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Nombre de usuario de la base de datos destino</span></p></td></tr>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt"><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">-outputJdbcPassword=<i>&lt;password&gt;</i></span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+</span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Password de la base de datos destino</span></p></td></tr>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top" nowrap>
+
+<p style="MARGIN: 0cm 0cm 0pt"><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">-outputDirectory=<i>&lt;directory name&gt;</i></span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+</span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Opcional. Directorio de creación de los scripts de la bases de datos. Las sentencias están el formato adecuado a la base de datos que se indique en outputJdbcURL.
+</span></p></td></tr>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt"><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">-outputJdbcBatchSize=<i>&lt;batch size&gt;</i></span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+</span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Tamaño en batch para la salida de las sentencias JDBC INSERT. Por defecto es 50. Si se configura como, El batches de JDBC no se utiliza.
+</span></p></td></tr>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top" nowrap>
+
+<p style="MARGIN: 0cm 0cm 0pt"><code><span lang="EN-GB" style="FONT-SIZE: 10pt; COLOR: #333333">-inputJdbcURL=<i>&lt;jdbcURL&gt;</i></span></code><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+</span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">URL JDBC de la base de datos fuente</span></p></td></tr>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt"><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">-inputJdbcUser=<i>&lt;user&gt;</i></span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+</span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Nombre de usuario de la base de datos fuente</span></p></td></tr>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt"><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">-inputJdbcPassword=<i>&lt;password&gt;</i></span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+</span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Password de la base de datos fuente</span></p></td></tr>
+<tr>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt"><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">-inputFile=<i>&lt;file name&gt;</i></span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+</span></p></td>
+<td style="BORDER-RIGHT: #c0c0c0; PADDING-RIGHT: 1.5pt; BORDER-TOP: #c0c0c0; PADDING-LEFT: 1.5pt; PADDING-BOTTOM: 1.5pt; BORDER-LEFT: #c0c0c0; PADDING-TOP: 1.5pt; BORDER-BOTTOM: #c0c0c0; BACKGROUND-COLOR: transparent" valign="top">
+
+<p style="MARGIN: 0cm 0cm 0pt; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Opcional. </span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Si no hay parámetros relativos a la Base de datos, se assume que los datos vienen de este fichero<span>&nbsp; </span>de sentencias INSERT.</span></p></td></tr></tbody></table>
+<p><font color="#333333"><span lang="ES-TRAD">La fuente normal para la utilidad MondrianFoodMartLoader es un script SQL (</span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">[-inputFile=&lt;file name&gt;]</span></code>
+<span lang="ES-TRAD">). Pero si se ha cargado ya datos en una fuente de datos JDBC (como pueda ser Microsoft Access), utilice </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">-inputJdbcURL</span></code><span lang="ES-TRAD">
+ y las opciones relacionadas para copiar datos desde la otra fuente de datos JDBC.</span></font></p>
+<p><span lang="ES-TRAD"><font color="#333333">El cargador utiliza el estándar J2SE JDBC, el driver JDBC, y algunas clases fuera del Mondrian que no suponene ficheros JARs adicionales. Ha sido provado contra Oracle, Postgres, MySQL y Microsoft Access.
+</font></span></p>
+<p><span lang="ES-TRAD"><font color="#333333">Si su destino es una base de datos JDBC, deberá crear la base de datos o esquema antes de realizar la carga de datos. Esto es específico para cada base de datos.</font></span>
+</p>
+<p><span lang="ES-TRAD"><font color="#333333">Puede ignorar con seguridad las advertencias del log4j:</font></span></p>
+<p><code><span lang="EN-GB" style="FONT-SIZE: 10pt"><font color="#333333">log4j:WARN No appenders could be found for logger (mondrian.rolap.RolapUtil).&nbsp;</font></span></code><span lang="EN-GB" style="FONT-SIZE: 10pt"><br>
+<code><font color="#333333">log4j:WARN Please initialize the log4j system properly.</font></code></span><span lang="EN-GB"></span></p>
+<h4 style="MARGIN: auto 0cm"><span lang="EN-GB"><font size="1"><font color="#333333">Ejemplos</font></font></span></h4>
+<p><font color="#333333"><span lang="ES-TRAD">Aquí tiene algunos ejemplos que puede ilustrar la idea genera de cómo invocar a </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">MondrianFoodMartLoader</span></code>
+<span lang="ES-TRAD">. La línea de comandos cambiará dependiendo del sistema operativo, las fuentes y destinos de datos que utilice.</span></font></p>
+<h5 style="MARGIN: auto 0cm"><span lang="ES-TRAD"><font color="#990000" size="1">Ejemplo 1. Cargando MySQL desde un fichero en Linux</font></span></h5>
+<p><font color="#333333"><span lang="ES-TRAD">El siguiente ejemplo es una línea de commandos Linux que crea un "schema" para MySQL llamado 'foodmart', y crea las tables FoodMart desde los datos incluidos en los scripts SQL. Primero, crea una base de datos 
+</span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">foodmart</span></code><span lang="ES-TRAD"> y un usuario </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">foodmart</span></code><span lang="ES-TRAD">:</span>
+</font></p>
+<p><font color="#333333"><code><b><i><span lang="EN-GB" style="FONT-SIZE: 10pt">$</span></i></b></code><code><span lang="EN-GB" style="FONT-SIZE: 10pt"> mysqladmin create foodmart</span></code></font><b><i><span lang="EN-GB" style="FONT-SIZE: 10pt">
+<br><code><font color="#333333">$</font></code></span></i></b><code><span lang="EN-GB" style="FONT-SIZE: 10pt"><font color="#333333"> mysql</font></span></code><b><span lang="EN-GB" style="FONT-SIZE: 10pt"><br><font color="#333333">
+<code><i>mysql&gt;</i> grant all privileges on *.* to 'foodmart'@'localhost' identified by 'foodmart';</code><br><code><i>Query OK, 0 rows affected (0.00 sec)</i></code></font><i><br><br><code><font color="#333333">mysql&gt; 
+</font></code></i></span></b><code><span lang="EN-GB" style="FONT-SIZE: 10pt"><font color="#333333">quit</font></span></code><b><i><span lang="EN-GB" style="FONT-SIZE: 10pt"><br><code><font color="#333333">Bye</font></code>
+</span></i></b><span lang="EN-GB"></span></p>
+<p><span lang="ES-TRAD"><font color="#333333">A continuación carga los datos:</font></span></p>
+<p><font color="#333333"><code><b><i><span lang="EN-GB" style="FONT-SIZE: 10pt">$</span></i></b></code><code><span lang="EN-GB" style="FONT-SIZE: 10pt"> java -cp &quot;/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/usr/local/mysql/mysql-connector-java-3.0.16-ga-bin.jar
+&quot;</span></code></font><span lang="EN-GB" style="FONT-SIZE: 10pt"><br><font color="#333333"><code>&nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=
+com.mysql.jdbc.Driver</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -inputFile=/mondrian/demo/FoodMartCreateData.sql </code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=&quot;jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart&quot;</code></font>
+</span><span lang="EN-GB"><font color="#333333"> </font></span></p>
+<h5 style="MARGIN: auto 0cm"><span lang="EN-GB"><font size="1"><font color="#990000">Ejemplo 2. Cargando PostgreSQL desde Access en Windows</font></font></span></h5>
+<p><span lang="ES-TRAD"><font color="#333333">El siguiente ejemplo es una línea de commandos Windows que crea las tables FoodMart para PostgreSQL desde los datos almacenados en una base de datos Access:</font></span></p>
+
+<p><font color="#333333"><code><b><i><span lang="EN-GB" style="FONT-SIZE: 10pt">C:\mondrian&gt;</span></i></b></code><code><span lang="EN-GB" style="FONT-SIZE: 10pt"> java -cp &quot;C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-
+1.2.9.jar;C:\mondrian\lib\eigenbase-xom.jar;C:\mondrian\lib\eigenbase-resgen.jar;C:\mondrian\lib\eigenbase-properties.jar;C:\mondrian\lib\postgres-jdbc.jar&quot;</span></code></font><span lang="EN-GB" style="FONT-SIZE: 10pt">
+<br><font color="#333333"><code>&nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=&quot;org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver
+&quot;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -inputJdbcURL=&quot;jdbc:odbc:MondrianFoodMart&quot;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=&quot;jdbc:postgresql://localhost/foodmart&quot;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcUser=postgres</code><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcPassword=password</code></font></span><span lang="EN-GB"></span></p>
+<h2 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_3_Deploy_and_run_the_web_app"><span lang="ES-TRAD"><font color="#990000" size="4">3. Despliegue y ejecución de una aplicación web con una base de datos no embebida</font>
+</span></a></h2>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">1.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Instale Tomcat (version 5.0.25 or superior). </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">2.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Desde el paquete descargado con los binarios, descomprímalos y coloque </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">lib/mondrian.war</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+ sobre </span><code><i><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">TOMCAT_HOME</span></i></code><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">/webapps/mondrian</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+ </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">3.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Abra el fichero mondrian.properties sitado en </span><code><i><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">TOMCAT_HOME</span></i></code><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">/webapps/mondrian
+</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"> y cambia las propiedades </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">mondrian.jdbcDrivers</span>
+</code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"> para la base de datos que ha configurado anteriormente siguiendo las instrucciones de este documento. </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">4.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Abra el fichero web.xml en </span><code><i><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">TOMCAT_HOME</span></i></code><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">/webapps/mondrian/WEB-INF
+</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"> y personalice las dos cadenas de conexión existentes a la base de datos FoodMart que ha instalado, teniendo en<span>&nbsp; </span>
+cuenta el tipo de base de datos que ha elegido. Es decir, </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt"><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver
+;</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Cambiaría a<span>&nbsp; </span></span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt"><code><span lang="EN-GB" style="FONT-SIZE: 10pt; COLOR: #333333">Provider=mondrian;Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=
+com.mysql.jdbc.Driver;</span></code><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">5.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Modigique los ficheros </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">fourheir.jsp</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">, </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">
+mondrian.jsp</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">, </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">colors.jsp</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+ y </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">arrows.jsp </span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">situados en el directorio </span><code>
+<i><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">TOMCAT_HOME</span></i></code><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">/webapps/mondrian/WEB-INF/queries</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+. Modifique la línea:</span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt"><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">&lt;jp:mondrianQuery id=&quot;query01&quot; jdbcDriver=&quot;sun.jdbc.odbc.JdbcOdbcDriver&quot; jdbcUrl=&quot;jdbc:odbc:MondrianFoodMart&quot; catalogUri=&quot;/WEB-INF/queries/FoodMart.xml&quot;&gt;
+</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"> </span></p>
+<p style="MARGIN-LEFT: 36pt"><span lang="ES-TRAD"><font color="#333333">por los mismos parámetros de base de datos para la base de datos FoodMart instalada según las instrucciones. Para el caso de MySQL, deberíamos tener algo del estilo a: 
+</font></span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt"><code><span lang="EN-GB" style="FONT-SIZE: 10pt; COLOR: #333333">&lt;jp:mondrianQuery id=&quot;query01&quot; jdbcDriver=&quot;com.mysql.jdbc.Driver&quot; jdbcUrl=&quot;jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart&quot;; catalogUri=&quot;/WEB-INF/queries/FoodMart.xml&quot;&gt;
+</span></code><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"></span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">6.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Copie los siguiente ficheros: </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 72pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">o<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Si es necesario, copie su JAR con el driver JDBC al directorio </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">TOMCAT_HOME/common/endorsed</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+ </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 72pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 10pt; COLOR: #333333">o<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Copie </span><code><span lang="EN-GB" style="FONT-SIZE: 10pt; COLOR: #333333">xalan.jar</span></code><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"> a </span><code><i><span lang="EN-GB" style="FONT-SIZE: 10pt; COLOR: #333333">
+TOMCAT_HOME</span></i></code><code><span lang="EN-GB" style="FONT-SIZE: 10pt; COLOR: #333333">/common/endorsed</span></code><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">7.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Inicialize su base de datos si es necesario. </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">8.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Introduzca <a onclick="return top.js.OpenExtLink(window,event,this)" href="http://localhost:8080/mondrian" target="_blank"><font color="#800080">http://localhost:8080/mondrian</font></a> en su navegador.</span></p>
+<h2 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_4_Deploy_and_run_the_embedded_web_app"><span lang="ES-TRAD"><font color="#990000" size="4">4. Despliegue y ejecución de una aplicación web con una base datos embebida
+</font></span></a></h2>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">1.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Desde el paquete descargado con los binarios, descomprímalos y coloque </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">lib/ mondrian-embedded.war</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+ sobre </span><code><i><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">TOMCAT_HOME</span></i></code><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt; COLOR: #333333">/webapps/mondrian-embedded</span></code><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+</span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">2.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Inicialice Tomcat </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">3.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Introduzca <a onclick="return top.js.OpenExtLink(window,event,this)" href="http://localhost:8080/mondrian" target="_blank"><font color="#800080">http://localhost:8080/mondrian-embedded</font></a> en su navegador.</span></p>
+
+<h2 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_5_How_to_configure_Mondrian_as_an_XMLA_p"><span lang="ES-TRAD"><font color="#990000" size="4">5. Cómo configurar Mondrian como un servidor XML/A</font></span></a></h2>
+
+<p><span lang="ES-TRAD"><font color="#333333">Para configurar un servicio XMLA, siga los siguientes pasos.</font></span></p>
+<h3 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_5_1_Describe_the_data_sources_in_datasou"><span lang="ES-TRAD"><font color="#333333" size="2">1. Describa las fuentes de datos en el fichero </font></span></a><span>
+<code><span lang="ES-TRAD" style="FONT-SIZE: 10pt"><font color="#333333">datasources.xml</font></span></code></span></h3>
+<p><font color="#333333"><span lang="ES-TRAD">En el directorio WEB-INF de su webapp, cree un fichero </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">datasources.xml</span></code><span lang="ES-TRAD">, con un contenido como el siguiente:
+</span></font></p>
+<p><code><span lang="EN-GB" style="FONT-SIZE: 10pt"><font color="#333333">&lt;?xml version=&quot;1.0&quot;?&gt;</font></span></code><span lang="EN-GB" style="FONT-SIZE: 10pt"><br><font color="#333333"><code>&lt;DataSources&gt;
+</code><br><code>&nbsp; &lt;DataSource&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;DataSourceName&gt;MondrianFoodMart&lt;/DataSourceName&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;DataSourceDescription&gt;FoodMart 2000 Data Warehouse From MS Analysis Services&lt;/DataSourceDescription&gt;
+</code><br><code>&nbsp;&nbsp;&nbsp; &lt;URL&gt;<a onclick="return top.js.OpenExtLink(window,event,this)" href="http://localhost:8080/mondrian/xmla" target="_blank">http://localhost:8080/mondrian/xmla</a>&lt;/URL&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian; Jdbc=jdbc:odbc:MondrianFoodMart; JdbcDrivers=
+sun.jdbc.odbc.JdbcOdbcDriver&lt;/DataSourceInfo&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;Catalogs&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;FoodMart&quot;&gt;/WEB-INF/schema/FoodMart.xml&lt;/Catalog&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;Markating&quot;&gt;/WEB-INF/schema/Marketing.xml&lt;/Catalog&gt;
+</code><br><code>&nbsp;&nbsp;&nbsp; &lt;/Catalogs&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;ProviderType&gt;MDP&lt;/ProviderType&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;</code><br><code>&nbsp; &lt;/DataSource&gt;
+</code><br><br><code>&nbsp; &lt;DataSource&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;DataSourceName&gt;PostgreSQLTest&lt;/DataSourceName&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;DataSourceDescription&gt;Test Data Warehouse On PostgreSQL&lt;/DataSourceDescription&gt;
+</code><br><code>&nbsp;&nbsp;&nbsp; &lt;URL&gt;<a onclick="return top.js.OpenExtLink(window,event,this)" href="http://localhost:8080/mondrian/xmla" target="_blank">http://localhost:8080/mondrian/xmla</a>&lt;/URL&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian; Jdbc=jdbc:postgresql://localhost/olap; JdbcDrivers=
+org.postgresql.Driver; JdbcUser=pgsql; JdbcPassword=pgsql&lt;/DataSourceInfo&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;Catalogs&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;Test&quot;&gt;/WEB-INF/schema/TestPgsql.xml&lt;Catalog&gt;
+</code><br><code>&nbsp;&nbsp;&nbsp; &lt;/Catalogs&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;ProviderName&gt;Mondrian&lt;/ProviderName&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;ProviderType&gt;MDP&lt;/ProviderType&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;
+</code><br><code>&nbsp; &lt;/DataSource&gt;</code><br><code>&lt;/DataSources&gt;</code></font></span><span lang="EN-GB"></span></p>
+<p><font color="#333333"><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">&lt;ProviderType&gt;</span></code><span lang="ES-TRAD"> y </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">&lt;AuthenticationMode&gt;</span>
+</code><span lang="ES-TRAD"> se ignoran ya que la implementación actual de XML/A sólo soporta 'MDP' y 'Unauthenticated'.</span></font></p>
+<h4 style="MARGIN: auto 0cm"><span lang="ES-TRAD"><font color="#333333" size="1">Múltiples fuentes de datos y catálogos</font></span></h4>
+<p><span lang="ES-TRAD"><font color="#333333">Si tiene intención de utilizar Mondrian con la librería cliente de Microsoft, <a onclick="return top.js.OpenExtLink(window,event,this)" href="http://adomd.net/" target="_blank">
+ADOMD.NET</a> o </font><a onclick="return top.js.OpenExtLink(window,event,this)" href="http://www.simba.com/Technologies/odbotoxmla.htm" target="_blank"><font color="#800080">Simba's O2X bridge</font></a><font color="#333333">
+, el fichero de fuentes de datos debe tener específicamente un elemento </font></span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt"><font color="#333333">&lt;DataSource&gt;</font></span></code><span lang="ES-TRAD"><font color="#333333">
+. Estos clientes ignorarán todos las fuentes de datos excepto una. Otros clients XML/A clients, como </font><a onclick="return top.js.OpenExtLink(window,event,this)" href="http://sourceforge.net/projects/whex" target="_blank">
+<font color="#990000">Rex</font></a><font color="#333333"> o Jrubik trabajan con múltiples fuentes de datos.</font></span></p>
+<p><font color="#333333"><span lang="ES-TRAD">Nótese que cada catálogo tiene un atributo name, y el URI (path) de un fichero XML schema. El nombre del catálogo debe coincidir con el atributo name del esquema del fichero (por ejemplo 
+</span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">&lt;Schema name=&quot;FoodMart&quot;&gt;</span></code><span lang="ES-TRAD">).</span></font></p>
+<p><font color="#333333"><span lang="ES-TRAD">Ya sea, que utilice una fuente de datos o varias, los catálogos en el fichero </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">datasources.xml</span></code><span lang="ES-TRAD">
+ deben contener nombres únicos.</span></font></p>
+<h3 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_5_2_Configure_XmlaServlet_in_your_web.xm"><span lang="ES-TRAD"><font color="#333333" size="2">2. Configuración de XmlaServlet en el archivo </font></span></a><span><code>
+<span lang="ES-TRAD" style="FONT-SIZE: 10pt"><font color="#333333">web.xml</font></span></code></span></h3>
+<p><span lang="EN-GB"><font color="#333333">Por ejemplo:</font></span></p>
+<p><code><span lang="EN-GB" style="FONT-SIZE: 10pt"><font color="#333333">&lt;servlet&gt;</font></span></code><span lang="EN-GB" style="FONT-SIZE: 10pt"><br><font color="#333333"><code>&nbsp; &lt;servlet-name&gt;MondrianXmlaServlet&lt;/servlet-name&gt;
+</code><br><code>&nbsp; &lt;servlet-class&gt;mondrian.xmla.XmlaServlet&lt;/servlet-class&gt;</code><br><code>&nbsp; &lt;init-param&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;param-name&gt;DataSourcesConfig&lt;/param-name&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;param-value&gt;
+datasources.xml&lt;/param-value&gt;</code><br><code>&nbsp; &lt;/init-param&gt;</code><br><code>&lt;/servlet&gt;</code></font></span><span lang="EN-GB"></span></p>
+<h2 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_6_Miscellaneous"><span lang="ES-TRAD"><font color="#990000" size="4">6. </font></span></a><span lang="ES-TRAD"><font color="#990000" size="4">Miscelánea</font></span>
+</h2>
+<h3 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_6_1_mondrian_properties"><span lang="ES-TRAD"><font color="#333333" size="2">6.1. Configuración de </font></span></a><span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">
+<font color="#333333">mondrian.properties</font></span></code></span></h3>
+<p><span lang="ES-TRAD"><font color="#333333">Las propiedades se describen en la </font><a onclick="return top.js.OpenExtLink(window,event,this)" href="configuration.html" target="_blank">
+<font color="#990000">Configuration Guide</font></a><font color="#333333">.</font></span></p>
+<h3 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_6_2_Cache_setup"><span lang="ES-TRAD"><font color="#333333" size="2">6.2. </font></span></a><span lang="ES-TRAD"><font color="#333333" size="2">Configuración de la caché
+</font></span></h3>
+<p><span lang="ES-TRAD"><font color="#333333">Deberá especificar la cantidad de memoria disponible para la cache utilizando la opción -Xms de la Java VM, por ejemplo -Xms256m para 256 Mb de ram para la JVM.</font></span>
+</p>
+<h2 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_7_Database_compatibility"><span lang="ES-TRAD"><font color="#990000" size="4">7. Bases de datos compatibles</font></span></a></h2>
+<p><span lang="ES-TRAD"><font color="#333333">Se sabe que Mondrian corre sobre las siguiente bases de datos:</font></span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">1.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Apache Derby </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">2.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Firebird </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">3.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+hsqldb </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">4.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+IBM DB2 </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">5.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Microsoft Access </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">6.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Microsoft SQL Server </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">7.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+MySQL </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">8.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Oracle </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">9.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+PostgreSQL </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; TEXT-INDENT: -18pt; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">10.<span>&nbsp; </span></span><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">
+Sybase </span></p>
+<p><span lang="ES-TRAD"><font color="#333333">Mondrian puede trabajar con casi todo tipo de fuentes de datos JDB, incluso si su base de datos no aparece en la lista anterior, del una oportunidad. Mondrian puede de forma genérica conocer las capacidades de la base de datos del driver JDBC, y generar SQL correcto.
+</font></span></p>
+<p><span lang="ES-TRAD"><font color="#333333">Si consigue hacer funcionar Mondrian con otra base de datos, mándenos un email. Háganos llegar el driver que utilice, la versión de su base de datos, configuración de propiedades, y cualquier detalle que haya tenido que considerar.
+</font></span></p>
+<h3 style="MARGIN: auto 0cm"><span lang="EN-GB"><font size="2"><font color="#333333">General database tips</font></font></span></h3>
+<p><font color="#333333"><span lang="ES-TRAD">Para ejemplos de cadenzas de conexión, mire en </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">mondrian.properties</span></code><span lang="ES-TRAD">. Hay ejemplos de cadenas de conexión para muchas bases de datos.
+</span></font></p>
+<h3 style="MARGIN: auto 0cm"><span lang="EN-GB"><font color="#333333"><font size="2">Sybase</font></font></span></h3>
+<p><span lang="ES-TRAD"><a onclick="return top.js.OpenExtLink(window,event,this)" href="https://sourceforge.net/forum/message.php?msg_id=3755994" target="_blank"><font color="#800080">mizar_sf escribe</font></a><font color="#333333">
+:</font></span></p>
+<p><span lang="ES-TRAD"><font color="#333333">Intenté varias soluciones para conseguir que Mondrian (He utilizado 2.1RC) conectase con un servidor Sybase ASE [version 12.5]. Finalmente encontré las siguientes soluciones:
+</font></span></p>
+<ul type="disc">
+<li style="MARGIN: 0cm 0cm 0pt; COLOR: #333333; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana">Descargar un driver jdbc3 compliant driver como jtds-1.2.jar desde sourceforge. </span>
+<li style="MARGIN: 0cm 0cm 0pt; COLOR: #333333; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana">Colocar el driver en TOMCAT_HOME/common/endorsed </span>
+<li style="MARGIN: 0cm 0cm 0pt; COLOR: #333333; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana">En ficheros de configuración como </span>
+<ul type="circle">
+<li style="MARGIN: 0cm 0cm 0pt; COLOR: #333333; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana">mondrian/WEB-INF/datasources.xml </span>
+<li style="MARGIN: 0cm 0cm 0pt; COLOR: #333333; LINE-HEIGHT: 9.5pt"><span lang="EN-GB" style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana">mondrian/WEB-INF/web.xml</span></li></li></ul></li></li></li></ul>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">Modifiqué la línea de parámetros como sigue: </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt"><code><span lang="EN-GB" style="FONT-SIZE: 10pt; COLOR: #333333">Provider=mondrian;JdbcUser=userName;JdbcPassword=userPass;Jdbc=jdbc:jtds:sybase://xxx.xxx.xxx.xxx:port/dbName;JdbcDrivers=
+net.sourceforge.jtds.jdbc.Driver;Catalog=/WEB-INF/queries/myCatalog.xml</span></code><span lang="EN-GB" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana"> </span></p>
+<p style="MARGIN: 0cm 0cm 0pt 36pt; LINE-HEIGHT: 9.5pt"><span lang="ES-TRAD" style="FONT-SIZE: 8pt; COLOR: #333333; FONT-FAMILY: Verdana">(datasources.xml no necesita ser modificado si solo necesitas probar la base de datos, pero si estás utilizando algo como OPENI hay que modificarlo.) 
+</span></p>
+<h2 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_8_Compatibility_issues"><span lang="ES-TRAD"><font color="#990000" size="4">8. Aspectos de Compatibilidad</font></span></a></h2>
+<h3 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_8_1_Weblogic_6_1_and_Xerces"><span lang="ES-TRAD"><font color="#333333" size="2">8.1. Weblogic 6.1 y<span>&nbsp; </span>Xerces</font></span></a></h3>
+<p><span lang="ES-TRAD"><font color="#333333">Weblogic 6.1 viene con una versión antigua e incompatible de Xerces. El síntoma del error:</font></span></p><pre><span lang="EN-GB"><font style="BACKGROUND-COLOR: #eeeeee">java.lang.VerifyError
+: (class: org/eigenbase/xom/wrappers/XercesDOMParser,<br><span>&nbsp;</span>method: parse signature: (Lorg/xml/sax/InputSource;)Lorg/w3c/dom/Document;)<br><span>&nbsp;</span>Incompatible object argument for function call<br>at java.lang.Class.forName0
+(Native Method)<br>at java.lang.Class.forName(Class.java:120)<br>at org.eigenbase.xom.XOMUtil.createDefaultParser(XOMUtil.java:165)<br>at org.eigenbase.resgen.Util.load(Util.java:49)<br>...</font></span></pre>
+<p><font color="#333333"><span lang="ES-TRAD">La solución pasa por sustituir </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">xml-apis.jar</span></code><span lang="ES-TRAD"> y </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">
+xercesImpl.jar</span></code><span lang="ES-TRAD"> antes de </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">weblogic.jar</span></code><span lang="ES-TRAD"> en su class-path.</span></font></p>
+<p><span lang="ES-TRAD"><font color="#333333">Generalmente, Mondrian utiliza cualquier parser XML compatible JAXP que proporcione<span>&nbsp; </span>el sistema. Desafortunadamente el analizador de Weblogic no se puede configurar en modo non-validating, y Mondrian lo necesita. Por tanto, en un entorno Weblogic, Mondrian utiliza explícitamenteXerces.&nbsp; 
+</font><a onclick="return top.js.OpenExtLink(window,event,this)" href="http://xml.apache.org/soap/faq/faq-for-WL6.1beta.html" target="_blank"><font color="#990000">Esta nota</font></a><font color="#333333"> describe cómo cambiar el analizador XML por defecto del Weblogic's.
+</font></span></p>
+<h3 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_8_2_Xalan_and_Tomcat"><span lang="ES-TRAD"><font color="#333333" size="2">8.2. JDK, Xalan y Tomcat</font></span></a></h3>
+<p><span lang="ES-TRAD"><font color="#333333">Los binarios de Mondrian, tal y como se pueden descargar de la web, necesitan JDK 1.4.x, Xalan 2.6.0, y Tomcat 5.0.25 o superior.</font></span></p>
+<p><font color="#333333"><span lang="ES-TRAD">Si está ejecutando JDK 1.3.<i>x</i>, necesitará ficheros JAR exta, porque JDK 1.3 no incluye un parser XML. </span><span lang="EN-GB">Copie </span><code><span lang="EN-GB" style="FONT-SIZE: 10pt">
+xalan.jar</span></code><span lang="EN-GB"> y </span><code><span lang="EN-GB" style="FONT-SIZE: 10pt">xml-apis.jar</span></code><span lang="EN-GB"> a </span><code><i><span lang="EN-GB" style="FONT-SIZE: 10pt">TOMCAT_HOME</span>
+</i></code><code><span lang="EN-GB" style="FONT-SIZE: 10pt">/common/lib</span></code><span lang="EN-GB">. </span><span lang="ES-TRAD">(o </span><code><i><span lang="ES-TRAD" style="FONT-SIZE: 10pt">TOMCAT_HOME</span></i></code>
+<code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">/common/endorsed</span></code><span lang="ES-TRAD">, si su versión de Tomcat tiene este directorio). Si su configuración es errónea, el error típico es el siguiente:</span>
+</font></p>
+<p><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt"><font color="#333333">java.lang.VerifyError: Cannot inherit from final class</font></span></code><span lang="ES-TRAD" style="FONT-SIZE: 10pt"><br><font color="#333333">
+<code>&nbsp; at java.lang.ClassLoader.defineClass0(Native Method)</code><br><code>&nbsp; at java.lang.ClassLoader.defineClass(ClassLoader.java:502)</code><br><code>&nbsp; at java.security.SecureClassLoader.defineClass(SecureClassLoader.java
+:123)</code><br><code>&nbsp; at org.apache.catalina.loader.WebappClassLoader.findClassInternal(WebappClassLoader.java:1664)</code><br><code>&nbsp; at org.apache.catalina.loader.WebappClassLoader.findClass(WebappClassLoader.java:953)
+</code><br><code>&nbsp; at org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1394)</code><br><code>&nbsp; at org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1274)</code><br>
+<code>&nbsp; at java.lang.ClassLoader.loadClassInternal(ClassLoader.java:315)</code><br><code>&nbsp; at org.apache.xerces.impl.XMLNSDocumentScannerImpl.createContentDispatcher(Unknown Source)</code><br><code>&nbsp; at org.apache.xerces.impl.XMLDocumentFragmentScannerImpl
+.&lt;init&gt;(XMLDocumentFragmentScannerImpl.java:249)</code><br><code>&nbsp; at org.apache.xerces.impl.XMLDocumentScannerImpl.&lt;init&gt;(XMLDocumentScannerImpl.java:245)</code><br><code>&nbsp; at org.apache.xerces.impl.XMLNSDocumentScannerImpl
+.&lt;init&gt;(Unknown Source)</code><br><code>&nbsp; at org.apache.xerces.parsers.IntegratedParserConfiguration.createDocumentScanner(Unknown Source)</code><br><code>&nbsp; at org.apache.xerces.parsers.DTDConfiguration.&lt;init&gt;(
+DTDConfiguration.java:367)</code><br><code>&nbsp; at org.apache.xerces.parsers.StandardParserConfiguration.&lt;init&gt;(StandardParserConfiguration.java:198)</code><br><code>&nbsp; at org.apache.xerces.parsers.IntegratedParserConfiguration
+.&lt;init&gt;(Unknown Source)</code><br><code>&nbsp; at org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown Source)</code><br><code>&nbsp; at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+</code></font></span></p>
+<p><font color="#333333"><span lang="ES-TRAD">Este error aparece con JDK 1.3.1, Tomcat 4.1.18, Xalan 2.4.1. Las posibles soluciones a este error pasan por (a) cambiarse a JDK 1.4 y eliminar </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">
+xml-apis.jar</span></code><span lang="ES-TRAD"> y </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">xercesImpl.jar</span></code><span lang="ES-TRAD"> del fichero </span><code><span lang="ES-TRAD" style="FONT-SIZE: 10pt">
+mondrian.war</span></code><span lang="ES-TRAD">, o (b) volver a Xalan 2.3.1.</span></font></p>
+<h3 style="MARGIN: auto 0cm"><a name="10c00c7a886b165a_8_3_Log4j_and_Tomcat"><span lang="EN-GB"><font color="#333333" size="2">8.3. Log4j y Tomcat</font></span></a><span lang="EN-GB"></span></h3>
+<p><span lang="ES-TRAD"><font color="#333333">Los WARs de Mondrian contienen en su distribución una versión de log4j.jar. Esto puede entrar en conflicto con su servidor de aplicaciones, como en el caso de JBoss, y causar errores en el log. Para solucionar esto, elimine 
+log4j.jar del WAR de Mondrian.</font></span></p></div></div></font></div>
+
+<hr>
+<table class="clsStd" style="border-collapse: collapse;" border="0"
+ bordercolor="#111111" cellpadding="0" cellspacing="0" width="100%" id="table1">
+  <tbody>
+    <tr>
+      <td class="content"> <a target="_top" href="index.html">Home</a>
+| <a target="_top" href="#">No frames</a> | This file is<i> 
+      <a href="http://mondrian.sourceforge.net/install_es.html">$Id$ </a></i> (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/install_es.html?ac=22">log</a>)</td>
+      <td align="right"> <a href="http://sourceforge.net"> <img
+ src="http://sourceforge.net/sflogo.php?group_id=35302&amp;type=1"
+ alt="SourceForge.net Logo" border="0" height="31" width="88"> </a> </td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>
