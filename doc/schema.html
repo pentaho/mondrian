@@ -291,12 +291,12 @@ to calculate its value.
 The measure "Promotion Sales" is an example of this.
 </p>
 <blockquote>
-  <pre>&lt;<a href="#XML_Measure">Measure</a> name="Promotion Sales" aggregator="sum" formatString="#,###.00"&gt;
- &nbsp;  &lt;MeasureExpression&gt;
- &nbsp;    &lt;SQL dialect="generic"&gt;
- &nbsp;      (case when sales_fact_1997.promotion_id = 0 then 0 else sales_fact_1997.store_sales end)
- &nbsp;    &lt;/SQL&gt;
- &nbsp;  &lt;/MeasureExpression&gt;<br>&lt;/<a
+  <pre>&lt;<a href="#XML_Measure">Measure</a> name="Promotion Sales" aggregator="sum" formatString="#,###.00"&gt;<br>  &lt;<a
+ href="#XML_MeasureExpression">MeasureExpression</a>&gt;<br>    &lt;<a
+ href="#XML_SQL">SQL</a> dialect="generic"&gt;
+ &nbsp;&nbsp;&nbsp;&nbsp; (case when sales_fact_1997.promotion_id = 0 then 0 else sales_fact_1997.store_sales end)<br>    &lt;/<a
+ href="#XML_SQL">SQL</a>&gt;<br>  &lt;/<a
+ href="#XML_MeasureExpression">MeasureExpression</a>&gt;<br>&lt;/<a
  href="#XML_Measure">Measure</a>&gt;</pre>
 </blockquote>
 <p>In this case, sales are only included in the summation if they correspond
@@ -345,7 +345,7 @@ dimension, called 'Measures'.</p>
   <pre>&lt;<a href="#XML_Dimension">Dimension</a> name="Gender" foreignKey="customer_id"&gt;<br>  &lt;<a
  href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="customer_id"&gt;<br>    &lt;<a
  href="#XML_Table">Table</a> name="customer"/&gt;<br>    &lt;<a
- href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"/&gt;<br>  &lt;/
+ href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"/&gt;<br>  &lt;/<a
  href="#XML_Hierarchy">Hierarchy</a>&gt;<br>&lt;/<a
  href="#XML_Dimension">Dimension</a>&gt;</pre>
 </blockquote>
@@ -2306,6 +2306,14 @@ MemberReader, if present.</td>
     <tr>
       <td><code>&lt;<a name="XML_Value" href="xml_schema.html#Value">Value</a>&gt;</code></td>
       <td>Value of a column in an &lt;InlineTable&gt; dataset.</td>
+    </tr>
+    <tr>
+      <td><code>&lt;<a name="XML_MeasureExpression" href="xml_schema.html#MeasureExpression">MeasureExpression</a>&gt;</code></td>
+      <td>SQL expression used to compute a measure, in lieu of a column.</td>
+    </tr>
+    <tr>
+      <td><code>&lt;<a name="XML_SQL" href="xml_schema.html#SQL">SQL</a>&gt;</code></td>
+      <td>The SQL expression for a particular database dialect.</td>
     </tr>
   </tbody>
 </table>
