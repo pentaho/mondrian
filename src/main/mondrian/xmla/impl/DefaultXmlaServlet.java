@@ -428,11 +428,6 @@ public class DefaultXmlaServlet extends XmlaServlet {
             byte[][] responseSoapParts) 
             throws XmlaException {
 
-        // Regardless of whats been put into the response so far, clear
-        // it out.
-        response.reset();
-        response.setStatus(HttpServletResponse.SC_OK);
-
         try {
             // If CharacterEncoding was set in web.xml, use this value
             String encoding = (charEncoding != null) 
@@ -598,6 +593,8 @@ public class DefaultXmlaServlet extends XmlaServlet {
         // I think that XMLA faults always returns OK.
         switch (phase) {
         case VALIDATE_HTTP_HEAD_PHASE :
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            break;
         case INITIAL_PARSE_PHASE :
         case CALLBACK_PRE_ACTION_PHASE :
         case PROCESS_HEADER_PHASE :

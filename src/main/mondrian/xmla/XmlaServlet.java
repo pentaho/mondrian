@@ -173,9 +173,6 @@ public abstract class XmlaServlet extends HttpServlet
 
         try {
 
-            phase = INITIAL_PARSE_PHASE;
-
-
             if (charEncoding != null) {
                 try {
                     request.setCharacterEncoding(charEncoding);
@@ -227,6 +224,7 @@ public abstract class XmlaServlet extends HttpServlet
             }
 
 
+            phase = INITIAL_PARSE_PHASE;
 
             try {
                 if (LOGGER.isDebugEnabled()) {
@@ -361,6 +359,7 @@ public abstract class XmlaServlet extends HttpServlet
 
             try {
 
+                response.setStatus(HttpServletResponse.SC_OK);
                 marshallSoapMessage(response, responseSoapParts);
 
             } catch (XmlaException xex) {
