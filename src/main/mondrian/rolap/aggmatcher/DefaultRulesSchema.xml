@@ -1544,8 +1544,11 @@ Revision is $Id$
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
-                    if (isRef(rules, msgRecorder, ignoreMap, 
-                            ignoreMapRef, "IgnoreMap")) {
+                    // IgnoreMap is optional
+                    if (ignoreMap != null) {
+                        ignoreMap.validate(rules, msgRecorder);
+                    } else if (ignoreMapRef != null) {
+                        ignoreMapRef.validate(rules, msgRecorder);
                         ignoreMap = 
                             rules.lookupIgnoreMap(ignoreMapRef.getRefId());
                     }

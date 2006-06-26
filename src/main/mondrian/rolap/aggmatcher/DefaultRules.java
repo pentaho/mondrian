@@ -330,7 +330,15 @@ public class DefaultRules {
             // get default AggRule
             DefaultDef.AggRule rule = getAggRule();
             DefaultDef.IgnoreMap ignoreMatch = rule.getIgnoreMap();
-            ignoreMatcherMap = ignoreMatch.getMatcher();
+            if (ignoreMatch == null) {
+                ignoreMatcherMap = new Recognizer.Matcher() {
+                    public boolean matches(String name) {
+                        return false;
+                    }
+                };
+            } else {
+                ignoreMatcherMap = ignoreMatch.getMatcher();
+            }
         }
         return ignoreMatcherMap;
     }
