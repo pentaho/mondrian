@@ -143,17 +143,6 @@
             <row>
                 <CATALOG_NAME>FoodMart</CATALOG_NAME>
                 <CUBE_NAME>Sales</CUBE_NAME>
-                <MEASURE_NAME>Profit last Period</MEASURE_NAME>
-                <MEASURE_UNIQUE_NAME>[Measures].[Profit last Period]</MEASURE_UNIQUE_NAME>
-                <MEASURE_CAPTION>Profit last Period</MEASURE_CAPTION>
-                <MEASURE_AGGREGATOR>127</MEASURE_AGGREGATOR>
-                <DATA_TYPE>130</DATA_TYPE>
-                <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                <DESCRIPTION>Sales Cube - Profit last Period Memeber</DESCRIPTION>
-            </row>
-            <row>
-                <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                <CUBE_NAME>Sales</CUBE_NAME>
                 <MEASURE_NAME>Profit Growth</MEASURE_NAME>
                 <MEASURE_UNIQUE_NAME>[Measures].[Profit Growth]</MEASURE_UNIQUE_NAME>
                 <MEASURE_CAPTION>Gewinn-Wachstum</MEASURE_CAPTION>

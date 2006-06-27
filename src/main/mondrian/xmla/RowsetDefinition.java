@@ -1595,6 +1595,16 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     RolapMember[] rms = cube.getMeasuresMembers();
                     for (int k = 1; k < rms.length; k++) {
                         RolapMember member = rms[k];
+                        
+                        // null == true for regular cubes
+                        // virtual cubes do not set the visible property
+                        // on its measures so it might be null.
+                        Boolean isVisible = (Boolean)
+                                member.getPropertyValue(Property.VISIBLE.name);
+                        if ((isVisible != null) && (! isVisible.booleanValue())) {
+                            continue;
+                        }
+
                         String memberName = member.getName();
 
                         row = new Row();
@@ -4349,6 +4359,15 @@ boolean restriction, boolean nullable, String description)
             // Access control
             if (!canAccess(connection, member)) {
                 return;
+            }
+
+            if (member instanceof MemberBase) {
+                MemberBase mb = (MemberBase) member;
+                Boolean isVisible = (Boolean)
+                       mb.getPropertyValue(Property.VISIBLE.name);
+                if ((isVisible != null) && (! isVisible.booleanValue())) {
+                    return;
+                }
             }
 
             //TODO: currently this is always null
