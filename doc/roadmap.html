@@ -12,7 +12,7 @@
 
 <h1><font size="6"> Mondrian roadmap</font></h1>
 
-<p>By Julian Hyde; last updated April, 2006.</p>
+<p>By Julian Hyde; last updated June, 2006.</p>
 
 <hr noshade color="#000000" size="1">
 
@@ -70,6 +70,9 @@
         and scalar functions</a></li>
         <li><a href="#Feature_Further_work_on_aggregate_tables">Further work on 
         aggregate tables</a></li>
+        <li><a href="#Feature_Query_cancel_timeout">Query cancel/timeout</a></li>
+        <li><a href="#Feature_Support_references_to_Invalid_Members">Support 
+        references to invalid members</a></li>
 
   </ol>
 </ol>
@@ -416,6 +419,39 @@ performance.</p>
 disambiguate which usage of the dimension is involved. Allow the virtual cube to 
 use the same cube more than once.</p>
 
+<p>First, add virtual cube(VC) unit tests.  Cover the following: </p>
+<ol>
+  <li>Non-conforming dimensions. </li>
+  <li>Non-conforming dimension with default non-all member. </li>
+  <li>Conforming dimensions that join to fact at different grains. </li>
+</ol>
+
+<h5>Design details</h5>
+
+<p>Long term, we would like to seperate the RolapDimension object into
+a RolapDimensionData object and a RolapDimensionUsage object.  This
+would allow us to seperate the dimension members from their usage in a
+cube context.  For example, the Time Dimension could be used multiple
+times as Order Date, Ship Date and Close Date.  Close Date would
+contain a psuedo-member [Close Date].[Year].[1997] and Order Date
+would contain a psuedo-member [Order Date].[Year].[1997] and both
+psuedo-members would really refer to the real member
+[Time].[Year].[1997].  Close Date and Order Date would have different
+dimension ordinals inside the cube even though they both refer to
+members from the same RolapDimensionData.  This work would be extended
+to virtual cubes so that virtual cubes could define dimension usages
+that refer to base cube dimension usages.  For example, the
+Oppty-Orders VC would contain a Canonical Time dimension based on
+Oppty Cube.Close Date and Order Cube.Order Date.  It would then be
+possible to determine that the psuedo member [Canonical
+Date].[Year].[1997] maps to [Close Date].[Year].[1997] and [Order
+Date].[Year].[1997] psuedo members which map to conforming member
+[Time].[Year].[1997].  In terms of implementation, there should only
+be one primary SQL reader inside of the Time RolapDimensionData.  Each
+RolapDimensionUsage would provide a decorated reader which also tracks
+usage specific calculated members such as [Closed Date].[All
+Dates].[1997].[Calculcated Member].
+
 <h3><a name="Feature_Calculated_members_in_virtual_cubes">4.6 Calculated members in virtual cubes</a></h3>
 
 <p><i>Effort: low; importance: medium; priority: medium.</i></p>
@@ -668,7 +704,19 @@ them an optional part of Mondrian -- in the source tree, but not
 loaded in the MDX dialect by default -- but create a set of tests for
 them. They will serve as great examples for others writing UDFs.</p>
 
-<h3><a name="Feature_Further_work_on_aggregate_tables">4.24 Further work on 
+<h4>InStr function</h4>
+
+See <a href="http://www.w3schools.com/vbscript/func_instr.asp">Instr</a>.
+
+This can then be used to filter a set.  For example,<blockquote>
+
+  <p><code>Filter([Competitors].Members, InStr([Competitors].CurrentMember.Name,'IBM') != 0)</code></p>
+</blockquote>
+ 
+<h4>CurrentDate function</h4>
+
+<p>See specification of CurrentDate function
+<a href="https://sourceforge.net/forum/forum.php?thread_id=1222972&forum_id=111375">here</a>.<h3><a name="Feature_Further_work_on_aggregate_tables">4.24 Further work on 
 aggregate tables</a></h3>
 
 <p>1. Utility to populate (or generate INSERT statements to populate) the  agg
@@ -694,7 +742,40 @@ running.
 
 <p>I'm thinking of these being utilities, not part of the core runtime engine.
 There's plenty of room to wrap these utilities in nice graphical interfaces,
-make them smarter.<p>&nbsp;<hr>
+make them smarter.
+
+<p/>
+
+<h3><a name="Feature_Query_cancel_timeout">4.25 Query cancel/timeout</a></h3>
+
+<p>Provide ability to run a query asynchonously; cancel a query; and set a 
+timeout for a query. Provide a threadsafe API on Query(?) which allows you to cancel the
+query from another thread. Short-term, we would probably set timeout in mondrian.properties.<p>
+Design: Canceling flag would be checked by the
+thread running the query at the following points: pushing on a RolapEvaluator 
+context, before executing SQL and after executing SQL.
+
+<p>Long term, when Mondrian implements the
+javax.sql.* interfaces such as DataSource, Connection and Statement.
+Mondrian can implement the synchronization of calling execute and
+cancel on Statement objects through these interfaces. And would simply use the 
+Statement.setTimeout() method. Suspect that commons-pool (or similar) already 
+provides the ability to run statements asynchronously, so it may happen for free 
+when Mondrian statements implement java.sql.Connection.<h3>
+<a name="Feature_Support_references_to_Invalid_Members">4.26 Support references to Invalid Members</a></h3>
+
+<p>MSAS2005 supports the ability to reference members that do not exist
+in dimension metadata such as [Time].[1997].[Q5].  The first thing to
+enhance in Mondrian is delayed validation of these members so that
+when a schema is load these members will not cause Mondrian to not
+start.  The second is when a query uses an invalid member.  One
+possible design is to replace with the null member,
+i.e. [Dimension].[#null].  Any Position containing this null member
+should be removed from the axis.<p>This seems to introduce problems for queries 
+involving set negation e.g. a reference to the non-existent quarter 
+[Time].[2005].[Q5] is fine, but would the query 'show be all the quarters where 
+we didn't sell beer in Texas' ever return that value? Check with MSAS2005 for exact
+semantics.<p>&nbsp;<hr>
 
 <table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0" id="table1">
   <tr>
