@@ -52,6 +52,16 @@ public class AggregationManager extends RolapAggregationManager {
         return LOGGER;
     }
 
+    /** 
+     * Called by FastBatchingCellReader.loadAggregation where the
+     * RolapStar creates an Aggregation if needed.
+     * 
+     * @param measures 
+     * @param columns 
+     * @param bitKey 
+     * @param constraintses 
+     * @param pinnedSegments 
+     */
     public void loadAggregation(
             RolapStar.Measure[] measures,
             RolapStar.Column[] columns,
@@ -123,6 +133,7 @@ public class AggregationManager extends RolapAggregationManager {
 
     /**
      * Generates the query to retrieve the cells for a list of segments.
+     * Called by Segment.load
      */
     public String generateSql(
             final Segment[] segments,

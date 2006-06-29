@@ -109,7 +109,40 @@ public class FastBatchingCellReader implements CellReader {
             return;
         }
         ++requestCount;
-        Object key = request.getBatchKey();
+
+        //
+        // This is needed because for a Virtual Cube, two CellRequests
+        // could have the same BitKey but have different underlying
+        // base cubes. Without this, one get the result in the
+        // SegmentArrayQuerySpec addMeasure Util.assertTrue being
+        // triggered (which is what happened).
+        // Note that this class need not be seen by any other method, 
+        // hence it is method private!!
+        //
+        class BatchKey {
+            BitKey key;
+            RolapStar star;
+            BatchKey(BitKey key, RolapStar star) {
+                this.key = key;
+                this.star = star;
+            }
+            public int hashCode() {
+                return key.hashCode() ^ star.hashCode();
+            }
+            public boolean equals(Object other) {
+                if (other instanceof BatchKey) {
+                    BatchKey bkey = (BatchKey) other;
+                    return key.equals(bkey.key) && star.equals(bkey.star);
+                } else {
+                    return false;
+                }
+            }
+            public String toString() {
+                return star.getFactTable().getTableName()+" "+key.toString();
+            }
+        };
+        BitKey bitkey = request.getBatchKey();
+        BatchKey key = new BatchKey(bitkey, request.getMeasure().getStar());
         Batch batch = (Batch) batches.get(key);
         if (batch == null) {
             batch = new Batch(request);
@@ -180,7 +213,6 @@ public class FastBatchingCellReader implements CellReader {
         final BitKey bitKey;
         final List measuresList = new ArrayList();
         final Set[] valueSets;
-
         public Batch(CellRequest request) {
             columns = request.getColumns();
             bitKey = request.getBatchKey();
@@ -201,6 +233,11 @@ public class FastBatchingCellReader implements CellReader {
                         (measure.getStar() ==
                         ((RolapStar.Measure) measuresList.get(0)).getStar()):
                         "Measure must belong to same star as other measures";
+/*
+System.out.println("Batch.add: size=" +measuresList.size());
+System.out.println(" measure.getName()=" +measure.getName());
+System.out.println(" measure.getTable().getTableName()=" +measure.getTable().getTableName());
+*/
                 measuresList.add(measure);
             }
         }
