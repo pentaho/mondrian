@@ -217,12 +217,6 @@
                     </xsd:schema>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Sales</TABLE_NAME>
-                        <TABLE_TYPE>TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Store:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
                         <DESCRIPTION>FoodMart - Sales Cube - Store
@@ -500,12 +494,6 @@
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
                         <DESCRIPTION>FoodMart - Sales Cube - Yearly
                             Income Hierarchy - Yearly Income Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse and Sales</TABLE_NAME>
-                        <TABLE_TYPE>TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
@@ -803,12 +791,6 @@
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Sales 2</TABLE_NAME>
-                        <TABLE_TYPE>TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Time:Year</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
                         <DESCRIPTION>FoodMart - Sales 2 Cube - Time
@@ -918,12 +900,6 @@
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
                         <DESCRIPTION>FoodMart - Sales 2 Cube - Gender
                             Hierarchy - Gender Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse</TABLE_NAME>
-                        <TABLE_TYPE>TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
@@ -1120,12 +1096,6 @@
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
                         <DESCRIPTION>FoodMart - Warehouse Cube -
                             Warehouse Hierarchy - Warehouse Name Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Sales Ragged</TABLE_NAME>
-                        <TABLE_TYPE>TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
@@ -1439,12 +1409,6 @@
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>HR</TABLE_NAME>
-                        <TABLE_TYPE>TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Time:Year</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
                         <DESCRIPTION>FoodMart - HR Cube - Time Hierarchy
@@ -1578,12 +1542,6 @@
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Store</TABLE_NAME>
-                        <TABLE_TYPE>TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Store Cube</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Store:Store Type:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
                         <DESCRIPTION>FoodMart - Store Cube - Store Type
@@ -1644,6 +1602,48 @@
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
                         <DESCRIPTION>FoodMart - Store Cube - Has coffee
                             bar Hierarchy - Has coffee bar Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales</TABLE_NAME>
+                        <TABLE_TYPE>TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales Cube</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Warehouse and Sales</TABLE_NAME>
+                        <TABLE_TYPE>TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales 2</TABLE_NAME>
+                        <TABLE_TYPE>TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Warehouse</TABLE_NAME>
+                        <TABLE_TYPE>TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Warehouse Cube</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Sales Ragged</TABLE_NAME>
+                        <TABLE_TYPE>TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>HR</TABLE_NAME>
+                        <TABLE_TYPE>TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - HR Cube</DESCRIPTION>
+                    </row>
+                    <row>
+                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
+                        <TABLE_NAME>Store</TABLE_NAME>
+                        <TABLE_TYPE>TABLE</TABLE_TYPE>
+                        <DESCRIPTION>FoodMart - Store Cube</DESCRIPTION>
                     </row>
                 </root>
             </xmla:return>
@@ -5941,7 +5941,7 @@
                             Level],[Gender].[Gender],[Marital
                             Status].[Marital Status],[Yearly
                             Income].[Yearly Income]</LEVELS_LIST>
-                        <DESCRIPTION>Sales Cube - Unit Sales Memeber</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Unit Sales Member</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -5962,7 +5962,7 @@
                             Level],[Gender].[Gender],[Marital
                             Status].[Marital Status],[Yearly
                             Income].[Yearly Income]</LEVELS_LIST>
-                        <DESCRIPTION>Sales Cube - Store Cost Memeber</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store Cost Member</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -5983,7 +5983,7 @@
                             Level],[Gender].[Gender],[Marital
                             Status].[Marital Status],[Yearly
                             Income].[Yearly Income]</LEVELS_LIST>
-                        <DESCRIPTION>Sales Cube - Store Sales Memeber</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store Sales Member</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -6004,7 +6004,7 @@
                             Level],[Gender].[Gender],[Marital
                             Status].[Marital Status],[Yearly
                             Income].[Yearly Income]</LEVELS_LIST>
-                        <DESCRIPTION>Sales Cube - Sales Count Memeber</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Sales Count Member</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -6025,7 +6025,7 @@
                             Level],[Gender].[Gender],[Marital
                             Status].[Marital Status],[Yearly
                             Income].[Yearly Income]</LEVELS_LIST>
-                        <DESCRIPTION>Sales Cube - Customer Count Memeber</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customer Count Member</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -6046,7 +6046,7 @@
                             Level],[Gender].[Gender],[Marital
                             Status].[Marital Status],[Yearly
                             Income].[Yearly Income]</LEVELS_LIST>
-                        <DESCRIPTION>Sales Cube - Promotion Sales Memeber</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Promotion Sales Member</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -6057,7 +6057,7 @@
                         <MEASURE_AGGREGATOR>127</MEASURE_AGGREGATOR>
                         <DATA_TYPE>130</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Profit Memeber</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Profit Member</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -6068,7 +6068,7 @@
                         <MEASURE_AGGREGATOR>127</MEASURE_AGGREGATOR>
                         <DATA_TYPE>130</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Profit Growth Memeber</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Profit Growth Member</DESCRIPTION>
                     </row>
                 </root>
             </xmla:return>

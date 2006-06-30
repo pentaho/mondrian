@@ -34,6 +34,7 @@ import java.util.*;
  */
 abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     final Column[] columnDefinitions;
+    final Column[] sortColumnDefinitions;
 
     /**
      * Date the schema was last modified.
@@ -98,9 +99,26 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
     );
 
-    RowsetDefinition(String name, int ordinal, String description, Column[] columnDefinitions) {
+    /**
+     * Creates a rowset definition.
+     *
+     * @param name
+     * @param ordinal
+     * @param description
+     * @param columnDefinitions List of column definitions
+     * @param sortColumnDefinitions List of column definitions to sort on,
+     *   or null if the rowset is not sorted
+     */
+    RowsetDefinition(
+        String name,
+        int ordinal,
+        String description,
+        Column[] columnDefinitions,
+        Column[] sortColumnDefinitions)
+    {
         super(name, ordinal, description);
         this.columnDefinitions = columnDefinitions;
+        this.sortColumnDefinitions = sortColumnDefinitions;
     }
 
     public static RowsetDefinition getValue(String name) {
@@ -117,6 +135,41 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a comparator with which to sort rows of this rowset definition.
+     * The sort order is defined by the {@link #sortColumnDefinitions} field.
+     * If the rowset is not sorted, returns null.
+     */
+    Comparator getComparator() {
+        if (sortColumnDefinitions == null) {
+            return null;
+        }
+        return new Comparator() {
+            public int compare(Object o1, Object o2) {
+                return compare((Rowset.Row) o1, (Rowset.Row) o2);
+            }
+
+            int compare(Rowset.Row row1, Rowset.Row row2) {
+                for (int i = 0; i < sortColumnDefinitions.length; i++) {
+                    RowsetDefinition.Column sortColumn = sortColumnDefinitions[i];
+                    Comparable val1 = (Comparable) row1.get(sortColumn.name);
+                    Comparable val2 = (Comparable) row2.get(sortColumn.name);
+                    if (val1 == null) {
+                        return -1;
+                    } else if (val2 == null) {
+                        return 1;
+                    } else if (val1 instanceof String &&
+                        val2 instanceof String) {
+                        return ((String) val1).compareToIgnoreCase((String) val2);
+                    } else {
+                        return val1.compareTo(val2);
+                    }
+                }
+                return 0;
+            }
+        };
     }
 
     /**
@@ -650,7 +703,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     ProviderName,
                     ProviderType,
                     AuthenticationMode,
-                }) {
+                },
+            null /* not sorted */) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new DiscoverDatasourcesRowset(request, handler);
             }
@@ -660,7 +714,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, request, handler);
         }
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             for (Iterator it = handler.getDataSourceEntries().values().iterator(); it.hasNext();) {
                 DataSourcesConfig.DataSource ds = (DataSourcesConfig.DataSource) it.next();
                 Row row = new Row();
@@ -671,7 +725,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 row.set(ProviderName.name, ds.getProviderName());
                 row.set(ProviderType.name, ds.getProviderType());
                 row.set(AuthenticationMode.name, ds.getAuthenticationMode());
-                emit(row, response);
+                addRow(row, rows);
             }
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
@@ -733,7 +787,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     SchemaGuid,
                     Restrictions,
                     Description,
-                }) {
+                },
+                null /* not sorted */) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new DiscoverSchemaRowsetsRowset(request, handler);
             }
@@ -819,7 +874,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, request, handler);
         }
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             final RowsetDefinition[] rowsetDefinitions = (RowsetDefinition[])
                     enumeration.getValuesSortedByName().
                     toArray(new RowsetDefinition[0]);
@@ -835,7 +890,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
                 String desc = rowsetDefinition.description;
                 row.set(Description.name, (desc == null) ? "" : desc);
-                emit(row, response);
+                addRow(row, rows);
             }
         }
 
@@ -938,13 +993,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     PropertyAccessType,
                     IsRequired,
                     Value,
-                }) {
+                },
+                null /* not sorted */) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new DiscoverPropertiesRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             final String[] propertyNames = PropertyDefinition.enumeration.getNames();
             for (int i = 0; i < propertyNames.length; i++) {
                 PropertyDefinition propertyDefinition = PropertyDefinition.getValue(propertyNames[i]);
@@ -955,7 +1011,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 row.set(PropertyAccessType.name, propertyDefinition.access);
                 row.set(IsRequired.name, false);
                 row.set(Value.name, propertyDefinition.value);
-                emit(row, response);
+                addRow(row, rows);
             }
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
@@ -1039,13 +1095,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     ElementName,
                     ElementDescription,
                     ElementValue,
-                }) {
+                },
+                null /* not sorted */) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new DiscoverEnumeratorsRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             Enumeration[] enumerators = getEnumerators();
             for (int i = 0; i < enumerators.length; i++) {
                 Enumeration enumerator = enumerators[i];
@@ -1073,7 +1130,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         row.set(ElementValue.name, value.getOrdinal());
                         break;
                     }
-                    emit(row, response);
+                    addRow(row, rows);
                 }
             }
         }
@@ -1139,7 +1196,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 "Returns an XML list of keywords reserved by the provider.",
                 new Column[] {
                     Keyword,
-                }) {
+                },
+                null /* not sorted */) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new DiscoverKeywordsRowset(request, handler);
             }
@@ -1206,12 +1264,12 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             "When", "Where", "With", "WTD", "Xor",
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             for (int i = 0; i < keywords.length; i++) {
                 String keyword = keywords[i];
                 Row row = new Row();
                 row.set(Keyword.name, keyword);
-                emit(row, response);
+                addRow(row, rows);
             }
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
@@ -1229,60 +1287,71 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, request, handler);
         }
 
+        private static final Column LiteralName = new Column(
+            "LiteralName",
+            Type.StringSometimesArray,
+            null,
+            Column.RESTRICTION,
+            Column.REQUIRED,
+            "The name of the literal described in the row.\n" + "Example: DBLITERAL_LIKE_PERCENT");
+
+        private static final Column LiteralValue = new Column(
+            "LiteralValue",
+            Type.String,
+            null,
+            Column.NOT_RESTRICTION,
+            Column.REQUIRED,
+            "Contains the actual literal value.\n" + "Example, if LiteralName is DBLITERAL_LIKE_PERCENT and the percent character (%) is used to match zero or more characters in a LIKE clause, this column's value would be \"%\".");
+
+        private static final Column LiteralInvalidChars = new Column(
+            "LiteralInvalidChars",
+            Type.String,
+            null,
+            Column.NOT_RESTRICTION,
+            Column.REQUIRED,
+            "The characters, in the literal, that are not valid.\n" + "For example, if table names can contain anything other than a numeric character, this string would be \"0123456789\".");
+
+        private static final Column LiteralInvalidStartingChars = new Column(
+            "LiteralInvalidStartingChars",
+            Type.String,
+            null,
+            Column.NOT_RESTRICTION,
+            Column.REQUIRED,
+            "The characters that are not valid as the first character of the literal. If the literal can start with any valid character, this is null.");
+
+        private static final Column LiteralMaxLength = new Column(
+            "LiteralMaxLength",
+            Type.Integer,
+            null,
+            Column.NOT_RESTRICTION,
+            Column.REQUIRED,
+            "The maximum number of characters in the literal. If there is no maximum or the maximum is unknown, the value is ?1.");
+
         /*
-         *
-         *
-         *
-         * restrictions
-         *
-         * Not supported
-         */
+        *
+        *
+        *
+        * restrictions
+        *
+        * Not supported
+        */
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "DISCOVER_LITERALS", DISCOVER_LITERALS,
                 "Returns information about literals supported by the provider.",
                 new Column[] {
-                    new Column(
-                        "LiteralName",
-                        Type.StringSometimesArray,
-                        null,
-                        Column.RESTRICTION,
-                        Column.REQUIRED,
-                        "The name of the literal described in the row.\n" + "Example: DBLITERAL_LIKE_PERCENT"),
-                    new Column(
-                        "LiteralValue",
-                        Type.String,
-                        null,
-                        Column.NOT_RESTRICTION,
-                        Column.REQUIRED,
-                        "Contains the actual literal value.\n" + "Example, if LiteralName is DBLITERAL_LIKE_PERCENT and the percent character (%) is used to match zero or more characters in a LIKE clause, this column's value would be \"%\"."),
-                    new Column(
-                        "LiteralInvalidChars",
-                        Type.String,
-                        null,
-                        Column.NOT_RESTRICTION,
-                        Column.REQUIRED,
-                        "The characters, in the literal, that are not valid.\n" + "For example, if table names can contain anything other than a numeric character, this string would be \"0123456789\"."),
-                    new Column(
-                        "LiteralInvalidStartingChars",
-                        Type.String,
-                        null,
-                        Column.NOT_RESTRICTION,
-                        Column.REQUIRED,
-                        "The characters that are not valid as the first character of the literal. If the literal can start with any valid character, this is null."),
-                    new Column(
-                        "LiteralMaxLength",
-                        Type.Integer,
-                        null,
-                        Column.NOT_RESTRICTION,
-                        Column.REQUIRED,
-                        "The maximum number of characters in the literal. If there is no maximum or the maximum is unknown, the value is ?1."),
-                }) {
+                    LiteralName,
+                    LiteralValue,
+                    LiteralInvalidChars,
+                    LiteralInvalidStartingChars,
+                    LiteralMaxLength,
+                },
+                null /* not sorted */) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new DiscoverLiteralsRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             emit(Enumeration.Literal.enumeration, response);
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
@@ -1350,13 +1419,16 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     Description,
                     Roles,
                     DateModified,
+                },
+                new Column[] {
+                    CatalogName,
                 }) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new DbschemaCatalogsRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
             String role = request.getRole();
@@ -1393,7 +1465,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 // TODO: currently schema grammar does not support modify date
                 // so we return just some date for now.
                 if (false) row.set(DateModified.name, dateModified);
-                emit(row, response);
+                addRow(row, rows);
             }
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
@@ -1536,7 +1608,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
          *    COLUMN_OLAP_TYPE
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "DBSCHEMA_COLUMNS", DBSCHEMA_COLUMNS, null, new Column[] {
+                "DBSCHEMA_COLUMNS", DBSCHEMA_COLUMNS, null,
+                new Column[] {
                     TableCatalog,
                     TableSchema,
                     TableName,
@@ -1550,13 +1623,18 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     CharacterOctetLength,
                     NumericPrecision,
                     NumericScale,
+                },
+                new Column[] {
+                    TableCatalog,
+                    TableSchema,
+                    TableName,
                 }) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new DbschemaColumnsRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
             String role = request.getRole();
@@ -1587,15 +1665,16 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         Hierarchy[] hierarchies = dimension.getHierarchies();
                         for (int h = 0; h < hierarchies.length; h++) {
                             HierarchyBase hierarchy = (HierarchyBase) hierarchies[h];
-                            ordinalPosition = emitHierarchy(response,
-                                connection, cube, hierarchy, ordinalPosition);
+                            ordinalPosition = populateHierarchy(
+                                connection, cube, hierarchy,
+                                ordinalPosition, rows);
                         }
                     }
 
                     RolapMember[] rms = cube.getMeasuresMembers();
                     for (int k = 1; k < rms.length; k++) {
                         RolapMember member = rms[k];
-                        
+
                         // null == true for regular cubes
                         // virtual cubes do not set the visible property
                         // on its measures so it might be null.
@@ -1624,17 +1703,18 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         // always returns.
                         row.set(NumericPrecision.name, 16);
                         row.set(NumericScale.name, 255);
-                        emit(row, response);
+                        addRow(row, rows);
                     }
                 }
             }
         }
 
-        private int emitHierarchy(XmlaResponse response,
+        private int populateHierarchy(
             Connection connection,
             RolapCube cube,
             HierarchyBase hierarchy,
-            int ordinalPosition) {
+            int ordinalPosition,
+            List rows) {
 
             // Access control
             if (!canAccess(connection, hierarchy)) {
@@ -1657,7 +1737,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 row.set(DataType.name, DBType.WSTR_ORDINAL);
                 row.set(CharacterMaximumLength.name, 0);
                 row.set(CharacterOctetLength.name, 0);
-                emit(row, response);
+                addRow(row, rows);
 
                 row = new Row();
                 row.set(TableCatalog.name, schemaName);
@@ -1671,41 +1751,41 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 row.set(DataType.name, DBType.WSTR_ORDINAL);
                 row.set(CharacterMaximumLength.name, 0);
                 row.set(CharacterOctetLength.name, 0);
-                emit(row, response);
+                addRow(row, rows);
 
-/*
-TODO: SQLServer outputs this hasall KEY column name - don't know what its for
-                row = new Row();
-                row.set(TableCatalog.name, schemaName);
-                row.set(TableName.name, cubeName);
-                row.set(ColumnName.name, hierarchyName + ":(All)!KEY");
-                row.set(OrdinalPosition.name, ordinalPosition++);
-                row.set(ColumnHasDefault.name, false);
-                row.set(ColumnFlags.name, 0);
-                row.set(IsNullable.name, false);
-                // names are always BOOL
-                row.set(DataType.name, DBType.BOOL_ORDINAL);
-                row.set(NumericPrecision.name, 255);
-                row.set(NumericScale.name, 255);
-                emit(row, response);
-*/
+                if (false) {
+                    // TODO: SQLServer outputs this hasall KEY column name -
+                    // don't know what it's for
+                    row = new Row();
+                    row.set(TableCatalog.name, schemaName);
+                    row.set(TableName.name, cubeName);
+                    row.set(ColumnName.name, hierarchyName + ":(All)!KEY");
+                    row.set(OrdinalPosition.name, ordinalPosition++);
+                    row.set(ColumnHasDefault.name, false);
+                    row.set(ColumnFlags.name, 0);
+                    row.set(IsNullable.name, false);
+                    // names are always BOOL
+                    row.set(DataType.name, DBType.BOOL_ORDINAL);
+                    row.set(NumericPrecision.name, 255);
+                    row.set(NumericScale.name, 255);
+                    addRow(row, rows);
+                }
             }
 
             Level[] levels = hierarchy.getLevels();
             for (int k = 0; k < levels.length; k++) {
                 Level level = levels[k];
-                ordinalPosition = emitLevel(
-                        response, cube, hierarchy, level, ordinalPosition);
+                ordinalPosition = populateLevel(
+                    cube, hierarchy, level, ordinalPosition, rows);
             }
             return ordinalPosition;
         }
 
-        private int emitLevel(
-                XmlaResponse response,
-                Cube cube,
-                HierarchyBase hierarchy,
-                Level level,
-                int ordinalPosition) {
+        private int populateLevel(
+            Cube cube,
+            HierarchyBase hierarchy,
+            Level level,
+            int ordinalPosition, List rows) {
 
             String schemaName = cube.getSchema().getName();
             String cubeName = cube.getName();
@@ -1725,7 +1805,7 @@ TODO: SQLServer outputs this hasall KEY column name - don't know what its for
             row.set(DataType.name, DBType.WSTR_ORDINAL);
             row.set(CharacterMaximumLength.name, 0);
             row.set(CharacterOctetLength.name, 0);
-            emit(row, response);
+            addRow(row, rows);
 
             row = new Row();
             row.set(TableCatalog.name, schemaName);
@@ -1740,7 +1820,7 @@ TODO: SQLServer outputs this hasall KEY column name - don't know what its for
             row.set(DataType.name, DBType.WSTR_ORDINAL);
             row.set(CharacterMaximumLength.name, 0);
             row.set(CharacterOctetLength.name, 0);
-            emit(row, response);
+            addRow(row, rows);
 
 /*
 TODO: see above
@@ -1757,7 +1837,7 @@ TODO: see above
             row.set(DataType.name, DBType.BOOL_ORDINAL);
             row.set(NumericPrecision.name, 255);
             row.set(NumericScale.name, 255);
-            emit(row, response);
+            addRow(row, rows);
 */
             Property[] props = level.getProperties();
             for (int m = 0; m < props.length; m++) {
@@ -1799,7 +1879,7 @@ TODO: see above
                     row.set(CharacterOctetLength.name, 0);
                     break;
                 }
-                emit(row, response);
+                addRow(row, rows);
             }
             return ordinalPosition;
         }
@@ -1940,7 +2020,8 @@ boolean restriction, boolean nullable, String description)
          * Not supported
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "DBSCHEMA_PROVIDER_TYPES", DBSCHEMA_PROVIDER_TYPES, null, new Column[] {
+                "DBSCHEMA_PROVIDER_TYPES", DBSCHEMA_PROVIDER_TYPES, null,
+                new Column[] {
                     TypeName,
                     DataType,
                     ColumnSize,
@@ -1954,13 +2035,16 @@ boolean restriction, boolean nullable, String description)
                     AutoUniqueValue,
                     IsLong,
                     BestMatch,
+                },
+                new Column[] {
+                    DataType,
                 }) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new DbschemaProviderTypesRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             // Identifies the (base) data types supported by the data provider.
 
             // i4
@@ -1975,7 +2059,7 @@ boolean restriction, boolean nullable, String description)
             row.set(AutoUniqueValue.name, false);
             row.set(IsLong.name, false);
             row.set(BestMatch.name, true);
-            emit(row, response);
+            addRow(row, rows);
 
             // R8
             row = new Row();
@@ -1989,7 +2073,7 @@ boolean restriction, boolean nullable, String description)
             row.set(AutoUniqueValue.name, false);
             row.set(IsLong.name, false);
             row.set(BestMatch.name, true);
-            emit(row, response);
+            addRow(row, rows);
 
             // CY
             row = new Row();
@@ -2003,7 +2087,7 @@ boolean restriction, boolean nullable, String description)
             row.set(AutoUniqueValue.name, false);
             row.set(IsLong.name, false);
             row.set(BestMatch.name, true);
-            emit(row, response);
+            addRow(row, rows);
 
             // BOOL
             row = new Row();
@@ -2017,7 +2101,7 @@ boolean restriction, boolean nullable, String description)
             row.set(AutoUniqueValue.name, false);
             row.set(IsLong.name, false);
             row.set(BestMatch.name, true);
-            emit(row, response);
+            addRow(row, rows);
 
             // I8
             row = new Row();
@@ -2031,7 +2115,7 @@ boolean restriction, boolean nullable, String description)
             row.set(AutoUniqueValue.name, false);
             row.set(IsLong.name, false);
             row.set(BestMatch.name, true);
-            emit(row, response);
+            addRow(row, rows);
 
             // WSTR
             row = new Row();
@@ -2048,7 +2132,7 @@ boolean restriction, boolean nullable, String description)
             row.set(AutoUniqueValue.name, false);
             row.set(IsLong.name, false);
             row.set(BestMatch.name, true);
-            emit(row, response);
+            addRow(row, rows);
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
             switch (propertyDef.ordinal) {
@@ -2162,7 +2246,8 @@ boolean restriction, boolean nullable, String description)
          * Not supported
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "DBSCHEMA_TABLES", DBSCHEMA_TABLES, null, new Column[] {
+                "DBSCHEMA_TABLES", DBSCHEMA_TABLES, null,
+                new Column[] {
                     TableCatalog,
                     TableSchema,
                     TableName,
@@ -2173,13 +2258,19 @@ boolean restriction, boolean nullable, String description)
                     DateCreated,
                     DateModified,
                     //TableOlapType,
+                },
+                new Column[] {
+                    TableType,
+                    TableCatalog,
+                    TableSchema,
+                    TableName,
                 }) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new DbschemaTablesRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
@@ -2218,7 +2309,7 @@ boolean restriction, boolean nullable, String description)
                     row.set(TableType.name, "TABLE");
                     row.set(Description.name, desc);
                     if (false) row.set(DateModified.name, dateModified);
-                    emit(row, response);
+                    addRow(row, rows);
 
 
                     Dimension[] dims = cube.getDimensions();
@@ -2228,18 +2319,18 @@ boolean restriction, boolean nullable, String description)
                         Hierarchy[] hierarchies = dimension.getHierarchies();
                         for (int h = 0; h < hierarchies.length; h++) {
                             HierarchyBase hierarchy = (HierarchyBase) hierarchies[h];
-                            emitHierarchy(response, connection, cube, hierarchy);
-
+                            populateHierarchy(connection, cube, hierarchy, rows);
                         }
                     }
                 }
             }
         }
 
-        private void emitHierarchy(XmlaResponse response,
+        private void populateHierarchy(
             Connection connection,
             RolapCube cube,
-            HierarchyBase hierarchy) {
+            HierarchyBase hierarchy,
+            List rows) {
 
             // Access control
             if (!canAccess(connection, hierarchy)) {
@@ -2271,22 +2362,22 @@ boolean restriction, boolean nullable, String description)
                 row.set(TableType.name, "SYSTEM TABLE");
                 row.set(Description.name, desc);
                 row.set(DateModified.name, dateModified);
-                emit(row, response);
+                addRow(row, rows);
             }
 */
             Level[] levels = hierarchy.getLevels();
             for (int k = 0; k < levels.length; k++) {
                 Level level = levels[k];
-                emitLevel(response, cube, hierarchy, level);
+                populateLevel(cube, hierarchy, level, rows);
 
             }
         }
 
-        private void emitLevel(
-                XmlaResponse response,
-                RolapCube cube,
-                HierarchyBase hierarchy,
-                Level level) {
+        private void populateLevel(
+            RolapCube cube,
+            HierarchyBase hierarchy,
+            Level level,
+            List rows) {
 
             String schemaName = cube.getSchema().getName();
             String cubeName = cube.getName();
@@ -2315,8 +2406,9 @@ boolean restriction, boolean nullable, String description)
             row.set(TableType.name, "SYSTEM TABLE");
             row.set(Description.name, desc);
             if (false) row.set(DateModified.name, dateModified);
-            emit(row, response);
+            addRow(row, rows);
         }
+
         protected void setProperty(PropertyDefinition propertyDef, String value) {
             switch (propertyDef.ordinal) {
             case PropertyDefinition.Content_ORDINAL:
@@ -2456,7 +2548,8 @@ boolean restriction, boolean nullable, String description)
          * Not supported
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "DBSCHEMA_TABLES_INFO", DBSCHEMA_TABLES_INFO, null, new Column[] {
+                "DBSCHEMA_TABLES_INFO", DBSCHEMA_TABLES_INFO, null,
+                new Column[] {
                     TableCatalog,
                     TableSchema,
                     TableName,
@@ -2471,13 +2564,14 @@ boolean restriction, boolean nullable, String description)
                     Cardinality,
                     Description,
                     TablePropId,
-                }) {
+                },
+                null /* cannot find doc -- presume unsorted */) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new DbschemaTablesInfoRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
@@ -2520,7 +2614,7 @@ boolean restriction, boolean nullable, String description)
                     row.set(TableVersion.name, version);
                     row.set(Cardinality.name, cardinality);
                     row.set(Description.name, desc);
-                    emit(row, response);
+                    addRow(row, rows);
                 }
             }
         }
@@ -2603,13 +2697,17 @@ boolean restriction, boolean nullable, String description)
                     CubeName,
                     Coordinate,
                     CoordinateType,
+                }, new Column[] {
+                    // Spec says sort on CATALOG_NAME, SCHEMA_NAME, CUBE_NAME,
+                    // ACTION_NAME.
+                    CubeName,
                 }) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new MdschemaActionsRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
                 HSB_UNSUPPORTED_OPERATION_CODE,
@@ -2772,7 +2870,8 @@ boolean restriction, boolean nullable, String description)
          *   ANNOTATIONS
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_CUBES", MDSCHEMA_CUBES, null, new Column[] {
+                "MDSCHEMA_CUBES", MDSCHEMA_CUBES, null,
+                new Column[] {
                     CatalogName,
                     SchemaName,
                     CubeName,
@@ -2788,13 +2887,18 @@ boolean restriction, boolean nullable, String description)
                     IsLinkable,
                     IsSqlEnabled,
                     Description
+                },
+                new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
                 }) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new MdschemaCubesRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
@@ -2847,7 +2951,7 @@ boolean restriction, boolean nullable, String description)
                     row.set(IsLinkable.name, false);
                     row.set(IsSqlEnabled.name, false);
                     row.set(Description.name, desc);
-                    emit(row, response);
+                    addRow(row, rows);
                 }
             }
         }
@@ -3035,7 +3139,8 @@ boolean restriction, boolean nullable, String description)
          *    Default restriction is a value of 1.
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_DIMENSIONS", MDSCHEMA_DIMENSIONS, null, new Column[] {
+                "MDSCHEMA_DIMENSIONS", MDSCHEMA_DIMENSIONS, null,
+                new Column[] {
                     CatalogName,
                     SchemaName,
                     CubeName,
@@ -3053,13 +3158,19 @@ boolean restriction, boolean nullable, String description)
                     DimensionUniqueSettings,
                     DimensionMasterUniqueName,
                     DimensionIsVisible,
+                },
+                new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
+                    DimensionName,
                 }) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new MdschemaDimensionsRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
@@ -3122,7 +3233,7 @@ boolean restriction, boolean nullable, String description)
                         row.set(DimensionUniqueSettings.name, 0);
                         row.set(DimensionIsVisible.name, true);
 
-                        emit(row, response);
+                        addRow(row, rows);
                     }
                 }
             }
@@ -3348,7 +3459,8 @@ boolean restriction, boolean nullable, String description)
          *  CAPTION The display caption for the function.
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_FUNCTIONS", MDSCHEMA_FUNCTIONS, null, new Column[] {
+                "MDSCHEMA_FUNCTIONS", MDSCHEMA_FUNCTIONS, null,
+                new Column[] {
                     FunctionName,
                     Description,
                     ParameterList,
@@ -3357,13 +3469,19 @@ boolean restriction, boolean nullable, String description)
                     InterfaceName,
                     LibraryName,
                     Caption,
+                },
+                new Column[] {
+                    LibraryName,
+                    InterfaceName,
+                    FunctionName,
+                    Origin,
                 }) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new MdschemaFunctionsRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
@@ -3405,7 +3523,7 @@ boolean restriction, boolean nullable, String description)
                         // TODO WHAT VALUE should this have
                         row.set(InterfaceName.name, "");
                         row.set(Caption.name, fi.getName());
-                        emit(row, response);
+                        addRow(row, rows);
 
                     } else {
                         for (int i = 0; i < paramCategories.length; i++) {
@@ -3443,7 +3561,7 @@ boolean restriction, boolean nullable, String description)
                             row.set(InterfaceName.name, "");
 
                             row.set(Caption.name, fi.getName());
-                            emit(row, response);
+                            addRow(row, rows);
                         }
                     }
                 }
@@ -3673,7 +3791,8 @@ boolean restriction, boolean nullable, String description)
          *  INSTANCE_SELECTION
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_HIERARCHIES", MDSCHEMA_HIERARCHIES, null, new Column[] {
+                "MDSCHEMA_HIERARCHIES", MDSCHEMA_HIERARCHIES, null,
+                new Column[] {
                     CatalogName,
                     SchemaName,
                     CubeName,
@@ -3695,13 +3814,20 @@ boolean restriction, boolean nullable, String description)
                     HierarchyOrdinal,
                     DimensionIsShared,
                     ParentChild,
+                },
+                new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
+                    DimensionUniqueName,
+                    HierarchyName,
                 }) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new MdschemaHierarchiesRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
@@ -3793,7 +3919,7 @@ boolean restriction, boolean nullable, String description)
                                     (RolapLevel) hierarchy.getLevels()[
                                     (hierarchy.hasAll() ? 1 : 0)];
                             row.set(ParentChild.name, nonAllFirstLevel.isParentChild());
-                            emit(row, response);
+                            addRow(row, rows);
                         }
                     }
                 }
@@ -3984,7 +4110,8 @@ boolean restriction, boolean nullable, String description)
          *
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_LEVELS", MDSCHEMA_LEVELS, null, new Column[] {
+                "MDSCHEMA_LEVELS", MDSCHEMA_LEVELS, null,
+                new Column[] {
                     CatalogName,
                     SchemaName,
                     CubeName,
@@ -3999,13 +4126,21 @@ boolean restriction, boolean nullable, String description)
                     LevelType,
                     LevelIsVisible,
                     Description,
+                },
+                new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
+                    DimensionUniqueName,
+                    HierarchyUniqueName,
+                    LevelNumber,
                 }) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new MdschemaLevelsRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
@@ -4065,7 +4200,7 @@ boolean restriction, boolean nullable, String description)
                                 row.set(LevelType.name, getLevelType(level));
                                 row.set(LevelIsVisible.name, true);
                                 row.set(Description.name, desc);
-                                emit(row, response);
+                                addRow(row, rows);
                             }
                         }
                     }
@@ -4264,7 +4399,8 @@ boolean restriction, boolean nullable, String description)
          *  DEFAULT_FORMAT_STRING
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_MEASURES", MDSCHEMA_MEASURES, null, new Column[] {
+                "MDSCHEMA_MEASURES", MDSCHEMA_MEASURES, null,
+                new Column[] {
                     CatalogName,
                     SchemaName,
                     CubeName,
@@ -4277,13 +4413,19 @@ boolean restriction, boolean nullable, String description)
                     MeasureIsVisible,
                     LevelsList,
                     Description,
+                },
+                new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
+                    MeasureName,
                 }) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new MdschemaMeasuresRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             // return both stored and calculated members on hierarchy [Measures]
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
@@ -4334,27 +4476,30 @@ boolean restriction, boolean nullable, String description)
                     Member[] storedMembers =
                             schemaReader.getLevelMembers(measuresLevel, false);
                     for (int j = 0; j < storedMembers.length; j++) {
-                        emitMember(response, connection, catalogName,
+                        populateMember(connection, catalogName,
                             storedMembers[j], cube,
-                            levelListStr);
+                            levelListStr, rows);
                     }
 
-                    List calMembers = schemaReader.getCalculatedMembers(measuresHierarchy);
-                    for (Iterator it = calMembers.iterator(); it.hasNext();) {
-                        emitMember(response, connection, catalogName,
+                    List calcMembers =
+                        schemaReader.getCalculatedMembers(measuresHierarchy);
+                    for (Iterator it = calcMembers.iterator(); it.hasNext();) {
+                        populateMember(connection, catalogName,
                             (Member) it.next(),
                             cube,
-                            null);
+                            null, rows);
                     }
                 }
             }
         }
 
-        private void emitMember(XmlaResponse response,
+        private void populateMember(
             Connection connection,
             String catalogName,
             Member member,
-            Cube cube, String levelListStr) {
+            Cube cube,
+            String levelListStr,
+            List rows) {
 
             // Access control
             if (!canAccess(connection, member)) {
@@ -4376,7 +4521,7 @@ boolean restriction, boolean nullable, String description)
                 desc = cube.getName() +
                     " Cube - " +
                     member.getName() +
-                    " Memeber";
+                    " Member";
             }
 
             Row row = new Row();
@@ -4434,7 +4579,7 @@ boolean restriction, boolean nullable, String description)
             }
 
             row.set(Description.name, desc);
-            emit(row, response);
+            addRow(row, rows);
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
             switch (propertyDef.ordinal) {
@@ -4614,7 +4759,8 @@ boolean restriction, boolean nullable, String description)
          * Not supported
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_MEMBERS", MDSCHEMA_MEMBERS, null, new Column[] {
+                "MDSCHEMA_MEMBERS", MDSCHEMA_MEMBERS, null,
+                new Column[] {
                     CatalogName,
                     SchemaName,
                     CubeName,
@@ -4634,13 +4780,23 @@ boolean restriction, boolean nullable, String description)
                     ParentCount,
                     TreeOp,
                     Depth,
+                },
+                new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
+                    DimensionUniqueName,
+                    HierarchyUniqueName,
+                    LevelUniqueName,
+                    LevelNumber,
+                    MemberOrdinal,
                 }) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new MdschemaMembersRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
@@ -4679,8 +4835,8 @@ boolean restriction, boolean nullable, String description)
                                     // stay with default value
                                 }
                             }
-                            unparseMember(connection, catalogName,
-                                    cube, member, response, treeOp);
+                            populateMember(connection, catalogName,
+                                    cube, member, treeOp, rows);
                         }
                         continue;
                     }
@@ -4708,10 +4864,10 @@ boolean restriction, boolean nullable, String description)
                                 // therefore we have nothing to work relative to.
                                 // We supply our own treeOp expression here, for
                                 // our own devious purposes.
-                                unparseMember(connection, catalogName,
-                                        cube, member, response,
-                                        Enumeration.TreeOp.Self.ordinal |
-                                        Enumeration.TreeOp.Descendants.ordinal);
+                                populateMember(connection, catalogName,
+                                        cube, member,
+                                    Enumeration.TreeOp.Self.ordinal |
+                                    Enumeration.TreeOp.Descendants.ordinal, rows);
                             }
                         }
                     }
@@ -4727,14 +4883,18 @@ boolean restriction, boolean nullable, String description)
         }
 
         /**
-         * Outputs a member and, depending upon the <code>treeOp</code>
-         * parameter, other relatives of the member. This method recursively
-         * invokes itself to walk up, down, or across the hierarchy.
+         * Adds a member to a result list and, depending upon the
+         * <code>treeOp</code> parameter, other relatives of the member. This
+         * method recursively invokes itself to walk up, down, or across the
+         * hierarchy.
          */
-        private void unparseMember(final Connection connection,
-                String catalogName, Cube cube,
-                Member member, XmlaResponse response,
-                int treeOp) {
+        private void populateMember(
+            final Connection connection,
+            String catalogName,
+            Cube cube,
+            Member member,
+            int treeOp,
+            List rows) {
 
             if (member.getOrdinal() == -1) {
                 RolapMember.setOrdinals(connection, member);
@@ -4742,7 +4902,7 @@ boolean restriction, boolean nullable, String description)
 
             // Visit node itself.
             if (mask(treeOp, Enumeration.TreeOp.Self.ordinal)) {
-                emitMember(member, connection, catalogName, cube, response);
+                populateMember(member, connection, catalogName, cube, rows);
             }
             // Visit node's siblings (not including itself).
             if (mask(treeOp, Enumeration.TreeOp.Siblings.ordinal)) {
@@ -4761,9 +4921,9 @@ boolean restriction, boolean nullable, String description)
                     if (sibling == member) {
                         continue;
                     }
-                    unparseMember(connection, catalogName,
-                            cube, sibling, response,
-                            Enumeration.TreeOp.Self.ordinal);
+                    populateMember(connection, catalogName,
+                            cube, sibling,
+                        Enumeration.TreeOp.Self.ordinal, rows);
                 }
             }
             // Visit node's descendants or its immediate children, but not both.
@@ -4772,19 +4932,19 @@ boolean restriction, boolean nullable, String description)
                         connection.getSchemaReader().getMemberChildren(member);
                 for (int i = 0; i < children.length; i++) {
                     Member child = children[i];
-                    unparseMember(connection, catalogName,
-                            cube, child, response,
-                            Enumeration.TreeOp.Self.ordinal |
-                            Enumeration.TreeOp.Descendants.ordinal);
+                    populateMember(connection, catalogName,
+                            cube, child,
+                        Enumeration.TreeOp.Self.ordinal |
+                        Enumeration.TreeOp.Descendants.ordinal, rows);
                 }
             } else if (mask(treeOp, Enumeration.TreeOp.Children.ordinal)) {
                 final Member[] children =
                         connection.getSchemaReader().getMemberChildren(member);
                 for (int i = 0; i < children.length; i++) {
                     Member child = children[i];
-                    unparseMember(connection, catalogName,
-                            cube, child, response,
-                            Enumeration.TreeOp.Self.ordinal);
+                    populateMember(connection, catalogName,
+                            cube, child,
+                        Enumeration.TreeOp.Self.ordinal, rows);
                 }
             }
             // Visit node's ancestors or its immediate parent, but not both.
@@ -4792,18 +4952,18 @@ boolean restriction, boolean nullable, String description)
                 final Member parent =
                         connection.getSchemaReader().getMemberParent(member);
                 if (parent != null) {
-                    unparseMember(connection, catalogName,
-                            cube, parent, response,
-                            Enumeration.TreeOp.Self.ordinal |
-                            Enumeration.TreeOp.Ancestors.ordinal);
+                    populateMember(connection, catalogName,
+                            cube, parent,
+                        Enumeration.TreeOp.Self.ordinal |
+                        Enumeration.TreeOp.Ancestors.ordinal, rows);
                 }
             } else if (mask(treeOp, Enumeration.TreeOp.Parent.ordinal)) {
                 final Member parent =
                         connection.getSchemaReader().getMemberParent(member);
                 if (parent != null) {
-                    unparseMember(connection, catalogName,
-                            cube, parent, response,
-                            Enumeration.TreeOp.Self.ordinal);
+                    populateMember(connection, catalogName,
+                            cube, parent,
+                        Enumeration.TreeOp.Self.ordinal, rows);
                 }
             }
         }
@@ -4820,10 +4980,11 @@ boolean restriction, boolean nullable, String description)
             return list;
         }
 
-        private void emitMember(Member member,
-                final Connection connection,
-                final String catalogName,
-                Cube cube, XmlaResponse response) {
+        private void populateMember(
+            Member member,
+            final Connection connection,
+            final String catalogName,
+            Cube cube, List rows) {
             // Access control
             if (!canAccess(connection, member)) {
                 return;
@@ -4860,7 +5021,7 @@ boolean restriction, boolean nullable, String description)
             row.set(ParentCount.name, member.getParentMember() == null ? 0 : 1);
 
             row.set(Depth.name, member.getDepth());
-            emit(row, response);
+            addRow(row, rows);
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
             switch (propertyDef.ordinal) {
@@ -4906,19 +5067,25 @@ boolean restriction, boolean nullable, String description)
          *    SET_DISPLAY_FOLDER
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_SETS", MDSCHEMA_SETS, null, new Column[] {
+                "MDSCHEMA_SETS", MDSCHEMA_SETS, null,
+                new Column[] {
                     CatalogName,
                     SchemaName,
                     CubeName,
                     SetName,
                     Scope,
+                },
+                new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
                 }) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new MdschemaSetsRowset(request, handler);
             }
         };
 
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
                 HSB_UNSUPPORTED_OPERATION_CODE,
@@ -5092,7 +5259,8 @@ boolean restriction, boolean nullable, String description)
          *    PROPERTY_IS_VISIBLE
          */
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_PROPERTIES", MDSCHEMA_PROPERTIES, null, new Column[] {
+                "MDSCHEMA_PROPERTIES", MDSCHEMA_PROPERTIES, null,
+                new Column[] {
                     CatalogName,
                     SchemaName,
                     CubeName,
@@ -5106,12 +5274,13 @@ boolean restriction, boolean nullable, String description)
                     DataType,
                     PropertyContentType,
                     Description
-                }) {
+                },
+                null /* not sorted */) {
             public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
                 return new MdschemaPropertiesRowset(request, handler);
             }
         };
-        public void unparse(XmlaResponse response) throws XmlaException {
+        public void populate(XmlaResponse response, List rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
@@ -5175,7 +5344,7 @@ boolean restriction, boolean nullable, String description)
                                         " Property";
                                     row.set(Description.name, desc);
 
-                                    emit(row, response);
+                                    addRow(row, rows);
                                 }
                             }
                         }

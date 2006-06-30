@@ -59,7 +59,7 @@
         <DATA_TYPE>5</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
-        <DESCRIPTION>Sales Cube - Unit Sales Memeber</DESCRIPTION>
+        <DESCRIPTION>Sales Cube - Unit Sales Member</DESCRIPTION>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -71,7 +71,7 @@
         <DATA_TYPE>5</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
-        <DESCRIPTION>Sales Cube - Store Cost Memeber</DESCRIPTION>
+        <DESCRIPTION>Sales Cube - Store Cost Member</DESCRIPTION>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -83,7 +83,7 @@
         <DATA_TYPE>5</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
-        <DESCRIPTION>Sales Cube - Store Sales Memeber</DESCRIPTION>
+        <DESCRIPTION>Sales Cube - Store Sales Member</DESCRIPTION>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -95,7 +95,7 @@
         <DATA_TYPE>3</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
-        <DESCRIPTION>Sales Cube - Sales Count Memeber</DESCRIPTION>
+        <DESCRIPTION>Sales Cube - Sales Count Member</DESCRIPTION>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -107,7 +107,7 @@
         <DATA_TYPE>3</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
-        <DESCRIPTION>Sales Cube - Customer Count Memeber</DESCRIPTION>
+        <DESCRIPTION>Sales Cube - Customer Count Member</DESCRIPTION>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -119,7 +119,7 @@
         <DATA_TYPE>5</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
-        <DESCRIPTION>Sales Cube - Promotion Sales Memeber</DESCRIPTION>
+        <DESCRIPTION>Sales Cube - Promotion Sales Member</DESCRIPTION>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -130,7 +130,7 @@
         <MEASURE_AGGREGATOR>127</MEASURE_AGGREGATOR>
         <DATA_TYPE>130</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-        <DESCRIPTION>Sales Cube - Profit Memeber</DESCRIPTION>
+        <DESCRIPTION>Sales Cube - Profit Member</DESCRIPTION>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -141,7 +141,7 @@
         <MEASURE_AGGREGATOR>127</MEASURE_AGGREGATOR>
         <DATA_TYPE>130</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-        <DESCRIPTION>Sales Cube - Profit Growth Memeber</DESCRIPTION>
+        <DESCRIPTION>Sales Cube - Profit Growth Member</DESCRIPTION>
       </row>
     </root>
   </xmla:return>

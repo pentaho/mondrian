@@ -11,10 +11,7 @@
 */
 package mondrian.xmla;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import mondrian.olap.EnumeratedValues;
 import mondrian.olap.Util;
@@ -23,7 +20,7 @@ import org.apache.log4j.Logger;
 
 /**
  * Base class for an XML for Analysis schema rowset. A concrete derived class
- * should implement {@link #unparse}, calling {@link #emit} for each row.
+ * should implement {@link #populate}, calling {@link #addRow} for each row.
  *
  * @author jhyde
  * @see mondrian.xmla.RowsetDefinition
@@ -40,15 +37,15 @@ abstract class Rowset implements XmlaConstants {
     protected final XmlaHandler handler;
     private final RowsetDefinition.Column[] restrictedColumns;
 
-    /** 
+    /**
      * The exceptions thrown in this constructor are not produced during
      * the execution of an XMLA request and so can be ordinary exceptions and
      * not XmlaException (which are  specifically for generating SOAP Fault
      * xml).
-     * 
-     * @param definition 
-     * @param request 
-     * @param handler 
+     *
+     * @param definition
+     * @param request
+     * @param handler
      */
     Rowset(RowsetDefinition definition, XmlaRequest request, XmlaHandler handler) {
         this.rowsetDefinition = definition;
@@ -147,7 +144,24 @@ abstract class Rowset implements XmlaConstants {
     /**
      * Writes the contents of this rowset as a series of SAX events.
      */
-    public abstract void unparse(XmlaResponse response) throws XmlaException;
+    public final void unparse(XmlaResponse response) throws XmlaException
+    {
+        ArrayList rows = new ArrayList();
+        populate(response, rows);
+        Comparator comparator = rowsetDefinition.getComparator();
+        if (comparator != null) {
+            Collections.sort(rows, comparator);
+        }
+        for (int i = 0; i < rows.size(); i++) {
+            Row row = (Row) rows.get(i);
+            emit(row, response);
+        }
+    }
+
+    /**
+     * Gathers the set of rows which match a given set of the criteria.
+     */
+    public abstract void populate(XmlaResponse response, List rows) throws XmlaException;
 
     private static boolean haveCommonMember(String[] a, String[] b) {
         for (int i = 0; i < a.length; i++) {
@@ -161,18 +175,18 @@ abstract class Rowset implements XmlaConstants {
     }
 
     /**
-     * Emits a row for this rowset, reading fields from a 
-     * {@link mondrian.xmla.Rowset.Row} object.
+     * Adds a {@link Row} to a result, provided that it meets the necessary
+     * criteria. Returns whether the row was added.
      *
-     * @param row
-     * @param response
+     * @param row Row
+     * @param rows List of result rows
      */
-    protected void emit(Row row, XmlaResponse response) throws XmlaException {
+    protected final boolean addRow(Row row, List rows) throws XmlaException {
         for (int i = 0; i < restrictedColumns.length; i++) {
             RowsetDefinition.Column column = restrictedColumns[i];
             Object value = row.get(column.name);
             if (value == null) {
-                return;
+                return false;
             }
             final Object requiredValue = restrictions.get(column.name);
 
@@ -184,7 +198,7 @@ abstract class Rowset implements XmlaConstants {
             } else {
                 throw new XmlaException(
                     CLIENT_FAULT_FC,
-                    HSB_BAD_RESTRICTION_TYPE_CODE, 
+                    HSB_BAD_RESTRICTION_TYPE_CODE,
                     HSB_BAD_RESTRICTION_TYPE_FAULT_FS,
                     Util.newInternal("Restriction value is of wrong type: " +
                         requiredValue));
@@ -198,15 +212,26 @@ abstract class Rowset implements XmlaConstants {
             } else {
                 throw new XmlaException(
                     CLIENT_FAULT_FC,
-                    HSB_BAD_RESTRICTION_VALUE_CODE, 
+                    HSB_BAD_RESTRICTION_VALUE_CODE,
                     HSB_BAD_RESTRICTION_VALUE_FAULT_FS,
                     Util.newInternal("Unexpected value type: " + value));
             }
 
             if (!haveCommonMember(requiredValues, values)) {
-                return;
+                return false;
             }
         }
+        return rows.add(row);
+    }
+
+    /**
+     * Emits a row for this rowset, reading fields from a
+     * {@link mondrian.xmla.Rowset.Row} object.
+     *
+     * @param row Row
+     * @param response XMLA response writer
+     */
+    protected void emit(Row row, XmlaResponse response) throws XmlaException {
 
         SaxWriter writer = response.getWriter();
 
@@ -218,11 +243,11 @@ abstract class Rowset implements XmlaConstants {
                 if (!column.nullable) {
                     throw new XmlaException(
                         CLIENT_FAULT_FC,
-                        HSB_BAD_NON_NULLABLE_COLUMN_CODE, 
+                        HSB_BAD_NON_NULLABLE_COLUMN_CODE,
                         HSB_BAD_NON_NULLABLE_COLUMN_FAULT_FS,
                         Util.newInternal("Value required for column " +
-                            column.name + 
-                            " of rowset " + 
+                            column.name +
+                            " of rowset " +
                             rowsetDefinition.name));
                 }
             } else if (value instanceof XmlElement[]) {
@@ -280,7 +305,7 @@ abstract class Rowset implements XmlaConstants {
      * @param row
      * @param response
      */
-    protected void emit(Object row, XmlaResponse response) 
+    protected void emit(Object row, XmlaResponse response)
             throws XmlaException {
         for (int i = 0; i < restrictedColumns.length; i++) {
             RowsetDefinition.Column column = restrictedColumns[i];
@@ -300,9 +325,9 @@ abstract class Rowset implements XmlaConstants {
             } else {
                 throw new XmlaException(
                     CLIENT_FAULT_FC,
-                    HSB_BAD_RESTRICTION_TYPE_CODE, 
+                    HSB_BAD_RESTRICTION_TYPE_CODE,
                     HSB_BAD_RESTRICTION_TYPE_FAULT_FS,
-                    Util.newInternal("Restriction value is of wrong type: " + 
+                    Util.newInternal("Restriction value is of wrong type: " +
                         requiredValue));
             }
         }
@@ -328,7 +353,7 @@ abstract class Rowset implements XmlaConstants {
     /**
      * Emits all of the values in an enumeration.
      */
-    protected void emit(EnumeratedValues enumeration, XmlaResponse response) 
+    protected void emit(EnumeratedValues enumeration, XmlaResponse response)
             throws XmlaException {
         final List valuesSortedByName = enumeration.getValuesSortedByName();
         for (int i = 0; i < valuesSortedByName.size(); i++) {
@@ -358,7 +383,7 @@ abstract class Rowset implements XmlaConstants {
 
     /**
      * A set of name/value pairs, which can be output using
-     * {@link Rowset#emit}.
+     * {@link Rowset#addRow}.
      */
     protected class Row {
         private final ArrayList names = new ArrayList();
