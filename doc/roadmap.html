@@ -428,14 +428,14 @@ use the same cube more than once.</p>
 
 <h5>Design details</h5>
 
-<p>Long term, we would like to seperate the RolapDimension object into
+<p>Long term, we would like to separate the RolapDimension object into
 a RolapDimensionData object and a RolapDimensionUsage object.  This
-would allow us to seperate the dimension members from their usage in a
+would allow us to separate the dimension members from their usage in a
 cube context.  For example, the Time Dimension could be used multiple
 times as Order Date, Ship Date and Close Date.  Close Date would
-contain a psuedo-member [Close Date].[Year].[1997] and Order Date
-would contain a psuedo-member [Order Date].[Year].[1997] and both
-psuedo-members would really refer to the real member
+contain a pseudo-member [Close Date].[Year].[1997] and Order Date
+would contain a pseudo-member [Order Date].[Year].[1997] and both
+pseudo-members would really refer to the real member
 [Time].[Year].[1997].  Close Date and Order Date would have different
 dimension ordinals inside the cube even though they both refer to
 members from the same RolapDimensionData.  This work would be extended
@@ -443,9 +443,9 @@ to virtual cubes so that virtual cubes could define dimension usages
 that refer to base cube dimension usages.  For example, the
 Oppty-Orders VC would contain a Canonical Time dimension based on
 Oppty Cube.Close Date and Order Cube.Order Date.  It would then be
-possible to determine that the psuedo member [Canonical
+possible to determine that the pseudo member [Canonical
 Date].[Year].[1997] maps to [Close Date].[Year].[1997] and [Order
-Date].[Year].[1997] psuedo members which map to conforming member
+Date].[Year].[1997] pseudo members which map to conforming member
 [Time].[Year].[1997].  In terms of implementation, there should only
 be one primary SQL reader inside of the Time RolapDimensionData.  Each
 RolapDimensionUsage would provide a decorated reader which also tracks
