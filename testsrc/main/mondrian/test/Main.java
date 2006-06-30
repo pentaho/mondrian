@@ -35,6 +35,7 @@ import mondrian.util.FormatTest;
 import mondrian.xmla.XmlaBasicTest;
 import mondrian.xmla.XmlaExcel2000Test;
 import mondrian.xmla.XmlaExcelXPTest;
+import mondrian.xmla.XmlaErrorTest;
 import mondrian.xmla.test.XmlaTest;
 
 import org.apache.log4j.Logger;
@@ -160,6 +161,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(ParserTest.class);
             suite.addTestSuite(ParentChildHierarchyTest.class);
             suite.addTestSuite(XmlaBasicTest.class);
+            suite.addTestSuite(XmlaErrorTest.class);
             suite.addTestSuite(XmlaExcel2000Test.class);
             suite.addTestSuite(XmlaExcelXPTest.class);
             suite.addTest(XmlaTest.suite());

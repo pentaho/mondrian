@@ -935,6 +935,11 @@ System.out.println("DO IT AGAIN");
             byte[] bytes = res.toByteArray();
             processResults(bytes, expectedFault);
 
+        } else if (statusCode == HttpServletResponse.SC_UNAUTHORIZED) {
+
+            byte[] bytes = res.toByteArray();
+            processResults(bytes, expectedFault);
+
         } else if (statusCode == HttpServletResponse.SC_CONTINUE) {
             // remove the Expect header from request and try again
 if (DEBUG) {
