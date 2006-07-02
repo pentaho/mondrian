@@ -54,7 +54,7 @@ public class NamedSetTest extends FoodMartTestCase {
                 "{[Warehouse].[All Warehouses].[USA].[WA].[Spokane].[Jones International]}\n" +
                 "{[Warehouse].[All Warehouses].[USA].[WA].[Yakima].[Maddock Stored Foods]}\n" +
                 "{[Warehouse].[All Warehouses].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse]}\n" +
-                "{[Warehouse].[All Warehouses].[USA].[OR].[Portland].[Quality Distribution, Inc.]}\n" +
+                "{[Warehouse].[All Warehouses].[USA].[OR].[Portland].[Deliberate error, to test CruiseControl]}\n" +
                 "Row #0: 31,116.375\n" +
                 "Row #1: 30,743.772\n" +
                 "Row #2: 22,907.959\n" +
