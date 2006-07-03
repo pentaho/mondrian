@@ -87,6 +87,37 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "Row #0: 196,770.888\n" +
                 "Row #0: 266,773\n"));
     }
+    
+    /**
+     * Query a virtual cube that contains a non-conforming dimension that
+     * does not have ALL as its default member.
+     */
+    public void testNonDefaultAllMember() {
+        assertQueryReturns(
+            "select {[Warehouse].defaultMember} on columns, " +
+            "{[Measures].[Warehouse Cost]} on rows from [Warehouse (Default USA)]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Warehouse].[USA]}\n" +
+                "Axis #2:\n" +
+                "{[Measures].[Warehouse Cost]}\n" +
+                "Row #0: 89,043.253\n"));  
+        
+        assertQueryReturns(
+            "select {[Warehouse].defaultMember} on columns, " +
+            "{[Measures].[Warehouse Cost], [Measures].[Sales Count]} on rows " +
+            "from [Warehouse (Default USA) and Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Warehouse].[USA]}\n" +
+                "Axis #2:\n" +
+                "{[Measures].[Warehouse Cost]}\n" +
+                "{[Measures].[Sales Count]}\n" +
+                "Row #0: 89,043.253\n" +
+                "Row #1: \n")); 
+    }
 }
 
 // End VirtualCubeTest.java
