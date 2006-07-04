@@ -506,6 +506,7 @@ in {mondrian.foodmart.jdbcURL}.">
 ${java.dir}/**/*.properties,
 ${java.dir}/mondrian/resource/MondrianResource.xml,
 ${java.dir}/mondrian/olap/Mondrian.xml,
+${java.dir}/mondrian/rolap/aggmatcher/DefaultRules.xml,
 ${java.dir}/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml,
 ${java.dir}/mondrian/xmla/DataSourcesConfig.xml,
 ${java.dir}/javax/jmi/model/resources/mof.xml,
