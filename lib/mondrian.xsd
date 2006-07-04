@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  == $Id: //open/mondrian/src/main/mondrian/olap/Mondrian.xml#48 $
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == Copyright (C) 2001-2003 Kana Software, Inc.
+  == Copyright (C) 2004-2006 Julian Hyde and others
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  ==
+  == This file describes a the XML schema of a Mondrian schema file.
+  ==
+  == It is hand-generated from mondrian/src/main/mondrian/olap/Mondrian.xml,
+  == and as such, it may not be up to date. It is correct as of Mondrian.xml#44.
+  -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:element name="Schema">
+        <xsd:annotation>
+            <xsd:documentation>
+                A schema is a collection of cubes and virtual cubes. It can also contain shared dimensions (for use by those cubes), named sets, roles, and declarations of user-defined functions.
+                
+                Attributes
+                    name(String): Name of this schema
+                    measuresCaption(String): Label for the measures dimension. Can be localized from Properties file using #{propertyname}.
+                    defaultRole(String): The name of the default role for connections to this schema
+                
+                Content
+                    Dimension[0..*]: Shared dimensions in this schema.
+                    Cube[0..*]: Cubes in this schema.
+                    VirtualCube[0..*]: Virtual cubes in this schema.
+                    NamedSet[0..*]: Named sets in this schema.
+                    Role[0..*]: Roles in this schema.
+                    UserDefinedFunction[0..*]: UserDefinedFunctions in this schema.
+                    UserDefinedFunction     userDefinedFunctions    Optional    Declarations of user-defined functions in this schema.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="Dimension" type="SharedDimension" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+                <xsd:element name="Cube" type="Cube" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+                <xsd:element name="VirtualCube" type="VirtualCube" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+                <xsd:element name="NamedSet" type="NamedSet" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+                <xsd:element name="Role" maxOccurs="unbounded" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="SchemaGrant" maxOccurs="unbounded" minOccurs="0">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="CubeGrant" maxOccurs="unbounded" minOccurs="0">
+                                            <xsd:complexType>
+                                                <xsd:sequence>
+                                                    <xsd:element name="DimensionGrant" maxOccurs="unbounded" minOccurs="0">
+                                                        <xsd:complexType>
+                                                            <xsd:attribute name="dimension" use="required"></xsd:attribute>
+                                                            <xsd:attribute name="access" use="required">
+                                                                <xsd:simpleType>
+                                                                    <xsd:restriction base="xsd:token">
+                                                                        <xsd:enumeration value="all"/>
+                                                                        <xsd:enumeration value="none"/>
+                                                                    </xsd:restriction>
+                                                                </xsd:simpleType>
+                                                            </xsd:attribute>
+                                                        </xsd:complexType>
+                                                    </xsd:element>
+                                                    <xsd:element name="HierarchyGrant" maxOccurs="unbounded" minOccurs="0">
+                                                        <xsd:complexType>
+                                                            <xsd:sequence>
+                                                                <xsd:element name="MemeberGrant" maxOccurs="unbounded" minOccurs="0">
+                                                                    <xsd:complexType>
+                                                                        <xsd:attribute name="member" use="required"></xsd:attribute>
+                                                                        <xsd:attribute name="access" use="required">
+                                                                            <xsd:simpleType>
+                                                                                <xsd:restriction base="xsd:token">
+                                                                                    <xsd:enumeration value="all"></xsd:enumeration>
+                                                                                    <xsd:enumeration value="custom"></xsd:enumeration>
+                                                                                    <xsd:enumeration value="none"></xsd:enumeration>
+                                                                                </xsd:restriction>
+                                                                            </xsd:simpleType>
+                                                                        </xsd:attribute>
+                                                                    </xsd:complexType>
+                                                                </xsd:element>
+                                                            </xsd:sequence>
+                                                            <xsd:attribute name="hierarchy" use="required"></xsd:attribute>
+                                                            <xsd:attribute name="topLevel"></xsd:attribute>
+                                                            <xsd:attribute name="bottomLevel"></xsd:attribute>
+                                                            <xsd:attribute name="access" use="required">
+                                                                <xsd:simpleType>
+                                                                    <xsd:restriction base="xsd:token">
+                                                                        <xsd:enumeration value="all"/>
+                                                                        <xsd:enumeration value="custom"/>
+                                                                        <xsd:enumeration value="none"/>
+                                                                    </xsd:restriction>
+                                                                </xsd:simpleType>
+                                                            </xsd:attribute>
+                                                        </xsd:complexType>
+                                                    </xsd:element>
+                                                </xsd:sequence>
+                                                <xsd:attribute name="cube" use="required"></xsd:attribute>
+                                                <xsd:attribute name="access" use="required">
+                                                    <xsd:simpleType>
+                                                        <xsd:restriction base="xsd:token">
+                                                            <xsd:enumeration value="all"></xsd:enumeration>
+                                                            <xsd:enumeration value="none"></xsd:enumeration>
+                                                        </xsd:restriction>
+                                                    </xsd:simpleType>
+                                                </xsd:attribute>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                    </xsd:sequence>
+                                    <xsd:attribute name="access" use="required">
+                                        <xsd:simpleType>
+                                            <xsd:restriction base="xsd:token">
+                                                <xsd:enumeration value="all"></xsd:enumeration>
+                                                <xsd:enumeration value="all_dimensions"></xsd:enumeration>
+                                                <xsd:enumeration value="none"></xsd:enumeration>
+                                            </xsd:restriction>
+                                        </xsd:simpleType>
+                                    </xsd:attribute>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                        <xsd:attribute name="name" use="required"></xsd:attribute>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="UserDefinedFunction" maxOccurs="unbounded" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:attribute name="name"></xsd:attribute>
+                        <xsd:attribute name="className"></xsd:attribute>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+            <xsd:attribute name="name" use="required"></xsd:attribute>
+            <xsd:attribute name="measuresCaption"></xsd:attribute>
+            <xsd:attribute name="defaultRole"></xsd:attribute>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:complexType name="SharedDimension">
+        <xsd:sequence>
+            <xsd:element name="Hierarchy" type="Hierarchy" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="name" use="required"></xsd:attribute>
+        <xsd:attribute name="caption"></xsd:attribute>
+        <xsd:attribute name="type" default="Standard">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:token">
+                    <xsd:enumeration value="Standard"></xsd:enumeration>
+                    <xsd:enumeration value="Time"></xsd:enumeration>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="Cube">
+        <xsd:sequence>
+            <xsd:group ref="Relation" minOccurs="1" maxOccurs="1"></xsd:group>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="DimensionUsage">
+                    <xsd:complexType>
+                        <xsd:attribute name="name" use="required"></xsd:attribute>
+                        <xsd:attribute name="caption"></xsd:attribute>
+                        <xsd:attribute name="foreignKey"></xsd:attribute>
+                        <xsd:attribute name="source" use="required"></xsd:attribute>
+                        <xsd:attribute name="level"></xsd:attribute>
+                        <xsd:attribute name="usagePrefix"></xsd:attribute>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="Dimension" type="CubeDimension"></xsd:element>
+            </xsd:choice>
+            <xsd:element name="Measure" type="Measure" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+            <xsd:element name="CalculatedMember" type="CalculatedMember" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+            <xsd:element name="NamedSet" type="NamedSet" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="name" use="required"></xsd:attribute>
+        <xsd:attribute name="caption"></xsd:attribute>
+        <xsd:attribute name="cache" default="true">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:token">
+                    <xsd:enumeration value="true"></xsd:enumeration>
+                    <xsd:enumeration value="false"></xsd:enumeration>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+        <xsd:attribute name="enabled" default="true">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:token">
+                    <xsd:enumeration value="true"></xsd:enumeration>
+                    <xsd:enumeration value="false"></xsd:enumeration>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="VirtualCube">
+        <xsd:sequence>
+            <xsd:element name="VirtualCubeDimension" maxOccurs="unbounded" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="cubeName"></xsd:attribute>
+                    <xsd:attribute name="name"></xsd:attribute>
+                    <xsd:attribute name="caption"></xsd:attribute>
+                    <xsd:attribute name="foreignKey"></xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="VirtualCubeMeasure" maxOccurs="unbounded" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="cubeName"></xsd:attribute>
+                    <xsd:attribute name="name"></xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="NamedSet" type="NamedSet" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="name"></xsd:attribute>
+        <xsd:attribute name="caption"></xsd:attribute>
+        <xsd:attribute name="enabled" default="true">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:token">
+                    <xsd:enumeration value="true"></xsd:enumeration>
+                    <xsd:enumeration value="false"></xsd:enumeration>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="NamedSet">
+        <xsd:sequence>
+            <xsd:element name="Formula" maxOccurs="1" minOccurs="0"></xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="name"></xsd:attribute>
+        <xsd:attribute name="formula"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="CubeDimension">
+        <xsd:sequence>
+            <xsd:element name="Hierarchy" type="Hierarchy" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="name" use="required"></xsd:attribute>
+        <xsd:attribute name="caption"></xsd:attribute>
+        <xsd:attribute name="foreignKey"></xsd:attribute>
+        <xsd:attribute name="type" default="Standard">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:token">
+                    <xsd:enumeration value="Standard"></xsd:enumeration>
+                    <xsd:enumeration value="Time"></xsd:enumeration>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="Measure">
+        <xsd:sequence>
+            <xsd:element name="CalculatedMemberProperty" type="CalculatedMemberProperty" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="name" use="required"></xsd:attribute>
+        <xsd:attribute name="column" use="required"></xsd:attribute>
+        <xsd:attribute name="datatype"></xsd:attribute>
+        <xsd:attribute name="formatString"></xsd:attribute>
+        <xsd:attribute name="aggregator" use="required">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:token">
+                    <xsd:enumeration value="sum"></xsd:enumeration>
+                    <xsd:enumeration value="count"></xsd:enumeration>
+                    <xsd:enumeration value="min"></xsd:enumeration>
+                    <xsd:enumeration value="max"></xsd:enumeration>
+                    <xsd:enumeration value="avg"></xsd:enumeration>
+                    <xsd:enumeration value="distinct count"></xsd:enumeration>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+        <xsd:attribute name="formatter"></xsd:attribute>
+        <xsd:attribute name="caption"></xsd:attribute>
+        <xsd:attribute name="visible"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="CalculatedMember">
+        <xsd:sequence>
+            <xsd:element name="Formula" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+            <xsd:element name="CalculatedMemberProperty" type="CalculatedMemberProperty" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="name"></xsd:attribute>
+        <xsd:attribute name="formatString"></xsd:attribute>
+        <xsd:attribute name="caption"></xsd:attribute>
+        <xsd:attribute name="formula"></xsd:attribute>
+        <xsd:attribute name="dimension"></xsd:attribute>
+        <xsd:attribute name="visible" default="true">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:token">
+                    <xsd:enumeration value="true"></xsd:enumeration>
+                    <xsd:enumeration value="false"></xsd:enumeration>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="Table">
+        <xsd:sequence>
+            <xsd:element name="SQL" maxOccurs="unbounded" minOccurs="0" type="SQL"></xsd:element>
+            <xsd:element name="AggExclude" maxOccurs="unbounded" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="pattern"></xsd:attribute>
+                    <xsd:attribute name="name"></xsd:attribute>
+                    <xsd:attribute name="ignorecase" default="true">
+                        <xsd:simpleType>
+                            <xsd:restriction base="xsd:token">
+                                <xsd:enumeration value="true"></xsd:enumeration>
+                                <xsd:enumeration value="false"></xsd:enumeration>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                    </xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:choice maxOccurs="unbounded" minOccurs="0">
+                <xsd:element name="AggName" type="AggName"></xsd:element>
+                <xsd:element name="AggPattern" type="AggPattern"></xsd:element>
+            </xsd:choice>
+        </xsd:sequence>
+        <xsd:attribute name="name" use="required"></xsd:attribute>
+        <xsd:attribute name="schema"></xsd:attribute>
+        <xsd:attribute name="alias"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="Join">
+        <xsd:sequence>
+            <xsd:group ref="Relation" minOccurs="2" maxOccurs="2"></xsd:group>
+        </xsd:sequence>
+        <xsd:attribute name="leftAlias"></xsd:attribute>
+        <xsd:attribute name="leftKey" use="required"></xsd:attribute>
+        <xsd:attribute name="rightAlias"></xsd:attribute>
+        <xsd:attribute name="rightKey" use="required"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="Hierarchy">
+        <xsd:sequence>
+            <xsd:group minOccurs="0" maxOccurs="1" ref="Relation"></xsd:group>
+            <xsd:element name="Level" maxOccurs="unbounded" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="KeyExpression" type="ExpressionView" maxOccurs="1" minOccurs="0"></xsd:element>
+                        <xsd:element name="NameExpression" type="ExpressionView" maxOccurs="1" minOccurs="0"></xsd:element>
+                        <xsd:element name="OrdinalExpression" type="ExpressionView" maxOccurs="1" minOccurs="0"></xsd:element>
+                        <xsd:element name="ParentExpression" type="ExpressionView" maxOccurs="1" minOccurs="0"></xsd:element>
+                        <xsd:element name="Closure" maxOccurs="1" minOccurs="0">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="Table" type="Table" maxOccurs="1" minOccurs="1"></xsd:element>
+                                </xsd:sequence>
+                                <xsd:attribute name="parentColumn"></xsd:attribute>
+                                <xsd:attribute name="childColumn"></xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="Property" type="Property" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+                    </xsd:sequence>
+                    <xsd:attribute name="name"></xsd:attribute>
+                    <xsd:attribute name="table"></xsd:attribute>
+                    <xsd:attribute name="column"></xsd:attribute>
+                    <xsd:attribute name="nameColumn"></xsd:attribute>
+                    <xsd:attribute name="ordinalColumn"></xsd:attribute>
+                    <xsd:attribute name="parentColumn"></xsd:attribute>
+                    <xsd:attribute name="nullParentValue"></xsd:attribute>
+                    <xsd:attribute name="type" default="String">
+                        <xsd:simpleType>
+                            <xsd:restriction base="xsd:token">
+                                <xsd:enumeration value="String"></xsd:enumeration>
+                                <xsd:enumeration value="Numeric"></xsd:enumeration>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                    </xsd:attribute>
+                    <xsd:attribute name="uniqueMembers" default="false">
+                        <xsd:simpleType>
+                            <xsd:restriction base="xsd:token">
+                                <xsd:enumeration value="true"></xsd:enumeration>
+                                <xsd:enumeration value="false"></xsd:enumeration>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                    </xsd:attribute>
+                    <xsd:attribute name="levelType" default="Regular">
+                        <xsd:simpleType>
+                            <xsd:restriction base="xsd:token">
+                                <xsd:enumeration value="Regular"></xsd:enumeration>
+                                <xsd:enumeration value="TimeYears"></xsd:enumeration>
+                                <xsd:enumeration value="TimeQuarters"></xsd:enumeration>
+                                <xsd:enumeration value="TimeMonths"></xsd:enumeration>
+                                <xsd:enumeration value="TimeWeeks"></xsd:enumeration>
+                                <xsd:enumeration value="TimeDays"></xsd:enumeration>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                    </xsd:attribute>
+                    <xsd:attribute name="hideMemberIf" default="Never">
+                        <xsd:simpleType>
+                            <xsd:restriction base="xsd:token">
+                                <xsd:enumeration value="Never"></xsd:enumeration>
+                                <xsd:enumeration value="IfBlankName"></xsd:enumeration>
+                                <xsd:enumeration value="IfParentsName"></xsd:enumeration>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                    </xsd:attribute>
+                    <xsd:attribute name="formatter"></xsd:attribute>
+                    <xsd:attribute name="caption"></xsd:attribute>
+                    <xsd:attribute name="captionColumn"></xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="Parameter" maxOccurs="unbounded" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="name"></xsd:attribute>
+                    <xsd:attribute name="value"></xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="name"></xsd:attribute>
+        <xsd:attribute name="caption"></xsd:attribute>
+        <xsd:attribute name="hasAll" use="required">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:token">
+                    <xsd:enumeration value="true"></xsd:enumeration>
+                    <xsd:enumeration value="false"></xsd:enumeration>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+        <xsd:attribute name="allMemberName"></xsd:attribute>
+        <xsd:attribute name="allMemberCaption"></xsd:attribute>
+        <xsd:attribute name="allLevelName"></xsd:attribute>
+        <xsd:attribute name="primaryKey"></xsd:attribute>
+        <xsd:attribute name="primaryKeyTable"></xsd:attribute>
+        <xsd:attribute name="defaultMember"></xsd:attribute>
+        <xsd:attribute name="memberReaderClass"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="Property">
+        <xsd:attribute name="name"></xsd:attribute>
+        <xsd:attribute name="column"></xsd:attribute>
+        <xsd:attribute name="type" default="String">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:token">
+                    <xsd:enumeration value="String"></xsd:enumeration>
+                    <xsd:enumeration value="Numeric"></xsd:enumeration>
+                    <xsd:enumeration value="Boolean"></xsd:enumeration>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+        <xsd:attribute name="formatter"></xsd:attribute>
+        <xsd:attribute name="caption"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="CalculatedMemberProperty">
+        <xsd:attribute name="name"></xsd:attribute>
+        <xsd:attribute name="caption"></xsd:attribute>
+        <xsd:attribute name="expression"></xsd:attribute>
+        <xsd:attribute name="value"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="View">
+        <xsd:sequence>
+            <xsd:element name="SQL" maxOccurs="unbounded" minOccurs="1" type="SQL"></xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="alias" use="required"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQL">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:token">
+                <xsd:attribute name="dialect" default="generic">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:token">
+                            <xsd:enumeration value="generic"></xsd:enumeration>
+                            <xsd:enumeration value="oracle"></xsd:enumeration>
+                            <xsd:enumeration value="mysql"></xsd:enumeration>
+                            <xsd:enumeration value="access"></xsd:enumeration>
+                            <xsd:enumeration value="postgres"></xsd:enumeration>
+                            <xsd:enumeration value="hsqldb"></xsd:enumeration>
+                            <xsd:enumeration value="mssql"></xsd:enumeration>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="AggExclude">
+        <xsd:attribute name="pattern"></xsd:attribute>
+        <xsd:attribute name="name"></xsd:attribute>
+        <xsd:attribute name="ignorecase" default="true">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:token">
+                    <xsd:enumeration value="true"></xsd:enumeration>
+                    <xsd:enumeration value="false"></xsd:enumeration>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="Column">
+        <xsd:attribute name="table"></xsd:attribute>
+        <xsd:attribute name="name" use="required"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="AggTable">
+        <xsd:sequence>
+            <xsd:element name="AggFactCount" type="AggColumnName" maxOccurs="1" minOccurs="1"></xsd:element>
+            <xsd:element name="AggIgnoreColumn" type="AggColumnName" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+            <xsd:element name="AggForeignKey" maxOccurs="unbounded" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="factColumn"></xsd:attribute>
+                    <xsd:attribute name="aggColumn"></xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="AggMeasure" maxOccurs="unbounded" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="column"></xsd:attribute>
+                    <xsd:attribute name="name"></xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="AggLevel" maxOccurs="unbounded" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:attribute name="column"></xsd:attribute>
+                    <xsd:attribute name="name"></xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="ignorecase"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="AggColumnName">
+        <xsd:attribute name="column"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="ExpressionView">
+        <xsd:sequence>
+            <xsd:element name="SQL" type="SQL" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="Grant">
+        <xsd:attribute name="access"></xsd:attribute>
+    </xsd:complexType>
+    
+    <xsd:complexType name="AggPattern">
+        <xsd:complexContent>
+            <xsd:extension base="AggTable">
+                <xsd:sequence>
+                    <xsd:element name="AggExclude">
+                        <xsd:complexType>
+                            <xsd:attribute name="pattern"></xsd:attribute>
+                            <xsd:attribute name="name"></xsd:attribute>
+                            <xsd:attribute name="ignorecase" default="true">
+                                <xsd:simpleType>
+                                    <xsd:restriction base="xsd:token">
+                                        <xsd:enumeration value="true"></xsd:enumeration>
+                                        <xsd:enumeration value="false"></xsd:enumeration>
+                                    </xsd:restriction>
+                                </xsd:simpleType>
+                            </xsd:attribute>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:sequence>
+                <xsd:attribute name="pattern"></xsd:attribute>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="AggName">
+        <xsd:complexContent>
+            <xsd:extension base="AggTable">
+                <xsd:attribute name="name"></xsd:attribute>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:group name="Relation">
+        <xsd:choice>
+            <xsd:element name="View" type="View" maxOccurs="1" minOccurs="0"></xsd:element>
+            <xsd:element name="Join" type="Join" maxOccurs="1" minOccurs="0"></xsd:element>
+            <xsd:element name="Table" type="Table" maxOccurs="1" minOccurs="0"></xsd:element>
+        </xsd:choice>
+    </xsd:group>
+
+</xsd:schema>
