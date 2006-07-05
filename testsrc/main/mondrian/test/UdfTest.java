@@ -14,6 +14,7 @@ import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
 import mondrian.spi.UserDefinedFunction;
 
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -217,6 +218,16 @@ public class UdfTest extends FoodMartTestCase {
         getTestContext().assertMatchesVerbose(
                 Pattern.compile(".*Invalid value for inverse normal distribution: 1.4435.*"),
                 cell.getValue().toString());
+    }
+    
+    public void testCurrentDateString()
+    {
+        String actual = executeExpr("CurrentDateString(\"Ddd mmm dd yyyy\")");
+        Date currDate = new Date();
+        String dateString = currDate.toString();
+        String expected =
+            dateString.substring(0, 11) + dateString.substring(24);
+        assertEquals(expected, actual);
     }
 
     /**

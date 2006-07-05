@@ -4085,6 +4085,15 @@
                         <CAPTION>Crossjoin</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>CurrentDateString</FUNCTION_NAME>
+                        <DESCRIPTION>Returns current date as a formatted string</DESCRIPTION>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>CurrentDateString</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>CurrentMember</FUNCTION_NAME>
                         <DESCRIPTION>Returns the current member along a
                             dimension during an iteration.</DESCRIPTION>
