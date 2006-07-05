@@ -77,19 +77,21 @@ public class XmlaHandler implements XmlaConstants {
             CatalogLocator catalogLocator) {
         this.catalogLocator = catalogLocator;
         Map map = new HashMap();
-        for (int i = 0; i < dataSources.dataSources.length; i++) {
-            DataSourcesConfig.DataSource ds = dataSources.dataSources[i];
-            if (map.containsKey(ds.getDataSourceName())) {
-                // This is not an XmlaException
-                throw Util.newError(
-                        "duplicated data source name '" +
-                        ds.getDataSourceName() + "'");
+        if (dataSources != null) {
+            for (int i = 0; i < dataSources.dataSources.length; i++) {
+                DataSourcesConfig.DataSource ds = dataSources.dataSources[i];
+                if (map.containsKey(ds.getDataSourceName())) {
+                    // This is not an XmlaException
+                    throw Util.newError(
+                            "duplicated data source name '" +
+                            ds.getDataSourceName() + "'");
+                }
+                // Set parent pointers.
+                for (int j = 0; j < ds.catalogs.catalogs.length; j++) {
+                     ds.catalogs.catalogs[j].setDataSource(ds);
+                }
+                map.put(ds.getDataSourceName(), ds);
             }
-            // Set parent pointers.
-            for (int j = 0; j < ds.catalogs.catalogs.length; j++) {
-                 ds.catalogs.catalogs[j].setDataSource(ds);
-            }
-            map.put(ds.getDataSourceName(), ds);
         }
         dataSourcesMap = Collections.unmodifiableMap(map);
     }

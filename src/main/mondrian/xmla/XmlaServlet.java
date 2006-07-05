@@ -518,7 +518,7 @@ public abstract class XmlaServlet extends HttpServlet
     protected void addToDataSources(DataSourcesConfig.DataSources dataSources) {
         if (this.dataSources == null) {
             this.dataSources = dataSources;
-        } else {
+        } else if (dataSources != null) {
             DataSourcesConfig.DataSource[] ds1 = this.dataSources.dataSources;
             int len1 = ds1.length;
             DataSourcesConfig.DataSource[] ds2 = dataSources.dataSources;
@@ -531,6 +531,8 @@ public abstract class XmlaServlet extends HttpServlet
             System.arraycopy(ds2, 0, tmp, len1, len2);
 
             this.dataSources.dataSources = tmp;
+        } else {
+            LOGGER.warn("XmlaServlet.addToDataSources: DataSources is null");
         }
     }
 
@@ -551,6 +553,10 @@ public abstract class XmlaServlet extends HttpServlet
                 String dataSourcesConfigString) {
 
         try {
+            if (dataSourcesConfigString == null) {
+                LOGGER.warn("XmlaServlet.parseDataSources: null input");
+                return null;
+            }
             dataSourcesConfigString = 
                 Util.replaceProperties(dataSourcesConfigString, 
                                       System.getProperties());
