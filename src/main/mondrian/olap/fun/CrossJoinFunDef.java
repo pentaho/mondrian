@@ -140,6 +140,9 @@ class CrossJoinFunDef extends FunDefBase {
             list1 = nonEmptyList(evaluator, list1);
             list2 = nonEmptyList(evaluator, list2);
             size = (long)list1.size() * (long)list2.size();
+            // both list1 and list2 may be empty after nonEmpty optimization
+            if (size == 0)
+            	return Collections.EMPTY_LIST;
             final int missCount2 = evaluator.getMissCount();
             if (missCount2 > missCount && size > 1000) {
                 // We've hit some cells which are not in the cache. They

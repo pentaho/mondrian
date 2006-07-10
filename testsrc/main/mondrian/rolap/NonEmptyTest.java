@@ -430,6 +430,25 @@ public class NonEmptyTest extends FoodMartTestCase {
         executeQuery("SELECT DESCENDANTS([Time].[1997], [Month]) ON COLUMNS FROM [Sales]");
     }
 
+    
+    /**
+     * Non Empty CrossJoin (A,B) gets turned into CrossJoin (Non Empty(A), Non Empty(B))
+     * Verify that there is no crash when the length of B could be non-zero length before the non emptyy 
+     * and 0 after the non empty.  
+     * 
+     */
+    public void testNonEmptyCrossJoinList() {
+    	boolean oldEnableNativeCJ = MondrianProperties.instance().EnableNativeCrossJoin.get();
+    	MondrianProperties.instance().EnableNativeCrossJoin.set(false);
+    	boolean oldEnableNativeNonEmpty = MondrianProperties.instance().EnableNativeNonEmpty.get();
+    	MondrianProperties.instance().EnableNativeNonEmpty.set(false);
+    	
+    	executeQuery("select non empty CrossJoin([Customers].[Name].Members, {[Promotions].[All Promotions].[Fantastic Discounts]}) ON COLUMNS FROM [Sales]");
+    	
+    	MondrianProperties.instance().EnableNativeCrossJoin.set(oldEnableNativeCJ);
+    	MondrianProperties.instance().EnableNativeNonEmpty.set(oldEnableNativeNonEmpty);
+    }
+    
     /**
      * SQL Optimization must be turned off in ragged hierarchies.
      */
