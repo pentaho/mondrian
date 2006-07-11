@@ -334,7 +334,18 @@ public class Util extends XOMUtil {
         }
     }
 
-
+    public static OlapElement lookupCompound(
+        SchemaReader schemaReader,
+        OlapElement parent,
+        String[] names,
+        boolean failIfNotFound,
+        int category)
+    {
+        return lookupCompound(
+            schemaReader, parent, names, failIfNotFound, category,
+            MatchType.EXACT);
+    }
+    
     /**
      * Resolves a name such as
      * '[Products]&#46;[Product Department]&#46;[Produce]' by resolving the
@@ -357,7 +368,9 @@ public class Util extends XOMUtil {
         OlapElement parent,
         String[] names,
         boolean failIfNotFound,
-        int category) {
+        int category,
+        int matchType)
+    {
 
         Util.assertPrecondition(parent != null, "parent != null");
 
@@ -396,7 +409,36 @@ public class Util extends XOMUtil {
         // Now resolve the name one part at a time.
         for (int i = 0; i < names.length; i++) {
             String name = names[i];
-            final OlapElement child = schemaReader.getElementChild(parent, name);
+            OlapElement child =
+                schemaReader.getElementChild(parent, name, matchType);
+            // if we're doing a non-exact match, and we find a non-exact
+            // match, then for an after match, return the first child
+            // of each subsequent level; for a before match, return the
+            // last child
+            if (child != null && matchType != MatchType.EXACT &&
+                !Util.equalName(child.getName(), name))
+            {
+                Util.assertPrecondition(child instanceof Member);
+                Member bestChild = (Member) child;
+                for (int j = i + 1; j < names.length; j++) {
+                    Member[] children =
+                        schemaReader.getMemberChildren(bestChild);
+                    List childrenList = Arrays.asList(children);
+                    FunUtil.hierarchize(childrenList, false);
+                    if (matchType == MatchType.AFTER) {
+                        bestChild = (Member) childrenList.get(0);
+                    } else {
+                        bestChild =
+                            (Member) childrenList.get(children.length - 1);
+                    }
+                    if (bestChild == null) {
+                        child = null;
+                        break;
+                    }
+                }
+                parent = bestChild;
+                break;
+            }
             if (child == null) {
                 if (LOGGER.isDebugEnabled()) {
                     StringBuffer buf = new StringBuffer(64);
@@ -572,6 +614,13 @@ public class Util extends XOMUtil {
         }
     }
 
+    public static Member lookupHierarchyRootMember(
+        SchemaReader reader, Hierarchy hierarchy, String memberName)
+    {
+        return lookupHierarchyRootMember(
+            reader, hierarchy, memberName, MatchType.EXACT);
+    }
+    
     /**
      * Finds a root member of a hierarchy with a given name.
      *
@@ -581,19 +630,44 @@ public class Util extends XOMUtil {
      */
     public static Member lookupHierarchyRootMember(SchemaReader reader,
                                                    Hierarchy hierarchy,
-                                                   String memberName) {
+                                                   String memberName,
+                                                   int matchType)
+    {   
         // Lookup member at first level.
         Member[] rootMembers = reader.getHierarchyRootMembers(hierarchy);
+        int bestMatch = -1;
         for (int i = 0; i < rootMembers.length; i++) {
-            if (rootMembers[i].getName().equalsIgnoreCase(memberName)) {
+            int rc = rootMembers[i].getName().compareToIgnoreCase(memberName);
+            if (rc == 0) {
                 return rootMembers[i];
             }
+            if (matchType == MatchType.BEFORE) {
+                if (rc < 0 &&
+                    (bestMatch == -1 ||
+                    rootMembers[i].getName().compareToIgnoreCase(
+                        rootMembers[bestMatch].getName()) > 0))
+                {
+                    bestMatch = i;
+                }
+            } else if (matchType == MatchType.AFTER) {
+                if (rc > 0 &&
+                    (bestMatch == -1 ||
+                    rootMembers[i].getName().compareToIgnoreCase(
+                        rootMembers[bestMatch].getName()) < 0))
+                {
+                    bestMatch = i;
+                }
+            }
+        }
+        if (matchType != MatchType.EXACT && bestMatch != -1) {
+            return rootMembers[bestMatch];
         }
         // If the first level is 'all', lookup member at second level. For
         // example, they could say '[USA]' instead of '[(All
         // Customers)].[USA]'.
         return (rootMembers.length == 1 && rootMembers[0].isAll())
-            ? reader.lookupMemberChildByName(rootMembers[0], memberName)
+            ? reader.lookupMemberChildByName(
+                rootMembers[0], memberName, matchType)
             : null;
     }
 

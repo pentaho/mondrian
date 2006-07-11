@@ -88,14 +88,14 @@ public class UdfResolver implements Resolver {
             return Category.Member;
         } else if (type instanceof LevelType) {
             return Category.Level;
+        } else if (type instanceof SymbolType) {
+            return Category.Symbol;
         } else if (type instanceof ScalarType) {
             return Category.Value;
         } else if (type instanceof SetType) {
             return Category.Set;
         } else if (type instanceof StringType) {
-            return Category.String;
-        } else if (type instanceof SymbolType) {
-            return Category.Symbol;
+            return Category.String;     
         } else if (type instanceof TupleType) {
             return Category.Tuple;
         } else {

@@ -99,7 +99,14 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return null;
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, String s) {
+    public OlapElement lookupChild(SchemaReader schemaReader, String s)
+    {
+        return lookupChild(schemaReader, s, MatchType.EXACT);
+    }
+    
+    public OlapElement lookupChild(
+        SchemaReader schemaReader, String s, int matchType)
+    {
         Dimension mdxDimension = (Dimension)lookupDimension(s);
         if (mdxDimension != null) {
             return mdxDimension;
@@ -107,7 +114,8 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
         //maybe this is not a dimension - maybe it's hierarchy, level or name
         for (int i = 0; i < dimensions.length; i++) {
-            OlapElement mdxElement = dimensions[i].lookupChild(schemaReader, s);
+            OlapElement mdxElement = dimensions[i].lookupChild(
+                schemaReader, s, matchType);
             if (mdxElement != null)
                 return mdxElement;
         }

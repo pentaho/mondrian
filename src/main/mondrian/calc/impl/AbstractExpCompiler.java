@@ -165,7 +165,7 @@ public class AbstractExpCompiler implements ExpCompiler {
             final HierarchyCalc hierarchyCalc = compileHierarchy(exp);
             final MemberCalc hierarchyCurrentMemberCalc =
                     new HierarchyCurrentMemberFunDef.CalcImpl(
-                            new DummyExp(type), hierarchyCalc);
+                            new DummyExp(memberType), hierarchyCalc);
             return new MemberValueCalc(
                     new DummyExp(memberType.getValueType()),
                     new MemberCalc[] {hierarchyCurrentMemberCalc});

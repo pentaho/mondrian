@@ -398,7 +398,7 @@ public class FunUtil extends Util {
         }
     }
 
-    static void hierarchize(List members, boolean post) {
+    public static void hierarchize(List members, boolean post) {
         if (members.isEmpty()) {
             return;
         }
@@ -1955,6 +1955,11 @@ public class FunUtil extends Util {
         }
 
         public OlapElement lookupChild(SchemaReader schemaReader, String s) {
+            throw new UnsupportedOperationException();
+        }
+        
+        public OlapElement lookupChild(
+            SchemaReader schemaReader, String s, int matchType) {
             throw new UnsupportedOperationException();
         }
 

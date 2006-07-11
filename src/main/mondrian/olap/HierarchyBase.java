@@ -110,9 +110,16 @@ public abstract class HierarchyBase
     }
 
     public OlapElement lookupChild(SchemaReader schemaReader, String s) {
+        return lookupChild(schemaReader, s, MatchType.EXACT);
+    }
+    
+    public OlapElement lookupChild(
+        SchemaReader schemaReader, String s, int matchType)
+    {
         OlapElement oe = Util.lookupHierarchyLevel(this, s);
         if (oe == null) {
-            oe = Util.lookupHierarchyRootMember(schemaReader, this, s);
+            oe = Util.lookupHierarchyRootMember(
+                schemaReader, this, s, matchType);
         }
         if (getLogger().isDebugEnabled()) {
             StringBuffer buf = new StringBuffer(64);

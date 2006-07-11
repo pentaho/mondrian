@@ -1834,6 +1834,14 @@ assert is not true.
     }
 
     public OlapElement lookupChild(SchemaReader schemaReader, String s) {
+        return lookupChild(schemaReader, s, MatchType.EXACT);
+    }
+    
+    public OlapElement lookupChild(
+        SchemaReader schemaReader, String s, int matchType)
+    {
+        // Note that non-exact matches aren't supported at this level,
+        // so the matchType is ignored
         OlapElement oe = null;
         String status = null;
         if (s.equals("Measures")) {
@@ -1841,7 +1849,7 @@ assert is not true.
             // Note if one calls getUsageByName with "Measures" as the value
             // it will return null so one must either do this or check for
             // a null HierarchyUsage below and disambiguate.
-            oe = super.lookupChild(schemaReader, s);
+            oe = super.lookupChild(schemaReader, s, MatchType.EXACT);
 
         } else {
             // At this point everything ought to have a HierarchyUsage.
@@ -1863,7 +1871,7 @@ assert is not true.
             HierarchyUsage hierUsage = getUsageByName(s);
 
             if (hierUsage == null) {
-                oe = super.lookupChild(schemaReader, s);
+                oe = super.lookupChild(schemaReader, s, MatchType.EXACT);
                 status = "hierUsage == null";
 
                 // Let us see if one is using the source name of a
@@ -1904,12 +1912,12 @@ assert is not true.
                 status = "hierUsage == shared";
                 // Shared, use source
                 String source = hierUsage.getSource();
-                oe = super.lookupChild(schemaReader, source);
+                oe = super.lookupChild(schemaReader, source, MatchType.EXACT);
 
             } else {
                 status = "hierUsage == not shared";
                 // Not shared, cool man
-                oe = super.lookupChild(schemaReader, s);
+                oe = super.lookupChild(schemaReader, s, MatchType.EXACT);
             }
         }
         if (getLogger().isDebugEnabled()) {
@@ -2069,10 +2077,23 @@ assert is not true.
         }
 
         public Member getMemberByUniqueName(
-                String[] uniqueNameParts, boolean failIfNotFound) {
+            String[] uniqueNameParts, boolean failIfNotFound)
+        {
+            return getMemberByUniqueName(
+                uniqueNameParts, failIfNotFound, MatchType.EXACT);
+        }
+        
+        public Member getMemberByUniqueName(
+                String[] uniqueNameParts, boolean failIfNotFound,
+                int matchType)
+        {
             Member member = (Member) lookupCompound(
                                         RolapCube.this, uniqueNameParts,
-                                        failIfNotFound, Category.Member);
+                                        failIfNotFound, Category.Member,
+                                        matchType);
+            if (!failIfNotFound && member == null) {
+                return null;
+            }
             if (getRole().canAccess(member)) {
                 return member;
             } else {

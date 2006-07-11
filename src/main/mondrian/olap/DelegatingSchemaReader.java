@@ -60,17 +60,35 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     }
 
     public Member getMemberByUniqueName(
+        String[] uniqueNameParts,
+        boolean failIfNotFound)
+    {
+        return getMemberByUniqueName(
+            uniqueNameParts, failIfNotFound, MatchType.EXACT);
+    }
+    
+    public Member getMemberByUniqueName(
             String[] uniqueNameParts,
-            boolean failIfNotFound) {
+            boolean failIfNotFound,
+            int matchType)
+    {
         return schemaReader.getMemberByUniqueName(
-                uniqueNameParts, failIfNotFound);
+                uniqueNameParts, failIfNotFound, matchType);
     }
 
     public OlapElement lookupCompound(
+        OlapElement parent, String[] names,
+        boolean failIfNotFound, int category)
+    {
+        return lookupCompound(
+            parent, names, failIfNotFound, category, MatchType.EXACT);
+    }
+    
+    public OlapElement lookupCompound(
             OlapElement parent, String[] names,
-            boolean failIfNotFound, int category) {
+            boolean failIfNotFound, int category, int matchType) {
         return schemaReader.lookupCompound(
-                parent, names, failIfNotFound, category);
+                parent, names, failIfNotFound, category, matchType);
     }
 
     public Member getCalculatedMember(String[] nameParts) {
@@ -98,7 +116,13 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     }
 
     public OlapElement getElementChild(OlapElement parent, String name) {
-        return schemaReader.getElementChild(parent, name);
+        return getElementChild(parent, name, MatchType.EXACT);
+    }
+    
+    public OlapElement getElementChild(
+        OlapElement parent, String name, int matchType)
+    {
+        return schemaReader.getElementChild(parent, name, matchType);
     }
 
     public Member[] getLevelMembers(Level level, boolean includeCalculated) {
@@ -158,7 +182,14 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     }
 
     public Member lookupMemberChildByName(Member member, String memberName) {
-        return schemaReader.lookupMemberChildByName(member, memberName);
+        return lookupMemberChildByName(member, memberName, MatchType.EXACT);
+    }
+
+    public Member lookupMemberChildByName(
+        Member member, String memberName, int matchType)
+    {
+        return schemaReader.lookupMemberChildByName(
+            member, memberName, matchType);
     }
 
     public NativeEvaluator getNativeSetEvaluator(

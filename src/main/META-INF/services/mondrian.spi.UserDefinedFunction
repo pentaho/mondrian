@@ -2,3 +2,5 @@ mondrian.udf.ValUdf
 mondrian.udf.InverseNormalUdf
 mondrian.udf.LastNonEmptyUdf
 mondrian.udf.CurrentDateStringUdf
+mondrian.udf.CurrentDateMemberUdf
+mondrian.udf.CurrentDateMemberExactUdf

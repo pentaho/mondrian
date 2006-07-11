@@ -85,7 +85,14 @@ public abstract class DimensionBase
         return dimension == this;
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, String s) {
+    public OlapElement lookupChild(SchemaReader schemaReader, String s)
+    {
+        return lookupChild(schemaReader, s, MatchType.EXACT);
+    }
+    
+    public OlapElement lookupChild(
+        SchemaReader schemaReader, String s, int matchType)
+    {
         OlapElement oe = lookupHierarchy(s);
 
         // If the user is looking for [Marital Status].[Marital Status] we
@@ -93,7 +100,8 @@ public abstract class DimensionBase
         // looking for level - we can check that by checking of hierarchy and
         // dimension name is the same.
         if ((oe == null) || oe.getName().equalsIgnoreCase(getName()) ) {
-            OlapElement oeLevel = getHierarchy().lookupChild(schemaReader, s);
+            OlapElement oeLevel =
+                getHierarchy().lookupChild(schemaReader, s, matchType);
             if (oeLevel != null)
                 oe = oeLevel; // level match overrides hierarchy match
         }

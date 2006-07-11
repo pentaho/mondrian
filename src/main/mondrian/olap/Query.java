@@ -1138,14 +1138,27 @@ public class Query extends QueryPart {
         }
 
         public Member getMemberByUniqueName(
+            String[] uniqueNameParts,
+            boolean failIfNotFound)
+        {
+            return getMemberByUniqueName(
+                uniqueNameParts, failIfNotFound, MatchType.EXACT);
+        }
+        
+        public Member getMemberByUniqueName(
                 String[] uniqueNameParts,
-                boolean failIfNotFound) {
+                boolean failIfNotFound,
+                int matchType)
+        {
             final String uniqueName = Util.implode(uniqueNameParts);
             Member member = lookupMemberFromCache(uniqueName);
             if (member == null) {
                 // Not a calculated member in the query, so go to the cube.
                 member = schemaReader.getMemberByUniqueName(uniqueNameParts,
-                    failIfNotFound);
+                    failIfNotFound, matchType);
+            }
+            if (!failIfNotFound && member == null) {
+                return null;
             }
             if (getRole().canAccess(member)) {
                 return member;
@@ -1200,9 +1213,17 @@ public class Query extends QueryPart {
             return getDefinedMembers();
         }
 
-        public OlapElement getElementChild(OlapElement parent, String s) {
+        public OlapElement getElementChild(OlapElement parent, String s)
+        {
+            return getElementChild(parent, s, MatchType.EXACT);
+        }
+        
+        public OlapElement getElementChild(
+            OlapElement parent, String s, int matchType)
+        {
             // first look in cube
-            OlapElement mdxElement = schemaReader.getElementChild(parent, s);
+            OlapElement mdxElement =
+                schemaReader.getElementChild(parent, s, matchType);
             if (mdxElement != null) {
                 return mdxElement;
             }
@@ -1223,10 +1244,22 @@ public class Query extends QueryPart {
         }
 
         public OlapElement lookupCompound(
+            OlapElement parent,
+            String[] names,
+            boolean failIfNotFound,
+            int category)
+        {
+            return lookupCompound(
+                parent, names, failIfNotFound, category, MatchType.EXACT);
+        }
+        
+        public OlapElement lookupCompound(
                 OlapElement parent,
                 String[] names,
                 boolean failIfNotFound,
-                int category) {
+                int category,
+                int matchType)
+        {
             // First look to ourselves.
             switch (category) {
             case Category.Unknown:
@@ -1250,7 +1283,7 @@ public class Query extends QueryPart {
             }
             // Then delegate to the next reader.
             OlapElement olapElement = super.lookupCompound(
-                    parent, names, failIfNotFound, category);
+                    parent, names, failIfNotFound, category, matchType);
             if (olapElement instanceof Member) {
                 Member member = (Member) olapElement;
                 final Formula formula = (Formula)

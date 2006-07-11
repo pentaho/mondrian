@@ -230,6 +230,151 @@ public class UdfTest extends FoodMartTestCase {
         assertEquals(expected, actual);
     }
 
+    public void testCurrentDateMemberBefore()
+    {
+        assertQueryReturns(
+            "SELECT { CurrentDateMember([Time], " +
+            "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", BEFORE)} " +
+            "ON COLUMNS FROM [Sales]",
+            fold(new String[] {
+                "Axis #0:",
+                "{}",
+                "Axis #1:",
+                "{[Time].[1998].[Q4].[12]}",
+                "Row #0: \n"
+            }));
+    }
+    
+    public void testCurrentDateMemberAfter()
+    {
+        // CurrentDateMember will return null since the latest date in
+        // FoodMart is from '98
+        assertQueryReturns(
+            "SELECT { CurrentDateMember([Time], " +
+            "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", AFTER)} " +
+            "ON COLUMNS FROM [Sales]",
+            fold(new String[] {
+                "Axis #0:",
+                "{}",
+                "Axis #1:\n"
+            }));
+    }
+    
+    public void testCurrentDateMemberExact()
+    {
+        // CurrentDateMember will return null since the latest date in
+        // FoodMart is from '98
+        assertQueryReturns(
+            "SELECT { CurrentDateMember([Time], " +
+            "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", EXACT)} " +
+            "ON COLUMNS FROM [Sales]",
+            fold(new String[] {
+                "Axis #0:",
+                "{}",
+                "Axis #1:\n"
+            }));
+    }
+    
+    public void testCurrentDateMemberNoFindArg()
+    {
+        // CurrentDateMember will return null since the latest date in
+        // FoodMart is from '98
+        assertQueryReturns(
+            "SELECT { CurrentDateMember([Time], " +
+            "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\")} " +
+            "ON COLUMNS FROM [Sales]",
+            fold(new String[] {
+                "Axis #0:",
+                "{}",
+                "Axis #1:\n"
+            }));
+    }
+    
+    public void testCurrentDateMemberHierarchy()
+    {
+        assertQueryReturns(
+            "SELECT { CurrentDateMember([Time.Weekly], " +
+            "\"[Ti\\me\\.Weekl\\y]\\.[All Ti\\me\\.Weekl\\y\\s]\\.[yyyy]\\.[ww]\", BEFORE)} " +
+            "ON COLUMNS FROM [Sales]",
+            fold(new String[] {
+                "Axis #0:",
+                "{}",
+                "Axis #1:",
+                "{[Time.Weekly].[All Time.Weeklys].[1998].[52]}",
+                "Row #0: \n"
+            }));
+    }
+    
+    public void testCurrentDateMemberRealAfter()
+    {
+        // omit formatting characters from the format so the current date
+        // is hard-coded to actual value in the database so we can test the
+        // after logic
+        assertQueryReturns(
+            "SELECT { CurrentDateMember([Time], " +
+            "\"[Ti\\me]\\.[1996]\\.[Q4]\", after)} " +
+            "ON COLUMNS FROM [Sales]",
+            fold(new String[] {
+                "Axis #0:",
+                "{}",
+                "Axis #1:",
+                "{[Time].[1997].[Q1]}",
+                "Row #0: 66,291\n"
+            }));
+    }
+    
+    public void testCurrentDateMemberRealExact1()
+    {
+        // omit formatting characters from the format so the current date
+        // is hard-coded to actual value in the database so we can test the
+        // exact logic
+        assertQueryReturns(
+            "SELECT { CurrentDateMember([Time], " +
+            "\"[Ti\\me]\\.[1997]\")} " +
+            "ON COLUMNS FROM [Sales]",
+            fold(new String[] {
+                "Axis #0:",
+                "{}",
+                "Axis #1:",
+                "{[Time].[1997]}",
+                "Row #0: 266,773\n"
+            }));
+    }
+    
+    public void testCurrentDateMemberRealExact2()
+    {
+        // omit formatting characters from the format so the current date
+        // is hard-coded to actual value in the database so we can test the
+        // exact logic
+        assertQueryReturns(
+            "SELECT { CurrentDateMember([Time], " +
+            "\"[Ti\\me]\\.[1997]\\.[Q2]\\.[5]\")} " +
+            "ON COLUMNS FROM [Sales]",
+            fold(new String[] {
+                "Axis #0:",
+                "{}",
+                "Axis #1:",
+                "{[Time].[1997].[Q2].[5]}",
+                "Row #0: 21,081\n"
+            }));
+    }
+    
+    public void testCurrentDateMemberPrev()
+    {
+        // apply a function on the result of the UDF
+        assertQueryReturns(
+            "SELECT { CurrentDateMember([Time], " +
+            "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", BEFORE).PrevMember} " +
+            "ON COLUMNS FROM [Sales]",
+            fold(new String[] {
+                "Axis #0:",
+                "{}",
+                "Axis #1:",
+                "{[Time].[1998].[Q4].[11]}",
+                "Row #0: \n"
+            }));
+    }
+    
     /**
      * Dynamic schema which adds two user-defined functions to any given
      * schema.

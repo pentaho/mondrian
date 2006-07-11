@@ -102,8 +102,15 @@ public abstract class LevelBase
     }
 
     public OlapElement lookupChild(SchemaReader schemaReader, String s) {
+        return lookupChild(schemaReader, s, MatchType.EXACT);
+    }
+    
+    public OlapElement lookupChild(
+        SchemaReader schemaReader, String s, int matchType)
+    {
         return areMembersUnique()
-            ? Util.lookupHierarchyRootMember(schemaReader, hierarchy, s)
+            ? Util.lookupHierarchyRootMember(
+                schemaReader, hierarchy, s, matchType)
             : null;
     }
 

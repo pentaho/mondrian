@@ -27,6 +27,7 @@ import mondrian.olap.Exp;
 import mondrian.olap.FunDef;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Level;
+import mondrian.olap.MatchType;
 import mondrian.olap.Member;
 import mondrian.olap.NamedSet;
 import mondrian.olap.NativeEvaluator;
@@ -219,36 +220,95 @@ public abstract class RolapSchemaReader implements SchemaReader {
     public abstract Cube getCube();
 
     public OlapElement getElementChild(OlapElement parent, String name) {
-        return parent.lookupChild(this, name);
+        return getElementChild(parent, name, MatchType.EXACT);
+    }
+    
+    public OlapElement getElementChild(
+        OlapElement parent, String name, int matchType)
+    {
+        return parent.lookupChild(this, name, matchType);
     }
 
     public Member getMemberByUniqueName(
-            String[] uniqueNameParts, boolean failIfNotFound) {
+        String[] uniqueNameParts, boolean failIfNotFound) {
+        return getMemberByUniqueName(
+            uniqueNameParts, failIfNotFound, MatchType.EXACT);
+    }
+    
+    public Member getMemberByUniqueName(
+            String[] uniqueNameParts, boolean failIfNotFound,
+            int matchType) {
         // In general, this schema reader doesn't have a cube, so we cannot
         // start looking up members.
         return null;
     }
 
     public OlapElement lookupCompound(
+        OlapElement parent,
+        String[] names,
+        boolean failIfNotFound,
+        int category)
+    {
+        return lookupCompound(
+            parent, names, failIfNotFound, category, MatchType.EXACT);
+    }
+    
+    public OlapElement lookupCompound(
             OlapElement parent,
             String[] names,
             boolean failIfNotFound,
-            int category) {
+            int category,
+            int matchType)
+    {
         return Util.lookupCompound(
-                this, parent, names, failIfNotFound, category);
+                this, parent, names, failIfNotFound, category, matchType);
     }
 
-    public Member lookupMemberChildByName(Member parent, String childName) {
+    public Member lookupMemberChildByName(Member parent, String childName)
+    {
+        return lookupMemberChildByName(parent, childName, MatchType.EXACT);
+    }
+    
+    public Member lookupMemberChildByName(
+        Member parent, String childName, int matchType)
+    {
         LOGGER.debug("looking for child \"" + childName + "\" of " + parent);
         try {
             MemberChildrenConstraint constraint =
-                sqlConstraintFactory.getChildByNameConstraint((RolapMember)parent, childName);
+                (matchType == MatchType.EXACT) ?
+                    sqlConstraintFactory.getChildByNameConstraint(
+                        (RolapMember)parent, childName) :
+                    sqlConstraintFactory.getMemberChildrenConstraint(null);
             Member[] children = internalGetMemberChildren(parent, constraint);
+            int bestMatch = -1;
             for (int i = 0; i < children.length; i++){
                 final Member child = children[i];
-                if (Util.equalName(child.getName(), childName)) {
+                int rc = Util.compareName(child.getName(), childName);
+                if (rc == 0) {
                     return child;
                 }
+                if (matchType == MatchType.BEFORE) {
+                    if (rc < 0 &&
+                        (bestMatch == -1 ||
+                        Util.compareName(
+                            child.getName(),
+                            children[bestMatch].getName()) > 0))
+                    {
+                        bestMatch = i;
+                    }
+                } else if (matchType == MatchType.AFTER) {
+                    if (rc > 0 &&
+                        (bestMatch == -1 ||
+                        Util.compareName(
+                            child.getName(),
+                            children[bestMatch].getName()) < 0))
+                    {
+                        bestMatch = i;
+                    }
+                }
+            }
+            if (matchType != MatchType.EXACT && bestMatch != -1) {
+                return children[bestMatch];
             }
         } catch (NumberFormatException e) {
             // this was thrown in SqlQuery#quote(boolean numeric, Object value). This happens when

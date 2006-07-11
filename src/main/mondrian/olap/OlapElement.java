@@ -26,6 +26,8 @@ public interface OlapElement {
      * Looks up a child element, returning null if it does not exist.
      */
     OlapElement lookupChild(SchemaReader schemaReader, String s);
+    OlapElement lookupChild(
+        SchemaReader schemaReader, String s, int matchType);
 
     /**
      * Returns the name of this element qualified by its class, for example

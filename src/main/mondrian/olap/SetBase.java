@@ -71,6 +71,11 @@ class SetBase extends OlapElementBase implements NamedSet {
     public OlapElement lookupChild(SchemaReader schemaReader, String s) {
         return null;
     }
+    
+    public OlapElement lookupChild(
+        SchemaReader schemaReader, String s, int matchType) {
+        return null;
+    }
 
     public void setName(String name) {
         this.name = name;

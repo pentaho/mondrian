@@ -12,6 +12,7 @@
 package mondrian.olap;
 
 import mondrian.calc.Calc;
+import mondrian.olap.MatchType;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -123,9 +124,14 @@ public interface SchemaReader {
      * @param uniqueNameParts Unique name of member
      * @param failIfNotFound Whether to throw an error, as opposed to returning
      *   <code>null</code>, if there is no such member.
+     * @param matchType indicates the match mode; if not specified, EXACT
      * @return The member, or null if not found
      */
-    Member getMemberByUniqueName(String[] uniqueNameParts, boolean failIfNotFound);
+    Member getMemberByUniqueName(
+        String[] uniqueNameParts, boolean failIfNotFound, int matchType);
+    
+    Member getMemberByUniqueName(
+        String[] uniqueNameParts, boolean failIfNotFound);
 
     /**
      * Looks up an MDX object by name.
@@ -141,10 +147,18 @@ public interface SchemaReader {
      *      to return null or throw an error
      * @param category Type of returned element, a {@link Category} value;
      *      {@link Category#Unknown} if it doesn't matter.
+     * @param matchType indicates the match mode; if not specified, EXACT
      *
      * @pre parent != null
      * @post !(failIfNotFound && return == null)
      */
+    OlapElement lookupCompound(
+        OlapElement parent,
+        String[] names,
+        boolean failIfNotFound,
+        int category,
+        int matchType);
+    
     OlapElement lookupCompound(
         OlapElement parent,
         String[] names,
@@ -196,6 +210,9 @@ public interface SchemaReader {
      * Looks up the child of <code>parent</code> called <code>s</code>; returns
      * null if no element is found.
      */
+    OlapElement getElementChild(
+        OlapElement parent, String name, int matchType);
+    
     OlapElement getElementChild(OlapElement parent, String name);
 
     /**
@@ -260,6 +277,9 @@ public interface SchemaReader {
     /**
      * Finds a child of a member with a given name.
      */
+    Member lookupMemberChildByName(
+        Member parent, String childName, int matchType);
+    
     Member lookupMemberChildByName(Member parent, String childName);
 
     /**

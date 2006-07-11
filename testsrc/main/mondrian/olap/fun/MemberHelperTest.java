@@ -200,6 +200,11 @@ public class MemberHelperTest extends TestCase {
             return null;
         }
 
+        public OlapElement lookupChild(
+            SchemaReader schemaReader, String s, int matchType) {
+            return null;
+        }
+
         public Object clone() {
             return null;
         }
