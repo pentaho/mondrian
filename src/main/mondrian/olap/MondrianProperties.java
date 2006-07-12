@@ -727,6 +727,12 @@ public class MondrianProperties extends TriggerableProperties {
 
     public final StringProperty JdbcFactoryClass = new StringProperty(
             this, "mondrian.rolap.aggregates.jdbcFactoryClass", null);
+    
+    /**
+     * Timeout value (in seconds) for queries; 0 indicates no timeout
+     */
+    public final IntegerProperty QueryTimeout = new IntegerProperty(
+        this, "mondrian.rolap.queryTimout", 0);
 }
 
 // End MondrianProperties.java

@@ -173,12 +173,20 @@ public class FastBatchingCellReader implements CellReader {
         return dirty || !batches.isEmpty();
     }
 
+    boolean loadAggregations()
+    {
+        return loadAggregations(null);
+    }
+    
     /**
      * Loads pending aggregations, if any.
+     * 
+     * @param query the parent query object that initiated this
+     * call
      *
      * @return Whether any aggregations were loaded.
      */
-    boolean loadAggregations() {
+    boolean loadAggregations(Query query) {
         long t1 = System.currentTimeMillis();
 
         requestCount = 0;
@@ -187,7 +195,10 @@ public class FastBatchingCellReader implements CellReader {
         }
         Iterator it = batches.values().iterator();
         while (it.hasNext()) {
-             ((Batch) it.next()).loadAggregation();
+            if (query != null) {
+                query.checkCancelOrTimeout();
+            }
+            ((Batch) it.next()).loadAggregation();
         }
         batches.clear();
 

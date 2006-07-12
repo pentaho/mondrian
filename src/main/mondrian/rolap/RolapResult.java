@@ -81,7 +81,7 @@ class RolapResult extends ResultBase {
                             executeAxis(evaluator.push(), axis, calc);
                     Util.discard(axisResult);
                     evaluator.clearExpResultCache();
-                    if (!batchingReader.loadAggregations()) {
+                    if (!batchingReader.loadAggregations(query)) {
                         break;
                     }
                     if (attempt++ > maxEvalDepth) {
@@ -236,7 +236,7 @@ class RolapResult extends ResultBase {
 
                 // Retrieve the aggregations collected.
                 //
-                if (!batchingReader.loadAggregations()) {
+                if (!batchingReader.loadAggregations(query)) {
                     // We got all of the cells we needed, so the result must be
                     // correct.
                     return;
@@ -279,7 +279,7 @@ class RolapResult extends ResultBase {
             ev.setCellReader(batchingReader);
             Object preliminaryValue = calc.evaluate(ev);
             Util.discard(preliminaryValue);
-            if (!batchingReader.loadAggregations()) {
+            if (!batchingReader.loadAggregations(evaluator.getQuery())) {
                 break;
             }
             if (attempt++ > maxEvalDepth) {
@@ -325,6 +325,7 @@ class RolapResult extends ResultBase {
             RolapAxis axis = (RolapAxis) slicerAxis;
             int count = axis.positions.length;
             for (int i = 0; i < count; i++) {
+                evaluator.getQuery().checkCancelOrTimeout();
                 RolapPosition position = (RolapPosition) axis.positions[i];
                 for (int j = 0; j < position.members.length; j++) {
                     evaluator.setContext(position.members[j]);
@@ -362,6 +363,7 @@ class RolapResult extends ResultBase {
                 for (int j = 0; j < position.members.length; j++) {
                     evaluator.setContext(position.members[j]);
                 }
+                evaluator.getQuery().checkCancelOrTimeout();
                 executeStripe(axisOrdinal - 1, evaluator);
             }
         }

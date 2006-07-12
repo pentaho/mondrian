@@ -66,6 +66,21 @@ public class Query extends QueryPart {
     private final Connection connection;
     public Calc[] axisCalcs;
     public Calc slicerCalc;
+    
+    /**
+     * Start time of query execution
+     */
+    private long startTime;
+    
+    /**
+     * Query timeout, in milliseconds
+     */
+    private final int queryTimeout;
+    
+    /**
+     * If true, cancel this query
+     */
+    private boolean isCanceled;
 
     /** Constructs a Query. */
     public Query(
@@ -110,6 +125,8 @@ public class Query extends QueryPart {
         }
         this.cellProps = cellProps;
         this.parameters = parameters;
+        this.queryTimeout =
+            MondrianProperties.instance().QueryTimeout.get() * 1000;
         resolve();
     }
 
@@ -191,6 +208,27 @@ public class Query extends QueryPart {
         return toMdx();
     }
 
+    public void cancel() {
+        isCanceled = true;
+    }
+    
+    public void checkCancelOrTimeout() {
+        if (isCanceled) {
+            throw MondrianResource.instance().QueryCanceled.ex();
+        }
+        if (queryTimeout > 0) {
+            long currTime = System.currentTimeMillis();
+            if ((currTime - startTime) >= queryTimeout) {
+                throw MondrianResource.instance().QueryTimeout.ex(
+                    new Long(queryTimeout/1000));
+            }
+        }
+    }
+    
+    public void setQueryStartTime() {
+        this.startTime = System.currentTimeMillis();
+    }
+    
     private void normalizeAxes() {
         for (int i = 0; i < axes.length; i++) {
             AxisOrdinal correctOrdinal = AxisOrdinal.get(i);

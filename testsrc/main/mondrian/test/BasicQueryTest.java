@@ -18,6 +18,8 @@ import mondrian.rolap.cache.CachePool;
 import java.util.regex.Pattern;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import junit.framework.Assert;
 
@@ -5177,7 +5179,59 @@ public class BasicQueryTest extends FoodMartTestCase {
             throwable,
             "must contain either a source column or a source expression, but not both");
         schema.removeCube(cubeName);
-    }   
+    }
+    
+    public void testCancel()
+    {
+        String query = fold(new String[] {
+            "WITH ",
+            "  MEMBER [Measures].[Rank among products] ",
+            "    AS ' Rank([Product].CurrentMember, Order([Product].members, [Measures].[Unit Sales], BDESC)) '",
+            "SELECT CrossJoin(",
+            "  [Gender].members,",
+            "  {[Measures].[Unit Sales],",
+            "   [Measures].[Rank among products]}) ON COLUMNS,",
+            "  {[Product].members} ON ROWS",
+            "FROM [Sales]"});
+
+        executeAndCancel(query, 2000);
+    }
+    
+    private void executeAndCancel(String queryString, int waitMillis)
+    {
+        Connection connection = getTestContext().getFoodMartConnection(false);
+        final Query query = connection.parseQuery(queryString);       
+        if (waitMillis == 0) {
+            // cancel immediately
+            query.cancel();
+        } else {
+            // Schedule timer to cancel after waitMillis
+            Timer timer = new Timer(true);
+            TimerTask task = new TimerTask()
+            {
+                public void run()
+                {
+                    Thread thread = Thread.currentThread();
+                    thread.setName("CancelThread");
+                    try {
+                        query.cancel();
+                    } catch (Exception ex) {
+                        Assert.fail(
+                            "Cancel request failed:  "
+                            + ex.getMessage());
+                    }
+                }
+            };
+            timer.schedule(task, waitMillis);
+        }
+        Throwable throwable = null;
+        try {
+            Result result = connection.execute(query);
+        } catch (Throwable ex) {
+            throwable = ex;
+        }
+        TestContext.checkThrowable(throwable, "canceled");
+    }
 }
 
 // End BasicQueryTest.java

@@ -234,6 +234,7 @@ public class RolapEvaluator implements Evaluator {
      * Creates a clone of the current validator.
      */
     protected RolapEvaluator _push() {
+        getQuery().checkCancelOrTimeout();
         Member[] cloneCurrentMembers = (Member[]) this.currentMembers.clone();
         return new RolapEvaluator(
                 root,

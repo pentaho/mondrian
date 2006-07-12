@@ -463,6 +463,14 @@
    <text>Number of members to be read exceeded limit ({0,number})</text>
 </exception>
 
+<exception id="600030" name="QueryCanceled" className="mondrian.olap.ResultLimitExceeded">
+    <text>Query canceled</text>
+</exception>
+
+<exception id="600040" name="QueryTimeout" className="mondrian.olap.ResultLimitExceeded">
+    <text>Query timeout of {0,number} seconds reached</text>
+</exception>
+
 <!-- empty ,invalid Dimension -->
 
 <exception id="601010" name="InvalidHierarchyCondition" className="mondrian.olap.InvalidHierarchy">
