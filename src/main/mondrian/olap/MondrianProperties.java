@@ -732,7 +732,7 @@ public class MondrianProperties extends TriggerableProperties {
      * Timeout value (in seconds) for queries; 0 indicates no timeout
      */
     public final IntegerProperty QueryTimeout = new IntegerProperty(
-        this, "mondrian.rolap.queryTimout", 0);
+        this, "mondrian.rolap.queryTimeout", 0);
 }
 
 // End MondrianProperties.java
