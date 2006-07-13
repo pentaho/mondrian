@@ -5183,6 +5183,8 @@ public class BasicQueryTest extends FoodMartTestCase {
     
     public void testCancel()
     {
+        // the cancel is issued after 2 seconds so the test query needs to
+        // run for at least that long; currently it does
         String query = fold(new String[] {
             "WITH ",
             "  MEMBER [Measures].[Rank among products] ",
@@ -5226,11 +5228,41 @@ public class BasicQueryTest extends FoodMartTestCase {
         }
         Throwable throwable = null;
         try {
-            Result result = connection.execute(query);
+            connection.execute(query);
         } catch (Throwable ex) {
             throwable = ex;
         }
         TestContext.checkThrowable(throwable, "canceled");
+    }
+    
+    public void testQueryTimeout()
+    {
+        // timeout is issued after 3 seconds so the test query needs to
+        // run for at least that long
+        int origTimeout = MondrianProperties.instance().QueryTimeout.get();
+        MondrianProperties.instance().QueryTimeout.set(3);
+        
+        String query = fold(new String[] {
+            "WITH ",
+            "  MEMBER [Measures].[Rank among products] ",
+            "    AS ' Rank([Product].CurrentMember, Order([Product].members, [Measures].[Unit Sales], BDESC)) '",
+            "SELECT CrossJoin(",
+            "  [Gender].members,",
+            "  {[Measures].[Unit Sales],",
+            "   [Measures].[Rank among products]}) ON COLUMNS,",
+            "  {[Product].members} ON ROWS",
+            "FROM [Sales]"});
+        Throwable throwable = null;
+        try {
+            executeQuery(query);
+        } catch (Throwable ex) {
+            throwable = ex;
+        }
+        TestContext.checkThrowable(
+            throwable, "Query timeout of 3 seconds reached");
+        
+        // reset the timeout back to the original value
+        MondrianProperties.instance().QueryTimeout.set(origTimeout);
     }
 }
 
