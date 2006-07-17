@@ -59,6 +59,7 @@ public class CmdRunner {
     private static final String nl = Util.nl;
 
     private static boolean RELOAD_CONNECTION = true;
+    private static String CATALOG_NAME = "FoodMart";
 
     private static final Map paraNameValues = new HashMap();
 
@@ -1170,7 +1171,7 @@ for (int i = 0; i < len; i++) {
             throws Exception {
         String catalogURL = CmdRunner.getCatalogURLProperty();
         String[][] catalogNameUrls = new String[][] {
-                            { "CMD_RUNNER_CATALOG", catalogURL }
+                            { CATALOG_NAME, catalogURL }
                         };
         byte[] bytes = XmlaSupport.processSoapXmla(file,
                         getConnectString(),
@@ -1206,7 +1207,7 @@ for (int i = 0; i < len; i++) {
 
         String catalogURL = CmdRunner.getCatalogURLProperty();
         String[][] catalogNameUrls = new String[][] {
-                            { "CMD_RUNNER_CATALOG", catalogURL }
+                            { CATALOG_NAME, catalogURL }
                         };
         byte[] bytes = XmlaSupport.processXmla(file,
                         getConnectString(),

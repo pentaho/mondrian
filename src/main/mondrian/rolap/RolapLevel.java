@@ -234,7 +234,7 @@ public class RolapLevel extends LevelBase {
     HideMemberCondition getHideMemberCondition() {
         return hideMemberCondition;
     }
-    boolean isUnique() {
+    public boolean isUnique() {
         return unique;
     }
     boolean isNumeric() {

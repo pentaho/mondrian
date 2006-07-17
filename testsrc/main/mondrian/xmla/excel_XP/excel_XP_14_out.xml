@@ -67,214 +67,214 @@
               </xsd:sequence>
             </xsd:complexType>
           </xsd:schema>
-            <row>
-                <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                <CUBE_NAME>Sales</CUBE_NAME>
-                <DIMENSION_NAME>Measures</DIMENSION_NAME>
-                <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
-                <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
-                <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
-                <DIMENSION_TYPE>2</DIMENSION_TYPE>
-                <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
-                <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
-                <DESCRIPTION>Sales Cube - Measures Dimension</DESCRIPTION>
-                <IS_VIRTUAL>false</IS_VIRTUAL>
-                <IS_READWRITE>false</IS_READWRITE>
-                <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-            </row>
-            <row>
-                <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                <CUBE_NAME>Sales</CUBE_NAME>
-                <DIMENSION_NAME>Store</DIMENSION_NAME>
-                <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                <DIMENSION_CAPTION>Store</DIMENSION_CAPTION>
-                <DIMENSION_ORDINAL>1</DIMENSION_ORDINAL>
-                <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
-                <DEFAULT_HIERARCHY>[Store]</DEFAULT_HIERARCHY>
-                <DESCRIPTION>Sales Cube - Store Dimension</DESCRIPTION>
-                <IS_VIRTUAL>false</IS_VIRTUAL>
-                <IS_READWRITE>false</IS_READWRITE>
-                <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-            </row>
-            <row>
-                <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                <CUBE_NAME>Sales</CUBE_NAME>
-                <DIMENSION_NAME>Store Size in SQFT</DIMENSION_NAME>
-                <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
-                <DIMENSION_CAPTION>Store Size in SQFT</DIMENSION_CAPTION>
-                <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
-                <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
-                <DEFAULT_HIERARCHY>[Store Size in SQFT]</DEFAULT_HIERARCHY>
-                <DESCRIPTION>Sales Cube - Store Size in SQFT Dimension</DESCRIPTION>
-                <IS_VIRTUAL>false</IS_VIRTUAL>
-                <IS_READWRITE>false</IS_READWRITE>
-                <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-            </row>
-            <row>
-                <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                <CUBE_NAME>Sales</CUBE_NAME>
-                <DIMENSION_NAME>Store Type</DIMENSION_NAME>
-                <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
-                <DIMENSION_CAPTION>Store Type</DIMENSION_CAPTION>
-                <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
-                <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
-                <DEFAULT_HIERARCHY>[Store Type]</DEFAULT_HIERARCHY>
-                <DESCRIPTION>Sales Cube - Store Type Dimension</DESCRIPTION>
-                <IS_VIRTUAL>false</IS_VIRTUAL>
-                <IS_READWRITE>false</IS_READWRITE>
-                <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-            </row>
-            <row>
-                <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                <CUBE_NAME>Sales</CUBE_NAME>
-                <DIMENSION_NAME>Time</DIMENSION_NAME>
-                <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-                <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
-                <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
-                <DIMENSION_TYPE>1</DIMENSION_TYPE>
-                <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
-                <DEFAULT_HIERARCHY>[Time]</DEFAULT_HIERARCHY>
-                <DESCRIPTION>Sales Cube - Time Dimension</DESCRIPTION>
-                <IS_VIRTUAL>false</IS_VIRTUAL>
-                <IS_READWRITE>false</IS_READWRITE>
-                <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-            </row>
-            <row>
-                <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                <CUBE_NAME>Sales</CUBE_NAME>
-                <DIMENSION_NAME>Product</DIMENSION_NAME>
-                <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
-                <DIMENSION_CAPTION>Product</DIMENSION_CAPTION>
-                <DIMENSION_ORDINAL>5</DIMENSION_ORDINAL>
-                <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
-                <DEFAULT_HIERARCHY>[Product]</DEFAULT_HIERARCHY>
-                <DESCRIPTION>Sales Cube - Product Dimension</DESCRIPTION>
-                <IS_VIRTUAL>false</IS_VIRTUAL>
-                <IS_READWRITE>false</IS_READWRITE>
-                <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-            </row>
-            <row>
-                <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                <CUBE_NAME>Sales</CUBE_NAME>
-                <DIMENSION_NAME>Promotion Media</DIMENSION_NAME>
-                <DIMENSION_UNIQUE_NAME>[Promotion Media]</DIMENSION_UNIQUE_NAME>
-                <DIMENSION_CAPTION>Promotion Media</DIMENSION_CAPTION>
-                <DIMENSION_ORDINAL>6</DIMENSION_ORDINAL>
-                <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
-                <DEFAULT_HIERARCHY>[Promotion Media]</DEFAULT_HIERARCHY>
-                <DESCRIPTION>Sales Cube - Promotion Media Dimension</DESCRIPTION>
-                <IS_VIRTUAL>false</IS_VIRTUAL>
-                <IS_READWRITE>false</IS_READWRITE>
-                <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-            </row>
-            <row>
-                <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                <CUBE_NAME>Sales</CUBE_NAME>
-                <DIMENSION_NAME>Promotions</DIMENSION_NAME>
-                <DIMENSION_UNIQUE_NAME>[Promotions]</DIMENSION_UNIQUE_NAME>
-                <DIMENSION_CAPTION>Promotions</DIMENSION_CAPTION>
-                <DIMENSION_ORDINAL>7</DIMENSION_ORDINAL>
-                <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
-                <DEFAULT_HIERARCHY>[Promotions]</DEFAULT_HIERARCHY>
-                <DESCRIPTION>Sales Cube - Promotions Dimension</DESCRIPTION>
-                <IS_VIRTUAL>false</IS_VIRTUAL>
-                <IS_READWRITE>false</IS_READWRITE>
-                <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-            </row>
-            <row>
-                <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                <CUBE_NAME>Sales</CUBE_NAME>
-                <DIMENSION_NAME>Customers</DIMENSION_NAME>
-                <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                <DIMENSION_CAPTION>Customers</DIMENSION_CAPTION>
-                <DIMENSION_ORDINAL>8</DIMENSION_ORDINAL>
-                <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
-                <DEFAULT_HIERARCHY>[Customers]</DEFAULT_HIERARCHY>
-                <DESCRIPTION>Sales Cube - Customers Dimension</DESCRIPTION>
-                <IS_VIRTUAL>false</IS_VIRTUAL>
-                <IS_READWRITE>false</IS_READWRITE>
-                <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-            </row>
-            <row>
-                <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                <CUBE_NAME>Sales</CUBE_NAME>
-                <DIMENSION_NAME>Education Level</DIMENSION_NAME>
-                <DIMENSION_UNIQUE_NAME>[Education Level]</DIMENSION_UNIQUE_NAME>
-                <DIMENSION_CAPTION>Education Level</DIMENSION_CAPTION>
-                <DIMENSION_ORDINAL>9</DIMENSION_ORDINAL>
-                <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
-                <DEFAULT_HIERARCHY>[Education Level]</DEFAULT_HIERARCHY>
-                <DESCRIPTION>Sales Cube - Education Level Dimension</DESCRIPTION>
-                <IS_VIRTUAL>false</IS_VIRTUAL>
-                <IS_READWRITE>false</IS_READWRITE>
-                <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-            </row>
-            <row>
-                <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                <CUBE_NAME>Sales</CUBE_NAME>
-                <DIMENSION_NAME>Gender</DIMENSION_NAME>
-                <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
-                <DIMENSION_CAPTION>Gender</DIMENSION_CAPTION>
-                <DIMENSION_ORDINAL>10</DIMENSION_ORDINAL>
-                <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
-                <DEFAULT_HIERARCHY>[Gender]</DEFAULT_HIERARCHY>
-                <DESCRIPTION>Sales Cube - Gender Dimension</DESCRIPTION>
-                <IS_VIRTUAL>false</IS_VIRTUAL>
-                <IS_READWRITE>false</IS_READWRITE>
-                <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-            </row>
-            <row>
-                <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                <CUBE_NAME>Sales</CUBE_NAME>
-                <DIMENSION_NAME>Marital Status</DIMENSION_NAME>
-                <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
-                <DIMENSION_CAPTION>Marital Status</DIMENSION_CAPTION>
-                <DIMENSION_ORDINAL>11</DIMENSION_ORDINAL>
-                <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
-                <DEFAULT_HIERARCHY>[Marital Status]</DEFAULT_HIERARCHY>
-                <DESCRIPTION>Sales Cube - Marital Status Dimension</DESCRIPTION>
-                <IS_VIRTUAL>false</IS_VIRTUAL>
-                <IS_READWRITE>false</IS_READWRITE>
-                <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-            </row>
-            <row>
-                <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                <CUBE_NAME>Sales</CUBE_NAME>
-                <DIMENSION_NAME>Yearly Income</DIMENSION_NAME>
-                <DIMENSION_UNIQUE_NAME>[Yearly Income]</DIMENSION_UNIQUE_NAME>
-                <DIMENSION_CAPTION>Yearly Income</DIMENSION_CAPTION>
-                <DIMENSION_ORDINAL>12</DIMENSION_ORDINAL>
-                <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                <DIMENSION_CARDINALITY>0</DIMENSION_CARDINALITY>
-                <DEFAULT_HIERARCHY>[Yearly Income]</DEFAULT_HIERARCHY>
-                <DESCRIPTION>Sales Cube - Yearly Income Dimension</DESCRIPTION>
-                <IS_VIRTUAL>false</IS_VIRTUAL>
-                <IS_READWRITE>false</IS_READWRITE>
-                <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-            </row>
+          <row>
+            <CATALOG_NAME>FoodMart</CATALOG_NAME>
+            <CUBE_NAME>Sales</CUBE_NAME>
+            <DIMENSION_NAME>Customers</DIMENSION_NAME>
+            <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+            <DIMENSION_CAPTION>Customers</DIMENSION_CAPTION>
+            <DIMENSION_ORDINAL>8</DIMENSION_ORDINAL>
+            <DIMENSION_TYPE>3</DIMENSION_TYPE>
+            <DIMENSION_CARDINALITY>10282</DIMENSION_CARDINALITY>
+            <DEFAULT_HIERARCHY>[Customers]</DEFAULT_HIERARCHY>
+            <DESCRIPTION>Sales Cube - Customers Dimension</DESCRIPTION>
+            <IS_VIRTUAL>false</IS_VIRTUAL>
+            <IS_READWRITE>false</IS_READWRITE>
+            <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+            <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+          </row>
+          <row>
+            <CATALOG_NAME>FoodMart</CATALOG_NAME>
+            <CUBE_NAME>Sales</CUBE_NAME>
+            <DIMENSION_NAME>Education Level</DIMENSION_NAME>
+            <DIMENSION_UNIQUE_NAME>[Education Level]</DIMENSION_UNIQUE_NAME>
+            <DIMENSION_CAPTION>Education Level</DIMENSION_CAPTION>
+            <DIMENSION_ORDINAL>9</DIMENSION_ORDINAL>
+            <DIMENSION_TYPE>3</DIMENSION_TYPE>
+            <DIMENSION_CARDINALITY>6</DIMENSION_CARDINALITY>
+            <DEFAULT_HIERARCHY>[Education Level]</DEFAULT_HIERARCHY>
+            <DESCRIPTION>Sales Cube - Education Level Dimension</DESCRIPTION>
+            <IS_VIRTUAL>false</IS_VIRTUAL>
+            <IS_READWRITE>false</IS_READWRITE>
+            <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+            <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+          </row>
+          <row>
+            <CATALOG_NAME>FoodMart</CATALOG_NAME>
+            <CUBE_NAME>Sales</CUBE_NAME>
+            <DIMENSION_NAME>Gender</DIMENSION_NAME>
+            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
+            <DIMENSION_CAPTION>Gender</DIMENSION_CAPTION>
+            <DIMENSION_ORDINAL>10</DIMENSION_ORDINAL>
+            <DIMENSION_TYPE>3</DIMENSION_TYPE>
+            <DIMENSION_CARDINALITY>3</DIMENSION_CARDINALITY>
+            <DEFAULT_HIERARCHY>[Gender]</DEFAULT_HIERARCHY>
+            <DESCRIPTION>Sales Cube - Gender Dimension</DESCRIPTION>
+            <IS_VIRTUAL>false</IS_VIRTUAL>
+            <IS_READWRITE>false</IS_READWRITE>
+            <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+            <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+          </row>
+          <row>
+            <CATALOG_NAME>FoodMart</CATALOG_NAME>
+            <CUBE_NAME>Sales</CUBE_NAME>
+            <DIMENSION_NAME>Marital Status</DIMENSION_NAME>
+            <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
+            <DIMENSION_CAPTION>Marital Status</DIMENSION_CAPTION>
+            <DIMENSION_ORDINAL>11</DIMENSION_ORDINAL>
+            <DIMENSION_TYPE>3</DIMENSION_TYPE>
+            <DIMENSION_CARDINALITY>3</DIMENSION_CARDINALITY>
+            <DEFAULT_HIERARCHY>[Marital Status]</DEFAULT_HIERARCHY>
+            <DESCRIPTION>Sales Cube - Marital Status Dimension</DESCRIPTION>
+            <IS_VIRTUAL>false</IS_VIRTUAL>
+            <IS_READWRITE>false</IS_READWRITE>
+            <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+            <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+          </row>
+          <row>
+            <CATALOG_NAME>FoodMart</CATALOG_NAME>
+            <CUBE_NAME>Sales</CUBE_NAME>
+            <DIMENSION_NAME>Measures</DIMENSION_NAME>
+            <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+            <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
+            <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
+            <DIMENSION_TYPE>2</DIMENSION_TYPE>
+            <DIMENSION_CARDINALITY>7</DIMENSION_CARDINALITY>
+            <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
+            <DESCRIPTION>Sales Cube - Measures Dimension</DESCRIPTION>
+            <IS_VIRTUAL>false</IS_VIRTUAL>
+            <IS_READWRITE>false</IS_READWRITE>
+            <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+            <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+          </row>
+          <row>
+            <CATALOG_NAME>FoodMart</CATALOG_NAME>
+            <CUBE_NAME>Sales</CUBE_NAME>
+            <DIMENSION_NAME>Product</DIMENSION_NAME>
+            <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
+            <DIMENSION_CAPTION>Product</DIMENSION_CAPTION>
+            <DIMENSION_ORDINAL>5</DIMENSION_ORDINAL>
+            <DIMENSION_TYPE>3</DIMENSION_TYPE>
+            <DIMENSION_CARDINALITY>1561</DIMENSION_CARDINALITY>
+            <DEFAULT_HIERARCHY>[Product]</DEFAULT_HIERARCHY>
+            <DESCRIPTION>Sales Cube - Product Dimension</DESCRIPTION>
+            <IS_VIRTUAL>false</IS_VIRTUAL>
+            <IS_READWRITE>false</IS_READWRITE>
+            <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+            <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+          </row>
+          <row>
+            <CATALOG_NAME>FoodMart</CATALOG_NAME>
+            <CUBE_NAME>Sales</CUBE_NAME>
+            <DIMENSION_NAME>Promotion Media</DIMENSION_NAME>
+            <DIMENSION_UNIQUE_NAME>[Promotion Media]</DIMENSION_UNIQUE_NAME>
+            <DIMENSION_CAPTION>Promotion Media</DIMENSION_CAPTION>
+            <DIMENSION_ORDINAL>6</DIMENSION_ORDINAL>
+            <DIMENSION_TYPE>3</DIMENSION_TYPE>
+            <DIMENSION_CARDINALITY>15</DIMENSION_CARDINALITY>
+            <DEFAULT_HIERARCHY>[Promotion Media]</DEFAULT_HIERARCHY>
+            <DESCRIPTION>Sales Cube - Promotion Media Dimension</DESCRIPTION>
+            <IS_VIRTUAL>false</IS_VIRTUAL>
+            <IS_READWRITE>false</IS_READWRITE>
+            <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+            <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+          </row>
+          <row>
+            <CATALOG_NAME>FoodMart</CATALOG_NAME>
+            <CUBE_NAME>Sales</CUBE_NAME>
+            <DIMENSION_NAME>Promotions</DIMENSION_NAME>
+            <DIMENSION_UNIQUE_NAME>[Promotions]</DIMENSION_UNIQUE_NAME>
+            <DIMENSION_CAPTION>Promotions</DIMENSION_CAPTION>
+            <DIMENSION_ORDINAL>7</DIMENSION_ORDINAL>
+            <DIMENSION_TYPE>3</DIMENSION_TYPE>
+            <DIMENSION_CARDINALITY>52</DIMENSION_CARDINALITY>
+            <DEFAULT_HIERARCHY>[Promotions]</DEFAULT_HIERARCHY>
+            <DESCRIPTION>Sales Cube - Promotions Dimension</DESCRIPTION>
+            <IS_VIRTUAL>false</IS_VIRTUAL>
+            <IS_READWRITE>false</IS_READWRITE>
+            <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+            <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+          </row>
+          <row>
+            <CATALOG_NAME>FoodMart</CATALOG_NAME>
+            <CUBE_NAME>Sales</CUBE_NAME>
+            <DIMENSION_NAME>Store</DIMENSION_NAME>
+            <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+            <DIMENSION_CAPTION>Store</DIMENSION_CAPTION>
+            <DIMENSION_ORDINAL>1</DIMENSION_ORDINAL>
+            <DIMENSION_TYPE>3</DIMENSION_TYPE>
+            <DIMENSION_CARDINALITY>26</DIMENSION_CARDINALITY>
+            <DEFAULT_HIERARCHY>[Store]</DEFAULT_HIERARCHY>
+            <DESCRIPTION>Sales Cube - Store Dimension</DESCRIPTION>
+            <IS_VIRTUAL>false</IS_VIRTUAL>
+            <IS_READWRITE>false</IS_READWRITE>
+            <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+            <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+          </row>
+          <row>
+            <CATALOG_NAME>FoodMart</CATALOG_NAME>
+            <CUBE_NAME>Sales</CUBE_NAME>
+            <DIMENSION_NAME>Store Size in SQFT</DIMENSION_NAME>
+            <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
+            <DIMENSION_CAPTION>Store Size in SQFT</DIMENSION_CAPTION>
+            <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
+            <DIMENSION_TYPE>3</DIMENSION_TYPE>
+            <DIMENSION_CARDINALITY>22</DIMENSION_CARDINALITY>
+            <DEFAULT_HIERARCHY>[Store Size in SQFT]</DEFAULT_HIERARCHY>
+            <DESCRIPTION>Sales Cube - Store Size in SQFT Dimension</DESCRIPTION>
+            <IS_VIRTUAL>false</IS_VIRTUAL>
+            <IS_READWRITE>false</IS_READWRITE>
+            <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+            <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+          </row>
+          <row>
+            <CATALOG_NAME>FoodMart</CATALOG_NAME>
+            <CUBE_NAME>Sales</CUBE_NAME>
+            <DIMENSION_NAME>Store Type</DIMENSION_NAME>
+            <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
+            <DIMENSION_CAPTION>Store Type</DIMENSION_CAPTION>
+            <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
+            <DIMENSION_TYPE>3</DIMENSION_TYPE>
+            <DIMENSION_CARDINALITY>7</DIMENSION_CARDINALITY>
+            <DEFAULT_HIERARCHY>[Store Type]</DEFAULT_HIERARCHY>
+            <DESCRIPTION>Sales Cube - Store Type Dimension</DESCRIPTION>
+            <IS_VIRTUAL>false</IS_VIRTUAL>
+            <IS_READWRITE>false</IS_READWRITE>
+            <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+            <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+          </row>
+          <row>
+            <CATALOG_NAME>FoodMart</CATALOG_NAME>
+            <CUBE_NAME>Sales</CUBE_NAME>
+            <DIMENSION_NAME>Time</DIMENSION_NAME>
+            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+            <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
+            <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
+            <DIMENSION_TYPE>1</DIMENSION_TYPE>
+            <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
+            <DEFAULT_HIERARCHY>[Time]</DEFAULT_HIERARCHY>
+            <DESCRIPTION>Sales Cube - Time Dimension</DESCRIPTION>
+            <IS_VIRTUAL>false</IS_VIRTUAL>
+            <IS_READWRITE>false</IS_READWRITE>
+            <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+            <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+          </row>
+          <row>
+            <CATALOG_NAME>FoodMart</CATALOG_NAME>
+            <CUBE_NAME>Sales</CUBE_NAME>
+            <DIMENSION_NAME>Yearly Income</DIMENSION_NAME>
+            <DIMENSION_UNIQUE_NAME>[Yearly Income]</DIMENSION_UNIQUE_NAME>
+            <DIMENSION_CAPTION>Yearly Income</DIMENSION_CAPTION>
+            <DIMENSION_ORDINAL>12</DIMENSION_ORDINAL>
+            <DIMENSION_TYPE>3</DIMENSION_TYPE>
+            <DIMENSION_CARDINALITY>9</DIMENSION_CARDINALITY>
+            <DEFAULT_HIERARCHY>[Yearly Income]</DEFAULT_HIERARCHY>
+            <DESCRIPTION>Sales Cube - Yearly Income Dimension</DESCRIPTION>
+            <IS_VIRTUAL>false</IS_VIRTUAL>
+            <IS_READWRITE>false</IS_READWRITE>
+            <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+            <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+          </row>
         </root>
       </xmla:return>
     </xmla:DiscoverResponse>

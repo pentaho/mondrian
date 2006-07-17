@@ -649,6 +649,7 @@ public class TestAggregationManager extends FoodMartTestCase {
         Bomb bomb;
         try {
             // Flush the cache, to ensure that the query gets executed.
+            star.clearCachedAggregations(true); 
             CachePool.instance().flush();
 
             final Result result = connection.execute(query);

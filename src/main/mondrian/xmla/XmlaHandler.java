@@ -109,6 +109,8 @@ public class XmlaHandler implements XmlaConstants {
     public void process(XmlaRequest request, XmlaResponse response)
             throws XmlaException {
         int method = request.getMethod();
+        long start = System.currentTimeMillis();
+
         switch (method) {
         case METHOD_DISCOVER:
             discover(request, response);
@@ -123,6 +125,10 @@ public class XmlaHandler implements XmlaConstants {
                 HSB_BAD_METHOD_FAULT_FS,
                 new IllegalArgumentException(
                     "Unsupported XML/A method: " +method));
+        }
+        if (LOGGER.isDebugEnabled()) {
+            long end = System.currentTimeMillis();
+            LOGGER.debug("XmlaHandler.process: time = " +(end-start));
         }
     }
 
@@ -995,7 +1001,7 @@ public class XmlaHandler implements XmlaConstants {
             Enumeration.Format format = Enumeration.Format.getValue(formatName);
 
             if (format == Enumeration.Format.Multidimensional) {
-                return new MDDataSet_Multidimensional(result);
+                return new MDDataSet_Multidimensional(result, connection);
             } else {
                 return new MDDataSet_Tabular(result);
             }
@@ -1075,9 +1081,11 @@ public class XmlaHandler implements XmlaConstants {
 
     static class MDDataSet_Multidimensional extends MDDataSet {
         private Hierarchy[] slicerAxisHierarchies;
+        private Connection connection;
 
-        protected MDDataSet_Multidimensional(Result result) {
+        protected MDDataSet_Multidimensional(Result result, Connection connection) {
             super(result);
+            this.connection = connection;
         }
 
         public void unparse(SaxWriter writer) throws SAXException {
@@ -1116,6 +1124,7 @@ public class XmlaHandler implements XmlaConstants {
             final QueryAxis[] queryAxes = result.getQuery().getAxes();
             //axisInfo(writer, result.getSlicerAxis(), "SlicerAxis");
             List axisHierarchyList = new ArrayList();
+axesInfoParentUniqueNameMap.clear();
             for (int i = 0; i < axes.length; i++) {
                 Hierarchy[] hiers =
                         axisInfo(writer, axes[i], queryAxes[i], "Axis" + i);
@@ -1183,6 +1192,9 @@ public class XmlaHandler implements XmlaConstants {
                 QueryAxis queryAxis,
                 String axisName) {
 
+currentAxisMap = new HashMap();
+axesInfoParentUniqueNameMap.put(axisName, currentAxisMap);
+
             writer.startElement("AxisInfo", new String[] { "name", axisName});
 
             Hierarchy[] hierarchies;
@@ -1204,8 +1216,13 @@ public class XmlaHandler implements XmlaConstants {
 
             writer.endElement(); // AxisInfo
 
+currentAxisMap = null;
             return hierarchies;
         }
+
+Map currentAxisMap = null;
+// [axis name]-> map : [hierarchyinfo name] -> number
+Map axesInfoParentUniqueNameMap = new HashMap();
 
         private void writeHierarchyInfo(
                 SaxWriter writer,
@@ -1217,10 +1234,22 @@ public class XmlaHandler implements XmlaConstants {
                     "name", hierarchies[j].getName()});
                 for (int k = 0; k < props.length; k++) {
                     final String prop = props[k];
+                    //RME String prop = props[k];
                     String longPropName = (String) longPropNames.get(prop);
                     if (longPropName == null) {
                         longPropName = prop;
                     }
+// RME XXXXXXXXXXXXXXXX
+/*
+if (prop.equals("PARENT_UNIQUE_NAME")) {
+    Integer i = new Integer(j);
+    if (! currentAxisMap.isEmpty()) {
+        prop = prop + "_" + j;
+System.out.println("PARENT_UNIQUE_NAME=" +prop);  
+    }
+    currentAxisMap.put(hierarchies[j].getName(), i);
+}
+*/
                     writer.element(prop, new String[] {
                         "name",
                         hierarchies[j].getUniqueName() + "." +
@@ -1238,8 +1267,10 @@ public class XmlaHandler implements XmlaConstants {
             final QueryAxis[] queryAxes = result.getQuery().getAxes();
             for (int i = 0; i < axes.length; i++) {
                 final String[] props = getProps(queryAxes[i]);
+currentAxisMap = (Map) axesInfoParentUniqueNameMap.get("Axis" + i);
                 axis(writer, axes[i], props, "Axis" + i);
             }
+currentAxisMap = null;
 
             ////////////////////////////////////////////
             // now generate SlicerAxis information
@@ -1305,6 +1336,7 @@ public class XmlaHandler implements XmlaConstants {
                     for (int m = 0; m < props.length; m++) {
                         Object value = null;
                         final String prop = props[m];
+                        //RME String prop = props[m];
                         String propLong = (String) longPropNames.get(prop);
                         if (propLong == null) {
                             propLong = prop;
@@ -1312,10 +1344,11 @@ public class XmlaHandler implements XmlaConstants {
                         if (propLong.equals(Property.DISPLAY_INFO.name)) {
                             Integer childrenCard =
                                 (Integer) member.getPropertyValue(Property.CHILDREN_CARDINALITY.name);
-                            int displayInfo =
-                                calculateDisplayInfo((j == 0 ? null : positions[j - 1]),
-                                                     (j + 1 == positions.length ? null : positions[j + 1]),
-                                                     member, k, childrenCard.intValue());
+                            int displayInfo = calculateDisplayInfo(
+                                    (j == 0 ? null : positions[j - 1]),
+                                    (j + 1 == positions.length 
+                                        ? null : positions[j + 1]),
+                                    member, k, childrenCard.intValue());
                             value = new Integer(displayInfo);
                         } else if (propLong.equals(Property.DEPTH.name)) {
                             value = new Integer(member.getDepth());
@@ -1323,6 +1356,16 @@ public class XmlaHandler implements XmlaConstants {
                             value = member.getPropertyValue(propLong);
                         }
                         if (value != null) {
+// RME XXXXXXXXXXXXXXXX
+/*
+if (prop.equals("PARENT_UNIQUE_NAME")) {
+Integer i = (Integer) currentAxisMap.get(member.getHierarchy().getName());
+if (i != null && i.intValue() != 0) {
+        prop = prop + "_" + j;
+System.out.println("PARENT_UNIQUE_NAME=" +prop);  
+}
+}
+*/
                             writer.startElement(prop); // Properties
                             writer.characters(value.toString());
                             writer.endElement(); // Properties
@@ -1964,11 +2007,19 @@ public class XmlaHandler implements XmlaConstants {
             DataSourcesConfig.DataSource ds,
             String catalogName) {
         DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
-        for (int i = 0; i < catalogs.length; i++) {
-            DataSourcesConfig.Catalog dsCatalog = catalogs[i];
+        if (catalogName == null) {
+            // if there is no catalog name - its optional and there is
+            // only one, then return it.
+            if (catalogs.length == 1) {
+                return catalogs[0];
+            }
+        } else {
+            for (int i = 0; i < catalogs.length; i++) {
+                DataSourcesConfig.Catalog dsCatalog = catalogs[i];
 
-            if (catalogName.equals(dsCatalog.name)) {
-                return dsCatalog;
+                if (catalogName.equals(dsCatalog.name)) {
+                    return dsCatalog;
+                }
             }
         }
         return null;
@@ -2017,14 +2068,14 @@ public class XmlaHandler implements XmlaConstants {
         Map properties = request.getProperties();
         final String catalogName =
             (String) properties.get(PropertyDefinition.Catalog.name);
-        if (catalogName == null) {
+        DataSourcesConfig.Catalog dsCatalog = getCatalog(ds, catalogName);
+        if ((dsCatalog == null) && (catalogName == null)) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
                 HSB_CONNECTION_DATA_SOURCE_CODE,
                 HSB_CONNECTION_DATA_SOURCE_FAULT_FS,
                 Util.newError("no catalog named '" + catalogName + "'"));
         }
-        DataSourcesConfig.Catalog dsCatalog = getCatalog(ds, catalogName);
         return dsCatalog;
     }
 

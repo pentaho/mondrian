@@ -33,7 +33,6 @@ public class CachePool {
     public void flush() {
         RolapSchema.clearCache();
     }
-
 }
 
 // End CachePool.java

@@ -386,22 +386,20 @@ abstract class Rowset implements XmlaConstants {
      * {@link Rowset#addRow}.
      */
     protected class Row {
-        private final ArrayList names = new ArrayList();
-        private final ArrayList values = new ArrayList();
-
+        private final Map map;
+        Row() {
+            this.map = new HashMap();
+        }
         void set(String name, Object value) {
-            if (value != null) {
-                names.add(name);
-                values.add(value);
-            }
+            map.put(name, value);
         }
 
         void set(String name, int value) {
-            set(name, Integer.toString(value));
+            map.put(name, new Integer(value));
         }
 
         void set(String name, boolean value) {
-            set(name, value ? "true" : "false");
+            map.put(name, value ? "true" : "false");
         }
 
         /**
@@ -409,12 +407,7 @@ abstract class Rowset implements XmlaConstants {
          * field's value is not defined.
          */
         public Object get(String name) {
-            int i = names.indexOf(name);
-            if (i < 0) {
-                return null;
-            } else {
-                return values.get(i);
-            }
+            return map.get(name);
         }
     }
 

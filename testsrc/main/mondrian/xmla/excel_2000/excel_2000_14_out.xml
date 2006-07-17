@@ -54,6 +54,10 @@
                   sql:field="LEVEL_CARDINALITY" type="xsd:unsignedInt"/>
                 <xsd:element name="LEVEL_TYPE" 
                     sql:field="LEVEL_TYPE" type="xsd:int"/>
+                <xsd:element sql:field="CUSTOM_ROLLUP_SETTINGS" 
+                    name="CUSTOM_ROLLUP_SETTINGS" type="xsd:int"/>
+                <xsd:element sql:field="LEVEL_UNIQUE_SETTINGS" 
+                    name="LEVEL_UNIQUE_SETTINGS" type="xsd:int"/>
                 <xsd:element name="LEVEL_IS_VISIBLE"
                   sql:field="LEVEL_IS_VISIBLE" type="xsd:boolean"/>
                 <xsd:element minOccurs="0" name="DESCRIPTION"

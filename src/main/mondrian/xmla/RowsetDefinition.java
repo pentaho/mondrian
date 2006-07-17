@@ -152,19 +152,31 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
 
             int compare(Rowset.Row row1, Rowset.Row row2) {
+                // A faster implementation is welcome.
                 for (int i = 0; i < sortColumnDefinitions.length; i++) {
                     RowsetDefinition.Column sortColumn = sortColumnDefinitions[i];
                     Comparable val1 = (Comparable) row1.get(sortColumn.name);
                     Comparable val2 = (Comparable) row2.get(sortColumn.name);
-                    if (val1 == null) {
+                    if ((val1 == null) && (val2 == null)) {
+                        // columns can be optional, compare next column
+                        continue;
+                    } else if (val1 == null) {
                         return -1;
                     } else if (val2 == null) {
                         return 1;
                     } else if (val1 instanceof String &&
-                        val2 instanceof String) {
-                        return ((String) val1).compareToIgnoreCase((String) val2);
+                            val2 instanceof String) {
+                        int v = ((String) val1).compareToIgnoreCase((String) val2);
+                        // if equal (= 0), compare next column
+                        if (v != 0) {
+                            return v;
+                        }
                     } else {
-                        return val1.compareTo(val2);
+                        int v = val1.compareTo(val2);
+                        // if equal (= 0), compare next column
+                        if (v != 0) {
+                            return v;
+                        }
                     }
                 }
                 return 0;
@@ -3219,8 +3231,20 @@ boolean restriction, boolean nullable, String description)
                         row.set(DimensionOrdinal.name, dimension.getOrdinal(cube));
                         row.set(DimensionType.name, getDimensionType(dimension));
 
-                        //TODO: Is this the number of primaryKey members there are??
-                        row.set(DimensionCardinality.name, 0);
+                        //TODO: Is this the number of primaryKey members 
+                        //   there are??
+                        // According to microsoft this is:
+                        //    "The number of members in the key attribute."
+                        // There may be a better way of doing this but
+                        // this is what I came up with. Note that I need to
+                        // add '1' to the number inorder for it to match
+                        // match what microsoft SQL Server is producing.
+                        Hierarchy hier = dimension.getHierarchies()[0];
+                        Level[] ls = hier.getLevels();
+                        Level l = ls[ls.length-1];
+                        int n = connection.getSchemaReader().getLevelMembers(l, false).length;
+                        row.set(DimensionCardinality.name, n+1);
+
                         // TODO: I think that this is just the dimension name
                         row.set(DefaultHierarchy.name, dimension.getUniqueName());
                         row.set(Description.name, desc);
@@ -4053,6 +4077,22 @@ boolean restriction, boolean nullable, String description)
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
                 "Type of the level");
+        private static final Column CustomRollupSettings =
+            new Column(
+                "CUSTOM_ROLLUP_SETTINGS",
+                Type.Integer,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
+                "A bitmap that specifies the custom rollup options.");
+        private static final Column LevelUniqueSettings =
+            new Column(
+                "LEVEL_UNIQUE_SETTINGS",
+                Type.Integer,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
+                "A bitmap that specifies which columns contain unique values, if the level only has members with unique names or keys.");
         private static final Column LevelIsVisible =
             new Column(
                 "LEVEL_IS_VISIBLE",
@@ -4124,6 +4164,8 @@ boolean restriction, boolean nullable, String description)
                     LevelNumber,
                     LevelCardinality,
                     LevelType,
+                    CustomRollupSettings,
+                    LevelUniqueSettings,
                     LevelIsVisible,
                     Description,
                 },
@@ -4196,8 +4238,28 @@ boolean restriction, boolean nullable, String description)
                                 // see notes on this #getDepth()
                                 row.set(LevelNumber.name, level.getDepth());
                                 // TODO: get level cardinality
-                                row.set(LevelCardinality.name, 1000);
+                                // According to microsoft this is:
+                                //   "The number of members in the level."
+                                int n = connection.getSchemaReader().getLevelMembers(level, false).length;
+                                row.set(LevelCardinality.name, n);
                                 row.set(LevelType.name, getLevelType(level));
+
+                                // TODO: most of the time this is correct
+                                row.set(CustomRollupSettings.name, 0);
+
+                                if (level instanceof RolapLevel) {
+                                    RolapLevel rl = (RolapLevel) level;
+                                    row.set(LevelUniqueSettings.name, 
+                                        (rl.isUnique() ? 1 : 0) +
+                                        (rl.isAll() ? 2 : 0)
+                                    );
+                                } else {
+                                    // can not access unique member attribute
+                                    // this is the best we can do.
+                                    row.set(LevelUniqueSettings.name, 
+                                        (level.isAll() ? 2 : 0)
+                                    );
+                                }
                                 row.set(LevelIsVisible.name, true);
                                 row.set(Description.name, desc);
                                 addRow(row, rows);
