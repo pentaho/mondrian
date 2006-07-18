@@ -1124,7 +1124,6 @@ public class XmlaHandler implements XmlaConstants {
             final QueryAxis[] queryAxes = result.getQuery().getAxes();
             //axisInfo(writer, result.getSlicerAxis(), "SlicerAxis");
             List axisHierarchyList = new ArrayList();
-axesInfoParentUniqueNameMap.clear();
             for (int i = 0; i < axes.length; i++) {
                 Hierarchy[] hiers =
                         axisInfo(writer, axes[i], queryAxes[i], "Axis" + i);
@@ -1192,9 +1191,6 @@ axesInfoParentUniqueNameMap.clear();
                 QueryAxis queryAxis,
                 String axisName) {
 
-currentAxisMap = new HashMap();
-axesInfoParentUniqueNameMap.put(axisName, currentAxisMap);
-
             writer.startElement("AxisInfo", new String[] { "name", axisName});
 
             Hierarchy[] hierarchies;
@@ -1216,13 +1212,9 @@ axesInfoParentUniqueNameMap.put(axisName, currentAxisMap);
 
             writer.endElement(); // AxisInfo
 
-currentAxisMap = null;
             return hierarchies;
         }
 
-Map currentAxisMap = null;
-// [axis name]-> map : [hierarchyinfo name] -> number
-Map axesInfoParentUniqueNameMap = new HashMap();
 
         private void writeHierarchyInfo(
                 SaxWriter writer,
@@ -1234,22 +1226,10 @@ Map axesInfoParentUniqueNameMap = new HashMap();
                     "name", hierarchies[j].getName()});
                 for (int k = 0; k < props.length; k++) {
                     final String prop = props[k];
-                    //RME String prop = props[k];
                     String longPropName = (String) longPropNames.get(prop);
                     if (longPropName == null) {
                         longPropName = prop;
                     }
-// RME XXXXXXXXXXXXXXXX
-/*
-if (prop.equals("PARENT_UNIQUE_NAME")) {
-    Integer i = new Integer(j);
-    if (! currentAxisMap.isEmpty()) {
-        prop = prop + "_" + j;
-System.out.println("PARENT_UNIQUE_NAME=" +prop);  
-    }
-    currentAxisMap.put(hierarchies[j].getName(), i);
-}
-*/
                     writer.element(prop, new String[] {
                         "name",
                         hierarchies[j].getUniqueName() + "." +
@@ -1267,10 +1247,8 @@ System.out.println("PARENT_UNIQUE_NAME=" +prop);
             final QueryAxis[] queryAxes = result.getQuery().getAxes();
             for (int i = 0; i < axes.length; i++) {
                 final String[] props = getProps(queryAxes[i]);
-currentAxisMap = (Map) axesInfoParentUniqueNameMap.get("Axis" + i);
                 axis(writer, axes[i], props, "Axis" + i);
             }
-currentAxisMap = null;
 
             ////////////////////////////////////////////
             // now generate SlicerAxis information
@@ -1336,7 +1314,6 @@ currentAxisMap = null;
                     for (int m = 0; m < props.length; m++) {
                         Object value = null;
                         final String prop = props[m];
-                        //RME String prop = props[m];
                         String propLong = (String) longPropNames.get(prop);
                         if (propLong == null) {
                             propLong = prop;
@@ -1356,16 +1333,6 @@ currentAxisMap = null;
                             value = member.getPropertyValue(propLong);
                         }
                         if (value != null) {
-// RME XXXXXXXXXXXXXXXX
-/*
-if (prop.equals("PARENT_UNIQUE_NAME")) {
-Integer i = (Integer) currentAxisMap.get(member.getHierarchy().getName());
-if (i != null && i.intValue() != 0) {
-        prop = prop + "_" + j;
-System.out.println("PARENT_UNIQUE_NAME=" +prop);  
-}
-}
-*/
                             writer.startElement(prop); // Properties
                             writer.characters(value.toString());
                             writer.endElement(); // Properties
