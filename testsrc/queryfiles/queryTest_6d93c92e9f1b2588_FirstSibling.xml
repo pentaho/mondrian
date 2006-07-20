@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT {[Product].FirstSibling} on ROWS, [Measures].MEMBERS on COLUMNS FROM [Sales]</mdxQuery>
+    <mdxQuery>SELECT {[Product].FirstSibling} on ROWS, {Measures.[Sales Count], Measures.[Store Cost], Measures.[Store Sales], Measures.[Unit Sales], Measures.[Customer Count]} on COLUMNS FROM [Sales]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -38,7 +38,7 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Measures].[Sales Count]</member>
                 </tuple>
                 <tuple>
                     <member>[Measures].[Store Cost]</member>
@@ -47,7 +47,7 @@
                     <member>[Measures].[Store Sales]</member>
                 </tuple>
                 <tuple>
-                    <member>[Measures].[Sales Count]</member>
+                    <member>[Measures].[Unit Sales]</member>
                 </tuple>
                 <tuple>
                     <member>[Measures].[Customer Count]</member>
@@ -66,10 +66,10 @@
         </rows>
         <data>
             <drow>
-                <cell>266773.0</cell>
+                <cell>86837.0</cell>
                 <cell>225627.2336</cell>
                 <cell>565238.13</cell>
-                <cell>86837.0</cell>
+                <cell>266773.0</cell>
                 <cell>5581.0</cell>
             </drow>
         </data>

@@ -241,7 +241,8 @@ public class UdfTest extends FoodMartTestCase {
                 "{}",
                 "Axis #1:",
                 "{[Time].[1998].[Q4].[12]}",
-                "Row #0: \n"
+                "Row #0: ",
+                ""
             }));
     }
     
@@ -256,7 +257,8 @@ public class UdfTest extends FoodMartTestCase {
             fold(new String[] {
                 "Axis #0:",
                 "{}",
-                "Axis #1:\n"
+                "Axis #1:",
+                ""
             }));
     }
     
@@ -271,7 +273,8 @@ public class UdfTest extends FoodMartTestCase {
             fold(new String[] {
                 "Axis #0:",
                 "{}",
-                "Axis #1:\n"
+                "Axis #1:",
+                ""
             }));
     }
     
@@ -286,7 +289,8 @@ public class UdfTest extends FoodMartTestCase {
             fold(new String[] {
                 "Axis #0:",
                 "{}",
-                "Axis #1:\n"
+                "Axis #1:",
+                ""
             }));
     }
     
@@ -301,7 +305,8 @@ public class UdfTest extends FoodMartTestCase {
                 "{}",
                 "Axis #1:",
                 "{[Time.Weekly].[All Time.Weeklys].[1998].[52]}",
-                "Row #0: \n"
+                "Row #0: ",
+                ""
             }));
     }
     
@@ -319,7 +324,8 @@ public class UdfTest extends FoodMartTestCase {
                 "{}",
                 "Axis #1:",
                 "{[Time].[1997].[Q1]}",
-                "Row #0: 66,291\n"
+                "Row #0: 66,291",
+                ""
             }));
     }
     
@@ -337,7 +343,8 @@ public class UdfTest extends FoodMartTestCase {
                 "{}",
                 "Axis #1:",
                 "{[Time].[1997]}",
-                "Row #0: 266,773\n"
+                "Row #0: 266,773",
+                ""
             }));
     }
     
@@ -355,7 +362,8 @@ public class UdfTest extends FoodMartTestCase {
                 "{}",
                 "Axis #1:",
                 "{[Time].[1997].[Q2].[5]}",
-                "Row #0: 21,081\n"
+                "Row #0: 21,081",
+                ""
             }));
     }
     
@@ -371,7 +379,8 @@ public class UdfTest extends FoodMartTestCase {
                 "{}",
                 "Axis #1:",
                 "{[Time].[1998].[Q4].[11]}",
-                "Row #0: \n"
+                "Row #0: ",
+                ""
             }));
     }
     
