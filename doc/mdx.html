@@ -77,6 +77,40 @@ differences between Mondrian's dialect and the standard dialect of MDX.</p>
 <p>Pseudo-functions <code>Param()</code> and <code>ParamRef()</code> allow
   you to create parameterized MDX statements.</p>
 
+<h3>Current Date Functions</h3>
+
+<p>Mondrian supports two functions that return values based on the current
+date. They are listed below in the table of functions under CurrentDateString()
+and CurrentDateMember().  CurrentDateString() returns a string representing 
+the current date as specified by a format string.  CurrentDateMember() returns
+a member corresponding to the current date, also based on a specified format
+string.  In both cases, the format string matches the formatting specification
+for <a href="http://www.apostate.com/programming/vb-format.html">
+Visual Basic's format function.</a>
+So, be careful when specifying your format string, and remember
+to escape any characters that
+correspond to Visual Basic formatting characters.</p>
+
+<p>E.g., to find a member in the [Time] dimension corresponding to the current
+month, you would specify:
+
+<blockquote>
+  <pre><code>CurrentDateMember([Time], "[Ti\me]\.[yyyy]\.[Qq]\.[m]")</code></pre>
+</blockquote>
+
+<p>escaping the "m" in "Time" and the "."s that separate each member,
+since "m" and "." are formatting characters.</p> 
+
+<p>CurrentDateMember() optionally takes a symbol parameter whose value is
+either EXACT, BEFORE, or AFTER.
+The default value, if that parameter is not specified, is EXACT.
+In the case of EXACT, there needs to be an
+existing member corresponding to the current date.  Otherwise, NULL is returned.
+If BEFORE is specified, and there is no matching member, then the closest
+available member in the past is returned.
+If AFTER is specified, and there is no matching member, then the closest
+available member in the future is returned.</p>
+
 <h2><a name="Comments">Comments</a></h2>
 
 <p>MDX statements can contain comments. There are 3 syntactic forms for 
@@ -476,6 +510,26 @@ FROM [Sales]</code></blockquote>
   <td valign=top>Crossjoin</td>
   <td>Returns the cross product of two sets.    <p><b>Syntax</b></p>
     <code>&lt;Set&gt; Crossjoin(&lt;Set&gt;, &lt;Set&gt;)</code><br/>
+  </td>
+</tr>
+<tr>
+  <td valign=top>CurrentDateMember</td>
+  <td>Returns the closest or exact member within the specified dimension, corresponding to the current date, in the format specified by the format parameter.    <p><b>Syntax</b></p>
+    <code>&lt;Member&gt; CurrentDateMember(&lt;Dimension&gt;, &lt;FormatString&gt;)</code><br/>
+    <code>&lt;Member&gt; CurrentDateMember(&lt;Dimension&gt;, &lt;FormatString&gt; ,&lt;FindSymbol&gt;)</code><br/>
+  </td>
+</tr>
+<tr>
+  <td valign=top>CurrentDateMember</td>
+  <td>Returns the closest or exact member within the specified hierarchy, corresponding to the current date, in the format specified by the format parameter.    <p><b>Syntax</b></p>
+    <code>&lt;Member&gt; CurrentDateMember(&lt;Hierarchy&gt;, &lt;FormatString&gt;)</code><br/>
+    <code>&lt;Member&gt; CurrentDateMember(&lt;Hierarchy&gt;, &lt;FormatString&gt; ,&lt;FindSymbol&gt;)</code><br/>
+  </td>
+</tr>
+<tr>
+  <td valign=top>CurrentDateString</td>
+  <td>Returns a string representing the current date in the format specified by the format parameter.    <p><b>Syntax</b></p>
+    <code>&lt;String&gt; CurrentDateString(&lt;FormatString&gt;)</code><br/>
   </td>
 </tr>
 <tr>
