@@ -157,6 +157,9 @@ class RolapResult extends ResultBase {
             executeBody(query);
         } finally {
             evaluator.clearExpResultCache();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("RolapResult<init>: " + Util.printMemory());
+            }
         }
         // RME : what is this doing???
         query.getCube().getDimensions();

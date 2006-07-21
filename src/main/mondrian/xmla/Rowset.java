@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
  * @version $Id$
  */
 abstract class Rowset implements XmlaConstants {
-    private static final Logger LOGGER = Logger.getLogger(Rowset.class);
+    protected static final Logger LOGGER = Logger.getLogger(Rowset.class);
 
     protected final RowsetDefinition rowsetDefinition;
     protected final Map restrictions;
@@ -57,6 +57,7 @@ abstract class Rowset implements XmlaConstants {
         for (Iterator restrictionsIter = restrictions.keySet().iterator();
              restrictionsIter.hasNext();) {
             String restrictedColumn = (String) restrictionsIter.next();
+LOGGER.debug("Rowset<init>: restrictedColumn=\""+restrictedColumn+"\"");
             final RowsetDefinition.Column column = definition.lookupColumn(
                     restrictedColumn);
             if (column == null) {
@@ -182,45 +183,6 @@ abstract class Rowset implements XmlaConstants {
      * @param rows List of result rows
      */
     protected final boolean addRow(Row row, List rows) throws XmlaException {
-        for (int i = 0; i < restrictedColumns.length; i++) {
-            RowsetDefinition.Column column = restrictedColumns[i];
-            Object value = row.get(column.name);
-            if (value == null) {
-                return false;
-            }
-            final Object requiredValue = restrictions.get(column.name);
-
-            String[] requiredValues;
-            if (requiredValue instanceof String) {
-                requiredValues = new String[] {(String) requiredValue};
-            } else if (requiredValue instanceof String[]) {
-                requiredValues = (String[]) requiredValue;
-            } else {
-                throw new XmlaException(
-                    CLIENT_FAULT_FC,
-                    HSB_BAD_RESTRICTION_TYPE_CODE,
-                    HSB_BAD_RESTRICTION_TYPE_FAULT_FS,
-                    Util.newInternal("Restriction value is of wrong type: " +
-                        requiredValue));
-            }
-
-            String[] values;
-            if (value instanceof String) {
-                values = new String[] {(String) value};
-            } else if (value instanceof String[]) {
-                values = (String[]) value;
-            } else {
-                throw new XmlaException(
-                    CLIENT_FAULT_FC,
-                    HSB_BAD_RESTRICTION_VALUE_CODE,
-                    HSB_BAD_RESTRICTION_VALUE_FAULT_FS,
-                    Util.newInternal("Unexpected value type: " + value));
-            }
-
-            if (!haveCommonMember(requiredValues, values)) {
-                return false;
-            }
-        }
         return rows.add(row);
     }
 
@@ -307,31 +269,6 @@ abstract class Rowset implements XmlaConstants {
      */
     protected void emit(Object row, XmlaResponse response)
             throws XmlaException {
-        for (int i = 0; i < restrictedColumns.length; i++) {
-            RowsetDefinition.Column column = restrictedColumns[i];
-            Object value = column.get(row);
-            if (value == null) {
-                return;
-            }
-            final Object requiredValue = restrictions.get(column.name);
-            if (requiredValue instanceof String) {
-                if (!value.equals(requiredValue)) {
-                    return;
-                }
-            } else if (requiredValue instanceof String[]) {
-                if (!contains((String[]) requiredValue, value.toString())) {
-                    return;
-                }
-            } else {
-                throw new XmlaException(
-                    CLIENT_FAULT_FC,
-                    HSB_BAD_RESTRICTION_TYPE_CODE,
-                    HSB_BAD_RESTRICTION_TYPE_FAULT_FS,
-                    Util.newInternal("Restriction value is of wrong type: " +
-                        requiredValue));
-            }
-        }
-
         SaxWriter writer = response.getWriter();
 
         writer.startElement("row");
@@ -366,40 +303,143 @@ abstract class Rowset implements XmlaConstants {
     /**
      * Returns whether a column value matches any restrictions placed on it.
      * If there are no restrictions, always returns true.
-     */
     protected boolean passesRestriction(RowsetDefinition.Column column,
-            String value) {
+            Object value) {
         final Object requiredValue = restrictions.get(column.name);
 
-        return (requiredValue == null)
-            ? true
-            : requiredValue.equals(value);
+        if (requiredValue == null) {
+            return true;
+        } else if (requiredValue instanceof String[]) {
+            return contains((String[]) requiredValue, value.toString());
+        } else {
+            return requiredValue.equals(value);
+        }
+    }
+     */
+
+    /** 
+     * Extensions to this abstract class implement a restriction test
+     * for each Rowset's discovery request. If there is no restriction 
+     * then the passes method always returns true.
+     * Since whether the restriction is not specified (null), a single
+     * value (String) or an array of values (String[]) is known at
+     * the beginning of a Rowset's populate() method, creating these
+     * just once at the beginning is faster than having to determine
+     * the restriction status each time it is needed.
+     */
+    static abstract class RistrictionTest {
+        public boolean passes(int ival) {
+            return passes(new Integer(ival));
+        }
+        public abstract boolean passes(Object value);
+    }
+
+    RistrictionTest getRistrictionTest(RowsetDefinition.Column column) {
+        final Object requiredValue = restrictions.get(column.name);
+/*
+System.out.println("Rowset.getRistrictionTest: column=" +column.name);
+System.out.println("Rowset.getRistrictionTest: requiredValue=" +requiredValue);
+*/
+
+        if (requiredValue == null) {
+            return new RistrictionTest() {
+                public boolean passes(int ival) {
+                    return true;
+                }
+                public boolean passes(Object value) {
+                    return true;
+                }
+            };
+        } else if (requiredValue instanceof String[]) {
+            final String[] requiredValueArray = (String[]) requiredValue;
+            return new RistrictionTest() {
+                public boolean passes(Object value) {
+                    return contains(requiredValueArray, value.toString());
+                }
+            };
+        } else {
+            return new RistrictionTest() {
+                public boolean passes(Object value) {
+                    return requiredValue.equals(value);
+                }
+            };
+        }
+    }
+    
+    /** 
+     * This returns either null, a String or String[] depending upon
+     * what was in the XMLA request.
+     * 
+     * @param column 
+     * @return 
+     */
+    Object getRestrictionValue(RowsetDefinition.Column column) {
+        return restrictions.get(column.name);
+    }
+    
+    /** 
+     * This returns the restriction if its a String or null. This does not
+     * attempt two determine if the restriction is an array of Strings
+     * if all members of the array have the same value (in which case
+     * one could return, again, simply a single String).
+     * 
+     * @param column 
+     * @return 
+     */
+    String getRestrictionValueAsString(RowsetDefinition.Column column) {
+        Object rval = getRestrictionValue(column);
+        return (rval instanceof String) ? (String) rval : null;
+    }
+    
+    /** 
+     * This returns the restriction as an integer (not an Integer) if it
+     * exists and returns -1 otherwise.
+     * 
+     * @param column 
+     * @return 
+     */
+    int getRestrictionValueAsInt(RowsetDefinition.Column column) {
+        Object rval = getRestrictionValue(column);
+        return (rval instanceof Integer) ? ((Integer) rval).intValue() : -1;
     }
 
 
+
+    /** 
+     * Returns true if there is a restriction for the given column 
+     * definition.
+     * 
+     * @param column 
+     * @return 
+     */
     protected boolean isRestricted(RowsetDefinition.Column column) {
         return (restrictions.get(column.name) != null);
     }
 
     /**
      * A set of name/value pairs, which can be output using
-     * {@link Rowset#addRow}.
+     * {@link Rowset#addRow}. This uses less memory than simply
+     * using a HashMap and for very big data sets memory is
+     * a concern.
      */
     protected class Row {
-        private final Map map;
+        private final ArrayList names;
+        private final ArrayList values;
         Row() {
-            this.map = new HashMap();
+            this.names = new ArrayList();
+            this.values = new ArrayList();
         }
         void set(String name, Object value) {
-            map.put(name, value);
+            this.names.add(name);
+            this.values.add(value);
         }
 
         void set(String name, int value) {
-            map.put(name, new Integer(value));
+            set(name, new Integer(value));
         }
 
         void set(String name, boolean value) {
-            map.put(name, value ? "true" : "false");
+            set(name, value ? "true" : "false");
         }
 
         /**
@@ -407,7 +447,8 @@ abstract class Rowset implements XmlaConstants {
          * field's value is not defined.
          */
         public Object get(String name) {
-            return map.get(name);
+            int i = this.names.indexOf(name);
+            return (i < 0) ? null : this.values.get(i);
         }
     }
 

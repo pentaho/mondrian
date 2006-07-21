@@ -129,6 +129,7 @@ public class XmlaHandler implements XmlaConstants {
         if (LOGGER.isDebugEnabled()) {
             long end = System.currentTimeMillis();
             LOGGER.debug("XmlaHandler.process: time = " +(end-start));
+            LOGGER.debug("XmlaHandler.process: " +Util.printMemory());
         }
     }
 
@@ -1920,6 +1921,13 @@ public class XmlaHandler implements XmlaConstants {
         RolapConnection conn =
             (RolapConnection) DriverManager.getConnection(connectProperties, null, false);
 
+if (LOGGER.isDebugEnabled()) {
+if (conn == null) {
+LOGGER.debug("XmlaHandler.getConnection: returning connection null");
+} else {
+LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
+}
+}
         return conn;
     }
 

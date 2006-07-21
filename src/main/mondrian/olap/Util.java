@@ -1535,6 +1535,39 @@ public class Util extends XOMUtil {
 
         return buf.toString();
     }
+    public static String printMemory() {
+        return printMemory(null);
+    }
+    public static String printMemory(String msg) {
+        final Runtime rt = Runtime.getRuntime();
+        final long freeMemory = rt.freeMemory();
+        final long totalMemory = rt.totalMemory();
+        final StringBuffer buf = new StringBuffer(64);
+
+        buf.append("FREE_MEMORY:");
+        if (msg != null) {
+            buf.append(msg);
+            buf.append(':');
+        }
+        buf.append(' ');
+        buf.append(freeMemory / 1024);
+        buf.append("kb ");
+
+        long hundredths = (freeMemory * 10000) / totalMemory;
+
+        buf.append(hundredths / 100);
+        hundredths %= 100;
+        if (hundredths >= 10) {
+            buf.append('.');
+        } else {
+            buf.append(".0");
+        }
+        buf.append(hundredths);
+        buf.append('%');
+
+        return buf.toString();
+    }
+
 
 }
 
