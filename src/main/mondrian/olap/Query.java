@@ -208,10 +208,24 @@ public class Query extends QueryPart {
         return toMdx();
     }
 
+    /**
+     * Issues a cancel request on this Query object.  Once the thread
+     * running the query detects the cancel request, the query execution will
+     * raise an exception. See {@link BasicQueryTest#testCancel} for an
+     * example of usage of this method.
+     */
     public void cancel() {
         isCanceled = true;
     }
     
+    /**
+     * Checks if either a cancel request has been issued on the query or
+     * the execution time has exceeded the timeout value (if one has been
+     * set).  Exceptions are raised if either of these two conditions are
+     * met.  This method should be called periodically during query execution
+     * to ensure timely detection of these events, particularly before/after
+     * any potentially long running operations.
+     */
     public void checkCancelOrTimeout() {
         if (isCanceled) {
             throw MondrianResource.instance().QueryCanceled.ex();
@@ -225,6 +239,10 @@ public class Query extends QueryPart {
         }
     }
     
+    /**
+     * Sets the start time of query execution.  Used to detect timeout for
+     * queries.
+     */
     public void setQueryStartTime() {
         this.startTime = System.currentTimeMillis();
     }
