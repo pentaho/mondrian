@@ -400,7 +400,21 @@ System.out.println("Rowset.getRistrictionTest: requiredValue=" +requiredValue);
      */
     int getRestrictionValueAsInt(RowsetDefinition.Column column) {
         Object rval = getRestrictionValue(column);
-        return (rval instanceof Integer) ? ((Integer) rval).intValue() : -1;
+        if (rval instanceof String) {
+            try {
+                return Integer.parseInt((String)rval);
+            } catch (NumberFormatException ex) {
+                LOGGER.info("Rowset.getRestrictionValue: "+
+                    "bad integer restriction \""+
+                    rval+
+                    "\"");
+                return -1;
+            }
+        } else if (rval instanceof Integer) {
+            return ((Integer) rval).intValue();
+        } else {
+            return -1;
+        }
     }
 
 
