@@ -5237,18 +5237,18 @@ public class BasicQueryTest extends FoodMartTestCase {
     
     public void testQueryTimeout()
     {
-        // timeout is issued after 1 second so the test query needs to
+        // timeout is issued after 2 seconds so the test query needs to
         // run for at least that long
         int origTimeout = MondrianProperties.instance().QueryTimeout.get();
-        MondrianProperties.instance().QueryTimeout.set(1);
+        MondrianProperties.instance().QueryTimeout.set(2);
         
         String query = fold(new String[] {
             "WITH ",
             "  MEMBER [Measures].[Rank among products] ",
-            "    AS ' Rank([Product].CurrentMember, Order([Product].members, [Measures].[Unit Sales], BDESC)) '",
+            "    AS ' Rank([Product].CurrentMember, Order([Product].members, [Measures].[Promotion Sales], BDESC)) '",
             "SELECT CrossJoin(",
             "  [Gender].members,",
-            "  {[Measures].[Unit Sales],",
+            "  {[Measures].[Promotion Sales],",
             "   [Measures].[Rank among products]}) ON COLUMNS,",
             "  {[Product].members} ON ROWS",
             "FROM [Sales]"});
@@ -5259,7 +5259,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             throwable = ex;
         }
         TestContext.checkThrowable(
-            throwable, "Query timeout of 1 seconds reached");
+            throwable, "Query timeout of 2 seconds reached");
         
         // reset the timeout back to the original value
         MondrianProperties.instance().QueryTimeout.set(origTimeout);
