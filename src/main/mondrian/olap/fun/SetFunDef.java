@@ -32,7 +32,7 @@ import java.util.List;
  * @since 3 March, 2002
  * @version $Id$
  */
-class SetFunDef extends FunDefBase {
+public class SetFunDef extends FunDefBase {
     static final ResolverImpl Resolver = new ResolverImpl();
 
     SetFunDef(Resolver resolver, int[] argTypes) {

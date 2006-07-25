@@ -740,6 +740,9 @@ fullname
   <!--
   <VirtualCubeMeasure cubeName="Sales" name="[Measures].[Store Sales Net]"/>
   -->
+  <CalculatedMember name="Profit" dimension="Measures">
+    <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>
+  </CalculatedMember>
 </VirtualCube>
 
 <!-- Virtual cube with a non-conforming dimension (Warehouse) that does not

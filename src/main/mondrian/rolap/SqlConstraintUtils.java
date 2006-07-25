@@ -105,15 +105,29 @@ public class SqlConstraintUtils {
     }
 
     /**
-     * Ensures that the table of <code>level</code> is joined to the fact table
+     * Ensures that the table of <code>level</code> is joined to the fact
+     * table
+     * 
+     * @param sqlQuery sql query under construction
+     * @param e evaluator corresponding to query
+     * @param level level to be added to query
+     * @param levelToColumnMap maps level to star columns; set only in the
+     * case of virtual cubes
      */
-    public static void joinLevelTableToFactTable(SqlQuery sqlQuery, Evaluator e,
-            RolapLevel level) {
+    public static void joinLevelTableToFactTable(
+        SqlQuery sqlQuery, Evaluator e, RolapLevel level,
+        Map levelToColumnMap) {
+        
         RolapCube cube = (RolapCube) e.getCube();
-        Util.assertTrue(!cube.isVirtual());
-        RolapStar star = cube.getStar();
-        Map mapLevelToColumnMap = star.getMapLevelToColumn(cube);
-        RolapStar.Column starColumn = (RolapStar.Column) mapLevelToColumnMap.get(level);
+        Map mapLevelToColumnMap;
+        if (cube.isVirtual()) {
+            mapLevelToColumnMap = levelToColumnMap;
+        } else {
+            RolapStar star = cube.getStar();
+            mapLevelToColumnMap = star.getMapLevelToColumn(cube);
+        }
+        RolapStar.Column starColumn =
+            (RolapStar.Column) mapLevelToColumnMap.get(level);
         Util.assertTrue(starColumn != null);
         RolapStar.Table table = starColumn.getTable();
         Util.assertTrue(table != null);

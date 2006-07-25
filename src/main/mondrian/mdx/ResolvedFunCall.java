@@ -12,6 +12,7 @@
 package mondrian.mdx;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
+import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
 import mondrian.olap.*;
 
@@ -135,7 +136,14 @@ public class ResolvedFunCall extends ExpBase implements FunCall {
     }
 
     public Exp accept(Validator validator) {
-        return this; // already validated
+        // even though the function has already been validated, we need
+        // to walk through the arguments to determine which measures are
+        // referenced
+        Exp[] newArgs = new Exp[args.length];
+        FunUtil.resolveFunArgs(
+            validator, args, newArgs, getFunName(), getSyntax());
+        
+        return this;
     }
 
     public void unparse(PrintWriter pw) {

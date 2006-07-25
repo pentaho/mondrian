@@ -10,6 +10,7 @@
 package mondrian.rolap.sql;
 
 import java.util.List;
+import java.util.Map;
 
 import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapMember;
@@ -50,8 +51,11 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      *
      * @param query the query to modify
      * @param level the level that contains the children
+     * @param levelToColumnMap set in the case of a virtual cube; use this
+     * to map a level to the columns from the base cube
      */
-    public void addLevelConstraint(SqlQuery query, RolapLevel level);
+    public void addLevelConstraint(
+        SqlQuery query, RolapLevel level, Map levelToColumnMap);
 
 }
 

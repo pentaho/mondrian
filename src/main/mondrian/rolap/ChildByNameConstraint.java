@@ -10,6 +10,7 @@
 package mondrian.rolap;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.MondrianProperties;
@@ -36,8 +37,9 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
                     ChildByNameConstraint.class, childName});
     }
 
-    public void addLevelConstraint(SqlQuery query, RolapLevel level) {
-        super.addLevelConstraint(query, level);
+    public void addLevelConstraint(
+        SqlQuery query, RolapLevel level, Map levelToColumnMap) {
+        super.addLevelConstraint(query, level, levelToColumnMap);
         MondrianDef.Expression exp = level.getNameExp();
         boolean numeric;
         if (exp == null) {

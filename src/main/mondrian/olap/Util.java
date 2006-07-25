@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 
 import mondrian.olap.fun.*;
 import mondrian.resource.MondrianResource;
-import mondrian.util.Format;
 import mondrian.mdx.*;
 
 /**
@@ -585,6 +584,10 @@ public class Util extends XOMUtil {
             throw MondrianResource.instance().MdxChildObjectNotFound.ex(
                     fullName, q.getCube().getQualifiedName());
         }
+        // keep track of any measure members referenced; these will be used
+        // later to determine if cross joins on virtual cubes can be 
+        // processed natively
+        q.addMeasuresMembers(olapElement);
         return createExpr(olapElement);
     }
 
@@ -1372,7 +1375,7 @@ public class Util extends XOMUtil {
     public static Validator createSimpleValidator(final FunTable funTable) {
         return new Validator() {
             public Query getQuery() {
-                throw new UnsupportedOperationException();
+                return null;
             }
 
             public Exp validate(Exp exp, boolean scalar) {

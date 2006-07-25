@@ -769,7 +769,90 @@ public class NonEmptyTest extends FoodMartTestCase {
                     "Row #1: $339,610.90",
                     ""}));
     }
+    
+    public void testVirtualCubeCrossJoin()
+    {
+        checkNative(18, 3,
+            "select " +
+            "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, " +
+            "non empty crossjoin([Product].[All Products].children, " +
+            "[Store].[All Stores].children) on rows " +
+            "from [Warehouse and Sales]");
+    }
+    
+    public void testVirtualCubeCrossJoinNonConformingDim()
+    {
+        // cross join involves non-conforming dimensions should not use
+        // native cross joins because it will result in a cartesian
+        // product join
+        checkNotNative(0,
+            "select " +
+            "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, " +
+            "non empty crossjoin([Customers].[All Customers].children, " +
+            "[Warehouse].[All Warehouses].children) on rows " +
+            "from [Warehouse and Sales]");
+    }
+    
+    public void testNotNativeVirtualCubeCrossJoin1()
+    {
+        // native cross join cannot be used due to AllMembers
+        checkNotNative(3,
+            "select " +
+            "{[Measures].AllMembers} on columns, " +
+            "non empty crossjoin([Product].[All Products].children, " +
+            "[Store].[All Stores].children) on rows " +
+            "from [Warehouse and Sales]");
+    }
+    
+    public void testNotNativeVirtualCubeCrossJoin2()
+    {
+        // native cross join cannot be used due to the range operator
+        checkNotNative(3,
+            "select " +
+            "{[Measures].[Sales Count] : [Measures].[Unit Sales]} on columns, " +
+            "non empty crossjoin([Product].[All Products].children, " +
+            "[Store].[All Stores].children) on rows " +
+            "from [Warehouse and Sales]");
+    }
+    
+    public void testVirtualCubeCrossJoinCalculatedMember1()
+    {
+        // calculated member appears in query
+        checkNative(18, 3,
+            "WITH MEMBER [Measures].[Total Cost] as " +
+            "'[Measures].[Store Cost] + [Measures].[Warehouse Cost]' " +
+            "select " +
+            "{[Measures].[Total Cost]} on columns, " +
+            "non empty crossjoin([Product].[All Products].children, " +
+            "[Store].[All Stores].children) on rows " +
+            "from [Warehouse and Sales]");
+    }
+    
+    public void testVirtualCubeCrossJoinCalculatedMember2()
+    {
+        // calculated member defined in schema
+        checkNative(18, 3,
+            "select " +
+            "{[Measures].[Store Invoice], [Measures].[Profit]} on columns, " +
+            "non empty crossjoin([Product].[All Products].children, " +
+            "[Store].[All Stores].children) on rows " +
+            "from [Warehouse and Sales]");
+    }
 
+    public void testNotNativeVirtualCubeCrossJoinCalculatedMember()
+    {
+        // native cross join cannot be used due to CurrentMember in the
+        // calculated member
+        checkNotNative(3,
+            "WITH MEMBER [Measures].[CurrMember] as " +
+            "'[Measures].CurrentMember' " +
+            "select " +
+            "{[Measures].[CurrMember]} on columns, " +
+            "non empty crossjoin([Product].[All Products].children, " +
+            "[Store].[All Stores].children) on rows " +
+            "from [Warehouse and Sales]");
+    }
+    
     /**
      * make sure the following is not run natively
      */

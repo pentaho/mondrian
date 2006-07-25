@@ -8,9 +8,7 @@
 */
 package mondrian.rolap;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import mondrian.olap.Evaluator;
 import mondrian.olap.Member;
@@ -47,11 +45,25 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      * @return false if this contstraint will not work for the current context
      */
     public static boolean isValidContext(Evaluator context) {
+        return isValidContext(context, true);
+    }
+    
+    /**
+     * @param context evaluation context
+     * @param disallowVirtualCube if true, check for virtual cubes
+     * 
+     * @return false if constraint will not work for current context
+     */
+    public static boolean isValidContext(
+        Evaluator context, boolean disallowVirtualCube) {
+        
         if (context == null)
             return false;
-        RolapCube cube = (RolapCube) context.getCube();
-        if (cube.isVirtual())
-            return false;
+        if (disallowVirtualCube) {
+            RolapCube cube = (RolapCube) context.getCube();
+            if (cube.isVirtual())
+                return false;
+        }
         return true;
     }
 
@@ -115,10 +127,12 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      * ensures that the table for <code>level</code> is joined
      * to the fact table.
      */
-    public void addLevelConstraint(SqlQuery sqlQuery, RolapLevel level) {
+    public void addLevelConstraint(
+        SqlQuery sqlQuery, RolapLevel level, Map levelToColumnMap) {
         if (!isJoinRequired())
             return;
-        SqlConstraintUtils.joinLevelTableToFactTable(sqlQuery, evaluator, level);
+        SqlConstraintUtils.joinLevelTableToFactTable(
+            sqlQuery, evaluator, level, levelToColumnMap);
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {
@@ -127,5 +141,10 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
 
     public Object getCacheKey() {
         return cacheKey;
+    }
+    
+    public Evaluator getEvaluator()
+    {
+        return evaluator;
     }
 }

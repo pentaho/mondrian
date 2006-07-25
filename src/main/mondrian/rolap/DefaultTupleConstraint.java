@@ -8,9 +8,12 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.Evaluator;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
+
+import java.util.Map;
 
 /**
  * TupleConstraint which does not restrict the result.
@@ -30,7 +33,8 @@ public class DefaultTupleConstraint implements TupleConstraint {
     public void addConstraint(SqlQuery sqlQuery) {
     }
 
-    public void addLevelConstraint(SqlQuery query, RolapLevel level) {
+    public void addLevelConstraint(
+        SqlQuery query, RolapLevel level, Map levelToColumnMap) {
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {
@@ -47,6 +51,10 @@ public class DefaultTupleConstraint implements TupleConstraint {
 
     public static TupleConstraint instance() {
         return instance;
+    }
+    
+    public Evaluator getEvaluator() {
+        return null;
     }
 
 }

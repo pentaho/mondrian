@@ -552,7 +552,7 @@ RME is this right
         sqlQuery.addGroupBy(q);
 
         // in non empty mode the level table must be joined to the fact table
-        constraint.addLevelConstraint(sqlQuery, level);
+        constraint.addLevelConstraint(sqlQuery, level, null);
 
         if (level.hasCaptionColumn()){
             MondrianDef.Expression captionExp = level.getCaptionExp();

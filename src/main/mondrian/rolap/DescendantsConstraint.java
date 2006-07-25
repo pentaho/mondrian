@@ -9,7 +9,9 @@
 package mondrian.rolap;
 
 import java.util.List;
+import java.util.Map;
 
+import mondrian.olap.Evaluator;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
@@ -39,8 +41,9 @@ class DescendantsConstraint implements TupleConstraint {
         mcc.addMemberConstraint(sqlQuery, parentMembers);
     }
 
-    public void addLevelConstraint(SqlQuery sqlQuery, RolapLevel level) {
-        mcc.addLevelConstraint(sqlQuery, level);
+    public void addLevelConstraint(
+        SqlQuery sqlQuery, RolapLevel level, Map levelToColumnMap) {
+        mcc.addLevelConstraint(sqlQuery, level, levelToColumnMap);
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {
@@ -51,6 +54,10 @@ class DescendantsConstraint implements TupleConstraint {
      * returns null, because descendants is not cached.
      */
     public Object getCacheKey() {
+        return null;
+    }
+    
+    public Evaluator getEvaluator() {
         return null;
     }
 }

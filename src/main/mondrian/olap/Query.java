@@ -82,6 +82,33 @@ public class Query extends QueryPart {
      */
     private boolean isCanceled;
 
+    /**
+     * Unique list of members referenced from the measures dimension.
+     * Will be used to determine if cross joins can be processed natively
+     * for virtual cubes.
+     */
+    private Set measuresMembers;
+    
+    /**
+     * If true, virtual cubes can be processed using native cross joins.
+     * It defaults to true, unless functions are applied on measures.
+     */
+    private boolean nativeCrossJoinVirtualCube;
+    
+    /**
+     * Used for virtual cubes.  Contains the set of maps used to map the
+     * levels referenced in a virtual cube to the columns in the underlying
+     * base cubes.
+     */
+    private Set virtualCubeBaseCubeMaps;
+    
+    /**
+     * Maps one of the level-to-column maps stored in
+     * virtualCubeBaseCubeMaps to a measure corresponding to the underlying
+     * cube that the level-to-column map corrsponds to
+     */
+    private Map levelMapToMeasureMap;
+    
     /** Constructs a Query. */
     public Query(
             Connection connection,
@@ -127,6 +154,10 @@ public class Query extends QueryPart {
         this.parameters = parameters;
         this.queryTimeout =
             MondrianProperties.instance().QueryTimeout.get() * 1000;
+        this.measuresMembers = new HashSet();
+        // assume, for now, that cross joins on virtual cubes can be
+        // processed natively; as we parse the query, we'll know otherwise
+        this.nativeCrossJoinVirtualCube = true;
         resolve();
     }
 
@@ -880,7 +911,87 @@ public class Query extends QueryPart {
         }
         return compiler;
     }
-
+    
+    /**
+     * Keeps track of references to members of the measures dimension
+     * 
+     * @param olapElement potential measure member
+     */
+    public void addMeasuresMembers(OlapElement olapElement)
+    {
+        if (olapElement instanceof Member) {
+            Member member = (Member) olapElement;
+            if (member.getDimension().getOrdinal(getCube()) == 0) {
+                measuresMembers.add(member);
+            }
+        }
+    }
+    
+    /**
+     * @return set of members from the measures dimension referenced within
+     * this query
+     */
+    public Set getMeasuresMembers()
+    {
+        return measuresMembers;
+    }
+    
+    /**
+     * Indicates that the query cannot use native cross joins to process
+     * this virtual cube
+     */
+    public void setVirtualCubeNonNativeCrossJoin()
+    {
+        nativeCrossJoinVirtualCube = false;
+    }  
+    
+    /**
+     * @return true if the query can use native cross joins on a virtual
+     * cube
+     */
+    public boolean nativeCrossJoinVirtualCube()
+    {
+        return nativeCrossJoinVirtualCube;
+    }
+    
+    /**
+     * Saves away the level to column maps for the underlying cubes that make
+     * up the virtual cube referenced in this query
+     * 
+     * @param maps the set of maps to be saved
+     */
+    public void setVirtualCubeBaseCubeMaps(Set maps)
+    {
+        virtualCubeBaseCubeMaps = maps;
+    }
+    
+    /**
+     * @return the set of level to column maps associated with the virtual
+     * cube this query references
+     */
+    public Set getVirtualCubeBaseCubeMaps()
+    {
+        return virtualCubeBaseCubeMaps;
+    }
+    
+    /**
+     * Saves away the map that maps a level-to-column map to a measure
+     * 
+     * @param map map to be saved
+     */
+    public void setLevelMapToMeasureMap(Map map)
+    {
+        levelMapToMeasureMap = map;
+    }
+    
+    /**
+     * @return the level-to-column-to-measure map
+     */
+    public Map getLevelMapToMeasureMap()
+    {
+        return levelMapToMeasureMap;
+    }
+    
     /**
      * Default implementation of {@link Validator}.
      *

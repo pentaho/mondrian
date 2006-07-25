@@ -11,14 +11,15 @@ package mondrian.rolap;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import javax.sql.DataSource;
 
+import mondrian.olap.Evaluator;
+import mondrian.olap.Member;
 import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.Query;
 import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.sql.MemberChildrenConstraint;
@@ -330,12 +331,88 @@ public class SqlTupleReader implements TupleReader {
     }
 
     String makeLevelMembersSql(Connection jdbcConnection) {
+ 
+        // In the case of a virtual cube, if we need to join to the fact
+        // table, we do not necessarily have a single underlying fact table,
+        // as the underlying base cubes in the virtual cube may all reference
+        // different fact tables.
+        //
+        // Therefore, we need to gather the underlying fact tables by going
+        // through the list of measures referenced in the query.  And then
+        // we generate one sub-select per fact table, joining against each
+        // underlying fact table, unioning the sub-selects.
+        boolean virtualCube = false;
+        if (constraint instanceof SqlContextConstraint) {
+            SqlContextConstraint sqlConstraint =
+                (SqlContextConstraint) constraint;
+            if (sqlConstraint.isJoinRequired()) {
+                Query query = constraint.getEvaluator().getQuery();
+                RolapCube cube = (RolapCube) query.getCube();
+                virtualCube = cube.isVirtual();
+            }
+        }
+        
+        if (virtualCube) {
+            String selectString = "";
+            Query query = constraint.getEvaluator().getQuery();
+            Set baseCubesLevelToColumnMaps =
+                query.getVirtualCubeBaseCubeMaps();
+            Map measureMap = query.getLevelMapToMeasureMap();
+            
+            // generate sub-selects, each one joining with one of 
+            // underlying fact tables
+            for (Iterator it = baseCubesLevelToColumnMaps.iterator();
+                it.hasNext(); )
+            {
+                Map map = (Map) it.next();
+                boolean finalSelect = !it.hasNext();
+                // set the evaluator context so it references a measure
+                // associated with the star that we're currently dealing
+                // with so the sql generated will reference the appropriate
+                // fact table
+                RolapStoredMeasure measure =
+                    (RolapStoredMeasure) measureMap.get(map);
+                Evaluator evaluator = constraint.getEvaluator();
+                evaluator.push();
+                evaluator.setContext(measure);
+                selectString +=
+                    generateSelectForLevels(
+                        jdbcConnection, map, finalSelect);
+                evaluator = evaluator.pop();
+                if (!finalSelect) {
+                    selectString += " union ";
+                }
+            }
+            return selectString;
+        } else {
+            return generateSelectForLevels(jdbcConnection, null, true);
+        }
+    }
+    
+    /**
+     * Generates the SQL string corresponding to the levels referenced.
+     * 
+     * @param jdbcConnection jdbc connection that they query will execute
+     * against
+     * @param levelToColumnMap set only in the case of virtual cubes;
+     * provides the appropriate mapping for the base cube being processed
+     * @param finalSelect true if this is the final sub-select in a larger
+     * select containing unions or this is a non-union select
+     * 
+     * @return SQL statement string
+     */
+    private String generateSelectForLevels(
+        Connection jdbcConnection, Map levelToColumnMap,
+        boolean finalSelect) {
+        
         String s = "while generating query to retrieve members of level(s) " + targets;
         SqlQuery sqlQuery = newQuery(jdbcConnection, s);
+        
         // add the selects for all levels to fetch
         for (Iterator it = targets.iterator(); it.hasNext();) {
             Target t = (Target) it.next();
-            addLevelMemberSql(sqlQuery, t.getLevel());
+            addLevelMemberSql(
+                sqlQuery, t.getLevel(), levelToColumnMap, finalSelect);
         }
 
         // additional constraints
@@ -359,12 +436,23 @@ public class SqlTupleReader implements TupleReader {
      *
      * <li><code>"init", "bar"</code> are member properties.</li>
      * </ul>
+     * 
+     * @param sqlQuery the query object being constructed
+     * @param level level to be added to the sql query
+     * @param levelToColumnMap set only in the case of virtual cubes;
+     * provides the appropriate mapping for the base cube being processed
+     * @param finalSelect true if this is the final sub-select in a larger
+     * select containing unions or this is a non-union select
      */
-    void addLevelMemberSql(SqlQuery sqlQuery, RolapLevel level) {
+    void addLevelMemberSql(
+        SqlQuery sqlQuery, RolapLevel level, Map levelToColumnMap, 
+        boolean finalSelect)
+    {
         RolapHierarchy hierarchy = (RolapHierarchy) level.getHierarchy();
 
         RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
         int levelDepth = level.getDepth();
+        int orderByColNo = 1;
         for (int i = 0; i <= levelDepth; i++) {
             RolapLevel level2 = levels[i];
             if (level2.isAll()) {
@@ -376,7 +464,8 @@ public class SqlTupleReader implements TupleReader {
             sqlQuery.addGroupBy(keySql);
             hierarchy.addToFrom(sqlQuery, level2.getOrdinalExp());
 
-            constraint.addLevelConstraint(sqlQuery, level2);
+            constraint.addLevelConstraint(
+                sqlQuery, level2, levelToColumnMap);
 
             if (level2.hasCaptionColumn()) {
                 MondrianDef.Expression captionExp = level2.getCaptionExp();
@@ -388,7 +477,17 @@ public class SqlTupleReader implements TupleReader {
 
             String ordinalSql = level2.getOrdinalExp().getExpression(sqlQuery);
             sqlQuery.addGroupBy(ordinalSql);
-            sqlQuery.addOrderBy(ordinalSql, true, false);
+            if (finalSelect) {
+                // if this is a select on a virtual cube, the query will be
+                // a union, so the order by columns need to be numbers,
+                // not column name strings
+                if (levelToColumnMap != null) {
+                    Integer obyCol = new Integer(orderByColNo);
+                    ordinalSql = obyCol.toString();
+                    orderByColNo++;
+                }
+                sqlQuery.addOrderBy(ordinalSql, true, false);
+            }
             RolapProperty[] properties = level2.getRolapProperties();
             for (int j = 0; j < properties.length; j++) {
                 RolapProperty property = properties[j];

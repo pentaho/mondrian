@@ -8,6 +8,12 @@
 */
 package mondrian.rolap;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 import mondrian.olap.*;
 import mondrian.rolap.sql.TupleConstraint;
 
@@ -64,8 +70,13 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
     NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
         if (!isEnabled())
             return null;
-        if (!NonEmptyCrossJoinConstraint.isValidContext(evaluator))
+        RolapCube cube = (RolapCube) evaluator.getCube();
+        if (!NonEmptyCrossJoinConstraint.isValidContext(evaluator, false) ||
+            (cube.isVirtual() &&
+                !evaluator.getQuery().nativeCrossJoinVirtualCube()))
+        {
             return null;
+        }
 
         // join with fact table will always filter out those members
         // that dont have a row in the fact table
@@ -77,6 +88,12 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             return null;
         if (isPreferInterpreter(cargs))
             return null;
+        
+        if (cube.isVirtual() &&
+            !validCrossJoinLevels(evaluator.getQuery(), cargs))
+        {
+            return null;
+        }
 
         LOGGER.debug("using native crossjoin");
 
@@ -84,5 +101,58 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         SchemaReader schemaReader = evaluator.getSchemaReader();
         return new SetEvaluator(cargs, schemaReader, constraint);
     }
-
+    
+    /**
+     * Determines if the levels referenced in the cross join all join with the
+     * underlying fact tables that make up a virtual cube.
+     * 
+     * @param query query containing the cross join
+     * @param cargs arguments to the cross join
+     * 
+     * @return true if all levels join with the fact tables
+     */
+    private boolean validCrossJoinLevels(Query query, CrossJoinArg[] cargs)
+    {
+        // Gather the unique set of level-to-column maps corresponding
+        // to the underlying star/cube where the measure column
+        // originates from.
+        Set baseCubesLevelToColumnMaps = new HashSet();
+        Map measureMap = new HashMap();
+        Util.assertTrue(query.nativeCrossJoinVirtualCube());
+        for (Iterator it = query.getMeasuresMembers().iterator();
+            it.hasNext(); )
+        {
+            Member member = (Member) it.next();
+            if (member instanceof RolapStoredMeasure) {
+                RolapStoredMeasure measure = (RolapStoredMeasure) member;
+                RolapStar.Measure starMeasure =
+                    (RolapStar.Measure) measure.getStarMeasure();
+                RolapStar star = starMeasure.getStar();
+                RolapCube baseCube = measure.getCube();
+                Map levelToColumnMap =
+                    star.getMapLevelToColumn(baseCube);
+                if (baseCubesLevelToColumnMaps.add(levelToColumnMap)) {
+                    measureMap.put(levelToColumnMap, measure);
+                }
+            }
+        }
+        
+        // we need to make sure all the levels join with each fact table;
+        // otherwise, it doesn't make sense to do the processing
+        // natively, as you'll end up with cartesian product joins!
+        for (Iterator it = baseCubesLevelToColumnMaps.iterator();
+            it.hasNext(); )
+        {
+            Map map = (Map) it.next();
+            for (int i = 0; i < cargs.length; i++) {
+                RolapLevel level = cargs[i].getLevel();
+                if (map.get(level) == null) {
+                    return false;
+                }
+            }
+        }
+        query.setVirtualCubeBaseCubeMaps(baseCubesLevelToColumnMaps);
+        query.setLevelMapToMeasureMap(measureMap);
+        return true;
+    }
 }

@@ -9,8 +9,11 @@
 */
 package mondrian.rolap.sql;
 
+import mondrian.olap.Evaluator;
 import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapMember;
+
+import java.util.Map;
 
 /**
  * Restricts the SQL result of {@link mondrian.rolap.TupleReader}. This is also
@@ -39,8 +42,11 @@ public interface TupleConstraint extends SqlConstraint {
      *
      * @param query the query to modify
      * @param level the level which is accessed in the Level.Members query
+     * @param levelToColumnMap set in the case of a virtual cube; use this
+     * to map a level to the columns from the base cube
      */
-    public void addLevelConstraint(SqlQuery query, RolapLevel level);
+    public void addLevelConstraint(
+        SqlQuery query, RolapLevel level, Map levelToColumnMap);
 
     /**
      * When the members of a level are fetched, the result is grouped
@@ -59,6 +65,11 @@ public interface TupleConstraint extends SqlConstraint {
      */
     MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent);
 
+    /**
+     * @return the evaluator currently associated with the constraint; null
+     * if there is no associated evaluator
+     */
+    public Evaluator getEvaluator();
 }
 
 // End TupleConstraint.java

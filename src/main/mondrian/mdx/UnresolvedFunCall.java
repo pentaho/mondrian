@@ -10,6 +10,7 @@
 package mondrian.mdx;
 
 import mondrian.olap.*;
+import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
@@ -77,12 +78,9 @@ public class UnresolvedFunCall extends ExpBase implements FunCall {
     }
 
     public Exp accept(Validator validator) {
-        final FunTable funTable = validator.getFunTable();
         Exp[] newArgs = new Exp[args.length];
-        for (int i = 0; i < args.length; i++) {
-            newArgs[i] = validator.validate(args[i], false);
-        }
-        FunDef funDef = funTable.getDef(newArgs, validator, name, syntax);
+        FunDef funDef = 
+            FunUtil.resolveFunArgs(validator, args, newArgs, name, syntax);
         return funDef.createCall(validator, newArgs);
     }
 

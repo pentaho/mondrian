@@ -17,7 +17,7 @@ import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.Calc;
 import mondrian.calc.DoubleCalc;
-import mondrian.mdx.ResolvedFunCall;
+import mondrian.mdx.*;
 
 import org.apache.log4j.Logger;
 
@@ -1462,6 +1462,60 @@ public class FunUtil extends Util {
             return NullMember;
         }
         return hierarchy.getNullMember();
+    }
+    
+    /**
+     * Validates the arguments to a function and resolves the function.
+     * 
+     * @param validator validator used to validate function arguments and
+     * resolve the function
+     * @param args arguments to the function
+     * @param newArgs returns the resolved arguments to the function
+     * @param name function name
+     * @param syntax syntax style used to invoke function
+     * 
+     * @return resolved function definition
+     */
+    public static FunDef resolveFunArgs(
+        Validator validator, Exp[] args, Exp[] newArgs, String name,
+        Syntax syntax) {
+        
+        Query query = validator.getQuery();
+        Cube cube = null;
+        if (query != null) {
+            cube = query.getCube();
+        }
+        for (int i = 0; i < args.length; i++) {
+            newArgs[i] = validator.validate(args[i], false);
+        }
+        final FunTable funTable = validator.getFunTable();
+        FunDef funDef = funTable.getDef(newArgs, validator, name, syntax);      
+        
+        // if a measure or the measures dimension is referenced in a function,
+        // then native cross joins cannot be used because the functions need
+        // to be executed to determine the resultant measures; the set
+        // function is ok since it just enumerates its arguments
+        if (!(funDef instanceof SetFunDef) && query != null &&
+            query.nativeCrossJoinVirtualCube())
+        {
+            int[] paramCategories = funDef.getParameterCategories();
+            for (int i = 0; i < paramCategories.length; i++) {
+                if ((paramCategories[i] == Category.Dimension &&
+                        newArgs[i] instanceof DimensionExpr &&
+                        ((DimensionExpr) newArgs[i]).getDimension().
+                            getOrdinal(cube) == 0) ||
+                    (paramCategories[i] == Category.Member &&
+                        newArgs[i] instanceof MemberExpr &&
+                        ((MemberExpr) newArgs[i]).getMember().getDimension().
+                            getOrdinal(cube) == 0))
+                {
+                    query.setVirtualCubeNonNativeCrossJoin();
+                    break;
+                }
+            } 
+        }
+        
+        return funDef;
     }
 
     // Inner classes

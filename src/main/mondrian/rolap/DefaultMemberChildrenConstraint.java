@@ -9,6 +9,7 @@
 package mondrian.rolap;
 
 import java.util.List;
+import java.util.Map;
 
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
@@ -40,7 +41,8 @@ public class DefaultMemberChildrenConstraint
         SqlConstraintUtils.addMemberConstraint(sqlQuery, parents, true);
     }
 
-    public void addLevelConstraint(SqlQuery query, RolapLevel level) {
+    public void addLevelConstraint(
+        SqlQuery query, RolapLevel level, Map levelToColumnMap) {
     }
 
     public String toString() {
