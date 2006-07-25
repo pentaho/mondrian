@@ -1500,11 +1500,15 @@ public class Util extends XOMUtil {
         final Reader r =
             new BufferedReader(new InputStreamReader(url.openStream()));
         final int BUF_SIZE = 8096;
-        String xmlCatalog = readFully(r, BUF_SIZE);
-        if (map != null) {
-            xmlCatalog = Util.replaceProperties(xmlCatalog, map);
+        try {
+            String xmlCatalog = readFully(r, BUF_SIZE);
+            if (map != null) {
+                xmlCatalog = Util.replaceProperties(xmlCatalog, map);
+            }
+            return xmlCatalog;
+        } finally {
+            r.close();
         }
-        return xmlCatalog;
     }
 
     /**
