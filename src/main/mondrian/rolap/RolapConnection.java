@@ -362,10 +362,12 @@ public class RolapConnection extends ConnectionBase {
                 pw.flush();
                 LOGGER.debug(sw.toString());
             }
+            query.setQueryEndExecution();
             return result;
 
         } catch (Exception e) {
             String queryString;
+            query.setQueryEndExecution();
             try {
                 queryString = query.getQueryString();
             } catch (Exception e1) {

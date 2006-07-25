@@ -81,6 +81,11 @@ public class Query extends QueryPart {
      * If true, cancel this query
      */
     private boolean isCanceled;
+    
+    /**
+     * If true, query is in the middle of execution
+     */
+    private boolean isExecuting;
 
     /**
      * Unique list of members referenced from the measures dimension.
@@ -152,6 +157,7 @@ public class Query extends QueryPart {
         }
         this.cellProps = cellProps;
         this.parameters = parameters;
+        this.isExecuting = false;
         this.queryTimeout =
             MondrianProperties.instance().QueryTimeout.get() * 1000;
         this.measuresMembers = new HashSet();
@@ -258,6 +264,9 @@ public class Query extends QueryPart {
      * any potentially long running operations.
      */
     public void checkCancelOrTimeout() {
+        if (!isExecuting) {
+            return;
+        }
         if (isCanceled) {
             throw MondrianResource.instance().QueryCanceled.ex();
         }
@@ -275,7 +284,17 @@ public class Query extends QueryPart {
      * queries.
      */
     public void setQueryStartTime() {
-        this.startTime = System.currentTimeMillis();
+        startTime = System.currentTimeMillis();
+        isExecuting = true;
+    }
+    
+    /**
+     * Called when query execution has completed.  Once query execution has
+     * ended, it is not possible to cancel or timeout the query until it
+     * starts executing again.
+     */
+    public void setQueryEndExecution() {
+        isExecuting = false;
     }
     
     private void normalizeAxes() {
