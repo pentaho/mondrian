@@ -11,6 +11,7 @@ package mondrian.olap.type;
 
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Util;
+import mondrian.olap.Category;
 
 /**
  * Utility methods relating to types.
@@ -169,6 +170,37 @@ public class TypeUtil {
         return type instanceof MemberType ||
                 type instanceof HierarchyType ||
                 type instanceof DimensionType;
+    }
+
+    /**
+     * Converts a {@link Type} value to a {@link Category} ordinal.
+     */
+    public static int typeToCategory(Type type) {
+        if (type instanceof NumericType) {
+            return Category.Numeric;
+        } else if (type instanceof BooleanType) {
+            return Category.Logical;
+        } else if (type instanceof DimensionType) {
+            return Category.Dimension;
+        } else if (type instanceof HierarchyType) {
+            return Category.Hierarchy;
+        } else if (type instanceof MemberType) {
+            return Category.Member;
+        } else if (type instanceof LevelType) {
+            return Category.Level;
+        } else if (type instanceof SymbolType) {
+            return Category.Symbol;
+        } else if (type instanceof StringType) {
+            return Category.String;
+        } else if (type instanceof ScalarType) {
+            return Category.Value;
+        } else if (type instanceof SetType) {
+            return Category.Set;
+        } else if (type instanceof TupleType) {
+            return Category.Tuple;
+        } else {
+            throw Util.newInternal("Unknown type " + type);
+        }
     }
 }
 
