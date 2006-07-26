@@ -157,7 +157,15 @@ public abstract class RolapNativeSet extends RolapNative {
             MemberReader mr = hierarchy.getMemberReader(schemaReader.getRole());
             MemberBuilder mb = mr.getMemberBuilder();
             Util.assertTrue(mb != null, "MemberBuilder not found");
-            tr.addLevelMembers(level, mb);
+            
+            RolapMember[] members = arg.getMembers();
+            if (members != null && members.length == 1 &&
+                members[0].isCalculated())
+            {
+                tr.addLevelMembers(level, mb, members[0]);
+            } else {          
+                tr.addLevelMembers(level, mb, null);
+            }
         }
 
         int getMaxRows() {
@@ -178,6 +186,8 @@ public abstract class RolapNativeSet extends RolapNative {
      */
     protected interface CrossJoinArg {
         RolapLevel getLevel();
+        
+        RolapMember[] getMembers();
 
         void addConstraint(SqlQuery sqlQuery);
 
@@ -206,6 +216,14 @@ public abstract class RolapNativeSet extends RolapNative {
 
         public RolapLevel getLevel() {
             return level;
+        }
+        
+        public RolapMember[] getMembers() {
+            if (member == null) {
+                return null;
+            }
+            RolapMember[] members = new RolapMember[] { member };
+            return members;
         }
 
         public boolean isPreferInterpreter() {
@@ -298,6 +316,10 @@ public abstract class RolapNativeSet extends RolapNative {
 
         public RolapLevel getLevel() {
             return level;
+        }
+        
+        public RolapMember[] getMembers() {
+            return members;
         }
 
         public boolean isPreferInterpreter() {

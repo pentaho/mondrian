@@ -853,6 +853,36 @@ public class NonEmptyTest extends FoodMartTestCase {
             "from [Warehouse and Sales]");
     }
     
+    public void testCrossJoinCalcMember()
+    {
+        // ensure that the axis containing the cross join on a calculated
+        // member retains the calculated member's name
+        String result = 
+            "Axis #0:" + nl +
+            "{}" + nl +
+            "Axis #1:" + nl +
+            "{[Measures].[Unit Sales]}" + nl +
+            "Axis #2:" + nl +
+            "{[Product].[All Products].[Drink], [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}" + nl +
+            "{[Product].[All Products].[Food], [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}" + nl +
+            "{[Product].[All Products].[Non-Consumable], [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}" + nl +
+            "Row #0: 24,597"+ nl +
+            "Row #1: 191,940" + nl +
+            "Row #2: 50,236" + nl;       
+        assertQueryReturns(
+            "with " +
+            "member [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
+            "    'Sum({[Education Level].[All Education Levels]})' " +
+            "select " +
+            "{[Measures].[Unit Sales]} ON COLUMNS, " +
+            "NON EMPTY " +
+            "    Crossjoin(" +
+            "        [Product].[Product Family].Members," +
+            "        {[Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}) " +
+            "ON ROWS from [Sales]",
+            result);
+    }
+    
     /**
      * make sure the following is not run natively
      */

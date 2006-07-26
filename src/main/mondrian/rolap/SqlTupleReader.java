@@ -80,12 +80,17 @@ public class SqlTupleReader implements TupleReader {
         RolapMember[] members;
         List[] siblings;
         MemberBuilder memberBuilder;
+        // if set, this target is computed from a calculated member
+        RolapMember calcMember;
 
-        public Target(RolapLevel level, MemberBuilder memberBuilder) {
+        public Target(
+            RolapLevel level, MemberBuilder memberBuilder,
+            RolapMember calcMember) {
             this.level = level;
             this.allMember = memberBuilder.getAllMember();
             this.cache = memberBuilder.getMemberCache();
             this.memberBuilder = memberBuilder;
+            this.calcMember = calcMember;
         }
 
         public void open() {
@@ -119,7 +124,15 @@ public class SqlTupleReader implements TupleReader {
             for (int i = 0; i <= levelDepth; i++) {
                 RolapLevel childLevel = levels[i];
                 if (childLevel.isAll()) {
-                    member = allMember;
+                    // if the member for this level is a calculated member,
+                    // use that member to construct the row rather than
+                    // the all member, as it has different characteristics
+                    // from the all member; e.g., a different unique name
+                    if (calcMember != null) {
+                        member = calcMember;
+                    } else {
+                        member = allMember;
+                    }
                     continue;
                 }
                 Object value = resultSet.getObject(++column);
@@ -230,8 +243,10 @@ public class SqlTupleReader implements TupleReader {
         this.constraint = constraint;
     }
 
-    public void addLevelMembers(RolapLevel level, MemberBuilder memberBuilder) {
-        targets.add(new Target(level, memberBuilder));
+    public void addLevelMembers(
+        RolapLevel level, MemberBuilder memberBuilder,
+        RolapMember calcMember) {
+        targets.add(new Target(level, memberBuilder, calcMember));
     }
 
     public Object getCacheKey() {

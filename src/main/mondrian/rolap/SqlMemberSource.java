@@ -492,7 +492,7 @@ RME is this right
                                    Connection jdbcConnection,
                                    TupleConstraint constraint) {
         TupleReader tupleReader = new SqlTupleReader(constraint);
-        tupleReader.addLevelMembers(level, this);
+        tupleReader.addLevelMembers(level, this, null);
         return tupleReader.readTuples(jdbcConnection);
     }
 
