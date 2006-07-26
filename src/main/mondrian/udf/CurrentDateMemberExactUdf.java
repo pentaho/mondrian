@@ -9,30 +9,32 @@
 */
 package mondrian.udf;
 
-import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.util.*;
 
 /**
- * User-defined function CurrentDateMember.  Arguments to the function are
- * as follows:
+ * User-defined function <code>CurrentDateMember</code>.  Arguments to the
+ * function are as follows:
  *
+ * <blockquote>
  * <code>
- * CurrentDataMember(<Hierarchy>, <FormatString>) returns <Member>
+ * CurrentDataMember(&lt;Hierarchy&gt;, &lt;FormatString&gt;) returns &lt;Member&gt;
  * </code>
+ * </blockquote>
  *
  * The function returns the member from the specified hierarchy that matches
- * the current date, to the granularity specified by the <FormatString>.
+ * the current date, to the granularity specified by the &lt;FormatString&gt;.
  *
  * The format string conforms to the format string implemented by
  * {@link Format}.
- * 
+ *
  * @author Zelaine Fong
+ * @version $Id$
  */
 public class CurrentDateMemberExactUdf extends CurrentDateMemberUdf {
-    
+
     public String getDescription() {
-        return "Returns the member corresponding to the current date";
+        return "Returns the member within the specified dimension corresponding to the current date, in the format specified by the format parameter.";
     }
 
     public Type[] getParameterTypes() {

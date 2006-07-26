@@ -17,28 +17,32 @@ import mondrian.util.*;
 import java.util.*;
 
 /**
- * User-defined function CurrentDateMember.  Arguments to the function are
- * as follows:
+ * User-defined function <code>CurrentDateMember</code>.  Arguments to the
+ * function are as follows:
  *
+ * <blockquote>
  * <code>
- * CurrentDataMember(<Hierarchy>, <FormatString>[, <Find>) returns <Member>
+ * CurrentDataMember(&lt;Hierarchy&gt;, &lt;FormatString&gt;[, &lt;Find&gt;)
+ * returns &lt;Member&gt;
  * </code>
+ * </blockquote>
  *
  * The function returns the member from the specified hierarchy that matches
- * the current date, to the granularity specified by the <FormatString>.
+ * the current date, to the granularity specified by the &lt;FormatString&gt;.
  *
  * The format string conforms to the format string implemented by
  * {@link Format}.
- * 
+ *
  * @author Zelaine Fong
+ * @version $Id$
  */
 public class CurrentDateMemberUdf implements UserDefinedFunction {
-    
+
     public Object execute(Evaluator evaluator, Argument[] arguments) {
-        
+
         // determine the current date
         Object formatArg = arguments[1].evaluateScalar(evaluator);
-        
+
         if (!(formatArg instanceof String)) {
             return null;
         }
@@ -46,7 +50,7 @@ public class CurrentDateMemberUdf implements UserDefinedFunction {
         final Format format = new Format((String) formatArg, locale);
         Date currDate = new Date();
         String currDateStr = format.format(currDate);
-        
+
         // determine the match type
         int matchType;
         if (arguments.length == 3) {
@@ -56,14 +60,14 @@ public class CurrentDateMemberUdf implements UserDefinedFunction {
         } else {
             matchType = MatchType.EXACT;
         }
-        
+
         String[] uniqueNames = Util.explode(currDateStr);
         return evaluator.getSchemaReader().getMemberByUniqueName(
                 uniqueNames, false, matchType);
     }
 
     public String getDescription() {
-        return "Returns the closest member corresponding to the current date";
+        return "Returns the closest or exact member within the specified dimension corresponding to the current date, in the format specified by the format parameter.";
     }
 
     public String getName() {

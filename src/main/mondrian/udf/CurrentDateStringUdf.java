@@ -19,18 +19,19 @@ import mondrian.util.*;
 import java.util.*;
 
 /**
- * User-defined function CurrentDateString, which returns the current date
- * value as a formatted string, based on a format string passed in as a
- * parameter.  The format string conforms to the format string implemented
+ * User-defined function <code>CurrentDateString<code>, which returns the
+ * current date value as a formatted string, based on a format string passed in
+ * as a parameter.  The format string conforms to the format string implemented
  * by {@link Format}.
- * 
+ *
  * @author Zelaine Fong
+ * @version $Id$
  */
 public class CurrentDateStringUdf implements UserDefinedFunction {
 
     public Object execute(Evaluator evaluator, Argument[] arguments) {
         Object arg = arguments[0].evaluateScalar(evaluator);
-        
+
         if (!(arg instanceof String)) {
             return null;
         }
@@ -41,7 +42,7 @@ public class CurrentDateStringUdf implements UserDefinedFunction {
     }
 
     public String getDescription() {
-        return "Returns current date as a formatted string";
+        return "Returns the current date formatted as specified by the format parameter.";
     }
 
     public String getName() {

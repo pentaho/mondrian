@@ -11,8 +11,6 @@ package mondrian.olap.fun;
 
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.olap.type.DimensionType;
-import mondrian.olap.type.LevelType;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
@@ -41,7 +39,17 @@ public class UdfResolver implements Resolver {
     }
 
     public String getSignature() {
-        return null;
+        Type[] parameterTypes = udf.getParameterTypes();
+        int[] parameterCategories = new int[parameterTypes.length];
+        for (int i = 0; i < parameterCategories.length; i++) {
+            parameterCategories[i] = TypeUtil.typeToCategory(parameterTypes[i]);
+        }
+        Type returnType = udf.getReturnType(parameterTypes);
+        int returnCategory = TypeUtil.typeToCategory(returnType);
+        return getSyntax().getSignature(
+            getName(),
+            returnCategory,
+            parameterCategories);
     }
 
     public Syntax getSyntax() {
@@ -63,7 +71,7 @@ public class UdfResolver implements Resolver {
             if (parameterType.equals(argType)) {
                 continue;
             }
-            final int parameterCategory = typeToCategory(parameterType);
+            final int parameterCategory = TypeUtil.typeToCategory(parameterType);
             if (!validator.canConvert(
                     arg, parameterCategory, conversionCount)) {
                 return null;
@@ -71,36 +79,8 @@ public class UdfResolver implements Resolver {
             parameterCategories[i] = parameterCategory;
         }
         final Type returnType = udf.getReturnType(argTypes);
-        final int returnCategory = typeToCategory(returnType);
+        final int returnCategory = TypeUtil.typeToCategory(returnType);
         return new UdfFunDef(returnCategory, parameterCategories);
-    }
-
-    private static int typeToCategory(Type type) {
-        if (type instanceof NumericType) {
-            return Category.Numeric;
-        } else if (type instanceof BooleanType) {
-            return Category.Logical;
-        } else if (type instanceof DimensionType) {
-            return Category.Dimension;
-        } else if (type instanceof HierarchyType) {
-            return Category.Hierarchy;
-        } else if (type instanceof MemberType) {
-            return Category.Member;
-        } else if (type instanceof LevelType) {
-            return Category.Level;
-        } else if (type instanceof SymbolType) {
-            return Category.Symbol;
-        } else if (type instanceof ScalarType) {
-            return Category.Value;
-        } else if (type instanceof SetType) {
-            return Category.Set;
-        } else if (type instanceof StringType) {
-            return Category.String;     
-        } else if (type instanceof TupleType) {
-            return Category.Tuple;
-        } else {
-            throw Util.newInternal("Unknown type " + type);
-        }
     }
 
     public boolean requiresExpression(int k) {

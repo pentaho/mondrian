@@ -4,7 +4,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == Copyright (C) 2005-2005 Julian Hyde
+  == Copyright (C) 2005-2006 Julian Hyde
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -91,7 +91,7 @@ So, be careful when specifying your format string, and remember
 to escape any characters that
 correspond to Visual Basic formatting characters.</p>
 
-<p>E.g., to find a member in the [Time] dimension corresponding to the current
+<p>For example, to find a member in the <code>[Time]</code> dimension corresponding to the current
 month, you would specify:
 
 <blockquote>
@@ -99,17 +99,34 @@ month, you would specify:
 </blockquote>
 
 <p>escaping the "m" in "Time" and the "."s that separate each member,
-since "m" and "." are formatting characters.</p> 
+since "m" and "." are formatting characters. If you prefer, you can also enclose 
+constant parts of the format string in double-quotes (&quot;):</p>
 
-<p>CurrentDateMember() optionally takes a symbol parameter whose value is
-either EXACT, BEFORE, or AFTER.
-The default value, if that parameter is not specified, is EXACT.
-In the case of EXACT, there needs to be an
+<blockquote>
+  <pre>CurrentDateMember([Time], '"[Time].[&quot;yyyy&quot;].[Q&quot;q&quot;].[&quot;m&quot;]"')</pre>
+</blockquote>
+
+<p><code>CurrentDateMember()</code> optionally takes a symbol parameter whose value is
+either <code>EXACT</code>, <code>BEFORE</code>, or <code>AFTER</code>.
+The default value, if that parameter is not specified, is <code>EXACT</code>.
+In the case of <code>EXACT</code>, there needs to be an
 existing member corresponding to the current date.  Otherwise, NULL is returned.
 If BEFORE is specified, and there is no matching member, then the closest
 available member in the past is returned.
 If AFTER is specified, and there is no matching member, then the closest
 available member in the future is returned.</p>
+
+<p>For example, suppose that today is 29th February, 2000, and we have forgot 
+that 2000 was a leap year, so our time dimension does not contain a member <code>
+[Time].[2000].[2].[29]</code>. Consider the 3 expressions:</p>
+<ol>
+  <li><code>CurrentDateMember([Time], '"[Time].[&quot;yyyy&quot;].[&quot;m&quot;].[&quot;d&quot;]"', EXACT)</code> 
+  returns the null member;</li>
+  <li><code>CurrentDateMember([Time], '"[Time].[&quot;yyyy&quot;].[&quot;m&quot;].[&quot;d&quot;]"', BEFORE)</code> 
+  returns <code>[Time].[2000].[2].[28]</code>;</li>
+  <li><code>CurrentDateMember([Time], '"[Time].[&quot;yyyy&quot;].[&quot;m&quot;].[&quot;d&quot;]"', AFTER)</code> 
+  returns <code>[Time].[2000].[3].[1]</code>.</li>
+</ol>
 
 <h2><a name="Comments">Comments</a></h2>
 
@@ -422,6 +439,12 @@ FROM [Sales]</code></blockquote>
   </td>
 </tr>
 <tr>
+  <td valign=top>CalculatedChild</td>
+  <td>Returns an existing calculated child member with name &lt;String&gt; from the specified &lt;Member&gt;.    <p><b>Syntax</b></p>
+    <code>&lt;Member&gt; &lt;Member&gt;.CalculatedChild(&lt;String&gt;)</code><br/>
+  </td>
+</tr>
+<tr>
   <td valign=top>Caption</td>
   <td>Returns the caption of a dimension.    <p><b>Syntax</b></p>
     <code>&lt;Dimension&gt;.Caption</code><br/>
@@ -514,22 +537,20 @@ FROM [Sales]</code></blockquote>
 </tr>
 <tr>
   <td valign=top>CurrentDateMember</td>
-  <td>Returns the closest or exact member within the specified dimension, corresponding to the current date, in the format specified by the format parameter.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; CurrentDateMember(&lt;Dimension&gt;, &lt;FormatString&gt;)</code><br/>
-    <code>&lt;Member&gt; CurrentDateMember(&lt;Dimension&gt;, &lt;FormatString&gt; ,&lt;FindSymbol&gt;)</code><br/>
+  <td>Returns the member within the specified dimension corresponding to the current date, in the format specified by the format parameter.    <p><b>Syntax</b></p>
+    <code>&lt;Member&gt; CurrentDateMember(&lt;Hierarchy&gt;, &lt;String&gt;)</code><br/>
   </td>
 </tr>
 <tr>
   <td valign=top>CurrentDateMember</td>
-  <td>Returns the closest or exact member within the specified hierarchy, corresponding to the current date, in the format specified by the format parameter.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; CurrentDateMember(&lt;Hierarchy&gt;, &lt;FormatString&gt;)</code><br/>
-    <code>&lt;Member&gt; CurrentDateMember(&lt;Hierarchy&gt;, &lt;FormatString&gt; ,&lt;FindSymbol&gt;)</code><br/>
+  <td>Returns the closest or exact member within the specified dimension corresponding to the current date, in the format specified by the format parameter.    <p><b>Syntax</b></p>
+    <code>&lt;Member&gt; CurrentDateMember(&lt;Hierarchy&gt;, &lt;String&gt;, &lt;Symbol&gt;)</code><br/>
   </td>
 </tr>
 <tr>
   <td valign=top>CurrentDateString</td>
-  <td>Returns a string representing the current date in the format specified by the format parameter.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; CurrentDateString(&lt;FormatString&gt;)</code><br/>
+  <td>Returns the current date formatted as specified by the format parameter.    <p><b>Syntax</b></p>
+    <code>&lt;String&gt; CurrentDateString(&lt;String&gt;)</code><br/>
   </td>
 </tr>
 <tr>

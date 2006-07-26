@@ -15,11 +15,16 @@ import mondrian.olap.*;
 import mondrian.test.*;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
+import mondrian.udf.CurrentDateMemberExactUdf;
+import mondrian.udf.CurrentDateMemberUdf;
+import mondrian.udf.CurrentDateStringUdf;
 
 import org.eigenbase.xom.StringEscaper;
 
 import java.io.*;
 import java.util.List;
+import java.util.Collections;
+import java.util.ArrayList;
 
 /**
  * <code>FunctionTest</code> tests the functions defined in
@@ -6439,8 +6444,8 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
     }
 
     public void testCalculatedChild() {
-    	// Construct calculated children with the same name for both [Drink] and [Non-Consumable]
-    	// Then, create a metric to select the calculated child based on current product member
+        // Construct calculated children with the same name for both [Drink] and [Non-Consumable]
+        // Then, create a metric to select the calculated child based on current product member
         assertQueryReturns(fold(new String[] {
                 "with",
                 " member [Product].[All Products].[Drink].[Calculated Child] as '[Product].[All Products].[Drink].[Alcoholic Beverages]'",
@@ -6463,8 +6468,8 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
     }
 
     public void testCalculatedChildUsingItem() {
-    	// Construct calculated children with the same name for both [Drink] and [Non-Consumable]
-    	// Then, create a metric to select the first calculated child
+        // Construct calculated children with the same name for both [Drink] and [Non-Consumable]
+        // Then, create a metric to select the first calculated child
         assertQueryReturns(fold(new String[] {
                 "with",
                 " member [Product].[All Products].[Drink].[Calculated Child] as '[Product].[All Products].[Drink].[Alcoholic Beverages]'",
@@ -6504,7 +6509,15 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
      * specification</a>.
      */
     public void testDumpFunctions() throws IOException {
-        final List funInfoList = BuiltinFunTable.instance().getFunInfoList();
+        final List funInfoList = new ArrayList();
+        funInfoList.addAll(BuiltinFunTable.instance().getFunInfoList());
+
+        // Add some UDFs.
+        funInfoList.add(new FunInfo(new UdfResolver(new CurrentDateMemberExactUdf())));
+        funInfoList.add(new FunInfo(new UdfResolver(new CurrentDateMemberUdf())));
+        funInfoList.add(new FunInfo(new UdfResolver(new CurrentDateStringUdf())));
+        Collections.sort(funInfoList);
+
         final File file = new File("functions.html");
         final FileOutputStream os = new FileOutputStream(file);
         final PrintWriter pw = new PrintWriter(os);
