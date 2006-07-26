@@ -12,8 +12,11 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.olap.type.NumericType;
+import mondrian.olap.type.Type;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.cache.CachePool;
+import mondrian.spi.UserDefinedFunction;
 
 import java.util.regex.Pattern;
 import java.util.List;
@@ -5184,15 +5187,14 @@ public class BasicQueryTest extends FoodMartTestCase {
     public void testCancel()
     {
         // the cancel is issued after 2 seconds so the test query needs to
-        // run for at least that long; currently it does
+        // run for at least that long; it will because the query references
+        // a Udf that has a 1 ms sleep in it; and there are enough rows
+        // in the result that the Udf should execute > 2000 times
         String query = fold(new String[] {
             "WITH ",
-            "  MEMBER [Measures].[Rank among products] ",
-            "    AS ' Rank([Product].CurrentMember, Order([Product].members, [Measures].[Unit Sales], BDESC)) '",
-            "SELECT CrossJoin(",
-            "  [Gender].members,",
-            "  {[Measures].[Unit Sales],",
-            "   [Measures].[Rank among products]}) ON COLUMNS,",
+            "  MEMBER [Measures].[Sleepy] ",
+            "    AS 'SleepUdf([Measures].[Unit Sales])' ",
+            "SELECT {[Measures].[Sleepy]} ON COLUMNS,",
             "  {[Product].members} ON ROWS",
             "FROM [Sales]"});
 
@@ -5201,7 +5203,15 @@ public class BasicQueryTest extends FoodMartTestCase {
     
     private void executeAndCancel(String queryString, int waitMillis)
     {
-        Connection connection = getTestContext().getFoodMartConnection(false);
+        final TestContext tc = new TestContext() {
+            public synchronized Connection getFoodMartConnection(
+                boolean fresh) {
+                return getFoodMartConnection(
+                    FoodmartWithSleepUdf.class.getName());
+            }
+        };
+        Connection connection = tc.getConnection();
+        
         final Query query = connection.parseQuery(queryString);       
         if (waitMillis == 0) {
             // cancel immediately
@@ -5238,23 +5248,31 @@ public class BasicQueryTest extends FoodMartTestCase {
     public void testQueryTimeout()
     {
         // timeout is issued after 2 seconds so the test query needs to
-        // run for at least that long
+        // run for at least that long; it will because the query references
+        // a Udf that has a 1 ms sleep in it; and there are enough rows
+        // in the result that the Udf should execute > 2000 times
         int origTimeout = MondrianProperties.instance().QueryTimeout.get();
         MondrianProperties.instance().QueryTimeout.set(2);
         
+        final TestContext tc = new TestContext() {
+            public synchronized Connection getFoodMartConnection(
+                boolean fresh) {
+                return getFoodMartConnection(
+                    FoodmartWithSleepUdf.class.getName());
+            }
+        };
+        
+        Connection connection = tc.getConnection();
         String query = fold(new String[] {
             "WITH ",
-            "  MEMBER [Measures].[Rank among products] ",
-            "    AS ' Rank([Product].CurrentMember, Order([Product].members, [Measures].[Promotion Sales], BDESC)) '",
-            "SELECT CrossJoin(",
-            "  [Gender].members,",
-            "  {[Measures].[Promotion Sales],",
-            "   [Measures].[Rank among products]}) ON COLUMNS,",
+            "  MEMBER [Measures].[Sleepy] ",
+            "    AS 'SleepUdf([Measures].[Unit Sales])' ",
+            "SELECT {[Measures].[Sleepy]} ON COLUMNS,",
             "  {[Product].members} ON ROWS",
             "FROM [Sales]"});
         Throwable throwable = null;
         try {
-            executeQuery(query);
+            tc.executeQuery(query);
         } catch (Throwable ex) {
             throwable = ex;
         }
@@ -5263,6 +5281,70 @@ public class BasicQueryTest extends FoodMartTestCase {
         
         // reset the timeout back to the original value
         MondrianProperties.instance().QueryTimeout.set(origTimeout);
+    }
+    
+    /**
+     * Adds a UDF that has a sleep call into the Foodmart schema.  Used
+     * by tests that exercise query cancel/timeout.
+     */
+    public static class FoodmartWithSleepUdf
+        extends DecoratingSchemaProcessor {
+        
+        protected String filterSchema(String s) {
+            return Util.replace(
+                s,
+                "</Schema>",
+                "<UserDefinedFunction name=\"SleepUdf\" className=\"" +
+                SleepUdf.class.getName() + "\"/>" + nl +
+                "</Schema>");
+        }
+    }
+    
+    /**
+     * A simple user-defined function which adds one to its argument, but
+     * sleeps 1 ms before doing so.
+     */
+    public static class SleepUdf implements UserDefinedFunction {
+        public String getName() {
+            return "SleepUdf";
+        }
+
+        public String getDescription() {
+            return "Returns its argument plus one but sleeps 1 ms first";
+        }
+
+        public Syntax getSyntax() {
+            return Syntax.Function;
+        }
+
+        public Type getReturnType(Type[] parameterTypes) {
+            return new NumericType();
+        }
+
+        public Type[] getParameterTypes() {
+            return new Type[] {new NumericType()};
+        }
+
+        public Object execute(Evaluator evaluator, Argument[] arguments) {
+            final Object argValue = arguments[0].evaluateScalar(evaluator);
+            if (argValue instanceof Number) {
+                try {
+                    Thread.sleep(1);
+                } catch (Exception ex) {
+                    return null;
+                }
+                return new Double(((Number) argValue).doubleValue() + 1);
+            } else {
+                // Argument might be a RuntimeException indicating that
+                // the cache does not yet have the required cell value. The
+                // function will be called again when the cache is loaded.
+                return null;
+            }
+        }
+
+        public String[] getReservedWords() {
+            return null;
+        }
     }
 }
 
