@@ -3797,8 +3797,10 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>CurrentDateMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the closest member
-                            corresponding to the current date</DESCRIPTION>
+                        <DESCRIPTION>Returns the closest or exact member
+                            within the specified dimension corresponding
+                            to the current date, in the format specified
+                            by the format parameter.</DESCRIPTION>
                         <PARAMETER_LIST>(none)</PARAMETER_LIST>
                         <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -3807,8 +3809,10 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>CurrentDateMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the member corresponding to
-                            the current date</DESCRIPTION>
+                        <DESCRIPTION>Returns the member within the
+                            specified dimension corresponding to the
+                            current date, in the format specified by the
+                            format parameter.</DESCRIPTION>
                         <PARAMETER_LIST>(none)</PARAMETER_LIST>
                         <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -3817,7 +3821,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>CurrentDateString</FUNCTION_NAME>
-                        <DESCRIPTION>Returns current date as a formatted string</DESCRIPTION>
+                        <DESCRIPTION>Returns the current date formatted
+                            as specified by the format parameter.</DESCRIPTION>
                         <PARAMETER_LIST>(none)</PARAMETER_LIST>
                         <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
