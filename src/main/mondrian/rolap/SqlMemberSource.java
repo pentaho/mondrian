@@ -993,6 +993,10 @@ RME is this right
         public int getDepth() {
             return depth;
         }
+
+        public int getOrdinal() {
+            return dataMember.getOrdinal();
+        }
     }
 
     /**
