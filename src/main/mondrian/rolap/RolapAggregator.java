@@ -114,14 +114,20 @@ public abstract class RolapAggregator
             throw new UnsupportedOperationException();
         }
     }
+
     /**
-     * This is an aggregator used for aggregate tables implementing the
-     * average aggregator. It uses the aggregate table fact_count column
+     * Aggregator used for aggregate tables implementing the
+     * average aggregator.
+     *
+     * <p>It uses the aggregate table fact_count column
      * and a sum measure to create the query used to generate an average:
-     * <pre>
+     * <blockquote>
+     * <code>
      *    avg == sum(column_sum) / sum(factcount).
-     * </pre>
-     * If the fact table has both a sum and average over the same column and
+     * </code>
+     * </blockquote>
+     *
+     * <p>If the fact table has both a sum and average over the same column and
      * the aggregate table only has a sum and fact count column, then the
      * average aggregator can be generated using this aggregator.
      */
@@ -133,20 +139,26 @@ public abstract class RolapAggregator
             StringBuffer buf = new StringBuffer(64);
             buf.append("sum(");
             buf.append(operand);
-            buf.append(") / sum (");
+            buf.append(") / sum(");
             buf.append(factCountExpr);
             buf.append(')');
             return buf.toString();
         }
     }
+
     /**
-     * This is an aggregator used for aggregate tables implementing the
-     * average aggregator. It uses the aggregate table fact_count column
+     * Aggregator used for aggregate tables implementing the
+     * average aggregator.
+     *
+     * <p>It uses the aggregate table fact_count column
      * and an average measure to create the query used to generate an average:
-     * <pre>
+     * <blockquote>
+     * <code>
      *    avg == sum(column_sum * factcount) / sum(factcount).
-     * </pre>
-     * If the fact table has both a sum and average over the same column and
+     * </code>
+     * </blockquote>
+     *
+     * <p>If the fact table has both a sum and average over the same column and
      * the aggregate table only has a average and fact count column, then the
      * average aggregator can be generated using this aggregator.
      */
@@ -160,7 +172,7 @@ public abstract class RolapAggregator
             buf.append(operand);
             buf.append(" * ");
             buf.append(factCountExpr);
-            buf.append(") / sum (");
+            buf.append(") / sum(");
             buf.append(factCountExpr);
             buf.append(')');
             return buf.toString();
