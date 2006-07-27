@@ -31,6 +31,11 @@ import java.util.regex.Pattern;
  */
 public class UdfTest extends FoodMartTestCase {
 
+    public UdfTest() {
+    }
+    public UdfTest(String name) {
+        super(name);
+    }
     /**
      * Test context which uses the local FoodMart schema.
      */
@@ -128,7 +133,7 @@ public class UdfTest extends FoodMartTestCase {
                     "Row #0: 2",
                     "Row #1: 7",
                     "Row #2: 6",
-                    "Row #3: ",
+                    "Row #3: 7",
                     "Row #4: 4",
                     "Row #5: 3",
                     "Row #6: 4",
