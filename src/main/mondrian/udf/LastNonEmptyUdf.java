@@ -65,7 +65,7 @@ public class LastNonEmptyUdf implements UserDefinedFunction {
             // Create an evaluator with the member as its context.
             Evaluator subEvaluator = evaluator.push(member);
             final Object o = exp.evaluateScalar(subEvaluator);
-            if (o == Util.nullValue) {
+            if (Util.isNull(o)) {
                 continue;
             }
             if (o instanceof RuntimeException) {

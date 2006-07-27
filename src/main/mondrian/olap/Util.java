@@ -60,6 +60,11 @@ public class Util extends XOMUtil {
     private static final Random metaRandom =
             createRandom(MondrianProperties.instance().TestSeed.get());
 
+    public static boolean isNull(Object o) {
+        return o == null || o == nullValue;
+    }
+
+
     /**
      * Encodes string for MDX (escapes ] as ]] inside a name).
      */
@@ -1343,16 +1348,14 @@ public class Util extends XOMUtil {
     /**
      * Returns the cumulative amount of time spent accessing the database.
      */
-    public static long dbTimeMillis()
-    {
+    public static long dbTimeMillis() {
         return databaseMillis;
     }
 
     /**
      * Adds to the cumulative amount of time spent accessing the database.
      */
-    public static void addDatabaseTime(long millis)
-    {
+    public static void addDatabaseTime(long millis) {
         databaseMillis += millis;
     }
 
@@ -1362,8 +1365,7 @@ public class Util extends XOMUtil {
      * method before an operation and after an operation, and the difference
      * is the amount of non-database time spent.
      */
-    public static long nonDbTimeMillis()
-    {
+    public static long nonDbTimeMillis() {
         final long systemMillis = System.currentTimeMillis();
         return systemMillis - databaseMillis;
     }
