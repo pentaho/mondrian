@@ -5,7 +5,8 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2000-2005 Kana Software, Inc. and others.
+  == Copyright (C) 2000-2002 Kana Software, Inc.
+  == Copyright (C) 2002-2006 Julian Hyde and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -330,7 +331,16 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
   <Measure name="Warehouse Sales" column="warehouse_sales" aggregator="sum"/>
   <Measure name="Units Shipped" column="units_shipped" aggregator="sum" formatString="#.0"/>
   <Measure name="Units Ordered" column="units_ordered" aggregator="sum" formatString="#.0"/>
-  <Measure name="Warehouse Profit" column="&quot;warehouse_sales&quot;-&quot;inventory_fact_1997&quot;.&quot;warehouse_cost&quot;" aggregator="sum"/>
+  <Measure name="Warehouse Profit" aggregator="sum">
+    <MeasureExpression>
+      <SQL dialect="mysql">
+`warehouse_sales` - `inventory_fact_1997`.`warehouse_cost`
+      </SQL>
+      <SQL dialect="generic">
+&quot;warehouse_sales&quot; - &quot;inventory_fact_1997&quot;.&quot;warehouse_cost&quot;
+      </SQL>
+    </MeasureExpression>
+  </Measure>
 </Cube>
 
 <!-- Test a cube based upon a single table. -->
