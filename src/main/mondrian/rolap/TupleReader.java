@@ -55,12 +55,12 @@ public interface TupleReader {
      * 
      * @param level level that the members correspond to
      * @param memberBuilder used to build new members for this level
-     * @param calcMember if set, the tuple reader only needs to "read"
-     * a single calculated member
+     * @param srcMembers if set, array of enumerated members that make up
+     * this level
      */
     void addLevelMembers(
         RolapLevel level, MemberBuilder memberBuilder,
-        RolapMember calcMember);
+        RolapMember[] srcMembers);
 
     /**
      * performs the read

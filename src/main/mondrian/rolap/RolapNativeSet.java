@@ -74,7 +74,15 @@ public abstract class RolapNativeSet extends RolapNative {
             super.addConstraint(sqlQuery);
             for (int i = 0; i < args.length; i++) {
                 CrossJoinArg arg = args[i];
-                arg.addConstraint(sqlQuery);
+                // if the cross join argument has calculated members in its
+                // enumerated set, ignore the constraint since we won't
+                // produce that set through the native sql and instead
+                // will simply enumerate through the members in the set
+                if (!(arg instanceof MemberListCrossJoinArg) ||
+                    !((MemberListCrossJoinArg) arg).hasCalcMembers())
+                {
+                    arg.addConstraint(sqlQuery);
+                }
             }
         }
 
@@ -158,12 +166,15 @@ public abstract class RolapNativeSet extends RolapNative {
             MemberBuilder mb = mr.getMemberBuilder();
             Util.assertTrue(mb != null, "MemberBuilder not found");
             
-            RolapMember[] members = arg.getMembers();
-            if (members != null && members.length == 1 &&
-                members[0].isCalculated())
+            if (arg instanceof MemberListCrossJoinArg &&
+                ((MemberListCrossJoinArg) arg).hasCalcMembers()) 
             {
-                tr.addLevelMembers(level, mb, members[0]);
-            } else {          
+                // only need to keep track of the members in the case
+                // where there are calculated members since in that case,
+                // we produce the values by enumerating through the list
+                // rather than generating the values through native sql
+                tr.addLevelMembers(level, mb, arg.getMembers());
+            } else {
                 tr.addLevelMembers(level, mb, null);
             }
         }
@@ -271,11 +282,15 @@ public abstract class RolapNativeSet extends RolapNative {
         private RolapMember[] members;
         private RolapLevel level = null;
         private boolean strict;
+        private boolean hasCalcMembers;
 
-        private MemberListCrossJoinArg(RolapLevel level, RolapMember[] members, boolean strict) {
+        private MemberListCrossJoinArg(
+            RolapLevel level, RolapMember[] members, boolean strict,
+            boolean hasCalcMembers) {
             this.level = level;
             this.members = members;
             this.strict = strict;
+            this.hasCalcMembers = hasCalcMembers;
         }
 
         /**
@@ -290,13 +305,17 @@ public abstract class RolapNativeSet extends RolapNative {
                 return null;
             }
             RolapLevel level = null;
+            boolean hasCalcMembers = false;
             for (int i = 0; i < args.length; i++) {
                 if (!(args[i] instanceof MemberExpr)) {
                     return null;
                 }
                 RolapMember m = (RolapMember) ((MemberExpr) args[i]).getMember();
-                if (strict && m.isCalculated()) {
-                    return null;
+                if (m.isCalculated()) {
+                    if (strict) {
+                        return null;
+                    }
+                    hasCalcMembers = true;
                 }
                 if (i == 0) {
                     level = m.getRolapLevel();
@@ -311,7 +330,8 @@ public abstract class RolapNativeSet extends RolapNative {
             for (int i = 0; i < members.length; i++) {
                 members[i] = (RolapMember) ((MemberExpr) args[i]).getMember();
             }
-            return new MemberListCrossJoinArg(level, members, strict);
+            return new MemberListCrossJoinArg(
+                level, members, strict, hasCalcMembers);
         }
 
         public RolapLevel getLevel() {
@@ -324,6 +344,10 @@ public abstract class RolapNativeSet extends RolapNative {
 
         public boolean isPreferInterpreter() {
             return true;
+        }
+        
+        public boolean hasCalcMembers() {
+            return hasCalcMembers;
         }
 
         public int hashCode() {

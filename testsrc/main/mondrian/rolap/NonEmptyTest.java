@@ -74,7 +74,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         if (!MondrianProperties.instance().EnableNativeFilter.get()) {
             return;
         }
-        checkNative(
+        checkNativeAndCaching(
                 32,
                 18,
                 "select {[Measures].[Store Sales]} ON COLUMNS, "
@@ -89,7 +89,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         if (!MondrianProperties.instance().EnableNativeFilter.get()) {
             return;
         }
-        checkNative(
+        checkNativeAndCaching(
                 32,
                 8,
                 "with member [Measures].[Rendite] as 'IIf(([Measures].[Store Cost] = 0.0), 1.0, (([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]))' "
@@ -103,7 +103,7 @@ public class NonEmptyTest extends FoodMartTestCase {
      * getMembersInLevel where Level = (All)
      */
     public void testAllLevelMembers() {
-        checkNative(
+        checkNativeAndCaching(
                 14,
                 14,
                 "select {[Measures].[Store Sales]} ON COLUMNS, "
@@ -116,7 +116,7 @@ public class NonEmptyTest extends FoodMartTestCase {
      * enum sets {} containing ALL
      */
     public void testCjDescendantsEnumAllOnly() {
-        checkNative(9, 9, "select {[Measures].[Unit Sales]} ON COLUMNS, " + "NON EMPTY Crossjoin("
+        checkNativeAndCaching(9, 9, "select {[Measures].[Unit Sales]} ON COLUMNS, " + "NON EMPTY Crossjoin("
                 + "  Descendants([Customers].[All Customers].[USA], [Customers].[City]), "
                 + "  {[Product].[All Products]}) ON ROWS " + "from [Sales] "
                 + "where ([Promotions].[All Promotions].[Bag Stuffers])");
@@ -127,7 +127,7 @@ public class NonEmptyTest extends FoodMartTestCase {
      * because its modified during sort
      */
     public void testResultIsModifyableCopy() {
-        checkNative(
+        checkNativeAndCaching(
                 3,
                 3,
                 "select {[Measures].[Store Sales]} on columns,"
@@ -143,7 +143,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         if (!MondrianProperties.instance().EnableNativeTopCount.get()) {
             return;
         }
-        checkNative(
+        checkNativeAndCaching(
                 3,
                 3,
                 "select {[Measures].[Store Sales]} on columns,"
@@ -160,7 +160,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         if (!MondrianProperties.instance().EnableNativeTopCount.get()) {
             return;
         }
-        checkNative(
+        checkNativeAndCaching(
                 3,
                 3,
                 "with member [Measures].[Store Profit Rate] as '([Measures].[Store Sales]-[Measures].[Store Cost])/[Measures].[Store Cost]', format = '#.00%' "
@@ -236,7 +236,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjMembersMembersMembers() {
-        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
+        checkNativeAndCaching(67, 67, "select {[Measures].[Store Sales]} on columns,"
                 + "  NON EMPTY Crossjoin("
                 + "    Crossjoin("
                 + "        [Customers].[Name].Members,"
@@ -272,7 +272,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjDescendantsEnum() {
-        checkNative(
+        checkNativeAndCaching(
                 11,
                 11,
                 "select {[Measures].[Unit Sales]} ON COLUMNS, "
@@ -284,7 +284,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjEnumChildren() {
-        checkNative(
+        checkNativeAndCaching(
                 3,
                 3,
                 "select {[Measures].[Unit Sales]} ON COLUMNS, "
@@ -312,7 +312,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjDescendantsMembers() {
-        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
+        checkNativeAndCaching(67, 67, "select {[Measures].[Store Sales]} on columns,"
                 + " NON EMPTY Crossjoin("
                 + "   Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name]),"
                 + "     [Product].[Product Name].Members) ON rows " + " from [Sales] where ("
@@ -321,7 +321,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjMembersDescendants() {
-        checkNative(
+        checkNativeAndCaching(
                 67,
                 67,
                 "select {[Measures].[Store Sales]} on columns,"
@@ -334,7 +334,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjChildrenMembers() {
-        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
+        checkNativeAndCaching(67, 67, "select {[Measures].[Store Sales]} on columns,"
                 + "  NON EMPTY Crossjoin([Customers].[All Customers].[USA].[CA].children,"
                 + "    [Product].[Product Name].Members) ON rows " + " from [Sales] where ("
                 + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
@@ -342,7 +342,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjMembersChildren() {
-        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
+        checkNativeAndCaching(67, 67, "select {[Measures].[Store Sales]} on columns,"
                 + "  NON EMPTY Crossjoin([Product].[Product Name].Members,"
                 + "    [Customers].[All Customers].[USA].[CA].children) ON rows "
                 + " from [Sales] where ("
@@ -351,7 +351,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjMembersMembers() {
-        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
+        checkNativeAndCaching(67, 67, "select {[Measures].[Store Sales]} on columns,"
                 + "  NON EMPTY Crossjoin([Customers].[Name].Members,"
                 + "    [Product].[Product Name].Members) ON rows " + " from [Sales] where ("
                 + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
@@ -359,7 +359,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjChildrenChildren() {
-        checkNative(
+        checkNativeAndCaching(
                 3,
                 3,
                 "select {[Measures].[Store Sales]} on columns, "
@@ -772,7 +772,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     
     public void testVirtualCubeCrossJoin()
     {
-        checkNative(18, 3,
+        checkNativeAndCaching(18, 3,
             "select " +
             "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, " +
             "non empty crossjoin([Product].[All Products].children, " +
@@ -818,7 +818,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     public void testVirtualCubeCrossJoinCalculatedMember1()
     {
         // calculated member appears in query
-        checkNative(18, 3,
+        checkNativeAndCaching(18, 3,
             "WITH MEMBER [Measures].[Total Cost] as " +
             "'[Measures].[Store Cost] + [Measures].[Warehouse Cost]' " +
             "select " +
@@ -831,7 +831,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     public void testVirtualCubeCrossJoinCalculatedMember2()
     {
         // calculated member defined in schema
-        checkNative(18, 3,
+        checkNativeAndCaching(18, 3,
             "select " +
             "{[Measures].[Store Invoice], [Measures].[Profit]} on columns, " +
             "non empty crossjoin([Product].[All Products].children, " +
@@ -853,34 +853,66 @@ public class NonEmptyTest extends FoodMartTestCase {
             "from [Warehouse and Sales]");
     }
     
-    public void testCrossJoinCalcMember()
+    public void testCjEnumCalcMembers()
     {
-        // ensure that the axis containing the cross join on a calculated
-        // member retains the calculated member's name
-        String result = 
-            "Axis #0:" + nl +
-            "{}" + nl +
-            "Axis #1:" + nl +
-            "{[Measures].[Unit Sales]}" + nl +
-            "Axis #2:" + nl +
-            "{[Product].[All Products].[Drink], [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}" + nl +
-            "{[Product].[All Products].[Food], [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}" + nl +
-            "{[Product].[All Products].[Non-Consumable], [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}" + nl +
-            "Row #0: 24,597"+ nl +
-            "Row #1: 191,940" + nl +
-            "Row #2: 50,236" + nl;       
-        assertQueryReturns(
+        // 3 cross joins -- 2 of the 4 arguments to the cross joins are
+        // enumerated sets with calculated members
+        checkNative(
+            30,
+            30,
             "with " +
-            "member [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
-            "    'Sum({[Education Level].[All Education Levels]})' " +
+            "member [Product].[All Products].[Drink].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
+            "    'sum({[Product].[All Products].[Drink]})' " +
+            "member [Product].[All Products].[Non-Consumable].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
+            "    'sum({[Product].[All Products].[Non-Consumable]})' " +
+            "member [Customers].[All Customers].[USA].[CA].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
+            "    'sum({[Customers].[All Customers].[USA].[CA]})' " +
+            "member [Customers].[All Customers].[USA].[OR].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
+            "    'sum({[Customers].[All Customers].[USA].[OR]})' " +
+            "member [Customers].[All Customers].[USA].[WA].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
+            "    'sum({[Customers].[All Customers].[USA].[WA]})' " +
             "select " +
-            "{[Measures].[Unit Sales]} ON COLUMNS, " +
-            "NON EMPTY " +
-            "    Crossjoin(" +
-            "        [Product].[Product Family].Members," +
-            "        {[Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}) " +
-            "ON ROWS from [Sales]",
-            result);
+            "{[Measures].[Unit Sales]} on columns, " +
+            "non empty " +
+            "    crossjoin( " +
+            "    crossjoin( " +
+            "    crossjoin( " +
+            "        {[Product].[All Products].[Drink].[*SUBTOTAL_MEMBER_SEL~SUM], " +
+            "            [Product].[All Products].[Non-Consumable].[*SUBTOTAL_MEMBER_SEL~SUM]}, " +
+            "        [Education Level].[Education Level].Members), " +
+            "        {[Customers].[All Customers].[USA].[CA].[*SUBTOTAL_MEMBER_SEL~SUM], " +
+            "            [Customers].[All Customers].[USA].[OR].[*SUBTOTAL_MEMBER_SEL~SUM], " +
+            "            [Customers].[All Customers].[USA].[WA].[*SUBTOTAL_MEMBER_SEL~SUM]}), " +
+            "        [Time].[Year].members)" +
+            "    on rows " +
+            "from [Sales]",
+            false);
+    }
+    
+    public void testCjEnumEmptyCalcMembers()
+    {
+        // enumerated list of calculated members results in some empty cells
+        checkNative(
+            15,
+            5,
+            "with " +
+            "member [Customers].[All Customers].[USA].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
+            "    'sum({[Customers].[All Customers].[USA]})' " +
+            "member [Customers].[All Customers].[Mexico].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
+            "    'sum({[Customers].[All Customers].[Mexico]})' " +
+            "member [Customers].[All Customers].[Canada].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
+            "    'sum({[Customers].[All Customers].[Canada]})' " +
+            "select " +
+            "{[Measures].[Unit Sales]} on columns, " +
+            "non empty " +
+            "    crossjoin( " +
+            "        {[Customers].[All Customers].[Mexico].[*SUBTOTAL_MEMBER_SEL~SUM], " +
+            "            [Customers].[All Customers].[Canada].[*SUBTOTAL_MEMBER_SEL~SUM], " +
+            "            [Customers].[All Customers].[USA].[*SUBTOTAL_MEMBER_SEL~SUM]}, " +
+            "        [Education Level].[Education Level].Members) " +
+            "    on rows " +
+            "from [Sales]",
+            false);
     }
     
     /**
@@ -911,11 +943,17 @@ public class NonEmptyTest extends FoodMartTestCase {
         return schemaReader.getSchema().getNativeRegistry();
     }
 
+    private void checkNativeAndCaching(
+        int resultLimit, int rowCount, String mdx) {
+        checkNative(resultLimit, rowCount, mdx, true);
+    }
+    
     /**
      * runs a query twice, with native crossjoin optimization enabled and
      * disabled. If both results are equal, its considered correct.
      */
-    private void checkNative(int resultLimit, int rowCount, String mdx) {
+    private void checkNative(
+        int resultLimit, int rowCount, String mdx, boolean checkCaching) {
         // Don't run the test if we're testing expression dependencies.
         // Expression dependencies cause spurious interval calls to
         // 'level.getMembers()' which create false negatives in this test.
@@ -941,11 +979,15 @@ public class NonEmptyTest extends FoodMartTestCase {
             if (!listener.isExcecuteSql()) {
                 fail("cache is empty: expected SQL query to be executed");
             }
-            // run once more to make sure that the result comes from cache now
-            listener.setExcecuteSql(false);
-            c.run();
-            if (listener.isExcecuteSql()) {
-                fail("expected result from cache when query runs twice");
+            // run once more to make sure that the result comes from cache now;
+            // avoid cache check for some queries that contain calculated
+            // members where caching does not apply
+            if (checkCaching) {
+                listener.setExcecuteSql(false);
+                c.run();
+                if (listener.isExcecuteSql()) {
+                    fail("expected result from cache when query runs twice");
+                }
             }
             con.close();
 
