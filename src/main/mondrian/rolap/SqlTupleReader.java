@@ -84,6 +84,9 @@ public class SqlTupleReader implements TupleReader {
         // if set, the rows for this target come from the array rather
         // than native sql
         private RolapMember[] srcMembers;
+        // current member within the current result set row
+        // for this target
+        private RolapMember currMember;
 
         public Target(
             RolapLevel level, MemberBuilder memberBuilder,
@@ -123,64 +126,69 @@ public class SqlTupleReader implements TupleReader {
 
         private int internalAddRow(ResultSet resultSet, int column) throws SQLException {           
             RolapMember member = null;
-            for (int i = 0; i <= levelDepth; i++) {
-                RolapLevel childLevel = levels[i];
-                if (childLevel.isAll()) {
-                    member = allMember;
-                    continue;
-                }
-                Object value = resultSet.getObject(++column);
-                if (value == null) {
-                    value = RolapUtil.sqlNullValue;
-                }
-                Object captionValue;
-                if (childLevel.hasCaptionColumn()) {
-                    captionValue = resultSet.getObject(++column);
-                } else {
-                    captionValue = null;
-                }
-                RolapMember parentMember = member;
-                Object key = cache.makeKey(parentMember, value);
-                member = cache.getMember(key);
-                if (member == null) {
-                    member = memberBuilder.makeMember(
-                        parentMember, childLevel, value, captionValue,
-                        parentChild, resultSet, key, column);
-                }
-                column += childLevel.getProperties().length;
-                if (member != members[i]) {
-                    // Flush list we've been building.
-                    List children = siblings[i + 1];
-                    if (children != null) {
-                        MemberChildrenConstraint mcc = constraint
-                            .getMemberChildrenConstraint(members[i]);
-                        if (mcc != null)
-                            cache.putChildren(members[i], mcc, children);
+            if (currMember != null) {
+                member = currMember;
+            } else {
+                for (int i = 0; i <= levelDepth; i++) {
+                    RolapLevel childLevel = levels[i];
+                    if (childLevel.isAll()) {
+                        member = allMember;
+                        continue;
                     }
-                    // Start a new list, if the cache needs one. (We don't
-                    // synchronize, so it's possible that the cache will
-                    // have one by the time we complete it.)
-                    MemberChildrenConstraint mcc = constraint
-                        .getMemberChildrenConstraint(member);
-                    // we keep a reference to cachedChildren so they don't get garbage collected
-                    List cachedChildren = cache.getChildrenFromCache(member, mcc);
-                    if (i < levelDepth && cachedChildren == null) {
-                        siblings[i + 1] = new ArrayList();
+                    Object value = resultSet.getObject(++column);
+                    if (value == null) {
+                        value = RolapUtil.sqlNullValue;
+                    }
+                    Object captionValue;
+                    if (childLevel.hasCaptionColumn()) {
+                        captionValue = resultSet.getObject(++column);
                     } else {
-                        siblings[i + 1] = null; // don't bother building up a list
+                        captionValue = null;
                     }
-                    // Record new current member of this level.
-                    members[i] = member;
-                    // If we're building a list of siblings at this level,
-                    // we haven't seen this one before, so add it.
-                    if (siblings[i] != null) {
-                        if (value == RolapUtil.sqlNullValue) {
-                            addAsOldestSibling(siblings[i], member);
-                        } else {
-                            siblings[i].add(member);
+                    RolapMember parentMember = member;
+                    Object key = cache.makeKey(parentMember, value);
+                    member = cache.getMember(key);
+                    if (member == null) {
+                        member = memberBuilder.makeMember(
+                            parentMember, childLevel, value, captionValue,
+                            parentChild, resultSet, key, column);
+                    }
+                    column += childLevel.getProperties().length;
+                    if (member != members[i]) {
+                        // Flush list we've been building.
+                        List children = siblings[i + 1];
+                        if (children != null) {
+                            MemberChildrenConstraint mcc = constraint
+                                .getMemberChildrenConstraint(members[i]);
+                            if (mcc != null)
+                                cache.putChildren(members[i], mcc, children);
                         }
-                    }
+                        // Start a new list, if the cache needs one. (We don't
+                        // synchronize, so it's possible that the cache will
+                        // have one by the time we complete it.)
+                        MemberChildrenConstraint mcc = constraint
+                            .getMemberChildrenConstraint(member);
+                        // we keep a reference to cachedChildren so they don't get garbage collected
+                        List cachedChildren = cache.getChildrenFromCache(member, mcc);
+                        if (i < levelDepth && cachedChildren == null) {
+                            siblings[i + 1] = new ArrayList();
+                        } else {
+                            siblings[i + 1] = null; // don't bother building up a list
+                        }
+                        // Record new current member of this level.
+                        members[i] = member;
+                        // If we're building a list of siblings at this level,
+                        // we haven't seen this one before, so add it.
+                        if (siblings[i] != null) {
+                            if (value == RolapUtil.sqlNullValue) {
+                                addAsOldestSibling(siblings[i], member);
+                            } else {
+                                siblings[i].add(member);
+                            }
+                        }
+                    }   
                 }
+                currMember = member;
             }
             list.add(member);
             return column;
@@ -313,6 +321,7 @@ public class SqlTupleReader implements TupleReader {
                     int column = 0;
                     for (Iterator it = targets.iterator(); it.hasNext();) {
                         Target t = (Target) it.next();
+                        t.currMember = null;
                         column = t.addRow(resultSet, column);
                     }
                 } else {
@@ -329,6 +338,7 @@ public class SqlTupleReader implements TupleReader {
                             break;
                         }
                     }
+                    resetCurrMembers();
                     addTargets(
                         0, firstEnumTarget, nEnumTargets,
                         srcMemberIdxes, resultSet, sql);
@@ -375,6 +385,13 @@ public class SqlTupleReader implements TupleReader {
             } catch (SQLException e) {
                 // ignore
             }
+        }
+    }
+    
+    private void resetCurrMembers() {
+        for (Iterator it = targets.iterator(); it.hasNext();) {
+            Target t = (Target) it.next();
+            t.currMember = null;
         }
     }
     
