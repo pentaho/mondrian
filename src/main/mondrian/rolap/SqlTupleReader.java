@@ -317,7 +317,7 @@ public class SqlTupleReader implements TupleReader {
                 List partialTargets = new ArrayList();
                 for (Iterator it = targets.iterator(); it.hasNext();) {
                     Target t = (Target) it.next();
-                    if (t.srcMembers != null) {
+                    if (t.srcMembers == null) {
                         partialTargets.add(t);
                     }
                 }
