@@ -258,7 +258,11 @@ public class SqlTupleReader implements TupleReader {
         key.add(SqlTupleReader.class);
         for (Iterator it = targets.iterator(); it.hasNext();) {
             Target t = (Target) it.next();
-            key.add(t.getLevel());
+            // don't include the level in the key if the target isn't
+            // processed through native sql
+            if (t.srcMembers != null) {
+                key.add(t.getLevel());
+            }
         }
         return key;
     }

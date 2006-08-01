@@ -74,7 +74,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         if (!MondrianProperties.instance().EnableNativeFilter.get()) {
             return;
         }
-        checkNativeAndCaching(
+        checkNative(
                 32,
                 18,
                 "select {[Measures].[Store Sales]} ON COLUMNS, "
@@ -89,7 +89,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         if (!MondrianProperties.instance().EnableNativeFilter.get()) {
             return;
         }
-        checkNativeAndCaching(
+        checkNative(
                 32,
                 8,
                 "with member [Measures].[Rendite] as 'IIf(([Measures].[Store Cost] = 0.0), 1.0, (([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]))' "
@@ -103,7 +103,7 @@ public class NonEmptyTest extends FoodMartTestCase {
      * getMembersInLevel where Level = (All)
      */
     public void testAllLevelMembers() {
-        checkNativeAndCaching(
+        checkNative(
                 14,
                 14,
                 "select {[Measures].[Store Sales]} ON COLUMNS, "
@@ -116,7 +116,7 @@ public class NonEmptyTest extends FoodMartTestCase {
      * enum sets {} containing ALL
      */
     public void testCjDescendantsEnumAllOnly() {
-        checkNativeAndCaching(9, 9, "select {[Measures].[Unit Sales]} ON COLUMNS, " + "NON EMPTY Crossjoin("
+        checkNative(9, 9, "select {[Measures].[Unit Sales]} ON COLUMNS, " + "NON EMPTY Crossjoin("
                 + "  Descendants([Customers].[All Customers].[USA], [Customers].[City]), "
                 + "  {[Product].[All Products]}) ON ROWS " + "from [Sales] "
                 + "where ([Promotions].[All Promotions].[Bag Stuffers])");
@@ -127,7 +127,7 @@ public class NonEmptyTest extends FoodMartTestCase {
      * because its modified during sort
      */
     public void testResultIsModifyableCopy() {
-        checkNativeAndCaching(
+        checkNative(
                 3,
                 3,
                 "select {[Measures].[Store Sales]} on columns,"
@@ -143,7 +143,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         if (!MondrianProperties.instance().EnableNativeTopCount.get()) {
             return;
         }
-        checkNativeAndCaching(
+        checkNative(
                 3,
                 3,
                 "select {[Measures].[Store Sales]} on columns,"
@@ -160,7 +160,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         if (!MondrianProperties.instance().EnableNativeTopCount.get()) {
             return;
         }
-        checkNativeAndCaching(
+        checkNative(
                 3,
                 3,
                 "with member [Measures].[Store Profit Rate] as '([Measures].[Store Sales]-[Measures].[Store Cost])/[Measures].[Store Cost]', format = '#.00%' "
@@ -236,7 +236,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjMembersMembersMembers() {
-        checkNativeAndCaching(67, 67, "select {[Measures].[Store Sales]} on columns,"
+        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
                 + "  NON EMPTY Crossjoin("
                 + "    Crossjoin("
                 + "        [Customers].[Name].Members,"
@@ -272,7 +272,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjDescendantsEnum() {
-        checkNativeAndCaching(
+        checkNative(
                 11,
                 11,
                 "select {[Measures].[Unit Sales]} ON COLUMNS, "
@@ -284,7 +284,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjEnumChildren() {
-        checkNativeAndCaching(
+        checkNative(
                 3,
                 3,
                 "select {[Measures].[Unit Sales]} ON COLUMNS, "
@@ -312,7 +312,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjDescendantsMembers() {
-        checkNativeAndCaching(67, 67, "select {[Measures].[Store Sales]} on columns,"
+        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
                 + " NON EMPTY Crossjoin("
                 + "   Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name]),"
                 + "     [Product].[Product Name].Members) ON rows " + " from [Sales] where ("
@@ -321,7 +321,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjMembersDescendants() {
-        checkNativeAndCaching(
+        checkNative(
                 67,
                 67,
                 "select {[Measures].[Store Sales]} on columns,"
@@ -334,7 +334,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjChildrenMembers() {
-        checkNativeAndCaching(67, 67, "select {[Measures].[Store Sales]} on columns,"
+        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
                 + "  NON EMPTY Crossjoin([Customers].[All Customers].[USA].[CA].children,"
                 + "    [Product].[Product Name].Members) ON rows " + " from [Sales] where ("
                 + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
@@ -342,7 +342,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjMembersChildren() {
-        checkNativeAndCaching(67, 67, "select {[Measures].[Store Sales]} on columns,"
+        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
                 + "  NON EMPTY Crossjoin([Product].[Product Name].Members,"
                 + "    [Customers].[All Customers].[USA].[CA].children) ON rows "
                 + " from [Sales] where ("
@@ -351,7 +351,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjMembersMembers() {
-        checkNativeAndCaching(67, 67, "select {[Measures].[Store Sales]} on columns,"
+        checkNative(67, 67, "select {[Measures].[Store Sales]} on columns,"
                 + "  NON EMPTY Crossjoin([Customers].[Name].Members,"
                 + "    [Product].[Product Name].Members) ON rows " + " from [Sales] where ("
                 + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
@@ -359,7 +359,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testCjChildrenChildren() {
-        checkNativeAndCaching(
+        checkNative(
                 3,
                 3,
                 "select {[Measures].[Store Sales]} on columns, "
@@ -772,7 +772,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     
     public void testVirtualCubeCrossJoin()
     {
-        checkNativeAndCaching(18, 3,
+        checkNative(18, 3,
             "select " +
             "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, " +
             "non empty crossjoin([Product].[All Products].children, " +
@@ -818,7 +818,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     public void testVirtualCubeCrossJoinCalculatedMember1()
     {
         // calculated member appears in query
-        checkNativeAndCaching(18, 3,
+        checkNative(18, 3,
             "WITH MEMBER [Measures].[Total Cost] as " +
             "'[Measures].[Store Cost] + [Measures].[Warehouse Cost]' " +
             "select " +
@@ -831,7 +831,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     public void testVirtualCubeCrossJoinCalculatedMember2()
     {
         // calculated member defined in schema
-        checkNativeAndCaching(18, 3,
+        checkNative(18, 3,
             "select " +
             "{[Measures].[Store Invoice], [Measures].[Profit]} on columns, " +
             "non empty crossjoin([Product].[All Products].children, " +
@@ -885,8 +885,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "            [Customers].[All Customers].[USA].[WA].[*SUBTOTAL_MEMBER_SEL~SUM]}), " +
             "        [Time].[Year].members)" +
             "    on rows " +
-            "from [Sales]",
-            false);
+            "from [Sales]");
     }
     
     public void testCjEnumEmptyCalcMembers()
@@ -911,8 +910,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "            [Customers].[All Customers].[USA].[*SUBTOTAL_MEMBER_SEL~SUM]}, " +
             "        [Education Level].[Education Level].Members) " +
             "    on rows " +
-            "from [Sales]",
-            false);
+            "from [Sales]");
     }
     
     /**
@@ -942,18 +940,13 @@ public class NonEmptyTest extends FoodMartTestCase {
         RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
         return schemaReader.getSchema().getNativeRegistry();
     }
-
-    private void checkNativeAndCaching(
-        int resultLimit, int rowCount, String mdx) {
-        checkNative(resultLimit, rowCount, mdx, true);
-    }
     
     /**
      * runs a query twice, with native crossjoin optimization enabled and
      * disabled. If both results are equal, its considered correct.
      */
     private void checkNative(
-        int resultLimit, int rowCount, String mdx, boolean checkCaching) {
+        int resultLimit, int rowCount, String mdx) {
         // Don't run the test if we're testing expression dependencies.
         // Expression dependencies cause spurious interval calls to
         // 'level.getMembers()' which create false negatives in this test.
@@ -979,15 +972,11 @@ public class NonEmptyTest extends FoodMartTestCase {
             if (!listener.isExcecuteSql()) {
                 fail("cache is empty: expected SQL query to be executed");
             }
-            // run once more to make sure that the result comes from cache now;
-            // avoid cache check for some queries that contain calculated
-            // members where caching does not apply
-            if (checkCaching) {
-                listener.setExcecuteSql(false);
-                c.run();
-                if (listener.isExcecuteSql()) {
-                    fail("expected result from cache when query runs twice");
-                }
+            // run once more to make sure that the result comes from cache now
+            listener.setExcecuteSql(false);
+            c.run();
+            if (listener.isExcecuteSql()) {
+                fail("expected result from cache when query runs twice");
             }
             con.close();
 

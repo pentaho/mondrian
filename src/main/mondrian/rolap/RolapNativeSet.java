@@ -101,7 +101,16 @@ public abstract class RolapNativeSet extends RolapNative {
         public Object getCacheKey() {
             List key = new ArrayList();
             key.add(super.getCacheKey());
-            key.addAll(Arrays.asList(args));
+            // only add args that will be retrieved through native sql;
+            // args that are sets with calculated members aren't executed
+            // natively
+            for (int i = 0; i < args.length; i++) {
+                if (!(args[i] instanceof MemberListCrossJoinArg) ||
+                    !((MemberListCrossJoinArg) args[i]).hasCalcMembers())
+                {
+                    key.add(args[i]);
+                }
+            }
             return key;
         }
     }
