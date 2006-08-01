@@ -913,6 +913,29 @@ public class NonEmptyTest extends FoodMartTestCase {
             "from [Sales]");
     }
     
+    public void testCjUnionEnumCalcMembers()
+    {
+        // native sql should be used to retrieve Product Department members
+        // and the second cross join should use the cached results from the
+        // first, since the sql select excludes the calculated members
+        checkNative(
+            46,
+            46,
+            "with " +
+            "member [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
+            "    'sum({[Education Level].[All Education Levels]})' " +
+            "member [Education Level].[*SUBTOTAL_MEMBER_SEL~AVG] as " +
+             "   'avg([Education Level].[Education Level].Members)' select " +
+            "{[Measures].[Unit Sales]} on columns, " +
+            "non empty union (Crossjoin( " +
+            "    [Product].[Product Department].Members, " +
+            "    {[Education Level].[*SUBTOTAL_MEMBER_SEL~AVG]}), " +
+            "crossjoin( " +
+            "    [Product].[Product Department].Members, " +
+            "    {[Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]})) on rows " +
+            "from [Sales]");
+    }
+    
     /**
      * make sure the following is not run natively
      */

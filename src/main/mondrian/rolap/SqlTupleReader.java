@@ -114,7 +114,9 @@ public class SqlTupleReader implements TupleReader {
          * scans a row of the resultset and creates a member
          * for the result
          *
+         * @param resultSet result set to retrieve rows from
          * @param column the column index to start with
+         *
          * @return index of the last column read + 1
          * @throws SQLException
          */
@@ -124,7 +126,7 @@ public class SqlTupleReader implements TupleReader {
             }
         }
 
-        private int internalAddRow(ResultSet resultSet, int column) throws SQLException {           
+        private int internalAddRow(ResultSet resultSet, int column) throws SQLException {        
             RolapMember member = null;
             if (currMember != null) {
                 member = currMember;
@@ -266,8 +268,25 @@ public class SqlTupleReader implements TupleReader {
         }
         return key;
     }
+    
+    /**
+     * @return number of targets that contain enumerated sets with calculated
+     * members
+     */
+    public int nEnumTargets()
+    {
+        int nEnumTargets = 0;
+        for (Iterator it = targets.iterator(); it.hasNext();) {
+            Target t = (Target) it.next();
+            if (t.srcMembers != null) {
+                nEnumTargets++;
+            }
+        }
+        return nEnumTargets;
+    }
 
-    public List readTuples(DataSource dataSource) {
+    public List readTuples(
+        DataSource dataSource, List partialResult, List newPartialResult) {
         Connection con;
         try {
             con = dataSource.getConnection();
@@ -275,7 +294,7 @@ public class SqlTupleReader implements TupleReader {
             throw Util.newInternal(e, "could not connect to DB");
         }
         try {
-            return readTuples(con);
+            return readTuples(con, partialResult, newPartialResult);
         } finally {
             try {
                 con.close();
@@ -285,13 +304,26 @@ public class SqlTupleReader implements TupleReader {
         }
     }
 
-    public List readTuples(Connection jdbcConnection) {
-
+    public List readTuples(
+        Connection jdbcConnection, List partialResult, List newPartialResult)
+    {
         String sql = makeLevelMembersSql(jdbcConnection);
         ResultSet resultSet = null;
+        boolean execQuery = (partialResult == null);
         try {
-            resultSet = RolapUtil.executeQuery(jdbcConnection, sql, maxRows,
-                    "SqlTupleReader.readTuples " + targets);
+            if (execQuery) {
+                // we're only reading tuples from the targets that are
+                // non-enum targets
+                List partialTargets = new ArrayList();
+                for (Iterator it = targets.iterator(); it.hasNext();) {
+                    Target t = (Target) it.next();
+                    if (t.srcMembers != null) {
+                        partialTargets.add(t);
+                    }
+                }
+                resultSet = RolapUtil.executeQuery(jdbcConnection, sql, maxRows,
+                    "SqlTupleReader.readTuples " + partialTargets);
+            }
 
             for (Iterator it = targets.iterator(); it.hasNext();) {
                 ((Target) it.next()).open();
@@ -300,27 +332,28 @@ public class SqlTupleReader implements TupleReader {
             int limit = MondrianProperties.instance().ResultLimit.get();
             int nFetch = 0;
             
-            // determine if we have any enum targets
-            int nEnumTargets = 0;
-            for (Iterator it = targets.iterator(); it.hasNext(); ) {
-                Target t = (Target) it.next();
-                if (t.srcMembers != null) {
-                    nEnumTargets++;
-                }
-            }
+            // determine how many enum targets we have
+            int nEnumTargets = nEnumTargets();
             int[] srcMemberIdxes = null;
             if (nEnumTargets > 0) {
                 srcMemberIdxes = new int[nEnumTargets];
             }
 
-            while (resultSet.next()) {
+            boolean moreRows;
+            int currPartialResultIdx = 0;
+            if (execQuery) {
+                moreRows = resultSet.next();
+            } else {
+                moreRows = currPartialResultIdx < partialResult.size();
+            }
+            while (moreRows) {
 
                 if (limit > 0 && limit < ++nFetch) {
                     // result limit exceeded, throw an exception
                     throw MondrianResource.instance().MemberFetchLimitExceeded
                             .ex(new Long(limit));
                 }
-
+         
                 if (nEnumTargets == 0) {
                     int column = 0;
                     for (Iterator it = targets.iterator(); it.hasNext();) {
@@ -342,10 +375,27 @@ public class SqlTupleReader implements TupleReader {
                             break;
                         }
                     }
-                    resetCurrMembers();
+                    List partialRow;
+                    if (execQuery) {
+                        partialRow = null;
+                    } else {
+                        partialRow =
+                            (List) partialResult.get(currPartialResultIdx);
+                    }
+                    resetCurrMembers(partialRow);
                     addTargets(
-                        0, firstEnumTarget, nEnumTargets,
-                        srcMemberIdxes, resultSet, sql);
+                        0, firstEnumTarget, nEnumTargets, srcMemberIdxes,
+                        resultSet, sql);
+                    if (newPartialResult != null) {
+                        savePartialResult(newPartialResult);
+                    }
+                }
+                
+                if (execQuery) {
+                    moreRows = resultSet.next();
+                } else {
+                    currPartialResultIdx++;
+                    moreRows = currPartialResultIdx < partialResult.size();
                 }
             }
 
@@ -392,10 +442,28 @@ public class SqlTupleReader implements TupleReader {
         }
     }
     
-    private void resetCurrMembers() {
-        for (Iterator it = targets.iterator(); it.hasNext();) {
-            Target t = (Target) it.next();
-            t.currMember = null;
+    /**
+     * Sets the current member for those targets that retrieve their column
+     * values from native sql
+     * 
+     * @param partialRow if set, previously cached result set
+     */
+    private void resetCurrMembers(List partialRow) {
+        int nativeTarget = 0;
+        for (int i = 0; i < targets.size(); i++) {
+            Target t = (Target) targets.get(i);
+            if (t.srcMembers == null) {
+                // if we have a previously cached row, use that by picking
+                // out the column corresponding to this target; otherwise,
+                // we need to retrieve a new column value from the current
+                // result set
+                if (partialRow != null) {
+                    t.currMember =
+                        (RolapMember) partialRow.get(nativeTarget++);
+                } else {
+                    t.currMember = null;
+                }
+            }
         }
     }
     
@@ -446,7 +514,7 @@ public class SqlTupleReader implements TupleReader {
                 for (Iterator it = targets.iterator(); it.hasNext();) {
                     Target t = (Target) it.next();
                     if (t.srcMembers == null) {
-                        try {
+                        try {              
                             column = t.addRow(resultSet, column);
                         } catch (Throwable e) {
                             throw Util.newInternal(
@@ -464,6 +532,24 @@ public class SqlTupleReader implements TupleReader {
                 }
             }
         }
+    }
+    
+    /**
+     * Retrieves the current members fetched from the targets executed
+     * through sql and form tuples, adding them to partialResult
+     * 
+     * @param partialResult list containing the columns and rows corresponding
+     * to data fetched through sql
+     */
+    private void savePartialResult(List partialResult) {
+        List row = new ArrayList();
+        for (Iterator it = targets.iterator(); it.hasNext();) {
+            Target t = (Target) it.next();
+            if (t.srcMembers == null) {
+                row.add(t.currMember);
+            }
+        }
+        partialResult.add(row);
     }
 
     String makeLevelMembersSql(Connection jdbcConnection) {

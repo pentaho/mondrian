@@ -493,7 +493,7 @@ RME is this right
                                    TupleConstraint constraint) {
         TupleReader tupleReader = new SqlTupleReader(constraint);
         tupleReader.addLevelMembers(level, this, null);
-        return tupleReader.readTuples(jdbcConnection);
+        return tupleReader.readTuples(jdbcConnection, null, null);
     }
 
     public RolapMember getAllMember() {

@@ -137,10 +137,15 @@ public abstract class RolapNativeSet extends RolapNative {
                 addLevel(tr, args[i]);
             }
 
-            // lookup the result in cache
+            // lookup the result in cache; we can't return the cached
+            // result if the tuple reader contains a target with calculated
+            // members because the cached result does not include those
+            // members; so we still need to cross join the cached result
+            // with those enumerated members
             Object key = tr.getCacheKey();
             List result = (List) cache.get(key);
-            if (result != null) {
+            boolean hasEnumTargets = (tr.nEnumTargets() > 0);
+            if (result != null && !hasEnumTargets) {
                 if (listener != null) {
                     TupleEvent e = new TupleEvent(this, tr);
                     listener.foundInCache(e);
@@ -149,12 +154,29 @@ public abstract class RolapNativeSet extends RolapNative {
             }
 
             // execute sql and store the result
-            if (listener != null) {
+            if (result == null && listener != null) {
                 TupleEvent e = new TupleEvent(this, tr);
                 listener.excutingSql(e);
             }
-            result = tr.readTuples(schemaReader.getDataSource());
-            cache.put(key, result);
+            
+            // if we don't have a cached result in the case where we have
+            // enumerated targets, then retrieve and cache that partial result
+            List partialResult = result;
+            result = null;
+            List newPartialResult = null;
+            if (hasEnumTargets && partialResult == null) {
+                newPartialResult = new ArrayList();
+            }
+            result = tr.readTuples(
+                schemaReader.getDataSource(), partialResult,
+                newPartialResult);
+            if (hasEnumTargets) {
+                if (newPartialResult != null) {
+                    cache.put(key, newPartialResult);
+                }
+            } else {
+                cache.put(key, result);
+            }
             return copy(result);
         }
 

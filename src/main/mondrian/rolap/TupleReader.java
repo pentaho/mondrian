@@ -66,14 +66,22 @@ public interface TupleReader {
      * performs the read
      * @return a list of RolapMember, if a single level was read, a list of tuples (RolapMember[] instances) else.
      */
-    List readTuples(Connection jdbcConnection);
+    List readTuples(
+        Connection jdbcConnection, List partialResult, List newPartialResult);
 
     /**
      * Performs the read.
+     * 
+     * @param dataSource source for reading tuples
+     * @param partialResult partially cached result that should be used
+     * instead of executing sql query
+     * @param newPartialResult if non-null, return the result of the read;
+     * note that this is a subset of the full return list
      *
      * @return a list of RolapMember, if a single level was read, a list of tuples (RolapMember[] instances) else.
      */
-    List readTuples(DataSource dataSource);
+    List readTuples(
+        DataSource dataSource, List partialResult, List newPartialResult);
 
     /**
      * Returns an object that uniquely identifies the Result that this
