@@ -158,6 +158,33 @@ public class UdfTest extends FoodMartTestCase {
                     ""}));
     }
 
+    /**
+     * Tests a performance issue with LastNonEmpty (bug 1533677). The naive
+     * implementation of LastNonEmpty crawls backward one period at a time,
+     * generates a cache miss, and the next iteration reads precisely one cell.
+     * So the query soon exceeds the {@link MondrianProperties#MaxEvalDepth}
+     * property.
+     */
+    public void testLastNonEmptyBig() {
+        assertQueryReturns(
+            "with\n" +
+            "     member\n" +
+            "     [Measures].[Last Sale] as ([Measures].[Unit Sales],\n" +
+            "         LastNonEmpty(Descendants([Time].CurrentMember, [Time].[Month]),\n" +
+            "         [Measures].[Unit Sales]))\n" +
+            "select\n" +
+            "     NON EMPTY {[Measures].[Last Sale]} ON columns,\n" +
+            "     NON EMPTY Order([Store].[All Stores].Children,\n" +
+            "         [Measures].[Last Sale], DESC) ON rows\n" +
+            "from [Sales]\n" +
+            "where [Time].LastSibling",
+            fold(
+                "Axis #0:\n" +
+                "{[Time].[1998]}\n" +
+                "Axis #1:\n" +
+                "Axis #2:\n"));
+    }
+
     public void testBadFun() {
         final TestContext tc = new TestContext() {
                     public synchronized Connection getFoodMartConnection(boolean fresh) {
@@ -224,7 +251,7 @@ public class UdfTest extends FoodMartTestCase {
                 Pattern.compile(".*Invalid value for inverse normal distribution: 1.4435.*"),
                 cell.getValue().toString());
     }
-    
+
     public void testCurrentDateString()
     {
         String actual = executeExpr("CurrentDateString(\"Ddd mmm dd yyyy\")");
@@ -251,7 +278,7 @@ public class UdfTest extends FoodMartTestCase {
                 ""
             }));
     }
-    
+
     public void testCurrentDateMemberAfter()
     {
         // CurrentDateMember will return null since the latest date in
@@ -267,7 +294,7 @@ public class UdfTest extends FoodMartTestCase {
                 ""
             }));
     }
-    
+
     public void testCurrentDateMemberExact()
     {
         // CurrentDateMember will return null since the latest date in
@@ -283,7 +310,7 @@ public class UdfTest extends FoodMartTestCase {
                 ""
             }));
     }
-    
+
     public void testCurrentDateMemberNoFindArg()
     {
         // CurrentDateMember will return null since the latest date in
@@ -299,7 +326,7 @@ public class UdfTest extends FoodMartTestCase {
                 ""
             }));
     }
-    
+
     public void testCurrentDateMemberHierarchy()
     {
         assertQueryReturns(
@@ -315,7 +342,7 @@ public class UdfTest extends FoodMartTestCase {
                 ""
             }));
     }
-    
+
     public void testCurrentDateMemberRealAfter()
     {
         // omit formatting characters from the format so the current date
@@ -334,7 +361,7 @@ public class UdfTest extends FoodMartTestCase {
                 ""
             }));
     }
-    
+
     public void testCurrentDateMemberRealExact1()
     {
         // omit formatting characters from the format so the current date
@@ -353,7 +380,7 @@ public class UdfTest extends FoodMartTestCase {
                 ""
             }));
     }
-    
+
     public void testCurrentDateMemberRealExact2()
     {
         // omit formatting characters from the format so the current date
@@ -372,7 +399,7 @@ public class UdfTest extends FoodMartTestCase {
                 ""
             }));
     }
-    
+
     public void testCurrentDateMemberPrev()
     {
         // apply a function on the result of the UDF
@@ -389,7 +416,7 @@ public class UdfTest extends FoodMartTestCase {
                 ""
             }));
     }
-    
+
     /**
      * Dynamic schema which adds two user-defined functions to any given
      * schema.

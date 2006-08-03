@@ -60,13 +60,34 @@ public class LastNonEmptyUdf implements UserDefinedFunction {
         final Argument memberListExp = arguments[0];
         final List memberList = (List) memberListExp.evaluate(evaluator);
         final Argument exp = arguments[1];
+        int nullCount = 0;
+        int missCount = 0;
         for (int i = memberList.size() - 1; i >= 0; --i) {
             Member member = (Member) memberList.get(i);
             // Create an evaluator with the member as its context.
             Evaluator subEvaluator = evaluator.push(member);
+            int missCountBefore = subEvaluator.getMissCount();
             final Object o = exp.evaluateScalar(subEvaluator);
+            int missCountAfter = subEvaluator.getMissCount();
             if (Util.isNull(o)) {
+                ++nullCount;
                 continue;
+            }
+            if (missCountAfter > missCountBefore) {
+                // There was a cache miss while evaluating the expression, so
+                // the result is bogus. It would be a mistake to give up after
+                // one cache miss, because then it would take us N
+                // evaluate/fetch passes to move back through N members, which
+                // is way too many.
+                //
+                // Carry on until we have seen as many misses as we have seen
+                // null cells. The effect of this policy is that each pass
+                // examines twice as many cells as the previous pass. Thus
+                // we can move back through N members in log2(N) passes.
+                ++missCount;
+                if (missCount < nullCount) {
+                    continue;
+                }
             }
             if (o instanceof RuntimeException) {
                 RuntimeException runtimeException = (RuntimeException) o;
