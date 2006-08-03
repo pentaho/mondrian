@@ -1012,11 +1012,13 @@ public interface BitKey {
             }
             return buf.toString();
         }
+        
         public BitKey copy() {
             return new Big(this);
         }
+
         public BitKey emptyCopy() {
-            return new Big(size());
+            return new Big(bits.length << ChunkBitCount);
         }
 
         public boolean isEmpty() {
