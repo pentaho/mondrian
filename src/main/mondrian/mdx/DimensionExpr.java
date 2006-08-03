@@ -69,6 +69,10 @@ public class DimensionExpr extends ExpBase implements Exp {
         return ConstantCalc.constantDimension(dimension);
     }
 
+    public Object accept(MdxVisitor visitor) {
+        return visitor.visit(this);
+    }
+
 }
 
 // End DimensionExpr.java

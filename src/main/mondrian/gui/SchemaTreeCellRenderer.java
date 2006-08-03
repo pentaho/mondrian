@@ -81,9 +81,9 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
             setText(((MondrianDef.Measure) value).name);
             super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("measure"))));
         }
-        else if (value instanceof MondrianDef.Parameter)
+        else if (value instanceof MondrianDef.MemberReaderParameter)
         {
-            setText(((MondrianDef.Parameter) value).name);
+            setText(((MondrianDef.MemberReaderParameter) value).name);
         }
         else if (value instanceof MondrianDef.Property)
         {

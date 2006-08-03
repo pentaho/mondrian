@@ -50,14 +50,9 @@ public class MemberProperty extends QueryPart {
     public String getName() {
         return name;
     }
-    
+
     public Object[] getChildren() {
         return new Exp[] {exp};
-    }
-
-    public void replaceChild(int ordinal, QueryPart with) {
-        Util.assertTrue(ordinal == 0);
-        exp = (Exp) with;
     }
 
     public void unparse(PrintWriter pw) {

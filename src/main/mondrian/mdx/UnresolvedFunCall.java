@@ -77,6 +77,16 @@ public class UnresolvedFunCall extends ExpBase implements FunCall {
         syntax.unparse(name, args, pw);
     }
 
+    public Object accept(MdxVisitor visitor) {
+        final Object o = visitor.visit(this);
+        // visit the call's arguments
+        for (int i = 0; i < args.length; i++) {
+            Exp arg = args[i];
+            arg.accept(visitor);
+        }
+        return o;
+    }
+
     public Exp accept(Validator validator) {
         Exp[] newArgs = new Exp[args.length];
         FunDef funDef = 

@@ -30,6 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import mondrian.olap.fun.*;
+import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.mdx.*;
 
@@ -349,7 +350,7 @@ public class Util extends XOMUtil {
             schemaReader, parent, names, failIfNotFound, category,
             MatchType.EXACT);
     }
-    
+
     /**
      * Resolves a name such as
      * '[Products]&#46;[Product Department]&#46;[Produce]' by resolving the
@@ -628,7 +629,7 @@ public class Util extends XOMUtil {
         return lookupHierarchyRootMember(
             reader, hierarchy, memberName, MatchType.EXACT);
     }
-    
+
     /**
      * Finds a root member of a hierarchy with a given name.
      *
@@ -640,7 +641,7 @@ public class Util extends XOMUtil {
                                                    Hierarchy hierarchy,
                                                    String memberName,
                                                    int matchType)
-    {   
+    {
         // Lookup member at first level.
         Member[] rootMembers = reader.getHierarchyRootMembers(hierarchy);
         int bestMatch = -1;
@@ -1033,6 +1034,16 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Converts an query to a string.
+     */
+    public static String unparse(Query query) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new QueryPrintWriter(sw);
+        query.unparse(pw);
+        return sw.toString();
+    }
+
+    /**
      * Creates a file-protocol URL for the given file.
      */
     public static URL toURL(File file) throws MalformedURLException {
@@ -1384,8 +1395,7 @@ public class Util extends XOMUtil {
                 return exp;
             }
 
-            public Parameter validate(Parameter parameter) {
-                return parameter;
+            public void validate(ParameterExpr parameterExpr) {
             }
 
             public void validate(MemberProperty memberProperty) {
@@ -1410,8 +1420,11 @@ public class Util extends XOMUtil {
             }
 
             public Parameter createOrLookupParam(
-                    ParameterFunDef funDef,
-                    Exp[] args) {
+                boolean definition,
+                String name,
+                Type type,
+                Exp defaultExp,
+                String description) {
                 return null;
             }
         };
@@ -1480,8 +1493,6 @@ public class Util extends XOMUtil {
 
     /**
      * Returns the contents of a URL.
-     *
-     * <p>Replaces the tokens "${key}" if "key" occurs in the key-value map.
      *
      * @param url URL
      * @return Contents of URL

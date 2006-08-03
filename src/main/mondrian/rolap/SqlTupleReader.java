@@ -3,75 +3,76 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2005-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-
-import javax.sql.DataSource;
-
-import mondrian.olap.Evaluator;
+import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
-import mondrian.olap.Member;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Query;
-import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+
 /**
- * reads the members of a single level (level.members) or of multiple levels (crossjoin).
- * <p>
- * Allows the result to be restricted by a {@link mondrian.rolap.sql.TupleConstraint}. So
- * the SqlTupleReader can also read Member.Descendants (which is level.members restricted
- * to a common parent) and member.children (which is a special case of member.descendants).
- * Other constraints, especially for the current slicer or evaluation context, are possible.
+ * Reads the members of a single level (level.members) or of multiple levels
+ * (crossjoin).
  *
- * <p>
- * Caching:
- * <p>
- * When this class reads level.members, it groups the result into parent/children pairs
- * and puts them into the cache. In order that these can be found later when the
- * children of a parent are requested, a matching constraint must be provided for
- * every parent.
+ * <p>Allows the result to be restricted by a {@link TupleConstraint}. So
+ * the SqlTupleReader can also read Member.Descendants (which is level.members
+ * restricted to a common parent) and member.children (which is a special case
+ * of member.descendants). Other constraints, especially for the current slicer
+ * or evaluation context, are possible.
+ *
+ * <h3>Caching</h3>
+ *
+ * <p>When a SqlTupleReader reads level.members, it groups the result into
+ * parent/children pairs and puts them into the cache. In order that these can
+ * be found later when the children of a parent are requested, a matching
+ * constraint must be provided for every parent.
  *
  * <ul>
- * <li>When reading members from a single level, then the constraint is not required to
- * join the fact table in
- * {@link mondrian.rolap.sql.TupleConstraint#addLevelConstraint(SqlQuery, RolapLevel)}
- * although it may do so to restrict the result. Also it is permitted to cache the
- * parent/children from all members in MemberCache, so
- * {@link mondrian.rolap.sql.TupleConstraint#getMemberChildrenConstraint(RolapMember)}
+ *
+ * <li>When reading members from a single level, then the constraint is not
+ * required to join the fact table in
+ * {@link TupleConstraint#addLevelConstraint} although it may do so to restrict
+ * the result. Also it is permitted to cache the parent/children from all
+ * members in MemberCache, so
+ * {@link TupleConstraint#getMemberChildrenConstraint(RolapMember)}
  * should not return null.</li>
  *
  * <li>When reading multiple levels (i.e. we are performing a crossjoin),
  * then we can not store the parent/child pairs in the MemberCache and
- * {@link mondrian.rolap.sql.TupleConstraint#getMemberChildrenConstraint(RolapMember)}
+ * {@link TupleConstraint#getMemberChildrenConstraint(RolapMember)}
  * must return null. Also
- * {@link mondrian.rolap.sql.TupleConstraint#addLevelConstraint(SqlQuery, RolapLevel)}
+ * {@link TupleConstraint#addConstraint(mondrian.rolap.sql.SqlQuery)}
  * is required to join the fact table for the levels table.</li>
  * </ul>
  *
  * @author av
  * @since Nov 11, 2005
+ * @version $Id$
  */
 public class SqlTupleReader implements TupleReader {
     TupleConstraint constraint;
     List targets = new ArrayList();
     int maxRows = 0;
 
+    /**
+     * TODO: Document this class.
+     */
     private class Target {
-        RolapLevel level;
-        RolapMember allMember;
-        MemberCache cache;
+        final RolapLevel level;
+        final RolapMember allMember;
+        final MemberCache cache;
 
         RolapLevel[] levels;
         RolapHierarchy hierarchy;
@@ -80,10 +81,10 @@ public class SqlTupleReader implements TupleReader {
         boolean parentChild;
         RolapMember[] members;
         List[] siblings;
-        MemberBuilder memberBuilder;
+        final MemberBuilder memberBuilder;
         // if set, the rows for this target come from the array rather
         // than native sql
-        private RolapMember[] srcMembers;
+        private final RolapMember[] srcMembers;
         // current member within the current result set row
         // for this target
         private RolapMember currMember;
@@ -97,7 +98,7 @@ public class SqlTupleReader implements TupleReader {
             this.memberBuilder = memberBuilder;
             this.srcMembers = srcMembers;
         }
-        
+
         public void open() {
             hierarchy = (RolapHierarchy) level.getHierarchy();
             levels = (RolapLevel[]) hierarchy.getLevels();
@@ -111,8 +112,8 @@ public class SqlTupleReader implements TupleReader {
         }
 
         /**
-         * scans a row of the resultset and creates a member
-         * for the result
+         * Scans a row of the resultset and creates a member
+         * for the result.
          *
          * @param resultSet result set to retrieve rows from
          * @param column the column index to start with
@@ -126,7 +127,7 @@ public class SqlTupleReader implements TupleReader {
             }
         }
 
-        private int internalAddRow(ResultSet resultSet, int column) throws SQLException {        
+        private int internalAddRow(ResultSet resultSet, int column) throws SQLException {
             RolapMember member = null;
             if (currMember != null) {
                 member = currMember;
@@ -331,7 +332,7 @@ public class SqlTupleReader implements TupleReader {
 
             int limit = MondrianProperties.instance().ResultLimit.get();
             int nFetch = 0;
-            
+
             // determine how many enum targets we have
             int nEnumTargets = nEnumTargets();
             int[] srcMemberIdxes = null;
@@ -441,7 +442,7 @@ public class SqlTupleReader implements TupleReader {
             }
         }
     }
-    
+
     /**
      * Sets the current member for those targets that retrieve their column
      * values from native sql
@@ -470,10 +471,10 @@ public class SqlTupleReader implements TupleReader {
     /**
      * Recursively forms the cross product of a row retrieved through sql
      * with each of the targets that contains an enumerated set of members.
-     * 
+     *
      * @param currEnumTargetIdx current enum target that recursion
      * is being applied on
-     * @param currTargetIdx index within the list of a targets that 
+     * @param currTargetIdx index within the list of a targets that
      * currEnumTargetIdx corresponds to
      * @param nEnumTargets number of targets that have enumerated members
      * @param srcMemberIdxes for each enumerated target, the current member
@@ -486,7 +487,7 @@ public class SqlTupleReader implements TupleReader {
     private void addTargets(
         int currEnumTargetIdx, int currTargetIdx, int nEnumTargets,
         int[] srcMemberIdxes, ResultSet resultSet, String sql) {
-        
+
         // loop through the list of members for the current enum target
         Target currTarget = (Target) targets.get(currTargetIdx);
         for (int i = 0; i < currTarget.srcMembers.length; i++) {
@@ -507,7 +508,7 @@ public class SqlTupleReader implements TupleReader {
                     srcMemberIdxes, resultSet, sql);
             } else {
                 // form a cross product using the columns from the current
-                // result set row and the current members that recursion 
+                // result set row and the current members that recursion
                 // has reached for the enum targets
                 int column = 0;
                 int enumTargetIdx = 0;
@@ -519,7 +520,7 @@ public class SqlTupleReader implements TupleReader {
                         } catch (Throwable e) {
                             throw Util.newInternal(
                                 e,
-                                "while populating member cache with" +
+                                "while populating member cache with " +
                                 "members for " + targets + "'; sql=[" + sql +
                                 "]");
                         } finally {
@@ -553,7 +554,7 @@ public class SqlTupleReader implements TupleReader {
     }
 
     String makeLevelMembersSql(Connection jdbcConnection) {
- 
+
         // In the case of a virtual cube, if we need to join to the fact
         // table, we do not necessarily have a single underlying fact table,
         // as the underlying base cubes in the virtual cube may all reference
@@ -573,15 +574,15 @@ public class SqlTupleReader implements TupleReader {
                 virtualCube = cube.isVirtual();
             }
         }
-        
+
         if (virtualCube) {
             String selectString = "";
             Query query = constraint.getEvaluator().getQuery();
             Set baseCubesLevelToColumnMaps =
                 query.getVirtualCubeBaseCubeMaps();
             Map measureMap = query.getLevelMapToMeasureMap();
-            
-            // generate sub-selects, each one joining with one of 
+
+            // generate sub-selects, each one joining with one of
             // underlying fact tables
             for (Iterator it = baseCubesLevelToColumnMaps.iterator();
                 it.hasNext(); )
@@ -610,26 +611,26 @@ public class SqlTupleReader implements TupleReader {
             return generateSelectForLevels(jdbcConnection, null, true);
         }
     }
-    
+
     /**
      * Generates the SQL string corresponding to the levels referenced.
-     * 
+     *
      * @param jdbcConnection jdbc connection that they query will execute
      * against
      * @param levelToColumnMap set only in the case of virtual cubes;
      * provides the appropriate mapping for the base cube being processed
      * @param finalSelect true if this is the final sub-select in a larger
      * select containing unions or this is a non-union select
-     * 
+     *
      * @return SQL statement string
      */
     private String generateSelectForLevels(
         Connection jdbcConnection, Map levelToColumnMap,
         boolean finalSelect) {
-        
+
         String s = "while generating query to retrieve members of level(s) " + targets;
         SqlQuery sqlQuery = newQuery(jdbcConnection, s);
-        
+
         // add the selects for all levels to fetch
         for (Iterator it = targets.iterator(); it.hasNext();) {
             Target t = (Target) it.next();
@@ -662,7 +663,7 @@ public class SqlTupleReader implements TupleReader {
      *
      * <li><code>"init", "bar"</code> are member properties.</li>
      * </ul>
-     * 
+     *
      * @param sqlQuery the query object being constructed
      * @param level level to be added to the sql query
      * @param levelToColumnMap set only in the case of virtual cubes;
@@ -671,7 +672,7 @@ public class SqlTupleReader implements TupleReader {
      * select containing unions or this is a non-union select
      */
     void addLevelMemberSql(
-        SqlQuery sqlQuery, RolapLevel level, Map levelToColumnMap, 
+        SqlQuery sqlQuery, RolapLevel level, Map levelToColumnMap,
         boolean finalSelect)
     {
         RolapHierarchy hierarchy = (RolapHierarchy) level.getHierarchy();

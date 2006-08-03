@@ -62,7 +62,7 @@ public class ResolvedFunCall extends ExpBase implements FunCall {
     }
 
     public String toString() {
-        return toMdx();
+        return Util.unparse(this);
     }
 
     public Object clone() {
@@ -114,10 +114,6 @@ public class ResolvedFunCall extends ExpBase implements FunCall {
         return args;
     }
 
-    public void replaceChild(int i, QueryPart with) {
-        args[i] = (Exp) with;
-    }
-
     /**
      * Returns the definition of the function which is being called.
      *
@@ -152,6 +148,16 @@ public class ResolvedFunCall extends ExpBase implements FunCall {
 
     public Calc accept(ExpCompiler compiler) {
         return funDef.compileCall(this, compiler);
+    }
+
+    public Object accept(MdxVisitor visitor) {
+        final Object o = visitor.visit(this);
+        // visit the call's arguments
+        for (int i = 0; i < args.length; i++) {
+            Exp arg = args[i];
+            arg.accept(visitor);
+        }
+        return o;
     }
 }
 

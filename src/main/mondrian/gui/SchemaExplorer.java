@@ -326,7 +326,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         dimension.hierarchies[0] = new MondrianDef.Hierarchy();
         dimension.hierarchies[0].hasAll = new Boolean(false);
         dimension.hierarchies[0].levels = new MondrianDef.Level[0];
-        dimension.hierarchies[0].memberReaderParameters = new MondrianDef.Parameter[0];
+        dimension.hierarchies[0].memberReaderParameters = new MondrianDef.MemberReaderParameter[0];
         dimension.hierarchies[0].relation = new MondrianDef.Join();
 
         //add cube to schema
@@ -475,7 +475,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             pNames = DEF_MEASURE;
             targetLabel.setText(LBL_MEASURE);
         }
-        else if (o instanceof MondrianDef.Parameter)
+        else if (o instanceof MondrianDef.MemberReaderParameter)
         {
             pNames = DEF_PARAMETER;
             targetLabel.setText(LBL_PARAMETER);

@@ -74,13 +74,20 @@ Levels</a></li>
     <li><a href="#Schema_processor">Schema processor</a></li>
   </ol></li>
   <li><a href="#I18n">Internationalization</a></li>
-  <li><a href="#Aggregate_tables">Aggregate tables</a> </li>
+  <li><a href="#Aggregate_tables">Aggregate tables</a></li>
   <li><a href="#Access_control">Access-control</a>
   <ol>
     <li><a href="#Defining_roles">Defining a role</a></li>
     <li><a href="#Setting_a_connections_role">Setting a connection's
 role</a></li>
   </ol></li>
+  <li><a href="#Parameters">Parameters</a><ol>
+  <li><a href="#System_parameters">System parameters</a></li>
+  <li><a href="#Schema_parameters">Schema parameters</a></li>
+  <li><a href="#Connection_parameters">Connection parameters</a></li>
+  <li><a href="#Statement_parameters">Statement parameters</a></li>
+</ol>
+  </li>
   <li><a href="#Appendix_A_XML_elements">Appendix A: XML elements</a></li>
 </ol>
 <h2><a name="What_is_a_schema">What is a schema?</a></h2>
@@ -2082,6 +2089,248 @@ details), or look one up using the method <a
  href="api/mondrian/olap/Schema.html#lookupRole%28java.lang.String%29">
 Schema.lookupRole(String)</a>.</li>
 </ol>
+
+<h2><a name="Parameters">Parameters</a></h2>
+
+<p>A parameter is a constant value which can be referenced in an MDX expression. 
+The <a href="mdx.html">MDX reference</a> describes how a parameter can be defined in the MDX expression using the <code>Parameter(&lt;paramName&gt;, 
+&lt;defaultValue&gt;)</code> function. This is a parameter whose scope is the 
+MDX statement which created it. Parameters 
+can also be defined at system, schema, connection scope.</p>
+
+<p>Parameter scopes:</p>
+
+<blockquote>
+  <table border="1" style="border-collapse: collapse" id="table8">
+    <tr>
+      <th>Parameter scope</th>
+      <th>Inherits from scopes</th>
+      <th>How are parameters defined?</th>
+      <th>How are parameters referenced?</th>
+    </tr>
+    <tr>
+      <td>System</td>
+      <td>none</td>
+      <td>As Java system properties. Specified when JVM is started, or loaded 
+      from <code>mondrian.properties</code>.</td>
+      <td rowspan="4" style="vertical-align: middle">Using the <code>ParamRef()</code> 
+      function</td>
+    </tr>
+    <tr>
+      <td>Schema</td>
+      <td>System</td>
+      <td>As <code>&lt;Parameter&gt;</code> element in schema XML file.</td>
+    </tr>
+    <tr>
+      <td height="26">Connection</td>
+      <td height="26">System, Schema</td>
+      <td height="26">As connect string parameters</td>
+    </tr>
+    <tr>
+      <td>Statement</td>
+      <td>System, Schema, Connection</td>
+      <td>Using <code>Parameter()</code> function</td>
+    </tr>
+  </table>
+</blockquote>
+
+<h3><a name="System_parameters">System parameters</a></h3>
+
+<p>System parameters describe the state of the JVM and container Mondrian is 
+running in. They are inherited from Java's property system, so their values are 
+set as initialization parameters to the JVM ('<code>-D</code>' options on the 
+java command line). Properties are also loaded from <code>mondrian.properties</code>.</p>
+
+<p>System parameters can be referenced from a statement, but cannot be 
+overridden. This statement references the </p>
+
+<p>The <a href="configuration.html#Property_list">Configuration Guide</a> 
+contains a list of System properties. </p>
+
+<h3><a name="Schema_parameters">Schema parameters</a></h3>
+
+<p>Schema parameters are defined in a schema file. For example,</p>
+
+<blockquote>
+
+  <p><code>&lt;Schema name=&quot;FoodMart&quot;&gt;<br>
+&nbsp; &lt;Parameter name=&quot;Base lending rate&quot; defaultValue=&quot;8.5&quot; type=&quot;Numeric&quot; 
+  final=&quot;false&quot; /&gt;<br>
+  &lt;/Schema&gt;</code></p>
+</blockquote>
+
+<p>The <code>name</code> attribute sets the name of this parameter.</p>
+
+<p>The <code>type</code> attribute specifies the parameters type: String, 
+Numeric or Member. If you specify <code>type=&quot;Member&quot;</code>, you must also 
+specify the hierarchy that the parameter's value belongs to:</p>
+
+<blockquote>
+
+  <p><code>&lt;Parameter name=&quot;Preferred Region&quot; type=&quot;Member&quot; hierarchy=&quot;[Store]&quot; 
+  defaultValue=&quot;[Store].DefaultMember&quot; /&gt;</code></p>
+</blockquote>
+
+<p>The <code>final</code> attribute prevents statements from changing the value 
+of this parameter.</p>
+
+<h4>Using schema parameters to define constants</h4>
+
+<p>A schema parameter is a good way to define a constant which can be used in 
+all of your application's queries. Just define a parameter with <code>
+final=&quot;true&quot;</code>.</p>
+
+<p>However, schema paA parameter with <code>final=&quot;true&quot;</code> is not a 
+constant if the value of the expression can change each time the expression is 
+evaluated. Consider this parameter definition:</p>
+
+<blockquote>
+
+  <p><code>&lt;Schema name=&quot;FoodMart&quot;&gt;<br>
+&nbsp; &lt;Parameter name=&quot;Current Date&quot; final=&quot;true&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DefaultValue&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Formula&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; StrToMember(CurrentTime(&quot;[Time].[%Y].[%m].[%d]&quot;))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/Formula&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/DefaultValue&gt;<br>
+&nbsp; &lt;/Parameter&gt;<br>
+  &lt;/Schema&gt;</code></p>
+</blockquote>
+
+<p>This gets the current system time, and looks up a member of the time 
+dimension for the current day, so <code>ParamRef(&quot;Current Date&quot;)</code> may 
+yield a value such as <code>[Time].[2006].[7].[8]</code>. If the same query is 
+executed again a few hours later, the expression may yield <code>
+[Time].[2006].[7].[9]</code>.</p>
+
+<p>Also note that this parameter definition uses the nested <code>&lt;DefaultValue&gt;</code> 
+element rather than the <code>defaultValue</code> attribute. This form is 
+recommended when defining parameters whose expressions are complex.</p>
+
+<h4>Using schema parameters to do value lookups</h4>
+
+<p>Schema expressions are </p>
+
+<h3><a name="Connection_parameters">Connection parameters</a></h3>
+
+<p><dfn><font face="Verdana">Connection parameters</font></dfn> set as part of 
+the connect string.</p>
+
+<p>Connection parameters are also known as <dfn><font face="Verdana">connection 
+properties</font></dfn>, because this is the terminology used by connectivity 
+protocols such as JDBC and OLE DB for OLAP.</p>
+
+<p>You can find out the values of the parameters using the <code>
+Connection.getProperty()</code> method. (Mondrian sessions are stateless; 
+therefore, there is no <code>Connection.setProperty()</code> method.)</p>
+
+<p>Session parameters can generally be overridden at the statement level. (There 
+are some exceptions for built-in connection parameters; see below.)</p>
+
+<p>The following table lists built-in connection parameters. For more details, 
+see <a href="configuration.html#Connect_string_properties">the Configuration 
+Guide</a>.</p>
+
+<blockquote>
+  <table style="border-collapse: collapse;" border="2" bordercolor="#111111" cellpadding="2" cellspacing="0">
+    <tr>
+      <th>Name</th>
+      <th>Comments</th>
+      <th>Can be overridden?</th>
+    </tr>
+    <tr>
+      <td>Provider</td>
+      <td>&nbsp;</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <td>Jdbc</td>
+      <td>&nbsp;</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <td>JdbcDrivers</td>
+      <td>&nbsp;</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <td>JdbcUser</td>
+      <td>&nbsp;</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <td>JdbcPassword</td>
+      <td>Always returns null</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <td>Catalog</td>
+      <td>&nbsp;</td>
+      <td>yes</td>
+    </tr>
+    <tr>
+      <td>Locale</td>
+      <td>&nbsp;</td>
+      <td>yes</td>
+    </tr>
+    <tr>
+      <td>CatalogContent</td>
+      <td>Always returns null</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <td>CatalogName</td>
+      <td>&nbsp;</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <td>DataSource</td>
+      <td>&nbsp;</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <td>PoolNeeded</td>
+      <td>&nbsp;</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <td>Role</td>
+      <td>&nbsp;</td>
+      <td>no</td>
+    </tr>
+    <tr>
+      <td>DynamicSchemaProcessor</td>
+      <td>&nbsp;</td>
+      <td>no</td>
+    </tr>
+  </table>
+</blockquote>
+
+<h3><a name="Statement_parameters">Statement parameters</a></h3>
+
+<p>Statement parameters are defined using the <code>Param(&lt;parameter name&gt;, 
+&lt;default value&gt;)</code> function.</p>
+
+<p>A parameter's type is inferred from the <code>&lt;default value&gt;</code> 
+expression. For example,</p>
+
+<blockquote>
+
+  <p><code>Param(&quot;Base rate&quot;, 6.5)</code></p>
+</blockquote>
+
+<p>has defines a parameter called &quot;Base rate&quot; of <code>Numeric</code> type.</p>
+
+<p>Parameters can even be referenced in the expression defining other parameters 
+(provided that the reference is not cyclic, of course). For example,</p>
+
+<blockquote>
+
+  <p><code>Param(&quot;Lending rate&quot;, ParamRef(&quot;Base rate&quot;) + 2.0)</code></p>
+</blockquote>
+
+<p>Built-in statement parameters: none</p>
+
 <h2><a name="Appendix_A_XML_elements">Appendix A: XML elements</a></h2>
 <table style="border-collapse: collapse;" id="AutoNumber2" border="2"
  bordercolor="#111111" cellpadding="2" cellspacing="0">

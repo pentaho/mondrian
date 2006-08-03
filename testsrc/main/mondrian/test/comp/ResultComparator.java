@@ -148,7 +148,7 @@ class ResultComparator {
             message = "";
         }
         message += "; expected=" + expected + "; actual=" + actual + Util.nl +
-                "Query: " + result.getQuery().toMdx() + Util.nl;
+                "Query: " + Util.unparse(result.getQuery()) + Util.nl;
         TestContext.assertEqualsVerbose(
                 toString(xmlRoot),
                 toString(result),

@@ -573,7 +573,7 @@ public class NamedSetTest extends FoodMartTestCase {
     public void testNamedSetAgainstCube() {
         final TestContext tc = new TestContext() {
             public synchronized Connection getFoodMartConnection(boolean fresh) {
-                return getFoodMartConnection(NamedSetsInCubeProcessor.class.getName());
+                return getFoodMartConnection(NamedSetsInCubeProcessor.class);
             }
         };
         // Set defined against cube, using 'formula' attribute.
@@ -649,7 +649,7 @@ public class NamedSetTest extends FoodMartTestCase {
     public void testNamedSetAgainstSchema() {
         final TestContext tc = new TestContext() {
             public synchronized Connection getFoodMartConnection(boolean fresh) {
-                return getFoodMartConnection(NamedSetsInCubeAndSchemaProcessor.class.getName());
+                return getFoodMartConnection(NamedSetsInCubeAndSchemaProcessor.class);
             }
         };
         tc.assertQueryReturns(
@@ -672,11 +672,11 @@ public class NamedSetTest extends FoodMartTestCase {
     }
 
     public void testBadNamedSet() {
-        final TestContext tc = new TestContext() {
-            public synchronized Connection getFoodMartConnection(boolean fresh) {
-                return getFoodMartConnection(BadNamedSetSchemaProcessor.class.getName());
-            }
-        };
+        final TestContext tc = TestContext.create(
+            null,
+            null,
+            "<NamedSet name=\"Bad\" formula=\"{[Store].[USA].[WA].Children}}\"/>",
+            null);
         tc.assertThrows(
                 "SELECT {[Measures].[Store Sales]} on columns,\n" +
                 " {[Bad]} on rows\n" +
@@ -750,7 +750,7 @@ public class NamedSetTest extends FoodMartTestCase {
     {
         final TestContext tc = new TestContext() {
             public synchronized Connection getFoodMartConnection(boolean fresh) {
-                return getFoodMartConnection(MixedNamedSetSchemaProcessor.class.getName());
+                return getFoodMartConnection(MixedNamedSetSchemaProcessor.class);
             }
         };
         tc.assertQueryReturns(
@@ -892,28 +892,6 @@ public class NamedSetTest extends FoodMartTestCase {
                 "<NamedSet name=\"Top USA Stores\">",
                 "  <Formula>TopCount(Descendants([Store].[USA]), 7)</Formula>",
                 "</NamedSet>",
-                s.substring(i)});
-            return s;
-        }
-    }
-
-    /**
-     * Dynamic schema processor which adds a named set which has a syntax
-     * error.
-     */
-    public static class BadNamedSetSchemaProcessor
-            extends DecoratingSchemaProcessor {
-
-        protected String filterSchema(String s) {
-            // Schema-level named sets occur after <Cube> and <VirtualCube> and
-            // before <Role> elements.
-            int i = s.indexOf("<Role");
-            if (i < 0) {
-                i = s.indexOf("</Schema>");
-            }
-            s = fold(new String[] {
-                s.substring(0, i),
-                "<NamedSet name=\"Bad\" formula=\"{[Store].[USA].[WA].Children}}\"/>",
                 s.substring(i)});
             return s;
         }

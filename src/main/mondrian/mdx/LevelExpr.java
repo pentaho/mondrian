@@ -69,6 +69,10 @@ public class LevelExpr extends ExpBase implements Exp {
         return ConstantCalc.constantLevel(level);
     }
 
+    public Object accept(MdxVisitor visitor) {
+        return visitor.visit(this);
+    }
+
 }
 
 // End LevelExpr.java

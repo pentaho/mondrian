@@ -11,6 +11,7 @@ package mondrian.calc;
 
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
+import mondrian.mdx.MdxVisitor;
 
 import java.io.PrintWriter;
 
@@ -50,6 +51,10 @@ public class DummyExp implements Exp {
     }
 
     public Calc accept(ExpCompiler compiler) {
+        throw new UnsupportedOperationException();
+    }
+
+    public Object accept(MdxVisitor visitor) {
         throw new UnsupportedOperationException();
     }
 

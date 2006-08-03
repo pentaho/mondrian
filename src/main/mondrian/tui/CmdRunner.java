@@ -10,20 +10,8 @@
 
 package mondrian.tui;
 
-import mondrian.olap.Category;
-import mondrian.olap.Cube;
-import mondrian.olap.OlapElement;
-import mondrian.olap.Parameter;
-import mondrian.olap.Connection;
-import mondrian.olap.DriverManager;
-import mondrian.olap.Dimension;
-import mondrian.olap.Member;
-import mondrian.olap.Query;
-import mondrian.olap.FunTable;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Result;
-import mondrian.olap.Util;
-import mondrian.olap.Hierarchy;
+import mondrian.olap.*;
+import mondrian.olap.type.TypeUtil;
 import mondrian.olap.fun.FunInfo;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.rolap.RolapCube;
@@ -316,7 +304,7 @@ public class CmdRunner {
     }
 
     public void loadParameter(Query query, Parameter param) {
-        int category = param.getCategory();
+        int category = TypeUtil.typeToCategory(param.getType());
         String name = param.getName();
         String value = (String) CmdRunner.paraNameValues.get(name);
         debug("loadParameter: name=" +name+ ", value=" + value);

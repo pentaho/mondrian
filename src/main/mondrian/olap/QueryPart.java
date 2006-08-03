@@ -24,6 +24,8 @@ public abstract class QueryPart implements Walkable {
 
     /**
      * Converts this query or expression into an MDX string.
+     *
+     * @deprecated Use {@link Util#unparse(Exp)}; deprecated since 2.1.2.
      */
     public String toMdx()
     {
@@ -35,15 +37,6 @@ public abstract class QueryPart implements Walkable {
 
     public void unparse(PrintWriter pw) {
         pw.print(toString());
-    }
-
-    /**
-     * Replaces the <code>ordinal</code>th child (as it appeared in the array
-     * returned from {@link #getChildren}) with <code>with</code>.
-     */
-    public void replaceChild(int ordinal, QueryPart with) {
-        // By default, a QueryPart is atomic (has no children).
-        throw new Error("unsupported");
     }
 
     // implement Walkable

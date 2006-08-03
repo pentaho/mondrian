@@ -86,6 +86,10 @@ public class NamedSetExpr extends ExpBase implements Exp {
         };
     }
 
+    public Object accept(MdxVisitor visitor) {
+        return visitor.visit(this);        
+    }
+
     public Type getType() {
         return namedSet.getType();
     }

@@ -15,6 +15,8 @@ package mondrian.olap;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.mdx.MemberExpr;
+import mondrian.mdx.MdxVisitor;
+import mondrian.mdx.MdxVisitorImpl;
 
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -197,12 +199,6 @@ public class Formula extends QueryPart {
     }
 
 
-    public void replaceChild(int ordinal, QueryPart with)
-    {
-        Util.assertTrue(ordinal == 0);
-        exp = (Exp) with;
-    }
-
     public void unparse(PrintWriter pw)
     {
         if (isMember) {
@@ -349,26 +345,55 @@ public class Formula extends QueryPart {
             }
             return Literal.createString(formatString);
         }
+
         // Burrow into the expression. If we find a member, use its format
         // string.
-        // TODO: Obsolete this code.
-        Walker walker = new Walker((Walkable) exp);
-        while (walker.hasMoreElements()) {
-            final Object o = walker.nextElement();
-            if (o instanceof MemberExpr) {
-                MemberExpr memberExpr = (MemberExpr) o;
-                Exp formatExp = (Exp) memberExpr.getMember().getPropertyValue(
-                    Property.FORMAT_EXP.name);
-                if (formatExp != null) {
-                    return formatExp;
+        try {
+            exp.accept(
+                new MdxVisitorImpl() {
+                    public Object visit(MemberExpr memberExpr) {
+                        Exp formatExp = (Exp) memberExpr.getMember().
+                            getPropertyValue(Property.FORMAT_EXP.name);
+                        if (formatExp != null) {
+                            throw new FoundOne(formatExp);
+                        }
+                        return super.visit(memberExpr);
+                    }
                 }
-            }
+            );
+            return null;
+        } catch (FoundOne foundOne) {
+            return foundOne.exp;
         }
-        return null;
     }
 
     public void compile() {
         // nothing to do
+    }
+
+    /**
+     * Accepts a visitor to this Formula.
+     * The default implementation dispatches to the
+     * {@link MdxVisitor#visit(Formula)} method.
+     *
+     * @param visitor Visitor
+     */
+    public Object accept(MdxVisitor visitor) {
+        final Object o = visitor.visit(this);
+
+        // visit the expression
+        exp.accept(visitor);
+
+        return o;
+    }
+
+    private static class FoundOne extends RuntimeException {
+        private final Exp exp;
+
+        public FoundOne(Exp exp) {
+            super();
+            this.exp = exp;
+        }
     }
 }
 

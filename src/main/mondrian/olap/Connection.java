@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -19,26 +19,29 @@ import java.util.Locale;
  * Connection to a multi-dimensional database.
  *
  * @see DriverManager
+ *
+ * @version $Id$
+ * @author jhyde
  */
 public interface Connection {
-    
-    /** 
-     * Get the Connect String associated with this Connection. 
-     * 
+
+    /**
+     * Get the Connect String associated with this Connection.
+     *
      * @return the Connect String (never null).
      */
     String getConnectString();
 
-    /** 
+    /**
      * Get the name of the Catalog associated with this Connection.
-     * 
+     *
      * @return the Catalog name (never null).
      */
     String getCatalogName();
-    
-    /** 
-     * Get the Schema associated with this Connection. 
-     * 
+
+    /**
+     * Get the Schema associated with this Connection.
+     *
      * @return the Schema (never null).
      */
     Schema getSchema();
@@ -51,6 +54,8 @@ public interface Connection {
 
     /**
      * Executes a query.
+     *
+     * @throws RuntimeException if another thread calls {@link Query#cancel()}.
      */
     Result execute(Query query);
 
@@ -92,6 +97,14 @@ public interface Connection {
      * role.
      */
     SchemaReader getSchemaReader();
+
+    /**
+     * Returns the value of a connection property.
+     *
+     * @param name Name of property, for example "JdbcUser".
+     * @return Value of property, or null if property is not defined.
+     */
+    Object getProperty(String name);
 }
 
 // End Connection.java

@@ -36,14 +36,16 @@ public class UdfTest extends FoodMartTestCase {
     public UdfTest(String name) {
         super(name);
     }
+
     /**
-     * Test context which uses the local FoodMart schema.
+     * Test context which uses the local FoodMart schema, and adds a "PlusOne"
+     * user-defined function.
      */
-    private final TestContext tc = new TestContext() {
-        public synchronized Connection getFoodMartConnection(boolean fresh) {
-            return getFoodMartConnection(FoodmartWithUdf.class.getName());
-        }
-    };
+    private final TestContext tc = TestContext.create(
+        null,
+        null,
+        null, "<UserDefinedFunction name=\"PlusOne\" className=\"" +
+    PlusOneUdf.class.getName() + "\"/>" + nl);
 
     public TestContext getTestContext() {
         return tc;
@@ -186,11 +188,11 @@ public class UdfTest extends FoodMartTestCase {
     }
 
     public void testBadFun() {
-        final TestContext tc = new TestContext() {
-                    public synchronized Connection getFoodMartConnection(boolean fresh) {
-                        return getFoodMartConnection(FoodmartWithBadUdf.class.getName());
-                    }
-            };
+        final TestContext tc = TestContext.create(
+            null,
+            null,
+            null, "<UserDefinedFunction name=\"BadPlusOne\" className=\"" +
+        BadPlusOneUdf.class.getName() + "\"/>" + nl);
         try {
             tc.executeQuery("SELECT {} ON COLUMNS FROM [Sales]");
             fail("Expected exception");
@@ -277,6 +279,13 @@ public class UdfTest extends FoodMartTestCase {
                 "Row #0: ",
                 ""
             }));
+    }
+
+    public void testCurrentDateMemberBeforeUsingQuotes()
+    {
+        assertAxisReturns(
+            "CurrentDateMember([Time], '\"[Time].[\"yyyy\"].[Q\"q\"].[\"m\"]\"', BEFORE)",
+            "[Time].[1998].[Q4].[12]");
     }
 
     public void testCurrentDateMemberAfter()
@@ -415,36 +424,6 @@ public class UdfTest extends FoodMartTestCase {
                 "Row #0: ",
                 ""
             }));
-    }
-
-    /**
-     * Dynamic schema which adds two user-defined functions to any given
-     * schema.
-     */
-    public static class FoodmartWithUdf extends DecoratingSchemaProcessor {
-        protected String filterSchema(String s) {
-            return Util.replace(
-                    s,
-                    "</Schema>",
-                    "<UserDefinedFunction name=\"PlusOne\" className=\"" +
-                    PlusOneUdf.class.getName() + "\"/>" + nl +
-                    "</Schema>");
-        }
-    }
-
-    /**
-     * Dynamic schema which adds the {@link BadPlusOneUdf} user-defined
-     * function to any given schema.
-     */
-    public static class FoodmartWithBadUdf extends DecoratingSchemaProcessor {
-        protected String filterSchema(String s) {
-            return Util.replace(
-                    s,
-                    "</Schema>",
-                    "<UserDefinedFunction name=\"BadPlusOne\" className=\"" +
-                    BadPlusOneUdf.class.getName() + "\"/>" + nl +
-                    "</Schema>");
-        }
     }
 
     /**

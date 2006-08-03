@@ -29,7 +29,31 @@ import java.util.*;
  *
  * <p>It is created by calling {@link Connection#parseQuery},
  * and executed by calling {@link Connection#execute},
- * to return a {@link Result}.
+ * to return a {@link Result}.</p>
+ *
+ * <h3>Query control</h3>
+ *
+ * <p>Most queries are model citizens, executing quickly (often using cached
+ * results from previous queries), but some queries take more time, or more
+ * database resources, or more results, than is reasonable. Mondrian offers
+ * three ways to control rogue queries:<ul>
+ *
+ * <li>You can set a query timeout by setting the
+ *     {@link MondrianProperties#QueryTimeout} parameter. If the query
+ *     takes longer to execute than the value of this parameter, the system
+ *     will kill it.</li>
+ *
+ * <li>The {@link MondrianProperties#QueryLimit} parameter limits the number
+ *     of cells returned by a query.</li>
+ *
+ * <li>At any time while a query is executing, another thread can call the
+ *     {@link #cancel()} method. The call to {@link Connection#execute(Query)}
+ *     will throw an exception.</li>
+ *
+ * </ul>
+ *
+ * @author jhyde
+ * @version $Id$
  */
 public class Query extends QueryPart {
 
@@ -51,7 +75,9 @@ public class Query extends QueryPart {
     /**
      * Definitions of all parameters used in this query.
      */
-    private Parameter[] parameters;
+    private final List/*<Parameter>*/ parameters = new ArrayList();
+
+    private final Map parametersByName = new HashMap();
 
     /**
      * Cell properties. Not currently used.
@@ -66,17 +92,17 @@ public class Query extends QueryPart {
     private final Connection connection;
     public Calc[] axisCalcs;
     public Calc slicerCalc;
-    
+
     /**
      * Start time of query execution
      */
     private long startTime;
-    
+
     /**
      * Query timeout, in milliseconds
      */
     private final int queryTimeout;
-    
+
     /**
      * If true, cancel this query
      */
@@ -114,7 +140,9 @@ public class Query extends QueryPart {
      */
     private Map levelMapToMeasureMap;
     
-    /** Constructs a Query. */
+    /**
+     * Creates a Query.
+     */
     public Query(
             Connection connection,
             Formula[] formulas,
@@ -156,7 +184,7 @@ public class Query extends QueryPart {
                             QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
         }
         this.cellProps = cellProps;
-        this.parameters = parameters;
+        this.parameters.addAll(Arrays.asList(parameters));
         this.isExecuting = false;
         this.queryTimeout =
             MondrianProperties.instance().QueryTimeout.get() * 1000;
@@ -212,22 +240,20 @@ public class Query extends QueryPart {
         return new StackValidator(connection.getSchema().getFunTable());
     }
 
-    public Object clone() throws CloneNotSupportedException {
-        return new Query(connection,
+    public Object clone() {
+        return new Query(
+                connection,
                 cube,
                 Formula.cloneArray(formulas),
                 QueryAxis.cloneArray(axes),
                 (slicerAxis == null) ? null : (Exp) slicerAxis.clone(),
                 cellProps,
-                Parameter.cloneArray(parameters));
+                (Parameter[])
+                    parameters.toArray(new Parameter[parameters.size()]));
     }
 
     public Query safeClone() {
-        try {
-            return (Query) clone();
-        } catch (CloneNotSupportedException e) {
-            throw Util.newInternal(e, "Query.clone() failed");
-        }
+        return (Query) clone();
     }
 
     public Connection getConnection() {
@@ -240,6 +266,8 @@ public class Query extends QueryPart {
      * it will have the same meaning. If the query's parse tree has been
      * manipulated (for instance, the rows and columns axes have been
      * interchanged) the returned string represents the current parse tree.
+     *
+     * @deprecated Use {@link Util#unparse(Query)}; deprecated since 2.1.2
      */
     public String getQueryString() {
         return toMdx();
@@ -248,13 +276,13 @@ public class Query extends QueryPart {
     /**
      * Issues a cancel request on this Query object.  Once the thread
      * running the query detects the cancel request, the query execution will
-     * raise an exception. See {@link BasicQueryTest#testCancel} for an
+     * throw an exception. See {@link BasicQueryTest#testCancel} for an
      * example of usage of this method.
      */
     public void cancel() {
         isCanceled = true;
     }
-    
+
     /**
      * Checks if either a cancel request has been issued on the query or
      * the execution time has exceeded the timeout value (if one has been
@@ -278,7 +306,7 @@ public class Query extends QueryPart {
             }
         }
     }
-    
+
     /**
      * Sets the start time of query execution.  Used to detect timeout for
      * queries.
@@ -296,7 +324,7 @@ public class Query extends QueryPart {
     public void setQueryEndExecution() {
         isExecuting = false;
     }
-    
+
     private void normalizeAxes() {
         for (int i = 0; i < axes.length; i++) {
             AxisOrdinal correctOrdinal = AxisOrdinal.get(i);
@@ -360,18 +388,64 @@ public class Query extends QueryPart {
      * @param validator Validator
      */
     void resolve(Validator validator) {
+        // Before commencing validation, create all calculated members,
+        // calculated sets, and parameters.
         if (formulas != null) {
-            //resolving of formulas should be done in two parts
-            //because formulas might depend on each other, so all calculated
-            //mdx elements have to be defined during resolve
+            // Resolving of formulas should be done in two parts
+            // because formulas might depend on each other, so all calculated
+            // mdx elements have to be defined during resolve.
             for (int i = 0; i < formulas.length; i++) {
                 formulas[i].createElement(validator.getQuery());
             }
+        }
+
+        // Register all parameters.
+        parameters.clear();
+        parametersByName.clear();
+        accept(
+            new MdxVisitorImpl() {
+                public Object visit(ParameterExpr parameterExpr) {
+                    Parameter parameter = parameterExpr.getParameter();
+                    if (!parameters.contains(parameter)) {
+                        parameters.add(parameter);
+                        parametersByName.put(parameter.getName(), parameter);
+                    }
+                    return null;
+                }
+
+                public Object visit(UnresolvedFunCall call) {
+                    if (call.getFunName().equals("Parameter")) {
+                        // Is there already a parameter with this name?
+                        String parameterName =
+                            ParameterFunDef.getParameterName(call.getArgs());
+                        if (parametersByName.get(parameterName) != null) {
+                            throw MondrianResource.instance().
+                                ParameterDefinedMoreThanOnce.ex(parameterName);
+                        }
+
+                        Type type =
+                            ParameterFunDef.getParameterType(call.getArgs());
+
+                        // Create a temporary parameter. We don't know its
+                        // type yet.
+                        Parameter parameter = new ParameterImpl(
+                            parameterName, null, null, type);
+                        parameters.add(parameter);
+                        parametersByName.put(parameterName, parameter);
+                    }
+                    return null;
+                }
+            }
+        );
+
+        // Validate formulas.
+        if (formulas != null) {
             for (int i = 0; i < formulas.length; i++) {
                 validator.validate(formulas[i]);
             }
         }
 
+        // Validate axes.
         if (axes != null) {
             for (int i = 0; i < axes.length; i++) {
                 validator.validate(axes[i]);
@@ -380,13 +454,6 @@ public class Query extends QueryPart {
         if (slicerAxis != null) {
             slicerAxis.validate(validator);
         }
-
-        // Now that out Parameters have been created (from FunCall's to
-        // Parameter() and ParamRef()), resolve them.
-        for (int i = 0; i < parameters.length; i++) {
-            parameters[i] = validator.validate(parameters[i]);
-        }
-        resolveParameters();
 
         // Make sure that no dimension is used on more than one axis.
         final Dimension[] dimensions = getCube().getDimensions();
@@ -409,7 +476,7 @@ public class Query extends QueryPart {
             }
             if (useCount > 1) {
                 throw MondrianResource.instance().DimensionInIndependentAxes.ex(
-                                dimension.getUniqueName());
+                    dimension.getUniqueName());
             }
         }
     }
@@ -457,8 +524,8 @@ public class Query extends QueryPart {
 
     /** Returns the MDX query string. */
     public String toString() {
-        resolve();
-        return toMdx();
+//        resolve();
+        return Util.unparse(this);
     }
 
     public Object[] getChildren() {
@@ -475,49 +542,6 @@ public class Query extends QueryPart {
             list.add(formulas[i]);
         }
         return list.toArray();
-    }
-
-    public void replaceChild(int i, QueryPart with) {
-        int i0 = i;
-        if (i < axes.length) {
-            if (with == null) {
-                // We need to remove the axis.  Copy the array, omitting
-                // element i.
-                QueryAxis[] oldAxes = axes;
-                axes = new QueryAxis[oldAxes.length - 1];
-                for (int j = 0; j < axes.length; j++) {
-                    axes[j] = oldAxes[j < i ? j : j + 1];
-                }
-            } else {
-                axes[i] = (QueryAxis) with;
-            }
-            return;
-        }
-
-        i -= axes.length;
-        if (i == 0) {
-            slicerAxis = (QueryAxis) with; // replace slicer
-            return;
-        }
-
-        i -= 1;
-        if (i < formulas.length) {
-            if (with == null) {
-                // We need to remove the formula.  Copy the array, omitting
-                // element i.
-                Formula[] oldFormulas = formulas;
-                formulas = new Formula[oldFormulas.length - 1];
-                for (int j = 0; j < formulas.length; j++) {
-                    formulas[j] = oldFormulas[j < i ? j : j + 1];
-                }
-            } else {
-                formulas[i] = (Formula) with;
-            }
-            return;
-        }
-        throw Util.newInternal(
-                "Query child ordinal " + i0 + " out of range (there are " +
-                axes.length + " axes, " + formulas.length + " formula)");
     }
 
     public QueryAxis getSlicerAxis() {
@@ -595,11 +619,23 @@ public class Query extends QueryPart {
      * @throws RuntimeException if there is not parameter with the given name
      */
     public void setParameter(String parameterName, String value) {
-        Parameter param = lookupParam(parameterName);
-        if (param == null) {
-            throw MondrianResource.instance().MdxParamNotFound.ex(parameterName);
+        // Need to resolve query before we set parameters, in order to create
+        // slots to store them in. (This code will go away when parameters
+        // belong to prepared statements.)
+        if (parameters.isEmpty()) {
+            resolve();
         }
-        final Exp exp = quickParse(param.getCategory(), value, this);
+
+        Parameter param = getSchemaReader(false).getParameter(parameterName);
+        if (param == null) {
+            throw MondrianResource.instance().UnknownParameter.ex(parameterName);
+        }
+        if (!param.isModifiable()) {
+            throw MondrianResource.instance().ParameterIsNotModifiable.ex(
+                parameterName, param.getScope().getName());
+        }
+        final Exp exp = quickParse(
+            TypeUtil.typeToCategory(param.getType()), value, this);
         param.setValue(exp);
     }
 
@@ -636,70 +672,11 @@ public class Query extends QueryPart {
     }
 
     /**
-     * Returns a parameter with a given name, or <code>null</code> if there is
-     * no such parameter.
-     */
-    public Parameter lookupParam(String parameterName) {
-        for (int i = 0; i < parameters.length; i++) {
-            if (parameters[i].getName().equals(parameterName)) {
-                return parameters[i];
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Validates each parameter, calculates their usage, and removes unused
-     * parameters.
-     * @return the array of parameter usage counts
-     */
-    private int[] resolveParameters() {
-        //validate definitions
-        for (int i = 0; i < parameters.length; i++) {
-            parameters[i].validate(this);
-        }
-        int[] usageCount = new int[parameters.length];
-        Walker queryElements = new Walker(this);
-        while (queryElements.hasMoreElements()) {
-            Object queryElement = queryElements.nextElement();
-            if (queryElement instanceof Parameter) {
-                boolean found = false;
-                for (int i = 0; i < parameters.length; i++) {
-                    if (parameters[i].equals(queryElement)) {
-                        usageCount[i]++;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    throw MondrianResource.instance().MdxParamNotFound.ex(
-                        ((Parameter) queryElement).getName());
-                }
-            }
-        }
-        return usageCount;
-    }
-
-    /**
-     * Returns the parameters used in this query.
+     * Returns the parameters defined in this query.
      */
     public Parameter[] getParameters() {
-        int[] usageCount = resolveParameters();
-        // count the parameters which are currently used
-        int nUsed = 0;
-        for (int i = 0; i < usageCount.length; i++) {
-            if (usageCount[i] > 0) {
-              nUsed++;
-            }
-        }
-        Parameter[] usedParameters = new Parameter[nUsed];
-        nUsed = 0;
-            for (int i = 0; i < parameters.length; i++) {
-                if (usageCount[i] > 0) {
-                usedParameters[nUsed++] = parameters[i];
-                }
-        }
-        return usedParameters;
+        return (Parameter[]) parameters.toArray(
+            new Parameter[parameters.size()]);
     }
 
     public Cube getCube() {
@@ -788,7 +765,8 @@ public class Query extends QueryPart {
                 while ((parent != null) && (grandParent != null)) {
                     if (grandParent instanceof Query) {
                         if (parent instanceof Axis) {
-                            throw MondrianResource.instance().MdxCalculatedFormulaUsedOnAxis.ex(
+                            throw MondrianResource.instance().
+                                MdxCalculatedFormulaUsedOnAxis.ex(
                                 formulaType,
                                 uniqueName,
                                 ((QueryAxis) parent).getAxisName());
@@ -798,12 +776,14 @@ public class Query extends QueryPart {
                                 ((Formula) parent).isMember()
                                     ? MondrianResource.instance().CalculatedMember.str()
                                     : MondrianResource.instance().CalculatedSet.str();
-                            throw MondrianResource.instance().MdxCalculatedFormulaUsedInFormula.ex(
+                            throw MondrianResource.instance().
+                                MdxCalculatedFormulaUsedInFormula.ex(
                                 formulaType, uniqueName, parentFormulaType,
                                 ((Formula) parent).getUniqueName());
 
                         } else {
-                            throw MondrianResource.instance().MdxCalculatedFormulaUsedOnSlicer.ex(
+                            throw MondrianResource.instance().
+                                MdxCalculatedFormulaUsedOnSlicer.ex(
                                 formulaType, uniqueName);
                         }
                     }
@@ -811,8 +791,9 @@ public class Query extends QueryPart {
                     parent = walker.getAncestor(i);
                     grandParent = walker.getAncestor(i+1);
                 }
-                throw MondrianResource.instance().MdxCalculatedFormulaUsedInQuery.ex(
-                    formulaType, uniqueName, this.toMdx());
+                throw MondrianResource.instance().
+                    MdxCalculatedFormulaUsedInQuery.ex(
+                    formulaType, uniqueName, Util.unparse(this));
             }
         }
 
@@ -866,7 +847,7 @@ public class Query extends QueryPart {
         Formula formula = findFormula(uniqueName);
         if (formula == null) {
             throw MondrianResource.instance().MdxFormulaNotFound.ex(
-                "formula", uniqueName, toMdx());
+                "formula", uniqueName, Util.unparse(this));
         }
         formula.rename(newName);
     }
@@ -884,7 +865,9 @@ public class Query extends QueryPart {
         return definedMembers;
     }
 
-    /** finds axis by index and sets flag to show empty cells on that axis*/
+    /**
+     * Finds axis by index and sets flag to show empty cells on that axis.
+     */
     public void setAxisShowEmptyCells(int axis, boolean showEmpty) {
         if (axis >= axes.length) {
             throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.ex(
@@ -1011,6 +994,26 @@ public class Query extends QueryPart {
         return levelMapToMeasureMap;
     }
     
+    public Object accept(MdxVisitor visitor) {
+        Object o = visitor.visit(this);
+
+        // visit formulas
+        for (int i = 0; i < formulas.length; i++) {
+            Formula formula = formulas[i];
+            formula.accept(visitor);
+        }
+        // visit axes
+        for (int i = 0; i < axes.length; i++) {
+            QueryAxis axis = axes[i];
+            axis.accept(visitor);
+        }
+        if (slicerAxis != null) {
+            slicerAxis.accept(visitor);
+        }
+
+        return o;
+    }
+
     /**
      * Default implementation of {@link Validator}.
      *
@@ -1027,7 +1030,6 @@ public class Query extends QueryPart {
     private class StackValidator implements Validator {
         private final Stack stack = new Stack();
         private final FunTable funTable;
-        private boolean haveCollectedParameters;
         private final Map resolvedNodes = new HashMap();
         private final Object placeHolder = "dummy";
 
@@ -1051,16 +1053,18 @@ public class Query extends QueryPart {
                 resolved = (Exp) resolvedNodes.get(exp);
             } catch (ClassCastException e) {
                 // A classcast exception will occur if there is a String
-                // placeholder in the map.
-                throw Util.newInternal(e,
-                        "Infinite recursion encountered while validating " +
-                        exp);
+                // placeholder in the map. This is an internal error -- should
+                // not occur for any query, valid or invalid.
+                throw Util.newInternal(
+                    e,
+                    "Infinite recursion encountered while validating '" +
+                        Util.unparse(exp) + "'");
             }
             if (resolved == null) {
                 try {
                     stack.push(exp);
-                    // Put in a placeholder while we're resolving to prevent
-                    // recursion.
+                    // To prevent recursion, put in a placeholder while we're
+                    // resolving.
                     resolvedNodes.put(exp, placeHolder);
                     resolved = exp.accept(this);
                     Util.assertTrue(resolved != null);
@@ -1081,17 +1085,18 @@ public class Query extends QueryPart {
             return resolved;
         }
 
-        public Parameter validate(Parameter parameter) {
-            Parameter resolved = (Parameter) resolvedNodes.get(parameter);
+        public void validate(ParameterExpr parameterExpr) {
+            ParameterExpr resolved =
+                (ParameterExpr) resolvedNodes.get(parameterExpr);
             if (resolved != null) {
-                return parameter; // already resolved
+                return; // already resolved
             }
             try {
-                stack.push(parameter);
-                resolvedNodes.put(parameter, placeHolder);
-                resolved = (Parameter) parameter.accept(this);
-                resolvedNodes.put(parameter, resolved);
-                return resolved;
+                stack.push(parameterExpr);
+                resolvedNodes.put(parameterExpr, placeHolder);
+                resolved = (ParameterExpr) parameterExpr.accept(this);
+                assert resolved != null;
+                resolvedNodes.put(parameterExpr, resolved);
             } finally {
                 stack.pop();
             }
@@ -1163,7 +1168,7 @@ public class Query extends QueryPart {
                 if (funCall.getFunDef().getSyntax() == Syntax.Parentheses) {
                     return requiresExpression(n - 1);
                 } else {
-                    int k = whichArg(funCall, stack.get(n));
+                    int k = whichArg(funCall, (Exp) stack.get(n));
                     if (k < 0) {
                         // Arguments of call have mutated since call was placed
                         // on stack. Presumably the call has already been
@@ -1180,7 +1185,7 @@ public class Query extends QueryPart {
                 if (funCall.getSyntax() == Syntax.Parentheses) {
                     return requiresExpression(n - 1);
                 } else {
-                    int k = whichArg(funCall, stack.get(n));
+                    int k = whichArg(funCall, (Exp) stack.get(n));
                     if (k < 0) {
                         // Arguments of call have mutated since call was placed
                         // on stack. Presumably the call has already been
@@ -1200,111 +1205,46 @@ public class Query extends QueryPart {
         }
 
         public Parameter createOrLookupParam(
-                ParameterFunDef funDef,
-                Exp[] args) {
-            Util.assertTrue(args[0] instanceof Literal,
-                "The name of parameter must be a quoted string");
-            String name = (String) ((Literal) args[0]).getValue();
-            Parameter param = lookupParam(name);
-            if (funDef.getName().equals("Parameter")) {
-                if (param != null) {
-                    if (param.getDefineCount() > 0) {
-                        throw Util.newInternal("Parameter '" + name +
-                                "' is defined more than once");
-                    } else {
-                        param.incrementDefineCount();
-                        return param;
-                    }
-                }
-                final int category = funDef.getReturnCategory();
-                final Type type = getParameterType(args[1], category);
-                param = new Parameter(
-                        funDef.parameterName, category,
-                        funDef.exp, funDef.parameterDescription, type);
+            boolean definition,
+            String name,
+            Type type,
+            Exp defaultExp,
+            String description)
+        {
+            final SchemaReader schemaReader = getSchemaReader(false);
+            Parameter param = schemaReader.getParameter(name);
 
-                // Append it to the array of known parameters.
-                Parameter[] old = parameters;
-                final int count = old.length;
-                parameters = new Parameter[count + 1];
-                System.arraycopy(old, 0, parameters, 0, count);
-                parameters[count] = param;
+            if (definition) {
+                if (param != null) {
+                    if (param.getScope() == Parameter.Scope.Statement) {
+                        ParameterImpl paramImpl = (ParameterImpl) param;
+                        paramImpl.setDescription(description);
+                        paramImpl.setDefaultExp(defaultExp);
+                        paramImpl.setType(type);
+                    }
+                    return param;
+                }
+                param = new ParameterImpl(
+                    name,
+                    defaultExp, description, type);
+
+                // Append it to the list of known parameters.
+                parameters.add(param);
+                parametersByName.put(name, param);
                 return param;
             } else {
                 if (param != null) {
                     return param;
                 }
-                // We're looking at a ParamRef("p"), and its defining
-                // Parameter("p") hasn't been seen yet. Just this once, walk
-                // over the entire query finding parameter definitions.
-                if (!haveCollectedParameters) {
-                    haveCollectedParameters = true;
-                    collectParameters();
-                    param = lookupParam(name);
-                    if (param != null) {
-                        return param;
-                    }
-                }
-                throw Util.newInternal("Parameter '" + name +
-                        "' is referenced but never defined");
+                throw MondrianResource.instance().UnknownParameter.ex(name);
             }
         }
 
-        private Type getParameterType(final Exp exp, int category) {
-            switch (category) {
-            case Category.Member:
-                assert exp instanceof DimensionExpr ||
-                        exp instanceof HierarchyExpr ||
-                        exp instanceof LevelExpr;
-                return TypeUtil.toMemberType(exp.getType());
-            case Category.String:
-                return new StringType();
-            case Category.Numeric:
-                return new NumericType();
-            case Category.Integer:
-                return new DecimalType(Integer.MAX_VALUE, 0);
-            default:
-                throw Category.instance.badValue(category);
-            }
-        }
-
-        private void collectParameters() {
-            final Walker walker = new Walker(Query.this);
-            while (walker.hasMoreElements()) {
-                final Object o = walker.nextElement();
-                if (o instanceof Parameter) {
-                    // Parameter has already been resolved.
-                    ;
-                } else if (o instanceof FunCall) {
-                    final FunCall call = (FunCall) o;
-                    if (call.getFunName().equalsIgnoreCase("Parameter")) {
-                        // Parameter definition which has not been resolved
-                        // yet. Resolve it and add it to the list of parameters.
-                        // Because we're resolving out out of the proper order,
-                        // the resolver doesn't hold the correct ancestral
-                        // context, but it should be OK.
-                        final Parameter param = (Parameter) validate(call, false);
-                        param.resetDefineCount();
-                    }
-                }
-            }
-        }
-
-        /*
-        private void replace(QueryPart oldChild, QueryPart newChild) {
-            QueryPart parent = (QueryPart) stack.get(stack.size() - 2);
-            int childIndex = whichArg(parent, oldChild);
-            Util.assertTrue(childIndex >= 0);
-            parent.replaceChild(childIndex, newChild);
-        }
-*/
-
-        private int whichArg(final Object node, final Object arg) {
-            if (node instanceof Walkable) {
-                final Object[] children = ((Walkable) node).getChildren();
-                for (int i = 0; i < children.length; i++) {
-                    if (children[i] == arg) {
-                        return i;
-                    }
+        private int whichArg(final FunCall node, final Exp arg) {
+            final Exp[] children = node.getArgs();
+            for (int i = 0; i < children.length; i++) {
+                if (children[i] == arg) {
+                    return i;
                 }
             }
             return -1;
@@ -1330,7 +1270,7 @@ public class Query extends QueryPart {
             return getMemberByUniqueName(
                 uniqueNameParts, failIfNotFound, MatchType.EXACT);
         }
-        
+
         public Member getMemberByUniqueName(
                 String[] uniqueNameParts,
                 boolean failIfNotFound,
@@ -1340,8 +1280,8 @@ public class Query extends QueryPart {
             Member member = lookupMemberFromCache(uniqueName);
             if (member == null) {
                 // Not a calculated member in the query, so go to the cube.
-                member = schemaReader.getMemberByUniqueName(uniqueNameParts,
-                    failIfNotFound, matchType);
+                member = schemaReader.getMemberByUniqueName(
+                    uniqueNameParts, failIfNotFound, matchType);
             }
             if (!failIfNotFound && member == null) {
                 return null;
@@ -1403,7 +1343,7 @@ public class Query extends QueryPart {
         {
             return getElementChild(parent, s, MatchType.EXACT);
         }
-        
+
         public OlapElement getElementChild(
             OlapElement parent, String s, int matchType)
         {
@@ -1438,7 +1378,7 @@ public class Query extends QueryPart {
             return lookupCompound(
                 parent, names, failIfNotFound, category, MatchType.EXACT);
         }
-        
+
         public OlapElement lookupCompound(
                 OlapElement parent,
                 String[] names,
@@ -1493,18 +1433,46 @@ public class Query extends QueryPart {
             }
             return lookupNamedSet(nameParts[0]);
         }
+
+        public Parameter getParameter(String name) {
+            // Look for a parameter defined in the query.
+            for (int i = 0; i < parameters.size(); i++) {
+                Parameter parameter = (Parameter) parameters.get(i);
+                if (parameter.getName().equals(name)) {
+                    return parameter;
+                }
+            }
+
+            // Look for a parameter defined in this connection.
+            if (RolapConnectionProperties.instance.getValue(name, false) != null) {
+                Object value = connection.getProperty(name);
+                // TODO: Don't assume it's a string.
+                // TODO: Create expression which will get the value from the
+                //  connection at the time the query is executed.
+                Literal defaultValue =
+                    Literal.createString(String.valueOf(value));
+                return new ConnectionParameterImpl(name, defaultValue);
+            }
+
+            return super.getParameter(name);
+        }
+
     }
 
-    /**
-     * PrintWriter used for unparsing queries. Remembers which parameters have
-     * been printed. The first time, they print themselves as "Parameter";
-     * subsequent times as "ParamRef".
-     */
-    static class QueryPrintWriter extends PrintWriter {
-        final HashSet parameters = new HashSet();
+    private static class ConnectionParameterImpl
+        extends ParameterImpl
+    {
+        public ConnectionParameterImpl(String name, Literal defaultValue) {
+            super(name, defaultValue, "Connection property", new StringType());
+        }
 
-        QueryPrintWriter(Writer writer) {
-            super(writer);
+        public Scope getScope() {
+            return Scope.Connection;
+        }
+
+        public void setValue(Object value) {
+            throw MondrianResource.instance().ParameterIsNotModifiable.ex(
+                getName(), getScope().getName());
         }
     }
 }

@@ -14,7 +14,6 @@ package mondrian.test;
 import mondrian.olap.*;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
-import mondrian.rolap.RolapConnection;
 import mondrian.rolap.cache.CachePool;
 import mondrian.spi.UserDefinedFunction;
 
@@ -421,12 +420,12 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Row #10: 508,272.49\n" +
             "Row #11: 56,965.64\n" +
             "Row #11: 565,238.13\n"),
-           
+
         // 8
         new QueryAndResult(
                 "select {[Measures].[Promotion Sales]} on columns\n" +
                 " from Sales",
-                
+
                 "Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
@@ -465,7 +464,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     public void testSample7() {
         assertQueryReturns(sampleQueries[7].query, sampleQueries[7].result);
     }
-    
+
     public void testSample8() {
         assertQueryReturns(sampleQueries[8].query, sampleQueries[8].result);
     }
@@ -551,8 +550,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         for (int i = 0; i < allComments.length; i++) {
             buf.append(allComments[i]);
         }
-        final String concatenatedComments = buf.toString();
-        allComments[allComments.length - 1] = concatenatedComments;
+        allComments[allComments.length - 1] = buf.toString();
 
         // Comment at start of query.
         for (int i = 0; i < allComments.length; i++) {
@@ -2771,9 +2769,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testCatalogHierarchyBasedOnView() {
-        RolapConnection conn = (RolapConnection) getConnection();
-        String jdbc_url = conn.getConnectInfo().get("Jdbc");
-        if (jdbc_url.toLowerCase().indexOf("mysql") >= 0 ) {
+        if (getTestContext().getDialect().isMySQL()) {
             return; // Mysql cannot handle subselect
         }
         Schema schema = getConnection().getSchema();
@@ -2809,9 +2805,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * joins correctly. This probably won't work in MySQL.
      */
     public void testCatalogHierarchyBasedOnView2() {
-        RolapConnection conn = (RolapConnection) getConnection();
-        String jdbc_url = conn.getConnectInfo().get("Jdbc");
-        if (jdbc_url.toLowerCase().indexOf("mysql") >= 0) {
+        if (getTestContext().getDialect().isMySQL()) {
             return; // Mysql cannot handle subselect
         }
         Schema schema = getConnection().getSchema();
@@ -4650,8 +4644,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * which is connected to the [Unit Sales] column
      */
     public void _testCubeWhichUsesSameSharedDimTwice() {
-        RolapConnection conn = (RolapConnection) getConnection();
-        Schema schema = conn.getSchema();
+        Schema schema = getConnection().getSchema();
         final Cube salesCube = schema.lookupCube("Sales", true);
         // Create a second usage of the "Store" shared dimension called "Other
         // Store". Attach it to the "unit_sales" column (which has values [1,
@@ -4755,9 +4748,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         sql = sql.replace('"', '`');
 
         String tableQualifier = "as ";
-        //RolapConnection conn = (RolapConnection) getConnection();
-        String jdbc_url = conn.getConnectInfo().get("Jdbc");
-        if (jdbc_url.toLowerCase().indexOf("oracle") >= 0) {
+        if (getTestContext().getDialect().isOracle()) {
             // " + tableQualifier + "
             tableQualifier = "";
         }
@@ -4816,7 +4807,6 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testAllMemberCaption() {
-        RolapConnection conn = (RolapConnection) getConnection();
         Schema schema = getConnection().getSchema();
         final Cube salesCube = schema.lookupCube("Sales", true);
         schema.createDimension(
@@ -4838,7 +4828,6 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testAllLevelName() {
-        RolapConnection conn = (RolapConnection) getConnection();
         Schema schema = getConnection().getSchema();
         final Cube salesCube = schema.lookupCube("Sales", true);
         schema.createDimension(
@@ -4864,7 +4853,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * twice.
      */
     public void testDimWithoutAll() {
-        Connection conn = getConnection();
         Schema schema = getConnection().getSchema();
         final Cube cube = schema.createCube(
                 "<Cube name=\"Sales_DimWithoutAll\">\n" +
@@ -5028,12 +5016,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * inconsistent, no data will be returned.
      */
     public void testMultipleConstraintsOnSameColumn() {
-        TestContext testContext = new TestContext() {
-            public Connection getConnection() {
-                return super.getConnection();
-            }
-        };
-        Connection conn = getConnection();
         Schema schema = getConnection().getSchema();
         final String cubeName = "Sales_withCities";
         final Cube cube = schema.createCube(
@@ -5133,7 +5115,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                     "Row #0: 66,291\n" +
                     "Row #0: 66,291\n"));
     }
-    
+
     public void testBadMeasure1() {
         Schema schema = getConnection().getSchema();
         final String cubeName = "SalesWithBadMeasure";
@@ -5155,7 +5137,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "must contain either a source column or a source expression, but not both");
         schema.removeCube(cubeName);
     }
-    
+
     public void testBadMeasure2() {
         Schema schema = getConnection().getSchema();
         final String cubeName = "SalesWithBadMeasure";
@@ -5183,7 +5165,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "must contain either a source column or a source expression, but not both");
         schema.removeCube(cubeName);
     }
-    
+
     public void testCancel()
     {
         // the cancel is issued after 2 seconds so the test query needs to
@@ -5200,19 +5182,17 @@ public class BasicQueryTest extends FoodMartTestCase {
 
         executeAndCancel(query, 2000);
     }
-    
+
     private void executeAndCancel(String queryString, int waitMillis)
     {
-        final TestContext tc = new TestContext() {
-            public synchronized Connection getFoodMartConnection(
-                boolean fresh) {
-                return getFoodMartConnection(
-                    FoodmartWithSleepUdf.class.getName());
-            }
-        };
+        final TestContext tc = TestContext.create(
+            null,
+            null,
+            null, "<UserDefinedFunction name=\"SleepUdf\" className=\"" +
+            SleepUdf.class.getName() + "\"/>");
         Connection connection = tc.getConnection();
-        
-        final Query query = connection.parseQuery(queryString);       
+
+        final Query query = connection.parseQuery(queryString);
         if (waitMillis == 0) {
             // cancel immediately
             query.cancel();
@@ -5244,62 +5224,41 @@ public class BasicQueryTest extends FoodMartTestCase {
         }
         TestContext.checkThrowable(throwable, "canceled");
     }
-    
+
     public void testQueryTimeout()
     {
         // timeout is issued after 2 seconds so the test query needs to
         // run for at least that long; it will because the query references
         // a Udf that has a 1 ms sleep in it; and there are enough rows
         // in the result that the Udf should execute > 2000 times
-        int origTimeout = MondrianProperties.instance().QueryTimeout.get();
-        MondrianProperties.instance().QueryTimeout.set(2);
-        
-        final TestContext tc = new TestContext() {
-            public synchronized Connection getFoodMartConnection(
-                boolean fresh) {
-                return getFoodMartConnection(
-                    FoodmartWithSleepUdf.class.getName());
-            }
-        };
-        
-        Connection connection = tc.getConnection();
-        String query = fold(new String[] {
-            "WITH ",
-            "  MEMBER [Measures].[Sleepy] ",
-            "    AS 'SleepUdf([Measures].[Unit Sales])' ",
-            "SELECT {[Measures].[Sleepy]} ON COLUMNS,",
-            "  {[Product].members} ON ROWS",
-            "FROM [Sales]"});
+        final TestContext tc = TestContext.create(
+            null,
+            null,
+            null, "<UserDefinedFunction name=\"SleepUdf\" className=\"" +
+            SleepUdf.class.getName() + "\"/>");
+
+        String query =
+            "WITH\n" +
+            "  MEMBER [Measures].[Sleepy]\n" +
+            "    AS 'SleepUdf([Measures].[Unit Sales])'\n" +
+            "SELECT {[Measures].[Sleepy]} ON COLUMNS,\n" +
+            "  {[Product].members} ON ROWS\n" +
+            "FROM [Sales]";
         Throwable throwable = null;
+        int origTimeout = MondrianProperties.instance().QueryTimeout.get();
         try {
+            MondrianProperties.instance().QueryTimeout.set(2);
             tc.executeQuery(query);
         } catch (Throwable ex) {
             throwable = ex;
+        } finally {
+            // reset the timeout back to the original value
+            MondrianProperties.instance().QueryTimeout.set(origTimeout);
         }
         TestContext.checkThrowable(
             throwable, "Query timeout of 2 seconds reached");
-        
-        // reset the timeout back to the original value
-        MondrianProperties.instance().QueryTimeout.set(origTimeout);
     }
-    
-    /**
-     * Adds a UDF that has a sleep call into the Foodmart schema.  Used
-     * by tests that exercise query cancel/timeout.
-     */
-    public static class FoodmartWithSleepUdf
-        extends DecoratingSchemaProcessor {
-        
-        protected String filterSchema(String s) {
-            return Util.replace(
-                s,
-                "</Schema>",
-                "<UserDefinedFunction name=\"SleepUdf\" className=\"" +
-                SleepUdf.class.getName() + "\"/>" + nl +
-                "</Schema>");
-        }
-    }
-    
+
     /**
      * A simple user-defined function which adds one to its argument, but
      * sleeps 1 ms before doing so.

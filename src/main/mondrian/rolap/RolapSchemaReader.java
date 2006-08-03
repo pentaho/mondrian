@@ -20,25 +20,15 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import mondrian.olap.Access;
-import mondrian.olap.Cube;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Exp;
-import mondrian.olap.FunDef;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
-import mondrian.olap.MatchType;
-import mondrian.olap.Member;
-import mondrian.olap.NamedSet;
-import mondrian.olap.NativeEvaluator;
-import mondrian.olap.OlapElement;
-import mondrian.olap.Role;
-import mondrian.olap.SchemaReader;
-import mondrian.olap.Util;
+import mondrian.olap.*;
+import mondrian.olap.type.StringType;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
+import mondrian.calc.DummyExp;
 import mondrian.calc.impl.AbstractCalc;
+import mondrian.calc.impl.GenericCalc;
 
 import org.apache.log4j.Logger;
 
@@ -222,7 +212,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
     public OlapElement getElementChild(OlapElement parent, String name) {
         return getElementChild(parent, name, MatchType.EXACT);
     }
-    
+
     public OlapElement getElementChild(
         OlapElement parent, String name, int matchType)
     {
@@ -234,7 +224,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
         return getMemberByUniqueName(
             uniqueNameParts, failIfNotFound, MatchType.EXACT);
     }
-    
+
     public Member getMemberByUniqueName(
             String[] uniqueNameParts, boolean failIfNotFound,
             int matchType) {
@@ -252,7 +242,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
         return lookupCompound(
             parent, names, failIfNotFound, category, MatchType.EXACT);
     }
-    
+
     public OlapElement lookupCompound(
             OlapElement parent,
             String[] names,
@@ -268,7 +258,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
     {
         return lookupMemberChildByName(parent, childName, MatchType.EXACT);
     }
-    
+
     public Member lookupMemberChildByName(
         Member parent, String childName, int matchType)
     {
@@ -453,12 +443,89 @@ public abstract class RolapSchemaReader implements SchemaReader {
         return schema.getNativeRegistry().createEvaluator(revaluator, fun, args);
     }
 
+    public Parameter getParameter(String name) {
+        // Scan through schema parameters.
+        for (int i = 0; i < schema.parameterList.size(); i++) {
+            RolapSchemaParameter parameter =
+                (RolapSchemaParameter) schema.parameterList.get(i);
+            if (Util.equalName(parameter.getName(), name)) {
+                return parameter;
+            }
+        }
+
+        // Scan through mondrian and system properties.
+        List propertyList = MondrianProperties.instance().getPropertyList();
+        for (int i = 0; i < propertyList.size(); i++) {
+            Property property = (Property) propertyList.get(i);
+            if (property.getName().equals(name)) {
+                return new SystemPropertyParameter(name, false);
+            }
+        }
+        if (System.getProperty(name) != null) {
+            return new SystemPropertyParameter(name, true);
+        }
+
+        return null;
+    }
+
     public DataSource getDataSource() {
         return schema.getInternalConnection().getDataSource();
     }
 
     RolapSchema getSchema() {
         return schema;
+    }
+
+    /**
+     * Implementation of {@link Parameter} which is sourced from system
+     * propertes (see {@link System#getProperties()} or mondrian properties
+     * (see {@link MondrianProperties}.
+     *
+     * <p>The name of the property is the same as the key into the
+     * {@link java.util.Properties} object; for example "java.version" or
+     * "mondrian.trace.level".
+     */
+    private static class SystemPropertyParameter
+        extends ParameterImpl
+    {
+        /**
+         * true if source is a system property;
+         * false if source is a mondrian property.
+         */
+        private final boolean system;
+
+        public SystemPropertyParameter(String name, boolean system) {
+            super(name,
+                Literal.nullValue,
+                "System property '" + name + "'",
+                new StringType());
+            this.system = system;
+        }
+
+        public Scope getScope() {
+            return Scope.System;
+        }
+
+        public boolean isModifiable() {
+            return false;
+        }
+
+        public Calc compile(ExpCompiler compiler) {
+            return new GenericCalc(new DummyExp(getType())) {
+                public Calc[] getCalcs() {
+                    return new Calc[0];
+                }
+
+                public Object evaluate(Evaluator evaluator) {
+                    final String name = SystemPropertyParameter.this.getName();
+                    if (system) {
+                        return System.getProperty(name);
+                    } else {
+                        return MondrianProperties.instance().getProperty(name);
+                    }
+                }
+            };
+        }
     }
 }
 

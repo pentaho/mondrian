@@ -44,8 +44,11 @@ public class RolapConnection extends ConnectionBase {
     private static final Logger LOGGER = Logger.getLogger(RolapConnection.class);
 
     private final Util.PropertyList connectInfo;
-    /** Factory for JDBC connections to talk to the RDBMS. This factory will
-     * usually use a connection pool. */
+
+    /**
+     * Factory for JDBC connections to talk to the RDBMS. This factory will
+     * usually use a connection pool.
+     */
     private final DataSource dataSource;
     private final String catalogName;
     private final RolapSchema schema;
@@ -342,10 +345,19 @@ public class RolapConnection extends ConnectionBase {
         return schemaReader;
     }
 
+    public Object getProperty(String name) {
+        // Mask out the values of certain properties.
+        if (name.equals(RolapConnectionProperties.JdbcPassword) ||
+            name.equals(RolapConnectionProperties.CatalogContent)) {
+            return "";
+        }
+        return connectInfo.get(name);
+    }
+
     public Result execute(Query query) {
         try {
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(query.getQueryString());
+                LOGGER.debug(Util.unparse(query));
             }
             query.setQueryStartTime();
             Result result = new RolapResult(query, true);
@@ -369,7 +381,7 @@ public class RolapConnection extends ConnectionBase {
             String queryString;
             query.setQueryEndExecution();
             try {
-                queryString = query.getQueryString();
+                queryString = Util.unparse(query);
             } catch (Exception e1) {
                 queryString = "?";
             }

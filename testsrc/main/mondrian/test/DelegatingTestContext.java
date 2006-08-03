@@ -34,8 +34,8 @@ public class DelegatingTestContext extends TestContext {
         return context.getFoodMartConnection(fresh);
     }
 
-    public synchronized Connection getFoodMartConnection(String dynProc) {
-        return context.getFoodMartConnection(dynProc);
+    public synchronized Connection getFoodMartConnection(Class dynProcClass) {
+        return context.getFoodMartConnection(dynProcClass);
     }
 
     public String getDefaultCubeName() {

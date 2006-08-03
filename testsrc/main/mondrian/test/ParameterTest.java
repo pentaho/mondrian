@@ -14,6 +14,10 @@ package mondrian.test;
 import junit.framework.Assert;
 
 import mondrian.olap.*;
+import mondrian.rolap.RolapConnectionProperties;
+
+import java.util.List;
+import java.util.Arrays;
 
 /**
  * A <code>ParameterTest</code> is a test suite for functionality relating to
@@ -27,6 +31,24 @@ public class ParameterTest extends FoodMartTestCase {
     public ParameterTest(String name) {
         super(name);
     }
+
+    // -- Helper methods ----------
+
+    private void assertSetPropertyFails(String propName) {
+        Query q = getConnection().parseQuery("select from [Sales]");
+        try {
+            q.setParameter(propName, "foo");
+            fail("expected exception, trying to set " +
+                "non-overrideable property '" + propName + "'");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().indexOf(
+                "Parameter '" +
+                propName +
+                "' (defined at 'Connection' scope) is not modifiable") >= 0);
+        }
+    }
+
+    // -- Tests --------------
 
     public void testParameterOnAxis() {
         assertQueryReturns(
@@ -42,10 +64,12 @@ public class ParameterTest extends FoodMartTestCase {
                 "{[Measures].[Unit Sales]}" + nl +
                 "Row #0: 135,215" + nl);
     }
+
     public void testNumericParameter() {
         String s = executeExpr("Parameter(\"N\",NUMERIC,2+3,\"A numeric parameter\")");
         Assert.assertEquals("5",s);
     }
+
     public void testStringParameter() {
         String s = executeExpr("Parameter(\"S\",STRING,\"x\" || \"y\",\"A string parameter\")");
         Assert.assertEquals("xy", s);
@@ -144,9 +168,11 @@ public class ParameterTest extends FoodMartTestCase {
                 "Parameter(\"Y\",STRING,\"y\" || \"Y\",\"Other string\")");
         Assert.assertEquals("xyY.xyY",s);
     }
+
     public void testParamRefWithoutParamFails() {
-        assertExprThrows("ParamRef(\"Y\")", "Parameter 'Y' is referenced but never defined");
+        assertExprThrows("ParamRef(\"Y\")", "Unknown parameter 'Y'");
     }
+
     public void testParamDefinedTwiceFails() {
         assertThrows(
                 "select {[Measures].[Unit Sales]} on rows," + nl +
@@ -154,6 +180,25 @@ public class ParameterTest extends FoodMartTestCase {
                 "  Parameter(\"P\",[Gender],[Gender].[F],\"Which gender?\")} on columns" + nl +
                 "from Sales",
                 "Parameter 'P' is defined more than once");
+    }
+
+    public void testParamBadTypeFails() {
+        assertExprThrows("Parameter(\"P\", 5)",
+            "No function matches signature 'Parameter(<String>, <Numeric Expression>)'");
+    }
+
+    public void testParamCyclicOk() {
+        assertExprReturns(
+            "Parameter(\"P\", NUMERIC, ParamRef(\"Q\") + 1) + " +
+                "Parameter(\"Q\", NUMERIC, Iif(1 = 0, ParamRef(\"P\"), 2))",
+            "5");
+    }
+
+    public void testParamCyclicFails() {
+        assertExprThrows(
+            "Parameter(\"P\", NUMERIC, ParamRef(\"Q\") + 1) + " +
+                "Parameter(\"Q\", NUMERIC, Iif(1 = 1, ParamRef(\"P\"), 2))",
+            "Cycle occurred while evaluating parameter 'P'");
     }
 
     public void testParameterMetadata() {
@@ -168,6 +213,7 @@ public class ParameterTest extends FoodMartTestCase {
                 "  Parameter(\"Q\",[Gender],[Gender].DefaultMember,\"Another gender?\")} on columns" + nl +
                 "from Sales");
         Parameter[] parameters = query.getParameters();
+        Assert.assertEquals(4, parameters.length);
         Assert.assertEquals("S", parameters[0].getName());
         Assert.assertEquals("N", parameters[1].getName());
         Assert.assertEquals("P", parameters[2].getName());
@@ -195,44 +241,58 @@ public class ParameterTest extends FoodMartTestCase {
         Result result = connection.execute(query);
         String resultString = TestContext.toString(result);
         TestContext.assertEqualsVerbose(
-                fold(new String[] {
-                "Axis #0:",
-                "{[Time].[1997].[Q1]}",
-                "Axis #1:",
-                "{[Measures].[Unit Sales]}",
-                "Axis #2:",
-                "{[Product].[All Products].[Food].[Baked Goods]}",
-                "{[Product].[All Products].[Food].[Baking Goods]}",
-                "{[Product].[All Products].[Food].[Breakfast Foods]}",
-                "{[Product].[All Products].[Food].[Canned Foods]}",
-                "{[Product].[All Products].[Food].[Canned Products]}",
-                "{[Product].[All Products].[Food].[Dairy]}",
-                "{[Product].[All Products].[Food].[Deli]}",
-                "{[Product].[All Products].[Food].[Eggs]}",
-                "{[Product].[All Products].[Food].[Frozen Foods]}",
-                "{[Product].[All Products].[Food].[Meat]}",
-                "{[Product].[All Products].[Food].[Produce]}",
-                "{[Product].[All Products].[Food].[Seafood]}",
-                "{[Product].[All Products].[Food].[Snack Foods]}",
-                "{[Product].[All Products].[Food].[Snacks]}",
-                "{[Product].[All Products].[Food].[Starchy Foods]}",
-                "Row #0: 1,932",
-                "Row #1: 5,045",
-                "Row #2: 820",
-                "Row #3: 4,737",
-                "Row #4: 400",
-                "Row #5: 3,262",
-                "Row #6: 2,985",
-                "Row #7: 918",
-                "Row #8: 6,624",
-                "Row #9: 391",
-                "Row #10: 9,499",
-                "Row #11: 412",
-                "Row #12: 7,750",
-                "Row #13: 1,718",
-                "Row #14: 1,316",
-                ""}),
-                resultString);
+            fold(
+                "Axis #0:\n" +
+                    "{[Time].[1997].[Q1]}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Product].[All Products].[Food].[Baked Goods]}\n" +
+                    "{[Product].[All Products].[Food].[Baking Goods]}\n" +
+                    "{[Product].[All Products].[Food].[Breakfast Foods]}\n" +
+                    "{[Product].[All Products].[Food].[Canned Foods]}\n" +
+                    "{[Product].[All Products].[Food].[Canned Products]}\n" +
+                    "{[Product].[All Products].[Food].[Dairy]}\n" +
+                    "{[Product].[All Products].[Food].[Deli]}\n" +
+                    "{[Product].[All Products].[Food].[Eggs]}\n" +
+                    "{[Product].[All Products].[Food].[Frozen Foods]}\n" +
+                    "{[Product].[All Products].[Food].[Meat]}\n" +
+                    "{[Product].[All Products].[Food].[Produce]}\n" +
+                    "{[Product].[All Products].[Food].[Seafood]}\n" +
+                    "{[Product].[All Products].[Food].[Snack Foods]}\n" +
+                    "{[Product].[All Products].[Food].[Snacks]}\n" +
+                    "{[Product].[All Products].[Food].[Starchy Foods]}\n" +
+                    "Row #0: 1,932\n" +
+                    "Row #1: 5,045\n" +
+                    "Row #2: 820\n" +
+                    "Row #3: 4,737\n" +
+                    "Row #4: 400\n" +
+                    "Row #5: 3,262\n" +
+                    "Row #6: 2,985\n" +
+                    "Row #7: 918\n" +
+                    "Row #8: 6,624\n" +
+                    "Row #9: 391\n" +
+                    "Row #10: 9,499\n" +
+                    "Row #11: 412\n" +
+                    "Row #12: 7,750\n" +
+                    "Row #13: 1,718\n" +
+                    "Row #14: 1,316\n"),
+            resultString);
+
+        // Set one parameter and execute again.
+        query.setParameter("ProductMember", "[Product].[All Products].[Food].[Eggs]");
+        result = connection.execute(query);
+        resultString = TestContext.toString(result);
+        TestContext.assertEqualsVerbose(
+            fold(
+                "Axis #0:\n" +
+                    "{[Time].[1997].[Q1]}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Product].[All Products].[Food].[Eggs].[Eggs]}\n" +
+                    "Row #0: 918\n"),
+            resultString);
 
         // Now set both parameters and execute again.
         query.setParameter("ProductMember", "[Product].[All Products].[Food].[Deli]");
@@ -240,20 +300,161 @@ public class ParameterTest extends FoodMartTestCase {
         result = connection.execute(query);
         resultString = TestContext.toString(result);
         TestContext.assertEqualsVerbose(
-                fold(new String[] {
-                    "Axis #0:",
-                    "{[Time].[1997].[Q2].[4]}",
-                    "Axis #1:",
-                    "{[Measures].[Unit Sales]}",
-                    "Axis #2:",
-                    "{[Product].[All Products].[Food].[Deli].[Meat]}",
-                    "{[Product].[All Products].[Food].[Deli].[Side Dishes]}",
-                    "Row #0: 621",
-                    "Row #1: 187",
-                    ""}),
-                resultString);
-
+            fold(
+                "Axis #0:\n" +
+                    "{[Time].[1997].[Q2].[4]}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Product].[All Products].[Food].[Deli].[Meat]}\n" +
+                    "{[Product].[All Products].[Food].[Deli].[Side Dishes]}\n" +
+                    "Row #0: 621\n" +
+                    "Row #1: 187\n"),
+            resultString);
     }
+
+    // -- Tests for connection properties --------------
+
+    /**
+     * Tests that certain connection properties which should be null, are.
+     */
+    public void testConnectionPropsWhichShouldBeNull() {
+        // properties which must always return null
+        assertExprReturns("ParamRef(\"JdbcPassword\")", "");
+        assertExprReturns("ParamRef(\"CatalogContent\")", "");
+    }
+
+    /**
+     * Tests that non-overrideable properties cannot be overridden in a
+     * statement.
+     */
+    public void testConnectionPropsCannotBeOverridden() {
+        String[] overrideableProps = {
+            RolapConnectionProperties.Catalog,
+            RolapConnectionProperties.Locale,
+        };
+        List propNames = RolapConnectionProperties.instance.getValuesSortedByName();
+        for (int i = 0; i < propNames.size(); i++) {
+            String propName = ((EnumeratedValues.Value) propNames.get(i)).getName();
+            if (!Arrays.asList(overrideableProps).contains(propName)) {
+                // try to override prop
+                assertSetPropertyFails(propName);
+            }
+        }
+    }
+
+    // -- Tests for system properties --------------
+
+    /**
+     * Tests accessing system properties as parameters in a statement.
+     */
+    public void testSystemPropsGet() {
+        List propertyList = MondrianProperties.instance().getPropertyList();
+        for (int i = 0; i < propertyList.size(); i++) {
+            Property property = (Property) propertyList.get(i);
+            assertExprReturns(
+                "ParamRef(" +
+                    Util.singleQuoteString(property.getName()) + ")",
+                String.valueOf(MondrianProperties.instance().get(property)));
+        }
+    }
+
+    /**
+     * Tests getting a java system property.
+     */
+    public void testSystemPropsGetJava() {
+        final String javaVersion = System.getProperty("java.version");
+        assertExprReturns(
+            "ParamRef(\"java.version\")", javaVersion);
+    }
+
+    /**
+     * Tests getting a mondrian property.
+     */
+    public void testMondrianPropsGetJava() {
+        final String jdbcDrivers =
+            MondrianProperties.instance().JdbcDrivers.get();
+        assertExprReturns(
+            "ParamRef(\"mondrian.jdbcDrivers\")", jdbcDrivers);
+    }
+
+    /**
+     * Tests setting system properties.
+     */
+    public void testSystemPropsSet() {
+        List propertyList = MondrianProperties.instance().getPropertyList();
+        for (int i = 0; i < propertyList.size(); i++) {
+            Property property = (Property) propertyList.get(i);
+            final String propName = property.getName();
+            assertSetPropertyFails(propName);
+        }
+    }
+
+    // -- Tests for schema properties --------------
+
+    /**
+     * Tests a schema property with a default value.
+     */
+    public void testSchemaProp() {
+        final TestContext tc = TestContext.create(
+            "<Parameter name=\"prop\" type=\"String\" defaultValue=\" 'foo bar' \" />", null, null, null);
+        tc.assertExprReturns("ParamRef(\"prop\")", "foo bar");
+    }
+
+    /**
+     * Tests a schema property with a default value.
+     */
+    public void testSchemaPropDupFails() {
+        final TestContext tc = TestContext.create(
+            "<Parameter name=\"foo\" type=\"Numeric\" defaultValue=\"1\" />\n" +
+                "<Parameter name=\"bar\" type=\"Numeric\" defaultValue=\"2\" />\n" +
+                "<Parameter name=\"foo\" type=\"Numeric\" defaultValue=\"3\" />\n", null, null, null);
+        tc.assertExprThrows("ParamRef(\"foo\")",
+            "Duplicate parameter 'foo' in schema");
+    }
+
+    public void testSchemaPropIllegalTypeFails() {
+        final TestContext tc = TestContext.create(
+            "<Parameter name=\"foo\" type=\"Bad type\" defaultValue=\"1\" />", null, null, null);
+        tc.assertExprThrows(
+            "1",
+            "In element 'Schema': In element 'Parameter': " +
+                "Value 'Bad type' of attribute 'type' has illegal value 'Bad type'.  " +
+                "Legal values: {String, Numeric, Member}");
+    }
+
+    public void testSchemaPropInvalidDefaultExpFails() {
+        final TestContext tc = TestContext.create(
+            "<Parameter name=\"Product Current Member\" type=\"Member\" defaultValue=\"[Product].DefaultMember.Children(2) \" />", null, null, null);
+        tc.assertExprThrows("ParamRef(\"Product Current Member\")",
+            "No function matches signature '<Member>.Children(<Numeric Expression>)'");
+    }
+
+    /**
+     * Tests that a schema property fails if it references dimensions which
+     * are not available.
+     */
+    public void testSchemaPropContext() {
+        final TestContext tc = TestContext.create(
+            "<Parameter name=\"Customer Current Member\" type=\"Member\" defaultValue=\"[Customers].DefaultMember.Children.Item(2) \" />", null, null, null);
+
+        tc.assertQueryReturns(
+            "with member [Measures].[Foo] as ' ParamRef(\"Customer Current Member\").Name '\n" +
+                "select {[Measures].[Foo]} on columns\n" +
+                "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Foo]}\n" +
+                "Row #0: USA\n"));
+
+        tc.assertThrows(
+            "with member [Measures].[Foo] as ' ParamRef(\"Customer Current Member\").Name '\n" +
+                "select {[Measures].[Foo]} on columns\n" +
+                "from [Warehouse]",
+            "MDX object '[Customers]' not found in cube 'Warehouse'");
+    }
+
 }
 
 // End ParameterTest.java

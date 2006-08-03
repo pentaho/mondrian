@@ -13,6 +13,7 @@
 
 package mondrian.olap;
 import mondrian.olap.type.Type;
+import mondrian.mdx.MdxVisitor;
 
 import java.io.PrintWriter;
 
@@ -98,6 +99,10 @@ public class Id
             return null;
         }
         return element.accept(validator);
+    }
+
+    public Object accept(MdxVisitor visitor) {
+        return visitor.visit(this);
     }
 
     public void unparse(PrintWriter pw) {

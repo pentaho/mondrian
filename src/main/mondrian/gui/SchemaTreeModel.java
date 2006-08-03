@@ -84,8 +84,8 @@ public class SchemaTreeModel extends DefaultTreeModel {
             }
         } else if (parent instanceof MondrianDef.Measure) {
             MondrianDef.Measure m = (MondrianDef.Measure)parent;
-        } else if (parent instanceof MondrianDef.Parameter) {
-            MondrianDef.Parameter p = (MondrianDef.Parameter)parent;
+        } else if (parent instanceof MondrianDef.MemberReaderParameter) {
+            MondrianDef.MemberReaderParameter p = (MondrianDef.MemberReaderParameter)parent;
         } else if (parent instanceof MondrianDef.Property) {
             MondrianDef.Property p = (MondrianDef.Property)parent;
         } else if (parent instanceof MondrianDef.Schema) {
@@ -227,7 +227,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
                         return i;
                 }
                 return -1;
-            } else if (child instanceof MondrianDef.Parameter) {
+            } else if (child instanceof MondrianDef.MemberReaderParameter) {
                 for (int i=0; i<h.memberReaderParameters.length; i++) {
                     if (h.memberReaderParameters[i].equals(child))
                         return i + h.levels.length;

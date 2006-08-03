@@ -10,8 +10,6 @@
 package mondrian.calc.impl;
 
 import mondrian.olap.*;
-import mondrian.calc.impl.AbstractDoubleCalc;
-import mondrian.calc.impl.AbstractExpCompiler;
 import mondrian.calc.*;
 
 /**

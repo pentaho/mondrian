@@ -12,7 +12,6 @@
 package mondrian.olap;
 
 import mondrian.calc.Calc;
-import mondrian.olap.MatchType;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -129,7 +128,7 @@ public interface SchemaReader {
      */
     Member getMemberByUniqueName(
         String[] uniqueNameParts, boolean failIfNotFound, int matchType);
-    
+
     Member getMemberByUniqueName(
         String[] uniqueNameParts, boolean failIfNotFound);
 
@@ -158,7 +157,7 @@ public interface SchemaReader {
         boolean failIfNotFound,
         int category,
         int matchType);
-    
+
     OlapElement lookupCompound(
         OlapElement parent,
         String[] names,
@@ -212,7 +211,7 @@ public interface SchemaReader {
      */
     OlapElement getElementChild(
         OlapElement parent, String name, int matchType);
-    
+
     OlapElement getElementChild(OlapElement parent, String name);
 
     /**
@@ -279,7 +278,7 @@ public interface SchemaReader {
      */
     Member lookupMemberChildByName(
         Member parent, String childName, int matchType);
-    
+
     Member lookupMemberChildByName(Member parent, String childName);
 
     /**
@@ -293,6 +292,12 @@ public interface SchemaReader {
      */
     NativeEvaluator getNativeSetEvaluator(
             FunDef fun, Exp[] args, Evaluator evaluator, Calc calc);
+
+    /**
+     * Returns the definition of a parameter with a given name, or null if not
+     * found.
+     */
+    Parameter getParameter(String name);
 
     DataSource getDataSource();
 }

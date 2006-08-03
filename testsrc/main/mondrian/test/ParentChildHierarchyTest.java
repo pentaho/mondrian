@@ -292,33 +292,35 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "{[Measures].[Org Salary]}" + nl +
             "Row #0: $39,431.67" + nl);
 
-        getConnection().getSchema().createCube(
+        TestContext testContext = TestContext.create(
+            null,
             "<Cube name='HR-fewer-dims'>" + nl +
-            "    <Table name='salary'/>" + nl +
-            "    <Dimension name='Department' foreignKey='department_id'>" + nl +
-            "        <Hierarchy hasAll='true' primaryKey='department_id'>" + nl +
-            "            <Table name='department'/>" + nl +
-            "            <Level name='Department Description' uniqueMembers='true' column='department_id'/>" + nl +
-            "        </Hierarchy>" + nl +
-            "    </Dimension>" + nl +
-            "    <Dimension name='Employees' foreignKey='employee_id'>" + nl +
-            "        <Hierarchy hasAll='true' allMemberName='All Employees' primaryKey='employee_id'>" + nl +
-            "            <Table name='employee'/>" + nl +
-            "            <Level name='Employee Id' type='Numeric' uniqueMembers='true' column='employee_id' parentColumn='supervisor_id' nameColumn='full_name' nullParentValue='0'>" + nl +
-            "                <Property name='Marital Status' column='marital_status'/>" + nl +
-            "                <Property name='Position Title' column='position_title'/>" + nl +
-            "                <Property name='Gender' column='gender'/>" + nl +
-            "                <Property name='Salary' column='salary'/>" + nl +
-            "                <Property name='Education Level' column='education_level'/>" + nl +
-            "                <Property name='Management Role' column='management_role'/>" + nl +
-            "            </Level>" + nl +
-            "        </Hierarchy>" + nl +
-            "    </Dimension>" + nl +
-            "    <Measure name='Org Salary' column='salary_paid' aggregator='sum' formatString='Currency' />" + nl +
-            "    <Measure name='Count' column='employee_id' aggregator='count' formatString='#,#'/>" + nl +
-            "</Cube>");
+                "    <Table name='salary'/>" + nl +
+                "    <Dimension name='Department' foreignKey='department_id'>" + nl +
+                "        <Hierarchy hasAll='true' primaryKey='department_id'>" + nl +
+                "            <Table name='department'/>" + nl +
+                "            <Level name='Department Description' uniqueMembers='true' column='department_id'/>" + nl +
+                "        </Hierarchy>" + nl +
+                "    </Dimension>" + nl +
+                "    <Dimension name='Employees' foreignKey='employee_id'>" + nl +
+                "        <Hierarchy hasAll='true' allMemberName='All Employees' primaryKey='employee_id'>" + nl +
+                "            <Table name='employee'/>" + nl +
+                "            <Level name='Employee Id' type='Numeric' uniqueMembers='true' column='employee_id' parentColumn='supervisor_id' nameColumn='full_name' nullParentValue='0'>" + nl +
+                "                <Property name='Marital Status' column='marital_status'/>" + nl +
+                "                <Property name='Position Title' column='position_title'/>" + nl +
+                "                <Property name='Gender' column='gender'/>" + nl +
+                "                <Property name='Salary' column='salary'/>" + nl +
+                "                <Property name='Education Level' column='education_level'/>" + nl +
+                "                <Property name='Management Role' column='management_role'/>" + nl +
+                "            </Level>" + nl +
+                "        </Hierarchy>" + nl +
+                "    </Dimension>" + nl +
+                "    <Measure name='Org Salary' column='salary_paid' aggregator='sum' formatString='Currency' />" + nl +
+                "    <Measure name='Count' column='employee_id' aggregator='count' formatString='#,#'/>" + nl +
+                "</Cube>", null, null);
+
         // On a cube with fewer dimensions, this gave a false failure.
-        assertQueryReturns(
+        testContext.assertQueryReturns(
             "SELECT {[Employees].[All Employees].Children} on columns," + nl +
             " {[Measures].[Org Salary]} on rows" + nl +
             "FROM [HR-fewer-dims]",
@@ -373,14 +375,13 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
 
     public void testParentChildDrillThrough() {
-        Result result = executeQuery("select {[Measures].Members} ON columns," + nl +
-                    "  {[Employees].Members} ON rows" + nl +
-                    "from [HR]");
+        Result result = executeQuery(
+            "select {[Measures].Members} ON columns," + nl +
+                "  {[Employees].Members} ON rows" + nl +
+                "from [HR]");
 
         String tableQualifier = "as ";
-        RolapConnection conn = (RolapConnection) getConnection();
-        String jdbc_url = conn.getConnectInfo().get("Jdbc");
-        if (jdbc_url.toLowerCase().indexOf("oracle") >= 0) {
+        if (getTestContext().getDialect().isOracle()) {
             // " + tableQualifier + "
             tableQualifier = "";
         }
@@ -450,9 +451,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                     "from [HR]");
 
         String tableQualifier = "as ";
-        RolapConnection conn = (RolapConnection) getConnection();
-        String jdbc_url = conn.getConnectInfo().get("Jdbc");
-        if (jdbc_url.toLowerCase().indexOf("oracle") >= 0) {
+        if (getTestContext().getDialect().isOracle()) {
             // " + tableQualifier + "
             tableQualifier = "";
         }
@@ -556,6 +555,89 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                     "{[Measures].[Employee Salary]}",
                     "Row #0: ",
                     ""}));
+    }
+
+    /**
+     * Tests that a parent-child hierarchy is sorted correctly if the
+     * "ordinalColumn" attribute is included in its definition.
+     * Testcase for bug 1522608, "Sorting of Parent/Child Hierarchy is wrong".
+     */
+    public void testParentChildOrdinal() {
+        TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"HR-ordered\">\n" +
+                "  <Table name=\"salary\"/>\n" +
+                "  <Dimension name=\"Employees\" foreignKey=\"employee_id\">\n" +
+                "    <Hierarchy hasAll=\"true\" allMemberName=\"All Employees\"\n" +
+                "        primaryKey=\"employee_id\">\n" +
+                "      <Table name=\"employee\"/>\n" +
+                "      <Level name=\"Employee Id\" type=\"Numeric\" uniqueMembers=\"true\"\n" +
+                "          column=\"employee_id\" parentColumn=\"supervisor_id\"\n" +
+                "          nameColumn=\"full_name\" nullParentValue=\"0\"" +
+                // Original "HR" cube has no ordinalColumn
+                "          ordinalColumn=\"last_name\" >\n" +
+                "        <Closure parentColumn=\"supervisor_id\" childColumn=\"employee_id\">\n" +
+                "          <Table name=\"employee_closure\"/>\n" +
+                "        </Closure>\n" +
+                "      </Level>\n" +
+                "    </Hierarchy>\n" +
+                "  </Dimension>\n" +
+                "\n" +
+                "  <Measure name=\"Org Salary\" column=\"salary_paid\" aggregator=\"sum\"\n" +
+                "      formatString=\"Currency\"/>\n" +
+                "  <Measure name=\"Count\" column=\"employee_id\" aggregator=\"count\"\n" +
+                "      formatString=\"#,#\"/>\n" +
+                "</Cube>", null, null);
+
+        // Make sure <Hierarchy>.MEMBERS is sorted.
+        testContext.assertQueryReturns(
+            "select {Tail(Head([Employees].Members, 15), 6)} on columns from [HR-ordered]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Employees].[All Employees].[Margaret Adams]}\n" +
+                "{[Employees].[All Employees].[Carla Adams]}\n" +
+                "{[Employees].[All Employees].[Ronald Adina]}\n" +
+                "{[Employees].[All Employees].[Samuel Agcaoili]}\n" +
+                "{[Employees].[All Employees].[James Aguilar]}\n" +
+                "{[Employees].[All Employees].[Robert Ahlering]}\n" +
+                "Row #0: $2,077.18\n" +
+                "Row #0: $80.92\n" +
+                "Row #0: $107.16\n" +
+                "Row #0: $981.82\n" +
+                "Row #0: $403.64\n" +
+                "Row #0: $40.47\n"));
+
+        // Make sure <Member>.CHILDREN is sorted.
+        testContext.assertQueryReturns(
+            "select {[Employees].[Sheri Nowmer].[Rebecca Kanagaki].Children} on columns from [HR-ordered]",
+
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]}\n" +
+                "Row #0: $60.00\n" +
+                "Row #0: $152.76\n"));
+
+        // Make sure <Member>.DESCENDANTS is sorted.
+        testContext.assertQueryReturns(
+            "select {HEAD(DESCENDANTS([Employees].[Sheri Nowmer], [Employees].[Employee Id], LEAVES), 6)} on columns from [HR-ordered]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].[Doris Carter]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Phyllis Burchett]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Jennifer Cooper]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Jessica Olguin]}\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Peggy Petty]}\n" +
+                "Row #0: $193.80\n" +
+                "Row #0: $60.00\n" +
+                "Row #0: $120.00\n" +
+                "Row #0: $152.76\n" +
+                "Row #0: $120.00\n" +
+                "Row #0: $182.40\n"));
     }
 }
 

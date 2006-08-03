@@ -53,8 +53,10 @@ public class ParameterFunDef extends FunDefBase {
     }
 
     public Exp createCall(Validator validator, Exp[] args) {
-        Parameter param = validator.createOrLookupParam(this, args);
-        return validator.validate(param);
+        Parameter parameter = validator.createOrLookupParam(
+            this.getName().equals("Parameter"),
+            parameterName, type, exp, parameterDescription);
+        return new ParameterExpr(parameter);
     }
 
     public Type getResultType(Validator validator, Exp[] args) {
@@ -92,6 +94,46 @@ public class ParameterFunDef extends FunDefBase {
         return false;
     }
 
+    public static String getParameterName(Exp[] args) {
+        if (args[0] instanceof Literal &&
+                args[0].getCategory() == Category.String) {
+            return (String) ((Literal) args[0]).getValue();
+        } else {
+            throw Util.newInternal("Parameter name must be a string constant");
+        }
+    }
+
+    /**
+     * Returns an approximate type for a parameter, based upon the 1'th
+     * argument. Does not use the default value expression, so this method
+     * can safely be used before the expression has been validated.
+     */
+    public static Type getParameterType(Exp[] args) {
+        if (args[1] instanceof Id) {
+            Id id = (Id) args[1];
+            String[] names = id.toStringArray();
+            if (names.length == 1) {
+                final String name = names[0];
+                if (name.equals("NUMERIC")) {
+                    return new NumericType();
+                }
+                if (name.equals("STRING")) {
+                    return new StringType();
+                }
+            }
+        } else if (args[1] instanceof Literal) {
+            final Literal literal = (Literal) args[1];
+            if (literal.getValue().equals("NUMERIC")) {
+                return new NumericType();
+            } else if (literal.getValue().equals("STRING")) {
+                return new StringType();
+            }
+        } else if (args[1] instanceof MemberExpr) {
+            return new MemberType(null,null,null,null);
+        }
+        return new StringType();
+    }
+
     /**
      * Resolves calls to the <code>Parameter</code> MDX function.
      */
@@ -117,15 +159,7 @@ public class ParameterFunDef extends FunDefBase {
         }
 
         protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-            String parameterName;
-            if (args[0] instanceof Literal &&
-                    args[0].getCategory() == Category.String) {
-                parameterName = (String) ((Literal) args[0]).getValue();
-            } else {
-                throw newEvalException(
-                        dummyFunDef,
-                        "Parameter name must be a string constant");
-            }
+            String parameterName = getParameterName(args);
             Exp typeArg = args[1];
             int category;
             Type type = typeArg.getType();
@@ -158,9 +192,11 @@ public class ParameterFunDef extends FunDefBase {
                 String s = (String) ((Literal) typeArg).getValue();
                 if (s.equalsIgnoreCase("NUMERIC")) {
                     category = Category.Numeric;
+                    type = new NumericType();
                     break;
                 } else if (s.equalsIgnoreCase("STRING")) {
                     category = Category.String;
+                    type = new StringType();
                     break;
                 }
                 // fall through and throw error
@@ -229,15 +265,7 @@ public class ParameterFunDef extends FunDefBase {
         }
 
         protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-            String parameterName;
-            if (args[0] instanceof Literal &&
-                    args[0].getCategory() == Category.String) {
-                parameterName = (String) ((Literal) args[0]).getValue();
-            } else {
-                throw newEvalException(
-                        dummyFunDef,
-                        "Parameter name must be a string constant");
-            }
+            String parameterName = getParameterName(args);
             return new ParameterFunDef(
                     dummyFunDef, parameterName, null, Category.Unknown, null,
                     null);

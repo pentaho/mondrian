@@ -18,6 +18,7 @@ import mondrian.olap.type.NumericType;
 import mondrian.olap.type.SymbolType;
 import mondrian.calc.*;
 import mondrian.calc.impl.ConstantCalc;
+import mondrian.mdx.MdxVisitor;
 
 import java.io.PrintWriter;
 
@@ -26,6 +27,7 @@ import java.io.PrintWriter;
  */
 public class Literal extends ExpBase {
 
+    public static final Literal nullValue = new Literal(null, false);
     public static final Literal emptyString = new Literal("", false);
     public static final Literal zero = new Literal(new Integer(0));
     public static final Literal one = new Literal(new Integer(1));
@@ -137,6 +139,10 @@ public class Literal extends ExpBase {
 
     public Calc accept(ExpCompiler compiler) {
         return new ConstantCalc(getType(), o);
+    }
+
+    public Object accept(MdxVisitor visitor) {
+        return visitor.visit(this);
     }
 
     public Object getValue() {

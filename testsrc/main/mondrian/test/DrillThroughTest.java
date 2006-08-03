@@ -11,11 +11,8 @@
 */
 package mondrian.test;
 
-import mondrian.olap.Connection;
 import mondrian.olap.Cube;
-import mondrian.olap.Query;
 import mondrian.olap.Result;
-import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
@@ -39,32 +36,29 @@ public class DrillThroughTest extends FoodMartTestCase {
      * differences between dialects.
      */
     private void assertSqlEquals(String expectedSql, String actualSql) {
-        RolapConnection conn = (RolapConnection) getConnection();
-        String jdbcUrl = conn.getConnectInfo().get("Jdbc");
         final String search = "fname \\+ ' ' \\+ lname";
-        if (jdbcUrl.toLowerCase().indexOf("mysql") >= 0) {
+        final SqlQuery.Dialect dialect = getTestContext().getDialect();
+        if (dialect.isMySQL()) {
             // Mysql would generate "CONCAT( ... )"
             expectedSql = expectedSql.replaceAll(
                     search,
                     "CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)");
-        } else if (jdbcUrl.toLowerCase().indexOf("postgresql") >= 0  ||
-                jdbcUrl.toLowerCase().indexOf("oracle") >= 0) {
+        } else if (dialect.isPostgres()  || dialect.isOracle()) {
             expectedSql = expectedSql.replaceAll(
                     search,
                     "`fname` || ' ' || `lname`");
-        } else if (jdbcUrl.toLowerCase().indexOf("derby") >= 0  ||
-                jdbcUrl.toLowerCase().indexOf("cloudscape") >= 0) {
+        } else if (dialect.isDerby() || dialect.isCloudscape()) {
             expectedSql = expectedSql.replaceAll(
                     search,
                     "`customer`.`fullname`");
-        } else if (jdbcUrl.toLowerCase().indexOf(":db2:") >= 0) {
+        } else if (dialect.isDB2()) {
             expectedSql = expectedSql.replaceAll(
                     search,
                     "CONCAT(CONCAT(fname, ' '), lname)");
         }
 
         // DB2 does not have quotes on identifiers
-        if (jdbcUrl.toLowerCase().indexOf(":db2:") >= 0) {
+        if (dialect.isDB2()) {
             expectedSql = expectedSql.replaceAll("`", "");
         }
 
@@ -72,7 +66,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         //  using '"' to quote identifiers
         actualSql = actualSql.replace('"', '`');
 
-        if (jdbcUrl.toLowerCase().indexOf("oracle") >= 0) {
+        if (dialect.isOracle()) {
             // " + tableQualifier + "
             expectedSql = expectedSql.replaceAll(" =as= ", " ");
         } else {
@@ -230,7 +224,7 @@ public class DrillThroughTest extends FoodMartTestCase {
                 "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`";
         assertSqlEquals(expectedSql, sql);
     }
-    
+
     // Test that proper SQL is being generated for a Measure specified
     // as an expression
     public void testDrillThroughMeasureExp() {
@@ -239,7 +233,7 @@ public class DrillThroughTest extends FoodMartTestCase {
                 " {[Product].Children} on rows" + nl +
                 "from Sales");
         String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(false);
-     
+
         String expectedSql =
                 "select `time_by_day`.`the_year` as `Year`," +
                 " `product_class`.`product_family` as `Product Family`," +

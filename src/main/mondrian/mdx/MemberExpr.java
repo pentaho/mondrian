@@ -69,6 +69,9 @@ public class MemberExpr extends ExpBase implements Exp {
         return ConstantCalc.constantMember(member);
     }
 
+    public Object accept(MdxVisitor visitor) {
+        return visitor.visit(this);
+    }
 }
 
 // End MemberExpr.java

@@ -16,6 +16,8 @@ package mondrian.olap;
 import mondrian.olap.type.Type;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
+import mondrian.mdx.MdxVisitorImpl;
+import mondrian.mdx.MdxVisitor;
 
 import java.io.PrintWriter;
 
@@ -71,6 +73,15 @@ public interface Exp {
      * @return A compiled expression
      */
     Calc accept(ExpCompiler compiler);
+
+    /**
+     * Accepts a visitor to this Exp.
+     * The implementation should generally dispatches to the
+     * {@link MdxVisitor#visit} method appropriate to the type of expression.
+     *
+     * @param visitor Visitor
+     */
+    Object accept(MdxVisitor visitor);
 }
 
 // End Exp.java

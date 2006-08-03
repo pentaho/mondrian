@@ -13,6 +13,8 @@
 
 package mondrian.olap;
 
+import mondrian.calc.ParameterSlot;
+
 /**
  * An <code>Evaluator</code> holds the context necessary to evaluate an
  * expression.
@@ -161,6 +163,12 @@ public interface Evaluator {
      * retrieving cell values.
      */
     int getMissCount();
+
+    /**
+     * Returns the value of a parameter, evaluating its default value if it is
+     * not set.
+     */
+    Object getParameterValue(ParameterSlot slot);
 }
 
 // End Evaluator.java

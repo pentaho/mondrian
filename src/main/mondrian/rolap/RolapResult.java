@@ -13,6 +13,7 @@
 
 package mondrian.rolap;
 import mondrian.calc.Calc;
+import mondrian.calc.ParameterSlot;
 import mondrian.olap.*;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.resource.MondrianResource;
@@ -261,7 +262,7 @@ class RolapResult extends ResultBase {
                 }
             }
         } finally {
-            // This call to clear the cube's cache only has an 
+            // This call to clear the cube's cache only has an
             // effect if caching has been disabled, otherwise
             // nothing happens.
             RolapCube cube = (RolapCube) query.getCube();
@@ -458,6 +459,7 @@ class RolapResult extends ResultBase {
          */
         private RolapEvaluator slicerEvaluator;
         private final RolapResult result;
+        private static final Object Sentinel = new Object();
 
         public RolapResultEvaluatorRoot(RolapResult result) {
             super(result.query);
@@ -479,8 +481,56 @@ class RolapResult extends ResultBase {
             }
             return value;
         }
-    }
 
+        public Object getParameterValue(ParameterSlot slot) {
+            final int index = slot.getIndex();
+            Object value = slot.getParameterValue();
+            if (value != null) {
+                return value;
+            }
+
+            // Look in other places for the value. Which places we look depends
+            // on the scope of the parameter.
+            Parameter.Scope scope = slot.getParameter().getScope();
+            switch (scope.getOrdinal()) {
+            case Parameter.Scope.System_ordinal:
+                // TODO: implement system params
+
+                // fall through
+            case Parameter.Scope.Schema_ordinal:
+                // TODO: implement schema params
+
+                // fall through
+            case Parameter.Scope.Connection_ordinal:
+                // if it's set in the session, return that value
+
+                // fall through
+            case Parameter.Scope.Statement_ordinal:
+                break;
+
+            default:
+                throw scope.unexpected();
+            }
+
+            // Not set in any accessible scope. Evaluate the default value,
+            // then cache it.
+            value = slot.getCachedDefaultValue();
+            if (value != null) {
+                if (value == Sentinel) {
+                    throw MondrianResource.instance().
+                        CycleDuringParameterEvaluation.ex(
+                        slot.getParameter().getName());
+                }
+                return value;
+            }
+            // Set value to a sentinel, so we can detect cyclic evaluation.
+            slot.setCachedDefaultValue(Sentinel);
+            value = result.evaluateExp(
+                slot.getDefaultValueCalc(), slicerEvaluator.push());
+            slot.setCachedDefaultValue(value);
+            return value;
+        }
+    }
 }
 
 // End RolapResult.java

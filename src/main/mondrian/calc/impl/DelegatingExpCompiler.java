@@ -99,6 +99,10 @@ public class DelegatingExpCompiler implements ExpCompiler {
         final Calc calc = parent.compileScalar(exp, scalar);
         return afterCompile(exp, calc);
     }
+
+    public ParameterSlot registerParameter(Parameter parameter) {
+        return parent.registerParameter(parameter);
+    }
 }
 
 // End DelegatingExpCompiler.java

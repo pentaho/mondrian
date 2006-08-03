@@ -10,6 +10,8 @@
 package mondrian.olap;
 
 import mondrian.olap.fun.ParameterFunDef;
+import mondrian.olap.type.Type;
+import mondrian.mdx.ParameterExpr;
 
 /**
  * Provides context necessary to resolve identifiers to objects, function
@@ -37,14 +39,16 @@ public interface Validator {
     Exp validate(Exp exp, boolean scalar);
 
     /**
-     * Validates a parameter, and returns the new parameter it resolves to.
+     * Validates a usage of a parameter.
+     *
+     * <p>It must resolve to the same object (although sub-objects may change).
      */
-    Parameter validate(Parameter parameter);
+    void validate(ParameterExpr parameterExpr);
 
     /**
      * Validates a child member property.
      *
-     * It must resolve to the same object (although sub-objects may change).
+     * <p>It must resolve to the same object (although sub-objects may change).
      */
     void validate(MemberProperty memberProperty);
 
@@ -87,7 +91,12 @@ public interface Validator {
      * Creates or retrieves the parameter corresponding to a "Parameter" or
      * "ParamRef" function call.
      */
-    Parameter createOrLookupParam(ParameterFunDef funDef, Exp[] args);
+    Parameter createOrLookupParam(
+        boolean definition,
+        String name,
+        Type type,
+        Exp defaultExp,
+        String description);
 }
 
 // End Validator.java

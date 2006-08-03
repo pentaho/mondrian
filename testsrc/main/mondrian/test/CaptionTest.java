@@ -29,7 +29,7 @@ public class CaptionTest extends TestCase {
      */
     public void testMeasureCaption() {
         TestContext tc = TestContext.instance();
-        Connection monConnection = tc.getFoodMartConnection("mondrian.test.CaptionTest$MyFoodmart");
+        Connection monConnection = tc.getFoodMartConnection(MyFoodmart.class);
         String mdxQuery = "SELECT {[Measures].[Unit Sales]} ON COLUMNS, {[Time].[1997].[Q1]} ON ROWS FROM [Sales]";
         mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
         mondrian.olap.Result monResult = monConnection.execute(monQuery);
@@ -45,7 +45,7 @@ public class CaptionTest extends TestCase {
      */
     public void testDimCaption() {
         TestContext tc = TestContext.instance();
-        Connection monConnection = tc.getFoodMartConnection("mondrian.test.CaptionTest$MyFoodmart");
+        Connection monConnection = tc.getFoodMartConnection(MyFoodmart.class);
         String mdxQuery = "SELECT {[Measures].[Unit Sales]} ON COLUMNS, {[Promotion Media].[All Media]} ON ROWS FROM [Sales]";
         mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
         mondrian.olap.Result monResult = monConnection.execute(monQuery);
@@ -63,7 +63,7 @@ public class CaptionTest extends TestCase {
     public void testDimCaptionShared() {
         TestContext tc = TestContext.instance();
         String mdxQuery = "SELECT {[Measures].[Unit Sales]} ON COLUMNS, {[Store Size in SQFT].[All Store Size in SQFTs]} ON ROWS FROM [Sales]";
-        Connection monConnection = tc.getFoodMartConnection("mondrian.test.CaptionTest$MyFoodmart");
+        Connection monConnection = tc.getFoodMartConnection(MyFoodmart.class);
          mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
         mondrian.olap.Result monResult = monConnection.execute(monQuery);
         Axis[] axes = monResult.getAxes();

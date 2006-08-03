@@ -44,6 +44,11 @@ Revision is $Id$
         <Attribute name="defaultRole" required="false">
             <Doc>The name of the default role for connections to this schema</Doc>
         </Attribute>
+        <Array name="parameters" type="Parameter">
+            <Doc>
+                This schema's parameter definitions.
+            </Doc>
+        </Array>
         <Array name="dimensions" type="Dimension">
             <Doc>
                 Shared dimensions in this schema.
@@ -459,7 +464,7 @@ Revision is $Id$
             </Doc>
         </Object>
         <Array name="levels" type="Level"><Doc></Doc></Array>
-        <Array name="memberReaderParameters" type="Parameter"/>
+        <Array name="memberReaderParameters" type="MemberReaderParameter"/>
     </Element>
 
     <Element type="Level">
@@ -895,7 +900,8 @@ Revision is $Id$
         <CData/>
     </Element>
 
-    <Element type="Parameter">
+    <Element type="MemberReaderParameter">
+        <Doc>Not used</Doc>
         <Attribute name="name"/>
         <Attribute name="value"/>
     </Element>
@@ -1627,6 +1633,45 @@ Revision is $Id$
         </Attribute>
     </Element>
 
+    <Element type="Parameter">
+        <Doc>
+            A <code>Parameter</code> defines a schema parameter.
+            It can be referenced from an MDX statement using the <code>ParamRef</code>
+            function and, if not final, its value can be overridden.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this parameter.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this parameter.
+            </Doc>
+        </Attribute>
+        <Attribute name="type" default="String" required="true">
+            <Doc>
+                Indicates the type of this parameter: String,
+                Numeric or Member.
+            </Doc>
+            <Value>String</Value>
+            <Value>Numeric</Value>
+            <Value>Member</Value>
+        </Attribute>
+        <Attribute name="modifiable" type="Boolean" required="false" default="true">
+            <Doc>
+                If false, statement cannot change the value of this parameter;
+                the parameter becomes effectively constant (provided that its default
+                value expression always returns the same value).
+                Default is true.
+            </Doc>
+        </Attribute>
+        <Attribute name="defaultValue" type="String" required="false">
+            <Doc>
+                Expression for the default value of this parameter.
+            </Doc>
+        </Attribute>
+    </Element>
 
 </Model>
 

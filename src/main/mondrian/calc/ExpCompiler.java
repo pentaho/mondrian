@@ -20,6 +20,10 @@ import mondrian.olap.*;
  * @since Sep 28, 2005
  */
 public interface ExpCompiler {
+    /**
+     * Returns the evaluator to be used for evaluating expressions during the
+     * compilation process.
+     */
     Evaluator getEvaluator();
     Validator getValidator();
 
@@ -91,6 +95,15 @@ public interface ExpCompiler {
      * @return Calculation which returns the scalar value of the expression
      */
     Calc compileScalar(Exp exp, boolean convert);
+
+    /**
+     * Implements a parameter, returning a unique slot which will hold the
+     * parameter's value.
+     *
+     * @param parameter Parameter
+     * @return Slot
+     */
+    ParameterSlot registerParameter(Parameter parameter);
 }
 
 // End ExpCompiler.java

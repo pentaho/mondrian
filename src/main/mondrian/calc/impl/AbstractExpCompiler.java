@@ -16,6 +16,9 @@ import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
 import mondrian.calc.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Abstract implementation of the {@link mondrian.calc.ExpCompiler} interface.
  *
@@ -26,6 +29,7 @@ import mondrian.calc.*;
 public class AbstractExpCompiler implements ExpCompiler {
     private final Evaluator evaluator;
     private final Validator validator;
+    private final Map parameterSlots = new HashMap();
 
     public AbstractExpCompiler(Evaluator evaluator, Validator validator) {
         this.evaluator = evaluator;
@@ -191,6 +195,72 @@ public class AbstractExpCompiler implements ExpCompiler {
             }
         } else {
             return compile(exp);
+        }
+    }
+
+    public ParameterSlot registerParameter(Parameter parameter) {
+        ParameterSlot slot = (ParameterSlot) parameterSlots.get(parameter);
+        if (slot != null) {
+            return slot;
+        }
+        int index = parameterSlots.size();
+        ParameterSlotImpl slot2 = new ParameterSlotImpl(parameter, index);
+        parameterSlots.put(parameter, slot2);
+
+        // Compile the expression only AFTER the parameter has been
+        // registered with a slot. Otherwise a cycle is possible.
+        Calc calc = parameter.getDefaultExp().accept(this);
+        slot2.setDefaultValueCalc(calc);
+        return slot2;
+    }
+
+    /**
+     * Implementation of {@link ParameterSlot}.
+     */
+    private static class ParameterSlotImpl implements ParameterSlot {
+        private final Parameter parameter;
+        private final int index;
+        private Calc defaultValueCalc;
+        private Object value;
+        private Object cachedDefaultValue;
+
+        public ParameterSlotImpl(
+            Parameter parameter, int index)
+        {
+            this.parameter = parameter;
+            this.index = index;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public Calc getDefaultValueCalc() {
+            return defaultValueCalc;
+        }
+
+        public Parameter getParameter() {
+            return parameter;
+        }
+
+        private void setDefaultValueCalc(Calc calc) {
+            this.defaultValueCalc = calc;
+        }
+
+        public void setParameterValue(Object value) {
+            this.value = value;
+        }
+
+        public Object getParameterValue() {
+            return value;
+        }
+
+        public void setCachedDefaultValue(Object value) {
+            this.cachedDefaultValue = value;
+        }
+
+        public Object getCachedDefaultValue() {
+            return cachedDefaultValue;
         }
     }
 }

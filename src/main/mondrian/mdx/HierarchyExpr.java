@@ -68,6 +68,10 @@ public class HierarchyExpr extends ExpBase implements Exp {
     public Calc accept(ExpCompiler compiler) {
         return ConstantCalc.constantHierarchy(hierarchy);
     }
+
+    public Object accept(MdxVisitor visitor) {
+        return visitor.visit(this);
+    }
 }
 
 // End HierarchyExpr.java

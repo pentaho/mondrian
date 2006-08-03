@@ -12,6 +12,7 @@ package mondrian.olap;
 import junit.framework.TestCase;
 import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.mdx.UnresolvedFunCall;
+import mondrian.mdx.QueryPrintWriter;
 import mondrian.test.TestContext;
 
 import java.io.StringWriter;
@@ -109,7 +110,7 @@ public class ParserTest extends TestCase {
         final TestContext testContext = TestContext.instance();
 
         final Query query = testContext.getConnection().parseQuery(queryString);
-        String unparsedQueryString = query.toMdx();
+        String unparsedQueryString = Util.unparse(query);
         TestContext.assertEqualsVerbose(expected, unparsedQueryString);
     }
 
@@ -278,7 +279,7 @@ public class ParserTest extends TestCase {
 
         public String toMdxString() {
             StringWriter sw = new StringWriter();
-            PrintWriter pw = new Query.QueryPrintWriter(sw);
+            PrintWriter pw = new QueryPrintWriter(sw);
             unparse(pw);
             return sw.toString();
         }

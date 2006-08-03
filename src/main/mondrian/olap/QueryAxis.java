@@ -99,6 +99,15 @@ public class QueryAxis extends QueryPart {
         return a2;
     }
 
+    public Object accept(MdxVisitor visitor) {
+        final Object o = visitor.visit(this);
+
+        // visit the expression which forms the axis
+        exp.accept(visitor);
+
+        return o;
+    }
+
     public Calc compile(ExpCompiler compiler) {
         Exp exp = this.exp;
         if (axisOrdinal == AxisOrdinal.Slicer) {
@@ -187,11 +196,6 @@ public class QueryAxis extends QueryPart {
 
     public Object[] getChildren() {
         return new Object[] {exp};
-    }
-
-    public void replaceChild(int ordinal, QueryPart with) {
-        Util.assertTrue(ordinal == 0);
-        exp = (Exp) with;
     }
 
     public void unparse(PrintWriter pw) {

@@ -19,6 +19,10 @@ import java.io.*;
 import java.net.*;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.List;
+import java.util.ArrayList;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 /**
  * <code>MondrianProperties</code> contains the properties which determine the
@@ -175,7 +179,7 @@ public class MondrianProperties extends TriggerableProperties {
         // read the file before, only read it if it is newer.
         loadIfStale(mondrianDotPropertiesSource);
 
-		URL url = null;
+        URL url = null;
         File file = new File(mondrianDotProperties);
         if (file.exists() && file.isFile()) {
             // Read properties file "mondrian.properties" from PWD, if it exists.
@@ -201,7 +205,7 @@ public class MondrianProperties extends TriggerableProperties {
         // copy in all system properties which start with "mondrian."
         int count = 0;
         for (Enumeration keys = System.getProperties().keys();
-                keys.hasMoreElements(); ) {
+             keys.hasMoreElements(); ) {
             String key = (String) keys.nextElement();
             String value = System.getProperty(key);
             if (key.startsWith("mondrian.")) {
@@ -257,6 +261,31 @@ public class MondrianProperties extends TriggerableProperties {
                 + e
                 + ")");
         }
+    }
+
+    /**
+     * Returns a list of all properties.
+     *
+     * <p>todo: Move to base class, {@link TriggerableProperties}, and rename
+     * base method {@link TriggerableProperties#getProperties()}}.
+     */
+    public List getPropertyList() {
+        Field[] fields = getClass().getFields();
+        List list = new ArrayList();
+        for (int i = 0; i < fields.length; i++) {
+            Field field = fields[i];
+            if (!Modifier.isStatic(field.getModifiers()) &&
+                Property.class.isAssignableFrom(field.getType())) {
+                try {
+                    list.add(field.get(this));
+                } catch (IllegalAccessException e) {
+                    throw Util.newInternal(
+                        e,
+                        "While accessing property '" + field.getName() + "'");
+                }
+            }
+        }
+        return list;
     }
 
     /**

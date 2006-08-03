@@ -15,16 +15,22 @@ package mondrian.test;
 import junit.framework.ComparisonFailure;
 import junit.framework.Assert;
 import mondrian.olap.*;
+import mondrian.olap.Connection;
+import mondrian.olap.DriverManager;
 import mondrian.rolap.RolapConnectionProperties;
+import mondrian.rolap.RolapConnection;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.Calc;
 import mondrian.calc.CalcWriter;
 
+import javax.sql.DataSource;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Pattern;
 import java.util.Locale;
+import java.sql.*;
 
 /**
  * <code>TestContext</code> is a singleton class which contains the information
@@ -45,12 +51,18 @@ import java.util.Locale;
 public class TestContext {
     private static TestContext instance; // the singleton
     private PrintWriter pw;
-    /** Connect string for the FoodMart database. Set by the constructor,
+
+    /**
+     * Connect string for the FoodMart database. Set by the constructor,
      * but the connection is not created until the first call to
-     * {@link #getFoodMartConnection}. */
+     * {@link #getFoodMartConnection}.
+     */
     private String foodMartConnectString;
-    /** Connection to the FoodMart database. Set on the first call to
-     * {@link #getFoodMartConnection}. */
+
+    /**
+     * Connection to the FoodMart database. Set on the first call to
+     * {@link #getFoodMartConnection}.
+     */
     private Connection foodMartConnection;
 
     protected static final String nl = Util.nl;
@@ -182,15 +194,83 @@ public class TestContext {
      * Returns a connection to the FoodMart database
      * with a dynamic schema processor.
      */
-    public synchronized Connection getFoodMartConnection(String dynProc) {
+    public synchronized Connection getFoodMartConnection(Class dynProcClass) {
         Util.PropertyList properties =
                 Util.parseConnectString(foodMartConnectString);
         properties.put(
                 RolapConnectionProperties.DynamicSchemaProcessor,
-                dynProc);
-        Connection newConnection = DriverManager.getConnection(
+                dynProcClass.getName());
+        return DriverManager.getConnection(
                 properties, null, null, false);
-        return newConnection;
+    }
+
+    /**
+     * Returns a connection to the FoodMart database
+     * with an inline schema.
+     */
+    public synchronized Connection getFoodMartConnection(String catalogContent) {
+        Util.PropertyList properties =
+                Util.parseConnectString(foodMartConnectString);
+        properties.put(
+                RolapConnectionProperties.CatalogContent,
+                catalogContent);
+        return DriverManager.getConnection(
+                properties, null, null, false);
+    }
+
+    /**
+     * Returns a the XML of the foodmart schema with added parameters and cube
+     * definitions.
+     */
+    public String getFoodMartSchema(
+        String parameterDefs,
+        String cubeDefs,
+        String namedSetDefs,
+        String udfDefs)
+    {
+        // First, get the unadulterated schema.
+        String s;
+        synchronized (SnoopingSchemaProcessor.class) {
+            getFoodMartConnection(SnoopingSchemaProcessor.class);
+            s = SnoopingSchemaProcessor.catalogContent;
+        }
+
+        // Add parameter definitions, if specified.
+        if (parameterDefs != null) {
+            int i = s.indexOf("<Dimension name=\"Store\">");
+            s = s.substring(0, i) +
+                parameterDefs +
+                s.substring(i);
+        }
+
+        // Add cube definitions, if specified.
+        if (cubeDefs != null) {
+            int i = s.indexOf("<Cube name=\"Sales\">");
+            s = s.substring(0, i) +
+                cubeDefs +
+                s.substring(i);
+        }
+
+        // Add named set definitions, if specified. Schema-level named sets
+        // occur after <Cube> and <VirtualCube> and before <Role> elements.
+        if (namedSetDefs != null) {
+            int i = s.indexOf("<Role");
+            if (i < 0) {
+                i = s.indexOf("</Schema>");
+            }
+            s = s.substring(0, i) +
+                namedSetDefs +
+                s.substring(i);
+        }
+
+        // Add definitions of user-defined functions, if specified.
+        if (udfDefs != null) {
+            int i = s.indexOf("</Schema>");
+            s = s.substring(0, i) +
+                udfDefs +
+                s.substring(i);
+        }
+        return s;
     }
 
     /**
@@ -610,6 +690,70 @@ public class TestContext {
             buf.append(string);
         }
         return buf.toString();
+    }
+
+    public SqlQuery.Dialect getDialect() {
+        java.sql.Connection connection = null;
+        try {
+            DataSource dataSource =
+                ((RolapConnection) getConnection()).getDataSource();
+            connection = dataSource.getConnection();
+            return SqlQuery.Dialect.create(connection.getMetaData());
+        } catch (SQLException e) {
+            throw Util.newInternal(e, "While opening connection");
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
+        }
+    }
+
+    /**
+     * Creates a TestContext which is based on a variant of the FoodMart
+     * schema, which parameter, cube, named set, and user-defined function
+     * definitions added.
+     *
+     * @param parameterDefs Parameter definitions. If not null, the string is
+     *   is inserted into the schema XML in the appropriate place for
+     *   parameter definitions.
+     * @param cubeDefs Cube definition(s). If not null, the string is
+     *   is inserted into the schema XML in the appropriate place for
+     *   cube definitions.
+     * @param namedSetDefs Definitions of named sets. If not null, the string
+     *   is inserted into the schema XML in the appropriate place for
+     *   named set definitions.
+     * @param udfDefs Definitions of user-defined functions. If not null, the
+     *   string is inserted into the schema XML in the appropriate place for
+     *   UDF definitions.
+     * @return TestContext which reads from a slightly different hymnbook
+     */
+    public static TestContext create(
+        final String parameterDefs,
+        final String cubeDefs,
+        final String namedSetDefs,
+        final String udfDefs) {
+        return new TestContext() {
+            public synchronized Connection getFoodMartConnection(boolean fresh) {
+                final String schema = getFoodMartSchema(
+                    parameterDefs, cubeDefs, namedSetDefs, udfDefs);
+                return getFoodMartConnection(schema);
+            }
+        };
+    }
+
+    public static class SnoopingSchemaProcessor
+        extends DecoratingSchemaProcessor
+    {
+        public static String catalogContent;
+
+        protected String filterSchema(String s) {
+            catalogContent = s;
+            return s;
+        }
     }
 }
 

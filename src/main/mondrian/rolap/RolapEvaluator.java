@@ -13,6 +13,7 @@
 
 package mondrian.rolap;
 import mondrian.calc.Calc;
+import mondrian.calc.ParameterSlot;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
@@ -123,7 +124,7 @@ public class RolapEvaluator implements Evaluator {
             }
         }
 
-        root.init(this);        
+        root.init(this);
     }
 
     /**
@@ -141,7 +142,6 @@ public class RolapEvaluator implements Evaluator {
         final SchemaReader schemaReader;
         final Map compiledExps = new HashMap();
         final private Query query;
-
 
         public RolapEvaluatorRoot(Query query) {
             this.query = query;
@@ -179,6 +179,17 @@ public class RolapEvaluator implements Evaluator {
          * First evaluator calls this method on construction.
          */
         protected void init(Evaluator evaluator) {
+        }
+
+        /**
+         * Returns the value of a parameter, evaluating its default expression
+         * if necessary.
+         *
+         * <p>The default implementation throws
+         * {@link UnsupportedOperationException}.
+         */
+        public Object getParameterValue(ParameterSlot slot) {
+            throw new UnsupportedOperationException();
         }
     }
 
@@ -554,6 +565,10 @@ public class RolapEvaluator implements Evaluator {
 
     public int getMissCount() {
         return cellReader.getMissCount();
+    }
+
+    public Object getParameterValue(ParameterSlot slot) {
+        return root.getParameterValue(slot);
     }
 
     private final Member[] calcMembers;
