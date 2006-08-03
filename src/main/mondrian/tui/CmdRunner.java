@@ -567,7 +567,7 @@ public class CmdRunner {
     public Result runQuery(String queryString, boolean loadParams) {
         debug("CmdRunner.runQuery: TOP");
         Result result = null;
-        long start = 0;
+        long start = System.currentTimeMillis();
         try {
             this.connection = getConnection();
             debug("CmdRunner.runQuery: AFTER getConnection");
@@ -578,33 +578,11 @@ public class CmdRunner {
             }
             start = System.currentTimeMillis();
             result = this.connection.execute(query);
-/*
-// RME START
-int len = query.axes.length;
-out.println("CmdRunner.runQuery: len=" +len);
-for (int i = 0; i < len; i++) {
-    Hierarchy[] hs = query.getMdxHierarchiesOnAxis(i);
-    if (hs == null) {
-        out.println("CmdRunner.runQuery: got null i=" +i);
-    } else {
-        for (int j = 0; j < hs.length; j++) {
-            Hierarchy h = hs[j];
-            out.print("CmdRunner.runQuery: j=" +j);
-            if (h == null) {
-                out.println(": got null");
-            } else {
-                out.println(": h=" +h.getName());
-            }
-        }
-    }
-}
-// RME END
-*/
         } finally {
+            queryTime = (System.currentTimeMillis() - start);
+            totalQueryTime += queryTime;
             debug("CmdRunner.runQuery: BOTTOM");
         }
-        queryTime = (System.currentTimeMillis() - start);
-        totalQueryTime += queryTime;
         return result;
     }
 
@@ -820,9 +798,11 @@ for (int i = 0; i < len; i++) {
         for(;;) {
             if (resultString != null) {
                 printResults(resultString);
+                printQueryTime();
                 resultString = null;
             } else if (interactive && (error != null)) {
                 printResults(error);
+                printQueryTime();
             }
             if (interactive) {
                 if (inMdxCmd) {
@@ -909,8 +889,10 @@ for (int i = 0; i < len; i++) {
                 inMdxCmd = false;
 
             } else if (line.length() > 0) {
+
                 // OK, just add the line to the mdx query we are building.
                 inMdxCmd = true;
+
                 if (line.endsWith(SEMI_COLON_STRING)) {
                     // Remove the ';' character.
                     buf.append(line.substring(0, line.length() - 1));
@@ -934,11 +916,13 @@ for (int i = 0; i < len; i++) {
                 out.println(resultString);
                 out.flush();
             }
-            if (options.timeQueries && (queryTime != -1)) {
-                out.println("time[" +queryTime+ "ms]");
-                out.flush();
-                queryTime = -1;
-            }
+        }
+    }
+    protected void printQueryTime() {
+        if (options.timeQueries && (queryTime != -1)) {
+            out.println("time[" +queryTime+ "ms]");
+            out.flush();
+            queryTime = -1;
         }
     }
 
@@ -968,12 +952,10 @@ for (int i = 0; i < len; i++) {
             if (c == ESCAPE_CHAR) {
                 buf.append(ESCAPE_CHAR);
                 buf.append(line.charAt(++offset));
-            }
-            else if ((c == STRING_CHAR_1) || (c == STRING_CHAR_2)) {
+            } else if ((c == STRING_CHAR_1) || (c == STRING_CHAR_2)) {
                 i = readString(reader, line, offset, buf, i);
                 offset = 0;
-            }
-            else {
+            } else {
                 int commentType=-1;
 
                 // check if we have the start of a comment block
@@ -987,21 +969,16 @@ for (int i = 0; i < len; i++) {
                 // -1 means no comment
                 if (commentType == -1) {
                     buf.append(c);
-                }
-                else {
+                } else {
                     // check for comment to end of line comment
                     if (commentDelim[commentType][1] == null) {
-                        if (inMdxCmd) {
-                            buf.append(line.substring(offset));
-                        }
                         break;
-                    }
-                    else {
+                    } else {
                         // handle delimited comment block
                         i = readBlock(reader, line, offset,
                                 commentDelim[commentType][0],
                                 commentDelim[commentType][1],
-                                false, inMdxCmd, buf, i);
+                                false, false, buf, i);
                         offset = 0;
                     }
                 }
@@ -1166,13 +1143,17 @@ for (int i = 0; i < len; i++) {
 
         long start = System.currentTimeMillis();
 
-        byte[] bytes = XmlaSupport.processSoapXmla(file,
+        byte[] bytes = null;
+        try {
+            bytes = XmlaSupport.processSoapXmla(file,
                         getConnectString(),
                         catalogNameUrls,
                         null);
 
-        queryTime = (System.currentTimeMillis() - start);
-        totalQueryTime += queryTime;
+        } finally {
+            queryTime = (System.currentTimeMillis() - start);
+            totalQueryTime += queryTime;
+        }
 
         String response = new String(bytes);
         out.println(response);
@@ -1209,12 +1190,16 @@ for (int i = 0; i < len; i++) {
 
         long start = System.currentTimeMillis();
 
-        byte[] bytes = XmlaSupport.processXmla(file,
+        byte[] bytes = null;
+        try {
+            bytes = XmlaSupport.processXmla(file,
                         getConnectString(),
                         catalogNameUrls);
 
-        queryTime = (System.currentTimeMillis() - start);
-        totalQueryTime += queryTime;
+        } finally {
+            queryTime = (System.currentTimeMillis() - start);
+            totalQueryTime += queryTime;
+        }
 
         String response = new String(bytes);
         out.println(response);
@@ -2409,6 +2394,7 @@ for (int i = 0; i < len; i++) {
                     if (cmdRunner.stack != null) {
                         System.err.println(cmdRunner.stack);
                     }
+                    cmdRunner.printQueryTime();
                     cmdRunner.clearError();
                 }
             }
