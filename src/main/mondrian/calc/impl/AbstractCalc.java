@@ -143,6 +143,28 @@ public abstract class AbstractCalc implements Calc {
     }
 
     /**
+     * Returns true if any of the calcs depend on dimension,
+     * else false if any of the calcs return dimension,
+     * else true.
+     */
+    public static boolean butDepends(
+            Calc[] calcs, Dimension dimension) {
+        boolean result = true;
+        for (int i = 0; i < calcs.length; i++) {
+            Calc calc = calcs[i];
+            if (calc != null) {
+                if (calc.dependsOn(dimension)) {
+                    return true;
+                }
+                if (calc.getType().usesDimension(dimension, true)) {
+                    result = false;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns any other arguments to this calc.
      * The default implementation returns the empty list.
      */
@@ -160,7 +182,6 @@ public abstract class AbstractCalc implements Calc {
      *
      * @param calc
      * @param evaluator
-     * @return
      */
     public static Evaluator simplifyEvaluator(Calc calc, Evaluator evaluator) {
         if (evaluator.isNonEmpty()) {

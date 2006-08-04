@@ -347,6 +347,17 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(query, fold(expectedResult));
     }
 
+    public void testValidMeasureDepends() {
+        assertExprDependsOn("ValidMeasure([Measures].[Unit Sales])",
+            allDimsExcept(new String[] {"[Measures]"}));
+
+        assertExprDependsOn("ValidMeasure(([Measures].[Unit Sales], [Time].[1997].[Q1]))",
+            allDimsExcept(new String[] {"[Measures]", "[Time]"}));
+
+        assertExprDependsOn("ValidMeasure(([Measures].[Unit Sales], [Time].CurrentMember.Parent))",
+            allDimsExcept(new String[] {"[Measures]"}));
+    }
+
     public void testAncestor() {
         Member member = executeSingletonAxis("Ancestor([Store].[USA].[CA].[Los Angeles],[Store Country])");
         Assert.assertEquals("USA", member.getName());
