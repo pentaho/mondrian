@@ -294,6 +294,68 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 4" + nl}));
     }
 
+    public void testQueryWithoutValidMeasure() {
+        String query = "with" + nl +
+            "member measures.[without VM] as ' [measures].[unit sales] '" + nl +
+            "select {measures.[without VM] } on 0," + nl +
+            "[Warehouse].[Country].members on 1 from [warehouse and sales]" + nl;
+        String expectedResult = "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[without VM]}\n" +
+            "Axis #2:\n" +
+            "{[Warehouse].[All Warehouses].[Canada]}\n" +
+            "{[Warehouse].[All Warehouses].[Mexico]}\n" +
+            "{[Warehouse].[All Warehouses].[USA]}\n" +
+            "Row #0: \n" +
+            "Row #1: \n" +
+            "Row #2: \n";
+        assertQueryReturns(query, fold(expectedResult));
+    }
+
+    /** Tests the <code>ValidMeasure</code> function. */
+    public void testValidMeasure() {
+        String query = "with\n" +
+            "member measures.[with VM] as 'validmeasure( [measures].[unit sales] )'\n" +
+            "select { measures.[with VM]} on 0,\n" +
+            "[Warehouse].[Country].members on 1 from [warehouse and sales]\n";
+        String expectedResult = "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[with VM]}\n" +
+            "Axis #2:\n" +
+            "{[Warehouse].[All Warehouses].[Canada]}\n" +
+            "{[Warehouse].[All Warehouses].[Mexico]}\n" +
+            "{[Warehouse].[All Warehouses].[USA]}\n" +
+            "Row #0: 266,773\n" +
+            "Row #1: 266,773\n" +
+            "Row #2: 266,773\n";
+        assertQueryReturns(query, fold(expectedResult));
+    }
+
+    public void testValidMeasureTupleHasAnotherMember() {
+        String query = "with\n" +
+            "member measures.[with VM] as 'validmeasure(( [measures].[unit sales],[customers].[all customers]))'\n" +
+            "select { measures.[with VM]} on 0,\n" +
+            "[Warehouse].[Country].members on 1 from [warehouse and sales]\n";
+        String expectedResult = "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "{[Measures].[with VM]}\n" +
+            "Axis #2:\n" +
+            "{[Warehouse].[All Warehouses].[Canada]}\n" +
+            "{[Warehouse].[All Warehouses].[Mexico]}\n" +
+            "{[Warehouse].[All Warehouses].[USA]}\n" +
+            "Row #0: 266,773\n" +
+            "Row #1: 266,773\n" +
+            "Row #2: 266,773\n";
+        assertQueryReturns(query, fold(expectedResult));
+    }
+
+    private void testAndAssert(String expectedResult, String mdxQuery) {
+        TestContext.assertEqualsVerbose(expectedResult, TestContext.toString(executeQuery(mdxQuery)));
+    }
+
     public void testAncestor() {
         Member member = executeSingletonAxis("Ancestor([Store].[USA].[CA].[Los Angeles],[Store Country])");
         Assert.assertEquals("USA", member.getName());
