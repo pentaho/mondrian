@@ -5409,6 +5409,17 @@
                         <CAPTION>Val</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>ValidMeasure</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a valid measure in a
+                            virtual cube by forcing inapplicable
+                            dimensions to their top level.</DESCRIPTION>
+                        <PARAMETER_LIST>Tuple</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>ValidMeasure</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Value</FUNCTION_NAME>
                         <DESCRIPTION>Returns the value of a measure.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>

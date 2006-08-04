@@ -22,7 +22,6 @@ import mondrian.olap.fun.extra.CalculatedChildFunDef;
 import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
 import mondrian.olap.type.Type;
-import mondrian.olap.type.TypeUtil;
 import org.eigenbase.xom.XOMUtil;
 
 import java.io.PrintWriter;
@@ -616,15 +615,8 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        if (false) define(new FunDefBase(
-                "ValidMeasure",
-                "ValidMeasure(<Tuple>)",
-                "Returns a valid measure in a virtual cube by forcing inapplicable dimensions to their top level.",
-                "fm*") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                throw new UnsupportedOperationException();
-            }
-        });
+        define(ValidMeasureFunDef.instance);
+
         //
         // NUMERIC FUNCTIONS
         define(AggregateFunDef.resolver);
@@ -1350,77 +1342,9 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(new FunDefBase(
-                "SetToStr",
-                "SetToStr(<Set>)",
-                "Constructs a string from a set.",
-                "fSx") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final ListCalc listCalc =
-                        compiler.compileList(call.getArg(0));
-                return new AbstractStringCalc(call, new Calc[] {listCalc}) {
-                    public String evaluateString(Evaluator evaluator) {
-                        final List list = listCalc.evaluateList(evaluator);
-                        return strToSet(list);
-                    }
-                };
-            }
+        define(SetToStrFunDef.instance);
 
-            String strToSet(List list) {
-                StringBuffer buf = new StringBuffer();
-                buf.append("{");
-                for (int i = 0; i < list.size(); i++) {
-                    if (i > 0) {
-                        buf.append(", ");
-                    }
-                    final Object o = list.get(i);
-                    appendMemberOrTuple(buf, o);
-                }
-                buf.append("}");
-                return buf.toString();
-            }
-        });
-
-        define(new FunDefBase(
-                "TupleToStr",
-                "TupleToStr(<Tuple>)",
-                "Constructs a string from a tuple.",
-                "fSt") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                if (TypeUtil.couldBeMember(call.getArg(0).getType())) {
-                    final MemberCalc memberCalc =
-                            compiler.compileMember(call.getArg(0));
-                    return new AbstractStringCalc(call, new Calc[] {memberCalc}) {
-                        public String evaluateString(Evaluator evaluator) {
-                            final Member member =
-                                    memberCalc.evaluateMember(evaluator);
-                            if (member.isNull()) {
-                                return "";
-                            }
-                            StringBuffer buf = new StringBuffer();
-                            appendMember(buf, member);
-                            return buf.toString();
-                        }
-                    };
-                } else {
-                    final TupleCalc tupleCalc =
-                            compiler.compileTuple(call.getArg(0));
-                    return new AbstractStringCalc(call, new Calc[] {tupleCalc}) {
-                        public String evaluateString(Evaluator evaluator) {
-                            final Member[] members =
-                                    tupleCalc.evaluateTuple(evaluator);
-                            if (members == null) {
-                                return "";
-                            }
-                            StringBuffer buf = new StringBuffer();
-                            appendTuple(buf, members);
-                            return buf.toString();
-                        }
-                    };
-                }
-            }
-
-        });
+        define(TupleToStrFunDef.instance);
 
         define(new FunDefBase(
                 "UniqueName",
@@ -2021,35 +1945,6 @@ public class BuiltinFunTable extends FunTableImpl {
         define(CalculatedChildFunDef.instance);
     }
 
-
-    static void appendMemberOrTuple(
-            StringBuffer buf,
-            Object memberOrTuple) {
-        if (memberOrTuple instanceof Member) {
-            Member member = (Member) memberOrTuple;
-            appendMember(buf, member);
-        } else {
-            Member[] members = (Member[]) memberOrTuple;
-            appendTuple(buf, members);
-        }
-    }
-
-    private static void appendMember(StringBuffer buf, Member member) {
-        buf.append(member.getUniqueName());
-    }
-
-    private static void appendTuple(StringBuffer buf, Member[] members) {
-        buf.append("(");
-        for (int j = 0; j < members.length; j++) {
-            if (j > 0) {
-                buf.append(", ");
-            }
-            Member member = members[j];
-            appendMember(buf, member);
-        }
-        buf.append(")");
-    }
-
     /**
      * Returns a read-only version of the name-to-resolvers map. Used by the
      * testing framework.
@@ -2130,6 +2025,7 @@ public class BuiltinFunTable extends FunTableImpl {
         FunUtil.hierarchize(memberList, false);
         return memberList;
     }
+
 }
 
 // End BuiltinFunTable.java

@@ -1463,23 +1463,23 @@ public class FunUtil extends Util {
         }
         return hierarchy.getNullMember();
     }
-    
+
     /**
      * Validates the arguments to a function and resolves the function.
-     * 
+     *
      * @param validator validator used to validate function arguments and
      * resolve the function
      * @param args arguments to the function
      * @param newArgs returns the resolved arguments to the function
      * @param name function name
      * @param syntax syntax style used to invoke function
-     * 
+     *
      * @return resolved function definition
      */
     public static FunDef resolveFunArgs(
         Validator validator, Exp[] args, Exp[] newArgs, String name,
         Syntax syntax) {
-        
+
         Query query = validator.getQuery();
         Cube cube = null;
         if (query != null) {
@@ -1489,8 +1489,8 @@ public class FunUtil extends Util {
             newArgs[i] = validator.validate(args[i], false);
         }
         final FunTable funTable = validator.getFunTable();
-        FunDef funDef = funTable.getDef(newArgs, validator, name, syntax);      
-        
+        FunDef funDef = funTable.getDef(newArgs, validator, name, syntax);
+
         // if a measure or the measures dimension is referenced in a function,
         // then native cross joins cannot be used because the functions need
         // to be executed to determine the resultant measures; the set
@@ -1512,10 +1512,22 @@ public class FunUtil extends Util {
                     query.setVirtualCubeNonNativeCrossJoin();
                     break;
                 }
-            } 
+            }
         }
-        
+
         return funDef;
+    }
+
+    static void appendTuple(StringBuffer buf, Member[] members) {
+        buf.append("(");
+        for (int j = 0; j < members.length; j++) {
+            if (j > 0) {
+                buf.append(", ");
+            }
+            Member member = members[j];
+            buf.append(member.getUniqueName());
+        }
+        buf.append(")");
     }
 
     // Inner classes
@@ -2011,7 +2023,7 @@ public class FunUtil extends Util {
         public OlapElement lookupChild(SchemaReader schemaReader, String s) {
             throw new UnsupportedOperationException();
         }
-        
+
         public OlapElement lookupChild(
             SchemaReader schemaReader, String s, int matchType) {
             throw new UnsupportedOperationException();
