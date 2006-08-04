@@ -31,12 +31,12 @@ public class VirtualCubeTest extends FoodMartTestCase {
      */
     public void _testNoTimeDimension() {
         Schema schema = getConnection().getSchema();
-        final Cube cube = schema.createCube(fold(new String[] {
-                "<VirtualCube name=\"Sales vs Warehouse\">",
-                "<VirtualCubeDimension name=\"Product\"/>",
-                "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>",
-                "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>",
-                "</VirtualCube>"}));
+        final Cube cube = schema.createCube(
+                "<VirtualCube name=\"Sales vs Warehouse\">\n" +
+                "<VirtualCubeDimension name=\"Product\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n" +
+                "</VirtualCube>");
 
         try  {
             checkXxx();
@@ -50,13 +50,13 @@ public class VirtualCubeTest extends FoodMartTestCase {
      */
     public void testWithTimeDimension() {
         Schema schema = getConnection().getSchema();
-        final Cube cube = schema.createCube(fold(new String[] {
-                "<VirtualCube name=\"Sales vs Warehouse\">",
-                "<VirtualCubeDimension name=\"Time\"/>",
-                "<VirtualCubeDimension name=\"Product\"/>",
-                "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>",
-                "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>",
-                "</VirtualCube>"}));
+        final Cube cube = schema.createCube(
+                "<VirtualCube name=\"Sales vs Warehouse\">\n" +
+                "<VirtualCubeDimension name=\"Time\"/>\n" +
+                "<VirtualCubeDimension name=\"Product\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n" +
+                "</VirtualCube>");
 
         try  {
             checkXxx();
@@ -71,13 +71,13 @@ public class VirtualCubeTest extends FoodMartTestCase {
         // I do not know/believe that the return values are correct.
 
         assertQueryReturns(
-                "select\n" +
-                "{ [Measures].[Warehouse Sales], [Measures].[Unit Sales] }\n" +
-                "ON COLUMNS,\n" +
-                "{[Product].[All Products]}\n" +
-                "ON ROWS\n" +
-                "from [Sales vs Warehouse]",
-                fold("Axis #0:\n" +
+            "select\n" +
+            "{ [Measures].[Warehouse Sales], [Measures].[Unit Sales] }\n" +
+            "ON COLUMNS,\n" +
+            "{[Product].[All Products]}\n" +
+            "ON ROWS\n" +
+            "from [Sales vs Warehouse]",
+            fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Warehouse Sales]}\n" +
@@ -87,7 +87,7 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "Row #0: 196,770.888\n" +
                 "Row #0: 266,773\n"));
     }
-    
+
     /**
      * Query a virtual cube that contains a non-conforming dimension that
      * does not have ALL as its default member.
@@ -102,8 +102,8 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "{[Warehouse].[USA]}\n" +
                 "Axis #2:\n" +
                 "{[Measures].[Warehouse Cost]}\n" +
-                "Row #0: 89,043.253\n"));  
-        
+                "Row #0: 89,043.253\n"));
+
         assertQueryReturns(
             "select {[Warehouse].defaultMember} on columns, " +
             "{[Measures].[Warehouse Cost], [Measures].[Sales Count]} on rows " +
@@ -116,7 +116,7 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "{[Measures].[Warehouse Cost]}\n" +
                 "{[Measures].[Sales Count]}\n" +
                 "Row #0: 89,043.253\n" +
-                "Row #1: \n")); 
+                "Row #1: \n"));
     }
 }
 

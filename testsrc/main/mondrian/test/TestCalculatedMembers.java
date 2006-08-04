@@ -214,108 +214,108 @@ public class TestCalculatedMembers extends FoodMartTestCase {
          */
 
         executeQuery(
-                "with" + nl +
-                "member [Measures].[Total Store Sales by Product Name] as" + nl +
-                "  'Sum([Product].[Product Name].members, [Measures].[Store Sales])'" + nl +
-                "" + nl +
-                "member [Measures].[Average Store Sales by Product Name] as" + nl +
-                "  'Avg([Product].[Product Name].allmembers, [Measures].[Store Sales])'" + nl +
-                "" + nl +
-                "member [Measures].[Number of Product Name members] as" + nl +
-                "  'Count([Product].[Product Name].members)'" + nl +
-                "" + nl +
-                "member [Measures].[Standard Deviation of Store Sales for Product Name] as" + nl +
-                "  'Stddev([Product].[Product Name].members, [Measures].[Store Sales])'" + nl +
-                "" + nl +
-                "member [Measures].[Variance between Store Sales and Store Cost] as" + nl +
-                "  '[Measures].[Store Sales] - [Measures].[Store Cost]'" + nl +
-                "" + nl +
-                "member [Measures].[% Variance between Store Sales and Store Cost] as" + nl +
-                "  'iif([Measures].[Store Cost] = 0, 1, [Measures].[Store Sales] / [Measures].[Store Cost])'" + nl +
-                ", format_string='Percent'" + nl +
-                "" + nl +
-                "member [Measures].[% Difference between Store Sales and Store Cost] as" + nl +
-                "  'iif([Measures].[Store Sales] = 0, -1, ([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Sales])'" + nl +
-                ", format_string='Percent'" + nl +
-                "" + nl +
-                "member [Measures].[% Markup between Store Sales and Store Cost] as" + nl +
-                "  'iif([Measures].[Store Cost] = 0, 1, ([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost])'" + nl +
-                ", format_string='Percent'" + nl +
-                "" + nl +
-                "member [Measures].[Growth of Store Sales since previous period] as" + nl +
-                "  '[Measures].[Store Sales] - ([Measures].[Store Sales], ParallelPeriod([Time].CurrentMember.level, 1))'" + nl +
-                "" + nl +
-                "member [Measures].[% Growth of Store Sales since previous period] as" + nl +
-                "  'iif(([Measures].[Store Sales], ParallelPeriod([Time].CurrentMember.level, 1)) = 0, 1, ([Measures].[Store Sales] - ([Measures].[Store Sales], ParallelPeriod([Time].CurrentMember.level, 1))) / ([Measures].[Store Sales], ParallelPeriod([Time].CurrentMember.level, 1)))'" + nl +
-                ", format_string='Percent'" + nl +
-                "" + nl +
-                "member [Measures].[Growth of Store Sales since previous year] as" + nl +
-                "  '[Measures].[Store Sales] - ([Measures].[Store Sales], ParallelPeriod([Time].[Year], 1))'" + nl +
-                "" + nl +
-                "member [Measures].[% Growth of Store Sales since previous year] as" + nl +
-                "  'iif(([Measures].[Store Sales], ParallelPeriod([Time].[Year], 1)) = 0, 1, ([Measures].[Store Sales] - ([Measures].[Store Sales], ParallelPeriod([Time].[Year], 1))) / ([Measures].[Store Sales], ParallelPeriod([Time].[Year], 1)))'" + nl +
-                ", format_string='Percent'" + nl +
-                "" + nl +
-                "member [Measures].[Store Sales as % of parent Store] as" + nl +
-                "  'iif(([Measures].[Store Sales], [Store].CurrentMember.Parent) = 0, 1, [Measures].[Store Sales] / ([Measures].[Store Sales], [Store].CurrentMember.Parent))'" + nl +
-                ", format_string='Percent'" + nl +
-                "" + nl +
-                "member [Measures].[Store Sales as % of all Store] as" + nl +
-                "  'iif(([Measures].[Store Sales], [Store].Members.Item(0)) = 0, 1, [Measures].[Store Sales] / ([Measures].[Store Sales], [Store].Members.Item(0)))'" + nl +
-                ", format_string='Percent'" + nl +
-                "" + nl +
-                "member [Measures].[Total Store Sales, period to date] as" + nl +
-                " 'sum(PeriodsToDate([Time].CurrentMember.Parent.Level), [Measures].[Store Sales])'" + nl +
-                "" + nl +
-                "member [Measures].[Total Store Sales, Quarter to date] as" + nl +
-                " 'sum(PeriodsToDate([Time].[Quarter]), [Measures].[Store Sales])'" + nl +
-                "" + nl +
-                "member [Measures].[Average Store Sales, period to date] as" + nl +
-                " 'avg(PeriodsToDate([Time].CurrentMember.Parent.Level), [Measures].[Store Sales])'" + nl +
-                "" + nl +
-                "member [Measures].[Average Store Sales, Quarter to date] as" + nl +
-                " 'avg(PeriodsToDate([Time].[Quarter]), [Measures].[Store Sales])'" + nl +
-                "" + nl +
-                "member [Measures].[Rolling Total of Store Sales over previous 3 periods] as" + nl +
-                " 'sum([Time].CurrentMember.Lag(2) : [Time].CurrentMember, [Measures].[Store Sales])'" + nl +
-                "" + nl +
-                "member [Measures].[Rolling Average of Store Sales over previous 3 periods] as" + nl +
-                " 'avg([Time].CurrentMember.Lag(2) : [Time].CurrentMember, [Measures].[Store Sales])'" + nl +
-                "" + nl +
-                "select" + nl +
-                " CrossJoin(" + nl +
-                "  {[Time].[1997], [Time].[1997].[Q2]}," + nl +
-                "  {[Store].[All Stores], " + nl +
-                "   [Store].[USA]," + nl +
-                "   [Store].[USA].[CA]," + nl +
-                "   [Store].[USA].[CA].[San Francisco]}) on columns," + nl +
-                " AddCalculatedMembers([Measures].members) on rows" + nl +
+                "with\n" +
+                "member [Measures].[Total Store Sales by Product Name] as\n" +
+                "  'Sum([Product].[Product Name].members, [Measures].[Store Sales])'\n" +
+                "\n" +
+                "member [Measures].[Average Store Sales by Product Name] as\n" +
+                "  'Avg([Product].[Product Name].allmembers, [Measures].[Store Sales])'\n" +
+                "\n" +
+                "member [Measures].[Number of Product Name members] as\n" +
+                "  'Count([Product].[Product Name].members)'\n" +
+                "\n" +
+                "member [Measures].[Standard Deviation of Store Sales for Product Name] as\n" +
+                "  'Stddev([Product].[Product Name].members, [Measures].[Store Sales])'\n" +
+                "\n" +
+                "member [Measures].[Variance between Store Sales and Store Cost] as\n" +
+                "  '[Measures].[Store Sales] - [Measures].[Store Cost]'\n" +
+                "\n" +
+                "member [Measures].[% Variance between Store Sales and Store Cost] as\n" +
+                "  'iif([Measures].[Store Cost] = 0, 1, [Measures].[Store Sales] / [Measures].[Store Cost])'\n" +
+                ", format_string='Percent'\n" +
+                "\n" +
+                "member [Measures].[% Difference between Store Sales and Store Cost] as\n" +
+                "  'iif([Measures].[Store Sales] = 0, -1, ([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Sales])'\n" +
+                ", format_string='Percent'\n" +
+                "\n" +
+                "member [Measures].[% Markup between Store Sales and Store Cost] as\n" +
+                "  'iif([Measures].[Store Cost] = 0, 1, ([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost])'\n" +
+                ", format_string='Percent'\n" +
+                "\n" +
+                "member [Measures].[Growth of Store Sales since previous period] as\n" +
+                "  '[Measures].[Store Sales] - ([Measures].[Store Sales], ParallelPeriod([Time].CurrentMember.level, 1))'\n" +
+                "\n" +
+                "member [Measures].[% Growth of Store Sales since previous period] as\n" +
+                "  'iif(([Measures].[Store Sales], ParallelPeriod([Time].CurrentMember.level, 1)) = 0, 1, ([Measures].[Store Sales] - ([Measures].[Store Sales], ParallelPeriod([Time].CurrentMember.level, 1))) / ([Measures].[Store Sales], ParallelPeriod([Time].CurrentMember.level, 1)))'\n" +
+                ", format_string='Percent'\n" +
+                "\n" +
+                "member [Measures].[Growth of Store Sales since previous year] as\n" +
+                "  '[Measures].[Store Sales] - ([Measures].[Store Sales], ParallelPeriod([Time].[Year], 1))'\n" +
+                "\n" +
+                "member [Measures].[% Growth of Store Sales since previous year] as\n" +
+                "  'iif(([Measures].[Store Sales], ParallelPeriod([Time].[Year], 1)) = 0, 1, ([Measures].[Store Sales] - ([Measures].[Store Sales], ParallelPeriod([Time].[Year], 1))) / ([Measures].[Store Sales], ParallelPeriod([Time].[Year], 1)))'\n" +
+                ", format_string='Percent'\n" +
+                "\n" +
+                "member [Measures].[Store Sales as % of parent Store] as\n" +
+                "  'iif(([Measures].[Store Sales], [Store].CurrentMember.Parent) = 0, 1, [Measures].[Store Sales] / ([Measures].[Store Sales], [Store].CurrentMember.Parent))'\n" +
+                ", format_string='Percent'\n" +
+                "\n" +
+                "member [Measures].[Store Sales as % of all Store] as\n" +
+                "  'iif(([Measures].[Store Sales], [Store].Members.Item(0)) = 0, 1, [Measures].[Store Sales] / ([Measures].[Store Sales], [Store].Members.Item(0)))'\n" +
+                ", format_string='Percent'\n" +
+                "\n" +
+                "member [Measures].[Total Store Sales, period to date] as\n" +
+                " 'sum(PeriodsToDate([Time].CurrentMember.Parent.Level), [Measures].[Store Sales])'\n" +
+                "\n" +
+                "member [Measures].[Total Store Sales, Quarter to date] as\n" +
+                " 'sum(PeriodsToDate([Time].[Quarter]), [Measures].[Store Sales])'\n" +
+                "\n" +
+                "member [Measures].[Average Store Sales, period to date] as\n" +
+                " 'avg(PeriodsToDate([Time].CurrentMember.Parent.Level), [Measures].[Store Sales])'\n" +
+                "\n" +
+                "member [Measures].[Average Store Sales, Quarter to date] as\n" +
+                " 'avg(PeriodsToDate([Time].[Quarter]), [Measures].[Store Sales])'\n" +
+                "\n" +
+                "member [Measures].[Rolling Total of Store Sales over previous 3 periods] as\n" +
+                " 'sum([Time].CurrentMember.Lag(2) : [Time].CurrentMember, [Measures].[Store Sales])'\n" +
+                "\n" +
+                "member [Measures].[Rolling Average of Store Sales over previous 3 periods] as\n" +
+                " 'avg([Time].CurrentMember.Lag(2) : [Time].CurrentMember, [Measures].[Store Sales])'\n" +
+                "\n" +
+                "select\n" +
+                " CrossJoin(\n" +
+                "  {[Time].[1997], [Time].[1997].[Q2]},\n" +
+                "  {[Store].[All Stores], \n" +
+                "   [Store].[USA],\n" +
+                "   [Store].[USA].[CA],\n" +
+                "   [Store].[USA].[CA].[San Francisco]}) on columns,\n" +
+                " AddCalculatedMembers([Measures].members) on rows\n" +
                 " from Sales");
 
         // Repeat time-related measures with more time members.
         executeQuery(
-                "with" + nl +
-                "member [Measures].[Total Store Sales, Quarter to date] as" + nl +
-                " 'sum(PeriodsToDate([Time].[Quarter]), [Measures].[Store Sales])'" + nl +
-                "" + nl +
-                "member [Measures].[Average Store Sales, period to date] as" + nl +
-                " 'avg(PeriodsToDate([Time].CurrentMember.Parent.Level), [Measures].[Store Sales])'" + nl +
-                "" + nl +
-                "member [Measures].[Average Store Sales, Quarter to date] as" + nl +
-                " 'avg(PeriodsToDate([Time].[Quarter]), [Measures].[Store Sales])'" + nl +
-                "" + nl +
-                "member [Measures].[Rolling Total of Store Sales over previous 3 periods] as" + nl +
-                " 'sum([Time].CurrentMember.Lag(2) : [Time].CurrentMember, [Measures].[Store Sales])'" + nl +
-                "" + nl +
-                "member [Measures].[Rolling Average of Store Sales over previous 3 periods] as" + nl +
-                " 'avg([Time].CurrentMember.Lag(2) : [Time].CurrentMember, [Measures].[Store Sales])'" + nl +
-                "" + nl +
-                "select" + nl +
-                " CrossJoin(" + nl +
-                "  {[Store].[USA].[CA]," + nl +
-                "   [Store].[USA].[CA].[San Francisco]}," + nl +
-                "  [Time].[Month].members) on columns," + nl +
-                " AddCalculatedMembers([Measures].members) on rows" + nl +
+                "with\n" +
+                "member [Measures].[Total Store Sales, Quarter to date] as\n" +
+                " 'sum(PeriodsToDate([Time].[Quarter]), [Measures].[Store Sales])'\n" +
+                "\n" +
+                "member [Measures].[Average Store Sales, period to date] as\n" +
+                " 'avg(PeriodsToDate([Time].CurrentMember.Parent.Level), [Measures].[Store Sales])'\n" +
+                "\n" +
+                "member [Measures].[Average Store Sales, Quarter to date] as\n" +
+                " 'avg(PeriodsToDate([Time].[Quarter]), [Measures].[Store Sales])'\n" +
+                "\n" +
+                "member [Measures].[Rolling Total of Store Sales over previous 3 periods] as\n" +
+                " 'sum([Time].CurrentMember.Lag(2) : [Time].CurrentMember, [Measures].[Store Sales])'\n" +
+                "\n" +
+                "member [Measures].[Rolling Average of Store Sales over previous 3 periods] as\n" +
+                " 'avg([Time].CurrentMember.Lag(2) : [Time].CurrentMember, [Measures].[Store Sales])'\n" +
+                "\n" +
+                "select\n" +
+                " CrossJoin(\n" +
+                "  {[Store].[USA].[CA],\n" +
+                "   [Store].[USA].[CA].[San Francisco]},\n" +
+                "  [Time].[Month].members) on columns,\n" +
+                " AddCalculatedMembers([Measures].members) on rows\n" +
                 " from Sales");
     }
 
@@ -377,16 +377,15 @@ public class TestCalculatedMembers extends FoodMartTestCase {
      */
     public void testBracketInCalcMemberName() {
         assertQueryReturns(
-                fold(new String[] {
-                    "with member [Measures].[has a [bracket]] in it] as ",
-                    "' [Measures].CurrentMember.Name '",
-                    "select {[Measures].[has a [bracket]] in it]} on columns",
-                    "from [Sales]"}),
-                "Axis #0:" + nl +
-                "{}" + nl +
-                "Axis #1:" + nl +
-                "{[Measures].[has a [bracket]] in it]}" + nl +
-                "Row #0: Unit Sales" + nl);
+            "with member [Measures].[has a [bracket]] in it] as \n" +
+            "' [Measures].CurrentMember.Name '\n" +
+            "select {[Measures].[has a [bracket]] in it]} on columns\n" +
+            "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[has a [bracket]] in it]}\n" +
+                "Row #0: Unit Sales\n"));
     }
 
     /**
@@ -395,33 +394,32 @@ public class TestCalculatedMembers extends FoodMartTestCase {
      */
     public void testNpeInIif() {
         assertQueryReturns(
-                fold(new String[] {
-                    "WITH MEMBER [Measures].[Foo] AS ' 1 / [Measures].[Unit Sales] ',",
-                    "  FORMAT_STRING=IIf([Measures].[Foo] < .3, \"|0.0|style=red\",\"0.0\")",
-                    "SELECT {[Store].[USA].[WA].children} on columns",
-                    "FROM Sales",
-                    "WHERE ( [Time].[1997].[Q4].[12],",
-                    " [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],",
-                    " [Measures].[Foo])"}),
-                fold(new String[] {
-                    "Axis #0:",
-                    "{[Time].[1997].[Q4].[12], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer], [Measures].[Foo]}",
-                    "Axis #1:",
-                    "{[Store].[All Stores].[USA].[WA].[Bellingham]}",
-                    "{[Store].[All Stores].[USA].[WA].[Bremerton]}",
-                    "{[Store].[All Stores].[USA].[WA].[Seattle]}",
-                    "{[Store].[All Stores].[USA].[WA].[Spokane]}",
-                    "{[Store].[All Stores].[USA].[WA].[Tacoma]}",
-                    "{[Store].[All Stores].[USA].[WA].[Walla Walla]}",
-                    "{[Store].[All Stores].[USA].[WA].[Yakima]}",
-                    "Row #0: ",
-                    "Row #0: ",
-                    "Row #0: 0.5",
-                    "Row #0: ",
-                    "Row #0: |0.1|style=red",
-                    "Row #0: ",
-                    "Row #0: |0.2|style=red",
-                    ""}));
+                fold(
+                    "WITH MEMBER [Measures].[Foo] AS ' 1 / [Measures].[Unit Sales] ',\n" +
+                    "  FORMAT_STRING=IIf([Measures].[Foo] < .3, \"|0.0|style=red\",\"0.0\")\n" +
+                    "SELECT {[Store].[USA].[WA].children} on columns\n" +
+                    "FROM Sales\n" +
+                    "WHERE ( [Time].[1997].[Q4].[12],\n" +
+                    " [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n" +
+                    " [Measures].[Foo])"),
+                fold(
+                    "Axis #0:\n" +
+                    "{[Time].[1997].[Q4].[12], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer], [Measures].[Foo]}\n" +
+                    "Axis #1:\n" +
+                    "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                    "{[Store].[All Stores].[USA].[WA].[Bremerton]}\n" +
+                    "{[Store].[All Stores].[USA].[WA].[Seattle]}\n" +
+                    "{[Store].[All Stores].[USA].[WA].[Spokane]}\n" +
+                    "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n" +
+                    "{[Store].[All Stores].[USA].[WA].[Walla Walla]}\n" +
+                    "{[Store].[All Stores].[USA].[WA].[Yakima]}\n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: 0.5\n" +
+                    "Row #0: \n" +
+                    "Row #0: |0.1|style=red\n" +
+                    "Row #0: \n" +
+                    "Row #0: |0.2|style=red\n"));
     }
 
     /**
@@ -431,49 +429,48 @@ public class TestCalculatedMembers extends FoodMartTestCase {
     public void testBracketInCubeCalcMemberName() {
         Schema schema = getConnection().getSchema();
         final String cubeName = "Sales_BracketInCubeCalcMemberName";
-        schema.createCube(fold(new String[] {
-                "<Cube name=\"" + cubeName + "\">",
-                "  <Table name=\"sales_fact_1997\"/>",
-                "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">",
-                "    <Hierarchy hasAll=\"false\" primaryKey=\"customer_id\">",
-                "    <Table name=\"customer\"/>",
-                "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>",
-                "    </Hierarchy>",
-                "  </Dimension>",
-                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"",
-                "      formatString=\"Standard\" visible=\"false\"/>",
-                "  <CalculatedMember",
-                "      name=\"With a [bracket] in it\"",
-                "      dimension=\"Measures\"",
-                "      visible=\"false\"",
-                "      formula=\"[Measures].[Unit Sales] * 10\">",
-                "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>",
-                "  </CalculatedMember>",
-                "</Cube>"}));
+        schema.createCube(
+                "<Cube name=\"" + cubeName + "\">\n" +
+                "  <Table name=\"sales_fact_1997\"/>\n" +
+                "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n" +
+                "    <Hierarchy hasAll=\"false\" primaryKey=\"customer_id\">\n" +
+                "    <Table name=\"customer\"/>\n" +
+                "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n" +
+                "    </Hierarchy>\n" +
+                "  </Dimension>\n" +
+                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
+                "      formatString=\"Standard\" visible=\"false\"/>\n" +
+                "  <CalculatedMember\n" +
+                "      name=\"With a [bracket] in it\"\n" +
+                "      dimension=\"Measures\"\n" +
+                "      visible=\"false\"\n" +
+                "      formula=\"[Measures].[Unit Sales] * 10\">\n" +
+                "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n" +
+                "  </CalculatedMember>\n" +
+                "</Cube>");
 
         getTestContext(cubeName).assertThrows(
-                fold(new String[] {
-                    "select {[Measures].[With a [bracket] in it]} on columns,",
-                    " {[Gender].Members} on rows",
-                    "from [" + cubeName + "]"}),
+                fold(
+                    "select {[Measures].[With a [bracket] in it]} on columns,\n" +
+                    " {[Gender].Members} on rows\n" +
+                    "from [" + cubeName + "]"),
                 "Syntax error at line 1, column 38, token 'in'");
 
         getTestContext(cubeName).assertQueryReturns(
-                fold(new String[] {
-                    "select {[Measures].[With a [bracket]] in it]} on columns,",
-                    " {[Gender].Members} on rows",
-                    "from [" + cubeName + "]"}),
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                "Axis #1:",
-                "{[Measures].[With a [bracket]] in it]}",
-                "Axis #2:",
-                "{[Gender].[F]}",
-                "{[Gender].[M]}",
-                "Row #0: $1,315,580.00",
-                "Row #1: $1,352,150.00",
-                ""}));
+                fold(
+                    "select {[Measures].[With a [bracket]] in it]} on columns,\n" +
+                    " {[Gender].Members} on rows\n" +
+                    "from [" + cubeName + "]"),
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[With a [bracket]] in it]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[F]}\n" +
+                "{[Gender].[M]}\n" +
+                "Row #0: $1,315,580.00\n" +
+                "Row #1: $1,352,150.00\n"));
     }
 
     public void testPropertyReferencesCalcMember() {
@@ -483,13 +480,12 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "select {[Measures].[Foo]} on columns " +
                 "from [Sales]",
 
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Measures].[Foo]}",
-                    "Row #0: |533,546|style=red",
-                    ""}));
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Foo]}\n" +
+                    "Row #0: |533,546|style=red\n"));
     }
 
     public void testCalcMemberWithQuote() {
@@ -507,39 +503,36 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "with member [Measures].[Foo] as ' \"quoted string with ''apostrophe'' in it\" ' " +
                 "select {[Measures].[Foo]} on columns " +
                 "from [Sales]",
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Measures].[Foo]}",
-                    "Row #0: quoted string with 'apostrophe' in it",
-                    ""}));
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Foo]}\n" +
+                    "Row #0: quoted string with 'apostrophe' in it\n"));
 
         // escaped double-quote inside double-quoted string literal
         assertQueryReturns(
                 "with member [Measures].[Foo] as ' \"quoted string with \"\"double-quote\"\" in it\" ' " +
                 "select {[Measures].[Foo]} on columns " +
                 "from [Sales]",
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Measures].[Foo]}",
-                    "Row #0: quoted string with \"double-quote\" in it",
-                    ""}));
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Foo]}\n" +
+                    "Row #0: quoted string with \"double-quote\" in it\n"));
 
         // escaped double-quote inside double-quoted string literal
         assertQueryReturns(
                 "with member [Measures].[Foo] as \"quoted string with 'apos' in it\" " +
                 "select {[Measures].[Foo]} on columns " +
                 "from [Sales]",
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Measures].[Foo]}",
-                    "Row #0: quoted string with 'apos' in it",
-                    ""}));
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Foo]}\n" +
+                    "Row #0: quoted string with 'apos' in it\n"));
 
         // Double-escaped single-quote
         // inside escaped single-quoted string literal
@@ -549,13 +542,12 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "with member [Measures].[Foo] as ' ''quoted string and ''''apos''''.'' ' " +
                 "select {[Measures].[Foo]} on columns " +
                 "from [Sales]",
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Measures].[Foo]}",
-                    "Row #0: quoted string and 'apos'.",
-                    ""}));
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Foo]}\n" +
+                    "Row #0: quoted string and 'apos'.\n"));
 
         // Escaped single-quote
         // inside double-quoted string literal
@@ -564,13 +556,12 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "with member [Measures].[Foo] as ' \"quoted string and ''apos''.\" ' " +
                 "select {[Measures].[Foo]} on columns " +
                 "from [Sales]",
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Measures].[Foo]}",
-                    "Row #0: quoted string and 'apos'.",
-                    ""}));
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Foo]}\n" +
+                    "Row #0: quoted string and 'apos'.\n"));
 
         // single quote in format expression
         assertQueryReturns(
@@ -579,19 +570,18 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "select {[Measures].[Colored Profit]} on columns," +
                 " {[Product].Children} on rows " +
                 "from [Sales]",
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Measures].[Colored Profit]}",
-                    "Axis #2:",
-                    "{[Product].[All Products].[Drink]}",
-                    "{[Product].[All Products].[Food]}",
-                    "{[Product].[All Products].[Non-Consumable]}",
-                    "Row #0: |$29,358.98|style=green",
-                    "Row #1: |$245,764.87|style=green",
-                    "Row #2: |$64,487.05|style=green",
-                    ""}));
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Colored Profit]}\n" +
+                    "Axis #2:\n" +
+                    "{[Product].[All Products].[Drink]}\n" +
+                    "{[Product].[All Products].[Food]}\n" +
+                    "{[Product].[All Products].[Non-Consumable]}\n" +
+                    "Row #0: |$29,358.98|style=green\n" +
+                    "Row #1: |$245,764.87|style=green\n" +
+                    "Row #2: |$64,487.05|style=green\n"));
 
         // double quote in format expression
         assertQueryReturns(
@@ -600,19 +590,18 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "select {[Measures].[Colored Profit]} on columns," +
                 " {[Product].Children} on rows " +
                 "from [Sales]",
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Measures].[Colored Profit]}",
-                    "Axis #2:",
-                    "{[Product].[All Products].[Drink]}",
-                    "{[Product].[All Products].[Food]}",
-                    "{[Product].[All Products].[Non-Consumable]}",
-                    "Row #0: |$29,358.98|style=green",
-                    "Row #1: |$245,764.87|style=green",
-                    "Row #2: |$64,487.05|style=green",
-                    ""}));
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Colored Profit]}\n" +
+                    "Axis #2:\n" +
+                    "{[Product].[All Products].[Drink]}\n" +
+                    "{[Product].[All Products].[Food]}\n" +
+                    "{[Product].[All Products].[Non-Consumable]}\n" +
+                    "Row #0: |$29,358.98|style=green\n" +
+                    "Row #1: |$245,764.87|style=green\n" +
+                    "Row #2: |$64,487.05|style=green\n"));
     }
 
     /**
@@ -622,76 +611,73 @@ public class TestCalculatedMembers extends FoodMartTestCase {
     public void testQuoteInCalcMember() {
         Schema schema = getConnection().getSchema();
         final String cubeName = "Sales_Bug1410383";
-        schema.createCube(fold(new String[] {
-                "<Cube name=\"" + cubeName + "\">",
-                "  <Table name=\"sales_fact_1997\"/>",
-                "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">",
-                "    <Hierarchy hasAll=\"false\" primaryKey=\"customer_id\">",
-                "    <Table name=\"customer\"/>",
-                "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>",
-                "    </Hierarchy>",
-                "  </Dimension>",
-                "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"",
-                "      formatString=\"Standard\" visible=\"false\"/>",
-                "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"",
-                "      formatString=\"Standard\" visible=\"false\"/>",
-                "  <CalculatedMember",
-                "      name=\"Apos in dq\"",
-                "      dimension=\"Measures\"",
-                "      visible=\"false\"",
-                "      formula=\" &quot;an 'apos' in dq&quot; \" />",
-                "  <CalculatedMember",
-                "      name=\"Dq in dq\"",
-                "      dimension=\"Measures\"",
-                "      visible=\"false\"",
-                "      formula=\" &quot;a &quot;&quot;dq&quot;&quot; in dq&quot; \" />",
-                "  <CalculatedMember",
-                "      name=\"Apos in apos\"",
-                "      dimension=\"Measures\"",
-                "      visible=\"false\"",
-                "      formula=\" &apos;an &apos;&apos;apos&apos;&apos; in apos&apos; \" />",
-                "  <CalculatedMember",
-                "      name=\"Dq in apos\"",
-                "      dimension=\"Measures\"",
-                "      visible=\"false\"",
-                "      formula=\" &apos;a &quot;dq&quot; in apos&apos; \" />",
-                "  <CalculatedMember",
-                "      name=\"Colored Profit\"",
-                "      dimension=\"Measures\"",
-                "      visible=\"false\"",
-                "      formula=\" [Measures].[Store Sales] - [Measures].[Store Cost] \">",
-                "    <CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"Iif([Measures].[Colored Profit] &lt; 0, '|($#,##0.00)|style=red', '|$#,##0.00|style=green')\"/>",
-                "  </CalculatedMember>",
-                "</Cube>"}));
+        schema.createCube(
+                "<Cube name=\"" + cubeName + "\">\n" +
+                "  <Table name=\"sales_fact_1997\"/>\n" +
+                "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n" +
+                "    <Hierarchy hasAll=\"false\" primaryKey=\"customer_id\">\n" +
+                "    <Table name=\"customer\"/>\n" +
+                "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n" +
+                "    </Hierarchy>\n" +
+                "  </Dimension>\n" +
+                "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
+                "      formatString=\"Standard\" visible=\"false\"/>\n" +
+                "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n" +
+                "      formatString=\"Standard\" visible=\"false\"/>\n" +
+                "  <CalculatedMember\n" +
+                "      name=\"Apos in dq\"\n" +
+                "      dimension=\"Measures\"\n" +
+                "      visible=\"false\"\n" +
+                "      formula=\" &quot;an 'apos' in dq&quot; \" />\n" +
+                "  <CalculatedMember\n" +
+                "      name=\"Dq in dq\"\n" +
+                "      dimension=\"Measures\"\n" +
+                "      visible=\"false\"\n" +
+                "      formula=\" &quot;a &quot;&quot;dq&quot;&quot; in dq&quot; \" />\n" +
+                "  <CalculatedMember\n" +
+                "      name=\"Apos in apos\"\n" +
+                "      dimension=\"Measures\"\n" +
+                "      visible=\"false\"\n" +
+                "      formula=\" &apos;an &apos;&apos;apos&apos;&apos; in apos&apos; \" />\n" +
+                "  <CalculatedMember\n" +
+                "      name=\"Dq in apos\"\n" +
+                "      dimension=\"Measures\"\n" +
+                "      visible=\"false\"\n" +
+                "      formula=\" &apos;a &quot;dq&quot; in apos&apos; \" />\n" +
+                "  <CalculatedMember\n" +
+                "      name=\"Colored Profit\"\n" +
+                "      dimension=\"Measures\"\n" +
+                "      visible=\"false\"\n" +
+                "      formula=\" [Measures].[Store Sales] - [Measures].[Store Cost] \">\n" +
+                "    <CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"Iif([Measures].[Colored Profit] &lt; 0, '|($#,##0.00)|style=red', '|$#,##0.00|style=green')\"/>\n" +
+                "  </CalculatedMember>\n" +
+                "</Cube>");
 
         getTestContext(cubeName).assertQueryReturns(
-                fold(new String[] {
-                    "select {[Measures].[Apos in dq], [Measures].[Dq in dq], [Measures].[Apos in apos], [Measures].[Dq in apos], [Measures].[Colored Profit]} on columns,",
-                    " {[Gender].Members} on rows",
-                    "from [" + cubeName + "]"}),
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Measures].[Apos in dq]}",
-                    "{[Measures].[Dq in dq]}",
-                    "{[Measures].[Apos in apos]}",
-                    "{[Measures].[Dq in apos]}",
-                    "{[Measures].[Colored Profit]}",
-                    "Axis #2:",
-                    "{[Gender].[F]}",
-                    "{[Gender].[M]}",
-                    "Row #0: an 'apos' in dq",
-                    "Row #0: a \"dq\" in dq",
-                    "Row #0: an 'apos' in apos",
-                    "Row #0: a \"dq\" in apos",
-                    "Row #0: |$168,448.73|style=green",
-                    "Row #1: an 'apos' in dq",
-                    "Row #1: a \"dq\" in dq",
-                    "Row #1: an 'apos' in apos",
-                    "Row #1: a \"dq\" in apos",
-                    "Row #1: |$171,162.17|style=green",
-                    ""}));
+            "select {[Measures].[Apos in dq], [Measures].[Dq in dq], [Measures].[Apos in apos], [Measures].[Dq in apos], [Measures].[Colored Profit]} on columns,\n" +
+            " {[Gender].Members} on rows\n" +
+            "from [" + cubeName + "]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Apos in dq]}\n" +
+                "{[Measures].[Dq in dq]}\n" +
+                "{[Measures].[Apos in apos]}\n" +
+                "{[Measures].[Dq in apos]}\n" +
+                "{[Measures].[Colored Profit]}\n" +
+                "Axis #2:\n" +
+                "{[Gender].[F]}\n" +
+                "{[Gender].[M]}\n" +
+                "Row #0: an 'apos' in dq\n" +
+                "Row #0: a \"dq\" in dq\n" +
+                "Row #0: an 'apos' in apos\n" +
+                "Row #0: a \"dq\" in apos\n" +
+                "Row #0: |$168,448.73|style=green\n" +
+                "Row #1: an 'apos' in dq\n" +
+                "Row #1: a \"dq\" in dq\n" +
+                "Row #1: an 'apos' in apos\n" +
+                "Row #1: a \"dq\" in apos\n" +
+                "Row #1: |$171,162.17|style=green\n"));
     }
 
 }

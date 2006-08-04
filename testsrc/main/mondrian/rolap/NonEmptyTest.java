@@ -372,19 +372,19 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testNonEmptyUnionQuery() {
-        Result result = executeQuery(fold(new String[] {
-                "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns,",
-                " NON EMPTY Hierarchize( ",
-                "   Union(",
-                "     Crossjoin(",
-                "       Crossjoin([Gender].[All Gender].children,",
-                "                 [Marital Status].[All Marital Status].children ),",
-                "       Crossjoin([Customers].[All Customers].children,",
-                "                 [Product].[All Products].children ) ),",
-                "     Crossjoin( {([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M] )},",
-                "       Crossjoin(", "         [Customers].[All Customers].[USA].children,",
-                "         [Product].[All Products].children ) ) )) on rows",
-                "from Sales where ([Time].[1997])"}));
+        Result result = executeQuery(
+                "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns,\n" +
+                " NON EMPTY Hierarchize( \n" +
+                "   Union(\n" +
+                "     Crossjoin(\n" +
+                "       Crossjoin([Gender].[All Gender].children,\n" +
+                "                 [Marital Status].[All Marital Status].children ),\n" +
+                "       Crossjoin([Customers].[All Customers].children,\n" +
+                "                 [Product].[All Products].children ) ),\n" +
+                "     Crossjoin( {([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M] )},\n" +
+                "       Crossjoin(\n" + "         [Customers].[All Customers].[USA].children,\n" +
+                "         [Product].[All Products].children ) ) )) on rows\n" +
+                "from Sales where ([Time].[1997])");
         final Axis rowsAxis = result.getAxes()[1];
         Assert.assertEquals(21, rowsAxis.positions.length);
     }
@@ -757,17 +757,16 @@ public class NonEmptyTest extends FoodMartTestCase {
                 "[Customers].[All Customers].Children)) ON ROWS\n" +
                 "from [Sales]\n" +
                 "where [Measures].[Profit]",
-                fold(new String[] {
-                    "Axis #0:",
-                    "{[Measures].[Profit]}",
-                    "Axis #1:",
-                    "{[Time].[1997]}",
-                    "Axis #2:",
-                    "{[Customers].[All Customers]}",
-                    "{[Customers].[All Customers].[USA]}",
-                    "Row #0: $339,610.90",
-                    "Row #1: $339,610.90",
-                    ""}));
+                fold(
+                    "Axis #0:\n" +
+                    "{[Measures].[Profit]}\n" +
+                    "Axis #1:\n" +
+                    "{[Time].[1997]}\n" +
+                    "Axis #2:\n" +
+                    "{[Customers].[All Customers]}\n" +
+                    "{[Customers].[All Customers].[USA]}\n" +
+                    "Row #0: $339,610.90\n" +
+                    "Row #1: $339,610.90\n"));
     }
     
     public void testVirtualCubeCrossJoin()

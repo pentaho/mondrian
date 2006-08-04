@@ -76,10 +76,9 @@ public class ParserTest extends TestCase {
         Parser p = new TestParser();
         assertParserReturns(
                 "select [measures].[$foo] on columns from sales",
-                TestContext.fold(new String[] {
-                    "select [measures].[$foo] ON COLUMNS",
-                    "from [sales]",
-                    ""}));
+                TestContext.fold(
+                    "select [measures].[$foo] ON COLUMNS\n" +
+                    "from [sales]\n"));
         checkFails(p,
                 "select [measures].$foo on columns from sales",
                 "Unexpected character '$'");
@@ -91,19 +90,18 @@ public class ParserTest extends TestCase {
 
     public void testUnparse() {
         checkUnparse(
-                TestContext.fold(new String[] {
-                    "with member [Measures].[Foo] as ' 123 '",
-                    "select {[Measures].members} on columns,",
-                    " CrossJoin([Product].members, {[Gender].Children}) on rows",
-                    "from [Sales]",
-                    "where [Marital Status].[S]"}),
-                TestContext.fold(new String[] {
-                    "with member [Measures].[Foo] as '123.0'",
-                    "select {[Measures].Members} ON COLUMNS,",
-                    "  Crossjoin([Product].Members, {[Gender].Children}) ON ROWS",
-                    "from [Sales]",
-                    "where [Marital Status].[All Marital Status].[S]",
-                    ""}));
+                TestContext.fold(
+                    "with member [Measures].[Foo] as ' 123 '\n" +
+                    "select {[Measures].members} on columns,\n" +
+                    " CrossJoin([Product].members, {[Gender].Children}) on rows\n" +
+                    "from [Sales]\n" +
+                    "where [Marital Status].[S]"),
+                TestContext.fold(
+                    "with member [Measures].[Foo] as '123.0'\n" +
+                    "select {[Measures].Members} ON COLUMNS,\n" +
+                    "  Crossjoin([Product].Members, {[Gender].Children}) ON ROWS\n" +
+                    "from [Sales]\n" +
+                    "where [Marital Status].[All Marital Status].[S]\n"));
     }
 
     private void checkUnparse(String queryString, final String expected) {
@@ -169,11 +167,10 @@ public class ParserTest extends TestCase {
                 "with member [Measures].[Foo] as " +
                 " ' case when x = y then \"eq\" when x < y then \"lt\" else \"gt\" end '" +
                 "select {[foo]} on axis(0) from cube",
-                TestContext.fold(new String[] {
-                    "with member [Measures].[Foo] as 'CASE WHEN ([x] = [y]) THEN \"eq\" WHEN ([x] < [y]) THEN \"lt\" ELSE \"gt\" END'",
-                    "select {[foo]} ON COLUMNS",
-                    "from [cube]",
-                    ""}));
+                TestContext.fold(
+                    "with member [Measures].[Foo] as 'CASE WHEN ([x] = [y]) THEN \"eq\" WHEN ([x] < [y]) THEN \"lt\" ELSE \"gt\" END'\n" +
+                    "select {[foo]} ON COLUMNS\n" +
+                    "from [cube]\n"));
     }
 
     public void testCaseSwitch() {
@@ -181,20 +178,18 @@ public class ParserTest extends TestCase {
                 "with member [Measures].[Foo] as " +
                 " ' case x when 1 then 2 when 3 then 4 else 5 end '" +
                 "select {[foo]} on axis(0) from cube",
-                TestContext.fold(new String[] {
-                    "with member [Measures].[Foo] as 'CASE [x] WHEN 1.0 THEN 2.0 WHEN 3.0 THEN 4.0 ELSE 5.0 END'",
-                    "select {[foo]} ON COLUMNS",
-                    "from [cube]",
-                    ""}));
+                TestContext.fold(
+                    "with member [Measures].[Foo] as 'CASE [x] WHEN 1.0 THEN 2.0 WHEN 3.0 THEN 4.0 ELSE 5.0 END'\n" +
+                    "select {[foo]} ON COLUMNS\n" +
+                    "from [cube]\n"));
     }
 
     public void testDimensionProperties() {
         assertParserReturns(
                 "select {[foo]} properties p1,   p2 on columns from [cube]",
-                TestContext.fold(new String[] {
-                    "select {[foo]} DIMENSION PROPERTIES [p1], [p2] ON COLUMNS",
-                    "from [cube]",
-                    ""}));
+                TestContext.fold(
+                    "select {[foo]} DIMENSION PROPERTIES [p1], [p2] ON COLUMNS\n" +
+                    "from [cube]\n"));
     }
 
     /**

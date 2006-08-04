@@ -28,53 +28,51 @@ public class InlineTableTest extends FoodMartTestCase {
     public void testInlineTable() {
         Schema schema = getConnection().getSchema();
         final String cubeName = "Sales_inline";
-        final Cube cube = schema.createCube(fold(new String[] {
-            "<Cube name=\"" + cubeName + "\">",
-            "  <Table name=\"sales_fact_1997\"/>",
-            "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>",
-            "  <Dimension name=\"Alternative Promotion\" foreignKey=\"promotion_id\">",
-            "    <Hierarchy hasAll=\"true\" primaryKey=\"promo_id\">",
-            "      <InlineTable alias=\"alt_promotion\">",
-            "        <ColumnDefs>",
-            "          <ColumnDef name=\"promo_id\" type=\"Numeric\"/>",
-            "          <ColumnDef name=\"promo_name\" type=\"String\"/>",
-            "        </ColumnDefs>",
-            "        <Rows>",
-            "          <Row>",
-            "            <Value column=\"promo_id\">0</Value>",
-            "            <Value column=\"promo_name\">Promo0</Value>",
-            "          </Row>",
-            "          <Row>",
-            "            <Value column=\"promo_id\">1</Value>",
-            "            <Value column=\"promo_name\">Promo1</Value>",
-            "          </Row>",
-            "        </Rows>",
-            "      </InlineTable>",
-            "      <Level name=\"Alternative Promotion\" column=\"promo_id\" nameColumn=\"promo_name\" uniqueMembers=\"true\"/> ",
-            "    </Hierarchy>",
-            "  </Dimension>",
-            "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"",
-            "      formatString=\"Standard\" visible=\"false\"/>",
-            "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"",
-            "      formatString=\"#,###.00\"/>",
-            "</Cube>"}));
+        final Cube cube = schema.createCube(
+            "<Cube name=\"" + cubeName + "\">\n" +
+            "  <Table name=\"sales_fact_1997\"/>\n" +
+            "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
+            "  <Dimension name=\"Alternative Promotion\" foreignKey=\"promotion_id\">\n" +
+            "    <Hierarchy hasAll=\"true\" primaryKey=\"promo_id\">\n" +
+            "      <InlineTable alias=\"alt_promotion\">\n" +
+            "        <ColumnDefs>\n" +
+            "          <ColumnDef name=\"promo_id\" type=\"Numeric\"/>\n" +
+            "          <ColumnDef name=\"promo_name\" type=\"String\"/>\n" +
+            "        </ColumnDefs>\n" +
+            "        <Rows>\n" +
+            "          <Row>\n" +
+            "            <Value column=\"promo_id\">0</Value>\n" +
+            "            <Value column=\"promo_name\">Promo0</Value>\n" +
+            "          </Row>\n" +
+            "          <Row>\n" +
+            "            <Value column=\"promo_id\">1</Value>\n" +
+            "            <Value column=\"promo_name\">Promo1</Value>\n" +
+            "          </Row>\n" +
+            "        </Rows>\n" +
+            "      </InlineTable>\n" +
+            "      <Level name=\"Alternative Promotion\" column=\"promo_id\" nameColumn=\"promo_name\" uniqueMembers=\"true\"/> \n" +
+            "    </Hierarchy>\n" +
+            "  </Dimension>\n" +
+            "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
+            "      formatString=\"Standard\" visible=\"false\"/>\n" +
+            "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
+            "      formatString=\"#,###.00\"/>\n" +
+            "</Cube>");
 
         try {
             getTestContext().assertQueryReturns(
-                    fold(new String[] {
-                        "select {[Alternative Promotion].members} ON COLUMNS",
-                        "from [" + cubeName + "] "}),
-                    fold(new String[] {
-                        "Axis #0:",
-                        "{}",
-                        "Axis #1:",
-                        "{[Alternative Promotion].[All Alternative Promotions]}",
-                        "{[Alternative Promotion].[All Alternative Promotions].[Promo0]}",
-                        "{[Alternative Promotion].[All Alternative Promotions].[Promo1]}",
-                        "Row #0: 266,773",
-                        "Row #0: 195,448",
-                        "Row #0: ",
-                        ""}));
+                "select {[Alternative Promotion].members} ON COLUMNS\n" +
+                "from [" + cubeName + "] ",
+                    fold(
+                        "Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Alternative Promotion].[All Alternative Promotions]}\n" +
+                        "{[Alternative Promotion].[All Alternative Promotions].[Promo0]}\n" +
+                        "{[Alternative Promotion].[All Alternative Promotions].[Promo1]}\n" +
+                        "Row #0: 266,773\n" +
+                        "Row #0: 195,448\n" +
+                        "Row #0: \n"));
         } finally {
             schema.removeCube(cubeName);
         }

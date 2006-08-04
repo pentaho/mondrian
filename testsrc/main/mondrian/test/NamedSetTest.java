@@ -754,95 +754,93 @@ public class NamedSetTest extends FoodMartTestCase {
             }
         };
         tc.assertQueryReturns(
-                fold(new String[] {
-                    "select {",
-                    "    [Measures].[Unit Sales],",
-                    "    [Measures].[CA City Sales]} on columns,",
-                    "  Crossjoin(",
-                    "    [Time].[1997].Children,",
-                    "    [Top Products In CA]) on rows",
-                    "from [Sales]",
-                    "where [Marital Status].[S]"}),
-                fold(new String[] {
-                    "Axis #0:",
-                    "{[Marital Status].[All Marital Status].[S]}",
-                    "Axis #1:",
-                    "{[Measures].[Unit Sales]}",
-                    "{[Measures].[CA City Sales]}",
-                    "Axis #2:",
-                    "{[Time].[1997].[Q1], [Product].[All Products].[Food].[Produce]}",
-                    "{[Time].[1997].[Q1], [Product].[All Products].[Food].[Snack Foods]}",
-                    "{[Time].[1997].[Q1], [Product].[All Products].[Non-Consumable].[Household]}",
-                    "{[Time].[1997].[Q2], [Product].[All Products].[Food].[Produce]}",
-                    "{[Time].[1997].[Q2], [Product].[All Products].[Food].[Snack Foods]}",
-                    "{[Time].[1997].[Q2], [Product].[All Products].[Non-Consumable].[Household]}",
-                    "{[Time].[1997].[Q3], [Product].[All Products].[Food].[Produce]}",
-                    "{[Time].[1997].[Q3], [Product].[All Products].[Food].[Snack Foods]}",
-                    "{[Time].[1997].[Q3], [Product].[All Products].[Non-Consumable].[Household]}",
-                    "{[Time].[1997].[Q4], [Product].[All Products].[Food].[Produce]}",
-                    "{[Time].[1997].[Q4], [Product].[All Products].[Food].[Snack Foods]}",
-                    "{[Time].[1997].[Q4], [Product].[All Products].[Non-Consumable].[Household]}",
-                    "Row #0: 4,872",
-                    "Row #0: $1,218.0",
-                    "Row #1: 3,746",
-                    "Row #1: $840.0",
-                    "Row #2: 3,425",
-                    "Row #2: $817.0",
-                    "Row #3: 4,633",
-                    "Row #3: $1,320.0",
-                    "Row #4: 3,588",
-                    "Row #4: $1,058.0",
-                    "Row #5: 3,149",
-                    "Row #5: $938.0",
-                    "Row #6: 4,651",
-                    "Row #6: $1,353.0",
-                    "Row #7: 3,895",
-                    "Row #7: $1,134.0",
-                    "Row #8: 3,395",
-                    "Row #8: $1,029.0",
-                    "Row #9: 5,160",
-                    "Row #9: $1,550.0",
-                    "Row #10: 4,160",
-                    "Row #10: $1,301.0",
-                    "Row #11: 3,808",
-                    "Row #11: $1,166.0",
-                    ""}));
+                fold(
+                    "select {\n" +
+                    "    [Measures].[Unit Sales],\n" +
+                    "    [Measures].[CA City Sales]} on columns,\n" +
+                    "  Crossjoin(\n" +
+                    "    [Time].[1997].Children,\n" +
+                    "    [Top Products In CA]) on rows\n" +
+                    "from [Sales]\n" +
+                    "where [Marital Status].[S]"),
+                fold(
+                    "Axis #0:\n" +
+                    "{[Marital Status].[All Marital Status].[S]}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "{[Measures].[CA City Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Time].[1997].[Q1], [Product].[All Products].[Food].[Produce]}\n" +
+                    "{[Time].[1997].[Q1], [Product].[All Products].[Food].[Snack Foods]}\n" +
+                    "{[Time].[1997].[Q1], [Product].[All Products].[Non-Consumable].[Household]}\n" +
+                    "{[Time].[1997].[Q2], [Product].[All Products].[Food].[Produce]}\n" +
+                    "{[Time].[1997].[Q2], [Product].[All Products].[Food].[Snack Foods]}\n" +
+                    "{[Time].[1997].[Q2], [Product].[All Products].[Non-Consumable].[Household]}\n" +
+                    "{[Time].[1997].[Q3], [Product].[All Products].[Food].[Produce]}\n" +
+                    "{[Time].[1997].[Q3], [Product].[All Products].[Food].[Snack Foods]}\n" +
+                    "{[Time].[1997].[Q3], [Product].[All Products].[Non-Consumable].[Household]}\n" +
+                    "{[Time].[1997].[Q4], [Product].[All Products].[Food].[Produce]}\n" +
+                    "{[Time].[1997].[Q4], [Product].[All Products].[Food].[Snack Foods]}\n" +
+                    "{[Time].[1997].[Q4], [Product].[All Products].[Non-Consumable].[Household]}\n" +
+                    "Row #0: 4,872\n" +
+                    "Row #0: $1,218.0\n" +
+                    "Row #1: 3,746\n" +
+                    "Row #1: $840.0\n" +
+                    "Row #2: 3,425\n" +
+                    "Row #2: $817.0\n" +
+                    "Row #3: 4,633\n" +
+                    "Row #3: $1,320.0\n" +
+                    "Row #4: 3,588\n" +
+                    "Row #4: $1,058.0\n" +
+                    "Row #5: 3,149\n" +
+                    "Row #5: $938.0\n" +
+                    "Row #6: 4,651\n" +
+                    "Row #6: $1,353.0\n" +
+                    "Row #7: 3,895\n" +
+                    "Row #7: $1,134.0\n" +
+                    "Row #8: 3,395\n" +
+                    "Row #8: $1,029.0\n" +
+                    "Row #9: 5,160\n" +
+                    "Row #9: $1,550.0\n" +
+                    "Row #10: 4,160\n" +
+                    "Row #10: $1,301.0\n" +
+                    "Row #11: 3,808\n" +
+                    "Row #11: $1,166.0\n"));
     }
 
     public void testNamedSetAndUnion() {
         assertQueryReturns(
-                fold(new String[] {
-                    "with set [Set Education Level] as",
-                    "   '{([Education Level].[All Education Levels].[Bachelors Degree]),",
-                    "     ([Education Level].[All Education Levels].[Graduate Degree])}'",
-                    "select",
-                    "   {[Measures].[Unit Sales],",
-                    "    [Measures].[Store Cost],",
-                    "    [Measures].[Store Sales]} ON COLUMNS,",
-                    "   UNION(",
-                    "      CROSSJOIN(",
-                    "         {[Time].[1997].[Q1]},",
-                    "          [Set Education Level]), ",
-                    "      {([Time].[1997].[Q1],",
-                    "        [Education Level].[All Education Levels].[Graduate Degree])}) ON ROWS",
-                    "from [Sales]"}),
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Measures].[Unit Sales]}",
-                    "{[Measures].[Store Cost]}",
-                    "{[Measures].[Store Sales]}",
-                    "Axis #2:",
-                    "{[Time].[1997].[Q1], [Education Level].[All Education Levels].[Bachelors Degree]}",
-                    "{[Time].[1997].[Q1], [Education Level].[All Education Levels].[Graduate Degree]}",
-                    "Row #0: 17,066",
-                    "Row #0: 14,234.10",
-                    "Row #0: 35,699.43",
-                    "Row #1: 3,637",
-                    "Row #1: 3,030.82",
-                    "Row #1: 7,583.71",
-                    ""}));
+                fold(
+                    "with set [Set Education Level] as\n" +
+                    "   '{([Education Level].[All Education Levels].[Bachelors Degree]),\n" +
+                    "     ([Education Level].[All Education Levels].[Graduate Degree])}'\n" +
+                    "select\n" +
+                    "   {[Measures].[Unit Sales],\n" +
+                    "    [Measures].[Store Cost],\n" +
+                    "    [Measures].[Store Sales]} ON COLUMNS,\n" +
+                    "   UNION(\n" +
+                    "      CROSSJOIN(\n" +
+                    "         {[Time].[1997].[Q1]},\n" +
+                    "          [Set Education Level]), \n" +
+                    "      {([Time].[1997].[Q1],\n" +
+                    "        [Education Level].[All Education Levels].[Graduate Degree])}) ON ROWS\n" +
+                    "from [Sales]"),
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "{[Measures].[Store Cost]}\n" +
+                    "{[Measures].[Store Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Time].[1997].[Q1], [Education Level].[All Education Levels].[Bachelors Degree]}\n" +
+                    "{[Time].[1997].[Q1], [Education Level].[All Education Levels].[Graduate Degree]}\n" +
+                    "Row #0: 17,066\n" +
+                    "Row #0: 14,234.10\n" +
+                    "Row #0: 35,699.43\n" +
+                    "Row #1: 3,637\n" +
+                    "Row #1: 3,030.82\n" +
+                    "Row #1: 7,583.71\n"));
     }
 
     /**
@@ -854,13 +852,13 @@ public class NamedSetTest extends FoodMartTestCase {
 
         protected String filterSchema(String s) {
             int i = s.indexOf("</Cube>");
-            return fold(new String[] {
-                s.substring(0, i),
-                "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>",
-                "<NamedSet name=\"Top CA Cities\">",
-                "  <Formula>TopCount([CA Cities], 2, [Measures].[Unit Sales])</Formula>",
-                "</NamedSet>",
-                s.substring(i)});
+            return
+                s.substring(0, i) + "\n" +
+                "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>\n" +
+                "<NamedSet name=\"Top CA Cities\">\n" +
+                "  <Formula>TopCount([CA Cities], 2, [Measures].[Unit Sales])</Formula>\n" +
+                "</NamedSet>\n" +
+                s.substring(i);
         }
     }
 
@@ -873,26 +871,26 @@ public class NamedSetTest extends FoodMartTestCase {
 
         protected String filterSchema(String s) {
             int i = s.indexOf("</Cube>");
-            s = fold(new String[] {
-                s.substring(0, i),
-                "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>",
-                "<NamedSet name=\"Top CA Cities\">",
-                "  <Formula>TopCount([CA Cities], 2, [Measures].[Unit Sales])</Formula>",
-                "</NamedSet>",
-                s.substring(i)});
+            s =
+                s.substring(0, i) + "\n" +
+                "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>\n" +
+                "<NamedSet name=\"Top CA Cities\">\n" +
+                "  <Formula>TopCount([CA Cities], 2, [Measures].[Unit Sales])</Formula>\n" +
+                "</NamedSet>\n" +
+                s.substring(i);
             // Schema-level named sets occur after <Cube> and <VirtualCube> and
             // before <Role> elements.
             i = s.indexOf("<Role");
             if (i < 0) {
                 i = s.indexOf("</Schema>");
             }
-            s = fold(new String[] {
-                s.substring(0, i),
-                "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[WA].Children}\"/>",
-                "<NamedSet name=\"Top USA Stores\">",
-                "  <Formula>TopCount(Descendants([Store].[USA]), 7)</Formula>",
-                "</NamedSet>",
-                s.substring(i)});
+            s = fold(
+                s.substring(0, i) + "\n" +
+                "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[WA].Children}\"/>\n" +
+                "<NamedSet name=\"Top USA Stores\">\n" +
+                "  <Formula>TopCount(Descendants([Store].[USA]), 7)</Formula>\n" +
+                "</NamedSet>\n" +
+                s.substring(i));
             return s;
         }
     }
@@ -910,22 +908,22 @@ public class NamedSetTest extends FoodMartTestCase {
             //   m2 references s1
             //   s1 references s0 and m1 and m0
             int i = s.indexOf("</Cube>");
-            s = fold(new String[] {
-                s.substring(0, i),
+            s = fold(
+                s.substring(0, i) + "\n" +
                 // member [CA City Sales] references set [CA Cities]
-                "  <CalculatedMember",
-                "      name=\"CA City Sales\"",
-                "      dimension=\"Measures\"",
-                "      visible=\"false\"",
-                "      formula=\"Aggregate([CA Cities], [Measures].[Unit Sales])\">",
-                "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.0\"/>",
-                "  </CalculatedMember>",
+                "  <CalculatedMember\n" +
+                "      name=\"CA City Sales\"\n" +
+                "      dimension=\"Measures\"\n" +
+                "      visible=\"false\"\n" +
+                "      formula=\"Aggregate([CA Cities], [Measures].[Unit Sales])\">\n" +
+                "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.0\"/>\n" +
+                "  </CalculatedMember>\n" +
                 // set [Top Products In CA] references member [CA City Sales]
-                "<NamedSet name=\"Top Products In CA\">",
-                "  <Formula>TopCount([Product].[Product Department].MEMBERS, 3, ([Time].[1997].[Q3], [Measures].[CA City Sales]))</Formula>",
-                "</NamedSet>",
-                "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>",
-                s.substring(i)});
+                "<NamedSet name=\"Top Products In CA\">\n" +
+                "  <Formula>TopCount([Product].[Product Department].MEMBERS, 3, ([Time].[1997].[Q3], [Measures].[CA City Sales]))</Formula>\n" +
+                "</NamedSet>\n" +
+                "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>\n" +
+                s.substring(i));
             return s;
         }
     }

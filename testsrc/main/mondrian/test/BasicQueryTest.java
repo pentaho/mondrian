@@ -35,10 +35,10 @@ import junit.framework.Assert;
  */
 public class BasicQueryTest extends FoodMartTestCase {
     static final String EmptyResult = fold(
-                    "Axis #0:\n" +
-                    "{}\n" +
-                    "Axis #1:\n" +
-                    "Axis #2:\n");
+        "Axis #0:\n" +
+            "{}\n" +
+            "Axis #1:\n" +
+            "Axis #2:\n");
 
     public BasicQueryTest(String name) {
         super(name);
@@ -2658,7 +2658,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         }
         final long start = System.currentTimeMillis();
         Connection connection = getTestContext().getFoodMartConnection(false);
-        final String queryString = fold(
+        final String queryString =
                 "select {[Measures].[Unit Sales],\n" +
                 " [Measures].[Store Cost],\n" +
                 " [Measures].[Store Sales]} ON columns,\n" +
@@ -2737,7 +2737,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " Crossjoin ({([Gender].[All Gender].[F],\n" +
                 " [Marital Status].[All Marital Status],\n" +
                 " [Customers].[All Customers].[USA])},\n" +
-                " [Product].[All Products].Children))) ON rows  from [Sales]  where [Time].[1997]");
+                " [Product].[All Products].Children))) ON rows  from [Sales]  where [Time].[1997]";
         Query query = connection.parseQuery(queryString);
         // If this call took longer than 10 seconds, the performance bug has
         // probably resurfaced again.
@@ -3105,10 +3105,10 @@ public class BasicQueryTest extends FoodMartTestCase {
             MondrianProperties.instance().LargeDimensionThreshold.set(1);
             final Connection connection =
                     TestContext.instance().getFoodMartConnection(true);
-            String queryString = fold(
+            String queryString =
                     "select {[Measures].[Unit Sales]} on columns,\n" +
                     "{[Customers].members} on rows\n" +
-                    "from Sales");
+                    "from Sales";
             Query query = connection.parseQuery(queryString);
             Result result = connection.execute(query);
             assertEquals(10407, result.getAxes()[1].positions.length);
@@ -4658,10 +4658,10 @@ public class BasicQueryTest extends FoodMartTestCase {
         axis = getTestContext().executeAxis("[Store].members");
         assertEquals(63, axis.positions.length);
 
-        final String q1 = fold(
+        final String q1 =
             "select {[Measures].[Unit Sales]} on columns,\n" +
             " NON EMPTY {[Other Store].members} on rows\n" +
-            "from [Sales]");
+            "from [Sales]";
         assertQueryReturns(q1,
                 fold("Axis #0:\n" +
                 "{}\n" +
@@ -5172,13 +5172,13 @@ public class BasicQueryTest extends FoodMartTestCase {
         // run for at least that long; it will because the query references
         // a Udf that has a 1 ms sleep in it; and there are enough rows
         // in the result that the Udf should execute > 2000 times
-        String query = fold(new String[] {
-            "WITH ",
-            "  MEMBER [Measures].[Sleepy] ",
-            "    AS 'SleepUdf([Measures].[Unit Sales])' ",
-            "SELECT {[Measures].[Sleepy]} ON COLUMNS,",
-            "  {[Product].members} ON ROWS",
-            "FROM [Sales]"});
+        String query = fold(
+            "WITH \n" +
+            "  MEMBER [Measures].[Sleepy] \n" +
+            "    AS 'SleepUdf([Measures].[Unit Sales])' \n" +
+            "SELECT {[Measures].[Sleepy]} ON COLUMNS,\n" +
+            "  {[Product].members} ON ROWS\n" +
+            "FROM [Sales]");
 
         executeAndCancel(query, 2000);
     }

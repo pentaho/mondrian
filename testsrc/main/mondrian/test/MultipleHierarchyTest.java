@@ -30,47 +30,46 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
         // When the context is one hierarchy,
         // the current member of other hierarchy must be its default member.
         assertQueryReturns(
-                fold(new String[] {
-                    "with",
-                    "  member [Measures].[Foo] as ' [Time.Weekly].CurrentMember.UniqueName '",
-                    "  member [Measures].[Foo2] as ' [Time].CurrentMember.UniqueName '",
-                    "select",
-                    "  {[Measures].[Unit Sales], [Measures].[Foo], [Measures].[Foo2]} on columns,",
-                    "  {[Time].children} on rows",
-                    "from [Sales]"}),
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Measures].[Unit Sales]}" ,
-                    "{[Measures].[Foo]}",
-                    "{[Measures].[Foo2]}",
-                    "Axis #2:",
-                    "{[Time].[1997].[Q1]}",
-                    "{[Time].[1997].[Q2]}",
-                    "{[Time].[1997].[Q3]}",
-                    "{[Time].[1997].[Q4]}",
-                    "Row #0: 66,291",
-                    "Row #0: [Time.Weekly].[All Time.Weeklys].[1997]",
-                    "Row #0: [Time].[1997].[Q1]",
-                    "Row #1: 62,610",
-                    "Row #1: [Time.Weekly].[All Time.Weeklys].[1997]",
-                    "Row #1: [Time].[1997].[Q2]",
-                    "Row #2: 65,848",
-                    "Row #2: [Time.Weekly].[All Time.Weeklys].[1997]",
-                    "Row #2: [Time].[1997].[Q3]",
-                    "Row #3: 72,024",
-                    "Row #3: [Time.Weekly].[All Time.Weeklys].[1997]",
-                    "Row #3: [Time].[1997].[Q4]",
-                    ""}));
+                fold(
+                    "with\n" +
+                    "  member [Measures].[Foo] as ' [Time.Weekly].CurrentMember.UniqueName '\n" +
+                    "  member [Measures].[Foo2] as ' [Time].CurrentMember.UniqueName '\n" +
+                    "select\n" +
+                    "  {[Measures].[Unit Sales], [Measures].[Foo], [Measures].[Foo2]} on columns,\n" +
+                    "  {[Time].children} on rows\n" +
+                    "from [Sales]"),
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "{[Measures].[Foo]}\n" +
+                    "{[Measures].[Foo2]}\n" +
+                    "Axis #2:\n" +
+                    "{[Time].[1997].[Q1]}\n" +
+                    "{[Time].[1997].[Q2]}\n" +
+                    "{[Time].[1997].[Q3]}\n" +
+                    "{[Time].[1997].[Q4]}\n" +
+                    "Row #0: 66,291\n" +
+                    "Row #0: [Time.Weekly].[All Time.Weeklys].[1997]\n" +
+                    "Row #0: [Time].[1997].[Q1]\n" +
+                    "Row #1: 62,610\n" +
+                    "Row #1: [Time.Weekly].[All Time.Weeklys].[1997]\n" +
+                    "Row #1: [Time].[1997].[Q2]\n" +
+                    "Row #2: 65,848\n" +
+                    "Row #2: [Time.Weekly].[All Time.Weeklys].[1997]\n" +
+                    "Row #2: [Time].[1997].[Q3]\n" +
+                    "Row #3: 72,024\n" +
+                    "Row #3: [Time.Weekly].[All Time.Weeklys].[1997]\n" +
+                    "Row #3: [Time].[1997].[Q4]\n"));
     }
 
     public void testMultipleSlicersFails() {
-        assertThrows(fold(new String[] {
-            "select {[Measures].[Unit Sales]} on columns,",
-            " {[Store].children} on rows",
-            "from [Sales]",
-            "where ([Gender].[M], [Time.Weekly].[1997], [Time].[1997])"}),
+        assertThrows(fold(
+            "select {[Measures].[Unit Sales]} on columns,\n" +
+            " {[Store].children} on rows\n" +
+            "from [Sales]\n" +
+            "where ([Gender].[M], [Time.Weekly].[1997], [Time].[1997])"),
             "Tuple contains more than one member of dimension '[Time]'.");
     }
 
@@ -83,17 +82,16 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
                 "  [Time].[1997].[Q2].[5]} on rows\n" +
                 "from [Sales]",
                 // msas give 86740, 107551
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Measures].[Sales to Date]}",
-                    "Axis #2:",
-                    "{[Time].[1997].[Q2].[4]}",
-                    "{[Time].[1997].[Q2].[5]}",
-                    "Row #0: 86,470",
-                    "Row #1: 107,551",
-                    ""}));
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Sales to Date]}\n" +
+                    "Axis #2:\n" +
+                    "{[Time].[1997].[Q2].[4]}\n" +
+                    "{[Time].[1997].[Q2].[5]}\n" +
+                    "Row #0: 86,470\n" +
+                    "Row #1: 107,551\n"));
 
         assertQueryReturns(
                 "with member [Measures].[Sales to Date] as \n" +
@@ -101,19 +99,18 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
                 "select {[Measures].[Sales to Date]} on columns,\n" +
                 " {[Time.Weekly].[1997].[14] : [Time.Weekly].[1997].[16]} on rows\n" +
                 "from [Sales]",
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Measures].[Sales to Date]}",
-                    "Axis #2:",
-                    "{[Time.Weekly].[All Time.Weeklys].[1997].[14]}",
-                    "{[Time.Weekly].[All Time.Weeklys].[1997].[15]}",
-                    "{[Time.Weekly].[All Time.Weeklys].[1997].[16]}",
-                    "Row #0: 81,670",
-                    "Row #1: 86,300",
-                    "Row #2: 90,139",
-                    ""}));
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Sales to Date]}\n" +
+                    "Axis #2:\n" +
+                    "{[Time.Weekly].[All Time.Weeklys].[1997].[14]}\n" +
+                    "{[Time.Weekly].[All Time.Weeklys].[1997].[15]}\n" +
+                    "{[Time.Weekly].[All Time.Weeklys].[1997].[16]}\n" +
+                    "Row #0: 81,670\n" +
+                    "Row #1: 86,300\n" +
+                    "Row #2: 90,139\n"));
     }
 }
 

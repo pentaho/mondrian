@@ -187,25 +187,18 @@ public class FoodMartTestCase extends TestCase {
         getTestContext().assertExprReturns(expression, expected);
     }
 
-    public static String fold(String[] strings) {
-        return TestContext.fold(strings);
-    }
-
     /**
      * Converts a string constant into locale-specific line endings.
      */
     public static String fold(String string) {
-        if (!nl.equals("\n")) {
-            string = Util.replace(string, "\n", nl);
-        }
-        return string;
+        return TestContext.fold(string);
     }
 
     static class QueryAndResult {
         String query;
         String result;
         QueryAndResult(String query, String result) {
-            this.query = fold(query);
+            this.query = query;
             this.result = fold(result);
         }
     }

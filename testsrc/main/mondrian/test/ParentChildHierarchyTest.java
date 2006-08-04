@@ -531,30 +531,28 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "     {[Employee Salary]} on columns, \n" +
                 "     {[Employees]} on rows \n" +
                 "from [HR]",
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Measures].[Employee Salary]}",
-                    "Axis #2:",
-                    "{[Employees].[All Employees]}",
-                    "Row #0: ",
-                    ""}));
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Employee Salary]}\n" +
+                    "Axis #2:\n" +
+                    "{[Employees].[All Employees]}\n" +
+                    "Row #0: \n"));
 
         assertQueryReturns(
                 "select \n" +
                 "     {[Position]} on columns,\n" +
                 "     {[Employee Salary]} on rows\n" +
                 "from [HR]",
-                fold(new String[] {
-                    "Axis #0:",
-                    "{}",
-                    "Axis #1:",
-                    "{[Position].[All Position]}",
-                    "Axis #2:",
-                    "{[Measures].[Employee Salary]}",
-                    "Row #0: ",
-                    ""}));
+                fold(
+                    "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Position].[All Position]}\n" +
+                    "Axis #2:\n" +
+                    "{[Measures].[Employee Salary]}\n" +
+                    "Row #0: \n"));
     }
 
     /**

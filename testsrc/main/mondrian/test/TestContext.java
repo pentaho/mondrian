@@ -692,6 +692,16 @@ public class TestContext {
         return buf.toString();
     }
 
+    /**
+     * Converts a string constant into locale-specific line endings.
+     */
+    public static String fold(String string) {
+        if (!nl.equals("\n")) {
+            string = Util.replace(string, "\n", nl);
+        }
+        return string;
+    }
+    
     public SqlQuery.Dialect getDialect() {
         java.sql.Connection connection = null;
         try {

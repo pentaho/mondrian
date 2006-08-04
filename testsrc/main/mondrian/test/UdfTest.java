@@ -101,63 +101,62 @@ public class UdfTest extends FoodMartTestCase {
                 "  {[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].children} ) ON ROWS" + nl +
                 "FROM [Sales]" + nl +
                 "WHERE ( [Store].[All Stores].[USA].[OR].[Portland].[Store 11] )",
-                fold(new String[] {
-                    "Axis #0:",
-                    "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}",
-                    "Axis #1:",
-                    "{[Measures].[Last Unit Sales]}",
-                    "Axis #2:",
-                    "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}",
-                    "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}",
-                    "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}",
-                    "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}",
-                    "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}",
-                    "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}",
-                    "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}",
-                    "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}",
-                    "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}",
-                    "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}",
-                    "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}",
-                    "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}",
-                    "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}",
-                    "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}",
-                    "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}",
-                    "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}",
-                    "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}",
-                    "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}",
-                    "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}",
-                    "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}",
-                    "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}",
-                    "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}",
-                    "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}",
-                    "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}",
-                    "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}",
-                    "Row #0: 2",
-                    "Row #1: 7",
-                    "Row #2: 6",
-                    "Row #3: 7",
-                    "Row #4: 4",
-                    "Row #5: 3",
-                    "Row #6: 4",
-                    "Row #7: 3",
-                    "Row #8: 4",
-                    "Row #9: 2",
-                    "Row #10: ",
-                    "Row #11: 4",
-                    "Row #12: ",
-                    "Row #13: 2",
-                    "Row #14: ",
-                    "Row #15: ",
-                    "Row #16: 2",
-                    "Row #17: ",
-                    "Row #18: 4",
-                    "Row #19: ",
-                    "Row #20: 3",
-                    "Row #21: 4",
-                    "Row #22: 3",
-                    "Row #23: 4",
-                    "Row #24: 2",
-                    ""}));
+                fold(
+                    "Axis #0:\n" +
+                    "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Last Unit Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n" +
+                    "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n" +
+                    "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n" +
+                    "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n" +
+                    "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n" +
+                    "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n" +
+                    "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n" +
+                    "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n" +
+                    "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n" +
+                    "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n" +
+                    "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n" +
+                    "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n" +
+                    "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n" +
+                    "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n" +
+                    "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n" +
+                    "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n" +
+                    "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n" +
+                    "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n" +
+                    "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n" +
+                    "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n" +
+                    "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n" +
+                    "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n" +
+                    "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n" +
+                    "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n" +
+                    "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n" +
+                    "Row #0: 2\n" +
+                    "Row #1: 7\n" +
+                    "Row #2: 6\n" +
+                    "Row #3: 7\n" +
+                    "Row #4: 4\n" +
+                    "Row #5: 3\n" +
+                    "Row #6: 4\n" +
+                    "Row #7: 3\n" +
+                    "Row #8: 4\n" +
+                    "Row #9: 2\n" +
+                    "Row #10: \n" +
+                    "Row #11: 4\n" +
+                    "Row #12: \n" +
+                    "Row #13: 2\n" +
+                    "Row #14: \n" +
+                    "Row #15: \n" +
+                    "Row #16: 2\n" +
+                    "Row #17: \n" +
+                    "Row #18: 4\n" +
+                    "Row #19: \n" +
+                    "Row #20: 3\n" +
+                    "Row #21: 4\n" +
+                    "Row #22: 3\n" +
+                    "Row #23: 4\n" +
+                    "Row #24: 2\n"));
     }
 
     /**
@@ -271,14 +270,12 @@ public class UdfTest extends FoodMartTestCase {
             "SELECT { CurrentDateMember([Time], " +
             "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", BEFORE)} " +
             "ON COLUMNS FROM [Sales]",
-            fold(new String[] {
-                "Axis #0:",
-                "{}",
-                "Axis #1:",
-                "{[Time].[1998].[Q4].[12]}",
-                "Row #0: ",
-                ""
-            }));
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1998].[Q4].[12]}\n" +
+                "Row #0: \n"));
     }
 
     public void testCurrentDateMemberBeforeUsingQuotes()
@@ -296,12 +293,10 @@ public class UdfTest extends FoodMartTestCase {
             "SELECT { CurrentDateMember([Time], " +
             "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", AFTER)} " +
             "ON COLUMNS FROM [Sales]",
-            fold(new String[] {
-                "Axis #0:",
-                "{}",
-                "Axis #1:",
-                ""
-            }));
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n"));
     }
 
     public void testCurrentDateMemberExact()
@@ -312,12 +307,10 @@ public class UdfTest extends FoodMartTestCase {
             "SELECT { CurrentDateMember([Time], " +
             "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", EXACT)} " +
             "ON COLUMNS FROM [Sales]",
-            fold(new String[] {
-                "Axis #0:",
-                "{}",
-                "Axis #1:",
-                ""
-            }));
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n"));
     }
 
     public void testCurrentDateMemberNoFindArg()
@@ -328,12 +321,10 @@ public class UdfTest extends FoodMartTestCase {
             "SELECT { CurrentDateMember([Time], " +
             "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\")} " +
             "ON COLUMNS FROM [Sales]",
-            fold(new String[] {
-                "Axis #0:",
-                "{}",
-                "Axis #1:",
-                ""
-            }));
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n"));
     }
 
     public void testCurrentDateMemberHierarchy()
@@ -342,14 +333,12 @@ public class UdfTest extends FoodMartTestCase {
             "SELECT { CurrentDateMember([Time.Weekly], " +
             "\"[Ti\\me\\.Weekl\\y]\\.[All Ti\\me\\.Weekl\\y\\s]\\.[yyyy]\\.[ww]\", BEFORE)} " +
             "ON COLUMNS FROM [Sales]",
-            fold(new String[] {
-                "Axis #0:",
-                "{}",
-                "Axis #1:",
-                "{[Time.Weekly].[All Time.Weeklys].[1998].[52]}",
-                "Row #0: ",
-                ""
-            }));
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Time.Weekly].[All Time.Weeklys].[1998].[52]}\n" +
+                "Row #0: \n"));
     }
 
     public void testCurrentDateMemberRealAfter()
@@ -361,14 +350,12 @@ public class UdfTest extends FoodMartTestCase {
             "SELECT { CurrentDateMember([Time], " +
             "\"[Ti\\me]\\.[1996]\\.[Q4]\", after)} " +
             "ON COLUMNS FROM [Sales]",
-            fold(new String[] {
-                "Axis #0:",
-                "{}",
-                "Axis #1:",
-                "{[Time].[1997].[Q1]}",
-                "Row #0: 66,291",
-                ""
-            }));
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1997].[Q1]}\n" +
+                "Row #0: 66,291\n"));
     }
 
     public void testCurrentDateMemberRealExact1()
@@ -380,14 +367,12 @@ public class UdfTest extends FoodMartTestCase {
             "SELECT { CurrentDateMember([Time], " +
             "\"[Ti\\me]\\.[1997]\")} " +
             "ON COLUMNS FROM [Sales]",
-            fold(new String[] {
-                "Axis #0:",
-                "{}",
-                "Axis #1:",
-                "{[Time].[1997]}",
-                "Row #0: 266,773",
-                ""
-            }));
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1997]}\n" +
+                "Row #0: 266,773\n"));
     }
 
     public void testCurrentDateMemberRealExact2()
@@ -399,14 +384,12 @@ public class UdfTest extends FoodMartTestCase {
             "SELECT { CurrentDateMember([Time], " +
             "\"[Ti\\me]\\.[1997]\\.[Q2]\\.[5]\")} " +
             "ON COLUMNS FROM [Sales]",
-            fold(new String[] {
-                "Axis #0:",
-                "{}",
-                "Axis #1:",
-                "{[Time].[1997].[Q2].[5]}",
-                "Row #0: 21,081",
-                ""
-            }));
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1997].[Q2].[5]}\n" +
+                "Row #0: 21,081\n"));
     }
 
     public void testCurrentDateMemberPrev()
@@ -416,14 +399,12 @@ public class UdfTest extends FoodMartTestCase {
             "SELECT { CurrentDateMember([Time], " +
             "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", BEFORE).PrevMember} " +
             "ON COLUMNS FROM [Sales]",
-            fold(new String[] {
-                "Axis #0:",
-                "{}",
-                "Axis #1:",
-                "{[Time].[1998].[Q4].[11]}",
-                "Row #0: ",
-                ""
-            }));
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1998].[Q4].[11]}\n" +
+                "Row #0: \n"));
     }
 
     /**
