@@ -536,8 +536,7 @@ public class RolapMember extends MemberBase {
         return ordinal;
     }
 
-    // RME : before checkin remove public
-    public void setOrdinal(int ordinal) {
+    void setOrdinal(int ordinal) {
         if (this.ordinal == -1) {
             this.ordinal = ordinal;
         }
