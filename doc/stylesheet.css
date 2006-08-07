@@ -30,7 +30,7 @@ a.nav:link {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 a.nav:visited {
@@ -38,7 +38,7 @@ a.nav:visited {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 a.body:link {
@@ -46,7 +46,7 @@ a.body:link {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 a.body:visited {
@@ -54,7 +54,7 @@ a.body:visited {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 a.purple:link {
@@ -64,7 +64,7 @@ a.purple:link {
   font-size: x-small;
   font-style: normal;
   font-weight: normal;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 a.purple:visited {
@@ -74,7 +74,7 @@ a.purple:visited {
   font-size: x-small;
   font-style: normal;
   font-weight: normal;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 a.td:link {
@@ -82,7 +82,7 @@ a.td:link {
   text-decoration: none;
   font-size: 10px;
   line-height: 12px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 a.td:visited {
@@ -90,7 +90,7 @@ a.td:visited {
   text-decoration: none;
   font-size: 10px;
   line-height: 12px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 a.subnav:link {
@@ -99,7 +99,7 @@ a.subnav:link {
   font-size: 12px;
   font-weight: bold;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 a.subnav:visited {
@@ -108,7 +108,7 @@ a.subnav:visited {
   font-size: 12px;
   font-weight: bold;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 dl {
@@ -116,7 +116,7 @@ dl {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 dt {
@@ -124,7 +124,7 @@ dt {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 dd {
@@ -132,7 +132,7 @@ dd {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 table.clsStd {
@@ -149,7 +149,7 @@ td.content {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 td.collcontent {
@@ -157,7 +157,7 @@ td.collcontent {
   text-decoration: none;
   font-size: 10px;
   line-height: 12px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 span.subtitle1 {
@@ -166,7 +166,7 @@ span.subtitle1 {
   font-size: 16px;
   font-weight: bold;
   line-height: 18px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 span.subtitle2 {
@@ -175,7 +175,7 @@ span.subtitle2 {
   font-size: 16px;
   font-weight: bold;
   line-height: 18px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 span.subtitle3 {
@@ -184,7 +184,7 @@ span.subtitle3 {
   font-size: 12px;
   font-weight: bold;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 span.subtitle4 {
@@ -193,7 +193,7 @@ span.subtitle4 {
   font-size: 10px;
   font-weight: bold;
   line-height: 12px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 span.subtitle5 {
@@ -202,7 +202,7 @@ span.subtitle5 {
   font-size: 12px;
   font-weight: bold;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 span.colldate {
@@ -211,7 +211,7 @@ span.colldate {
   font-size: 10px;
   font-style: oblique;
   line-height: 12px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 span.highlight {
@@ -223,7 +223,7 @@ textarea {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 p, td, th {
@@ -231,7 +231,7 @@ p, td, th {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 p.award {
@@ -239,7 +239,7 @@ p.award {
   text-decoration: none;
   font-size: 10px;
   line-height: 12px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 p.coll {
@@ -247,7 +247,7 @@ p.coll {
   text-decoration: none;
   font-size: 10px;
   line-height: 12px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 h1 {
@@ -255,7 +255,7 @@ h1 {
   text-decoration: bold;
   font-size: 24px;
   line-height: 18px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 h2 {
@@ -263,7 +263,7 @@ h2 {
   text-decoration: none;
   font-size: 18px;
   line-height: 18px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 h3 {
@@ -271,7 +271,7 @@ h3 {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 h4 {
@@ -279,7 +279,7 @@ h4 {
   text-decoration: none;
   font-size: 10px;
   line-height: 10px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 h5 {
@@ -287,7 +287,7 @@ h5 {
   text-decoration: none;
   font-size: 10px;
   line-height: 10px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 ul {
@@ -295,7 +295,7 @@ ul {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, helvetica, arial, sans-serif;
+  font-family: Verdana, helvetica, arial, sans-serif;
 }
 
 ul.coll {
@@ -303,7 +303,7 @@ ul.coll {
   text-decoration: none;
   font-size: 10px;
   line-height: 12px;
-  font-family: verdana, helvetica, arial, sans-serif;
+  font-family: Verdana, helvetica, arial, sans-serif;
 }
 
 li {
@@ -311,7 +311,7 @@ li {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, helvetica, arial, sans-serif;
+  font-family: Verdana, helvetica, arial, sans-serif;
 }
 
 ol {
@@ -319,7 +319,7 @@ ol {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, helvetica, arial, sans-serif;
+  font-family: Verdana, helvetica, arial, sans-serif;
 }
 
 ol.coll {
@@ -327,7 +327,7 @@ ol.coll {
   text-decoration: none;
   font-size: 10px;
   line-height: 12px;
-  font-family: verdana, helvetica, arial, sans-serif;
+  font-family: Verdana, helvetica, arial, sans-serif;
 }
 
 .footer {
@@ -335,7 +335,7 @@ ol.coll {
   text-decoration: none;
   font-size: 10px;
   line-height: 10px;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: Verdana, arial, helvetica, sans-serif;
 }
 
 PRE {
@@ -350,6 +350,6 @@ PRE.clsCode, CODE.clsText {
   font-size:130%;
 }
 
-PRE.clsSyntax { font-family:verdana,arial,helvetica,sans-serif; font-size:120%; }
+PRE.clsSyntax { font-family:Verdana,arial,helvetica,sans-serif; font-size:120%; }
 
 /* End stylesheet.css */

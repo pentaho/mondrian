@@ -21,7 +21,7 @@
 </head>
 <body>
 <h1>How to Design a Mondrian Schema</h1>
-<p>By Julian Hyde and others; last updated May, 2006.</p>
+<p>By Julian Hyde and others; last updated August, 2006.</p>
 <hr color="#000000" noshade="noshade" size="1">
 <h2>Contents</h2>
 <ol>
@@ -37,6 +37,7 @@ Hierarchies, Levels</a></li>
         <li><a href="#Mapping_Hierarchies">Mapping dimensions and
 hierarchies onto tables</a></li>
         <li><a href="#The_all_member">The 'All' member</a></li>
+		<li><a href="#Default_member">Default member</a></li>
         <li><a href="#Time_dimensions">Time dimensions</a></li>
         <li><a href="#Level_Order_and_Display">Order and Display of
 Levels</a></li>
@@ -415,6 +416,31 @@ level; for example, in a Time hierarchy, it will be the first year in
 the hierarchy. Changing the default member can be confusing, so you
 should generally use <code>
 hasAll="true"</code>.</p>
+<h4><a name="Default_member">Default member</a></h4>
+<p>Every hierarchy has a default member. This is the member which is used in the 
+evaluation context if the hierarchy is not explicitly mentioned in a query. If 
+the hierarchy has an 'all' member, then this is the default; otherwise, the 
+default member is the first member of the first level. For example, in the 
+FoodMart schema, the default member of the <code>[Time]</code> dimension is
+<code>[Time].[1997]</code>, because 1997 is the first year for which there is 
+data in the dimension table.</p>
+<p>A different default member can be specified in the hierarchy definition:</p>
+<blockquote>
+	<p><code>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Status" foreignKey="issue_status"&gt;<br>  &nbsp;  &lt;<a
+ href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="id"&gt;<br>    &nbsp;&nbsp;&nbsp;    &lt;<a
+ href="#XML_Table">Table</a> name="status_codes" /&gt;<br>    &nbsp;&nbsp;&nbsp;    &lt;<a
+ href="#XML_Level">Level</a> name=&quot;Code" column=&quot;id" nameColumn=&quot;name&quot; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; uniqueMembers="true" defaultMember=&quot;[Status 
+	code].[Open]&quot; /&gt;<br>  &nbsp; &lt;/<a
+ href="#XML_Hierarchy">Hierarchy</a>&gt;<br>&lt;/<a
+ href="#XML_Dimension">Dimension</a>&gt;</code></p>
+</blockquote>
+<p>Real-world applications often have a requirement to report on the current 
+time period. Clearly, one way of doing this is to change the default member of 
+the time dimension. But a better way is use a <a href="#Schema_parameters">
+schema parameter</a> for the current time period; then you can leave the default 
+time member as <code>[Time].[(All time)]</code> for those reports that want to 
+look at historical data.</p>
 <h4><a name="Time_dimensions">Time dimensions</a></h4>
 <p>Time dimensions based on year/month/week/day are coded differently
 in the Mondrian schema due to the MDX time related functions such as:</p>
