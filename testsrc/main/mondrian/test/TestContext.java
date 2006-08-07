@@ -274,6 +274,38 @@ public class TestContext {
     }
 
     /**
+     * Returns a the XML of the foodmart schema, adding dimension definitions
+     * to the definition of a given cube.
+     */
+    public String getFoodMartSchemaSubstitutingCube(
+        String cubeName,
+        String dimensionDefs)
+    {
+        // First, get the unadulterated schema.
+        String s;
+        synchronized (SnoopingSchemaProcessor.class) {
+            getFoodMartConnection(SnoopingSchemaProcessor.class);
+            s = SnoopingSchemaProcessor.catalogContent;
+        }
+
+        // Search for the cube.
+        int h = s.indexOf("<Cube name=\"" + cubeName + "\"");
+        if (h < 0) {
+            throw new RuntimeException("cube '" + cubeName + "' not found");
+        }
+
+        // Add dimension definitions, if specified.
+        if (dimensionDefs != null) {
+            int i = s.indexOf("<Dimension ", h);
+            s = s.substring(0, i) +
+                dimensionDefs +
+                s.substring(i);
+        }
+
+        return s;
+    }
+
+    /**
      * Executes a query.
      */
     public Result executeQuery(String queryString) {
@@ -750,6 +782,23 @@ public class TestContext {
             public synchronized Connection getFoodMartConnection(boolean fresh) {
                 final String schema = getFoodMartSchema(
                     parameterDefs, cubeDefs, namedSetDefs, udfDefs);
+                return getFoodMartConnection(schema);
+            }
+        };
+    }
+
+    /**
+     * Creates a TestContext, adding hierarchy definitions to a cube definition.
+     * @param cubeName Name of a cube in the schema (cube must exist)
+     * @param dimensionDefs String defining dimensions, or null
+     */
+    public static TestContext createSubstitutingCube(
+        final String cubeName,
+        final String dimensionDefs) {
+        return new TestContext() {
+            public synchronized Connection getFoodMartConnection(boolean fresh) {
+                final String schema =
+                    getFoodMartSchemaSubstitutingCube(cubeName,  dimensionDefs);
                 return getFoodMartConnection(schema);
             }
         };

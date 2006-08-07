@@ -27,11 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import mondrian.olap.*;
-import mondrian.resource.MondrianResource;
 import mondrian.calc.ExpCompiler;
-
-import org.apache.log4j.Logger;
 
 /**
  * Utility methods for classes in the <code>mondrian.rolap</code> package.
@@ -94,7 +90,28 @@ public class RolapUtil {
             MemberReader reader,
             String[] uniqueNameParts,
             boolean failIfNotFound) {
-        RolapMember member = null;
+        RolapMember member = xxx(uniqueNameParts, null, reader, failIfNotFound);
+        if (member != null) {
+            return member;
+        }
+
+        // If this hierarchy has an 'all' member, we can omit it.
+        // For example, '[Gender].[(All Gender)].[F]' can be abbreviated
+        // '[Gender].[F]'.
+        final List rootMembers = reader.getRootMembers();
+        if (rootMembers.size() == 1) {
+            final RolapMember rootMember = (RolapMember) rootMembers.get(0);
+            if (rootMember.isAll()) {
+                member = xxx(
+                    uniqueNameParts, rootMember, reader, failIfNotFound);
+            }
+        }
+        return member;
+    }
+
+    private static RolapMember xxx(
+        String[] uniqueNameParts, RolapMember member,
+        MemberReader reader, boolean failIfNotFound) {
         for (int i = 0; i < uniqueNameParts.length; i++) {
             String name = uniqueNameParts[i];
             List children;

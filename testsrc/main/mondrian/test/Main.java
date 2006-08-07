@@ -177,6 +177,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(I18nTest.class);
             suite.addTestSuite(FormatTest.class);
             suite.addTestSuite(ParallelTest.class);
+            suite.addTestSuite(SchemaTest.class);
             suite.addTestSuite(CmdRunnerTest.class);
 
             boolean testNonEmpty = isRunOnce();
