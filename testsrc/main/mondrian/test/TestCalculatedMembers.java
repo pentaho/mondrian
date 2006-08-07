@@ -680,6 +680,20 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "Row #1: |$171,162.17|style=green\n"));
     }
 
+    public void testChildrenOfCalcMembers() {
+        assertQueryReturns(
+            "with member [Time].[# Months Product Sold] as 'Count(Descendants([Time].LastSibling, [Time].[Month]), EXCLUDEEMPTY)'\n" +
+                "select Crossjoin([Time].[# Months Product Sold].Children,\n" +
+                "     [Store].[All Stores].Children) ON COLUMNS,\n" +
+                "   [Product].[All Products].Children ON ROWS from [Sales] where [Measures].[Unit Sales]",
+            fold("Axis #0:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #1:\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products].[Drink]}\n" +
+                "{[Product].[All Products].[Food]}\n" +
+                "{[Product].[All Products].[Non-Consumable]}\n"));
+    }
 }
 
 // End CalculatedMembersTestCase.java

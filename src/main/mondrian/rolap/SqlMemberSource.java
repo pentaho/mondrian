@@ -608,8 +608,9 @@ RME is this right
     }
 
     public void getMemberChildren(RolapMember parentMember, List children, MemberChildrenConstraint constraint) {
-//        if (!parentMember.isAll() && parentMember.isCalculated())
-//            return;
+        if (!parentMember.isAll() && parentMember.isCalculated()) {
+            return;
+        }
         Connection jdbcConnection;
         try {
             jdbcConnection = dataSource.getConnection();
@@ -979,7 +980,7 @@ RME is this right
                 List list = new ArrayList();
                 list.add(dataMember);
                 RolapHierarchy hierarchy = (RolapHierarchy) getHierarchy();
-                hierarchy.getMemberReader().getMemberChildren(this, list);
+                hierarchy.getMemberReader().getMemberChildren(dataMember, list);
                 return list;
             } else {
                 return super.getPropertyValue(name);
@@ -1002,7 +1003,7 @@ RME is this right
     /**
      * Member of a parent-child dimension which has no closure table.
      *
-     * <p>This member is calculcated. When you ask for its value, it returns
+     * <p>This member is calculated. When you ask for its value, it returns
      * an expression which aggregates the values of its child members.
      * This calculation is very inefficient, and we can only support
      * aggregatable measures ("count distinct" is non-aggregatable).
