@@ -726,7 +726,7 @@ doc/**/*.xml"
     </tar>
   </target>
 
-  <target name="jar" depends="compile,compile.tests">
+  <target name="jar" depends="version,compile,compile.tests">
     <mkdir dir="${lib.dir}" />
     <zip
         zipfile="${jar.file}"
