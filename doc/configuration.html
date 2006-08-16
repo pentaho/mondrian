@@ -10,7 +10,7 @@
 
 <h1>Mondrian Configuration Guide</h1>
 
-<p>By Julian Hyde; last updated by Julian Hyde, March, 2006.</p>
+<p>By Julian Hyde; last updated by Julian Hyde, August, 2006.</p>
 
 <hr noshade color="#000000" size="1">
 
@@ -237,6 +237,15 @@ suite of regression tests.</p>
       <td>0</td>
       <td>If set to a value greater than zero, limits the number of seconds
       a query executes before it is aborted.</td>
+    </tr>
+    <tr>
+      <td><code>
+		<a href="api/mondrian/olap/MondrianProperties.html#api/mondrian/olap/MondrianProperties.html">
+		mondrian.rolap.nonempty</a></code></td>
+      <td>boolean</td>
+      <td>false</td>
+      <td>If true, each query axis implicit has the NON EMPTY option set (and in 
+		fact there is no way to display empty cells).</td>
     </tr>
     <tr>
       <td colspan="4">
