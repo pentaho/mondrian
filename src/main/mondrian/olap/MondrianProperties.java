@@ -16,7 +16,9 @@ import org.apache.log4j.Logger;
 import org.eigenbase.util.property.*;
 
 import java.io.*;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.List;
@@ -275,19 +277,18 @@ public class MondrianProperties extends TriggerableProperties {
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
             if (!Modifier.isStatic(field.getModifiers()) &&
-                Property.class.isAssignableFrom(field.getType())) {
+                    Property.class.isAssignableFrom(field.getType())) {
                 try {
                     list.add(field.get(this));
                 } catch (IllegalAccessException e) {
                     throw Util.newInternal(
-                        e,
-                        "While accessing property '" + field.getName() + "'");
+                            e,
+                            "While accessing property '" + field.getName() + "'");
                 }
             }
         }
         return list;
     }
-
     /**
      * Maximum number of simultaneous queries the system will allow.
      *
@@ -626,12 +627,11 @@ public class MondrianProperties extends TriggerableProperties {
             this, "mondrian.rolap.generate.formatted.sql", false);
 
     /**
-     * Boolean property which controls whether the MDX parser resolves uses
-     * case-sensitive matching when looking up identifiers. The default is
-     * false.
+     * Boolean property which controls whether each query axis implicit has the
+     * NON EMPTY option set. The default is false.
      */
-    public final BooleanProperty CaseSensitive = new BooleanProperty(
-            this, "mondrian.olap.case.sensitive", false);
+    public final BooleanProperty EnableNonEmptyOnAllAxis = new BooleanProperty(
+            this, "mondrian.rolap.nonempty", false);
 
     /**
      * Boolean property which controls whether to use a cache for frequently
@@ -723,6 +723,15 @@ public class MondrianProperties extends TriggerableProperties {
         this, "mondrian.xmla.drillthroughTotalCount.enable", true);
 
     /**
+     * Boolean property which controls whether the MDX parser resolves uses
+     * case-sensitive matching when looking up identifiers. The default is
+     * false.
+     */
+    public final BooleanProperty CaseSensitive = new BooleanProperty(
+            this, "mondrian.olap.case.sensitive", false);
+
+
+    /**
      * Property which defines
      * limit on the number of rows returned by XML/A drill through request.
      */
@@ -756,12 +765,14 @@ public class MondrianProperties extends TriggerableProperties {
 
     public final StringProperty JdbcFactoryClass = new StringProperty(
             this, "mondrian.rolap.aggregates.jdbcFactoryClass", null);
-    
+
     /**
      * Timeout value (in seconds) for queries; 0 indicates no timeout
      */
     public final IntegerProperty QueryTimeout = new IntegerProperty(
         this, "mondrian.rolap.queryTimeout", 0);
+
+
 }
 
 // End MondrianProperties.java

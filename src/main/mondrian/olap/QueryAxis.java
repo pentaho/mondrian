@@ -66,7 +66,8 @@ public class QueryAxis extends QueryPart {
             int showSubtotals,
             Id[] dimensionProperties) {
         assert dimensionProperties != null;
-        this.nonEmpty = nonEmpty;
+        this.nonEmpty = nonEmpty ||
+            MondrianProperties.instance().EnableNonEmptyOnAllAxis.get();
         this.exp = set;
         this.axisOrdinal = axisDef;
         this.showSubtotals = showSubtotals;

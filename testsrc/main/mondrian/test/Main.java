@@ -167,6 +167,7 @@ public class Main extends TestSuite {
             suite.addTest(XmlaTest.suite());
             if (isRunOnce()) suite.addTestSuite(TestCalculatedMembers.class);
             suite.addTestSuite(RaggedHierarchyTest.class);
+            suite.addTestSuite(NonEmptyPropertyForAllAxisTest.class);
             suite.addTestSuite(InlineTableTest.class);
             suite.addTestSuite(CompatibilityTest.class);
             suite.addTestSuite(CaptionTest.class);
