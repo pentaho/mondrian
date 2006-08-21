@@ -15,6 +15,9 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.sql.*;
+import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.rolap.agg.AggregationManager;
+import mondrian.rolap.agg.CellRequest;
 
 import org.eigenbase.util.property.IntegerProperty;
 
@@ -532,17 +535,20 @@ RME is this right
      *
      * <p>See also {@link SqlTupleReader#makeLevelMembersSql}.
      */
-    String makeChildMemberSql(
-            RolapMember member,
-            Connection jdbcConnection,
-            MemberChildrenConstraint constraint) {
+    String makeChildMemberSql(RolapMember member, Connection jdbcConnection,
+        MemberChildrenConstraint constraint) {
         SqlQuery sqlQuery = newQuery(jdbcConnection,
-                "while generating query to retrieve children of member "
+            "while generating query to retrieve children of member "
                 + member);
+
+        // If this is a non-empty constraint, it is more efficient to join to
+        // an aggregate table than to the fact table. See whether a suitable
+        // aggregate table exists.
+        AggStar aggStar = chooseAggStar(constraint, member);
 
         // create the condition, which is either the parent member or
         // the full context (non empty).
-        constraint.addMemberConstraint(sqlQuery, member);
+        constraint.addMemberConstraint(sqlQuery, aggStar, member);
 
         RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
         RolapLevel level = levels[member.getLevel().getDepth() + 1];
@@ -552,9 +558,9 @@ RME is this right
         sqlQuery.addGroupBy(q);
 
         // in non empty mode the level table must be joined to the fact table
-        constraint.addLevelConstraint(sqlQuery, level, null);
+        constraint.addLevelConstraint(sqlQuery, aggStar, level, null);
 
-        if (level.hasCaptionColumn()){
+        if (level.hasCaptionColumn()) {
             MondrianDef.Expression captionExp = level.getCaptionExp();
             hierarchy.addToFrom(sqlQuery, captionExp);
             String captionSql = captionExp.getExpression(sqlQuery);
@@ -579,6 +585,54 @@ RME is this right
             sqlQuery.addGroupBy(s);
         }
         return sqlQuery.toString();
+    }
+
+    private static AggStar chooseAggStar(MemberChildrenConstraint constraint, RolapMember member) {
+        AggStar aggStar;
+        if (!(constraint instanceof SqlContextConstraint)) {
+            return null;
+        }
+
+        SqlContextConstraint contextConstraint =
+                (SqlContextConstraint) constraint;
+        Evaluator evaluator = contextConstraint.getEvaluator();
+        RolapCube cube = (RolapCube) evaluator.getCube();
+        RolapStar star = cube.getStar();
+        final int starColumnCount = star.getColumnCount();
+        BitKey measureBitKey = BitKey.Factory.makeBitKey(starColumnCount);
+        BitKey levelBitKey = BitKey.Factory.makeBitKey(starColumnCount);
+
+        // Convert global ordinal to cube based ordinal (the 0th dimension
+        // is always [Measures])
+        final Member[] members = evaluator.getMembers();
+        Member measure = members[0];
+        int ordinal = measure.getOrdinal();
+
+        // get the level using the current depth
+        RolapLevel childLevel = (RolapLevel) member.getLevel().getChildLevel();
+        final Map mapLevelToColumn = star.getMapLevelToColumn(cube);
+        RolapStar.Column column =
+                (RolapStar.Column) mapLevelToColumn.get(childLevel);
+
+        // set a bit for each level which is constrained in the context
+        CellRequest request =
+                RolapAggregationManager.makeRequest(members, false, false);
+        if (request == null) {
+            // One or more calculated members. Cannot use agg table.
+            return null;
+        }
+        RolapStar.Column[] columns = request.getColumns();
+        for (int i = 0; i < columns.length; i++) {
+            levelBitKey.set(columns[i].getBitPosition());
+        }
+
+        // set the masks
+        levelBitKey.set(column.getBitPosition());
+        measureBitKey.set(ordinal);
+
+        // find the aggstar using the masks
+        return AggregationManager.instance().findAgg(
+                star, levelBitKey, measureBitKey, new boolean[]{ false });
     }
 
     public void getMemberChildren(List parentMembers, List children) {

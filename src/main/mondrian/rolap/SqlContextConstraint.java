@@ -16,6 +16,7 @@ import mondrian.olap.Util;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
+import mondrian.rolap.aggmatcher.AggStar;
 
 /**
  * limits the result of a Member SQL query to the current evaluation context.
@@ -47,22 +48,24 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     public static boolean isValidContext(Evaluator context) {
         return isValidContext(context, true);
     }
-    
+
     /**
      * @param context evaluation context
      * @param disallowVirtualCube if true, check for virtual cubes
-     * 
+     *
      * @return false if constraint will not work for current context
      */
     public static boolean isValidContext(
         Evaluator context, boolean disallowVirtualCube) {
-        
-        if (context == null)
+
+        if (context == null) {
             return false;
+        }
         if (disallowVirtualCube) {
             RolapCube cube = (RolapCube) context.getCube();
-            if (cube.isVirtual())
+            if (cube.isVirtual()) {
                 return false;
+            }
         }
         return true;
     }
@@ -71,8 +74,8 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     * @param strict defines the behaviour if the evaluator context
     * contains calculated members. If true, an exception is thrown,
     * otherwise calculated members are silently ignored. The
-    * methods {@link #addMemberConstraint(SqlQuery, List)} and
-    * {@link #addMemberConstraint(SqlQuery, RolapMember)} will
+    * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery,mondrian.rolap.aggmatcher.AggStar,java.util.List)} and
+    * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery,mondrian.rolap.aggmatcher.AggStar,RolapMember)} will
     * never accept a calculated member as parent.
     */
     SqlContextConstraint(RolapEvaluator evaluator, boolean strict) {
@@ -88,51 +91,61 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      * Called from MemberChildren: adds <code>parent</code> to the current
      * context and restricts the SQL resultset to that new context.
      */
-    public void addMemberConstraint(SqlQuery sqlQuery, RolapMember parent) {
-        if (parent.isCalculated())
+    public void addMemberConstraint(
+        SqlQuery sqlQuery, AggStar aggStar, RolapMember parent)
+    {
+        if (parent.isCalculated()) {
             throw Util.newInternal("cannot restrict SQL to calculated member");
+        }
         Evaluator e = evaluator.push(parent);
-        SqlConstraintUtils.addContextConstraint(sqlQuery, e, strict);
-        SqlConstraintUtils.addMemberConstraint(sqlQuery, parent, true);
+        SqlConstraintUtils.addContextConstraint(sqlQuery, aggStar, e, strict);
+        SqlConstraintUtils.addMemberConstraint(sqlQuery, aggStar, parent, true);
     }
 
-    public void addMemberConstraint(SqlQuery sqlQuery, List parents) {
-        SqlConstraintUtils.addContextConstraint(sqlQuery, evaluator, strict);
-        SqlConstraintUtils.addMemberConstraint(sqlQuery, parents, true);
+    public void addMemberConstraint(
+        SqlQuery sqlQuery, AggStar aggStar, List parents) {
+        SqlConstraintUtils.addContextConstraint(
+            sqlQuery, aggStar, evaluator, strict);
+        SqlConstraintUtils.addMemberConstraint(
+            sqlQuery, aggStar, parents, true);
     }
 
     /**
-     * Called from LevelMembers: restricts the SQL resultset to the current context.
+     * Called from LevelMembers: restricts the SQL resultset to the current
+     * context.
      */
     public void addConstraint(SqlQuery sqlQuery) {
-        SqlConstraintUtils.addContextConstraint(sqlQuery, evaluator, strict);
+        SqlConstraintUtils.addContextConstraint(
+            sqlQuery, null, evaluator, strict);
     }
 
     /**
-     * a join with fact table is required if the context contains members from dimensions
-     * other than level. If we are interested in the members of a level or a members children
-     * then it does not make sense to join only one dimension (the one that contains the requested
-     * members) with the fact table for NON EMPTY optimization.
+     * Returns whether a join with the fact table is required. A join is
+     * required if the context contains members from dimensions other than
+     * level. If we are interested in the members of a level or a members
+     * children then it does not make sense to join only one dimension (the one
+     * that contains the requested members) with the fact table for NON EMPTY
+     * optimization.
      */
     protected boolean isJoinRequired() {
         Member[] members = evaluator.getMembers();
         // members[0] is the Measure, so loop starts at 1
-        for (int i = 1; i < members.length; i++)
-            if (!members[i].isAll())
+        for (int i = 1; i < members.length; i++) {
+            if (!members[i].isAll()) {
                 return true;
+            }
+        }
         return false;
     }
 
-    /**
-     * ensures that the table for <code>level</code> is joined
-     * to the fact table.
-     */
     public void addLevelConstraint(
-        SqlQuery sqlQuery, RolapLevel level, Map levelToColumnMap) {
-        if (!isJoinRequired())
+        SqlQuery sqlQuery, AggStar aggStar,
+        RolapLevel level, Map levelToColumnMap) {
+        if (!isJoinRequired()) {
             return;
+        }
         SqlConstraintUtils.joinLevelTableToFactTable(
-            sqlQuery, evaluator, level, levelToColumnMap);
+            sqlQuery, aggStar, evaluator, level, levelToColumnMap);
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {
@@ -142,9 +155,10 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     public Object getCacheKey() {
         return cacheKey;
     }
-    
-    public Evaluator getEvaluator()
-    {
+
+    public Evaluator getEvaluator() {
         return evaluator;
     }
 }
+
+// End SqlContextConstraint.java

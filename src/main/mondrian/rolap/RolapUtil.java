@@ -52,6 +52,11 @@ public class RolapUtil {
     public static final Object valueNotReadyException = new Double(0);
 
     /**
+     * Hook to run when a query is executed.
+     */
+    static final ThreadLocal threadHooks = new ThreadLocal();
+
+    /**
      * Special value represents a null key.
      */
     public static final Object sqlNullValue = new Object() {
@@ -211,6 +216,7 @@ public class RolapUtil {
             String sql,
             String component)
             throws SQLException {
+
         return executeQuery(jdbcConnection, sql, -1, component);
     }
 
@@ -229,6 +235,10 @@ public class RolapUtil {
             RolapUtil.debugOut.print(
                 component + ": executing sql [" + sql + "]");
             RolapUtil.debugOut.flush();
+        }
+        ExecuteQueryHook hook = (ExecuteQueryHook) threadHooks.get();
+        if (hook != null) {
+            hook.onExecuteQuery(sql);
         }
         try {
             final long start = System.currentTimeMillis();
@@ -433,6 +443,10 @@ public class RolapUtil {
             count++;
             notify();
         }
+    }
+
+    static interface ExecuteQueryHook {
+        void onExecuteQuery(String sql);
     }
 }
 

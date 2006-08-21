@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianDef;
 
@@ -38,8 +39,9 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
     }
 
     public void addLevelConstraint(
-        SqlQuery query, RolapLevel level, Map levelToColumnMap) {
-        super.addLevelConstraint(query, level, levelToColumnMap);
+        SqlQuery query, AggStar aggStar, RolapLevel level, Map levelToColumnMap)
+    {
+        super.addLevelConstraint(query, aggStar, level, levelToColumnMap);
         MondrianDef.Expression exp = level.getNameExp();
         boolean numeric;
         if (exp == null) {
@@ -60,7 +62,10 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
             }
         }
         value = query.quote(numeric, value);
-        query.addWhere(column, RolapUtil.sqlNullLiteral.equals(value) ? " is " : " = ", value);
+        query.addWhere(
+            column,
+            RolapUtil.sqlNullLiteral.equals(value) ? " is " : " = ",
+            value);
     }
 
     public String toString() {

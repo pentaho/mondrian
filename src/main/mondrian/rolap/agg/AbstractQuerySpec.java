@@ -11,11 +11,8 @@
 
 package mondrian.rolap.agg;
 
-import mondrian.olap.Util;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 
 /**
  * Base class for {@link QuerySpec} implementations.
@@ -63,7 +60,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             }
             table.addToFrom(sqlQuery, false, true);
 
-            String expr = column.getExpression(sqlQuery);
+            String expr = column.generateExprString(sqlQuery);
 
             ColumnConstraint[] constraints = getConstraints(i);
             if (constraints != null) {
@@ -92,3 +89,5 @@ public abstract class AbstractQuerySpec implements QuerySpec {
     }
 }
 
+
+// End AbstractQuerySpec.java

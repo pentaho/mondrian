@@ -114,7 +114,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         Util.assertTrue(measure.getTable() == getStar().getFactTable());
         measure.getTable().addToFrom(sqlQuery, false, true);
 
-        String expr = measure.getExpression(sqlQuery);
+        String expr = measure.generateExprString(sqlQuery);
         sqlQuery.addSelect(expr, getMeasureAlias(i));
     }
     protected boolean isAggregate() {

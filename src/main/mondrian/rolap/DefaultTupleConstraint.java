@@ -12,6 +12,7 @@ import mondrian.olap.Evaluator;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.aggmatcher.AggStar;
 
 import java.util.Map;
 
@@ -34,7 +35,7 @@ public class DefaultTupleConstraint implements TupleConstraint {
     }
 
     public void addLevelConstraint(
-        SqlQuery query, RolapLevel level, Map levelToColumnMap) {
+        SqlQuery query, AggStar aggStar, RolapLevel level, Map levelToColumnMap) {
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {

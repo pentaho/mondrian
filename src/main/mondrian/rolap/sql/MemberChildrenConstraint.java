@@ -14,6 +14,7 @@ import java.util.Map;
 
 import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapMember;
+import mondrian.rolap.aggmatcher.AggStar;
 
 /**
  * Restricts the SQL result of a MembersChildren query in SqlMemberSource.
@@ -25,37 +26,43 @@ import mondrian.rolap.RolapMember;
  * @version $Id$
  */
 public interface MemberChildrenConstraint extends SqlConstraint {
-    
-    /**
-     * modifies a Member.Children sqlQuery so that only the children
-     * of <code>parent</code> will be returned in the resultset
-     * @param sqlQuery the query to modify
-     * @param parent the parent member that restricts the returned children
-     */
-    public void addMemberConstraint(SqlQuery sqlQuery, RolapMember parent);
 
     /**
-     * modifies a Member.Children sqlQuery so that (all or some) children
-     * of <em>all</em> parent members contained in <code>parents</code> will 
-     * be returned in the resultset.
+     * Modifies a <code>Member.Children</code> query so that only the children
+     * of <code>parent</code> will be returned in the result set.
+     *
      * @param sqlQuery the query to modify
-     * @param parents list of parent members that restrict the returned children.
-     * all parents will belong to the same level and there at least two in the list.
+     * @param aggStar Aggregate star, if we are reading from an aggregate table,
+     * @param parent the parent member that restricts the returned children
      */
-    public void addMemberConstraint(SqlQuery sqlQuery, List parents);
-    
+    public void addMemberConstraint(
+        SqlQuery sqlQuery,
+        AggStar aggStar, RolapMember parent);
+
+    /**
+     * Modifies a <code>Member.Children</code> query so that (all or some)
+     * children of <em>all</em> parent members contained in <code>parents</code>
+     * will be returned in the result set.
+     *
+     * @param sqlQuery the query to modify
+     * @param aggStar Aggregate table, or null if query is against fact table
+     * @param parents list of parent members that restrict the returned children.
+     */
+    public void addMemberConstraint(
+        SqlQuery sqlQuery, AggStar aggStar, List parents);
+
     /**
      * Will be called once for the level that contains the
      * children of a Member.Children query. If the condition requires so,
      * it may join the levels table to the fact table.
      *
      * @param query the query to modify
+     * @param aggStar Aggregate table, or null if query is against fact table
      * @param level the level that contains the children
      * @param levelToColumnMap set in the case of a virtual cube; use this
-     * to map a level to the columns from the base cube
      */
     public void addLevelConstraint(
-        SqlQuery query, RolapLevel level, Map levelToColumnMap);
+        SqlQuery query, AggStar aggStar, RolapLevel level, Map levelToColumnMap);
 
 }
 

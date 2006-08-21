@@ -9,19 +9,14 @@
  */
 package mondrian.rolap;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import mondrian.olap.Evaluator;
 import mondrian.olap.Member;
 import mondrian.olap.Util;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.aggmatcher.AggStar;
 
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},
@@ -42,15 +37,16 @@ public class SqlConstraintUtils {
      * a WHERE condition and a join to the fact table.
      *
      * @param sqlQuery the query to modify
+     * @param aggStar Aggregate table, or null if query is against fact table
      * @param strict defines the behavior if the current context contains
      *   calculated members.
      *   If true, an exception is thrown,
-     *   otherwise calculated members are silently ignored.
      */
     public static void addContextConstraint(
-            SqlQuery sqlQuery,
-            Evaluator e,
-            boolean strict) {
+        SqlQuery sqlQuery,
+        AggStar aggStar,
+        Evaluator e,
+        boolean strict) {
 
         Member[] members = e.getMembers();
         if (strict) {
@@ -74,10 +70,22 @@ public class SqlConstraintUtils {
         // following code is similar to AbsractQuerySpec#nonDistinctGenerateSQL()
         for (int i = 0; i < arity; i++) {
             RolapStar.Column column = columns[i];
-            RolapStar.Table table = column.getTable();
-            table.addToFrom(sqlQuery, false, true);
 
-            String expr = column.getExpression(sqlQuery);
+            String expr;
+            if (aggStar != null) {
+                int bitPos = column.getBitPosition();
+                AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                AggStar.Table table = aggColumn.getTable();
+                table.addToFrom(sqlQuery, false, true);
+
+                expr = aggColumn.generateExprString(sqlQuery);
+            } else {
+                RolapStar.Table table = column.getTable();
+                table.addToFrom(sqlQuery, false, true);
+
+                expr = column.generateExprString(sqlQuery);
+            }
+
             String value = sqlQuery.quote(column.isNumeric(), values[i]);
             sqlQuery.addWhere(expr,
                     RolapUtil.sqlNullLiteral.equals(value) ? " is " : " = ",
@@ -107,17 +115,17 @@ public class SqlConstraintUtils {
     /**
      * Ensures that the table of <code>level</code> is joined to the fact
      * table
-     * 
+     *
      * @param sqlQuery sql query under construction
+     * @param aggStar
      * @param e evaluator corresponding to query
      * @param level level to be added to query
      * @param levelToColumnMap maps level to star columns; set only in the
-     * case of virtual cubes
      */
     public static void joinLevelTableToFactTable(
-        SqlQuery sqlQuery, Evaluator e, RolapLevel level,
-        Map levelToColumnMap) {
-        
+        SqlQuery sqlQuery, AggStar aggStar, Evaluator e, RolapLevel level,
+        Map levelToColumnMap)
+    {
         RolapCube cube = (RolapCube) e.getCube();
         Map mapLevelToColumnMap;
         if (cube.isVirtual()) {
@@ -128,25 +136,32 @@ public class SqlConstraintUtils {
         }
         RolapStar.Column starColumn =
             (RolapStar.Column) mapLevelToColumnMap.get(level);
-        Util.assertTrue(starColumn != null);
-        RolapStar.Table table = starColumn.getTable();
-        Util.assertTrue(table != null);
-        table.addToFrom(sqlQuery, false, true);
+        assert starColumn != null;
+        if (aggStar != null) {
+            int bitPos = starColumn.getBitPosition();
+            AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+            AggStar.Table table = aggColumn.getTable();
+            table.addToFrom(sqlQuery, false, true);
+        } else {
+            RolapStar.Table table = starColumn.getTable();
+            assert table != null;
+            table.addToFrom(sqlQuery, false, true);
+        }
     }
 
     /**
      * creates a WHERE parent = value
      * @param sqlQuery the query to modify
+     * @param aggStar Definition of the aggregate table, or null if query is
      * @param parent the list of parent members
      * @param strict defines the behavior if <code>parent</code>
-     * is a calculated member.
-     * If true, an exception is thrown,
-     * otherwise calculated members are silently ignored.
+     * is a calculated member. If true, an exception is thrown
      */
-    public static void addMemberConstraint(SqlQuery sqlQuery, RolapMember parent, boolean strict) {
-        List list = new ArrayList(1);
-        list.add(parent);
-        addMemberConstraint(sqlQuery, list, strict);
+    public static void addMemberConstraint(
+        SqlQuery sqlQuery, AggStar aggStar, RolapMember parent, boolean strict)
+    {
+        List list = Collections.singletonList(parent);
+        addMemberConstraint(sqlQuery, aggStar, list, strict);
     }
 
     /**
@@ -154,23 +169,28 @@ public class SqlConstraintUtils {
      * of all parents. All parents must belong to the same level.
      *
      * @param sqlQuery the query to modify
+     * @param aggStar
      * @param parents the list of parent members
      * @param strict defines the behavior if <code>parents</code>
      *   contains calculated members.
      *   If true, an exception is thrown,
-     *   otherwise calculated members are silently ignored.
      */
-    public static void addMemberConstraint(SqlQuery sqlQuery, List parents, boolean strict) {
-        if (parents.size() == 0)
+    public static void addMemberConstraint(
+        SqlQuery sqlQuery, AggStar aggStar, List parents, boolean strict)
+    {
+        if (parents.size() == 0) {
             return;
-
+        }
         for (Collection c = parents; !c.isEmpty(); c = getUniqueParentMembers(c)) {
             RolapMember m = (RolapMember) c.iterator().next();
-            if (m.isAll())
+            if (m.isAll()) {
                 continue;
+            }
             if (m.isCalculated()) {
-                if (strict)
-                  throw Util.newInternal("addMemberConstraint: cant restrict SQL to calculated member");
+                if (strict) {
+                    throw Util.newInternal("addMemberConstraint: cannot " +
+                        "restrict SQL to calculated member :" + m);
+                }
                 continue;
             }
             RolapLevel level = m.getRolapLevel();
@@ -202,8 +222,9 @@ public class SqlConstraintUtils {
         for (Iterator it = members.iterator(); it.hasNext();) {
             RolapMember m = (RolapMember) it.next();
             m = (RolapMember) m.getParentMember();
-            if (m != null)
+            if (m != null) {
                 set.add(m);
+            }
         }
         return set;
     }

@@ -15,6 +15,7 @@ import mondrian.olap.Evaluator;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.aggmatcher.AggStar;
 
 /**
  * TupleConstaint which restricts the result of a tuple sqlQuery to a
@@ -38,12 +39,14 @@ class DescendantsConstraint implements TupleConstraint {
     }
 
     public void addConstraint(SqlQuery sqlQuery) {
-        mcc.addMemberConstraint(sqlQuery, parentMembers);
+        mcc.addMemberConstraint(sqlQuery, null, parentMembers);
     }
 
     public void addLevelConstraint(
-        SqlQuery sqlQuery, RolapLevel level, Map levelToColumnMap) {
-        mcc.addLevelConstraint(sqlQuery, level, levelToColumnMap);
+        SqlQuery sqlQuery, AggStar aggStar,
+        RolapLevel level, Map levelToColumnMap)
+    {
+        mcc.addLevelConstraint(sqlQuery, aggStar, level, levelToColumnMap);
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {
@@ -56,7 +59,7 @@ class DescendantsConstraint implements TupleConstraint {
     public Object getCacheKey() {
         return null;
     }
-    
+
     public Evaluator getEvaluator() {
         return null;
     }

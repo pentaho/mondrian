@@ -13,6 +13,7 @@ import java.util.Map;
 
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.aggmatcher.AggStar;
 
 /**
  * Restricts the SQL result set to the parent member of a
@@ -33,16 +34,20 @@ public class DefaultMemberChildrenConstraint
     protected DefaultMemberChildrenConstraint() {
     }
 
-    public void addMemberConstraint(SqlQuery sqlQuery, RolapMember parent) {
-        SqlConstraintUtils.addMemberConstraint(sqlQuery, parent, true);
+    public void addMemberConstraint(
+        SqlQuery sqlQuery, AggStar aggStar, RolapMember parent)
+    {
+        SqlConstraintUtils.addMemberConstraint(
+            sqlQuery, aggStar, parent, true);
     }
 
-    public void addMemberConstraint(SqlQuery sqlQuery, List parents) {
-        SqlConstraintUtils.addMemberConstraint(sqlQuery, parents, true);
+    public void addMemberConstraint(
+        SqlQuery sqlQuery, AggStar aggStar, List parents) {
+        SqlConstraintUtils.addMemberConstraint(sqlQuery, aggStar, parents, true);
     }
 
     public void addLevelConstraint(
-        SqlQuery query, RolapLevel level, Map levelToColumnMap) {
+        SqlQuery query, AggStar aggStar, RolapLevel level, Map levelToColumnMap) {
     }
 
     public String toString() {

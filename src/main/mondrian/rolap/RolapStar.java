@@ -450,7 +450,7 @@ public class RolapStar {
         Util.assertTrue(measure.getTable() == factTable);
         factTable.addToFrom(sqlQuery, true, true);
         sqlQuery.addSelect(
-            measure.aggregator.getExpression(measure.getExpression(sqlQuery)));
+            measure.aggregator.getExpression(measure.generateExprString(sqlQuery)));
         // add constraining dimensions
         for (int i = 0; i < columns.length; i++) {
             Object value = values[i];
@@ -647,8 +647,12 @@ public class RolapStar {
             return expression;
         }
 
-        public String getExpression(SqlQuery query) {
-            return expression.getExpression(query);
+        /**
+         * Generates a SQL expression, which typically this looks like
+         * this: <code><i>tableName</i>.<i>columnName</i></code>.
+         */
+        public String generateExprString(SqlQuery query) {
+            return getExpression().getExpression(query);
         }
 
         private static void quoteValue(
@@ -688,7 +692,7 @@ public class RolapStar {
             if (sqlQuery.getDialect().allowsCountDistinct()) {
                 // e.g. "select count(distinct product_id) from product"
                 sqlQuery.addSelect("count(distinct "
-                    + getExpression(sqlQuery) + ")");
+                    + generateExprString(sqlQuery) + ")");
 
                 // no need to join fact table here
                 table.addToFrom(sqlQuery, true, false);
@@ -698,7 +702,7 @@ public class RolapStar {
                 // product_id from product)"
                 SqlQuery inner = sqlQuery.cloneEmpty();
                 inner.setDistinct(true);
-                inner.addSelect(getExpression(inner));
+                inner.addSelect(generateExprString(inner));
                 boolean failIfExists = true,
                     joinToParent = false;
                 table.addToFrom(inner, failIfExists, joinToParent);
@@ -839,7 +843,7 @@ public class RolapStar {
             pw.print(" (");
             pw.print(getBitPosition());
             pw.print("): ");
-            pw.print(getExpression(sqlQuery));
+            pw.print(generateExprString(sqlQuery));
         }
     }
 
@@ -888,7 +892,7 @@ public class RolapStar {
             pw.print(" (");
             pw.print(getBitPosition());
             pw.print("): ");
-            pw.print(aggregator.getExpression(getExpression(sqlQuery)));
+            pw.print(aggregator.getExpression(generateExprString(sqlQuery)));
         }
     }
 

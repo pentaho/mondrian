@@ -274,7 +274,7 @@ public class SqlTupleReader implements TupleReader {
      * @return number of targets that contain enumerated sets with calculated
      * members
      */
-    public int nEnumTargets()
+    public int getEnumTargetCount()
     {
         int nEnumTargets = 0;
         for (Iterator it = targets.iterator(); it.hasNext();) {
@@ -334,7 +334,7 @@ public class SqlTupleReader implements TupleReader {
             int nFetch = 0;
 
             // determine how many enum targets we have
-            int nEnumTargets = nEnumTargets();
+            int nEnumTargets = getEnumTargetCount();
             int[] srcMemberIdxes = null;
             if (nEnumTargets > 0) {
                 srcMemberIdxes = new int[nEnumTargets];
@@ -692,7 +692,7 @@ public class SqlTupleReader implements TupleReader {
             hierarchy.addToFrom(sqlQuery, level2.getOrdinalExp());
 
             constraint.addLevelConstraint(
-                sqlQuery, level2, levelToColumnMap);
+                sqlQuery, null, level2, levelToColumnMap);
 
             if (level2.hasCaptionColumn()) {
                 MondrianDef.Expression captionExp = level2.getCaptionExp();

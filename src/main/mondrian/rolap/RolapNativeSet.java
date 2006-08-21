@@ -144,7 +144,7 @@ public abstract class RolapNativeSet extends RolapNative {
             // with those enumerated members
             Object key = tr.getCacheKey();
             List result = (List) cache.get(key);
-            boolean hasEnumTargets = (tr.nEnumTargets() > 0);
+            boolean hasEnumTargets = (tr.getEnumTargetCount() > 0);
             if (result != null && !hasEnumTargets) {
                 if (listener != null) {
                     TupleEvent e = new TupleEvent(this, tr);
@@ -297,8 +297,10 @@ public abstract class RolapNativeSet extends RolapNative {
         }
 
         public void addConstraint(SqlQuery sqlQuery) {
-            if (member != null)
-                SqlConstraintUtils.addMemberConstraint(sqlQuery, member, true);
+            if (member != null) {
+                SqlConstraintUtils.addMemberConstraint(
+                    sqlQuery, null, member, true);
+            }
         }
     }
 
@@ -407,20 +409,21 @@ public abstract class RolapNativeSet extends RolapNative {
         }
 
         public void addConstraint(SqlQuery sqlQuery) {
-            SqlConstraintUtils.addMemberConstraint(sqlQuery, Arrays.asList(members), strict);
+            SqlConstraintUtils.addMemberConstraint(
+                sqlQuery, null, Arrays.asList(members), strict);
         }
-
     }
 
     /**
      * Checks for Descendants(&lt;member&gt;, &lt;Level&gt;)
      *
-     * @return an {@link CrossJoinArg} instance describing the Descendants function or null,
-     * if <code>fun</code> represents something else.
+     * @return an {@link CrossJoinArg} instance describing the Descendants
+     *   function, or null if <code>fun</code> represents something else.
      */
     protected CrossJoinArg checkDescendants(FunDef fun, Exp[] args) {
-        if (!"Descendants".equalsIgnoreCase(fun.getName()))
+        if (!"Descendants".equalsIgnoreCase(fun.getName())) {
             return null;
+        }
         if (args.length != 2) {
             return null;
         }

@@ -226,7 +226,7 @@ public class AggregationManager extends RolapAggregationManager {
      *   an exact match
      * @return An aggregate, or null if none is suitable.
      */
-    private AggStar findAgg(
+    public AggStar findAgg(
             RolapStar star,
             final BitKey levelBitKey,
             final BitKey measureBitKey,
@@ -240,7 +240,7 @@ public class AggregationManager extends RolapAggregationManager {
         // whose measure BitKey is a superset of the measure BitKey,
         // whose level BitKey is an exact match and the aggregate table
         // can NOT have any foreign keys.
-
+        assert rollup != null;
         BitKey fullBitKey = levelBitKey.or(measureBitKey);
         // superset match
         for (Iterator it = star.getAggStars().iterator(); it.hasNext(); ) {
@@ -268,7 +268,7 @@ public class AggregationManager extends RolapAggregationManager {
             // rolled up to. For example,
             // if the measure is 'distinct customer count',
             // and the agg table has levels customer_id,
-            // then gender is a core level
+            // then gender is a core level.
             final BitKey distinctMeasuresBitKey =
                     measureBitKey.and(aggStar.getDistinctMeasureBitKey());
             final BitSet distinctMeasures = distinctMeasuresBitKey.toBitSet();

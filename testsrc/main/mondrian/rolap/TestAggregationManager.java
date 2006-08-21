@@ -19,11 +19,6 @@ import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.cache.CachePool;
 import mondrian.test.TestContext;
 import mondrian.test.FoodMartTestCase;
-import mondrian.util.DelegatingInvocationHandler;
-
-import javax.sql.DataSource;
-import java.lang.reflect.Proxy;
-import java.sql.*;
 
 /**
  * Unit test for {@link AggregationManager}.
@@ -552,7 +547,62 @@ public class TestAggregationManager extends FoodMartTestCase {
         assertRequestSql(new CellRequest[] {request}, patterns);
     }
 
+    /**
+     * Tests that an aggregate table is used to speed up a
+     * <code>&lt;Member&gt;.Children</code> expression.
+     */
+    public void testAggMembers() {
+        if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
+            return;
+        }
+        if (!(MondrianProperties.instance().UseAggregates.get() &&
+                MondrianProperties.instance().ReadAggregates.get())) {
+            return;
+        }
+        SqlPattern[] patterns = {
+            new SqlPattern(
+                SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
+                "select `store`.`store_country` as `c0` " +
+                    "from `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`," +
+                    " `store` as `store` " +
+                    "where `agg_c_14_sales_fact_1997`.`the_year` = 1997 " +
+                    "and `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id` " +
+                    "group by `store`.`store_country` " +
+                    "order by `store`.`store_country` ASC",
+                26)};
 
+        assertQuerySql(
+            "select NON EMPTY {[Time].[1997]} ON COLUMNS,\n" +
+            "       NON EMPTY Crossjoin(Hierarchize(Union({[Store].[All Stores]},\n" +
+            "           [Store].[All Stores].Children)), {[Product].[All Products]}) \n" +
+            "           ON ROWS\n" +
+            "    from [Sales]\n" +
+            "    where [Measures].[Unit Sales]",
+            patterns);
+    }
+
+    /**
+     * As {@link #testAggMembers()}, but asks for children of a leaf level.
+     * Rewrite using an aggregate table is not possible, so just check that it
+     * gets the right result.
+     */
+    public void testAggChildMembersOfLeaf() {
+        assertQueryReturns(
+            "select NON EMPTY {[Time].[1997]} ON COLUMNS,\n" +
+                "       NON EMPTY Crossjoin(Hierarchize(Union({[Store].[All Stores]},\n" +
+                "           [Store].[USA].[CA].[San Francisco].[Store 14].Children)), {[Product].[All Products]}) \n" +
+                "           ON ROWS\n" +
+                "    from [Sales]\n" +
+                "    where [Measures].[Unit Sales]",
+            fold(
+                "Axis #0:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #1:\n" +
+                    "{[Time].[1997]}\n" +
+                    "Axis #2:\n" +
+                    "{[Store].[All Stores], [Product].[All Products]}\n" +
+                    "Row #0: 266,773\n"));
+    }
 
     /**
      * Fake exception to interrupt the test when we see the desired query.
@@ -575,9 +625,8 @@ public class TestAggregationManager extends FoodMartTestCase {
         int d = SqlPattern.getDialect(dialect);
         SqlPattern sqlPattern = SqlPattern.getPattern(d, patterns);
         if (sqlPattern == null) {
-            // This is the current behavior: when the dialect is not
-            // Access then do not run the test. We do not print
-            // any warning message.
+            // If the dialect is not one in the pattern set, do not run the
+            // test. We do not print any warning message.
             return;
         }
 
@@ -587,24 +636,20 @@ public class TestAggregationManager extends FoodMartTestCase {
         // Create a dummy DataSource which will throw a 'bomb' if it is asked
         // to execute a particular SQL statement, but will otherwise behave
         // exactly the same as the current DataSource.
-        DataSource oldDataSource = star.getDataSource();
-        final DataSource dataSource = (DataSource) Proxy.newProxyInstance(
-                null,
-                new Class[] {DataSource.class},
-                new DataSourceHandler(oldDataSource, trigger));
-        star.setDataSource(dataSource);
+        RolapUtil.threadHooks.set(new TriggerHook(trigger));
         Bomb bomb;
         try {
             FastBatchingCellReader fbcr =
                 new FastBatchingCellReader(getCube("Sales"));
-            for (int i = 0; i < requests.length; i++)
+            for (int i = 0; i < requests.length; i++) {
                 fbcr.recordCellRequest(requests[i]);
+            }
             fbcr.loadAggregations();
             bomb = null;
         } catch (Bomb e) {
             bomb = e;
         } finally {
-            star.setDataSource(oldDataSource);
+            RolapUtil.threadHooks.set(null);
         }
         assertTrue(bomb != null);
         assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
@@ -628,24 +673,28 @@ public class TestAggregationManager extends FoodMartTestCase {
         int d = SqlPattern.getDialect(dialect);
         SqlPattern sqlPattern = SqlPattern.getPattern(d, patterns);
         if (sqlPattern == null) {
-            // This is the current behavior: when the dialect is not
-            // Access then do not run the test. We do not print
-            // any warning message.
+            // If the dialect is not one in the pattern set, do not run the
+            // test. We do not print any warning message.
             return;
         }
 
         String sql = sqlPattern.getSql();
         String trigger = sqlPattern.getTriggerSql();
 
+        // Clear the cache for the Sales cube, so the query runs as if for the
+        // first time. (TODO: Cleaner way to do this.)
+        RolapHierarchy hierarchy = (RolapHierarchy) getConnection().getSchema().
+            lookupCube("Sales", true).lookupHierarchy("Store", false);
+        SmartMemberReader memberReader =
+            (SmartMemberReader) hierarchy.getMemberReader();
+        memberReader.mapLevelToMembers.cache.clear();
+        memberReader.mapMemberToChildren.cache.clear();
+
         // Create a dummy DataSource which will throw a 'bomb' if it is asked
         // to execute a particular SQL statement, but will otherwise behave
         // exactly the same as the current DataSource.
-        DataSource oldDataSource = star.getDataSource();
-        final DataSource dataSource = (DataSource) Proxy.newProxyInstance(
-                null,
-                new Class[] {DataSource.class},
-                new DataSourceHandler(oldDataSource, trigger));
-        star.setDataSource(dataSource);
+        RolapUtil.threadHooks.set(new TriggerHook(trigger));
+
         Bomb bomb;
         try {
             // Flush the cache, to ensure that the query gets executed.
@@ -658,7 +707,7 @@ public class TestAggregationManager extends FoodMartTestCase {
         } catch (Bomb e) {
             bomb = e;
         } finally {
-            star.setDataSource(oldDataSource);
+            RolapUtil.threadHooks.set(null);
         }
         if (bomb == null) {
             fail("expected query [" + sql + "] did not occur");
@@ -723,69 +772,6 @@ public class TestAggregationManager extends FoodMartTestCase {
             TestContext.instance().getFoodMartConnection(false);
         final boolean fail = true;
         return (RolapCube) connection.getSchema().lookupCube(cube, fail);
-    }
-
-
-    public static class DataSourceHandler extends DelegatingInvocationHandler {
-        private final DataSource dataSource;
-        private final String trigger;
-
-        public DataSourceHandler(DataSource dataSource, String trigger) {
-            super(dataSource);
-            this.dataSource = dataSource;
-            this.trigger = trigger;
-        }
-
-        public java.sql.Connection getConnection() throws SQLException {
-            final java.sql.Connection connection = dataSource.getConnection();
-            return (java.sql.Connection) Proxy.newProxyInstance(
-                    null,
-                    new Class[]{java.sql.Connection.class},
-                    new TriggerHandler(connection));
-        }
-
-        public class TriggerHandler extends DelegatingInvocationHandler {
-            private final java.sql.Connection connection;
-
-            public TriggerHandler(java.sql.Connection connection) {
-                super(connection);
-                this.connection = connection;
-            }
-
-            public Statement createStatement() throws SQLException {
-                final Statement statement = connection.createStatement();
-                return (Statement) Proxy.newProxyInstance(
-                        null,
-                        new Class[]{Statement.class},
-                        new StatementHandler(statement));
-            }
-        }
-
-        public class StatementHandler extends DelegatingInvocationHandler {
-            private final Statement statement;
-
-            public StatementHandler(Statement statement) {
-                super(statement);
-                this.statement = statement;
-            }
-
-            public ResultSet executeQuery(String sql) throws SQLException {
-                if (matchTrigger(sql)) {
-                    throw new Bomb(sql);
-                } else {
-                    return statement.executeQuery(sql);
-                }
-            }
-
-            // different versions of mysql drivers use different quoting, so ignore quotes
-            private boolean matchTrigger(String sql) {
-                if (trigger == null)
-                    return true;
-                String s = replaceQuotes(sql);
-                String t = replaceQuotes(trigger);
-                return s.startsWith(t);
-            }
-        }
     }
 
     private static class SqlPattern {
@@ -879,7 +865,31 @@ public class TestAggregationManager extends FoodMartTestCase {
             return triggerSql;
         }
     }
-}
 
+    private static class TriggerHook implements RolapUtil.ExecuteQueryHook {
+        private final String trigger;
+
+        public TriggerHook(String trigger) {
+            this.trigger = trigger;
+        }
+
+        private boolean matchTrigger(String sql) {
+            if (trigger == null) {
+                return true;
+            }
+            // different versions of mysql drivers use different quoting, so
+            // ignore quotes
+            String s = replaceQuotes(sql);
+            String t = replaceQuotes(trigger);
+            return s.startsWith(t);
+        }
+
+        public void onExecuteQuery(String sql) {
+            if (matchTrigger(sql)) {
+                throw new Bomb(sql);
+            }
+        }
+    }
+}
 
 // End TestAggregationManager.java

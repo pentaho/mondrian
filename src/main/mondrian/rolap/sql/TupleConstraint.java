@@ -12,6 +12,7 @@ package mondrian.rolap.sql;
 import mondrian.olap.Evaluator;
 import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapMember;
+import mondrian.rolap.aggmatcher.AggStar;
 
 import java.util.Map;
 
@@ -41,12 +42,12 @@ public interface TupleConstraint extends SqlConstraint {
      * it may join the levels table to the fact table.
      *
      * @param query the query to modify
+     * @param aggStar Aggregate table, or null if query is against fact table
      * @param level the level which is accessed in the Level.Members query
      * @param levelToColumnMap set in the case of a virtual cube; use this
-     * to map a level to the columns from the base cube
      */
     public void addLevelConstraint(
-        SqlQuery query, RolapLevel level, Map levelToColumnMap);
+        SqlQuery query, AggStar aggStar, RolapLevel level, Map levelToColumnMap);
 
     /**
      * When the members of a level are fetched, the result is grouped

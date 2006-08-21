@@ -105,7 +105,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         Util.assertTrue(measure.getTable() == getStar().getFactTable());
         measure.getTable().addToFrom(sqlQuery, false, true);
 
-        String exprInner = measure.getExpression(sqlQuery);
+        String exprInner = measure.generateExprString(sqlQuery);
         String exprOuter = measure.getAggregator().getExpression(exprInner);
         sqlQuery.addSelect(exprOuter, getMeasureAlias(i));
     }
@@ -136,7 +136,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
                 continue;
             }
             table.addToFrom(innerSqlQuery, false, true);
-            String expr = column.getExpression(innerSqlQuery);
+            String expr = column.generateExprString(innerSqlQuery);
             ColumnConstraint[] constraints = getConstraints(i);
             if (constraints != null) {
                 innerSqlQuery.addWhere(
@@ -157,7 +157,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
             measure.getTable().addToFrom(innerSqlQuery, false, true);
 
             String alias = getMeasureAlias(i);
-            String expr = measure.getExpression(outerSqlQuery);
+            String expr = measure.generateExprString(outerSqlQuery);
             innerSqlQuery.addSelect(expr, alias);
 
             outerSqlQuery.addSelect(
