@@ -25,7 +25,7 @@
 <h1>Cómo instalar Mondrian</h1>
 
 <p>Traducido por Félix Alberto Martín. 
-Based on install.html#60 (2006/5/31).</p>
+Based on install.html#65 (2006/8/23).</p>
 
 <hr align="center" width="100%" color="black" noshade size="1">
 
@@ -35,7 +35,7 @@ Based on install.html#60 (2006/5/31).</p>
   </a>
 
   <ol>
-  <li><a href="#2_1_Microsoft_Access%232_1_Microsoft_Access">Microsoft Access</a> 
+  <li><a href="#2_1_Microsoft_Access%232_1_Microsoft_Access">Microsoft Access</a>  
   </li>
   <li><a href="#2_2_Non_Access_setup%232_2_Non_Access_setup">Otras bases de datos</a> 
   </li>
@@ -46,7 +46,7 @@ Based on install.html#60 (2006/5/31).</p>
   <a href="#3_Deploy_and_run_the_web_app%233_Deploy_and_run_the_web_app">Despliegue y ejecución de una aplicación web con una base de datos no embebida
   </a></li>
   <li>
-  <a href="#4_Deploy_and_run_the_embedded_web_app%234_Deploy_and_run_the_embedded_web_app">Despliegue y ejecución de una aplicación web con una base de datos embebida</a> 
+  <a href="#4_Deploy_and_run_the_embedded_web_app%234_Deploy_and_run_the_embedded_web_app">Despliegue y ejecución de una aplicación web con una base de datos embebida</a>  
   </li>
   <li>
   <a href="#5_How_to_configure_Mondrian_as_an_XMLA_provider%235_How_to_configure_Mondrian_as_an_XMLA_provider">Cómo configurar Mondrian como un servidor XML/A</a> 
@@ -91,24 +91,24 @@ Based on install.html#60 (2006/5/31).</p>
 
 <p>El núcleo de Mondrian es un JAR que actúa como "JDBC para OLAP": proporcionando conexiones y ejecutando consultas SQL contra la base de datos relacional que sirve los datos. Los binarios de Mondrian vienen empaquetados de diferentes maneras:
 </p>
-<p>1.&nbsp;&nbsp;&nbsp;&nbsp; 
-Como un paquete WAR que contiene Jpivot, un <i>framework</i> para trabajo con aplicaciones web y tecnología OLAP, junto con un ejemplo de datos que pueden ser cargados en una base de datos de su elección.</p>
-<p>2.&nbsp;&nbsp;&nbsp;&nbsp; 
-Como un paquete WAR que además de contener a Jpivot, incluye una base de datos Derby, con lo que no se requiere ninguna configuración extra, aparte del despliegue sobre el servidor de aplicaciones.</p>
+<ol>
+	<li>Como un paquete WAR que contiene Jpivot, un <i>framework</i> para trabajo con aplicaciones web y tecnología OLAP, junto con un ejemplo de datos que pueden ser cargados en una base de datos de su elección.</li>
+	<li>Como un paquete WAR que además de contener a Jpivot, incluye una base de datos Derby, con lo que no se requiere ninguna configuración extra, aparte del despliegue sobre el servidor de aplicaciones.</li>
+</ol>
 <p>Ambas distribuciones contienen los fuentes de Mondrian. Además, todos los JARs necesarios para la ejecución de Mondrian están incluidos en la distribución, en el directorio WAR /WEB-INF/lib.
 </p>
 <p>A continuación se detallan una serie de indicaciones para realizar la instalación del binario:</p>
-<p>1.&nbsp;&nbsp;&nbsp;&nbsp; 
-Instalar Java SDK (1.4.2 o superior). </p>
-<p>2.&nbsp;&nbsp;&nbsp;&nbsp; 
-Descargar la última versión del binario de Mondrian: <code>mondrian-<i>version</i>.zip</code>
- desde <a href="http://sourceforge.net/projects/mondrian">SourceForge</a>, y descomprímalo. </p>
-<p>3.&nbsp;&nbsp;&nbsp;&nbsp; 
-Para la distribución sin datos embebidos, configure la base de datos FoodMart, tal y como se describe en el <a href="#2_Set_up_test_data%232_Set_up_test_data">
-apartado 2</a>. </p>
-<p>4.&nbsp;&nbsp;&nbsp;&nbsp; 
-Configure y ejecute la aplicación web, tal y como se describe en los <a href="#3_Deploy_and_run_the_web_app%233_Deploy_and_run_the_web_app">
-apartados 3 o 4</a>. </p>
+<ol>
+	<li>Instalar Java SDK (1.4.2 o superior). </li>
+	<li>Descargar la última versión del binario de Mondrian: <code>mondrian-<i>version</i>.zip</code>
+ desde <a href="http://sourceforge.net/projects/mondrian">SourceForge</a>, y descomprímalo. 
+	</li>
+	<li>Para la distribución sin datos embebidos, configure la base de datos FoodMart, tal y como se describe en el
+	<a href="#2_Set_up_test_data%232_Set_up_test_data">apartado 2</a>. </li>
+	<li>Configure y ejecute la aplicación web, tal y como se describe en los
+	<a href="#3_Deploy_and_run_the_web_app%233_Deploy_and_run_the_web_app">apartados 3 o 4</a>. 
+	</li>
+</ol>
 <p>Si su objetivo es desarrollar con Mondrian, existen instrucciones adicionales para el acceso al servidor de control de fuentes Perforce y&nbsp; para compilar el código fuente en 
 <a href="developer.html">the Developer's Guide</a>.
 </p>
@@ -126,16 +126,21 @@ demo/FoodMartCreateData.sql</code>).</p>
 
 <p>Bajo el menú 'Herramientas Administrativas', situado en el Panel de Control de su equipo, haga click sobre&nbsp; 'Orígenes de datos (ODBC)' para abrir el administrados de fuentes de datos ODBC. A continuación cree un DSN de sistema llamado 
 <code>MondrianFoodMart</code> apuntando a <code><i>MONDRIAN_HOME</i></code><code>
-/demo/access/MondrianFoodMart.mdb</code>. (Esto permitirá que Mondrian acceda a los datos utilizando la cadena de conexión JDBC &quot;<code>jdbc:odbc:MondrianFoodMart
-</code>&quot;.</p>
+/demo/access/MondrianFoodMart.mdb</code>. (Esto permitirá que Mondrian acceda a los datos utilizando la cadena de conexión JDBC &quot;<code>jdbc:odbc:MondrianFoodMart</code>&quot;.</p>
 <h3><a name="10c00c7a886b165a_2_2_Non_Access_setup">2.2. Ot</a>ras bases de datos
 </h3>
 <p>Si no utiliza Microsoft Access, utilice la utilidad MondrianFoodMartLoader para crear una base de datos y cargar los datos a partir del script SQL.</p>
 <h4>Sintaxis</h4>
-<p><code>MondrianFoodMartLoader</code><br><code>&nbsp;&nbsp;&nbsp; [-verbose] [-tables] [-data] [-indexes]
-</code><br><code>&nbsp;&nbsp;&nbsp; -jdbcDrivers=&lt;jdbcDrivers&gt;</code><br><code>&nbsp;&nbsp;&nbsp; -outputJdbcURL=&lt;jdbcURL&gt;</code><br><code>&nbsp;&nbsp;&nbsp; [ [ [-outputJdbcUser=user] [-outputJdbcPassword=password] [-outputJdbcBatchSize=&lt;batch size&gt;] ]
-</code><br><code>&nbsp;&nbsp;&nbsp; | -outputDirectory=&lt;directory name&gt;</code><br><code>&nbsp;&nbsp;&nbsp; ]</code><br><code>&nbsp;&nbsp;&nbsp; [ [-inputJdbcURL=&lt;jdbcURL&gt; [-inputJdbcUser=user] [-inputJdbcPassword=password] ]</code><br><code>&nbsp;&nbsp;&nbsp; | [-inputFile=&lt;file name&gt;]
-</code><br><code>&nbsp;&nbsp;&nbsp; ]</code></p>
+<blockquote>
+	<div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
+		<code>MondrianFoodMartLoader</code><br><code>&nbsp;&nbsp;&nbsp; [-verbose] [-tables] [-data] [-indexes]
+		</code><br><code>&nbsp;&nbsp;&nbsp; -jdbcDrivers=&lt;jdbcDrivers&gt;</code><br>
+		<code>&nbsp;&nbsp;&nbsp; -outputJdbcURL=&lt;jdbcURL&gt;</code><br><code>&nbsp;&nbsp;&nbsp; [ [ [-outputJdbcUser=user] [-outputJdbcPassword=password] [-outputJdbcBatchSize=&lt;batch size&gt;] ]
+		</code><br><code>&nbsp;&nbsp;&nbsp; | -outputDirectory=&lt;directory name&gt;</code><br>
+		<code>&nbsp;&nbsp;&nbsp; ]</code><br><code>&nbsp;&nbsp;&nbsp; [ [-inputJdbcURL=&lt;jdbcURL&gt; [-inputJdbcUser=user] [-inputJdbcPassword=password] ]</code><br>
+		<code>&nbsp;&nbsp;&nbsp; | [-inputFile=&lt;file name&gt;] </code><br>
+		<code>&nbsp;&nbsp;&nbsp; ]</code></div>
+</blockquote>
 <h4>Options</h4>
 
 <blockquote>
@@ -279,8 +284,11 @@ Si no hay parámetros relativos a la Base de datos, se assume que los datos viene
 <p>Si su destino es una base de datos JDBC, deberá crear la base de datos o esquema antes de realizar la carga de datos. Esto es específico para cada base de datos.
 </p>
 <p>Puede ignorar con seguridad las advertencias del log4j:</p>
-<p><code>log4j:WARN No appenders could be found for logger (mondrian.rolap.RolapUtil).&nbsp;</code><br>
-<code>log4j:WARN Please initialize the log4j system properly.</code></p>
+<blockquote>
+	<div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
+		<code>log4j:WARN No appenders could be found for logger (mondrian.rolap.RolapUtil).&nbsp;</code><br>
+		<code>log4j:WARN Please initialize the log4j system properly.</code></div>
+</blockquote>
 <h4>Ejemplos</h4>
 <p>Aquí tiene algunos ejemplos que puede ilustrar la idea genera de cómo invocar a <code>MondrianFoodMartLoader</code>
 . La línea de comandos cambiará dependiendo del sistema operativo, las fuentes y destinos de datos que utilice.</p>
@@ -291,107 +299,107 @@ Si no hay parámetros relativos a la Base de datos, se assume que los datos viene
 
 <blockquote>
 
-  <p><code><b><i>$</i></b></code><code> mysqladmin create foodmart</code><b><i>
+  <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
+	<code><b><i>$</i></b></code><code> mysqladmin create foodmart</code><b><i>
   <br><code>$</code></i></b><code> mysql</code><b><br><code><i>mysql&gt;</i> grant all privileges on *.* to 'foodmart'@'localhost' identified by 'foodmart';</code><br>
   <code><i>Query OK, 0 rows affected (0.00 sec)</i></code><i><br><br><code>mysql&gt;
-  </code></i></b><code>quit</code><b><i><br><code>Bye</code> </i></b></p>
+  </code></i></b><code>quit</code><b><i><br><code>Bye</code> </i></b></div>
 </blockquote>
 <p>A continuación carga los datos:</p>
 
 <blockquote>
 
-  <p><code><b><i>$</i></b></code><code> java -cp &quot;/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/usr/local/mysql/mysql-connector-java-3.0.16-ga-bin.jar
+  <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
+	<code><b><i>$</i></b></code><code> java -cp &quot;/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/usr/local/mysql/mysql-connector-java-3.0.16-ga-bin.jar
 &quot;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader</code><br>
   <code>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes</code><br>
   <code>&nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=
 com.mysql.jdbc.Driver</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -inputFile=/mondrian/demo/FoodMartCreateData.sql
   </code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=&quot;jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart&quot;</code>
-  </p>
+  </div>
 </blockquote>
 <h5>Ejemplo 2. Cargando PostgreSQL desde Access en Windows</h5>
 <p>El siguiente ejemplo es una línea de commandos Windows que crea las tables FoodMart para PostgreSQL desde los datos almacenados en una base de datos Access:</p>
 
 <blockquote>
 
-  <p><code><b><i>C:\mondrian&gt;</i></b></code><code> java -cp &quot;C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-
+  <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
+	<code><b><i>C:\mondrian&gt;</i></b></code><code> java -cp &quot;C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-
 1.2.9.jar;C:\mondrian\lib\eigenbase-xom.jar;C:\mondrian\lib\eigenbase-resgen.jar;C:\mondrian\lib\eigenbase-properties.jar;C:\mondrian\lib\postgres-jdbc.jar&quot;</code>
   <br><code>&nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader</code><br>
   <code>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes</code><br>
   <code>&nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=&quot;org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver
 &quot;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -inputJdbcURL=&quot;jdbc:odbc:MondrianFoodMart&quot;</code><br>
   <code>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=&quot;jdbc:postgresql://localhost/foodmart&quot;</code><br>
-  <code>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcUser=postgres</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcPassword=password</code></p>
+  <code>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcUser=postgres</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcPassword=password</code></div>
 </blockquote>
 <h2><a name="10c00c7a886b165a_3_Deploy_and_run_the_web_app">3. Despliegue y ejecución de una aplicación web con una base de datos no embebida
 </a></h2>
-<p>1.&nbsp;&nbsp;&nbsp;&nbsp; 
-Instale Tomcat (version 5.0.25 or superior). </p>
-<p>2.&nbsp;&nbsp;&nbsp;&nbsp; 
-Desde el paquete descargado con los binarios, descomprímalos y coloque <code>lib/mondrian.war</code>
- sobre <code><i>TOMCAT_HOME</i></code><code>/webapps/mondrian</code>
- </p>
-<p>3.&nbsp;&nbsp;&nbsp;&nbsp; 
-Abra el fichero mondrian.properties sitado en <code><i>TOMCAT_HOME</i></code><code>/webapps/mondrian
-</code> y cambia las propiedades <code>mondrian.jdbcDrivers
-</code> para la base de datos que ha configurado anteriormente siguiendo las instrucciones de este documento. </p>
-<p>4.&nbsp;&nbsp;&nbsp;&nbsp; 
-Abra el fichero web.xml en <code><i>TOMCAT_HOME</i></code><code>/webapps/mondrian/WEB-INF
-</code> y personalice las dos cadenas de conexión existentes a la base de datos FoodMart que ha instalado, teniendo en&nbsp; 
-cuenta el tipo de base de datos que ha elegido. Es decir, </p>
+<ol>
+	<li>Instale Tomcat (version 5.0.25 or superior). </li>
+	<li>Desde el paquete descargado con los binarios, descomprímalos y coloque
+	<code>lib/mondrian.war</code>
+ sobre <code><i>TOMCAT_HOME</i></code><code>/webapps/mondrian</code> </li>
+	<li>Abra el fichero mondrian.properties sitado en <code><i>TOMCAT_HOME</i></code><code>/webapps/mondrian
+	</code>y cambia las propiedades <code>mondrian.jdbcDrivers
+</code>para la base de datos que ha configurado anteriormente siguiendo las instrucciones de este documento. 
+	</li>
+	<li>Abra el fichero web.xml en <code><i>TOMCAT_HOME</i></code><code>/webapps/mondrian/WEB-INF
+	</code>y personalice las dos cadenas de conexión existentes a la base de datos FoodMart que ha instalado, teniendo en&nbsp; 
+cuenta el tipo de base de datos que ha elegido. Es decir,
 
-<blockquote>
+  <blockquote>
+	<div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
+		<code>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;</code></div>
+	</blockquote>
+	<p>Cambiaría a&nbsp; </p>
+	<blockquote>
+		<div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
+			<code>Provider=mondrian;Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=
+com.mysql.jdbc.Driver;</code> </div>
+	</blockquote> 
+	</li>
 
-  <p><code>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;</code></p>
-</blockquote>
-<p>Cambiaría a&nbsp; </p>
+	<li>Modigique los ficheros <code>fourheir.jsp</code>, <code>mondrian.jsp</code>, 
+	<code>colors.jsp</code>
+ y <code>arrows.jsp </code>situados en el directorio <code><i>TOMCAT_HOME</i></code><code>/webapps/mondrian/WEB-INF/queries</code>. Modifique la línea:
 
-<blockquote>
-
-  <p><code>Provider=mondrian;Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=
-com.mysql.jdbc.Driver;</code> </p>
-</blockquote>
-<p>5.&nbsp;&nbsp;&nbsp;&nbsp; 
-Modigique los ficheros <code>fourheir.jsp</code>, <code>
-mondrian.jsp</code>, <code>colors.jsp</code>
- y <code>arrows.jsp </code>situados en el directorio <code>
-<i>TOMCAT_HOME</i></code><code>/webapps/mondrian/WEB-INF/queries</code>
-. Modifique la línea:</p>
-
-<blockquote>
-
-  <p><code>&lt;jp:mondrianQuery id=&quot;query01&quot; jdbcDriver=&quot;sun.jdbc.odbc.JdbcOdbcDriver&quot; jdbcUrl=&quot;jdbc:odbc:MondrianFoodMart&quot; catalogUri=&quot;/WEB-INF/queries/FoodMart.xml&quot;&gt;
-  </code></p>
+  <blockquote>
+	<div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
+		<code>&lt;jp:mondrianQuery id=&quot;query01&quot; jdbcDriver=&quot;sun.jdbc.odbc.JdbcOdbcDriver&quot; jdbcUrl=&quot;jdbc:odbc:MondrianFoodMart&quot; catalogUri=&quot;/WEB-INF/queries/FoodMart.xml&quot;&gt;
+		</code></div>
 </blockquote>
 <p>por los mismos parámetros de base de datos para la base de datos FoodMart instalada según las instrucciones. Para el caso de MySQL, deberíamos tener algo del estilo a: 
 </p>
 
 <blockquote>
 
-  <p><code>&lt;jp:mondrianQuery id=&quot;query01&quot; jdbcDriver=&quot;com.mysql.jdbc.Driver&quot; jdbcUrl=&quot;jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart&quot;; catalogUri=&quot;/WEB-INF/queries/FoodMart.xml&quot;&gt;
-  </code></p>
+  <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
+	<code>&lt;jp:mondrianQuery id=&quot;query01&quot; jdbcDriver=&quot;com.mysql.jdbc.Driver&quot; jdbcUrl=&quot;jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart&quot; catalogUri=&quot;/WEB-INF/queries/FoodMart.xml&quot;&gt;
+  </code></div>
 </blockquote>
-<p>6.&nbsp;&nbsp;&nbsp;&nbsp; 
-Copie los siguiente ficheros: </p>
+    </li>
+
+	<li>Copie los siguiente ficheros:
 <ul>
-  <li>Si es necesario, copie su JAR con el driver JDBC al directorio <code>TOMCAT_HOME/common/endorsed</code> 
+  <li>Si es necesario, copie su JAR con el driver JDBC al directorio <code>TOMCAT_HOME/common/endorsed</code>  
   </li>
   <li>Copie <code>xalan.jar</code> a <code><i>TOMCAT_HOME</i></code><code>/common/endorsed</code> 
   </li>
 </ul>
-<p>7.&nbsp;&nbsp;&nbsp;&nbsp; 
-Inicialize su base de datos si es necesario. </p>
-<p>8.&nbsp;&nbsp;&nbsp;&nbsp; 
-Introduzca <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a> en su navegador.</p>
+	<li>Inicialize su base de datos si es necesario. </li>
+	<li>Introduzca <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a> en su navegador.</li>
+</ol>
 <h2><a name="10c00c7a886b165a_4_Deploy_and_run_the_embedded_web_app">4. Despliegue y ejecución de una aplicación web con una base datos embebida
 </a></h2>
-<p>1.&nbsp;&nbsp;&nbsp;&nbsp; 
-Desde el paquete descargado con los binarios, descomprímalos y coloque <code>lib/ mondrian-embedded.war</code>
- sobre <code><i>TOMCAT_HOME</i></code><code>/webapps/mondrian-embedded</code>
-</p>
-<p>2.&nbsp;&nbsp;&nbsp;&nbsp; 
-Inicialice Tomcat </p>
-<p>3.&nbsp;&nbsp;&nbsp;&nbsp; 
-Introduzca <a href="http://localhost:8080/mondrian-embedded" target="_new">http://localhost:8080/mondrian-embedded</a> en su navegador.</p>
+<ol>
+	<li>Desde el paquete descargado con los binarios, descomprímalos y coloque
+	<code>lib/mondrian-embedded.war</code>
+ sobre <code><i>TOMCAT_HOME</i></code><code>/webapps/mondrian-embedded</code> 
+</li>
+<li>Inicialice Tomcat </li>
+<li>Introduzca <a href="http://localhost:8080/mondrian-embedded" target="_new">http://localhost:8080/mondrian-embedded</a> en su navegador.</li>
+</ol>
 
 <h2><a name="10c00c7a886b165a_5_How_to_configure_Mondrian_as_an_XMLA_p">5. Cómo configurar Mondrian como un servidor XML/A</a></h2>
 
@@ -402,29 +410,52 @@ Introduzca <a href="http://localhost:8080/mondrian-embedded" target="_new">http:
 </p>
 
 <blockquote>
-
-  <p><code>&lt;?xml version=&quot;1.0&quot;?&gt;</code><br><code>&lt;DataSources&gt;
-  </code><br><code>&nbsp; &lt;DataSource&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;DataSourceName&gt;MondrianFoodMart&lt;/DataSourceName&gt;</code><br>
-  <code>&nbsp;&nbsp;&nbsp; &lt;DataSourceDescription&gt;FoodMart 2000 Data Warehouse From MS Analysis Services&lt;/DataSourceDescription&gt;
-  </code><br><code>&nbsp;&nbsp;&nbsp; &lt;URL&gt;<a href="http://localhost:8080/mondrian/xmla">http://localhost:8080/mondrian/xmla</a>&lt;/URL&gt;</code><br>
-  <code>&nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian; Jdbc=jdbc:odbc:MondrianFoodMart; JdbcDrivers=
-sun.jdbc.odbc.JdbcOdbcDriver&lt;/DataSourceInfo&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;Catalogs&gt;</code><br>
-  <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;FoodMart&quot;&gt;/WEB-INF/schema/FoodMart.xml&lt;/Catalog&gt;</code><br>
-  <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;Markating&quot;&gt;/WEB-INF/schema/Marketing.xml&lt;/Catalog&gt;
-  </code><br><code>&nbsp;&nbsp;&nbsp; &lt;/Catalogs&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;ProviderType&gt;MDP&lt;/ProviderType&gt;</code><br>
-  <code>&nbsp;&nbsp;&nbsp; &lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;</code><br>
-  <code>&nbsp; &lt;/DataSource&gt; </code><br><br><code>&nbsp; &lt;DataSource&gt;</code><br>
-  <code>&nbsp;&nbsp;&nbsp; &lt;DataSourceName&gt;PostgreSQLTest&lt;/DataSourceName&gt;</code><br>
-  <code>&nbsp;&nbsp;&nbsp; &lt;DataSourceDescription&gt;Test Data Warehouse On PostgreSQL&lt;/DataSourceDescription&gt;
-  </code><br><code>&nbsp;&nbsp;&nbsp; &lt;URL&gt;<a href="http://localhost:8080/mondrian/xmla">http://localhost:8080/mondrian/xmla</a>&lt;/URL&gt;</code><br>
-  <code>&nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian; Jdbc=jdbc:postgresql://localhost/olap; JdbcDrivers=
-org.postgresql.Driver; JdbcUser=pgsql; JdbcPassword=pgsql&lt;/DataSourceInfo&gt;</code><br>
-  <code>&nbsp;&nbsp;&nbsp; &lt;Catalogs&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;Test&quot;&gt;/WEB-INF/schema/TestPgsql.xml&lt;Catalog&gt;
-  </code><br><code>&nbsp;&nbsp;&nbsp; &lt;/Catalogs&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;ProviderName&gt;Mondrian&lt;/ProviderName&gt;</code><br>
-  <code>&nbsp;&nbsp;&nbsp; &lt;ProviderType&gt;MDP&lt;/ProviderType&gt;</code><br>
-  <code>&nbsp;&nbsp;&nbsp; &lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;
-  </code><br><code>&nbsp; &lt;/DataSource&gt;</code><br><code>&lt;/DataSources&gt;</code></p>
+  <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
+	<code>&lt;?xml version="1.0"?&gt;<br>
+&lt;DataSources&gt;<br>
+&nbsp; &lt;DataSource&gt;<br>
+&nbsp;&nbsp;&nbsp;
+&lt;DataSourceName&gt;MondrianFoodMart&lt;/DataSourceName&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DataSourceDescription&gt;FoodMart 2000 Data
+Warehouse From MS Analysis Services&lt;/DataSourceDescription&gt;<br>
+&nbsp;&nbsp;&nbsp;
+&lt;URL&gt;http://localhost:8080/mondrian/xmla&lt;/URL&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian;
+Jdbc=jdbc:odbc:MondrianFoodMart;
+JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver&lt;/DataSourceInfo&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;ProviderType&gt;MDP&lt;/ProviderType&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;Catalogs&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;FoodMart&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Definition&gt;/WEB-INF/schema/FoodMart.xml&lt;/Definition&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/Catalog&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;Marketing&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian;
+Jdbc=jdbc:odbc:MarketingDB;
+JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver&lt;/DataSourceInfo&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Definition&gt;/WEB-INF/schema/Marketing.xml&lt;/Definition&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/Catalog&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/Catalogs&gt;<br>
+&nbsp; &lt;/DataSource&gt;<br>
+  <br>
+&nbsp; &lt;DataSource&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DataSourceName&gt;PostgreSQLTest&lt;/DataSourceName&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DataSourceDescription&gt;Test Data Warehouse On PostgreSQL&lt;/DataSourceDescription&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;URL&gt;http://localhost:8080/mondrian/xmla&lt;/URL&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian; Jdbc=jdbc:postgresql://localhost/olap; JdbcDrivers=org.postgresql.Driver; JdbcUser=pgsql; JdbcPassword=pgsql&lt;/DataSourceInfo&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;ProviderName&gt;Mondrian&lt;/ProviderName&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;ProviderType&gt;MDP&lt;/ProviderType&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;Catalogs&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;Test&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Definition&gt;/WEB-INF/schema/TestPgsql.xml&lt;/Definition&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/Catalogs&gt;<br>
+&nbsp; &lt;/DataSource&gt;<br>
+&lt;/DataSources&gt;</code></div>
 </blockquote>
+
 <p><code>&lt;ProviderType&gt;</code> y <code>&lt;AuthenticationMode&gt;
 </code> se ignoran ya que la implementación actual de XML/A sólo soporta 'MDP' y 'Unauthenticated'.</p>
 <h4>Múltiples fuentes de datos y catálogos</h4>
@@ -440,9 +471,12 @@ Rex</a> o Jrubik trabajan con múltiples fuentes de datos.</p>
 <h3><a name="10c00c7a886b165a_5_2_Configure_XmlaServlet_in_your_web.xm">2. Configuración de XmlaServlet en el archivo </a><code>
 web.xml</code></h3>
 <p>Por ejemplo:</p>
-<p><code>&lt;servlet&gt;</code><br><code>&nbsp; &lt;servlet-name&gt;MondrianXmlaServlet&lt;/servlet-name&gt;
-</code><br><code>&nbsp; &lt;servlet-class&gt;mondrian.xmla.XmlaServlet&lt;/servlet-class&gt;</code><br><code>&nbsp; &lt;init-param&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;param-name&gt;DataSourcesConfig&lt;/param-name&gt;</code><br><code>&nbsp;&nbsp;&nbsp; &lt;param-value&gt;
-datasources.xml&lt;/param-value&gt;</code><br><code>&nbsp; &lt;/init-param&gt;</code><br><code>&lt;/servlet&gt;</code></p>
+<blockquote>
+	<div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
+		<code>&lt;servlet&gt;</code><br><code>&nbsp; &lt;servlet-name&gt;MondrianXmlaServlet&lt;/servlet-name&gt;</code><br>
+		<code>&nbsp; &lt;servlet-class&gt;mondrian.xmla.impl.DefaultXmlaServlet&lt;/servlet-class&gt;</code><br>
+		<code>&lt;/servlet&gt;</code></div>
+</blockquote>
 <h2><a name="10c00c7a886b165a_6_Miscellaneous">6. </a>Miscelánea
 </h2>
 <h3><a name="10c00c7a886b165a_6_1_mondrian_properties">6.1. Configuración de </a><code>
@@ -494,9 +528,10 @@ Configuration Guide</a>.</p>
 
   <p>Modifiqué la línea de parámetros como sigue: </p>
 
-  <p><code>Provider=mondrian;JdbcUser=userName;JdbcPassword=userPass;Jdbc=jdbc:jtds:sybase://xxx.xxx.xxx.xxx:port/dbName;JdbcDrivers=
+  <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
+	<code>Provider=mondrian;JdbcUser=userName;JdbcPassword=userPass;Jdbc=jdbc:jtds:sybase://xxx.xxx.xxx.xxx:port/dbName;JdbcDrivers=
 net.sourceforge.jtds.jdbc.Driver;Catalog=/WEB-INF/queries/myCatalog.xml</code>
-  </p>
+  </div>
 
   <p>(datasources.xml no necesita ser modificado si solo necesitas probar la base de datos, pero si estás utilizando algo como OPENI hay que modificarlo.)
   </p>
@@ -506,8 +541,10 @@ net.sourceforge.jtds.jdbc.Driver;Catalog=/WEB-INF/queries/myCatalog.xml</code>
 <p>Weblogic 6.1 viene con una versión antigua e incompatible de Xerces. El síntoma del error:</p>
 
 <blockquote>
+  <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
   <pre>java.lang.VerifyError: (class: org/eigenbase/xom/wrappers/XercesDOMParser,<br>&nbsp;method: parse signature: (Lorg/xml/sax/InputSource;)Lorg/w3c/dom/Document;)<br>&nbsp;Incompatible object argument for function call<br>at java.lang.Class.forName0
 (Native Method)<br>at java.lang.Class.forName(Class.java:120)<br>at org.eigenbase.xom.XOMUtil.createDefaultParser(XOMUtil.java:165)<br>at org.eigenbase.resgen.Util.load(Util.java:49)<br>...</pre>
+	</div>
 </blockquote>
 <p>La solución pasa por sustituir <code>xml-apis.jar</code> y <code>
 xercesImpl.jar</code> antes de <code>weblogic.jar</code> en su class-path.</p>
@@ -524,7 +561,8 @@ xalan.jar</code> y <code>xml-apis.jar</code> a <code><i>TOMCAT_HOME
 
 <blockquote>
 
-  <p><code>java.lang.VerifyError: Cannot inherit from final class</code><br>
+  <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
+	<code>java.lang.VerifyError: Cannot inherit from final class</code><br>
   <code>&nbsp; at java.lang.ClassLoader.defineClass0(Native Method)</code><br>
   <code>&nbsp; at java.lang.ClassLoader.defineClass(ClassLoader.java:502)</code><br>
   <code>&nbsp; at java.security.SecureClassLoader.defineClass(SecureClassLoader.java
@@ -543,7 +581,7 @@ DTDConfiguration.java:367)</code><br><code>&nbsp; at org.apache.xerces.parsers.S
   <code>&nbsp; at org.apache.xerces.parsers.IntegratedParserConfiguration
 .&lt;init&gt;(Unknown Source)</code><br><code>&nbsp; at org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown Source)</code><br>
   <code>&nbsp; at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
-  </code></p>
+  </code></div>
 </blockquote>
 <p>Este error aparece con JDK 1.3.1, Tomcat 4.1.18, Xalan 2.4.1. Las posibles soluciones a este error pasan por (a) cambiarse a JDK 1.4 y eliminar <code>
 xml-apis.jar</code> y <code>xercesImpl.jar</code> del fichero <code>
