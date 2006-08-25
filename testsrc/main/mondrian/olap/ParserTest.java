@@ -50,7 +50,7 @@ public class ParserTest extends TestCase {
             String expectedName) {
         Parser p = new TestParser();
         String q = "select [member] on " + s + " from [cube]";
-        Query query = p.parseInternal(null, q, false, funTable);
+        Query query = p.parseInternal(null, q, false, funTable, false);
         assertNull("Test parser should return null query", query);
 
         QueryAxis[] axes = ((TestParser) p).getAxes();
@@ -114,7 +114,7 @@ public class ParserTest extends TestCase {
 
     private void checkFails(Parser p, String query, String expected) {
         try {
-            p.parseInternal(null, query, false, funTable);
+            p.parseInternal(null, query, false, funTable, false);
 
             fail("Must return an error");
         } catch (Exception e) {
@@ -128,7 +128,7 @@ public class ParserTest extends TestCase {
         String query = "select {[axis0mbr]} on axis(0), "
                 + "{[axis1mbr]} on axis(1) from cube";
 
-        assertNull("Test parser should return null query", p.parseInternal(null, query, false, funTable));
+        assertNull("Test parser should return null query", p.parseInternal(null, query, false, funTable, false));
 
         QueryAxis[] axes = ((TestParser) p).getAxes();
 
@@ -201,7 +201,7 @@ public class ParserTest extends TestCase {
      */
     private void assertParserReturns(String mdx, final String expected) {
         Parser p = new TestParser();
-        final Query query = p.parseInternal(null, mdx, false, funTable);
+        final Query query = p.parseInternal(null, mdx, false, funTable, false);
         assertNull("Test parser should return null query", query);
         final String actual = ((TestParser) p).toMdxString();
         TestContext.assertEqualsVerbose(expected, actual);

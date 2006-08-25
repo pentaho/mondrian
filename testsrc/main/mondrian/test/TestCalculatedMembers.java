@@ -122,7 +122,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 throw e;
             }
         }
-
+        
         // should fail if member property's expression is invalid
         try {
             salesCube.createCalculatedMember(
@@ -138,6 +138,22 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 throw e;
             }
         }
+
+        // should succeed if we switch the property to ignore invalid
+        // members; the create will succeed and in the select, it will
+        // return null for the member and therefore a 0 in the calculation
+        MondrianProperties.instance().IgnoreInvalidMembers.set(true);
+        salesCube.createCalculatedMember(
+            "<CalculatedMember name='Profit4'" +
+            "  dimension='Measures'" +
+            "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]+" +
+            "     [Measures].[FooBar]'>" +
+            "</CalculatedMember>");
+        result = TestContext.instance().executeQuery(
+            "select {[Measures].[Profit4]} on columns from Sales");
+        s = result.getCell(new int[]{0}).getFormattedValue();
+        Assert.assertEquals("339,610.90", s);
+        MondrianProperties.instance().IgnoreInvalidMembers.set(false);
     }
 
     private Cube getSalesCube(String cubeName) {

@@ -772,7 +772,13 @@ public class MondrianProperties extends TriggerableProperties {
     public final IntegerProperty QueryTimeout = new IntegerProperty(
         this, "mondrian.rolap.queryTimeout", 0);
 
-
+    
+    /**
+     * Whether non-existent member errors should be ignored during schema
+     * load
+     */
+    public final BooleanProperty IgnoreInvalidMembers = new BooleanProperty(
+        this, "mondrian.rolap.ignoreInvalidMembers", false);
 }
 
 // End MondrianProperties.java

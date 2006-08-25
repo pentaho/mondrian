@@ -141,6 +141,11 @@ public class Query extends QueryPart {
     private Map levelMapToMeasureMap;
     
     /**
+     * If true, loading schema
+     */
+    private boolean load;
+
+    /**
      * Creates a Query.
      */
     public Query(
@@ -149,14 +154,16 @@ public class Query extends QueryPart {
             QueryAxis[] axes,
             String cube,
             Exp slicer,
-            QueryPart[] cellProps) {
+            QueryPart[] cellProps,
+            boolean load) {
         this(connection,
                 connection.getSchema().lookupCube(cube, true),
                 formulas,
                 axes,
                 slicer,
                 cellProps,
-                new Parameter[0]);
+                new Parameter[0],
+                load);
     }
 
     /**
@@ -169,7 +176,8 @@ public class Query extends QueryPart {
             QueryAxis[] axes,
             Exp slicer,
             QueryPart[] cellProps,
-            Parameter[] parameters) {
+            Parameter[] parameters,
+            boolean load) {
         this.connection = connection;
         this.cube = mdxCube;
         this.formulas = formulas;
@@ -192,6 +200,7 @@ public class Query extends QueryPart {
         // assume, for now, that cross joins on virtual cubes can be
         // processed natively; as we parse the query, we'll know otherwise
         this.nativeCrossJoinVirtualCube = true;
+        this.load = load;
         resolve();
     }
 
@@ -249,7 +258,8 @@ public class Query extends QueryPart {
                 (slicerAxis == null) ? null : (Exp) slicerAxis.clone(),
                 cellProps,
                 (Parameter[])
-                    parameters.toArray(new Parameter[parameters.size()]));
+                    parameters.toArray(new Parameter[parameters.size()]),
+                load);
     }
 
     public Query safeClone() {
@@ -357,6 +367,16 @@ public class Query extends QueryPart {
         final Evaluator evaluator = RolapUtil.createEvaluator(this);
         ExpCompiler compiler = createCompiler(evaluator, validator);
         compile(compiler);
+    }
+
+    /**
+     * @return true if Query object is being accessed during schema load
+     * and the property to ignore invalid members is set to true
+     */
+    public boolean ignoreInvalidMembers()
+    {
+        return load &&
+            MondrianProperties.instance().IgnoreInvalidMembers.get() == true;
     }
 
     /**

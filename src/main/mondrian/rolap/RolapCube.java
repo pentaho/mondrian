@@ -66,6 +66,11 @@ public class RolapCube extends CubeBase {
 
     private RolapStar star;
     private ExplicitRules.Group aggGroup;
+    
+    /**
+     * True if the cube is being created while loading the schema
+     */
+    private boolean load;
 
     /**
      * private constructor used by both normal cubes and virtual cubes.
@@ -79,7 +84,8 @@ public class RolapCube extends CubeBase {
                       String name,
                       boolean isCache,
                       MondrianDef.Relation fact,
-                      MondrianDef.CubeDimension[] dimensions) {
+                      MondrianDef.CubeDimension[] dimensions,
+                      boolean load) {
         super(name, new RolapDimension[dimensions.length + 1]);
 
         this.schema = schema;
@@ -88,6 +94,7 @@ public class RolapCube extends CubeBase {
         this.cellReader = AggregationManager.instance();
         this.calculatedMembers = new Formula[0];
         this.namedSets = new Formula[0];
+        this.load = load;
 
         if (! isVirtual()) {
             this.star = schema.getRolapStarRegistry().getOrCreateStar(fact);
@@ -148,9 +155,10 @@ public class RolapCube extends CubeBase {
      */
     RolapCube(RolapSchema schema,
               MondrianDef.Schema xmlSchema,
-              MondrianDef.Cube xmlCube) {
+              MondrianDef.Cube xmlCube,
+              boolean load) {
         this(schema, xmlSchema, xmlCube.name, xmlCube.cache.booleanValue(),
-            xmlCube.fact, xmlCube.dimensions);
+            xmlCube.fact, xmlCube.dimensions, load);
 
         if (fact.getAlias() == null) {
             throw Util.newError(
@@ -244,9 +252,10 @@ public class RolapCube extends CubeBase {
      */
     RolapCube(RolapSchema schema,
               MondrianDef.Schema xmlSchema,
-              MondrianDef.VirtualCube xmlVirtualCube) {
+              MondrianDef.VirtualCube xmlVirtualCube,
+              boolean load) {
         this(schema, xmlSchema, xmlVirtualCube.name, true,
-            null, xmlVirtualCube.dimensions);
+            null, xmlVirtualCube.dimensions, load);
 
 
         // Since MondrianDef.Measure and MondrianDef.VirtualCubeMeasure cannot
@@ -322,7 +331,8 @@ public class RolapCube extends CubeBase {
                                     calculatedMemberList.size()]),
                     new MondrianDef.NamedSet[0],
                     new ArrayList(),
-                    new ArrayList());
+                    new ArrayList(),
+                    load);
         }
         // Note: virtual cubes do not get aggregate
     }
@@ -397,7 +407,7 @@ return dim;
         List formulaList = new ArrayList();
         createCalcMembersAndNamedSets(
                 xmlCube.calculatedMembers, xmlCube.namedSets,
-                memberList, formulaList);
+                memberList, formulaList, load);
     }
 
 
@@ -467,12 +477,14 @@ return dim;
      * @param xmlNamedSets Array of XML definition of named set
      * @param memberList Output list of {@link Member} objects
      * @param formulaList Output list of {@link Formula} objects
+     * @param load true if loading schema
      */
     private void createCalcMembersAndNamedSets(
             MondrianDef.CalculatedMember[] xmlCalcMembers,
             MondrianDef.NamedSet[] xmlNamedSets,
             List memberList,
-            List formulaList) {
+            List formulaList,
+            boolean load) {
         // If there are no objects to create, our generated SQL will so silly
         // the parser will laugh.
         if (xmlCalcMembers.length == 0 &&
@@ -506,7 +518,7 @@ return dim;
         final Query queryExp;
         try {
             RolapConnection conn = schema.getInternalConnection();
-            queryExp = conn.parseQuery(queryString);
+            queryExp = conn.parseQuery(queryString, load);
         } catch (Exception e) {
             throw MondrianResource.instance().UnknownNamedSetHasBadFormula.ex(
                 getUniqueName(), e);
@@ -1976,7 +1988,8 @@ assert is not true.
                 new MondrianDef.CalculatedMember[] {xmlCalcMember},
                 new MondrianDef.NamedSet[0],
                 memberList,
-                new ArrayList());
+                new ArrayList(),
+                load);
         assert memberList.size() == 1;
         return (Member) memberList.get(0);
     }

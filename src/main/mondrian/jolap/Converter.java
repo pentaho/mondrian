@@ -44,7 +44,7 @@ class Converter {
         }
         final Query query = new Query(cubeView.connection.mondrianConnection,
                 mondrianJolapCube.cube, new Formula[0], queryAxes, slicer,
-                cellProps, parameters);
+                cellProps, parameters, false);
         return query;
     }
 

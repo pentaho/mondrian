@@ -51,6 +51,10 @@ public abstract class ConnectionBase implements Connection {
     }
 
     public Query parseQuery(String s) {
+        return parseQuery(s, false);
+    }
+    
+    public Query parseQuery(String s, boolean load) {
         boolean debug = false;
         if (getLogger().isDebugEnabled()) {
             //debug = true;
@@ -62,7 +66,7 @@ public abstract class ConnectionBase implements Connection {
         try {
             Parser parser = new Parser();
             final FunTable funTable = getSchema().getFunTable();
-            Query q = parser.parseInternal(this, s, debug, funTable);
+            Query q = parser.parseInternal(this, s, debug, funTable, load);
             return q;
         } catch (Throwable e) {
             throw MondrianResource.instance().FailedToParseQuery.ex(s, e);

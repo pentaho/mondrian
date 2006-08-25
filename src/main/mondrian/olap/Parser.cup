@@ -27,6 +27,7 @@ parser code {:
     private String queryString;
     private Connection mdxConnection;
     private FunTable funTable;
+    private boolean load;
 
     /**
       * Recursively parses an expression.
@@ -45,13 +46,15 @@ parser code {:
         Connection mdxConnection,
         String queryString,
         boolean debug,
-        FunTable funTable)
+        FunTable funTable,
+        boolean load)
     {
         Symbol parse_tree = null;
         this.scanner = new StringScanner(queryString, debug);
         this.mdxConnection = mdxConnection;
         this.queryString = queryString;
         this.funTable = funTable;
+        this.load = load;
         try {
             if (debug) {
                 parse_tree = debug_parse();
@@ -144,7 +147,7 @@ parser code {:
         String cube, Exp slicer, QueryPart[] cellProps)
     {
         return new Query(
-            mdxConnection, formulae, axes, cube, slicer, cellProps);
+            mdxConnection, formulae, axes, cube, slicer, cellProps, load);
     }
 
     // Override lr_parser methods for NLS.  With this error handling scheme,

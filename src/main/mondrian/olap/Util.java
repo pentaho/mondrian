@@ -586,9 +586,28 @@ public class Util extends XOMUtil {
                                 createExpr(olapElement)});
                 }
             }
-
-            throw MondrianResource.instance().MdxChildObjectNotFound.ex(
+            // if we're in the middle of loading the schema, the
+            // property has been set to ignore invalid members, and the member
+            // is non-existent, return the null member; find the null member
+            // by first finding a member at the same level and then
+            // getting the null member from that member's hierarchy; if
+            // we can't find a member of the specified hierarchy, then just
+            // return the null member from the first hierarchy
+            if (q.ignoreInvalidMembers()) {
+                olapElement = schemaReader.lookupCompound(
+                    q.getCube(), nameParts, false, Category.Member, 
+                    MatchType.BEFORE);
+                if (olapElement != null) {
+                    olapElement = olapElement.getHierarchy().getNullMember();
+                } else {
+                    olapElement =
+                        q.getCube().getDimensions()[0].getHierarchy().
+                            getNullMember();
+                }
+            } else {    
+                throw MondrianResource.instance().MdxChildObjectNotFound.ex(
                     fullName, q.getCube().getQualifiedName());
+            }
         }
         // keep track of any measure members referenced; these will be used
         // later to determine if cross joins on virtual cubes can be 

@@ -340,7 +340,7 @@ public class RolapSchema implements Schema {
         for (int i = 0; i < xmlSchema.cubes.length; i++) {
             MondrianDef.Cube xmlCube = xmlSchema.cubes[i];
             if (xmlCube.isEnabled()) {
-                RolapCube cube = new RolapCube(this, xmlSchema, xmlCube);
+                RolapCube cube = new RolapCube(this, xmlSchema, xmlCube, true);
                 Util.discard(cube);
             }
         }
@@ -349,7 +349,8 @@ public class RolapSchema implements Schema {
         for (int i = 0; i < xmlSchema.virtualCubes.length; i++) {
             MondrianDef.VirtualCube xmlVirtualCube = xmlSchema.virtualCubes[i];
             if (xmlVirtualCube.isEnabled()) {
-                RolapCube cube = new RolapCube(this, xmlSchema, xmlVirtualCube);
+                RolapCube cube =
+                    new RolapCube(this, xmlSchema, xmlVirtualCube, true);
                 Util.discard(cube);
             }
         }
@@ -504,13 +505,13 @@ public class RolapSchema implements Schema {
                 // okay, because there are no forward-references to resolve.
                 final MondrianDef.Schema xmlSchema = new MondrianDef.Schema();
                 MondrianDef.Cube xmlDimension = new MondrianDef.Cube(def);
-                cube = new RolapCube(this, xmlSchema, xmlDimension);
+                cube = new RolapCube(this, xmlSchema, xmlDimension, false);
             } else if (tagName.equals("VirtualCube")) {
                 // Need the real schema here.
                 MondrianDef.Schema xmlSchema = getXMLSchema();
                 MondrianDef.VirtualCube xmlDimension =
                         new MondrianDef.VirtualCube(def);
-                cube = new RolapCube(this, xmlSchema, xmlDimension);
+                cube = new RolapCube(this, xmlSchema, xmlDimension, false);
             } else {
                 throw new XOMException("Got <" + tagName +
                     "> when expecting <Cube>");
