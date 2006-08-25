@@ -755,25 +755,6 @@ fullname
   </CalculatedMember>
 </VirtualCube>
 
-<!-- Virtual cube with a non-conforming dimension (Warehouse) that does not
-     have ALL as its default member -->
-<VirtualCube name="Warehouse (Default USA) and Sales">
-  <VirtualCubeDimension name="Product"/>
-  <VirtualCubeDimension name="Store"/>
-  <VirtualCubeDimension name="Time"/>
-  <VirtualCubeDimension cubeName="Warehouse (Default USA)" name="Warehouse"/>
-  <VirtualCubeMeasure cubeName="Sales 2" name="[Measures].[Sales Count]"/>
-  <VirtualCubeMeasure cubeName="Sales 2" name="[Measures].[Store Cost]"/>
-  <VirtualCubeMeasure cubeName="Sales 2" name="[Measures].[Store Sales]"/>
-  <VirtualCubeMeasure cubeName="Sales 2" name="[Measures].[Unit Sales]"/>
-  <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Store Invoice]"/>
-  <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Supply Time]"/>
-  <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Units Ordered]"/>
-  <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Units Shipped]"/>
-  <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Warehouse Cost]"/>
-  <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Warehouse Sales]"/>
-</VirtualCube>
-
 <!-- A California manager can only see customers and stores in California.
      They cannot drill down on Gender. -->
 <Role name="California manager">

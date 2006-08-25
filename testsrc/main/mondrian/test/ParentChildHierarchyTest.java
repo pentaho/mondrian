@@ -317,7 +317,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "    </Dimension>" + nl +
                 "    <Measure name='Org Salary' column='salary_paid' aggregator='sum' formatString='Currency' />" + nl +
                 "    <Measure name='Count' column='employee_id' aggregator='count' formatString='#,#'/>" + nl +
-                "</Cube>", null, null);
+                "</Cube>", null, null, null);
 
         // On a cube with fewer dimensions, this gave a false failure.
         testContext.assertQueryReturns(
@@ -585,7 +585,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "      formatString=\"Currency\"/>\n" +
                 "  <Measure name=\"Count\" column=\"employee_id\" aggregator=\"count\"\n" +
                 "      formatString=\"#,#\"/>\n" +
-                "</Cube>", null, null);
+                "</Cube>", null, null, null);
 
         // Make sure <Hierarchy>.MEMBERS is sorted.
         testContext.assertQueryReturns(

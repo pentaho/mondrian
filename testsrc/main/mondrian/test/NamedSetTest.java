@@ -675,6 +675,7 @@ public class NamedSetTest extends FoodMartTestCase {
         final TestContext tc = TestContext.create(
             null,
             null,
+            null,
             "<NamedSet name=\"Bad\" formula=\"{[Store].[USA].[WA].Children}}\"/>",
             null);
         tc.assertThrows(

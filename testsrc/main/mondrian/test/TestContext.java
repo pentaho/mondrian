@@ -225,6 +225,7 @@ public class TestContext {
     public String getFoodMartSchema(
         String parameterDefs,
         String cubeDefs,
+        String virtualCubeDefs,
         String namedSetDefs,
         String udfDefs)
     {
@@ -248,6 +249,14 @@ public class TestContext {
             int i = s.indexOf("<Cube name=\"Sales\">");
             s = s.substring(0, i) +
                 cubeDefs +
+                s.substring(i);
+        }
+
+        // Add virtual cube definitions, if specified.
+        if (virtualCubeDefs != null) {
+            int i = s.indexOf("<VirtualCube name=\"Warehouse and Sales\">");
+            s = s.substring(0, i) +
+                virtualCubeDefs +
                 s.substring(i);
         }
 
@@ -765,6 +774,7 @@ public class TestContext {
      * @param cubeDefs Cube definition(s). If not null, the string is
      *   is inserted into the schema XML in the appropriate place for
      *   cube definitions.
+     * @param virtualCubeDefs
      * @param namedSetDefs Definitions of named sets. If not null, the string
      *   is inserted into the schema XML in the appropriate place for
      *   named set definitions.
@@ -776,12 +786,14 @@ public class TestContext {
     public static TestContext create(
         final String parameterDefs,
         final String cubeDefs,
+        final String virtualCubeDefs,
         final String namedSetDefs,
         final String udfDefs) {
         return new TestContext() {
             public synchronized Connection getFoodMartConnection(boolean fresh) {
                 final String schema = getFoodMartSchema(
-                    parameterDefs, cubeDefs, namedSetDefs, udfDefs);
+                    parameterDefs, cubeDefs,
+                    virtualCubeDefs, namedSetDefs, udfDefs);
                 return getFoodMartConnection(schema);
             }
         };

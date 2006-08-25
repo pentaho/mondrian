@@ -397,7 +397,9 @@ public class ParameterTest extends FoodMartTestCase {
      */
     public void testSchemaProp() {
         final TestContext tc = TestContext.create(
-            "<Parameter name=\"prop\" type=\"String\" defaultValue=\" 'foo bar' \" />", null, null, null);
+            "<Parameter name=\"prop\" type=\"String\" defaultValue=\" 'foo bar' \" />", null,
+            null,
+            null, null);
         tc.assertExprReturns("ParamRef(\"prop\")", "foo bar");
     }
 
@@ -408,14 +410,18 @@ public class ParameterTest extends FoodMartTestCase {
         final TestContext tc = TestContext.create(
             "<Parameter name=\"foo\" type=\"Numeric\" defaultValue=\"1\" />\n" +
                 "<Parameter name=\"bar\" type=\"Numeric\" defaultValue=\"2\" />\n" +
-                "<Parameter name=\"foo\" type=\"Numeric\" defaultValue=\"3\" />\n", null, null, null);
+                "<Parameter name=\"foo\" type=\"Numeric\" defaultValue=\"3\" />\n", null,
+            null,
+            null, null);
         tc.assertExprThrows("ParamRef(\"foo\")",
             "Duplicate parameter 'foo' in schema");
     }
 
     public void testSchemaPropIllegalTypeFails() {
         final TestContext tc = TestContext.create(
-            "<Parameter name=\"foo\" type=\"Bad type\" defaultValue=\"1\" />", null, null, null);
+            "<Parameter name=\"foo\" type=\"Bad type\" defaultValue=\"1\" />", null,
+            null,
+            null, null);
         tc.assertExprThrows(
             "1",
             "In element 'Schema': In element 'Parameter': " +
@@ -425,7 +431,9 @@ public class ParameterTest extends FoodMartTestCase {
 
     public void testSchemaPropInvalidDefaultExpFails() {
         final TestContext tc = TestContext.create(
-            "<Parameter name=\"Product Current Member\" type=\"Member\" defaultValue=\"[Product].DefaultMember.Children(2) \" />", null, null, null);
+            "<Parameter name=\"Product Current Member\" type=\"Member\" defaultValue=\"[Product].DefaultMember.Children(2) \" />", null,
+            null,
+            null, null);
         tc.assertExprThrows("ParamRef(\"Product Current Member\")",
             "No function matches signature '<Member>.Children(<Numeric Expression>)'");
     }
@@ -436,7 +444,9 @@ public class ParameterTest extends FoodMartTestCase {
      */
     public void testSchemaPropContext() {
         final TestContext tc = TestContext.create(
-            "<Parameter name=\"Customer Current Member\" type=\"Member\" defaultValue=\"[Customers].DefaultMember.Children.Item(2) \" />", null, null, null);
+            "<Parameter name=\"Customer Current Member\" type=\"Member\" defaultValue=\"[Customers].DefaultMember.Children.Item(2) \" />", null,
+            null,
+            null, null);
 
         tc.assertQueryReturns(
             "with member [Measures].[Foo] as ' ParamRef(\"Customer Current Member\").Name '\n" +

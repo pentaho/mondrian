@@ -5188,7 +5188,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         final TestContext tc = TestContext.create(
             null,
             null,
-            null, "<UserDefinedFunction name=\"SleepUdf\" className=\"" +
+            null, null, "<UserDefinedFunction name=\"SleepUdf\" className=\"" +
             SleepUdf.class.getName() + "\"/>");
         Connection connection = tc.getConnection();
 
@@ -5234,7 +5234,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         final TestContext tc = TestContext.create(
             null,
             null,
-            null, "<UserDefinedFunction name=\"SleepUdf\" className=\"" +
+            null, null, "<UserDefinedFunction name=\"SleepUdf\" className=\"" +
             SleepUdf.class.getName() + "\"/>");
 
         String query =

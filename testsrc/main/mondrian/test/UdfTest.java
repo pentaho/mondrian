@@ -44,7 +44,7 @@ public class UdfTest extends FoodMartTestCase {
     private final TestContext tc = TestContext.create(
         null,
         null,
-        null, "<UserDefinedFunction name=\"PlusOne\" className=\"" +
+        null, null, "<UserDefinedFunction name=\"PlusOne\" className=\"" +
     PlusOneUdf.class.getName() + "\"/>" + nl);
 
     public TestContext getTestContext() {
@@ -190,7 +190,7 @@ public class UdfTest extends FoodMartTestCase {
         final TestContext tc = TestContext.create(
             null,
             null,
-            null, "<UserDefinedFunction name=\"BadPlusOne\" className=\"" +
+            null, null, "<UserDefinedFunction name=\"BadPlusOne\" className=\"" +
         BadPlusOneUdf.class.getName() + "\"/>" + nl);
         try {
             tc.executeQuery("SELECT {} ON COLUMNS FROM [Sales]");
