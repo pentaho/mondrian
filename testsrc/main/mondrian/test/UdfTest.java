@@ -287,7 +287,7 @@ public class UdfTest extends FoodMartTestCase {
 
     public void testCurrentDateMemberAfter()
     {
-        // CurrentDateMember will return null since the latest date in
+        // CurrentDateMember will return null member since the latest date in
         // FoodMart is from '98
         assertQueryReturns(
             "SELECT { CurrentDateMember([Time], " +
@@ -301,11 +301,12 @@ public class UdfTest extends FoodMartTestCase {
 
     public void testCurrentDateMemberExact()
     {
-        // CurrentDateMember will return null since the latest date in
-        // FoodMart is from '98
+        // CurrentDateMember will return null member since the latest date in
+        // FoodMart is from '98; apply a function on the return value to
+        // ensure null member instead of null is returned
         assertQueryReturns(
             "SELECT { CurrentDateMember([Time], " +
-            "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", EXACT)} " +
+            "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", EXACT).lag(1)} " +
             "ON COLUMNS FROM [Sales]",
             fold(
                 "Axis #0:\n" +
@@ -315,7 +316,7 @@ public class UdfTest extends FoodMartTestCase {
 
     public void testCurrentDateMemberNoFindArg()
     {
-        // CurrentDateMember will return null since the latest date in
+        // CurrentDateMember will return null member since the latest date in
         // FoodMart is from '98
         assertQueryReturns(
             "SELECT { CurrentDateMember([Time], " +
@@ -339,6 +340,21 @@ public class UdfTest extends FoodMartTestCase {
                 "Axis #1:\n" +
                 "{[Time.Weekly].[All Time.Weeklys].[1998].[52]}\n" +
                 "Row #0: \n"));
+    }
+    
+    public void testCurrentDateMemberHierarchyNullReturn()
+    {
+        // CurrentDateMember will return null member since the latest date in
+        // FoodMart is from '98; note that first arg is a hierarchy rather
+        // than a dimension
+        assertQueryReturns(
+            "SELECT { CurrentDateMember([Time.Weekly], " +
+            "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\")} " +
+            "ON COLUMNS FROM [Sales]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n"));
     }
 
     public void testCurrentDateMemberRealAfter()
