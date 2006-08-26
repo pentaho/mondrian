@@ -178,7 +178,9 @@ public class VirtualCubeTest extends FoodMartTestCase {
         Position[] columnPositions = result.getAxes()[0].positions;
         Member measure = columnPositions[ordinal].getMembers()[0];
         assertEquals(expectedName, measure.getName());
-        assertEquals(expectedVisibility, measure.getPropertyValue(Property.VISIBLE.name));
+        assertEquals(
+            Boolean.valueOf(expectedVisibility),
+            measure.getPropertyValue(Property.VISIBLE.name));
     }
 }
 
