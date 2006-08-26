@@ -138,33 +138,14 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-                        <CUBE_TYPE>CUBE</CUBE_TYPE>
-                        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
-                        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
-                        <IS_LINKABLE>false</IS_LINKABLE>
-                        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
-                        <DESCRIPTION>FoodMart Schema - Warehouse (Default USA) Cube</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-                        <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
-                        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
-                        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
-                        <IS_LINKABLE>false</IS_LINKABLE>
-                        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
-                        <DESCRIPTION>FoodMart Schema - Warehouse (Default USA) and Sales Cube</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
-                        <DESCRIPTION>FoodMart Schema - Warehouse and Sales Cube</DESCRIPTION>
+                        <DESCRIPTION>FoodMart Schema - Warehouse and
+                            Sales Cube</DESCRIPTION>
                     </row>
                 </root>
             </xmla:return>
@@ -238,1459 +219,1389 @@
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Department:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Department Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Department
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Department:Department Description</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Department Hierarchy - Department Description Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Department
+                            Hierarchy - Department Description Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Employees:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Employees Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Employees
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Employees:Employee Id</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Employees Hierarchy - Employee Id Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Employees
+                            Hierarchy - Employee Id Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Pay Type:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Pay Type Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Pay Type
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Pay Type:Pay Type</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Pay Type Hierarchy - Pay Type Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Pay Type
+                            Hierarchy - Pay Type Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Position:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Position Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Position
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Position:Management Role</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Position Hierarchy - Management Role Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Position
+                            Hierarchy - Management Role Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Position:Position Title</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Position Hierarchy - Position Title Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Position
+                            Hierarchy - Position Title Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Store Type:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Store Type Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Store Type
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Store Type:Store Type</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Store Type Hierarchy - Store Type Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Store Type
+                            Hierarchy - Store Type Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Store:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Store Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Store
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Store:Store City</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Store Hierarchy - Store City Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Store
+                            Hierarchy - Store City Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Store:Store Country</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Store Hierarchy - Store Country Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Store
+                            Hierarchy - Store Country Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Store:Store Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Store Hierarchy - Store Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Store
+                            Hierarchy - Store Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Store:Store State</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Store Hierarchy - Store State Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Store
+                            Hierarchy - Store State Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Time:Month</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Time Hierarchy - Month Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Time Hierarchy
+                            - Month Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Time:Quarter</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Time Hierarchy - Quarter Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Time Hierarchy
+                            - Quarter Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>HR:Time:Year</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - HR Cube - Time Hierarchy - Year Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - HR Cube - Time Hierarchy
+                            - Year Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Gender:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Gender Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Gender
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Gender:Gender</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Gender Hierarchy - Gender Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Gender
+                            Hierarchy - Gender Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Product:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Product:Brand Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product Hierarchy - Brand Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product
+                            Hierarchy - Brand Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Product:Product Category</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product Hierarchy - Product Category Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product
+                            Hierarchy - Product Category Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Product:Product Department</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product Hierarchy - Product Department Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product
+                            Hierarchy - Product Department Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Product:Product Family</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product Hierarchy - Product Family Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product
+                            Hierarchy - Product Family Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Product:Product Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product Hierarchy - Product Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product
+                            Hierarchy - Product Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Product:Product Subcategory</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product Hierarchy - Product Subcategory Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Product
+                            Hierarchy - Product Subcategory Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Time.Weekly:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Time.Weekly Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube -
+                            Time.Weekly Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Time.Weekly:Day</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Time.Weekly Hierarchy - Day Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube -
+                            Time.Weekly Hierarchy - Day Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Time.Weekly:Week</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Time.Weekly Hierarchy - Week Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube -
+                            Time.Weekly Hierarchy - Week Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Time.Weekly:Year</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Time.Weekly Hierarchy - Year Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube -
+                            Time.Weekly Hierarchy - Year Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Time:Month</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Time Hierarchy - Month Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Time
+                            Hierarchy - Month Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Time:Quarter</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Time Hierarchy - Quarter Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Time
+                            Hierarchy - Quarter Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales 2:Time:Year</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales 2 Cube - Time Hierarchy - Year Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales 2 Cube - Time
+                            Hierarchy - Year Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Customers:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Customers Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Customers Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Customers:City</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Customers Hierarchy - City Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Customers Hierarchy - City Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Customers:Country</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Customers Hierarchy - Country Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Customers Hierarchy - Country Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Customers:Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Customers Hierarchy - Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Customers Hierarchy - Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Customers:State Province</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Customers Hierarchy - State Province Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Customers Hierarchy - State Province Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Education Level:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Education Level Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Education Level Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Sales Ragged:Education Level:Education Level</TABLE_NAME>
+                        <TABLE_NAME>Sales Ragged:Education
+                            Level:Education Level</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Education Level Hierarchy - Education Level Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Education Level Hierarchy - Education Level Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Gender:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Gender Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Gender Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Gender:Gender</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Gender Hierarchy - Gender Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Gender Hierarchy - Gender Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Geography:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Geography Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Geography Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Geography:City</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Geography Hierarchy - City Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Geography Hierarchy - City Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Geography:Country</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Geography Hierarchy - Country Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Geography Hierarchy - Country Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Geography:State</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Geography Hierarchy - State Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Geography Hierarchy - State Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Marital Status:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Marital Status Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Marital Status Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Marital Status:Marital Status</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Marital Status Hierarchy - Marital Status Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Marital Status Hierarchy - Marital Status Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Product:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Product Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Product Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Product:Brand Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Product Hierarchy - Brand Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Product Hierarchy - Brand Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Product:Product Category</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Product Hierarchy - Product Category Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Product Hierarchy - Product Category Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Product:Product Department</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Product Hierarchy - Product Department Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Product Hierarchy - Product Department Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Product:Product Family</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Product Hierarchy - Product Family Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Product Hierarchy - Product Family Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Product:Product Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Product Hierarchy - Product Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Product Hierarchy - Product Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Product:Product Subcategory</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Product Hierarchy - Product Subcategory Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Product Hierarchy - Product Subcategory Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Promotion Media:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Promotion Media Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Promotion Media Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Promotion Media:Media Type</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Promotion Media Hierarchy - Media Type Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Promotion Media Hierarchy - Media Type Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Promotions:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Promotions Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Promotions Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Promotions:Promotion Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Promotions Hierarchy - Promotion Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Promotions Hierarchy - Promotion Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Store Size in SQFT:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Store Size in SQFT Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Store Size in SQFT Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Sales Ragged:Store Size in SQFT:Store Sqft</TABLE_NAME>
+                        <TABLE_NAME>Sales Ragged:Store Size in
+                            SQFT:Store Sqft</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Store Size in SQFT Hierarchy - Store Sqft Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Store Size in SQFT Hierarchy - Store Sqft Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Store Type:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Store Type Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Store Type Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Store Type:Store Type</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Store Type Hierarchy - Store Type Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Store Type Hierarchy - Store Type Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Store:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Store Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Store Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Store:Store City</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Store Hierarchy - Store City Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Store Hierarchy - Store City Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Store:Store Country</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Store Hierarchy - Store Country Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Store Hierarchy - Store Country Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Store:Store Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Store Hierarchy - Store Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Store Hierarchy - Store Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Store:Store State</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Store Hierarchy - Store State Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Store Hierarchy - Store State Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Time.Weekly:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Time.Weekly Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Time.Weekly Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Time.Weekly:Day</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Time.Weekly Hierarchy - Day Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Time.Weekly Hierarchy - Day Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Time.Weekly:Week</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Time.Weekly Hierarchy - Week Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Time.Weekly Hierarchy - Week Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Time.Weekly:Year</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Time.Weekly Hierarchy - Year Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Time.Weekly Hierarchy - Year Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Time:Month</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Time Hierarchy - Month Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Time
+                            Hierarchy - Month Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Time:Quarter</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Time Hierarchy - Quarter Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Time
+                            Hierarchy - Quarter Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Time:Year</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Time Hierarchy - Year Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Time
+                            Hierarchy - Year Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Yearly Income:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Yearly Income Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Yearly Income Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales Ragged:Yearly Income:Yearly Income</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Ragged Cube - Yearly Income Hierarchy - Yearly Income Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Ragged Cube -
+                            Yearly Income Hierarchy - Yearly Income Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Customers:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Customers Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Customers
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Customers:City</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Customers Hierarchy - City Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Customers
+                            Hierarchy - City Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Customers:Country</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Customers Hierarchy - Country Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Customers
+                            Hierarchy - Country Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Customers:Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Customers Hierarchy - Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Customers
+                            Hierarchy - Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Customers:State Province</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Customers Hierarchy - State Province Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Customers
+                            Hierarchy - State Province Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Education Level:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Education Level Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Education
+                            Level Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Education Level:Education Level</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Education Level Hierarchy - Education Level Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Education
+                            Level Hierarchy - Education Level Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Gender:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Gender Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Gender
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Gender:Gender</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Gender Hierarchy - Gender Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Gender
+                            Hierarchy - Gender Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Marital Status:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Marital Status Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Marital
+                            Status Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Marital Status:Marital Status</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Marital Status Hierarchy - Marital Status Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Marital
+                            Status Hierarchy - Marital Status Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Product:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Product Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Product
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Product:Brand Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Product Hierarchy - Brand Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Product
+                            Hierarchy - Brand Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Product:Product Category</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Product Hierarchy - Product Category Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Product
+                            Hierarchy - Product Category Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Product:Product Department</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Product Hierarchy - Product Department Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Product
+                            Hierarchy - Product Department Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Product:Product Family</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Product Hierarchy - Product Family Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Product
+                            Hierarchy - Product Family Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Product:Product Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Product Hierarchy - Product Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Product
+                            Hierarchy - Product Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Product:Product Subcategory</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Product Hierarchy - Product Subcategory Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Product
+                            Hierarchy - Product Subcategory Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Promotion Media:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Promotion Media Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Promotion
+                            Media Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Promotion Media:Media Type</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Promotion Media Hierarchy - Media Type Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Promotion
+                            Media Hierarchy - Media Type Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Promotions:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Promotions Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Promotions
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Promotions:Promotion Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Promotions Hierarchy - Promotion Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Promotions
+                            Hierarchy - Promotion Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Store Size in SQFT:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Store Size in SQFT Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Store Size
+                            in SQFT Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Store Size in SQFT:Store Sqft</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Store Size in SQFT Hierarchy - Store Sqft Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Store Size
+                            in SQFT Hierarchy - Store Sqft Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Store Type:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Store Type Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Store Type
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Store Type:Store Type</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Store Type Hierarchy - Store Type Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Store Type
+                            Hierarchy - Store Type Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Store:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Store Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Store
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Store:Store City</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Store Hierarchy - Store City Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Store
+                            Hierarchy - Store City Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Store:Store Country</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Store Hierarchy - Store Country Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Store
+                            Hierarchy - Store Country Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Store:Store Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Store Hierarchy - Store Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Store
+                            Hierarchy - Store Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Store:Store State</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Store Hierarchy - Store State Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Store
+                            Hierarchy - Store State Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Time.Weekly:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Time.Weekly Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Time.Weekly
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Time.Weekly:Day</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Time.Weekly Hierarchy - Day Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Time.Weekly
+                            Hierarchy - Day Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Time.Weekly:Week</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Time.Weekly Hierarchy - Week Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Time.Weekly
+                            Hierarchy - Week Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Time.Weekly:Year</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Time.Weekly Hierarchy - Year Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Time.Weekly
+                            Hierarchy - Year Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Time:Month</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Time Hierarchy - Month Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Time
+                            Hierarchy - Month Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Time:Quarter</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Time Hierarchy - Quarter Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Time
+                            Hierarchy - Quarter Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Time:Year</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Time Hierarchy - Year Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Time
+                            Hierarchy - Year Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Yearly Income:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Yearly Income Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Yearly
+                            Income Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Sales:Yearly Income:Yearly Income</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Sales Cube - Yearly Income Hierarchy - Yearly Income Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Sales Cube - Yearly
+                            Income Hierarchy - Yearly Income Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Store:Has coffee bar:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Store Cube - Has coffee bar Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Store Cube - Has coffee
+                            bar Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Store:Has coffee bar:Has coffee bar</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Store Cube - Has coffee bar Hierarchy - Has coffee bar Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Store Cube - Has coffee
+                            bar Hierarchy - Has coffee bar Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Store:Store Type:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Store Cube - Store Type Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Store Cube - Store Type
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Store:Store Type:Store Type</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Store Cube - Store Type Hierarchy - Store Type Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Store Cube - Store Type
+                            Hierarchy - Store Type Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Store:Store:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Store Cube - Store Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Store Cube - Store
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Store:Store:Store City</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Store Cube - Store Hierarchy - Store City Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Store Cube - Store
+                            Hierarchy - Store City Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Store:Store:Store Country</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Store Cube - Store Hierarchy - Store Country Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Store Cube - Store
+                            Hierarchy - Store Country Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Store:Store:Store Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Store Cube - Store Hierarchy - Store Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Store Cube - Store
+                            Hierarchy - Store Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Store:Store:Store State</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Store Cube - Store Hierarchy - Store State Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Product:(All)</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Product Hierarchy - (All) Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Product:Brand Name</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Product Hierarchy - Brand Name Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Product:Product Category</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Product Hierarchy - Product Category Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Product:Product Department</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Product Hierarchy - Product Department Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Product:Product Family</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Product Hierarchy - Product Family Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Product:Product Name</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Product Hierarchy - Product Name Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Product:Product Subcategory</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Product Hierarchy - Product Subcategory Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Store:(All)</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Store Hierarchy - (All) Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Store:Store City</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Store Hierarchy - Store City Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Store:Store Country</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Store Hierarchy - Store Country Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Store:Store Name</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Store Hierarchy - Store Name Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Store:Store State</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Store Hierarchy - Store State Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Time.Weekly:(All)</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Time.Weekly Hierarchy - (All) Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Time.Weekly:Day</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Time.Weekly Hierarchy - Day Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Time.Weekly:Week</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Time.Weekly Hierarchy - Week Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Time.Weekly:Year</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Time.Weekly Hierarchy - Year Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Time:Month</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Time Hierarchy - Month Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Time:Quarter</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Time Hierarchy - Quarter Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Time:Year</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Time Hierarchy - Year Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Warehouse:City</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Warehouse Hierarchy - City Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Warehouse:Country</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Warehouse Hierarchy - Country Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Warehouse:State Province</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Warehouse Hierarchy - State Province Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales:Warehouse:Warehouse Name</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube - Warehouse Hierarchy - Warehouse Name Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Product:(All)</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Product Hierarchy - (All) Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Product:Brand Name</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Product Hierarchy - Brand Name Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Product:Product Category</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Product Hierarchy - Product Category Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Product:Product Department</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Product Hierarchy - Product Department Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Product:Product Family</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Product Hierarchy - Product Family Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Product:Product Name</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Product Hierarchy - Product Name Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Product:Product Subcategory</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Product Hierarchy - Product Subcategory Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Store:(All)</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Store Hierarchy - (All) Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Store:Store City</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Store Hierarchy - Store City Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Store:Store Country</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Store Hierarchy - Store Country Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Store:Store Name</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Store Hierarchy - Store Name Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Store:Store State</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Store Hierarchy - Store State Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Time.Weekly:(All)</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Time.Weekly Hierarchy - (All) Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Time.Weekly:Day</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Time.Weekly Hierarchy - Day Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Time.Weekly:Week</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Time.Weekly Hierarchy - Week Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Time.Weekly:Year</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Time.Weekly Hierarchy - Year Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Time:Month</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Time Hierarchy - Month Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Time:Quarter</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Time Hierarchy - Quarter Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Time:Year</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Time Hierarchy - Year Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Warehouse:City</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Warehouse Hierarchy - City Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Warehouse:Country</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Warehouse Hierarchy - Country Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Warehouse:State Province</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Warehouse Hierarchy - State Province Level</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA):Warehouse:Warehouse Name</TABLE_NAME>
-                        <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube - Warehouse Hierarchy - Warehouse Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Store Cube - Store
+                            Hierarchy - Store State Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Customers:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Customers Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Customers Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Customers:City</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Customers Hierarchy - City Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Customers Hierarchy - City Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Customers:Country</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Customers Hierarchy - Country Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Customers Hierarchy - Country Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Customers:Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Customers Hierarchy - Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Customers Hierarchy - Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Customers:State Province</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Customers Hierarchy - State Province Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Customers Hierarchy - State Province Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Education Level:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Education Level Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Education Level Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse and Sales:Education Level:Education Level</TABLE_NAME>
+                        <TABLE_NAME>Warehouse and Sales:Education
+                            Level:Education Level</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Education Level Hierarchy - Education Level Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Education Level Hierarchy - Education
+                            Level Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Gender:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Gender Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Gender Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Gender:Gender</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Gender Hierarchy - Gender Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Gender Hierarchy - Gender Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Marital Status:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Marital Status Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Marital Status Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse and Sales:Marital Status:Marital Status</TABLE_NAME>
+                        <TABLE_NAME>Warehouse and Sales:Marital
+                            Status:Marital Status</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Marital Status Hierarchy - Marital Status Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Marital Status Hierarchy - Marital Status Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Product:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Product Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Product Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Product:Brand Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Product Hierarchy - Brand Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Product Hierarchy - Brand Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Product:Product Category</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Product Hierarchy - Product Category Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Product Hierarchy - Product Category Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Product:Product Department</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Product Hierarchy - Product Department Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Product Hierarchy - Product Department Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Product:Product Family</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Product Hierarchy - Product Family Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Product Hierarchy - Product Family Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Product:Product Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Product Hierarchy - Product Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Product Hierarchy - Product Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Product:Product Subcategory</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Product Hierarchy - Product Subcategory Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Product Hierarchy - Product Subcategory Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Promotion Media:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Promotion Media Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Promotion Media Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse and Sales:Promotion Media:Media Type</TABLE_NAME>
+                        <TABLE_NAME>Warehouse and Sales:Promotion
+                            Media:Media Type</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Promotion Media Hierarchy - Media Type Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Promotion Media Hierarchy - Media Type Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Promotions:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Promotions Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Promotions Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse and Sales:Promotions:Promotion Name</TABLE_NAME>
+                        <TABLE_NAME>Warehouse and
+                            Sales:Promotions:Promotion Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Promotions Hierarchy - Promotion Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Promotions Hierarchy - Promotion Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Store:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Store Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Store Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Store:Store City</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Store Hierarchy - Store City Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Store Hierarchy - Store City Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Store:Store Country</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Store Hierarchy - Store Country Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Store Hierarchy - Store Country Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Store:Store Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Store Hierarchy - Store Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Store Hierarchy - Store Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Store:Store State</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Store Hierarchy - Store State Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Store Hierarchy - Store State Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Time.Weekly:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Time.Weekly Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Time.Weekly Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Time.Weekly:Day</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Time.Weekly Hierarchy - Day Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Time.Weekly Hierarchy - Day Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Time.Weekly:Week</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Time.Weekly Hierarchy - Week Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Time.Weekly Hierarchy - Week Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Time.Weekly:Year</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Time.Weekly Hierarchy - Year Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Time.Weekly Hierarchy - Year Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Time:Month</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Time Hierarchy - Month Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Time Hierarchy - Month Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Time:Quarter</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Time Hierarchy - Quarter Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Time Hierarchy - Quarter Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Time:Year</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Time Hierarchy - Year Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Time Hierarchy - Year Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Warehouse:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Warehouse Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Warehouse Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Warehouse:City</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Warehouse Hierarchy - City Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Warehouse Hierarchy - City Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Warehouse:Country</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Warehouse Hierarchy - Country Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Warehouse Hierarchy - Country Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Warehouse:State Province</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Warehouse Hierarchy - State Province Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Warehouse Hierarchy - State Province Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse and Sales:Warehouse:Warehouse Name</TABLE_NAME>
+                        <TABLE_NAME>Warehouse and
+                            Sales:Warehouse:Warehouse Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Warehouse Hierarchy - Warehouse Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Warehouse Hierarchy - Warehouse Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse and Sales:Yearly Income:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Yearly Income Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Yearly Income Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse and Sales:Yearly Income:Yearly Income</TABLE_NAME>
+                        <TABLE_NAME>Warehouse and Sales:Yearly
+                            Income:Yearly Income</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube - Yearly Income Hierarchy - Yearly Income Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse and Sales Cube
+                            - Yearly Income Hierarchy - Yearly Income Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Product:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Product Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Product
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Product:Brand Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Product Hierarchy - Brand Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Product
+                            Hierarchy - Brand Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Product:Product Category</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Product Hierarchy - Product Category Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Product
+                            Hierarchy - Product Category Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Product:Product Department</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Product Hierarchy - Product Department Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Product
+                            Hierarchy - Product Department Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Product:Product Family</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Product Hierarchy - Product Family Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Product
+                            Hierarchy - Product Family Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Product:Product Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Product Hierarchy - Product Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Product
+                            Hierarchy - Product Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Product:Product Subcategory</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Product Hierarchy - Product Subcategory Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Product
+                            Hierarchy - Product Subcategory Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Store Size in SQFT:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Store Size in SQFT Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Store
+                            Size in SQFT Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Store Size in SQFT:Store Sqft</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Store Size in SQFT Hierarchy - Store Sqft Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Store
+                            Size in SQFT Hierarchy - Store Sqft Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Store Type:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Store Type Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Store
+                            Type Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Store Type:Store Type</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Store Type Hierarchy - Store Type Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Store
+                            Type Hierarchy - Store Type Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Store:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Store Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Store
+                            Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Store:Store City</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Store Hierarchy - Store City Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Store
+                            Hierarchy - Store City Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Store:Store Country</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Store Hierarchy - Store Country Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Store
+                            Hierarchy - Store Country Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Store:Store Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Store Hierarchy - Store Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Store
+                            Hierarchy - Store Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Store:Store State</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Store Hierarchy - Store State Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Store
+                            Hierarchy - Store State Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Time.Weekly:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Time.Weekly Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube -
+                            Time.Weekly Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Time.Weekly:Day</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Time.Weekly Hierarchy - Day Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube -
+                            Time.Weekly Hierarchy - Day Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Time.Weekly:Week</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Time.Weekly Hierarchy - Week Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube -
+                            Time.Weekly Hierarchy - Week Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Time.Weekly:Year</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Time.Weekly Hierarchy - Year Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube -
+                            Time.Weekly Hierarchy - Year Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Time:Month</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Time Hierarchy - Month Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Time
+                            Hierarchy - Month Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Time:Quarter</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Time Hierarchy - Quarter Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Time
+                            Hierarchy - Quarter Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Time:Year</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Time Hierarchy - Year Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube - Time
+                            Hierarchy - Year Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Warehouse:(All)</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Warehouse Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube -
+                            Warehouse Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Warehouse:City</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Warehouse Hierarchy - City Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube -
+                            Warehouse Hierarchy - City Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Warehouse:Country</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Warehouse Hierarchy - Country Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube -
+                            Warehouse Hierarchy - Country Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Warehouse:State Province</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Warehouse Hierarchy - State Province Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube -
+                            Warehouse Hierarchy - State Province Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
                         <TABLE_NAME>Warehouse:Warehouse:Warehouse Name</TABLE_NAME>
                         <TABLE_TYPE>SYSTEM TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse Cube - Warehouse Hierarchy - Warehouse Name Level</DESCRIPTION>
+                        <DESCRIPTION>FoodMart - Warehouse Cube -
+                            Warehouse Hierarchy - Warehouse Name Level</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
@@ -1727,18 +1638,6 @@
                         <TABLE_NAME>Warehouse</TABLE_NAME>
                         <TABLE_TYPE>TABLE</TABLE_TYPE>
                         <DESCRIPTION>FoodMart - Warehouse Cube</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA)</TABLE_NAME>
-                        <TABLE_TYPE>TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) Cube</DESCRIPTION>
-                    </row>
-                    <row>
-                        <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
-                        <TABLE_NAME>Warehouse (Default USA) and Sales</TABLE_NAME>
-                        <TABLE_TYPE>TABLE</TABLE_TYPE>
-                        <DESCRIPTION>FoodMart - Warehouse (Default USA) and Sales Cube</DESCRIPTION>
                     </row>
                     <row>
                         <TABLE_CATALOG>FoodMart</TABLE_CATALOG>
@@ -2405,7 +2304,8 @@
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
                         <DIMENSION_CARDINALITY>22</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Store Size in SQFT]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Sales Ragged Cube - Store Size in SQFT Dimension</DESCRIPTION>
+                        <DESCRIPTION>Sales Ragged Cube - Store Size in
+                            SQFT Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
@@ -2637,166 +2537,6 @@
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-                        <DIMENSION_NAME>Measures</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>2</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>3</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse (Default USA) Cube - Measures Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-                        <DIMENSION_NAME>Product</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Product</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>1561</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Product]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse (Default USA) Cube - Product Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-                        <DIMENSION_NAME>Store</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Store</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>26</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Store]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse (Default USA) Cube - Store Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-                        <DIMENSION_NAME>Time</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>1</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>1</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Time]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse (Default USA) Cube - Time Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-                        <DIMENSION_NAME>Warehouse</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Warehouse]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Warehouse</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Warehouse]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse (Default USA) Cube - Warehouse Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-                        <DIMENSION_NAME>Measures</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>2</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>11</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse (Default USA) and Sales Cube - Measures Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-                        <DIMENSION_NAME>Product</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Product</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>1</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>1561</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Product]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse (Default USA) and Sales Cube - Product Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-                        <DIMENSION_NAME>Store</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Store</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>26</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Store]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse (Default USA) and Sales Cube - Store Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-                        <DIMENSION_NAME>Time</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>1</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Time]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse (Default USA) and Sales Cube - Time Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-                        <DIMENSION_NAME>Warehouse</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Warehouse]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Warehouse</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Warehouse]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse (Default USA) and Sales Cube - Warehouse Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_NAME>Customers</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
@@ -2805,7 +2545,8 @@
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
                         <DIMENSION_CARDINALITY>10282</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Customers]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse and Sales Cube - Customers Dimension</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube -
+                            Customers Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
@@ -2821,7 +2562,8 @@
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
                         <DIMENSION_CARDINALITY>6</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Education Level]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse and Sales Cube - Education Level Dimension</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube -
+                            Education Level Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
@@ -2853,7 +2595,8 @@
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
                         <DIMENSION_CARDINALITY>3</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Marital Status]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse and Sales Cube - Marital Status Dimension</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Marital
+                            Status Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
@@ -2901,7 +2644,8 @@
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
                         <DIMENSION_CARDINALITY>15</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Promotion Media]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse and Sales Cube - Promotion Media Dimension</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube -
+                            Promotion Media Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
@@ -2917,7 +2661,8 @@
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
                         <DIMENSION_CARDINALITY>52</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Promotions]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse and Sales Cube - Promotions Dimension</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube -
+                            Promotions Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
@@ -2965,7 +2710,8 @@
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
                         <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Warehouse]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse and Sales Cube - Warehouse Dimension</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube -
+                            Warehouse Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
@@ -2981,7 +2727,8 @@
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
                         <DIMENSION_CARDINALITY>9</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Yearly Income]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Warehouse and Sales Cube - Yearly Income Dimension</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Yearly
+                            Income Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
@@ -6549,134 +6296,6 @@
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Type</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) and Sales
-                            Cube - Store Hierarchy - Store Name Level -
-                            Store Type Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) and Sales
-                            Cube - Store Hierarchy - Store Name Level -
-                            Store Manager Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) and Sales
-                            Cube - Store Hierarchy - Store Name Level -
-                            Store Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) and Sales
-                            Cube - Store Hierarchy - Store Name Level -
-                            Grocery Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) and Sales
-                            Cube - Store Hierarchy - Store Name Level -
-                            Frozen Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) and Sales
-                            Cube - Store Hierarchy - Store Name Level -
-                            Meat Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>11</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) and Sales
-                            Cube - Store Hierarchy - Store Name Level -
-                            Has coffee bar Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) and Sales
-                            Cube - Store Hierarchy - Store Name Level -
-                            Street address Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
@@ -7607,134 +7226,6 @@
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
                         <DESCRIPTION>HR Cube - Employees Hierarchy -
                             Employee Id Level - Management Role Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Type</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) Cube -
-                            Store Hierarchy - Store Name Level - Store
-                            Type Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) Cube -
-                            Store Hierarchy - Store Name Level - Store
-                            Manager Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) Cube -
-                            Store Hierarchy - Store Name Level - Store
-                            Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) Cube -
-                            Store Hierarchy - Store Name Level - Grocery
-                            Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) Cube -
-                            Store Hierarchy - Store Name Level - Frozen
-                            Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) Cube -
-                            Store Hierarchy - Store Name Level - Meat
-                            Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>11</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) Cube -
-                            Store Hierarchy - Store Name Level - Has
-                            coffee bar Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse (Default USA) Cube -
-                            Store Hierarchy - Store Name Level - Street
-                            address Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>

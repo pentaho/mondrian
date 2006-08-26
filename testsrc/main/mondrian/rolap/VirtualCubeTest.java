@@ -96,7 +96,32 @@ public class VirtualCubeTest extends FoodMartTestCase {
     public void testNonDefaultAllMember() {
         // Create a virtual cube with a non-conforming dimension (Warehouse)
         // that does not have ALL as its default member.
-        TestContext testContext = TestContext.create(null, null,
+        TestContext testContext = TestContext.create(
+            null,
+
+            // Warehouse cube where the default member in the Warehouse
+            // dimension is USA.
+            "<Cube name=\"Warehouse (Default USA)\">\n" +
+                "  <Table name=\"inventory_fact_1997\"/>\n" +
+                "\n" +
+                "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
+                "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n" +
+                "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n" +
+                "  <Dimension name=\"Warehouse\" foreignKey=\"warehouse_id\">\n" +
+                "    <Hierarchy hasAll=\"false\" defaultMember=\"[USA]\" primaryKey=\"warehouse_id\"> \n" +
+                "      <Table name=\"warehouse\"/>\n" +
+                "      <Level name=\"Country\" column=\"warehouse_country\" uniqueMembers=\"true\"/>\n" +
+                "      <Level name=\"State Province\" column=\"warehouse_state_province\"\n" +
+                "          uniqueMembers=\"true\"/>\n" +
+                "      <Level name=\"City\" column=\"warehouse_city\" uniqueMembers=\"false\"/>\n" +
+                "      <Level name=\"Warehouse Name\" column=\"warehouse_name\" uniqueMembers=\"true\"/>\n" +
+                "    </Hierarchy>\n" +
+                "  </Dimension>\n" +
+                "  <Measure name=\"Warehouse Cost\" column=\"warehouse_cost\" aggregator=\"sum\"/>\n" +
+                "  <Measure name=\"Warehouse Sales\" column=\"warehouse_sales\" aggregator=\"sum\"/>\n" +
+                "</Cube>",
+
+            // Virtual cube based on [Warehouse (Default USA)]
             "<VirtualCube name=\"Warehouse (Default USA) and Sales\">\n" +
                 "  <VirtualCubeDimension name=\"Product\"/>\n" +
                 "  <VirtualCubeDimension name=\"Store\"/>\n" +
@@ -141,7 +166,6 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "Row #1: \n"));
     }
 
-    // disabled pending fix
     public void _testMemberVisibility() {
         TestContext testContext = TestContext.create(
             null, null,

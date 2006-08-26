@@ -702,28 +702,6 @@ fullname
    </CalculatedMember>
 </Cube>   
 
-<!-- Warehouse cube where the default member in the Warehouse dimension is
-     USA -->
-<Cube name="Warehouse (Default USA)">
-  <Table name="inventory_fact_1997"/>
-
-  <DimensionUsage name="Time" source="Time" foreignKey="time_id"/>
-  <DimensionUsage name="Product" source="Product" foreignKey="product_id"/>
-  <DimensionUsage name="Store" source="Store" foreignKey="store_id"/>
-  <Dimension name="Warehouse" foreignKey="warehouse_id">
-    <Hierarchy hasAll="false" defaultMember="[USA]" primaryKey="warehouse_id"> 
-      <Table name="warehouse"/>
-      <Level name="Country" column="warehouse_country" uniqueMembers="true"/>
-      <Level name="State Province" column="warehouse_state_province"
-          uniqueMembers="true"/>
-      <Level name="City" column="warehouse_city" uniqueMembers="false"/>
-      <Level name="Warehouse Name" column="warehouse_name" uniqueMembers="true"/>
-    </Hierarchy>
-  </Dimension>
-  <Measure name="Warehouse Cost" column="warehouse_cost" aggregator="sum"/>
-  <Measure name="Warehouse Sales" column="warehouse_sales" aggregator="sum"/>
-</Cube>
-
 <VirtualCube name="Warehouse and Sales">
   <VirtualCubeDimension cubeName="Sales" name="Customers"/>
   <VirtualCubeDimension cubeName="Sales" name="Education Level"/>

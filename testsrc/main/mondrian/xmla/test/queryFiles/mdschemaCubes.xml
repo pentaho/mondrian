@@ -113,26 +113,6 @@
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
-        <CUBE_NAME>Warehouse (Default USA)</CUBE_NAME>
-        <CUBE_TYPE>CUBE</CUBE_TYPE>
-        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
-        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
-        <IS_LINKABLE>false</IS_LINKABLE>
-        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
-        <DESCRIPTION>FoodMart Schema - Warehouse (Default USA) Cube</DESCRIPTION>
-      </row>
-      <row>
-        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-        <CUBE_NAME>Warehouse (Default USA) and Sales</CUBE_NAME>
-        <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
-        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
-        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
-        <IS_LINKABLE>false</IS_LINKABLE>
-        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
-        <DESCRIPTION>FoodMart Schema - Warehouse (Default USA) and Sales Cube</DESCRIPTION>
-      </row>
-      <row>
-        <CATALOG_NAME>FoodMart</CATALOG_NAME>
         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
         <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
