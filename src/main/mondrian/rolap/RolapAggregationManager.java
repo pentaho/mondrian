@@ -54,19 +54,19 @@ public abstract class RolapAggregationManager implements CellReader {
             Member[] members,
             boolean extendedContext,
             final boolean drillThrough) {
-        if (!(members[0] instanceof RolapStoredMeasure)) {
+        Map mapLevelToColumn;
+        CellRequest request;
+        if (members[0] instanceof RolapStoredMeasure) {
+            RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
+            final RolapStar.Measure starMeasure =
+                    (RolapStar.Measure) measure.getStarMeasure();
+            assert starMeasure != null;
+            RolapStar star = starMeasure.getStar();
+            request = new CellRequest(starMeasure, extendedContext, drillThrough);
+            mapLevelToColumn = star.getMapLevelToColumn(measure.getCube());
+        } else {
             return null;
         }
-        RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
-        final RolapStar.Measure starMeasure =
-                (RolapStar.Measure) measure.getStarMeasure();
-
-        Util.assertTrue(starMeasure != null);
-
-        RolapStar star = starMeasure.getStar();
-        CellRequest request =
-                new CellRequest(starMeasure, extendedContext, drillThrough);
-        Map mapLevelToColumn = star.getMapLevelToColumn(measure.getCube());
 
         // Since 'request.extendedContext == false' is a well-worn code path,
         // we have moved the test outside the loop.
@@ -169,7 +169,7 @@ public abstract class RolapAggregationManager implements CellReader {
 
     public Object getCell(Member[] members) {
         CellRequest request = makeRequest(members, false, false);
-        RolapMeasure measure = (RolapMeasure) members[0];
+        RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
         final RolapStar.Measure starMeasure = (RolapStar.Measure)
                 measure.getStarMeasure();
 

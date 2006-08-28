@@ -593,8 +593,8 @@ public class SqlTupleReader implements TupleReader {
                 // associated with the star that we're currently dealing
                 // with so the sql generated will reference the appropriate
                 // fact table
-                RolapStoredMeasure measure =
-                    (RolapStoredMeasure) measureMap.get(map);
+                RolapMember measure = (RolapMember) measureMap.get(map);
+                assert measure instanceof RolapStoredMeasure;
                 Evaluator evaluator = constraint.getEvaluator();
                 evaluator.push();
                 evaluator.setContext(measure);

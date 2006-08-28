@@ -1095,20 +1095,20 @@ public class RolapStar {
                 return null;
             }
         }
-        synchronized void makeMeasure(RolapStoredMeasure storedMeasure) {
-            RolapStar.Measure measure = new RolapStar.Measure(
-                storedMeasure.getName(),
-                storedMeasure.getAggregator(),
+        synchronized void makeMeasure(RolapBaseCubeMeasure measure) {
+            RolapStar.Measure starMeasure = new RolapStar.Measure(
+                measure.getName(),
+                measure.getAggregator(),
                 this,
-                storedMeasure.getMondrianDefExpression(),
+                measure.getMondrianDefExpression(),
                 true);
 
-            storedMeasure.setStarMeasure(measure); // reverse mapping
+            measure.setStarMeasure(starMeasure); // reverse mapping
 
-            if (containsColumn(measure)) {
+            if (containsColumn(starMeasure)) {
                 star.decrementColumnCount();
             } else {
-                addColumn(measure);
+                addColumn(starMeasure);
             }
         }
 

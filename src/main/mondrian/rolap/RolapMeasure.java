@@ -12,48 +12,22 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.Literal;
 import mondrian.olap.Member;
-import mondrian.olap.Property;
+import mondrian.olap.CellFormatter;
 
 /**
- * A <code>RolapMeasure</code> is a member of the "Measures" dimension.
- *
- * <p>The only derived class currently is {@link RolapStoredMeasure}.
- * ({@link RolapCalculatedMember calculated members} are not always measures,
- * so they do not derive from this class.)
+ * Interface implemented by all measures (both stored and calculated).
  *
  * @author jhyde
  * @since 10 August, 2001
  * @version $Id$
  */
-abstract class RolapMeasure extends RolapMember {
+interface RolapMeasure extends Member {
     /**
-     * Holds the {@link mondrian.rolap.RolapStar.Measure} from which this
-     * member is computed. Untyped, because another implementation might store
-     * it somewhere else.
+     * Returns the object which formats cells of this measure, or null to use
+     * default formatting.
      */
-    private Object starMeasure;
-
-    RolapMeasure(Member parentMember,
-                 RolapLevel level,
-                 String name,
-                String formatString) {
-        super(parentMember, level, name);
-        if (formatString == null) {
-            formatString = "";
-        }
-        setProperty(
-                Property.FORMAT_EXP.name,
-                Literal.createString(formatString));
-    }
-    Object getStarMeasure() {
-        return starMeasure;
-    }
-    void setStarMeasure(Object starMeasure) {
-        this.starMeasure = starMeasure;
-    }
+    CellFormatter getFormatter();
 }
-
 
 // End RolapMeasure.java

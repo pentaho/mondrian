@@ -285,6 +285,12 @@ Revision is $Id$
                 Unique name of the measure within its cube.
             </Doc>
         </Attribute>
+        <Attribute name="visible" type="Boolean" required="false">
+            <Doc>
+                Whether this member is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
     </Element>
 
     <!-- DimensionUsage =================================================== -->

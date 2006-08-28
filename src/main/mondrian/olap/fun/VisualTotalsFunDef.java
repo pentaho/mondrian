@@ -192,8 +192,10 @@ public class VisualTotalsFunDef extends FunDefBase {
                 Member member,
                 String name,
                 final Exp exp) {
-            super(member.getParentMember(), (RolapLevel) member.getLevel(),
-                    null, name, FORMULA_MEMBER_TYPE);
+            super(
+                (RolapMember) member.getParentMember(),
+                (RolapLevel) member.getLevel(),
+                null, name, FORMULA_MEMBER_TYPE);
             this.member = member;
             this.exp = exp;
         }

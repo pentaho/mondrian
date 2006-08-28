@@ -42,7 +42,6 @@ public class RolapMember extends MemberBase {
      * 
      * @param schemaReader 
      * @param hierarchy 
-     * @return 
      */
     public static Member[][] getAllMembers(SchemaReader schemaReader, 
             Hierarchy hierarchy) {
@@ -295,7 +294,7 @@ public class RolapMember extends MemberBase {
      * @param flags Flags describing this member (see {@link #flags}
      */
     protected RolapMember(
-            Member parentMember,
+            RolapMember parentMember,
             RolapLevel level,
             Object key,
             String name,
@@ -316,7 +315,7 @@ public class RolapMember extends MemberBase {
         }
     }
 
-    RolapMember(Member parentMember, RolapLevel level, Object value) {
+    RolapMember(RolapMember parentMember, RolapLevel level, Object value) {
         this(parentMember, level, value, null, REGULAR_MEMBER_TYPE);
     }
 

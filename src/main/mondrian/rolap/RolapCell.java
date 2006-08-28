@@ -37,11 +37,9 @@ class RolapCell implements Cell {
         final Evaluator evaluator = result.getEvaluator(pos);
         RolapCube c = (RolapCube) evaluator.getCube();
         Dimension measuresDim = c.getMeasuresHierarchy().getDimension();
-        Member m = evaluator.getContext(measuresDim);
+        RolapMeasure m = (RolapMeasure) evaluator.getContext(measuresDim);
 
-        CellFormatter cf = (m instanceof RolapStoredMeasure)
-            ? ((RolapStoredMeasure)m).getFormatter()
-            : null;
+        CellFormatter cf = m.getFormatter();
         return (cf != null)
             ? cf.formatCell(value)
             : evaluator.format(value);

@@ -166,7 +166,7 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "Row #1: \n"));
     }
 
-    public void _testMemberVisibility() {
+    public void testMemberVisibility() {
         TestContext testContext = TestContext.create(
             null, null,
             "<VirtualCube name=\"Warehouse and Sales Member Visibility\">\n" +

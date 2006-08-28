@@ -226,10 +226,12 @@ class RolapHierarchy extends HierarchyBase {
         }
 
         RolapHierarchy that = (RolapHierarchy)o;
-        return ((sharedHierarchyName == null) || (that.sharedHierarchyName == null))
-            ? false
-            : (sharedHierarchyName.equals(that.sharedHierarchyName) &&
-                getUniqueName().equals(that.getUniqueName()));
+        if (sharedHierarchyName == null || that.sharedHierarchyName == null) {
+            return false;
+        } else {
+            return sharedHierarchyName.equals(that.sharedHierarchyName) &&
+                getUniqueName().equals(that.getUniqueName());
+        }
     }
 
     public int hashCode() {
@@ -366,11 +368,16 @@ class RolapHierarchy extends HierarchyBase {
             Level level,
             String name,
             Formula formula) {
-        return (formula != null)
-            ? new RolapCalculatedMember(
-                (RolapMember) parent, (RolapLevel) level, name, formula)
-            : new RolapMember(
+        if (formula == null) {
+            return new RolapMember(
                 (RolapMember) parent, (RolapLevel) level, name);
+        } else if (level.getDimension().isMeasures()) {
+            return new RolapCalculatedMeasure(
+                (RolapMember) parent, (RolapLevel) level, name, formula);
+        } else {
+            return new RolapCalculatedMember(
+                (RolapMember) parent, (RolapLevel) level, name, formula);
+        }
     }
 
     String getAlias() {
@@ -663,5 +670,18 @@ RME HACK
         }
     }
 
+    private static class RolapCalculatedMeasure
+        extends RolapCalculatedMember
+        implements RolapMeasure
+    {
+        public RolapCalculatedMeasure(
+            RolapMember parent, RolapLevel level, String name, Formula formula) {
+            super(parent, level, name, formula);
+        }
+
+        public CellFormatter getFormatter() {
+            return null;
+        }
+    }
 }
 // End RolapHierarchy.java
