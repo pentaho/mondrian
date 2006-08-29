@@ -14,6 +14,7 @@ package mondrian.olap;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.*;
+import org.eigenbase.util.property.Property;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -266,7 +267,7 @@ public class MondrianProperties extends TriggerableProperties {
     }
 
     /**
-     * Returns a list of all properties.
+     * Returns a list of every {@link org.eigenbase.util.property.Property}.
      *
      * <p>todo: Move to base class, {@link TriggerableProperties}, and rename
      * base method {@link TriggerableProperties#getProperties()}}.
@@ -277,7 +278,8 @@ public class MondrianProperties extends TriggerableProperties {
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
             if (!Modifier.isStatic(field.getModifiers()) &&
-                    Property.class.isAssignableFrom(field.getType())) {
+                    org.eigenbase.util.property.Property.class.isAssignableFrom(
+                        field.getType())) {
                 try {
                     list.add(field.get(this));
                 } catch (IllegalAccessException e) {
@@ -289,6 +291,27 @@ public class MondrianProperties extends TriggerableProperties {
         }
         return list;
     }
+
+    /**
+     * Returns the definition of a named property, or null if there is no
+     * such property.
+     *
+     * <p>todo: Move to base class, {@link TriggerableProperties}.
+     *
+     * @param path Name of the property
+     */
+    public Property getPropertyDefinition(String path) {
+        final List propertyList = getPropertyList();
+        for (int i = 0; i < propertyList.size(); i++) {
+            org.eigenbase.util.property.Property property =
+                (Property) propertyList.get(i);
+            if (property.getPath().equals(path)) {
+                return property;
+            }
+        }
+        return null;
+    }
+
     /**
      * Maximum number of simultaneous queries the system will allow.
      *

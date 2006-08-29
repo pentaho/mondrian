@@ -391,6 +391,9 @@ public class TestContext {
      */
     public void assertExprReturns(String expression, String expected) {
         final Cell cell = executeExprRaw(expression);
+        if (expected == null) {
+            expected = ""; // null values are formatted as empty string
+        }
         assertEqualsVerbose(expected, cell.getFormattedValue());
     }
 

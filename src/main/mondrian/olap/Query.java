@@ -447,9 +447,9 @@ public class Query extends QueryPart {
                             ParameterFunDef.getParameterType(call.getArgs());
 
                         // Create a temporary parameter. We don't know its
-                        // type yet.
+                        // type yet. The default of NULL is temporary.
                         Parameter parameter = new ParameterImpl(
-                            parameterName, null, null, type);
+                            parameterName, Literal.nullValue, null, type);
                         parameters.add(parameter);
                         parametersByName.put(parameterName, parameter);
                     }

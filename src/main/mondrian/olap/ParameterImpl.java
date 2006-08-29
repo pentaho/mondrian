@@ -46,6 +46,7 @@ public class ParameterImpl
         this.defaultExp = defaultExp;
         this.description = description;
         this.type = type;
+        assert defaultExp != null;
         assert type instanceof StringType ||
             type instanceof NumericType ||
             type instanceof MemberType;
@@ -122,10 +123,14 @@ public class ParameterImpl
     }
 
     public void setType(Type type) {
+        assert type instanceof StringType ||
+            type instanceof NumericType ||
+            type instanceof MemberType;
         this.type = type;
     }
 
     public void setDefaultExp(Exp defaultExp) {
+        assert defaultExp != null;
         this.defaultExp = defaultExp;
     }
 

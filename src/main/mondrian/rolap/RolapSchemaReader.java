@@ -31,6 +31,7 @@ import mondrian.calc.impl.AbstractCalc;
 import mondrian.calc.impl.GenericCalc;
 
 import org.apache.log4j.Logger;
+import org.eigenbase.util.property.Property;
 
 /**
  * A <code>RolapSchemaReader</code> allows you to read schema objects while
@@ -456,8 +457,9 @@ public abstract class RolapSchemaReader implements SchemaReader {
         // Scan through mondrian and system properties.
         List propertyList = MondrianProperties.instance().getPropertyList();
         for (int i = 0; i < propertyList.size(); i++) {
-            Property property = (Property) propertyList.get(i);
-            if (property.getName().equals(name)) {
+            org.eigenbase.util.property.Property property =
+                (org.eigenbase.util.property.Property) propertyList.get(i);
+            if (property.getPath().equals(name)) {
                 return new SystemPropertyParameter(name, false);
             }
         }
@@ -493,13 +495,20 @@ public abstract class RolapSchemaReader implements SchemaReader {
          * false if source is a mondrian property.
          */
         private final boolean system;
+        /**
+         * Definition of mondrian property, or null if system property.
+         */
+        private final Property propertyDefinition;
 
         public SystemPropertyParameter(String name, boolean system) {
             super(name,
-                null, 
+                Literal.nullValue,
                 "System property '" + name + "'",
                 new StringType());
             this.system = system;
+            this.propertyDefinition =
+                system ? null :
+                MondrianProperties.instance().getPropertyDefinition(name);
         }
 
         public Scope getScope() {
@@ -517,11 +526,11 @@ public abstract class RolapSchemaReader implements SchemaReader {
                 }
 
                 public Object evaluate(Evaluator evaluator) {
-                    final String name = SystemPropertyParameter.this.getName();
                     if (system) {
+                        final String name = SystemPropertyParameter.this.getName();
                         return System.getProperty(name);
                     } else {
-                        return MondrianProperties.instance().getProperty(name);
+                        return propertyDefinition.stringValue();
                     }
                 }
             };

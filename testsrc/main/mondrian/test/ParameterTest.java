@@ -34,7 +34,7 @@ public class ParameterTest extends FoodMartTestCase {
 
     // -- Helper methods ----------
 
-    private void assertSetPropertyFails(String propName) {
+    private void assertSetPropertyFails(String propName, String scope) {
         Query q = getConnection().parseQuery("select from [Sales]");
         try {
             q.setParameter(propName, "foo");
@@ -42,9 +42,8 @@ public class ParameterTest extends FoodMartTestCase {
                 "non-overrideable property '" + propName + "'");
         } catch (Exception e) {
             assertTrue(e.getMessage().indexOf(
-                "Parameter '" +
-                propName +
-                "' (defined at 'Connection' scope) is not modifiable") >= 0);
+                "Parameter '" + propName + "' (defined at '" +
+                    scope + "' scope) is not modifiable") >= 0);
         }
     }
 
@@ -338,7 +337,7 @@ public class ParameterTest extends FoodMartTestCase {
             String propName = ((EnumeratedValues.Value) propNames.get(i)).getName();
             if (!Arrays.asList(overrideableProps).contains(propName)) {
                 // try to override prop
-                assertSetPropertyFails(propName);
+                assertSetPropertyFails(propName, "Connection");
             }
         }
     }
@@ -351,11 +350,12 @@ public class ParameterTest extends FoodMartTestCase {
     public void testSystemPropsGet() {
         List propertyList = MondrianProperties.instance().getPropertyList();
         for (int i = 0; i < propertyList.size(); i++) {
-            Property property = (Property) propertyList.get(i);
+            org.eigenbase.util.property.Property property =
+                (org.eigenbase.util.property.Property) propertyList.get(i);
             assertExprReturns(
                 "ParamRef(" +
-                    Util.singleQuoteString(property.getName()) + ")",
-                String.valueOf(MondrianProperties.instance().get(property)));
+                    Util.singleQuoteString(property.getPath()) + ")",
+                property.stringValue());
         }
     }
 
@@ -384,9 +384,10 @@ public class ParameterTest extends FoodMartTestCase {
     public void testSystemPropsSet() {
         List propertyList = MondrianProperties.instance().getPropertyList();
         for (int i = 0; i < propertyList.size(); i++) {
-            Property property = (Property) propertyList.get(i);
-            final String propName = property.getName();
-            assertSetPropertyFails(propName);
+            org.eigenbase.util.property.Property property =
+                (org.eigenbase.util.property.Property) propertyList.get(i);
+            final String propName = property.getPath();
+            assertSetPropertyFails(propName, "System");
         }
     }
 

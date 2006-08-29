@@ -33,7 +33,7 @@ public interface Parameter {
 
     /**
      * Returns the expression which provides the default value for this
-     * Parameter.
+     * Parameter. Never null.
      */
     Exp getDefaultExp();
 
