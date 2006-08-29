@@ -19,6 +19,7 @@ import mondrian.mdx.ResolvedFunCall;
 /**
  * Definition of the <code>IS</code> MDX function.
  *
+ * @see IsNullFunDef
  * @author jhyde
  * @version $Id$
  * @since Mar 23, 2006
@@ -37,7 +38,6 @@ class IsFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final int category = call.getArg(0).getCategory();
-        assert category == call.getArg(1).getCategory();
         switch (category) {
         case Category.Tuple:
             final TupleCalc tupleCalc0 = compiler.compileTuple(call.getArg(0));
@@ -50,6 +50,7 @@ class IsFunDef extends FunDefBase {
                 }
             };
         default:
+            assert category == call.getArg(1).getCategory();
             final Calc calc0 = compiler.compile(call.getArg(0));
             final Calc calc1 = compiler.compile(call.getArg(1));
             return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
