@@ -168,7 +168,7 @@ public class FoodMartTestCase extends TestCase {
         final String iifExpression = "Iif(" + expression + ",\"true\",\"false\")";
         final String actual = executeExpr(iifExpression);
         final String expectedString = expected ? "true" : "false";
-        assertEquals(actual, expectedString);
+        assertEquals(expectedString, actual);
     }
 
     /**

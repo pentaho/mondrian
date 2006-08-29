@@ -635,6 +635,8 @@ public class FunUtil extends Util {
             return Category.Value;
         case 'y':
             return Category.Symbol;
+        case 'U':
+            return Category.Null;
         default:
             throw newInternal(
                     "unknown type code '" + c + "' in string '" + flags + "'");
@@ -1428,6 +1430,8 @@ public class FunUtil extends Util {
             return false;
         case Category.Symbol:
             return false;
+        case Category.Null:
+            return  to == Category.Numeric;
         default:
             throw newInternal("unknown category " + from);
         }
@@ -1528,6 +1532,43 @@ public class FunUtil extends Util {
             buf.append(member.getUniqueName());
         }
         buf.append(")");
+    }
+
+    /**
+     * Returns whether two tuples are equal.
+     *
+     * <p>The members are allowed to be in different positions. For example,
+     * <blockquote>
+     * <code>([Gender].[M], [Store].[USA]) IS ([Store].[USA], [Gender].[M])</code>
+     * </blockquote>
+     * returns <code>true</code>.
+     */
+    static boolean equalTuple(Member[] members0, Member[] members1) {
+        final int count = members0.length;
+        if (count != members1.length) {
+            return false;
+        }
+        outer:
+        for (int i = 0; i < count; i++) {
+            // First check the member at the corresponding ordinal. It is more
+            // likely to be there.
+            final Member member0 = members0[i];
+            if (member0.equals(members1[i])) {
+                continue;
+            }
+            // Look for this member in other positions.
+            // We can assume that the members in members0 are distinct (because
+            // they belong to different dimensions), so this test is valid.
+            for (int j = 0; j < count; j++) {
+                if (i != j && member0.equals(members1[j])) {
+                    continue outer;
+                }
+            }
+            // This member of members0 does not occur in any position of
+            // members1. The tuples are not equal.
+            return false;
+        }
+        return true;
     }
 
     // Inner classes

@@ -4010,8 +4010,43 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>IS</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether two objects are the
-                            same (idempotent)</DESCRIPTION>
+                        <DESCRIPTION>Returns whether an object is null</DESCRIPTION>
+                        <PARAMETER_LIST>Member, Null</PARAMETER_LIST>
+                        <RETURN_TYPE>11</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IS</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IS</FUNCTION_NAME>
+                        <DESCRIPTION>Returns whether an object is null</DESCRIPTION>
+                        <PARAMETER_LIST>Level, Null</PARAMETER_LIST>
+                        <RETURN_TYPE>11</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IS</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IS</FUNCTION_NAME>
+                        <DESCRIPTION>Returns whether an object is null</DESCRIPTION>
+                        <PARAMETER_LIST>Hierarchy, Null</PARAMETER_LIST>
+                        <RETURN_TYPE>11</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IS</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IS</FUNCTION_NAME>
+                        <DESCRIPTION>Returns whether an object is null</DESCRIPTION>
+                        <PARAMETER_LIST>Dimension, Null</PARAMETER_LIST>
+                        <RETURN_TYPE>11</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IS</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IS</FUNCTION_NAME>
+                        <DESCRIPTION>Returns whether two objects are the same</DESCRIPTION>
                         <PARAMETER_LIST>Member, Member</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -4020,8 +4055,7 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>IS</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether two objects are the
-                            same (idempotent)</DESCRIPTION>
+                        <DESCRIPTION>Returns whether two objects are the same</DESCRIPTION>
                         <PARAMETER_LIST>Level, Level</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -4030,8 +4064,7 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>IS</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether two objects are the
-                            same (idempotent)</DESCRIPTION>
+                        <DESCRIPTION>Returns whether two objects are the same</DESCRIPTION>
                         <PARAMETER_LIST>Hierarchy, Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -4040,8 +4073,7 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>IS</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether two objects are the
-                            same (idempotent)</DESCRIPTION>
+                        <DESCRIPTION>Returns whether two objects are the same</DESCRIPTION>
                         <PARAMETER_LIST>Dimension, Dimension</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
@@ -4049,13 +4081,13 @@
                         <CAPTION>IS</CAPTION>
                     </row>
                     <row>
-                        <FUNCTION_NAME>IS NULL</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether a member is null.</DESCRIPTION>
-                        <PARAMETER_LIST>Member</PARAMETER_LIST>
+                        <FUNCTION_NAME>IS</FUNCTION_NAME>
+                        <DESCRIPTION>Returns whether two objects are the same</DESCRIPTION>
+                        <PARAMETER_LIST>Tuple, Tuple</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
-                        <CAPTION>IS NULL</CAPTION>
+                        <CAPTION>IS</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>IsEmpty</FUNCTION_NAME>

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,10 +12,7 @@
 */
 
 package mondrian.olap;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.StringType;
-import mondrian.olap.type.NumericType;
-import mondrian.olap.type.SymbolType;
+import mondrian.olap.type.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.ConstantCalc;
 import mondrian.mdx.MdxVisitor;
@@ -23,18 +20,50 @@ import mondrian.mdx.MdxVisitor;
 import java.io.PrintWriter;
 
 /**
- * Constant (just strings and symbols for now).
+ * Represents a constant value, such as a string or number, in a parse tree.
+ *
+ * <p>Symbols, such as the <code>ASC</code> keyword in
+ * <code>Order([Store].Members, [Measures].[Unit Sales], ASC)</code>, are
+ * also represented as Literals.
+ *
+ * @version $Id$
+ * @author jhyde
  */
 public class Literal extends ExpBase {
 
-    public static final Literal nullValue = new Literal(null, false);
+    // Data members.
+
+    public final int category;
+    private final Object o;
+
+
+    // Constants for commonly used literals.
+
+    public static final Literal nullValue = new Literal(Category.Null, null);
+
     public static final Literal emptyString = new Literal("", false);
+
     public static final Literal zero = new Literal(new Integer(0));
+
     public static final Literal one = new Literal(new Integer(1));
+
     public static final Literal negativeOne = new Literal(new Integer(-1));
+
     public static final Literal doubleZero = new Literal(new Double(0.0));
+
     public static final Literal doubleOne = new Literal(new Double(1.0));
+
     public static final Literal doubleNegativeOne = new Literal(new Double(-1.0));
+
+    /**
+     * Private constructor.
+     *
+     * <p>Use the creation methods {@link #createString(String)} etc.
+     */
+    private Literal(int type, Object o) {
+        this.category = type;
+        this.o = o;
+    }
 
     /**
      * Creates a string literal.
@@ -54,6 +83,9 @@ public class Literal extends ExpBase {
         return new Literal(s, true);
     }
 
+    /**
+     * Creates a numeric literal.
+     */
     public static Literal create(Double d) {
         double dv = d.doubleValue();
         if (dv == 0.0) {
@@ -67,6 +99,9 @@ public class Literal extends ExpBase {
         }
     }
 
+    /**
+     * Creates an integer literal.
+     */
     public static Literal create(Integer i) {
         switch (i.intValue()) {
         case -1:
@@ -80,22 +115,18 @@ public class Literal extends ExpBase {
         }
     }
 
-
-    public final int type;
-    private final Object o;
-
     private Literal(String s, boolean isSymbol) {
         this.o = s;
-        this.type = isSymbol ? Category.Symbol : Category.String;
+        this.category = isSymbol ? Category.Symbol : Category.String;
     }
 
     private Literal(Double d) {
         this.o = d;
-        this.type = Category.Numeric;
+        this.category = Category.Numeric;
     }
     private Literal(Integer i) {
         this.o = i;
-        this.type = Category.Numeric;
+        this.category = Category.Numeric;
     }
 
     public Object clone() {
@@ -103,7 +134,7 @@ public class Literal extends ExpBase {
     }
 
     public void unparse(PrintWriter pw) {
-        switch (type) {
+        switch (category) {
         case Category.Symbol:
         case Category.Numeric:
             pw.print(o);
@@ -111,25 +142,30 @@ public class Literal extends ExpBase {
         case Category.String:
             pw.print(Util.quoteForMdx((String) o));
             break;
+        case Category.Null:
+            pw.print("NULL");
+            break;
         default:
-            throw Util.newInternal("bad literal type " + type);
+            throw Util.newInternal("bad literal type " + category);
         }
     }
 
     public int getCategory() {
-        return type;
+        return category;
     }
 
     public Type getType() {
-        switch (type) {
+        switch (category) {
         case Category.Symbol:
             return new SymbolType();
         case Category.Numeric:
             return new NumericType();
         case Category.String:
             return new StringType();
+        case Category.Null:
+            return new NullType();
         default:
-            throw Category.instance.badValue(type);
+            throw Category.instance.badValue(category);
         }
     }
 

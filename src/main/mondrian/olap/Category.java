@@ -34,23 +34,23 @@ public class Category extends EnumeratedValues {
                 new String[] {
                     "unknown", "array", "dimension", "hierarchy", "level",
                     "logical", "member", "numeric", "set",
-                    "string", "tuple", "symbol", "cube", "value", "integer",
+                    "string", "tuple", "symbol", "cube", "value", "integer", "null",
                 },
                 new int[] {
                     Unknown, Array, Dimension, Hierarchy, Level,
                     Logical, Member, Numeric, Set,
-                    String, Tuple, Symbol, Cube, Value, Integer,
+                    String, Tuple, Symbol, Cube, Value, Integer, Null,
                 },
                 new String[] {
                     "Unknown", "Array", "Dimension", "Hierarchy", "Level",
                     "Logical Expression", "Member", "Numeric Expression", "Set",
-                    "String", "Tuple", "Symbol", "Cube", "Value", "Integer",
+                    "String", "Tuple", "Symbol", "Cube", "Value", "Integer", "Null",
                 }
         );
     }
 
     /** Returns the singleton instance of <code>Category</code>. */
-    public static final Category instance() {
+    public static Category instance() {
         return instance;
     }
 
@@ -91,8 +91,14 @@ public class Category extends EnumeratedValues {
     /** <code>Integer</code> is an integer expression. This is a subtype of
      * {@link #Numeric}. */
     public static final int Integer = 15;
-    /** <code>Expression</code> is a flag which, when bitwise-OR-ed with a
-     * category value, indicates an expression (as opposed to a constant). */
+    /**
+     * Represents a <code>Null</code> value
+     */
+    public static final int Null = 16;
+    /**
+     * <code>Expression</code> is a flag which, when bitwise-OR-ed with a
+     * category value, indicates an expression (as opposed to a constant).
+     */
     public static final int Expression = 0;
     /** <code>Constant</code> is a flag which, when bitwise-OR-ed with a
      * category value, indicates a constant (as opposed to an expression). */

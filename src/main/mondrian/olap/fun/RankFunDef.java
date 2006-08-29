@@ -40,21 +40,6 @@ public class RankFunDef extends FunDefBase {
         super(dummyFunDef);
     }
 
-    /**
-     * Returns whether two tuples are equal.
-     */
-    static boolean equalTuple(Member[] tuple, Member[] m) {
-        if (tuple.length != m.length) {
-            return false;
-        }
-        for (int i = 0; i < tuple.length; i++) {
-            if (! tuple[i].equals(m[i])) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         switch (call.getArgCount()) {
         case 2:
@@ -478,7 +463,7 @@ public class RankFunDef extends FunDefBase {
 
         RankedList(List members) {
             for (int i = 0; i < members.size(); i++) {
-                Object o = (Object) members.get(i);
+                Object o = members.get(i);
                 final Object key;
                 if (o instanceof Member) {
                     key = o;

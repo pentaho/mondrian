@@ -192,6 +192,23 @@ public class ParserTest extends TestCase {
                     "from [cube]\n"));
     }
 
+    public void testIsNull() {
+        assertParserReturns("with member [Measures].[Foo]\n" +
+            " as ' [Measures].[Unit Sales] IS NULL'\n" +
+            "select {[Measures].[Foo]} on columns from [Sales]",
+            TestContext.fold(
+                "with member [Measures].[Foo] as '([Measures].[Unit Sales] IS NULL)'\n" +
+                    "select {[Measures].[Foo]} ON COLUMNS\n" +
+                    "from [Sales]\n"));
+    }
+
+    public void testNull() {
+        assertParserReturns("select Filter({[Measures].[Foo]}, Iif(1 = 2, NULL, 'X')) on columns from [Sales]",
+            TestContext.fold(
+                "select Filter({[Measures].[Foo]}, Iif((1.0 = 2.0), NULL, \"X\")) ON COLUMNS\n" +
+                    "from [Sales]\n"));
+    }
+
     /**
      * Parses an MDX query and asserts that the result is as expected when
      * unparsed.

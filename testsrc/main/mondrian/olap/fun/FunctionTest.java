@@ -3010,6 +3010,28 @@ public class FunctionTest extends FoodMartTestCase {
             "Yes");
     }
 
+    public void testIIfWithNullAndNumber()
+    {
+        assertExprReturns("IIf(([Measures].[Unit Sales],[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]) > 100, null,20)",
+                "");
+        assertExprReturns("IIf(([Measures].[Unit Sales],[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]) > 100, 20,null)",
+                "20");
+    }
+
+    public void testIIfWithStringAndNull()
+    {
+        assertExprThrows("IIf(([Measures].[Unit Sales],[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]) > 100, null,\"foo\")",
+                "Failed to parse");
+        assertExprThrows("IIf(([Measures].[Unit Sales],[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]) > 100, \"foo\",null)",
+                "Failed to parse");
+    }
+
+    public void testIsEmptyWithNull()
+    {
+        assertExprReturns("iif (isempty(null), \"is empty\", \"not is empty\")", "is empty");
+        assertExprReturns("iif (isempty(null), 1, 2)", "1");
+    }
+
     public void testDimensionCaption() {
         assertExprReturns("[Time].[1997].Dimension.Caption", "Time");
     }
@@ -4080,12 +4102,22 @@ public class FunctionTest extends FoodMartTestCase {
         assertBooleanExprReturns(" [Store].[USA].[CA].parent IS [Store].[Mexico]", false);
     }
 
-    // TODO: uncomment when tuple compare implemented
-    public void _testIsTuple() {
+    public void testIsString() {
+        assertExprThrows(" [Store].[USA].Name IS \"USA\" ",
+            "No function matches signature '<String> IS <String>'");
+    }
+
+    public void testIsNumeric() {
+        assertExprThrows(" [Store].[USA].Level.Ordinal IS 25 ",
+            "No function matches signature '<Numeric Expression> IS <Numeric Expression>'");
+    }
+
+    public void testIsTuple() {
         assertBooleanExprReturns(" (Store.[USA], Gender.[M]) IS (Store.[USA], Gender.[M])", true);
         assertBooleanExprReturns(" (Store.[USA], Gender.[M]) IS (Gender.[M], Store.[USA])", true);
         assertBooleanExprReturns(" (Store.[USA], Gender.[M]) IS (Store.[USA], Gender.[F])", false);
         assertBooleanExprReturns(" (Store.[USA], Gender.[M]) IS (Store.[USA])", false);
+        assertBooleanExprReturns(" (Store.[USA], Gender.[M]) IS Store.[USA]", false);
     }
 
     public void testIsLevel() {

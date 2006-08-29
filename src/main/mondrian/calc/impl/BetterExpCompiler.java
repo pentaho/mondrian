@@ -37,8 +37,25 @@ public class BetterExpCompiler extends AbstractExpCompiler {
                     return (double) result;
                 }
             };
+        } else {
+            throw Util.newInternal("cannot cast " + exp);
         }
-        throw Util.newInternal("cannot cast " + exp);
+    }
+
+    public TupleCalc compileTuple(Exp exp) {
+        final Calc calc = compile(exp);
+        if (calc instanceof TupleCalc) {
+            return (TupleCalc) calc;
+        } else if (calc instanceof MemberCalc) {
+            final MemberCalc memberCalc = (MemberCalc) calc;
+            return new AbstractTupleCalc(exp, new Calc[] {memberCalc}) {
+                public Member[] evaluateTuple(Evaluator evaluator) {
+                    return new Member[] {memberCalc.evaluateMember(evaluator)};
+                }
+            };
+        } else {
+            throw Util.newInternal("cannot cast " + exp);
+        }
     }
 }
 

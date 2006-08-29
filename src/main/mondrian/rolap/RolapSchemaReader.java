@@ -496,7 +496,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
 
         public SystemPropertyParameter(String name, boolean system) {
             super(name,
-                Literal.nullValue,
+                null, 
                 "System property '" + name + "'",
                 new StringType());
             this.system = system;

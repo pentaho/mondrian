@@ -282,25 +282,7 @@ public class BuiltinFunTable extends FunTableImpl {
         //
         // LOGICAL FUNCTIONS
         define(IsEmptyFunDef.Resolver);
-
-        define(new FunDefBase(
-                "IS NULL",
-                "<Member> IS NULL",
-                "Returns whether a member is null.",
-                "pbm") {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-                final MemberCalc memberCalc =
-                        compiler.compileMember(call.getArg(0));
-                return new AbstractBooleanCalc(call, new Calc[] {memberCalc}) {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        Member member = memberCalc.evaluateMember(evaluator);
-                        return member.isNull();
-                    }
-                };
-            }
-
-        });
-
+        define(IsNullFunDef.Resolver);
         define(IsFunDef.Resolver);
 
         //

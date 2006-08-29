@@ -682,9 +682,6 @@ term4 ::=
 
 term3 ::=
         term2
-    |   term3:p IS NULL {:
-            RESULT = new UnresolvedFunCall("IS NULL", Syntax.Property, new Exp[] {p});
-        :}
     |   term3:x comp_op:op term2:y {: // e.g. 1 < 5
             RESULT = new UnresolvedFunCall(op, Syntax.Infix, new Exp[] {x, y});
         :}
@@ -799,6 +796,9 @@ value_expression_primary ::=
     |   LBRACE exp_list_opt:lis RBRACE {: // set built from sets/tuples
             RESULT = new UnresolvedFunCall(
                 "{}", Syntax.Braces, Parser.toExpArray(lis));
+        :}
+    |  NULL {:
+            RESULT = Literal.nullValue;
         :}
     |   case_expression
     ;
