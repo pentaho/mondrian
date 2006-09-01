@@ -307,36 +307,43 @@ System.out.println(" measure.getTable().getTableName()=" +measure.getTable().get
 
             // If the database cannot execute "count(distinct ...)", split the
             // distinct aggregations out.
-            while (true) {
-                // Scan for a measure based upon a distinct aggregation.
-                RolapStar.Measure distinctMeasure =
+            RolapStar.Measure measure =
+                (RolapStar.Measure) measuresList.get(0);
+            if (!measure.getStar().getSqlQueryDialect().allowsCountDistinct()) {
+                while (true) {
+                    // Scan for a measure based upon a distinct aggregation.
+                    RolapStar.Measure distinctMeasure =
                         getFirstDistinctMeasure(measuresList);
-                if (distinctMeasure == null) {
-                    break;
-                }
-                final String expr =
-                    distinctMeasure.getExpression().getGenericExpression();
-                final List distinctMeasuresList = new ArrayList();
-                for (int i = 0; i < measuresList.size();) {
-                    RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(i);
-                    if (measure.getAggregator().isDistinct() &&
-                            measure.getExpression().getGenericExpression().equals(expr)) {
-                        measuresList.remove(i);
-                        distinctMeasuresList.add(distinctMeasure);
-                    } else {
-                        i++;
+                    if (distinctMeasure == null) {
+                        break;
                     }
-                }
-                RolapStar.Measure[] measures = (RolapStar.Measure[])
+                    final String expr =
+                        distinctMeasure.getExpression().
+                            getGenericExpression();
+                    final List distinctMeasuresList = new ArrayList();
+                    for (int i = 0; i < measuresList.size();) {
+                        measure = (RolapStar.Measure) measuresList.get(i);
+                        if (measure.getAggregator().isDistinct() &&
+                            measure.getExpression().getGenericExpression().
+                                equals(expr))
+                        {
+                            measuresList.remove(i);
+                            distinctMeasuresList.add(distinctMeasure);
+                        } else {
+                            i++;
+                        }
+                    }
+                    RolapStar.Measure[] measures = (RolapStar.Measure[])
                         distinctMeasuresList.toArray(
                             new RolapStar.Measure[distinctMeasuresList.size()]);
-                aggmgr.loadAggregation(measures, columns, bitKey,
+                    aggmgr.loadAggregation(measures, columns, bitKey,
                             constraintses, pinnedSegments);
+                }
             }
             final int measureCount = measuresList.size();
             if (measureCount > 0) {
                 RolapStar.Measure[] measures = (RolapStar.Measure[])
-                        measuresList.toArray(new RolapStar.Measure[measureCount]);
+                    measuresList.toArray(new RolapStar.Measure[measureCount]);
                 aggmgr.loadAggregation(measures, columns, bitKey,
                     constraintses, pinnedSegments);
             }
