@@ -307,18 +307,7 @@ class SqlMemberSource implements MemberReader, SqlTupleReader.MemberBuilder {
             Map map = new HashMap();
             RolapMember root = null;
             if (hierarchy.hasAll()) {
-                root = new RolapMember(null,
-                                       (RolapLevel) hierarchy.getLevels()[0],
-                                       null,
-                                       hierarchy.getAllMemberName(),
-                                       Member.ALL_MEMBER_TYPE);
-                // assign "all member" caption
-                if (hierarchy.xmlHierarchy != null &&
-                    hierarchy.xmlHierarchy.allMemberCaption != null &&
-                        hierarchy.xmlHierarchy.allMemberCaption.length() > 0)
-                    root.setCaption(hierarchy.xmlHierarchy.allMemberCaption );
-
-                root.setOrdinal(lastOrdinal++);
+                root = hierarchy.getAllMember();
                 list.add(root);
             }
 
@@ -449,29 +438,13 @@ RME is this right
         return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
     }
 
-    public List getMembersInLevel(RolapLevel level,
+    public List getMembersInLevel(
+            RolapLevel level,
             int startOrdinal,
             int endOrdinal,
             TupleConstraint constraint) {
         if (level.isAll()) {
-            final String allMemberName = hierarchy.getAllMemberName();
-            Object key = cache.makeKey(null, allMemberName);
-            RolapMember root = cache.getMember(key);
-            if (root == null) {
-                root = new RolapMember(null, level, null, allMemberName,
-                        Member.ALL_MEMBER_TYPE);
-                root.setOrdinal(lastOrdinal++);
-                cache.putMember(key, root);
-                if (hierarchy.xmlHierarchy != null &&
-                    hierarchy.xmlHierarchy.allMemberCaption != null &&
-                    hierarchy.xmlHierarchy.allMemberCaption.length() > 0) {
-                    root.setCaption(hierarchy.xmlHierarchy.allMemberCaption );
-                }
-
-            }
-            List list = new ArrayList(1);
-            list.add(root);
-            return list;
+            return Collections.singletonList(hierarchy.getAllMember());
         }
         Connection jdbcConnection;
         try {
@@ -491,22 +464,13 @@ RME is this right
         }
     }
 
-    private List getMembersInLevel(RolapLevel level,
-                                   Connection jdbcConnection,
-                                   TupleConstraint constraint) {
+    private List getMembersInLevel(
+            RolapLevel level,
+            Connection jdbcConnection,
+            TupleConstraint constraint) {
         TupleReader tupleReader = new SqlTupleReader(constraint);
         tupleReader.addLevelMembers(level, this, null);
         return tupleReader.readTuples(jdbcConnection, null, null);
-    }
-
-    public RolapMember getAllMember() {
-        RolapMember allMember = null;
-        if (hierarchy.hasAll()) {
-            final List rootMembers = getRootMembers();
-            Util.assertTrue(rootMembers.size() == 1);
-            allMember = (RolapMember) rootMembers.get(0);
-        }
-        return allMember;
     }
 
     public MemberCache getMemberCache() {

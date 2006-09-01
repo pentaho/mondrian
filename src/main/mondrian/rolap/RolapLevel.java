@@ -509,7 +509,12 @@ public class RolapLevel extends LevelBase {
             if (column == null) {
                 // This hierarchy is not one which qualifies the starMeasure
                 // (this happens in virtual cubes). The starMeasure only has
-                // a value for the 'all' member of the hierarchy.
+                // a value for the 'all' member of the hierarchy (or for the
+                // default member if the hierarchy has no 'all' member)
+                if (member == hierarchy.getDefaultMember() &&
+                    !hierarchy.hasAll()) {
+                    return false;
+                }
                 return true;
             }
 

@@ -96,7 +96,59 @@ public class VirtualCubeTest extends FoodMartTestCase {
     public void testNonDefaultAllMember() {
         // Create a virtual cube with a non-conforming dimension (Warehouse)
         // that does not have ALL as its default member.
-        TestContext testContext = TestContext.create(
+        TestContext testContext = createContextWithNonDefaultAllMember();
+
+        testContext.assertQueryReturns(
+            "select {[Warehouse].defaultMember} on columns, " +
+            "{[Measures].[Warehouse Cost]} on rows from [Warehouse (Default USA)]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Warehouse].[USA]}\n" +
+                "Axis #2:\n" +
+                "{[Measures].[Warehouse Cost]}\n" +
+                "Row #0: 89,043.253\n"));
+
+        // There is a value for [USA] -- because it is the default member and
+        // the hierarchy has no all member -- but not for [USA].[CA].
+        testContext.assertQueryReturns(
+            "select {[Warehouse].defaultMember, [Warehouse].[USA].[CA]} on columns, " +
+                "{[Measures].[Warehouse Cost], [Measures].[Sales Count]} on rows " +
+                "from [Warehouse (Default USA) and Sales]",
+            fold(
+                "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Warehouse].[USA]}\n" +
+                    "{[Warehouse].[USA].[CA]}\n" +
+                    "Axis #2:\n" +
+                    "{[Measures].[Warehouse Cost]}\n" +
+                    "{[Measures].[Sales Count]}\n" +
+                    "Row #0: 89,043.253\n" +
+                    "Row #0: 25,789.086\n" +
+                    "Row #1: 86,837\n" +
+                    "Row #1: \n"));
+    }
+
+    public void testNonDefaultAllMember2() {
+        TestContext testContext = createContextWithNonDefaultAllMember();
+        testContext.assertQueryReturns(
+            "select { measures.[unit sales] } on 0 \n" +
+                "from [warehouse (Default USA) and Sales]",
+            fold(
+                "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Row #0: 266,773\n"));
+    }
+
+    /**
+     * Creates a TestContext containing a cube
+     * "Warehouse (Default USA) and Sales".
+     */
+    private TestContext createContextWithNonDefaultAllMember() {
+        return TestContext.create(
             null,
 
             // Warehouse cube where the default member in the Warehouse
@@ -139,31 +191,6 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n" +
                 "</VirtualCube>",
             null, null);
-
-        testContext.assertQueryReturns(
-            "select {[Warehouse].defaultMember} on columns, " +
-            "{[Measures].[Warehouse Cost]} on rows from [Warehouse (Default USA)]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Warehouse].[USA]}\n" +
-                "Axis #2:\n" +
-                "{[Measures].[Warehouse Cost]}\n" +
-                "Row #0: 89,043.253\n"));
-
-        testContext.assertQueryReturns(
-            "select {[Warehouse].defaultMember} on columns, " +
-            "{[Measures].[Warehouse Cost], [Measures].[Sales Count]} on rows " +
-            "from [Warehouse (Default USA) and Sales]",
-            fold("Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Warehouse].[USA]}\n" +
-                "Axis #2:\n" +
-                "{[Measures].[Warehouse Cost]}\n" +
-                "{[Measures].[Sales Count]}\n" +
-                "Row #0: 89,043.253\n" +
-                "Row #1: \n"));
     }
 
     public void testMemberVisibility() {

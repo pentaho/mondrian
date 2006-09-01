@@ -16,33 +16,30 @@ import java.util.List;
 import javax.sql.DataSource;
 
 /**
- * describes the public methods of {@link mondrian.rolap.SqlTupleReader}.
+ * Describes the public methods of {@link mondrian.rolap.SqlTupleReader}.
  * 
  * @author av
  * @since Nov 21, 2005
+ * @version $Id$
  */
-
 public interface TupleReader {
     /**
-     * provides the environment to create new members for a
+     * Factory to create new members for a
      * hierarchy from SQL result.
      *
      * @author av
      * @since Nov 11, 2005
      */
     public interface MemberBuilder {
-        /**
-         * returns the All member of the hierarchy or null if the hierarchy does not have one
-         */
-        RolapMember getAllMember();
 
         /**
-         * returns the <code>MemberCache</code> to look up members before creating them.
+         * Returns the <code>MemberCache</code> to look up members before
+         * creating them.
          */
         MemberCache getMemberCache();
 
         /**
-         * creates a new member (together with its properties)
+         * Creates a new member (together with its properties).
          * @see SqlMemberSource#makeMember(RolapMember, RolapLevel, Object, Object, boolean, ResultSet, Object, int)
          */
         RolapMember makeMember(RolapMember parentMember, RolapLevel childLevel,
@@ -51,7 +48,7 @@ public interface TupleReader {
     }
 
     /**
-     * adds a hierarchy to retrieve members from
+     * Adds a hierarchy to retrieve members from.
      * 
      * @param level level that the members correspond to
      * @param memberBuilder used to build new members for this level
@@ -63,8 +60,9 @@ public interface TupleReader {
         RolapMember[] srcMembers);
 
     /**
-     * performs the read
-     * @return a list of RolapMember, if a single level was read, a list of tuples (RolapMember[] instances) else.
+     * Performs the read.
+     * @return a list of RolapMember, if a single level was read, a list of 
+     *   tuples (RolapMember[] instances) otherwise.
      */
     List readTuples(
         Connection jdbcConnection, List partialResult, List newPartialResult);

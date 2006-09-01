@@ -71,11 +71,9 @@ public class SqlTupleReader implements TupleReader {
      */
     private class Target {
         final RolapLevel level;
-        final RolapMember allMember;
         final MemberCache cache;
 
         RolapLevel[] levels;
-        RolapHierarchy hierarchy;
         List list;
         int levelDepth;
         boolean parentChild;
@@ -93,15 +91,13 @@ public class SqlTupleReader implements TupleReader {
             RolapLevel level, MemberBuilder memberBuilder,
             RolapMember[] srcMembers) {
             this.level = level;
-            this.allMember = memberBuilder.getAllMember();
             this.cache = memberBuilder.getMemberCache();
             this.memberBuilder = memberBuilder;
             this.srcMembers = srcMembers;
         }
 
         public void open() {
-            hierarchy = (RolapHierarchy) level.getHierarchy();
-            levels = (RolapLevel[]) hierarchy.getLevels();
+            levels = (RolapLevel[]) level.getHierarchy().getLevels();
             list = new ArrayList();
             levelDepth = level.getDepth();
             parentChild = level.isParentChild();
@@ -135,7 +131,7 @@ public class SqlTupleReader implements TupleReader {
                 for (int i = 0; i <= levelDepth; i++) {
                     RolapLevel childLevel = levels[i];
                     if (childLevel.isAll()) {
-                        member = allMember;
+                        member = ((RolapHierarchy) level.getHierarchy()).getAllMember();
                         continue;
                     }
                     Object value = resultSet.getObject(++column);

@@ -79,17 +79,23 @@ class RolapHierarchy extends HierarchyBase {
      */
     private final RolapLevel nullLevel;
 
+    /**
+     * The 'all' member of this hierarchy. This exists even if the hierarchy
+     * does not officially have an 'all' member.
+     */
+    private RolapMember allMember;
+
     RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll) {
         super(dimension, subName, hasAll);
 
         this.levels = new RolapLevel[0];
         setCaption(dimension.getCaption());
 
+        this.allLevelName = "(All)";
+        this.allMemberName = "All " + name + "s";
         if (hasAll) {
-            this.allLevelName = "(All)";
             Util.discard(newLevel(this.allLevelName,
-                    RolapLevel.ALL | RolapLevel.UNIQUE));
-            this.allMemberName = "All " + name + "s";
+                RolapLevel.ALL | RolapLevel.UNIQUE));
         }
 
         // The null member belongs to a level with very similar properties to
@@ -125,20 +131,34 @@ class RolapHierarchy extends HierarchyBase {
                     (MondrianDef.InlineTable) xmlHierarchy.relation);
         }
         this.memberReaderClass = xmlHierarchy.memberReaderClass;
+
+        // Create an 'all' level even if the hierarchy does not officially
+        // have one.
+        if (xmlHierarchy.allMemberName != null) {
+            this.allMemberName = xmlHierarchy.allMemberName;
+        }
+        if (xmlHierarchy.allLevelName != null) {
+            this.allLevelName = xmlHierarchy.allLevelName;
+        }
+        RolapLevel allLevel = new RolapLevel(
+            this, 0, this.allLevelName, null, null, null, null, null, null,
+            null, RolapProperty.emptyArray,
+            RolapLevel.ALL | RolapLevel.UNIQUE,
+            RolapLevel.HideMemberCondition.Never,
+            LevelType.Regular);
+        this.allMember = new RolapMember(
+            null, allLevel, null, allMemberName, Member.ALL_MEMBER_TYPE);
+        // assign "all member" caption
+        if (xmlHierarchy.allMemberCaption != null &&
+            xmlHierarchy.allMemberCaption.length() > 0) {
+            this.allMember.setCaption(xmlHierarchy.allMemberCaption);
+        }
+        this.allMember.setOrdinal(0);
+
+        // If the hierarchy has an 'all' member, the 'all' level is level 0.
         if (hasAll) {
-            if (xmlHierarchy.allMemberName != null) {
-                this.allMemberName = xmlHierarchy.allMemberName;
-            }
-            if (xmlHierarchy.allLevelName != null) {
-                this.allLevelName = xmlHierarchy.allLevelName;
-            }
             this.levels = new RolapLevel[xmlHierarchy.levels.length + 1];
-            this.levels[0] = new RolapLevel(
-                    this, 0, this.allLevelName, null, null, null, null, null, null,
-                    null, RolapProperty.emptyArray,
-                    RolapLevel.ALL | RolapLevel.UNIQUE,
-                    RolapLevel.HideMemberCondition.Never,
-                    LevelType.Regular);
+            this.levels[0] = allLevel;
             for (int i = 0; i < xmlHierarchy.levels.length; i++) {
                 final MondrianDef.Level xmlLevel = xmlHierarchy.levels[i];
                 if (xmlLevel.getKeyExp() == null &&
@@ -166,7 +186,8 @@ class RolapHierarchy extends HierarchyBase {
         }
         if (xmlHierarchy.relation != null &&
                 xmlHierarchy.memberReaderClass != null) {
-            throw MondrianResource.instance().HierarchyMustNotHaveMoreThanOneSource.ex(getUniqueName());
+            throw MondrianResource.instance().
+                HierarchyMustNotHaveMoreThanOneSource.ex(getUniqueName());
         }
         this.primaryKey = xmlHierarchy.primaryKey;
         if (!Util.isEmpty(xmlHierarchy.caption)) {
@@ -361,6 +382,13 @@ class RolapHierarchy extends HierarchyBase {
             nullMember = new RolapNullMember(nullLevel);
         }
         return nullMember;
+    }
+
+    /**
+     * Returns the 'all' member.
+     */
+    public RolapMember getAllMember() {
+        return allMember;
     }
 
     public Member createMember(
@@ -590,6 +618,7 @@ class RolapHierarchy extends HierarchyBase {
         // Create a peer hierarchy.
         RolapHierarchy peerHier = peerDimension.newHierarchy(subName, true);
         peerHier.allMemberName = allMemberName;
+        peerHier.allMember = allMember;
         peerHier.allLevelName = allLevelName;
         peerHier.sharedHierarchyName = sharedHierarchyName;
         peerHier.primaryKey = primaryKey;

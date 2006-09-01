@@ -12,14 +12,11 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.Member;
 import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * <code>ArrayMemberSource</code> implements a flat, static hierarchy. There is
@@ -75,51 +72,5 @@ abstract class ArrayMemberSource implements MemberSource {
         }
     }
 }
-
-/*
-class HasBoughtDairySource extends ArrayMemberSource
-{
-    public HasBoughtDairySource(RolapHierarchy hierarchy, Properties properties)
-    {
-        super(hierarchy, new Thunk(hierarchy).getMembers());
-        Util.discard(properties);
-    }
-
-    ///
-     //Because Java won't allow us to call methods before constructing {@link
-     //HasBoughtDairyReader}'s base class.
-     ///
-    private static class Thunk
-    {
-        RolapHierarchy hierarchy;
-
-        Thunk(RolapHierarchy hierarchy)
-        {
-            this.hierarchy = hierarchy;
-        }
-        RolapMember[] getMembers()
-        {
-            String[] values = new String[] {"False", "True"};
-            List list = new ArrayList();
-            int ordinal = 0;
-            RolapMember root = null;
-            RolapLevel level = (RolapLevel) hierarchy.getLevels()[0];
-            if (hierarchy.hasAll()) {
-                root = new RolapMember(null, level, null,
-                        hierarchy.getAllMemberName(), Member.ALL_MEMBER_TYPE);
-                root.setOrdinal(ordinal++);
-                list.add(root);
-                level = (RolapLevel) hierarchy.getLevels()[1];
-            }
-            for (int i = 0; i < values.length; i++) {
-                RolapMember member = new RolapMember(root, level, values[i]);
-                member.setOrdinal(ordinal++);
-                list.add(member);
-            }
-            return (RolapMember[]) list.toArray(RolapUtil.emptyMemberArray);
-        }
-    }
-}
-*/
 
 // End ArrayMemberSource.java
