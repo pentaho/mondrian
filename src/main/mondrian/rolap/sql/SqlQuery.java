@@ -1017,7 +1017,7 @@ public class SqlQuery
          * <blockquote><code>SELECT * FROM
          *   (VALUES (1, 'a'), (2, 'b')) AS t(x, y)</code></blockquote>
          *
-	 * <p>If NULL values are present, we use a CAST to ensure that they
+         * <p>If NULL values are present, we use a CAST to ensure that they
          * have the same type as other columns:
          *
          * <blockquote><code>SELECT * FROM
@@ -1032,6 +1032,20 @@ public class SqlQuery
                 List columnTypes, List valueList) {
             final StringBuffer buf = new StringBuffer();
             buf.append("SELECT * FROM (VALUES ");
+            // Derby pads out strings to a common length, so we cast the
+            // string values to avoid this.  Determine the cast type for each
+            // column.
+            String[] castTypes = null;
+            if (isDerby()) {
+                castTypes = new String[columnNames.size()];
+                for (int i = 0; i < columnNames.size(); i++) {
+                    String columnType = (String) columnTypes.get(i);
+                    if (columnType.equals("String")) {
+                        castTypes[i] =
+                            guessSqlType(columnType, valueList, i);
+                    }
+                }              
+            }
             for (int i = 0; i < valueList.size(); i++) {
                 if (i > 0) {
                     buf.append(", ");
@@ -1045,16 +1059,17 @@ public class SqlQuery
                     }
                     final String columnType = (String) columnTypes.get(j);
                     if (value == null) {
-                        String sqlType = guessSqlType(columnType, valueList, j);
-                        if (sqlType == null) {
-                            throw Util.newError(
-                                    "Inline data set must contain at least " +
-                                    "one non-NULL sqlType for column '" +
-                                    columnNames.get(j) + "'");
-                        }
+                        String sqlType =
+                            guessSqlType(columnType, valueList, j);
                         buf.append("CAST(NULL AS ")
-                                .append(sqlType)
-                                .append(")");
+                            .append(sqlType)
+                            .append(")");
+                    } else if (isDerby() && castTypes[j] != null) {
+                        buf.append("CAST(")
+                            .append(quote(value, columnType))
+                            .append(" AS ")
+                            .append(castTypes[j])
+                            .append(")");
                     } else {
                         buf.append(quote(value, columnType));
                     }
