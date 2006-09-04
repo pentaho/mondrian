@@ -277,6 +277,7 @@ terminal
     AS,
     AXIS,
     CASE,
+    CAST,
     CELL,
     DIMENSION,
     ELSE,
@@ -786,6 +787,10 @@ value_expression_primary ::=
     |   identifier:i LPAREN exp_list_opt:lis RPAREN {:
             RESULT = new UnresolvedFunCall(
                 i, Syntax.Function, Parser.toExpArray(lis));
+        :}
+    |   CAST LPAREN expression:e AS identifier:t RPAREN {:
+            RESULT = new UnresolvedFunCall(
+                "CAST", Syntax.Cast, new Exp[] {e, Literal.createSymbol(t)});
         :}
     |   LPAREN exp_list:lis RPAREN {:
             // Whereas ([Sales],[Time]) and () are tuples, ([Sales]) and (5)

@@ -1571,6 +1571,15 @@ public class FunUtil extends Util {
         return true;
     }
 
+    static FunDef createDummyFunDef(
+        Resolver resolver,
+        int returnCategory,
+        Exp[] args)
+    {
+        final int[] argCategories = ExpBase.getTypes(args);
+        return new FunDefBase(resolver, returnCategory, argCategories) {};
+    }
+
     // Inner classes
 
 

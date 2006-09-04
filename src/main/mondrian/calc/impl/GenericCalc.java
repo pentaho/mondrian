@@ -11,7 +11,6 @@ package mondrian.calc.impl;
 
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
-import mondrian.calc.impl.AbstractCalc;
 import mondrian.calc.*;
 
 import java.util.List;
@@ -25,8 +24,9 @@ import java.util.List;
  */
 public abstract class GenericCalc
         extends AbstractCalc
-        implements ListCalc, StringCalc, IntegerCalc, DoubleCalc, VoidCalc,
-        MemberCalc, LevelCalc, HierarchyCalc, DimensionCalc {
+        implements ListCalc, StringCalc, IntegerCalc, DoubleCalc, BooleanCalc,
+            VoidCalc, MemberCalc, LevelCalc, HierarchyCalc, DimensionCalc
+{
 
     protected GenericCalc(Exp exp) {
         super(exp);
@@ -50,6 +50,10 @@ public abstract class GenericCalc
         return number == null ?
                 FunUtil.DoubleNull :
                 number.doubleValue();
+    }
+
+    public boolean evaluateBoolean(Evaluator evaluator) {
+        return ((Boolean) evaluate(evaluator)).booleanValue();
     }
 
     public void evaluateVoid(Evaluator evaluator) {

@@ -125,7 +125,7 @@ class CaseMatchFunDef extends FunDefBase {
                 return null;
             }
 
-            FunDef dummy = new FunDefBase(this, returnType, ExpBase.getTypes(args)) {};
+            FunDef dummy = createDummyFunDef(this, returnType, args);
             return new CaseMatchFunDef(dummy);
         }
 

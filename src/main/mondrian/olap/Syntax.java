@@ -193,6 +193,23 @@ public class Syntax extends EnumeratedValues.BasicValue {
     public static final Syntax Internal = new Syntax("Internal", 8);
 
     /**
+     * Syntax for a CAST expression <code>CAST(expression AS type)</code>.
+     */
+    public static final Syntax Cast = new Syntax("Cast", 9) {
+        public void unparse(String fun, Exp[] args, PrintWriter pw) {
+            pw.print("CAST(");
+            args[0].unparse(pw);
+            pw.print(" AS ");
+            args[1].unparse(pw);
+            pw.print(")");
+        }
+
+        public String getSignature(String name, int returnType, int[] argTypes) {
+            return "CAST(<Expression> AS <Type>)";
+        }
+    };
+
+    /**
      * Expression invoked <code>object&#46;&PROPERTY</code>
      * (a variant of {@link #Property}).
      */
@@ -221,7 +238,7 @@ public class Syntax extends EnumeratedValues.BasicValue {
             new Syntax[] {
                 Function, Property, Method, Infix,
                 Prefix, Braces, Parentheses, Case,
-                Internal});
+                Internal, Cast});
 
     /**
      * Converts a call to a function of this syntax into source code.

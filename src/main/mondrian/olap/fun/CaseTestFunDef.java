@@ -117,7 +117,7 @@ class CaseTestFunDef extends FunDefBase {
             if (mismatchingArgs != 0) {
                 return null;
             }
-            FunDef dummy = new FunDefBase(this, returnType, ExpBase.getTypes(args)) {};
+            FunDef dummy = createDummyFunDef(this, returnType, args);
             return new CaseTestFunDef(dummy);
         }
 

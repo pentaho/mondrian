@@ -335,6 +335,9 @@
     <text>Cycle occurred while evaluating parameter ''{0}''</text>
 </exception>
 
+<exception id="350410" name="CastInvalidType">
+    <text>Unknown type ''{0}''; values are NUMERIC, STRING, BOOLEAN</text>
+</exception>
 
 <!-- ====================================================================== -->
 <!-- Catalog errors -->

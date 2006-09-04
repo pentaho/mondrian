@@ -67,7 +67,7 @@ class SetItemFunDef extends FunDefBase {
                 throw Util.newError("Argument count does not match set's cardinality " + arity);
             }
             final int category = arity == 1 ? Category.Member : Category.Tuple;
-            FunDef dummy = new FunDefBase(this, category, ExpBase.getTypes(args)) {};
+            FunDef dummy = createDummyFunDef(this, category, args);
             return new SetItemFunDef(dummy);
         }
     };

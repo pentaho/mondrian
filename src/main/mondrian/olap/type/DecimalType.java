@@ -61,6 +61,12 @@ public class DecimalType extends NumericType {
     public int getScale() {
         return scale;
     }
+
+    public String toString() {
+        return precision == Integer.MAX_VALUE ?
+            "DECIMAL(" + scale + ")" :
+            "DECIMAL(" + precision + ", " + scale + ")";
+    }
 }
 
 // End DecimalType.java

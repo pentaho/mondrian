@@ -27,6 +27,9 @@ public class NumericType extends ScalarType {
     public NumericType() {
     }
 
+    public String toString() {
+        return "NUMERIC";
+    }
 }
 
 // End NumericType.java

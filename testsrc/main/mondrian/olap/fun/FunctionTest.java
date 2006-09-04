@@ -6521,6 +6521,50 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         Assert.assertEquals(member, null);
     }
 
+    public void testCast() {
+        // NOTE: Some of these tests fail with 'cannot convert ...', and they
+        // probably shouldn't. Feel free to fix the conversion.
+        // -- jhyde, 2006/9/3
+
+        // From integer
+        // To integer (trivial)
+        assertExprReturns("0 + Cast(1 + 2 AS Integer)", "3");
+        // To String
+        assertExprReturns("'' || Cast(1 + 2 AS String)", "3.0");
+        // To Boolean (not possible)
+        assertExprThrows("1=1 AND Cast(1 + 2 AS Boolean)",
+            "cannot convert value '3.0' to targetType 'BOOLEAN'");
+
+        // From boolean
+        // To String
+        assertExprReturns("'' || Cast(1 = 1 AND 1 = 2 AS String)", "false");
+        // To boolean (trivial)
+        assertExprReturns("1=1 AND Cast(1 = 1 AND 1 = 2 AS Boolean)", "false");
+
+        // From null
+        // To Integer
+        assertExprThrows("0 + Cast(NULL AS Integer)",
+            "cannot convert value 'null' to targetType 'DECIMAL(0)'");
+        // To Numeric
+        assertExprThrows("0 + Cast(NULL AS Numeric)",
+            "cannot convert value 'null' to targetType 'NUMERIC'");
+        // To String
+        assertExprReturns("'' || Cast(NULL AS String)", "null");
+        // To Boolean
+        assertExprThrows("1=1 AND Cast(NULL AS Boolean)",
+            "cannot convert value 'null' to targetType 'BOOLEAN'");
+
+        // Double is not allowed as a type
+        assertExprThrows("Cast(1 AS Double)",
+            "Unknown type 'Double'; values are NUMERIC, STRING, BOOLEAN");
+
+        // An integer constant is not allowed as a type
+        assertExprThrows("Cast(1 AS 5)",
+            "Syntax error at line 1, column 11, token '5.0'");
+
+        assertExprReturns("Cast('tr' || 'ue' AS boolean)", "true");
+    }
+
     /**
      * Tests {@link mondrian.olap.FunTable#getFunInfoList()}, but more
      * importantly, generates an HTML table of all implemented functions into

@@ -74,7 +74,7 @@ public class ParserTest extends TestCase {
     public void testScannerPunc() {
         // '$' is OK inside brackets but not outside
         Parser p = new TestParser();
-        assertParserReturns(
+        assertParseQuery(
                 "select [measures].[$foo] on columns from sales",
                 TestContext.fold(
                     "select [measures].[$foo] ON COLUMNS\n" +
@@ -128,7 +128,8 @@ public class ParserTest extends TestCase {
         String query = "select {[axis0mbr]} on axis(0), "
                 + "{[axis1mbr]} on axis(1) from cube";
 
-        assertNull("Test parser should return null query", p.parseInternal(null, query, false, funTable, false));
+        assertNull("Test parser should return null query",
+            p.parseInternal(null, query, false, funTable, false));
 
         QueryAxis[] axes = ((TestParser) p).getAxes();
 
@@ -140,6 +141,9 @@ public class ParserTest extends TestCase {
 
         query = "select {[axis1mbr]} on aXiS(1), "
                 + "{[axis0mbr]} on AxIs(0) from cube";
+
+        assertNull("Test parser should return null query",
+            p.parseInternal(null, query, false, funTable, false));
 
         assertEquals("Number of axes", 2, axes.length);
         assertEquals("Axis index name must be correct",
@@ -163,7 +167,7 @@ public class ParserTest extends TestCase {
     }
 
     public void testCaseTest() {
-        assertParserReturns(
+        assertParseQuery(
                 "with member [Measures].[Foo] as " +
                 " ' case when x = y then \"eq\" when x < y then \"lt\" else \"gt\" end '" +
                 "select {[foo]} on axis(0) from cube",
@@ -174,7 +178,7 @@ public class ParserTest extends TestCase {
     }
 
     public void testCaseSwitch() {
-        assertParserReturns(
+        assertParseQuery(
                 "with member [Measures].[Foo] as " +
                 " ' case x when 1 then 2 when 3 then 4 else 5 end '" +
                 "select {[foo]} on axis(0) from cube",
@@ -185,7 +189,7 @@ public class ParserTest extends TestCase {
     }
 
     public void testDimensionProperties() {
-        assertParserReturns(
+        assertParseQuery(
                 "select {[foo]} properties p1,   p2 on columns from [cube]",
                 TestContext.fold(
                     "select {[foo]} DIMENSION PROPERTIES [p1], [p2] ON COLUMNS\n" +
@@ -193,20 +197,24 @@ public class ParserTest extends TestCase {
     }
 
     public void testIsNull() {
-        assertParserReturns("with member [Measures].[Foo]\n" +
-            " as ' [Measures].[Unit Sales] IS NULL'\n" +
-            "select {[Measures].[Foo]} on columns from [Sales]",
-            TestContext.fold(
-                "with member [Measures].[Foo] as '([Measures].[Unit Sales] IS NULL)'\n" +
-                    "select {[Measures].[Foo]} ON COLUMNS\n" +
-                    "from [Sales]\n"));
+        assertParseExpr("[Measures].[Unit Sales] IS NULL",
+            "([Measures].[Unit Sales] IS NULL)");
+
+        assertParseExpr("[Measures].[Unit Sales] IS NULL AND 1 <> 2",
+            "(([Measures].[Unit Sales] IS NULL) AND (1.0 <> 2.0))");
     }
 
     public void testNull() {
-        assertParserReturns("select Filter({[Measures].[Foo]}, Iif(1 = 2, NULL, 'X')) on columns from [Sales]",
-            TestContext.fold(
-                "select Filter({[Measures].[Foo]}, Iif((1.0 = 2.0), NULL, \"X\")) ON COLUMNS\n" +
-                    "from [Sales]\n"));
+        assertParseExpr("Filter({[Measures].[Foo]}, Iif(1 = 2, NULL, 'X'))",
+            "Filter({[Measures].[Foo]}, Iif((1.0 = 2.0), NULL, \"X\"))");
+    }
+
+    public void testCast() {
+        assertParseExpr("Cast([Measures].[Unit Sales] AS Numeric)",
+            "CAST([Measures].[Unit Sales] AS Numeric)");
+
+        assertParseExpr("Cast(1 + 2 AS String)",
+            "CAST((1.0 + 2.0) AS String)");
     }
 
     /**
@@ -216,11 +224,29 @@ public class ParserTest extends TestCase {
      * @param mdx MDX query
      * @param expected Expected result of unparsing
      */
-    private void assertParserReturns(String mdx, final String expected) {
+    private void assertParseQuery(String mdx, final String expected) {
         Parser p = new TestParser();
         final Query query = p.parseInternal(null, mdx, false, funTable, false);
         assertNull("Test parser should return null query", query);
         final String actual = ((TestParser) p).toMdxString();
+        TestContext.assertEqualsVerbose(expected, actual);
+    }
+
+    /**
+     * Parses an MDX expression and asserts that the result is as expected when
+     * unparsed.
+     *
+     * @param expr MDX query
+     * @param expected Expected result of unparsing
+     */
+    private void assertParseExpr(String expr, final String expected) {
+        TestParser p = new TestParser();
+        final String mdx = "with member [Measures].[Foo] as " +
+            expr +
+            "\n select from [Sales]";
+        final Query query = p.parseInternal(null, mdx, false, funTable, false);
+        assertNull("Test parser should return null query", query);
+        final String actual = Util.unparse(p.formulas[0].getExpression());
         TestContext.assertEqualsVerbose(expected, actual);
     }
 
@@ -289,6 +315,9 @@ public class ParserTest extends TestCase {
             this.slicer = slicer;
         }
 
+        /**
+         * Converts this query to a string.
+         */
         public String toMdxString() {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new QueryPrintWriter(sw);
@@ -330,6 +359,15 @@ public class ParserTest extends TestCase {
             }
         }
 
+        /**
+         * Converts an expression to a string.
+         */
+        public String toMdxString(Exp exp) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new QueryPrintWriter(sw);
+            unparse(pw);
+            return sw.toString();
+        }
 
     }
 }

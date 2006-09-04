@@ -85,7 +85,7 @@ outer:
             }
             final String signature = signatures[j];
             int returnType = decodeReturnCategory(signature);
-            FunDef dummy = new FunDefBase(this, returnType, parameterTypes) {};
+            FunDef dummy = createDummyFunDef(this, returnType, args);
             return createFunDef(args, dummy);
         }
         return null;

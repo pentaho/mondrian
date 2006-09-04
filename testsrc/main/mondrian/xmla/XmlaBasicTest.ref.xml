@@ -3371,6 +3371,15 @@
                         <CAPTION>Caption</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>CAST</FUNCTION_NAME>
+                        <DESCRIPTION>Converts values to another type</DESCRIPTION>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>CAST</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Children</FUNCTION_NAME>
                         <DESCRIPTION>Returns the children of a member.</DESCRIPTION>
                         <PARAMETER_LIST>Member</PARAMETER_LIST>

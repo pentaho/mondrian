@@ -1925,6 +1925,8 @@ public class BuiltinFunTable extends FunTableImpl {
         define(NthQuartileFunDef.ThirdQResolver);
 
         define(CalculatedChildFunDef.instance);
+
+        define(CastFunDef.Resolver);
     }
 
     /**

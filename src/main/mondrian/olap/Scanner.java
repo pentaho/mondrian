@@ -227,6 +227,7 @@ public class Scanner {
 //      initResword(ParserSym.BACK_COLOR          ,"BACK_COLOR");
 //      initResword(ParserSym.BASC                ,"BASC");
 //      initResword(ParserSym.BDESC               ,"BDESC");
+        initResword(ParserSym.CAST                ,"CAST"); // mondrian extension
         initResword(ParserSym.CASE                ,"CASE");
         initResword(ParserSym.CELL                ,"CELL");
 //      initResword(ParserSym.CELL_ORDINAL        ,"CELL_ORDINAL");

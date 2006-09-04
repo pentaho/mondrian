@@ -76,46 +76,59 @@ class PropertiesFunDef extends FunDefBase {
         public FunDef resolve(
                 Exp[] args, Validator validator, int[] conversionCount) {
             final int[] argTypes = new int[]{Category.Member, Category.String};
+            final Exp propertyNameExp = args[1];
+            final Exp memberExp = args[0];
             if ((args.length != 2) ||
-                    (args[0].getCategory() != Category.Member) ||
-                    (args[1].getCategory() != Category.String)) {
+                    (memberExp.getCategory() != Category.Member) ||
+                    (propertyNameExp.getCategory() != Category.String)) {
                 return null;
             }
-            int returnType;
-            if (args[1] instanceof Literal) {
-                String propertyName = (String) ((Literal) args[1]).getValue();
-                Hierarchy hierarchy = args[0].getType().getHierarchy();
-                Level[] levels = hierarchy.getLevels();
-                Property property = lookupProperty(
-                        levels[levels.length - 1], propertyName);
-                if (property == null) {
-                    // we'll likely get a runtime error
-                    returnType = Category.Value;
-                } else {
-                    switch (property.getType()) {
-                    case Property.TYPE_BOOLEAN:
-                        returnType = Category.Logical;
-                        break;
-                    case Property.TYPE_NUMERIC:
-                        returnType = Category.Numeric;
-                        break;
-                    case Property.TYPE_STRING:
-                        returnType = Category.String;
-                        break;
-                    default:
-                        throw Util.newInternal("Unknown property type "
-                            + property.getType());
-                    }
-                }
-            } else {
-                returnType = Category.Value;
+            int returnType = deducePropertyCategory(memberExp, propertyNameExp);
+            return new PropertiesFunDef(
+                getName(), getSignature(), getDescription(),getSyntax(),
+                returnType, argTypes);
+        }
+
+        /**
+         * Deduces the category of a property. This is possible only if the
+         * name is a string literal, and the member's hierarchy is unambigous.
+         * If the type cannot be deduced, returns {@link Category#Value}.
+         *
+         * @param memberExp Expression for the member
+         * @param propertyNameExp Expression for the name of the property
+         * @return Category of the property
+         */
+        private int deducePropertyCategory(
+            Exp memberExp,
+            Exp propertyNameExp)
+        {
+            if (!(propertyNameExp instanceof Literal)) {
+                return Category.Value;
             }
-            return new PropertiesFunDef(getName(),
-                                        getSignature(),
-                                        getDescription(),
-                                        getSyntax(),
-                                        returnType,
-                                        argTypes);
+            String propertyName = (String) ((Literal) propertyNameExp).getValue();
+            Hierarchy hierarchy = memberExp.getType().getHierarchy();
+            if (hierarchy == null) {
+                return Category.Value;
+            }
+            Level[] levels = hierarchy.getLevels();
+            Property property = lookupProperty(
+                levels[levels.length - 1], propertyName);
+            if (property == null) {
+                // we'll likely get a runtime error
+                return Category.Value;
+            } else {
+                switch (property.getType()) {
+                case Property.TYPE_BOOLEAN:
+                    return Category.Logical;
+                case Property.TYPE_NUMERIC:
+                    return Category.Numeric;
+                case Property.TYPE_STRING:
+                    return Category.String;
+                default:
+                    throw Util.newInternal("Unknown property type "
+                        + property.getType());
+                }
+            }
         }
 
         public boolean requiresExpression(int k) {

@@ -17,6 +17,9 @@ package mondrian.olap.type;
  * @version $Id$
  */
 public class BooleanType extends ScalarType {
+    public String toString() {
+        return "BOOLEAN";
+    }
 }
 
 // End BooleanType.java
