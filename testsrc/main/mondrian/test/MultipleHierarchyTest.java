@@ -119,52 +119,45 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
      */
     public void testProperty() {
         TestContext testContext = TestContext.createSubstitutingCube("Sales",
-            "<Dimension name=\"NuStore\" foreignKey=\"store_id\"> \n" +
-                "<Hierarchy hasAll=\"true\" primaryKey=\"store_id\"> \n" +
-                "  <Table name=\"Store\"/> \n" +
-                "  <Level name=\"NuStore Country\" column=\"store_country\" uniqueMembers=\"true\"/> \n" +
-                "  <Level name=\"NuStore State\" column=\"store_state\" uniqueMembers=\"true\"/> \n" +
-                "  <Level name=\"NuStore City\" column=\"store_city\" uniqueMembers=\"false\"/> \n" +
-                "  <Level name=\"NuStore Name\" column=\"store_name\" uniqueMembers=\"true\"> \n" +
-                "    <Property name=\"NuStore Type\" column=\"store_type\"/> \n" +
-                "    <Property name=\"NuStore Manager\" column=\"store_manager\"/> \n" +
-                "    <Property name=\"NuStore Sqft\" column=\"store_sqft\" type=\"Numeric\"/> \n" +
-                "    <Property name=\"Grocery Sqft\" column=\"grocery_sqft\" type=\"Numeric\"/> \n" +
-                "    <Property name=\"Frozen Sqft\" column=\"frozen_sqft\" type=\"Numeric\"/> \n" +
-                "    <Property name=\"Meat Sqft\" column=\"meat_sqft\" type=\"Numeric\"/> \n" +
-                "    <Property name=\"Has coffee bar\" column=\"coffee_bar\" type=\"Boolean\"/> \n" +
-                "    <Property name=\"Street address\" column=\"store_street_address\" type=\"String\"/> \n" +
-                "  </Level> \n" +
-                "</Hierarchy> \n" +
-                "<Hierarchy caption=\"NuStore2\" name=\"NuStore2\" allMemberName=\"All NuStore2s\" hasAll=\"true\" primaryKey=\"NuStore_id\"> \n" +
-                "  <Table name=\"NuStore\"/> \n" +
-                "  <Level name=\"NuStore City\" column=\"store_city\" uniqueMembers=\"false\"/> \n" +
-                "<Level name=\"NuStore Name\" column=\"store_name\" \n" +
-                "uniqueMembers=\"true\"> \n" +
-                "<Property name=\"NuStore Type\" column=\"store_type\"/> \n" +
-                "<Property name=\"NuStore Manager\" column=\"store_manager\"/> \n" +
-                "<Property name=\"NuStore Sqft\" column=\"store_sqft\" \n" +
-                "type=\"Numeric\"/> \n" +
-                "<Property name=\"Grocery Sqft\" column=\"grocery_sqft\" \n" +
-                "type=\"Numeric\"/> \n" +
-                "<Property name=\"Frozen Sqft\" column=\"frozen_sqft\" \n" +
-                "type=\"Numeric\"/> \n" +
-                "<Property name=\"Meat Sqft\" column=\"meat_sqft\" \n" +
-                "type=\"Numeric\"/> \n" +
-                "<Property name=\"Has coffee bar\" column=\"coffee_bar\" \n" +
-                "type=\"Boolean\"/> \n" +
-                "<Property name=\"Street address\" \n" +
-                "column=\"store_street_address\" type=\"String\"/> \n" +
-                "</Level> \n" +
-                "</Hierarchy> \n" +
+            "<Dimension name=\"NuStore\" foreignKey=\"store_id\">\n" +
+                "<Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n" +
+                "  <Table name=\"store\"/>\n" +
+                "  <Level name=\"NuStore Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n" +
+                "  <Level name=\"NuStore State\" column=\"store_state\" uniqueMembers=\"true\"/>\n" +
+                "  <Level name=\"NuStore City\" column=\"store_city\" uniqueMembers=\"false\"/>\n" +
+                "  <Level name=\"NuStore Name\" column=\"store_name\" uniqueMembers=\"true\">\n" +
+                "    <Property name=\"NuStore Type\" column=\"store_type\"/>\n" +
+                "    <Property name=\"NuStore Manager\" column=\"store_manager\"/>\n" +
+                "    <Property name=\"NuStore Sqft\" column=\"store_sqft\" type=\"Numeric\"/>\n" +
+                "    <Property name=\"Grocery Sqft\" column=\"grocery_sqft\" type=\"Numeric\"/>\n" +
+                "    <Property name=\"Frozen Sqft\" column=\"frozen_sqft\" type=\"Numeric\"/>\n" +
+                "    <Property name=\"Meat Sqft\" column=\"meat_sqft\" type=\"Numeric\"/>\n" +
+                "    <Property name=\"Has coffee bar\" column=\"coffee_bar\" type=\"Boolean\"/>\n" +
+                "    <Property name=\"Street address\" column=\"store_street_address\" type=\"String\"/>\n" +
+                "  </Level>\n" +
+                "</Hierarchy>\n" +
+                "<Hierarchy caption=\"NuStore2\" name=\"NuStore2\" allMemberName=\"All NuStore2s\" hasAll=\"true\" primaryKey=\"NuStore_id\">\n" +
+                "  <Table name=\"store\"/>\n" +
+                "  <Level name=\"NuStore City\" column=\"store_city\" uniqueMembers=\"false\"/>\n" +
+                "  <Level name=\"NuStore Name\" column=\"store_name\"  uniqueMembers=\"true\">\n" +
+                "    <Property name=\"NuStore Type\" column=\"store_type\"/>\n" +
+                "    <Property name=\"NuStore Manager\" column=\"store_manager\"/>\n" +
+                "    <Property name=\"NuStore Sqft\" column=\"store_sqft\" type=\"Numeric\"/>\n" +
+                "    <Property name=\"Grocery Sqft\" column=\"grocery_sqft\" type=\"Numeric\"/>\n" +
+                "    <Property name=\"Frozen Sqft\" column=\"frozen_sqft\" type=\"Numeric\"/>\n" +
+                "    <Property name=\"Meat Sqft\" column=\"meat_sqft\" type=\"Numeric\"/>\n" +
+                "    <Property name=\"Has coffee bar\" column=\"coffee_bar\" type=\"Boolean\"/>\n" +
+                "    <Property name=\"Street address\" column=\"store_street_address\" type=\"String\"/>\n" +
+                "  </Level>\n" +
+                "</Hierarchy>\n" +
                 "</Dimension>");
         testContext.assertQueryReturns(
-            "with member [Measures].[Store level] as '[NuStore].CurrentMember.Level.Name' \n" +
-                "member [Measures].[Store type] as 'IIf(([NuStore].CurrentMember.Level.Name = \"NuStore Name\"), CAST([NuStore].CurrentMember.Properties(\"NuStore Type\") AS STRING), \"No type\")' \n" +
-                "member [Measures].[Store Sqft] as 'IIf(([NuStore].CurrentMember.Level.Name = \"NuStore Name\"), CAST([NuStore].CurrentMember.Properties(\"NuStore Sqft\") AS INTEGER), 0.0)' \n" +
-                "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales], [Measures].[Store level], [Measures].[Store type], [Measures].[Store Sqft]} ON COLUMNS, \n" +
-                "{[NuStore].[All NuStores], [NuStore].[All NuStores].[Canada], [NuStore].[All NuStores].[Canada].[BC], [NuStore].[All NuStores].[Canada].[BC].[Vancouver], [NuStore].[All NuStores].[Canada].[BC].[Vancouver].[Store 19], [NuStore].[All NuStores].[Canada].[BC].[Victoria], [NuStore].[All NuStores].[Mexico], [NuStore].[All NuStores].[USA]} ON ROWS \n" +
-                "from [Sales] \n" +
+            "with member [Measures].[Store level] as '[NuStore].CurrentMember.Level.Name'\n" +
+                "member [Measures].[Store type] as 'IIf(([NuStore].CurrentMember.Level.Name = \"NuStore Name\"), CAST([NuStore].CurrentMember.Properties(\"NuStore Type\") AS STRING), \"No type\")'\n" +
+                "member [Measures].[Store Sqft] as 'IIf(([NuStore].CurrentMember.Level.Name = \"NuStore Name\"), CAST([NuStore].CurrentMember.Properties(\"NuStore Sqft\") AS INTEGER), 0.0)'\n" +
+                "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales], [Measures].[Store level], [Measures].[Store type], [Measures].[Store Sqft]} ON COLUMNS,\n" +
+                "{[NuStore].[All NuStores], [NuStore].[All NuStores].[Canada], [NuStore].[All NuStores].[Canada].[BC], [NuStore].[All NuStores].[Canada].[BC].[Vancouver], [NuStore].[All NuStores].[Canada].[BC].[Vancouver].[Store 19], [NuStore].[All NuStores].[Canada].[BC].[Victoria], [NuStore].[All NuStores].[Mexico], [NuStore].[All NuStores].[USA]} ON ROWS\n" +
+                "from [Sales]\n" +
                 "where [Time].[1997] ",
             fold("Axis #0:\n" +
                 "{[Time].[1997]}\n" +
