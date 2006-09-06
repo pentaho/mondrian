@@ -63,10 +63,10 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
 
     public void testAll() {
         assertQueryReturns(
-                "select {[Measures].[Org Salary], [Measures].[Count]} on columns,\n" +
+            "select {[Measures].[Org Salary], [Measures].[Count]} on columns,\n" +
                 " {[Employees]} on rows\n" +
                 "from [HR]",
-                "Axis #0:\n" +
+            fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Org Salary]}\n" +
@@ -74,15 +74,15 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Axis #2:\n" +
                 "{[Employees].[All Employees]}\n" +
                 "Row #0: $39,431.67\n" +
-                "Row #0: 7,392\n");
+                "Row #0: 7,392\n"));
     }
 
     public void testChildrenOfAll() {
         assertQueryReturns(
-                "select {[Measures].[Org Salary], [Measures].[Count]} on columns,\n" +
+            "select {[Measures].[Org Salary], [Measures].[Count]} on columns,\n" +
                 " {[Employees].children} on rows\n" +
                 "from [HR]",
-                "Axis #0:\n" +
+            fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Org Salary]}\n" +
@@ -90,7 +90,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Axis #2:\n" +
                 "{[Employees].[All Employees].[Sheri Nowmer]}\n" +
                 "Row #0: $39,431.67\n" +
-                "Row #0: 7,392\n");
+                "Row #0: 7,392\n"));
     }
 
     // bug 1063369: DISTINCT COUNT applied to a parent/child hierarchy fails:
@@ -98,11 +98,11 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      public void testDistinctAll() {
         // parent/child dimension not expanded, and the query works
         assertQueryReturns(
-                "select {[Measures].[Count], [Measures].[Org Salary], \n" +
+            "select {[Measures].[Count], [Measures].[Org Salary], \n" +
                 "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns,\n" +
                 "{[Employees]} on rows\n" +
                 "from [HR]",
-                "Axis #0:\n" +
+            fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Count]}\n" +
@@ -114,7 +114,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Row #0: 7,392\n" +
                 "Row #0: $39,431.67\n" +
                 "Row #0: 616\n" +
-                "Row #0: $64.01\n");
+                "Row #0: $64.01\n"));
     }
 
     public void testDistinctChildrenOfAll() {
@@ -123,33 +123,33 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         // mondrian.rolap.RolapAggregator$6.aggregate(RolapAggregator.java:72)
         assertQueryReturns(
             "select {[Measures].[Count], [Measures].[Org Salary], \n" +
-            "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns,\n" +
-            "{[Employees].children} on rows\n" +
-            "from [HR]",
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Measures].[Count]}\n" +
-            "{[Measures].[Org Salary]}\n" +
-            "{[Measures].[Number of Employees]}\n" +
-            "{[Measures].[Avg Salary]}\n" +
-            "Axis #2:\n" +
-            "{[Employees].[All Employees].[Sheri Nowmer]}\n" +
-            "Row #0: 7,392\n" +
-            "Row #0: $39,431.67\n" +
-            "Row #0: 616\n" +
-            "Row #0: $64.01\n");
+                "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns,\n" +
+                "{[Employees].children} on rows\n" +
+                "from [HR]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Count]}\n" +
+                "{[Measures].[Org Salary]}\n" +
+                "{[Measures].[Number of Employees]}\n" +
+                "{[Measures].[Avg Salary]}\n" +
+                "Axis #2:\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer]}\n" +
+                "Row #0: 7,392\n" +
+                "Row #0: $39,431.67\n" +
+                "Row #0: 616\n" +
+                "Row #0: $64.01\n"));
     }
 
     // same two tests, but on a subtree
     public void testDistinctSubtree() {
         // also fails with UnsupportedOperationException
         assertQueryReturns(
-                "select {[Measures].[Count], [Measures].[Org Salary], \n" +
+            "select {[Measures].[Count], [Measures].[Org Salary], \n" +
                 "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns,\n" +
                 "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]} on rows\n" +
                 "from [HR]",
-                "Axis #0:\n" +
+            fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Count]}\n" +
@@ -161,7 +161,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Row #0: 24\n" +
                 "Row #0: $234.36\n" +
                 "Row #0: 2\n" +
-                "Row #0: $117.18\n");
+                "Row #0: $117.18\n"));
     }
 
 
@@ -171,11 +171,11 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      */
     public void testDistinctAllExplicitClosure() {
         getEmpClosureTestContext().assertQueryReturns(
-                "select {[Measures].[Count], [Measures].[Org Salary], \n" +
+            "select {[Measures].[Count], [Measures].[Org Salary], \n" +
                 "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns,\n" +
                 "{[EmployeesClosure]} on rows\n" +
                 "from [HR]",
-                "Axis #0:\n" +
+            fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Count]}\n" +
@@ -187,7 +187,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Row #0: 7,392\n" +
                 "Row #0: $39,431.67\n" +
                 "Row #0: 616\n" +
-                "Row #0: $64.01\n");
+                "Row #0: $64.01\n"));
     }
 
     public void testDistinctChildrenOfAllExplicitClosure() {
@@ -197,7 +197,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns,\n" +
                 "{[EmployeesClosure].FirstChild} on rows\n" +
                 "from [HR]",
-                "Axis #0:\n" +
+                fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Count]}\n" +
@@ -209,16 +209,16 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Row #0: 7,392\n" +
                 "Row #0: $39,431.67\n" +
                 "Row #0: 616\n" +
-                "Row #0: $64.01\n");
+                "Row #0: $64.01\n"));
     }
 
     public void testDistinctSubtreeExplicitClosure() {
         getEmpClosureTestContext().assertQueryReturns(
-                "select {[Measures].[Count], [Measures].[Org Salary], \n" +
+            "select {[Measures].[Count], [Measures].[Org Salary], \n" +
                 "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns,\n" +
                 "{[EmployeesClosure].[All Employees].[7]} on rows\n" +
                 "from [HR]",
-                "Axis #0:\n" +
+            fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Count]}\n" +
@@ -230,7 +230,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Row #0: 24\n" +
                 "Row #0: $234.36\n" +
                 "Row #0: 2\n" +
-                "Row #0: $117.18\n");
+                "Row #0: $117.18\n"));
     }
 
 
@@ -238,10 +238,10 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     public void testLeaf() {
         // Juanita Sharp has no reports
         assertQueryReturns(
-                "select {[Measures].[Org Salary], [Measures].[Count]} on columns,\n" +
+            "select {[Measures].[Org Salary], [Measures].[Count]} on columns,\n" +
                 " {[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]} on rows\n" +
                 "from [HR]",
-                "Axis #0:\n" +
+            fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Org Salary]}\n" +
@@ -249,16 +249,16 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Axis #2:\n" +
                 "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]}\n" +
                 "Row #0: $72.36\n" +
-                "Row #0: 12\n");
+                "Row #0: 12\n"));
     }
 
     public void testOneAboveLeaf() {
         // Rebecca Kanagaki has 2 direct reports, and they have no reports
         assertQueryReturns(
-                "select {[Measures].[Org Salary], [Measures].[Count]} on columns,\n" +
+            "select {[Measures].[Org Salary], [Measures].[Count]} on columns,\n" +
                 " {[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]} on rows\n" +
                 "from [HR]",
-                "Axis #0:\n" +
+            fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Org Salary]}\n" +
@@ -266,7 +266,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Axis #2:\n" +
                 "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]}\n" +
                 "Row #0: $234.36\n" +
-                "Row #0: 24\n");
+                "Row #0: 24\n"));
     }
 
     /**
@@ -370,16 +370,16 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         // On the regular HR cube, this has always worked.
         assertQueryReturns(
             "SELECT {[Employees].[All Employees].Children} on columns,\n" +
-            " {[Measures].[Org Salary]} on rows\n" +
-            "FROM [HR]",
+                " {[Measures].[Org Salary]} on rows\n" +
+                "FROM [HR]",
 
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Employees].[All Employees].[Sheri Nowmer]}\n" +
-            "Axis #2:\n" +
-            "{[Measures].[Org Salary]}\n" +
-            "Row #0: $39,431.67\n");
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer]}\n" +
+                "Axis #2:\n" +
+                "{[Measures].[Org Salary]}\n" +
+                "Row #0: $39,431.67\n"));
 
         TestContext testContext = TestContext.create(
             null,
@@ -411,15 +411,15 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         // On a cube with fewer dimensions, this gave a false failure.
         testContext.assertQueryReturns(
             "SELECT {[Employees].[All Employees].Children} on columns,\n" +
-            " {[Measures].[Org Salary]} on rows\n" +
-            "FROM [HR-fewer-dims]",
-            "Axis #0:\n" +
-            "{}\n" +
-            "Axis #1:\n" +
-            "{[Employees].[All Employees].[Sheri Nowmer]}\n" +
-            "Axis #2:\n" +
-            "{[Measures].[Org Salary]}\n" +
-            "Row #0: $271,552.44\n");
+                " {[Measures].[Org Salary]} on rows\n" +
+                "FROM [HR-fewer-dims]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Employees].[All Employees].[Sheri Nowmer]}\n" +
+                "Axis #2:\n" +
+                "{[Measures].[Org Salary]}\n" +
+                "Row #0: $271,552.44\n"));
     }
 
     public void testGenuineCycle() {
