@@ -1002,7 +1002,7 @@ public class XmlaHandler implements XmlaConstants {
             Enumeration.Format format = Enumeration.Format.getValue(formatName);
 
             if (format == Enumeration.Format.Multidimensional) {
-                return new MDDataSet_Multidimensional(result, connection);
+                return new MDDataSet_Multidimensional(result);
             } else {
                 return new MDDataSet_Tabular(result);
             }
@@ -1082,11 +1082,9 @@ public class XmlaHandler implements XmlaConstants {
 
     static class MDDataSet_Multidimensional extends MDDataSet {
         private Hierarchy[] slicerAxisHierarchies;
-        private Connection connection;
 
-        protected MDDataSet_Multidimensional(Result result, Connection connection) {
+        protected MDDataSet_Multidimensional(Result result) {
             super(result);
-            this.connection = connection;
         }
 
         public void unparse(SaxWriter writer) throws SAXException {
@@ -1573,11 +1571,10 @@ public class XmlaHandler implements XmlaConstants {
         private final boolean empty;
         private final int[] pos;
         private final int axisCount;
-        private final Level[] levels;
         private int cellOrdinal;
 
         private static final Id[] MemberCaptionIdArray = {
-            new Id(Property.MEMBER_CAPTION.name, false)
+            new Id(new Id.Segment(Property.MEMBER_CAPTION.name, Id.Quoting.QUOTED))
         };
         private final Member[] members;
         private final ColumnHandler[] columnHandlers;
@@ -1604,9 +1601,7 @@ public class XmlaHandler implements XmlaConstants {
             this.empty = empty;
 
             // Build a list of the lowest level used on each non-COLUMNS axis.
-            this.levels = new Level[dimensionCount];
-            List levelPropList = new ArrayList(); // todo: remove
-            List encodedLevelPropList = new ArrayList(); // todo: remove
+            Level[] levels = new Level[dimensionCount];
             List columnHandlerList = new ArrayList();
             int memberOrdinal = 0;
             if (!empty) {
@@ -1646,13 +1641,6 @@ public class XmlaHandler implements XmlaConstants {
                             }
                             for (int m = 0; m < dimProps.length; m++) {
                                 Id dimProp = dimProps[m];
-                                String prop =
-                                        level.getUniqueName() + "." +
-                                        dimProp.toString();
-                                levelPropList.add(prop);
-                                String encodedProp = XmlaUtil.encodeElementName(prop);
-                                encodedLevelPropList.add(encodedProp);
-
                                 columnHandlerList.add(
                                         new MemberColumnHandler(
                                                 dimProp.toStringArray()[0],
@@ -1779,8 +1767,7 @@ public class XmlaHandler implements XmlaConstants {
                     // Populate headers and values with levels.
                     int ho = headerOrdinal;
                     for (int j = 0; j < position.members.length; j++) {
-                        Member member = position.members[j];
-                        members[ho++] = member;
+                        members[ho++] = position.members[j];
                     }
 
                     recurse(writer, axis - 1, ho);

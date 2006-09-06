@@ -361,11 +361,12 @@ non terminal Id
 non terminal String
     axis_name,
     comp_op,
+    keyword;
+non terminal Id.Segment
     identifier,
     quoted_identifier,
     unquoted_identifier,
-    amp_quoted_identifier,
-    keyword;
+    amp_quoted_identifier;
 non terminal Formula
     member_specification,
     set_specification,
@@ -418,18 +419,25 @@ start with statement;
 // <identifier> ::= <regular_identifier> | <delimited_identifier>
 
 quoted_identifier ::=
-        QUOTED_ID
+        QUOTED_ID:i  {:
+            RESULT = new Id.Segment(i, Id.Quoting.QUOTED);
+        :}
     ;
 
 amp_quoted_identifier ::=
-        AMP_QUOTED_ID
+        AMP_QUOTED_ID:i {:
+            RESULT = new Id.Segment(i, Id.Quoting.KEY);
+        :}
     ;
 
 unquoted_identifier ::=
-        ID
-    |   keyword
+        ID:i {:
+            RESULT = new Id.Segment(i, Id.Quoting.UNQUOTED);
+        :}
+    |   keyword:i {:
+            RESULT = new Id.Segment(i, Id.Quoting.UNQUOTED);
+        :}
     ;
-
 
 identifier ::=
         unquoted_identifier
@@ -452,7 +460,7 @@ compound_id ::=
             RESULT = new Id(i);
         :}
     |   compound_id:hd DOT identifier:tl {:
-            RESULT = hd.append(tl, false);
+            RESULT = hd.append(tl);
         :}
 
     ;
@@ -758,39 +766,40 @@ value_expression_primary ::=
             RESULT = new Id(i);
         :}
     |   value_expression_primary:i DOT unquoted_identifier:j {:
-            if (i instanceof Id && !parser.isFunCall(j)) {
-                RESULT = ((Id) i).append(j, false);
+            if (i instanceof Id && !parser.isFunCall(j.name)) {
+                RESULT = ((Id) i).append(j);
             } else {
-                RESULT = new UnresolvedFunCall(j, Syntax.Property, new Exp[] {i});
+                RESULT = new UnresolvedFunCall(j.name, Syntax.Property, new Exp[] {i});
             }
         :}
     |   value_expression_primary:i DOT quoted_identifier:j {:
             if (i instanceof Id) {
-                RESULT = ((Id) i).append(j, false);
+                RESULT = ((Id) i).append(j);
             } else {
                 RESULT = new UnresolvedFunCall(
-                    j, Syntax.QuotedProperty, new Exp[] {i});
+                    j.name, Syntax.QuotedProperty, new Exp[] {i});
             }
         :}
     |   value_expression_primary:i DOT amp_quoted_identifier:j {:
             if (i instanceof Id) {
-                RESULT = ((Id) i).append(j, true);
+                RESULT = ((Id) i).append(j);
             } else {
                 RESULT = new UnresolvedFunCall(
-                    j, Syntax.AmpersandQuotedProperty, new Exp[] {i});
+                    j.name, Syntax.AmpersandQuotedProperty, new Exp[] {i});
             }
         :}
     |   value_expression_primary:i DOT identifier:j LPAREN exp_list_opt:lis RPAREN {:
             lis.add(0, i);
-            RESULT = new UnresolvedFunCall(j, Syntax.Method, Parser.toExpArray(lis));
+            RESULT = new UnresolvedFunCall(
+                j.name, Syntax.Method, Parser.toExpArray(lis));
         :}
     |   identifier:i LPAREN exp_list_opt:lis RPAREN {:
             RESULT = new UnresolvedFunCall(
-                i, Syntax.Function, Parser.toExpArray(lis));
+                i.name, Syntax.Function, Parser.toExpArray(lis));
         :}
     |   CAST LPAREN expression:e AS identifier:t RPAREN {:
             RESULT = new UnresolvedFunCall(
-                "CAST", Syntax.Cast, new Exp[] {e, Literal.createSymbol(t)});
+                "CAST", Syntax.Cast, new Exp[] {e, Literal.createSymbol(t.name)});
         :}
     |   LPAREN exp_list:lis RPAREN {:
             // Whereas ([Sales],[Time]) and () are tuples, ([Sales]) and (5)
@@ -1323,7 +1332,7 @@ member_name ::= compound_id;
 // <member_property_definition> ::= <identifier> = <value_expression>
 member_property_definition ::=
         identifier:id EQ value_expression:e {:
-            RESULT = new MemberProperty(id, e);
+            RESULT = new MemberProperty(id.name, e);
         :}
     ;
 //
@@ -1392,7 +1401,10 @@ dim_props_opt ::=
 //               | CHAPTERS
 //               | SECTIONS
 //               | AXIS(<index>)
-axis_name ::= identifier;
+axis_name ::=
+        identifier:i {: RESULT = i.name; :}
+    ;
+
 axis_number ::=
         NUMBER
     |   AXIS LPAREN NUMBER:n RPAREN {: RESULT = n; :}

@@ -478,30 +478,6 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
     </Hierarchy>
   </Dimension>
 
-  <!-- Explicit Closure of [Employees] (just for unit testing):
-    == [Employees] is a parent/child hierarchy (along the relationship
-    == supervisor_id/employee_id). The table employee_closure expresses the
-    == closure of the parent/child relation, ie it represents
-    == ancestor/descendant, having a row for each ancestor/descendant pair.
-    ==
-    == The closed hierarchy has two levels: the detail level (here named
-    == [Employee]) is equivalent to the base hierarchy; the [Closure] level
-    == relates each descendant to all its ancestors.
-  <Dimension name="EmployeesClosure" foreignKey="employee_id">
-      <Hierarchy hasAll="true" allMemberName="All Employees"
-          primaryKey="employee_id" primaryKeyTable="employee_closure">
-        <Join leftKey="supervisor_id" rightKey="employee_id">
-          <Table name="employee_closure"/>
-          <Table name="employee"/>
-        </Join>
-        <Level name="Closure"  type="Numeric" uniqueMembers="false"
-            table="employee_closure" column="supervisor_id"/>
-        <Level name="Employee" type="Numeric" uniqueMembers="true"
-            table="employee_closure" column="employee_id"/>
-      </Hierarchy>
-  </Dimension>
-    -->
-
   <Measure name="Org Salary" column="salary_paid" aggregator="sum"
       formatString="Currency"/>
   <Measure name="Count" column="employee_id" aggregator="count"

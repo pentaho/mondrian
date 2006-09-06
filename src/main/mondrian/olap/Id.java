@@ -16,6 +16,9 @@ import mondrian.olap.type.Type;
 import mondrian.mdx.MdxVisitor;
 
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Multi-part identifier.
@@ -24,27 +27,19 @@ public class Id
     extends ExpBase
     implements Cloneable {
 
-    private final String[] names;
-    private final boolean[] keys;
+    private final List segments;
 
     /**
      * Creates an identifier containing a single part.
      *
-     * @param name Name
-     * @param key Whether the part represents a key value
+     * @param segment Segment, consisting of a name and quoting style
      */
-    public Id(String name, boolean key) {
-        names = new String[] {name};
-        keys = new boolean[] {key};
+    public Id(Segment segment) {
+        segments = Collections.singletonList(segment);
     }
 
-    Id(String s) {
-        this(s, false);
-    }
-
-    private Id(String[] names, boolean[] keys) {
-        this.names = names;
-        this.keys = keys;
+    private Id(List segments) {
+        this.segments = segments;
     }
 
     public Object clone() {
@@ -66,34 +61,39 @@ public class Id
     }
 
     public String[] toStringArray() {
-        return (String[]) names.clone();
+        String[] names = new String[segments.size()];
+        for (int i = 0; i < segments.size(); i++) {
+            names[i] = ((Segment) segments.get(i)).name;
+        }
+        return names;
     }
 
     public String getElement(int i) {
-        return names[i];
+        return ((Segment) segments.get(i)).name;
     }
 
-    public Id append(String s, boolean key) {
-        String[] newNames = new String[names.length + 1];
-        boolean[] newKeys = new boolean[keys.length + 1];
-        System.arraycopy(names, 0, newNames, 0, names.length);
-        System.arraycopy(keys, 0, newKeys, 0, keys.length);
-        newNames[newNames.length - 1] = s;
-        newKeys[newKeys.length - 1] = key;
-        return new Id(newNames, newKeys);
-    }
-
-    public void append(String s) {
-        append(s, false);
+    /**
+     * Returns a new Identifier consisting of this one with another segment
+     * appended. Does not modify this Identifier.
+     *
+     * @param segment Name of segment
+     * @return New identifier
+     */
+    public Id append(Segment segment) {
+        List newSegments = new ArrayList(segments);
+        newSegments.add(segment);
+        return new Id(newSegments);
     }
 
     public Exp accept(Validator validator) {
-        if (names.length == 1) {
-            final String s = names[0];
-            if (validator.getFunTable().isReserved(s)) {
-                return Literal.createSymbol(s.toUpperCase());
+        if (segments.size() == 1) {
+            final Segment s = (Segment) segments.get(0);
+            if (s.quoting == Quoting.UNQUOTED &&
+                validator.getFunTable().isReserved(s.name)) {
+                return Literal.createSymbol(s.name.toUpperCase());
             }
         }
+        final String[] names = toStringArray();
         final Exp element = Util.lookup(validator.getQuery(), names, true);
         if (element == null) {
             return null;
@@ -106,19 +106,72 @@ public class Id
     }
 
     public void unparse(PrintWriter pw) {
-        for (int i = 0; i < names.length; i++) {
-            String s = names[i];
+        for (int i = 0; i < segments.size(); i++) {
+            Segment s = (Segment) segments.get(i);
             if (i > 0) {
                 pw.print(".");
             }
-            if (keys[i]) {
-                pw.print("&[" + Util.mdxEncodeString(s) + "]");
-            } else {
-                pw.print("[" + Util.mdxEncodeString(s) + "]");
+            switch (s.quoting.ordinal) {
+            case Quoting.UNQUOTED_ORDINAL:
+                pw.print(s.name);
+                break;
+            case Quoting.KEY_ORDINAL:
+                pw.print("&[" + Util.mdxEncodeString(s.name) + "]");
+                break;
+            case Quoting.QUOTED_ORDINAL:
+                pw.print("[" + Util.mdxEncodeString(s.name) + "]");
+                break;
             }
         }
     }
 
+    /**
+     * Component in a compound identifier. It is described by its name and how
+     * the name is quoted.
+     *
+     * <p>For example, the identifier
+     * <code>[Store].USA.[New Mexico].&[45]</code> has four segments:<ul>
+     * <li>"Store", {@link mondrian.olap.Id.Quoting#QUOTED}</li>
+     * <li>"USA", {@link mondrian.olap.Id.Quoting#UNQUOTED}</li>
+     * <li>"New Mexico", {@link mondrian.olap.Id.Quoting#QUOTED}</li>
+     * <li>"45", {@link mondrian.olap.Id.Quoting#KEY}</li>
+     * </ul>
+     */
+    public static class Segment {
+        public final String name;
+        public final Quoting quoting;
+
+        public Segment(String name, Quoting quoting) {
+            this.name = name;
+            this.quoting = quoting;
+        }
+    }
+
+    public static class Quoting extends EnumeratedValues.BasicValue {
+
+        public static final int UNQUOTED_ORDINAL = 0;
+        /**
+         * Unquoted identifier, for example "Measures".
+         */
+        public static final Quoting UNQUOTED = new Quoting("UNQUOTED", UNQUOTED_ORDINAL);
+
+        public static final int QUOTED_ORDINAL = 1;
+        /**
+         * Quoted identifier, for example "[Measures]".
+         */
+        public static final Quoting QUOTED = new Quoting("QUOTED", QUOTED_ORDINAL);
+
+        public static final int KEY_ORDINAL = 2;
+        /**
+         * Identifier quoted with an ampersand to indicate a key value, for example
+         * the second segment in "[Employees].&[89]".
+         */
+        public static final Quoting KEY = new Quoting("KEY", KEY_ORDINAL);
+
+        private Quoting(String name, int ordinal) {
+            super(name, ordinal, null);
+        }
+    }
 }
 
 // End Id.java

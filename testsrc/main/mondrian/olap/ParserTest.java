@@ -172,7 +172,7 @@ public class ParserTest extends TestCase {
                 " ' case when x = y then \"eq\" when x < y then \"lt\" else \"gt\" end '" +
                 "select {[foo]} on axis(0) from cube",
                 TestContext.fold(
-                    "with member [Measures].[Foo] as 'CASE WHEN ([x] = [y]) THEN \"eq\" WHEN ([x] < [y]) THEN \"lt\" ELSE \"gt\" END'\n" +
+                    "with member [Measures].[Foo] as 'CASE WHEN (x = y) THEN \"eq\" WHEN (x < y) THEN \"lt\" ELSE \"gt\" END'\n" +
                     "select {[foo]} ON COLUMNS\n" +
                     "from [cube]\n"));
     }
@@ -183,7 +183,7 @@ public class ParserTest extends TestCase {
                 " ' case x when 1 then 2 when 3 then 4 else 5 end '" +
                 "select {[foo]} on axis(0) from cube",
                 TestContext.fold(
-                    "with member [Measures].[Foo] as 'CASE [x] WHEN 1.0 THEN 2.0 WHEN 3.0 THEN 4.0 ELSE 5.0 END'\n" +
+                    "with member [Measures].[Foo] as 'CASE x WHEN 1.0 THEN 2.0 WHEN 3.0 THEN 4.0 ELSE 5.0 END'\n" +
                     "select {[foo]} ON COLUMNS\n" +
                     "from [cube]\n"));
     }
@@ -192,7 +192,7 @@ public class ParserTest extends TestCase {
         assertParseQuery(
                 "select {[foo]} properties p1,   p2 on columns from [cube]",
                 TestContext.fold(
-                    "select {[foo]} DIMENSION PROPERTIES [p1], [p2] ON COLUMNS\n" +
+                    "select {[foo]} DIMENSION PROPERTIES p1, p2 ON COLUMNS\n" +
                     "from [cube]\n"));
     }
 
@@ -215,6 +215,13 @@ public class ParserTest extends TestCase {
 
         assertParseExpr("Cast(1 + 2 AS String)",
             "CAST((1.0 + 2.0) AS String)");
+    }
+
+    public void testId() {
+        assertParseExpr("foo", "foo");
+        assertParseExpr("fOo", "fOo");
+        assertParseExpr("[Foo].[Bar Baz]", "[Foo].[Bar Baz]");
+        assertParseExpr("[Foo].&[Bar]", "[Foo].&[Bar]");
     }
 
     /**
