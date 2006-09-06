@@ -134,13 +134,23 @@ public class DiffRepository
      */
     private static final Map mapClassToRepos = new HashMap();
 
+    /**
+     * Directories to look for log file in.
+     */
+    private final String[] prefixes;
 
-    private static File findFile(Class clazz, final String suffix)
+    /**
+     * Default prefix directories.
+     */
+    public static final String[] DefaultPrefixes = {"testsrc", "main"};
+
+    private static File findFile(
+        Class clazz, String[] prefixes, final String suffix)
     {
         // The reference file for class "com.foo.Bar" is "com/foo/Bar.ref.xml"
         String rest =
             clazz.getName().replace('.', File.separatorChar) + suffix;
-        File fileBase = getFileBase(clazz);
+        File fileBase = getFileBase(clazz, prefixes);
         return new File(fileBase, rest);
     }
 
@@ -151,13 +161,17 @@ public class DiffRepository
      * If the current directory is "/home/jhyde/open/mondrian/intellij",
      * returns "/home/jhyde/open/mondrian/testsrc".
      */
-    private static File getFileBase(Class clazz)
+    private static File getFileBase(Class clazz, String[] prefixes)
     {
         String javaFileName =
             clazz.getName().replace('.', File.separatorChar) + ".java";
         File file = new File(System.getProperty("user.dir"));
         while (true) {
-            File file2 = new File(new File(file, "testsrc"), "main");
+            File file2 = file;
+            for (int i = 0; i < prefixes.length; i++) {
+                String prefix = prefixes[i];
+                file2 = new File(file2, prefix);
+            }
             if (file2.isDirectory() &&
                 new File(file2, javaFileName).exists()) {
                 return file2;
@@ -170,8 +184,13 @@ public class DiffRepository
         }
     }
 
-    public DiffRepository(File refFile, File logFile, DiffRepository baseRepos)
+    public DiffRepository(
+        File refFile, File logFile, DiffRepository baseRepos,
+        String[] prefixes)
     {
+        this.prefixes =
+            prefixes == null ? new String[] {"testsrc", "main"} :
+                prefixes;
         this.baseRepos = baseRepos;
         if (refFile == null) {
             throw new IllegalArgumentException("url must not be null");
@@ -604,9 +623,15 @@ public class DiffRepository
         return true;
     }
 
+    /**
+     * Finds the repository instance for a given class, using the default
+     * prefixes, and with no parent repository.
+     *
+     * @see #lookup(Class, DiffRepository, String[])
+     */
     public static DiffRepository lookup(Class clazz)
     {
-        return lookup(clazz, null);
+        return lookup(clazz, null, null);
     }
 
     /**
@@ -626,15 +651,21 @@ public class DiffRepository
      *
      * @param clazz Testcase class
      * @param baseRepos Base class of test class
+     * @param prefixes Array of directory names to look in; if null, the
+     *   default {"testsrc", "main"} is used
      * @return The diff repository shared between testcases in this class.
      */
-    public static DiffRepository lookup(Class clazz, DiffRepository baseRepos)
+    public static DiffRepository lookup(
+        Class clazz, DiffRepository baseRepos, String[] prefixes)
     {
         DiffRepository diffRepos = (DiffRepository) mapClassToRepos.get(clazz);
         if (diffRepos == null) {
-            final File refFile = findFile(clazz, ".ref.xml");
-            final File logFile = findFile(clazz, ".log.xml");
-            diffRepos = new DiffRepository(refFile, logFile, baseRepos);
+            if (prefixes == null) {
+                prefixes = DefaultPrefixes;
+            }
+            final File refFile = findFile(clazz, prefixes, ".ref.xml");
+            final File logFile = findFile(clazz, prefixes, ".log.xml");
+            diffRepos = new DiffRepository(refFile, logFile, baseRepos, null);
             mapClassToRepos.put(clazz, diffRepos);
         }
         return diffRepos;

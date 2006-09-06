@@ -113,8 +113,8 @@ public class CastFunDef extends FunDefBase {
     private static class ResolverImpl extends ResolverBase {
 
         public ResolverImpl() {
-            super("CAST", "CAST(<Expression> AS <Type>)",
-                "Converts values to another type", Syntax.Cast);
+            super("Cast", "Cast(<Expression> AS <Type>)",
+                "Converts values to another type.", Syntax.Cast);
         }
 
         public FunDef resolve(
