@@ -3371,13 +3371,13 @@
                         <CAPTION>Caption</CAPTION>
                     </row>
                     <row>
-                        <FUNCTION_NAME>CAST</FUNCTION_NAME>
-                        <DESCRIPTION>Converts values to another type</DESCRIPTION>
+                        <FUNCTION_NAME>Cast</FUNCTION_NAME>
+                        <DESCRIPTION>Converts values to another type.</DESCRIPTION>
                         <PARAMETER_LIST>(none)</PARAMETER_LIST>
                         <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
-                        <CAPTION>CAST</CAPTION>
+                        <CAPTION>Cast</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Children</FUNCTION_NAME>
