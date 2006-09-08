@@ -32,9 +32,6 @@ public class CurrentDateStringUdf implements UserDefinedFunction {
     public Object execute(Evaluator evaluator, Argument[] arguments) {
         Object arg = arguments[0].evaluateScalar(evaluator);
 
-        if (!(arg instanceof String)) {
-            return null;
-        }
         final Locale locale = Locale.getDefault();
         final Format format = new Format((((String) arg).toString()), locale);
         Date currDate = new Date();
