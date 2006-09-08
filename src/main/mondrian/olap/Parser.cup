@@ -284,7 +284,9 @@ terminal
     EMPTY,
     END,
     FROM,
+    IN,
     IS,
+    MATCHES,
     MEMBER,
     NON,
     NOT,
@@ -693,6 +695,22 @@ term3 ::=
         term2
     |   term3:x comp_op:op term2:y {: // e.g. 1 < 5
             RESULT = new UnresolvedFunCall(op, Syntax.Infix, new Exp[] {x, y});
+        :}
+    |   term3:x MATCHES term2:y {:
+            RESULT = new UnresolvedFunCall("MATCHES", Syntax.Infix, new Exp[] {x, y});
+        :}
+    |   term3:x NOT MATCHES term2:y {:
+            RESULT = new UnresolvedFunCall(
+                "NOT", Syntax.Prefix, new Exp[] 
+                {new UnresolvedFunCall("MATCHES", Syntax.Infix, new Exp[] {x, y})});
+        :}
+    |   term3:x IN term2:y {:
+            RESULT = new UnresolvedFunCall("IN", Syntax.Infix, new Exp[] {x, y});
+        :}
+    |   term3:x NOT IN term2:y {:
+            RESULT = new UnresolvedFunCall(
+                "NOT", Syntax.Prefix, new Exp[] 
+                {new UnresolvedFunCall("IN", Syntax.Infix, new Exp[] {x, y})});
         :}
     ;
 

@@ -3988,6 +3988,16 @@
                         <CAPTION>IIf</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>IN</FUNCTION_NAME>
+                        <DESCRIPTION>Returns true if the member argument
+                            is contained in the set argument.</DESCRIPTION>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IN</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Intersect</FUNCTION_NAME>
                         <DESCRIPTION>Returns the intersection of two
                             input sets, optionally retaining duplicates.</DESCRIPTION>
@@ -4360,6 +4370,16 @@
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>LinRegVariance</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>MATCHES</FUNCTION_NAME>
+                        <DESCRIPTION>Returns true if the string matches
+                            the regular expression.</DESCRIPTION>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>MATCHES</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>Max</FUNCTION_NAME>

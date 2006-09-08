@@ -249,10 +249,12 @@ public class Scanner {
 //      initResword(ParserSym.FORMAT_STRING       ,"FORMAT_STRING");
         initResword(ParserSym.FROM                ,"FROM");
         initResword(ParserSym.IS                  ,"IS");
+        initResword(ParserSym.IN                  ,"IN");
 //      initResword(ParserSym.LAG                 ,"LAG");
 //      initResword(ParserSym.LASTCHILD           ,"LASTCHILD");
 //      initResword(ParserSym.LASTSIBLING         ,"LASTSIBLING");
 //      initResword(ParserSym.LEAD                ,"LEAD");
+        initResword(ParserSym.MATCHES             ,"MATCHES");
         initResword(ParserSym.MEMBER              ,"MEMBER");
 //      initResword(ParserSym.MEMBERS             ,"MEMBERS");
 //      initResword(ParserSym.NEXTMEMBER          ,"NEXTMEMBER");

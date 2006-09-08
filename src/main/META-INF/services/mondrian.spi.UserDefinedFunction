@@ -4,3 +4,5 @@ mondrian.udf.LastNonEmptyUdf
 mondrian.udf.CurrentDateStringUdf
 mondrian.udf.CurrentDateMemberUdf
 mondrian.udf.CurrentDateMemberExactUdf
+mondrian.udf.MatchesUdf
+mondrian.udf.InUdf

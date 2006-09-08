@@ -457,7 +457,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
                 "      formatString=\"Standard\" visible=\"false\"/>\n" +
                 "  <CalculatedMember\n" +
-                "      name=\"With a [bracket] in it\"\n" +
+                "      name=\"With a [bracket] inside it\"\n" +
                 "      dimension=\"Measures\"\n" +
                 "      visible=\"false\"\n" +
                 "      formula=\"[Measures].[Unit Sales] * 10\">\n" +
@@ -467,21 +467,21 @@ public class TestCalculatedMembers extends FoodMartTestCase {
 
         getTestContext(cubeName).assertThrows(
                 fold(
-                    "select {[Measures].[With a [bracket] in it]} on columns,\n" +
+                    "select {[Measures].[With a [bracket] inside it]} on columns,\n" +
                     " {[Gender].Members} on rows\n" +
                     "from [" + cubeName + "]"),
-                "Syntax error at line 1, column 38, token 'in'");
+                "Syntax error at line 1, column 38, token 'inside'");
 
         getTestContext(cubeName).assertQueryReturns(
                 fold(
-                    "select {[Measures].[With a [bracket]] in it]} on columns,\n" +
+                    "select {[Measures].[With a [bracket]] inside it]} on columns,\n" +
                     " {[Gender].Members} on rows\n" +
                     "from [" + cubeName + "]"),
                 fold(
                     "Axis #0:\n" +
                     "{}\n" +
                 "Axis #1:\n" +
-                "{[Measures].[With a [bracket]] in it]}\n" +
+                "{[Measures].[With a [bracket]] inside it]}\n" +
                 "Axis #2:\n" +
                 "{[Gender].[F]}\n" +
                 "{[Gender].[M]}\n" +

@@ -128,6 +128,15 @@ that 2000 was a leap year, so our time dimension does not contain a member <code
   returns <code>[Time].[2000].[3].[1]</code>.</li>
 </ol>
 
+<h3><code>IN</code> and <code>NOT IN</code></h3>
+
+<p><code>IN</code> and <code>NOT IN</code> are Mondrian-specific functions.</p>
+
+<h3><code>MATCHES</code> and <code>NOT MATCHES</code></h3>
+
+<p><code>MATCHES</code> and <code>NOT MATCHES</code> are Mondrian-specific functions which take as one of its arguments a <A href="http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/Pattern.html">java regular expression</A>.</p>
+
+
 <h2><a name="Comments">Comments</a></h2>
 
 <p>MDX statements can contain comments. There are 3 syntactic forms for 
@@ -734,6 +743,12 @@ FROM [Sales]</code></blockquote>
   </td>
 </tr>
 <tr>
+  <td valign=top>IN</td>
+  <td>Returns whether a member is contained in a set.    <p><b>Syntax</b></p>
+    <code>&lt;Member&gt; IN &lt;Set&gt;</code><br/>
+  </td>
+</tr>
+<tr>
   <td valign=top>IS</td>
   <td>Returns whether two objects are the same (idempotent)    <p><b>Syntax</b></p>
     <code>&lt;Member&gt; IS &lt;Member&gt;</code><br/>
@@ -865,6 +880,12 @@ FROM [Sales]</code></blockquote>
   </td>
 </tr>
 <tr>
+  <td valign=top>MATCHES</td>
+  <td>Returns whether an expression matches a regular expression.    <p><b>Syntax</b></p>
+    <code>&lt;String&gt; MATCHES &lt;String&gt;</code><br/>
+  </td>
+</tr>
+<tr>
   <td valign=top>Max</td>
   <td>Returns the maximum value of a numeric expression evaluated over a set.    <p><b>Syntax</b></p>
     <code>&lt;Numeric Expression&gt; Max(&lt;Set&gt;)</code><br/>
@@ -920,6 +941,18 @@ FROM [Sales]</code></blockquote>
   <td valign=top>NOT</td>
   <td>Returns the negation of a condition.    <p><b>Syntax</b></p>
     <code>NOT &lt;Logical Expression&gt;</code><br/>
+  </td>
+</tr>
+<tr>
+  <td valign=top>NOT IN</td>
+  <td>Returns whether a member is not contained in a set.    <p><b>Syntax</b></p>
+    <code>&lt;Member&gt; NOT IN &lt;Set&gt;</code><br/>
+  </td>
+</tr>
+<tr>
+  <td valign=top>NOT MATCHES</td> 
+  <td>Returns whether an expression does not match a regular expression.    <p><b>Syntax</b></p>
+    <code>&lt;String&gt; NOT MATCHES &lt;String&gt;</code><br/>
   </td>
 </tr>
 <tr>
