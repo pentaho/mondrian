@@ -68,8 +68,13 @@ class UnionFunDef extends FunDefBase {
             if (list0.isEmpty()) {
                 return list1;
             }
-            list0.addAll(list1);
-            return list0;
+            if (list1.isEmpty()) {
+                return list0;
+            }
+            List result = new ArrayList();
+            result.addAll(list0);
+            result.addAll(list1);
+            return result;
         } else {
             Set added = new HashSet();
             List result = new ArrayList();

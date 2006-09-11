@@ -476,14 +476,16 @@ class RolapResult extends ResultBase {
                 final RolapEvaluator.RolapEvaluatorRoot root =
                         ((RolapEvaluator) slicerEvaluator).root;
                 final Calc calc = root.getCompiled(exp, false);
-                value = result.evaluateExp(calc, slicerEvaluator.push());
+                List list = (List) result.evaluateExp(calc, slicerEvaluator.push());
+                // Make immutable, just in case expressions are modifying the
+                // results we give them.
+                value = Collections.unmodifiableList(list);
                 namedSetValues.put(name, value);
             }
             return value;
         }
 
         public Object getParameterValue(ParameterSlot slot) {
-            final int index = slot.getIndex();
             Object value = slot.getParameterValue();
             if (value != null) {
                 return value;

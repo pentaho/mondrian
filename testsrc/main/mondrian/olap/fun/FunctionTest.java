@@ -5255,6 +5255,54 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Gender].[All Gender].[F]")); // order is preserved
     }
 
+    public void testUnionAllTuple() {
+        // With the bug, the last 8 rows are repeated.
+        assertQueryReturns("with \n" +
+            "set [Set1] as 'Crossjoin({[Time].[1997].[Q1]:[Time].[1997].[Q4]},{[Store].[USA].[CA]:[Store].[USA].[OR]})'\n" +
+            "set [Set2] as 'Crossjoin({[Time].[1997].[Q2]:[Time].[1997].[Q3]},{[Store].[Mexico].[DF]:[Store].[Mexico].[Veracruz]})'\n" +
+            "select \n" +
+            "{[Measures].[Unit Sales]} ON COLUMNS,\n" +
+            "Union([Set1], [Set2], ALL) ON ROWS\n" +
+            "from [Sales]",
+            fold("Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Time].[1997].[Q1], [Store].[All Stores].[USA].[CA]}\n" +
+                    "{[Time].[1997].[Q1], [Store].[All Stores].[USA].[OR]}\n" +
+                    "{[Time].[1997].[Q2], [Store].[All Stores].[USA].[CA]}\n" +
+                    "{[Time].[1997].[Q2], [Store].[All Stores].[USA].[OR]}\n" +
+                    "{[Time].[1997].[Q3], [Store].[All Stores].[USA].[CA]}\n" +
+                    "{[Time].[1997].[Q3], [Store].[All Stores].[USA].[OR]}\n" +
+                    "{[Time].[1997].[Q4], [Store].[All Stores].[USA].[CA]}\n" +
+                    "{[Time].[1997].[Q4], [Store].[All Stores].[USA].[OR]}\n" +
+                    "{[Time].[1997].[Q2], [Store].[All Stores].[Mexico].[DF]}\n" +
+                    "{[Time].[1997].[Q2], [Store].[All Stores].[Mexico].[Guerrero]}\n" +
+                    "{[Time].[1997].[Q2], [Store].[All Stores].[Mexico].[Jalisco]}\n" +
+                    "{[Time].[1997].[Q2], [Store].[All Stores].[Mexico].[Veracruz]}\n" +
+                    "{[Time].[1997].[Q3], [Store].[All Stores].[Mexico].[DF]}\n" +
+                    "{[Time].[1997].[Q3], [Store].[All Stores].[Mexico].[Guerrero]}\n" +
+                    "{[Time].[1997].[Q3], [Store].[All Stores].[Mexico].[Jalisco]}\n" +
+                    "{[Time].[1997].[Q3], [Store].[All Stores].[Mexico].[Veracruz]}\n" +
+                    "Row #0: 16,890\n" +
+                    "Row #1: 19,287\n" +
+                    "Row #2: 18,052\n" +
+                    "Row #3: 15,079\n" +
+                    "Row #4: 18,370\n" +
+                    "Row #5: 16,940\n" +
+                    "Row #6: 21,436\n" +
+                    "Row #7: 16,353\n" +
+                    "Row #8: \n" +
+                    "Row #9: \n" +
+                    "Row #10: \n" +
+                    "Row #11: \n" +
+                    "Row #12: \n" +
+                    "Row #13: \n" +
+                    "Row #14: \n" +
+                    "Row #15: \n"));
+    }
+
     public void testUnion() {
         assertAxisReturns("Union({[Store].[USA], [Store].[USA], [Store].[USA].[OR]}, {[Store].[USA].[CA], [Store].[USA]})",
                 fold(
@@ -6587,28 +6635,32 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         final PrintWriter pw = new PrintWriter(os);
         pw.println("<table border='1'>");
         pw.println("<tr>");
-        pw.println("<th>Name</th>");
-        pw.println("<th>Description</th>");
+        pw.println("<td><b>Name</b></td>");
+        pw.println("<td><b>Description</b></td>");
         pw.println("</tr>");
         for (int i = 0; i < funInfoList.size(); i++) {
             FunInfo funInfo = (FunInfo) funInfoList.get(i);
             pw.println("<tr>");
-            pw.print("  <td valign=top>");
+            pw.print("  <td valign=top><code>");
             printHtml(pw, funInfo.getName());
-            pw.println("</td>");
+            pw.println("</code></td>");
             pw.print("  <td>");
             if (funInfo.getDescription() != null) {
                 printHtml(pw, funInfo.getDescription());
             }
+            pw.println();
             final String[] signatures = funInfo.getSignatures();
             if (signatures != null) {
-                pw.println("    <p><b>Syntax</b></p>");
+                pw.println("    <h1>Syntax</h1>");
                 for (int j = 0; j < signatures.length; j++) {
+                    if (j > 0) {
+                        pw.println("<br/>");
+                    }
                     String signature = signatures[j];
-                    pw.print("    <code>");
+                    pw.print("    ");
                     printHtml(pw, signature);
-                    pw.println("</code><br/>");
                 }
+                pw.println();
             }
             pw.println("  </td>");
             pw.println("</tr>");
