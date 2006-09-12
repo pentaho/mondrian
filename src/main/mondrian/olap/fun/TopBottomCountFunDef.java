@@ -80,6 +80,10 @@ class TopBottomCountFunDef extends FunDefBase {
                 List list = listCalc.evaluateList(evaluator);
                 int n = integerCalc.evaluateInteger(evaluator);
                 if (orderCalc != null) {
+                    // RolapResult.RolapResultEvaluatorRoot's evaluateNamedSet
+                    // method returns an unmodifiable List so we must
+                    // make the list modifiable before sorting.
+                    list = new java.util.ArrayList(list);
                     sort(evaluator.push(), list, orderCalc, top, true);
                 }
                 if (n < list.size()) {
