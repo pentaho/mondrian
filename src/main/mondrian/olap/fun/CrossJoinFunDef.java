@@ -231,11 +231,11 @@ class CrossJoinFunDef extends FunDefBase {
 
 
     static class MeasureVisitor implements mondrian.mdx.MdxVisitor {
+        // This set is null unless a measure is found.
         Set measureSet;
         Set queryMeasureSet;
         MeasureVisitor(Set queryMeasureSet) {
             this.queryMeasureSet = queryMeasureSet;
-            this.measureSet = new HashSet();
         }
         public Object visit(mondrian.olap.Query query) {
             return null;
@@ -273,6 +273,9 @@ class CrossJoinFunDef extends FunDefBase {
             while (mit.hasNext()) {
                 Member measure = (Member) mit.next();
                 if (measure.equals(member)) {
+                    if (measureSet == null) {
+                        measureSet = new HashSet();
+                    }
                     measureSet.add(measure);
                     break;
                 }
@@ -326,7 +329,7 @@ class CrossJoinFunDef extends FunDefBase {
         // are dynamically generated, for instance using a function such as
         // StrToSet, then one can not count on visiting the axes' Exp and determining
         // all Measures - they can only be known at execution-time.  
-        // So, here it is assumed that all Measures are know by 
+        // So, here it is assumed that all Measures are know statically by 
         // this stage of the processing.
         Query query = evaluator.getQuery();
         QueryAxis[] axes = query.getAxes();
@@ -338,10 +341,12 @@ class CrossJoinFunDef extends FunDefBase {
                 if (axes[i] != null) {
                     MeasureVisitor visitor = new MeasureVisitor(queryMeasureSet);
                     axes[i].accept(visitor);
-                    if (measureSet != null) {
-                        measureSet.addAll(visitor.measureSet);
-                    } else {
-                        measureSet = visitor.measureSet;
+                    if (visitor.measureSet != null) {
+                        if (measureSet != null) {
+                            measureSet.addAll(visitor.measureSet);
+                        } else {
+                            measureSet = visitor.measureSet;
+                        }
                     }
                 }
             }
@@ -353,6 +358,7 @@ class CrossJoinFunDef extends FunDefBase {
             for (Iterator listItr = list.iterator(); listItr.hasNext();) {
                 Member[] ms = (Member[]) listItr.next();
                 evaluator.setContext(ms);
+                // no measures found, use standard algorithm
                 if (measureSet == null) {
                     Object value = evaluator.evaluateCurrent();
                     if (value != null && !(value instanceof Throwable)) {
@@ -376,6 +382,7 @@ class CrossJoinFunDef extends FunDefBase {
             for (Iterator listItr = list.iterator(); listItr.hasNext();) {
                 Member m = (Member) listItr.next();
                 evaluator.setContext(m);
+                // no measures found, use standard algorithm
                 if (measureSet == null) {
                     Object value = evaluator.evaluateCurrent();
                     if (value != null && !(value instanceof Throwable)) {
@@ -397,32 +404,6 @@ class CrossJoinFunDef extends FunDefBase {
             }
         }
         return result;
-
-
-/*
-        List result = new ArrayList();
-        evaluator = evaluator.push();
-        if (list.get(0) instanceof Member[]) {
-            for (Iterator it = list.iterator(); it.hasNext();) {
-                Member[] m = (Member[]) it.next();
-                evaluator.setContext(m);
-                Object value = evaluator.evaluateCurrent();
-                if (value != null && !(value instanceof Throwable)) {
-                    result.add(m);
-                }
-            }
-        } else {
-            for (Iterator it = list.iterator(); it.hasNext();) {
-                Member m = (Member) it.next();
-                evaluator.setContext(m);
-                Object value = evaluator.evaluateCurrent();
-                if (value != null && !(value instanceof Throwable)) {
-                    result.add(m);
-                }
-            }
-        }
-        return result;
-*/
     }
 
     private static class StarCrossJoinResolver extends MultiResolver {
