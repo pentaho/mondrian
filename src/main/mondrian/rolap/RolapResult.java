@@ -207,17 +207,11 @@ class RolapResult extends ResultBase {
             List list = (List) value;
             positions = new Position[list.size()];
             for (int i = 0; i < list.size(); i++) {
-                Member[] members = null;
                 Object o = list.get(i);
-                if (o instanceof Object[]) {
-                    Object[] a = (Object[]) o;
-                    members = new Member[a.length];
-                    for (int j = 0; j < a.length; j++) {
-                        members[j] = (Member) a[j];
-                    }
-                } else {
-                    members = new Member[] {(Member) o};
-                }
+                Member[] members = (o instanceof Member[])
+                        ? (Member[]) o
+                        : new Member[] {(Member) o};
+
                 RolapPosition position = new RolapPosition(members);
                 positions[i] = position;
             }
