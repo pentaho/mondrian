@@ -270,6 +270,48 @@ public class RolapEvaluator implements Evaluator {
         return Arrays.equals(this.currentMembers, that.currentMembers);
     }
 
+    /**             
+     * Replace the current member of a given hierarchy with member parameter
+     * if the current member is the null, all, or default member.
+     * The parameter member will never attempt to replace a current member
+     * when the current member is part of the slicer axis (this is
+     * addressed in the RolapResult purge method).
+     * <p>
+     * Currently, replacement only takes place when the current member is
+     * the default member of its hierarchy (so the checks for null, measure and
+     * all may not be needed).
+     * 
+     * @param member 
+     * @return 
+     */
+    Member setContextConditional(Member member) {
+        RolapMember m = (RolapMember) member;
+        int ordinal = m.getDimension().getOrdinal(root.cube);
+        // should never happend
+        if (ordinal >= currentMembers.length) {
+            return null;
+        }
+        Member previous = currentMembers[ordinal];
+        if (previous.isNull()) {
+            // Is the ever possible?
+            return setContext(member);
+        } else if (previous.isMeasure()) {
+            // Is the ever possible?
+            return setContext(member);
+        } else if (previous.isAll()) {
+            // Is the ever possible?
+            return setContext(member);
+        } else {
+            Hierarchy heirarchy = m.getHierarchy();
+            Member defaultMember = heirarchy.getDefaultMember();
+            if (previous.equals(defaultMember) && ! previous.equals(member)) {
+                return setContext(member);
+            } else {
+                return null;
+            }
+        }
+    }
+
     public Member setContext(Member member) {
         RolapMember m = (RolapMember) member;
         int ordinal = m.getDimension().getOrdinal(root.cube);
