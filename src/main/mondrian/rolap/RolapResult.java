@@ -79,7 +79,7 @@ class RolapResult extends ResultBase {
                 while (true) {
                     evaluator.setCellReader(batchingReader);
                     RolapAxis axisResult =
-                            executeAxis(evaluator.push(), axis, calc);
+                            executeAxis(evaluator.push(), axis, calc, false);
                     Util.discard(axisResult);
                     evaluator.clearExpResultCache();
                     if (!batchingReader.loadAggregations(query)) {
@@ -93,7 +93,7 @@ class RolapResult extends ResultBase {
                 }
 
                 evaluator.setCellReader(aggregatingReader);
-                RolapAxis axisResult = executeAxis(evaluator.push(), axis, calc);
+                RolapAxis axisResult = executeAxis(evaluator.push(), axis, calc, true);
                 evaluator.clearExpResultCache();
 
                 if (i == -1) {
@@ -162,8 +162,6 @@ class RolapResult extends ResultBase {
                 LOGGER.debug("RolapResult<init>: " + Util.printMemory());
             }
         }
-        // RME : what is this doing???
-        query.getCube().getDimensions();
     }
 
     protected Logger getLogger() {
@@ -187,14 +185,18 @@ class RolapResult extends ResultBase {
     }
 
     private RolapAxis executeAxis(
-            Evaluator evaluator, QueryAxis axis, Calc axisCalc) {
+            Evaluator evaluator, QueryAxis axis, Calc axisCalc, boolean construct) {
         Position[] positions;
         if (axis == null) {
             // Create an axis containing one position with no members (not
             // the same as an empty axis).
-            Member[] members = new Member[0];
-            RolapPosition position = new RolapPosition(members);
-            positions = new Position[] {position};
+            if (construct) {
+                Member[] members = new Member[0];
+                RolapPosition position = new RolapPosition(members);
+                positions = new Position[] {position};
+            } else {
+                positions = null;
+            }
 
         } else {
             evaluator.setNonEmpty(axis.nonEmpty);
@@ -205,18 +207,22 @@ class RolapResult extends ResultBase {
             }
             Util.assertTrue(value instanceof List);
             List list = (List) value;
-            positions = new Position[list.size()];
-            for (int i = 0; i < list.size(); i++) {
-                Object o = list.get(i);
-                Member[] members = (o instanceof Member[])
-                        ? (Member[]) o
-                        : new Member[] {(Member) o};
+            if (construct) {
+                positions = new Position[list.size()];
+                for (int i = 0; i < list.size(); i++) {
+                    Object o = list.get(i);
+                    Member[] members = (o instanceof Member[])
+                            ? (Member[]) o
+                            : new Member[] {(Member) o};
 
-                RolapPosition position = new RolapPosition(members);
-                positions[i] = position;
+                    RolapPosition position = new RolapPosition(members);
+                    positions[i] = position;
+                }
+            } else {
+                positions = null;
             }
         }
-        return new RolapAxis(positions);
+        return (construct) ? new RolapAxis(positions) : null;
     }
 
     private void executeBody(Query query) {
