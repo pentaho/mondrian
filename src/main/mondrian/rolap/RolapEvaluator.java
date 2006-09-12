@@ -328,7 +328,11 @@ public class RolapEvaluator implements Evaluator {
         evaluator.setExpanding(maxSolveMember);
         final Exp exp = maxSolveMember.getExpression();
         Calc calc = root.getCompiled(exp, true);
-        return calc.evaluate(evaluator);
+        Object o = calc.evaluate(evaluator);
+        if (o == Util.nullValue) {
+            o = null;
+        }
+        return o;
     }
 
     private void setExpanding(Member member) {
