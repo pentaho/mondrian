@@ -21,8 +21,10 @@ import mondrian.mdx.ResolvedFunCall;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Definition of the <code>CrossJoin</code> MDX function.
@@ -131,7 +133,6 @@ class CrossJoinFunDef extends FunDefBase {
         //  nonempty(crossjoin(nonempty(a),nonempty(b))
         long size = (long)list1.size() * (long)list2.size();
         int resultLimit = MondrianProperties.instance().ResultLimit.get();
-        //if (resultLimit > 0 && size > resultLimit && evaluator.isNonEmpty()) {
         if (size > 1000 && evaluator.isNonEmpty()) {
             // instead of overflow exception try to further
             // optimize nonempty(crossjoin(a,b)) ==
@@ -141,8 +142,9 @@ class CrossJoinFunDef extends FunDefBase {
             list2 = nonEmptyList(evaluator, list2);
             size = (long)list1.size() * (long)list2.size();
             // both list1 and list2 may be empty after nonEmpty optimization
-            if (size == 0)
+            if (size == 0) {
             	return Collections.EMPTY_LIST;
+            }
             final int missCount2 = evaluator.getMissCount();
             if (missCount2 > missCount && size > 1000) {
                 // We've hit some cells which are not in the cache. They
@@ -227,10 +229,177 @@ class CrossJoinFunDef extends FunDefBase {
         return result;
     }
 
+
+    static class MeasureVisitor implements mondrian.mdx.MdxVisitor {
+        Set measureSet;
+        Set queryMeasureSet;
+        MeasureVisitor(Set queryMeasureSet) {
+            this.queryMeasureSet = queryMeasureSet;
+            this.measureSet = new HashSet();
+        }
+        public Object visit(mondrian.olap.Query query) {
+            return null;
+        }
+        public Object visit(mondrian.olap.QueryAxis queryAxis) {
+            return null;
+        }
+        public Object visit(mondrian.olap.Formula formula) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.UnresolvedFunCall call) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.ResolvedFunCall call) {
+            return null;
+        }
+        public Object visit(mondrian.olap.Id id) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.ParameterExpr parameterExpr) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.DimensionExpr dimensionExpr) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.HierarchyExpr hierarchyExpr) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.LevelExpr levelExpr) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.MemberExpr memberExpr) {
+            Member member = memberExpr.getMember();
+            Iterator mit = queryMeasureSet.iterator();
+            while (mit.hasNext()) {
+                Member measure = (Member) mit.next();
+                if (measure.equals(member)) {
+                    measureSet.add(measure);
+                    break;
+                }
+            }
+            return null;
+        }
+        public Object visit(mondrian.mdx.NamedSetExpr namedSetExpr) {
+            return null;
+        }
+        public Object visit(mondrian.olap.Literal literal) {
+            return null;
+        }
+    }
+
+    /** 
+     * What one wants to determine is for each individual Members of the input
+     * parameter list whether across a slice there is any data. But what data.
+     * For other Members, the default Member is used, but for Measures one
+     * should look for that data for all Measures associated with the query, not
+     * just one Measure. For a dense dataset this may not be a problem or even
+     * apparent, but for a sparse dataset, the first Measure may, in fact, have
+     * not data but other Measures associated with the query might. 
+     * Hence, the solution here is to identify all Measures associated with the
+     * query and then for each Member of the list, determine if there is any
+     * data iterating across all Measures until non-null data is found or the 
+     * end of the Measures is reached.
+     * 
+     * @param evaluator 
+     * @param list 
+     * @return 
+     */
     protected static List nonEmptyList(Evaluator evaluator, List list) {
         if (list.isEmpty()) {
             return list;
         }
+
+        // A compromise between allocating too much and having lots of allocations.
+        // If everything is null, then this is too big, but if nothing is null
+        // then this results in TWO calls to ArrayList's ensureCapacity method
+        // and its associated System.arraycopy method.
+        // What is best?
+        List result = new ArrayList((list.size() +2) >> 1);
+
+        // Get all Measures
+        // RME: The only mechanism I could find for getting all Measures
+        // associated with the query was to use a the MdxVisitor to get all
+        // MemberExprs and test if its Member was one of the Measures.  First,
+        // it might be expected that at query parse-time one could determine
+        // what Measures were associated with which axes saving the use of the
+        // visitor and, many times, this might be true but 2) if the Measures
+        // are dynamically generated, for instance using a function such as
+        // StrToSet, then one can not count on visiting the axes' Exp and determining
+        // all Measures - they can only be known at execution-time.  
+        // So, here it is assumed that all Measures are know by 
+        // this stage of the processing.
+        Query query = evaluator.getQuery();
+        QueryAxis[] axes = query.getAxes();
+        Set measureSet = null;
+        Set queryMeasureSet = evaluator.getQuery().getMeasuresMembers();
+        if (axes.length >  1 && queryMeasureSet.size() > 0 ) {
+            for (int i = 0; i < axes.length; i++) {
+                // for junit test this null test is required
+                if (axes[i] != null) {
+                    MeasureVisitor visitor = new MeasureVisitor(queryMeasureSet);
+                    axes[i].accept(visitor);
+                    if (measureSet != null) {
+                        measureSet.addAll(visitor.measureSet);
+                    } else {
+                        measureSet = visitor.measureSet;
+                    }
+                }
+            }
+        }
+
+        // Determine if there is any data.
+        evaluator = evaluator.push();
+        if (list.get(0) instanceof Member[]) {
+            for (Iterator listItr = list.iterator(); listItr.hasNext();) {
+                Member[] ms = (Member[]) listItr.next();
+                evaluator.setContext(ms);
+                if (measureSet == null) {
+                    Object value = evaluator.evaluateCurrent();
+                    if (value != null && !(value instanceof Throwable)) {
+                        result.add(ms);
+                    }
+                } else {
+                    Iterator measureIter = measureSet.iterator();
+                    MEASURES_LOOP:
+                    while (measureIter.hasNext()) {
+                        Member measure = (Member) measureIter.next();
+                        evaluator.setContext(measure);
+                        Object value = evaluator.evaluateCurrent();
+                        if (value != null && !(value instanceof Throwable)) {
+                            result.add(ms);
+                            break MEASURES_LOOP;
+                        }
+                    }
+                }
+            }
+        } else {
+            for (Iterator listItr = list.iterator(); listItr.hasNext();) {
+                Member m = (Member) listItr.next();
+                evaluator.setContext(m);
+                if (measureSet == null) {
+                    Object value = evaluator.evaluateCurrent();
+                    if (value != null && !(value instanceof Throwable)) {
+                        result.add(m);
+                    }
+                } else {
+                    Iterator measureIter = measureSet.iterator();
+                    MEASURES_LOOP:
+                    while (measureIter.hasNext()) {
+                        Member measure = (Member) measureIter.next();
+                        evaluator.setContext(measure);
+                        Object value = evaluator.evaluateCurrent();
+                        if (value != null && !(value instanceof Throwable)) {
+                            result.add(m);
+                            break MEASURES_LOOP;
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+
+
+/*
         List result = new ArrayList();
         evaluator = evaluator.push();
         if (list.get(0) instanceof Member[]) {
@@ -253,6 +422,7 @@ class CrossJoinFunDef extends FunDefBase {
             }
         }
         return result;
+*/
     }
 
     private static class StarCrossJoinResolver extends MultiResolver {
