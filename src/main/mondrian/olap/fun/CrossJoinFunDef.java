@@ -172,7 +172,17 @@ class CrossJoinFunDef extends FunDefBase {
             arity1 = ((Member[]) list2.get(0)).length;
             neitherSideIsTuple = false;
         }
-        List result = new ArrayList();
+
+        if (size > Integer.MAX_VALUE) {
+            // If the long "size" value is greater than Integer.MAX_VALUE, then
+            // it can not be used as the size for an array allocation.
+            String msg = "Union size \"" + 
+                size + 
+                "\" too big (greater than Integer.MAX_VALUE)";
+            throw Util.newInternal(msg);
+        }
+        List result = new ArrayList((int) size);
+
         if (neitherSideIsTuple) {
             // Simpler routine if we know neither side contains tuples.
             for (int i = 0, m = list1.size(); i < m; i++) {
