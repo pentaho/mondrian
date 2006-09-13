@@ -3131,7 +3131,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "     \"|#.00%|arrow='right'\"))\n" +
                 "select {[Measures].members} on columns\n" +
                 "from Sales");
-        final String s = query.toString();
+        final String s = query.toMdx();
         // Parentheses are added to reflect operator precedence, but that's ok.
         // Note that the doubled parentheses in line #2 of the query have been
         // reduced to a single level.
