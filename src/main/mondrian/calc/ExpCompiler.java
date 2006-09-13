@@ -27,7 +27,23 @@ public interface ExpCompiler {
     Evaluator getEvaluator();
     Validator getValidator();
 
+    /**
+     * Compiles an expression.
+     *
+     * @param exp Expression
+     * @return Compiled expression
+     */
     Calc compile(Exp exp);
+
+    /**
+     * Compiles an expression to a given result type.
+     *
+     * @param exp Expression
+     * @param preferredResultTypes List of result types, in descending order
+     *   of preference. Never null.
+     * @return Compiled expression, or null if none can satisfy
+     */
+    Calc compile(Exp exp, ResultStyle[] preferredResultTypes);
 
     /**
      * Compiles an expression which yields a {@link Member} result.
@@ -62,11 +78,25 @@ public interface ExpCompiler {
     StringCalc compileString(Exp exp);
 
     /**
-     * Compiles an expression which yields a {@link java.util.List} result.
-     * Such an expression is generally a list of {@link Member} objects or a
-     * list of tuples (each represented by a {@link Member} array).
+     * Compiles an expression which yields an immutable {@link java.util.List}
+     * result.
+     *
+     * <p>Always equivalent to <code>{@link #compileList}(exp, false)</code>.
      */
     ListCalc compileList(Exp exp);
+
+    /**
+     * Compiles an expression which yields {@link java.util.List} result.
+     *
+     * <p>Such an expression is generally a list of {@link Member} objects or a
+     * list of tuples (each represented by a {@link Member} array).
+     *
+     * <p>See {@link #compileList(mondrian.olap.Exp)}.
+     *
+     * @param exp Expression
+     * @param mutable Whether resulting list is mutable
+     */
+    ListCalc compileList(Exp exp, boolean mutable);
 
     /**
      * Compiles an expression which yields a <code>boolean</code> result.
@@ -104,6 +134,50 @@ public interface ExpCompiler {
      * @return Slot
      */
     ParameterSlot registerParameter(Parameter parameter);
+
+    /**
+     * Returns a list of the {@link mondrian.calc.ExpCompiler.ResultStyle}s
+     * acceptable to the caller.
+     */
+    ResultStyle[] getAcceptableResultStyles();
+
+    /**
+     * Enumeration of ways that a compiled expression can return its result to
+     * its caller.
+     *
+     * <p>In future, we may have an "ITERABLE" result style, which allows us
+     * to handle large lists without holding them in memory.
+     */
+    class ResultStyle extends EnumeratedValues.BasicValue {
+
+        private ResultStyle(String name, int ordinal) {
+            super(name, ordinal, null);
+        }
+
+        /**
+         * Indicates that caller will accept any applicable style.
+         */
+        public static final ResultStyle ANY = new ResultStyle("ANY", 0);
+
+        /**
+         * Indicates that the expression returns its result as a list which may
+         * safely be modified by the caller.
+         */
+        public static final ResultStyle MUTABLE_LIST = new ResultStyle("MUTABLE_LIST", 1);
+
+        /**
+         * Indicates that the expression returns its result as a list which must
+         * not be modified by the caller.
+         */
+        public static final ResultStyle LIST = new ResultStyle("LIST", 2);
+
+        /**
+         * Indicates that the expression results its result as an immutable
+         * value. This is typical for expressions which return string and
+         * numeric values.
+         */
+        public static final ResultStyle VALUE = new ResultStyle("VALUE", 3);
+    }
 }
 
 // End ExpCompiler.java

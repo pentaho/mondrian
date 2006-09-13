@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.olap.type.Type;
 import mondrian.calc.Calc;
 import mondrian.calc.CalcWriter;
+import mondrian.calc.ExpCompiler;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.io.PrintWriter;
@@ -217,6 +218,10 @@ public abstract class AbstractCalc implements Calc {
             }
         }
         return ev;
+    }
+
+    public ExpCompiler.ResultStyle getResultStyle() {
+        return ExpCompiler.ResultStyle.VALUE;
     }
 }
 

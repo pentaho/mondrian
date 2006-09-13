@@ -4637,23 +4637,27 @@ public class FunctionTest extends FoodMartTestCase {
     public void testOrderCalc() {
         // [Measures].[Unit Sales] is a constant member, so it is evaluated in
         // a ContextCalc.
+        // Note that a CopyListCalc is required because Children returns an
+        // immutable list, and Order wants to sort it.
         assertAxisCompilesTo(
                 "order([Product].children, [Measures].[Unit Sales])",
-                "{}(Sublist(ContextCalc([Measures].[Unit Sales], Order(Children(CurrentMember([Product])), ValueCalc, ASC))))");
+                "{}(Sublist(ContextCalc([Measures].[Unit Sales], Order(CopyListCalc(Children(CurrentMember([Product]))), ValueCalc, ASC))))");
 
         // [Time].[1997] is constant, and is evaluated in a ContextCalc.
         // [Product].Parent is variable, and is evaluated inside the loop.
         assertAxisCompilesTo(
                 "order([Product].children, ([Time].[1997], [Product].CurrentMember.Parent))",
-                "{}(Sublist(ContextCalc([Time].[1997], Order(Children(CurrentMember([Product])), MemberValueCalc(Parent(CurrentMember([Product]))), ASC))))");
+                "{}(Sublist(ContextCalc([Time].[1997], Order(CopyListCalc(Children(CurrentMember([Product]))), MemberValueCalc(Parent(CurrentMember([Product]))), ASC))))");
 
         // No ContextCalc this time. All members are non-variable.
         assertAxisCompilesTo(
                 "order([Product].children, [Product].CurrentMember.Parent)",
-                "{}(Sublist(Order(Children(CurrentMember([Product])), MemberValueCalc(Parent(CurrentMember([Product]))), ASC)))");
+                "{}(Sublist(Order(CopyListCalc(Children(CurrentMember([Product]))), MemberValueCalc(Parent(CurrentMember([Product]))), ASC)))");
 
         // List expression is dependent on one of the constant calcs. It cannot
         // be pulled up, so [Gender].[M] is not in the ContextCalc.
+        // Note that there is no CopyListCalc - because Filter creates its own
+        // mutable copy.
         assertAxisCompilesTo(
                 "order(filter([Product].children, [Measures].[Unit Sales] > 1000), ([Gender].[M], [Measures].[Store Sales]))",
                 "{}(Sublist(ContextCalc([Measures].[Store Sales], Order(Filter(Children(CurrentMember([Product])), >(MemberValueCalc([Measures].[Unit Sales]), 1000.0)), MemberValueCalc([Gender].[All Gender].[M]), ASC))))");

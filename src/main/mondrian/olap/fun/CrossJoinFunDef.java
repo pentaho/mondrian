@@ -156,12 +156,28 @@ class CrossJoinFunDef extends FunDefBase {
             }
         }
 
-        // throw an exeption, if the crossjoin gets too large
+        // Throw an exeption, if the size of the crossjoin exceeds the result
+        // limit.
+        //
+        // FIXME: If we're going to apply a NON EMPTY constraint later, it's
+        // possible that the ultimate result will be much smaller.
         if (resultLimit > 0 && resultLimit < size) {
-            // result limit exceeded, throw an exception
             throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
                             new Long(size), new Long(resultLimit));
         }
+
+        // Throw an exception if the crossjoin exceeds a reasonable limit.
+        // (Yes, 4 billion is a reasonable limit.)
+        if (size > Integer.MAX_VALUE) {
+            throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
+                            new Long(size), new Long(Integer.MAX_VALUE));
+        }
+
+        // Now we can safely cast size to an integer. It still might be very
+        // large - which means we're allocating a huge array which we might
+        // pare down later by applying NON EMPTY constraints - which is a
+        // concern.
+        List result = new ArrayList((int) size);
 
         boolean neitherSideIsTuple = true;
         int arity0 = 1;
@@ -174,16 +190,6 @@ class CrossJoinFunDef extends FunDefBase {
             arity1 = ((Member[]) list2.get(0)).length;
             neitherSideIsTuple = false;
         }
-
-        if (size > Integer.MAX_VALUE) {
-            // If the long "size" value is greater than Integer.MAX_VALUE, then
-            // it can not be used as the size for an array allocation.
-            String msg = "Union size \"" + 
-                size + 
-                "\" too big (greater than Integer.MAX_VALUE)";
-            throw Util.newInternal(msg);
-        }
-        List result = new ArrayList((int) size);
 
         if (neitherSideIsTuple) {
             // Simpler routine if we know neither side contains tuples.
@@ -230,6 +236,9 @@ class CrossJoinFunDef extends FunDefBase {
     }
 
 
+    /**
+     * Visitor which builds a list of all measures referenced in a query.
+     */
     static class MeasureVisitor implements mondrian.mdx.MdxVisitor {
         // This set is null unless a measure is found.
         Set measureSet;
@@ -290,22 +299,21 @@ class CrossJoinFunDef extends FunDefBase {
         }
     }
 
-    /** 
+    /**
      * What one wants to determine is for each individual Members of the input
      * parameter list whether across a slice there is any data. But what data.
      * For other Members, the default Member is used, but for Measures one
      * should look for that data for all Measures associated with the query, not
      * just one Measure. For a dense dataset this may not be a problem or even
      * apparent, but for a sparse dataset, the first Measure may, in fact, have
-     * not data but other Measures associated with the query might. 
+     * not data but other Measures associated with the query might.
      * Hence, the solution here is to identify all Measures associated with the
      * query and then for each Member of the list, determine if there is any
-     * data iterating across all Measures until non-null data is found or the 
+     * data iterating across all Measures until non-null data is found or the
      * end of the Measures is reached.
-     * 
-     * @param evaluator 
-     * @param list 
-     * @return 
+     *
+     * @param evaluator
+     * @param list
      */
     protected static List nonEmptyList(Evaluator evaluator, List list) {
         if (list.isEmpty()) {
@@ -317,7 +325,7 @@ class CrossJoinFunDef extends FunDefBase {
         // then this results in TWO calls to ArrayList's ensureCapacity method
         // and its associated System.arraycopy method.
         // What is best?
-        List result = new ArrayList((list.size() +2) >> 1);
+        List result = new ArrayList((list.size() + 2) >> 1);
 
         // Get all Measures
         // RME: The only mechanism I could find for getting all Measures
@@ -328,8 +336,8 @@ class CrossJoinFunDef extends FunDefBase {
         // visitor and, many times, this might be true but 2) if the Measures
         // are dynamically generated, for instance using a function such as
         // StrToSet, then one can not count on visiting the axes' Exp and determining
-        // all Measures - they can only be known at execution-time.  
-        // So, here it is assumed that all Measures are know statically by 
+        // all Measures - they can only be known at execution-time. 
+        // So, here it is assumed that all Measures are known statically by 
         // this stage of the processing.
         Query query = evaluator.getQuery();
         QueryAxis[] axes = query.getAxes();
@@ -390,14 +398,14 @@ class CrossJoinFunDef extends FunDefBase {
                     }
                 } else {
                     Iterator measureIter = measureSet.iterator();
-                    MEASURES_LOOP:
+                    measuresLoop:
                     while (measureIter.hasNext()) {
                         Member measure = (Member) measureIter.next();
                         evaluator.setContext(measure);
                         Object value = evaluator.evaluateCurrent();
                         if (value != null && !(value instanceof Throwable)) {
                             result.add(m);
-                            break MEASURES_LOOP;
+                            break measuresLoop;
                         }
                     }
                 }

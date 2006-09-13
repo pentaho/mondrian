@@ -231,7 +231,6 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
          *
          * @param save
          * @param schemaReader
-         * @return
          */
         private Member chooseOtherMember(
                 final Member save, SchemaReader schemaReader) {
@@ -265,20 +264,23 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
     }
 
     /**
-     * Expression which checks dependencies.
+     * Expression which checks dependencies and list immutability.
      */
     private static class DteCalcImpl extends GenericCalc {
         private final Calc calc;
         private final Dimension[] independentDimensions;
+        private final boolean mutableList;
         private final String mdxString;
 
         DteCalcImpl(
                 Calc calc,
                 Dimension[] independentDimensions,
+                boolean mutableList,
                 String mdxString) {
             super(new DummyExp(calc.getType()));
             this.calc = calc;
             this.independentDimensions = independentDimensions;
+            this.mutableList = mutableList;
             this.mdxString = mdxString;
         }
 
@@ -291,21 +293,38 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
                     (RolapDependencyTestingEvaluator) evaluator;
             return dtEval.evaluate(calc, independentDimensions, mdxString);
         }
+
+        public List evaluateList(Evaluator evaluator) {
+            List list = super.evaluateList(evaluator);
+            if (!mutableList) {
+                list = Collections.unmodifiableList((List) list);
+            }
+            return list;
+        }
+
+        public ExpCompiler.ResultStyle getResultStyle() {
+            return calc.getResultStyle();
+        }
     }
 
     /**
      * Expression compiler which introduces dependency testing.
+     *
+     * <p>It also checks that the caller does not modify lists unless it has
+     * explicitly asked for a mutable list.
      */
     static class DteCompiler extends DelegatingExpCompiler {
         DteCompiler(ExpCompiler compiler) {
             super(compiler);
         }
 
-        protected Calc afterCompile(Exp exp, Calc calc) {
+        protected Calc afterCompile(Exp exp, Calc calc, boolean mutable) {
             Dimension[] dimensions = getIndependentDimensions(calc);
+            calc = super.afterCompile(exp, calc, mutable);
             return new DteCalcImpl(
                     calc,
                     dimensions,
+                    mutable,
                     Util.unparse(exp));
         }
 

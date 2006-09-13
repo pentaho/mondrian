@@ -15,6 +15,7 @@ import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Usage of a {@link mondrian.olap.NamedSet} in an MDX expression.
@@ -73,10 +74,10 @@ public class NamedSetExpr extends ExpBase implements Exp {
     }
 
     public Calc accept(ExpCompiler compiler) {
-        return new AbstractListCalc(this, new Calc[] { /* todo: compile namedSet.getExp() */ }) {
+        return new AbstractListCalc(this, new Calc[] { /* todo: compile namedSet.getExp() */ }, false) {
             public List evaluateList(Evaluator evaluator) {
                 return (List) evaluator.evaluateNamedSet(
-                        namedSet.getName(), namedSet.getExp());
+                    namedSet.getName(), namedSet.getExp());
             }
 
             public boolean dependsOn(Dimension dimension) {
@@ -87,7 +88,7 @@ public class NamedSetExpr extends ExpBase implements Exp {
     }
 
     public Object accept(MdxVisitor visitor) {
-        return visitor.visit(this);        
+        return visitor.visit(this);
     }
 
     public Type getType() {

@@ -12,6 +12,9 @@ package mondrian.calc.impl;
 import mondrian.olap.*;
 import mondrian.calc.*;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * Enhanced expression compiler. It can generate code to convert between
  * scalar types.
@@ -55,6 +58,30 @@ public class BetterExpCompiler extends AbstractExpCompiler {
             };
         } else {
             throw Util.newInternal("cannot cast " + exp);
+        }
+    }
+
+    public ListCalc compileList(Exp exp, boolean mutable) {
+        final ListCalc listCalc = super.compileList(exp, mutable);
+        if (mutable && listCalc.getResultStyle() == ResultStyle.LIST) {
+            // Wrap the expression in an expression which creates a mutable
+            // copy.
+            return new CopyListCalc(listCalc);
+        }
+        return listCalc;
+    }
+
+    private static class CopyListCalc extends AbstractListCalc {
+        private final ListCalc listCalc;
+
+        public CopyListCalc(ListCalc listCalc) {
+            super(new DummyExp(listCalc.getType()), new Calc[]{listCalc});
+            this.listCalc = listCalc;
+        }
+
+        public List evaluateList(Evaluator evaluator) {
+            List list = listCalc.evaluateList(evaluator);
+            return new ArrayList(list);
         }
     }
 }

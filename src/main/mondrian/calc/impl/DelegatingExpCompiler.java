@@ -29,7 +29,7 @@ public class DelegatingExpCompiler implements ExpCompiler {
     /**
      * Hook for post-processing.
      */
-    protected Calc afterCompile(Exp exp, Calc calc) {
+    protected Calc afterCompile(Exp exp, Calc calc, boolean mutable) {
         return calc;
     }
 
@@ -45,63 +45,75 @@ public class DelegatingExpCompiler implements ExpCompiler {
         return parent.compile(exp);
     }
 
+    public Calc compile(Exp exp, ResultStyle[] preferredResultTypes) {
+        return parent.compile(exp, preferredResultTypes);
+    }
+
     public MemberCalc compileMember(Exp exp) {
         MemberCalc calc = parent.compileMember(exp);
-        return (MemberCalc) afterCompile(exp, calc);
+        return (MemberCalc) afterCompile(exp, calc, false);
     }
 
     public LevelCalc compileLevel(Exp exp) {
         final LevelCalc calc = parent.compileLevel(exp);
-        return (LevelCalc) afterCompile(exp, calc);
+        return (LevelCalc) afterCompile(exp, calc, false);
     }
 
     public DimensionCalc compileDimension(Exp exp) {
         final DimensionCalc calc = parent.compileDimension(exp);
-        return (DimensionCalc) afterCompile(exp, calc);
+        return (DimensionCalc) afterCompile(exp, calc, false);
     }
 
     public HierarchyCalc compileHierarchy(Exp exp) {
         final HierarchyCalc calc = parent.compileHierarchy(exp);
-        return (HierarchyCalc) afterCompile(exp, calc);
+        return (HierarchyCalc) afterCompile(exp, calc, false);
     }
 
     public IntegerCalc compileInteger(Exp exp) {
         final IntegerCalc calc = parent.compileInteger(exp);
-        return (IntegerCalc) afterCompile(exp, calc);
+        return (IntegerCalc) afterCompile(exp, calc, false);
     }
 
     public StringCalc compileString(Exp exp) {
         final StringCalc calc = parent.compileString(exp);
-        return (StringCalc) afterCompile(exp, calc);
+        return (StringCalc) afterCompile(exp, calc, false);
     }
 
     public ListCalc compileList(Exp exp) {
-        final ListCalc calc = parent.compileList(exp);
-        return (ListCalc) afterCompile(exp, calc);
+        return compileList(exp, false);
+    }
+
+    public ListCalc compileList(Exp exp, boolean mutable) {
+        final ListCalc calc = parent.compileList(exp, mutable);
+        return (ListCalc) afterCompile(exp, calc, mutable);
     }
 
     public BooleanCalc compileBoolean(Exp exp) {
         final BooleanCalc calc = parent.compileBoolean(exp);
-        return (BooleanCalc) afterCompile(exp, calc);
+        return (BooleanCalc) afterCompile(exp, calc, false);
     }
 
     public DoubleCalc compileDouble(Exp exp) {
         final DoubleCalc calc = parent.compileDouble(exp);
-        return (DoubleCalc) afterCompile(exp, calc);
+        return (DoubleCalc) afterCompile(exp, calc, false);
     }
 
     public TupleCalc compileTuple(Exp exp) {
         final TupleCalc calc = parent.compileTuple(exp);
-        return (TupleCalc) afterCompile(exp, calc);
+        return (TupleCalc) afterCompile(exp, calc, false);
     }
 
     public Calc compileScalar(Exp exp, boolean scalar) {
         final Calc calc = parent.compileScalar(exp, scalar);
-        return afterCompile(exp, calc);
+        return afterCompile(exp, calc, false);
     }
 
     public ParameterSlot registerParameter(Parameter parameter) {
         return parent.registerParameter(parameter);
+    }
+
+    public ResultStyle[] getAcceptableResultStyles() {
+        return parent.getAcceptableResultStyles();
     }
 }
 

@@ -861,8 +861,10 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
-                return new AbstractListCalc(call, new Calc[] {memberCalc}) {
+                return new AbstractListCalc(call, new Calc[] {memberCalc}, false) {
                     public List evaluateList(Evaluator evaluator) {
+                        // Return the list of children. The list is immutable,
+                        // hence 'false' above.
                         Member member = memberCalc.evaluateMember(evaluator);
                         Member[] children = getNonEmptyMemberChildren(evaluator, member);
                         return Arrays.asList(children);

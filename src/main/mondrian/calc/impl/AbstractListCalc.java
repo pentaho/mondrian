@@ -12,12 +12,11 @@ package mondrian.calc.impl;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
 import mondrian.olap.type.SetType;
-import mondrian.calc.impl.AbstractCalc;
 import mondrian.calc.ListCalc;
 import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
 
 import java.util.List;
-import java.util.Collections;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.ListCalc} interface.
@@ -34,10 +33,33 @@ public abstract class AbstractListCalc
         extends AbstractCalc
         implements ListCalc {
     private final Calc[] calcs;
+    private final boolean mutable;
 
+    /**
+     * Creates an abstract implementation of a compiled expression which returns
+     * a mutable list.
+     *
+     * @param exp Expression which was compiled
+     * @param calcs List of child compiled expressions (for dependency
+     *   analysis)
+     */
     protected AbstractListCalc(Exp exp, Calc[] calcs) {
+        this(exp, calcs, true);
+    }
+
+    /**
+     * Creates an abstract implementation of a compiled expression which returns
+     * a list.
+     *
+     * @param exp Expression which was compiled
+     * @param calcs List of child compiled expressions (for dependency
+     *   analysis)
+     * @param mutable Whether the list is mutable
+     */
+    protected AbstractListCalc(Exp exp, Calc[] calcs, boolean mutable) {
         super(exp);
         this.calcs = calcs;
+        this.mutable = mutable;
         assert getType() instanceof SetType : "expecting a set: " + getType();
     }
 
@@ -49,6 +71,12 @@ public abstract class AbstractListCalc
 
     public Calc[] getCalcs() {
         return calcs;
+    }
+
+    public ExpCompiler.ResultStyle getResultStyle() {
+        return mutable ?
+            ExpCompiler.ResultStyle.MUTABLE_LIST :
+            ExpCompiler.ResultStyle.LIST;
     }
 }
 

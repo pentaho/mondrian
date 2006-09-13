@@ -10,7 +10,6 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.FunDef;
-import mondrian.olap.Exp;
 import mondrian.olap.Evaluator;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;

@@ -124,6 +124,18 @@ public interface Calc {
      * @param calcWriter Writer
      */
     void accept(CalcWriter calcWriter);
+
+    /**
+     * Returns style in which the result of evaluating this expression is
+     * returned.
+     *
+     * <p>One application of this method is for the compiler to figure out
+     * whether the compiled expression is returning a mutable list. If a mutable
+     * list is required, the compiler can create a mutable copy.
+     *
+     * @see ExpCompiler#compileList(mondrian.olap.Exp, boolean) 
+     */
+    ExpCompiler.ResultStyle getResultStyle();
 }
 
 // End Calc.java

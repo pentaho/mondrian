@@ -40,7 +40,7 @@ class OrderFunDef extends FunDefBase {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        final ListCalc listCalc = compiler.compileList(call.getArg(0));
+        final ListCalc listCalc = compiler.compileList(call.getArg(0), true);
         final Calc expCalc = compiler.compileScalar(call.getArg(1), true);
         int order = getLiteralArg(call, 2, Flags.ASC, Flags.instance);
         final boolean desc = Flags.isDescending(order);
@@ -120,8 +120,15 @@ class OrderFunDef extends FunDefBase {
         private final boolean desc;
         private final boolean brk;
 
-        public CalcImpl(ResolvedFunCall call, ListCalc listCalc, Calc expCalc, boolean desc, boolean brk) {
+        public CalcImpl(
+            ResolvedFunCall call,
+            ListCalc listCalc,
+            Calc expCalc,
+            boolean desc,
+            boolean brk)
+        {
             super(call, new Calc[]{listCalc, expCalc});
+            assert listCalc.getResultStyle() == ExpCompiler.ResultStyle.MUTABLE_LIST;
             this.listCalc = listCalc;
             this.expCalc = expCalc;
             this.desc = desc;

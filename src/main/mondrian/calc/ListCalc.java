@@ -24,6 +24,10 @@ public interface ListCalc extends Calc {
     /**
      * Evaluates an expression to yield a list of members or tuples.
      *
+     * <p>The list is immutable if {@link #getResultStyle()} yields
+     * {@link mondrian.calc.ExpCompiler.ResultStyle#MUTABLE_LIST}. Otherwise,
+     * the caller must not modify the list.
+     *
      * @param evaluator Evaluation context
      * @return A list of members or tuples, never null.
      */

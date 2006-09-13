@@ -30,6 +30,8 @@ public class AbstractExpCompiler implements ExpCompiler {
     private final Evaluator evaluator;
     private final Validator validator;
     private final Map parameterSlots = new HashMap();
+    private ResultStyle[] resultStyles = {ResultStyle.ANY};
+    private static final ResultStyle[] MUTABLE_LIST_ONLY = {ResultStyle.MUTABLE_LIST};
 
     public AbstractExpCompiler(Evaluator evaluator, Validator validator) {
         this.evaluator = evaluator;
@@ -46,6 +48,15 @@ public class AbstractExpCompiler implements ExpCompiler {
 
     public Calc compile(Exp exp) {
         return exp.accept(this);
+    }
+
+    public Calc compile(Exp exp, ResultStyle[] preferredResultTypes) {
+        assert preferredResultTypes != null;
+        ResultStyle[] save = this.resultStyles;
+        this.resultStyles = preferredResultTypes;
+        Calc calc = exp.accept(this);
+        this.resultStyles = save;
+        return calc;
     }
 
     public MemberCalc compileMember(Exp exp) {
@@ -129,7 +140,20 @@ public class AbstractExpCompiler implements ExpCompiler {
     }
 
     public ListCalc compileList(Exp exp) {
-        return (ListCalc) compile(exp);
+        return compileList(exp, false);
+    }
+
+    public ListCalc compileList(Exp exp, boolean mutable) {
+        ListCalc listCalc;
+        if (mutable) {
+            ResultStyle[] save = this.resultStyles;
+            this.resultStyles = MUTABLE_LIST_ONLY;
+            listCalc = (ListCalc) compile(exp);
+            this.resultStyles = save;
+        } else {
+            listCalc = (ListCalc) compile(exp);
+        }
+        return listCalc;
     }
 
     public BooleanCalc compileBoolean(Exp exp) {
@@ -212,6 +236,10 @@ public class AbstractExpCompiler implements ExpCompiler {
         Calc calc = parameter.getDefaultExp().accept(this);
         slot2.setDefaultValueCalc(calc);
         return slot2;
+    }
+
+    public ResultStyle[] getAcceptableResultStyles() {
+        return resultStyles;
     }
 
     /**
