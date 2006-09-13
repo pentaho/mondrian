@@ -434,7 +434,7 @@ public class TestContext {
         if (scalar) {
             exp = query.formulas[0].getExpression();
         } else {
-            exp = query.axes[0].exp;
+            exp = query.axes[0].getSet();
         }
         final Calc calc = query.compileExpression(exp, scalar);
         final StringWriter sw = new StringWriter();

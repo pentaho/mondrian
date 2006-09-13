@@ -490,7 +490,7 @@ public class Query extends QueryPart {
                 } else {
                     axisExp = axes[j];
                 }
-                if (axisExp.exp.getType().usesDimension(dimension, false)) {
+                if (axisExp.getSet().getType().usesDimension(dimension, false)) {
                     ++useCount;
                 }
             }
@@ -544,7 +544,7 @@ public class Query extends QueryPart {
 
     /** Returns the MDX query string. */
     public String toString() {
-//        resolve();
+        resolve();
         return Util.unparse(this);
     }
 
@@ -679,14 +679,14 @@ public class Query extends QueryPart {
      */
     public void swapAxes() {
         if (axes.length == 2) {
-            Exp e0 = axes[0].exp;
-            boolean nonEmpty0 = axes[0].nonEmpty;
-            Exp e1 = axes[1].exp;
-            boolean nonEmpty1 = axes[1].nonEmpty;
-            axes[1].exp = e0;
-            axes[1].nonEmpty = nonEmpty0;
-            axes[0].exp = e1;
-            axes[0].nonEmpty = nonEmpty1;
+            Exp e0 = axes[0].getSet();
+            boolean nonEmpty0 = axes[0].isNonEmpty();
+            Exp e1 = axes[1].getSet();
+            boolean nonEmpty1 = axes[1].isNonEmpty();
+            axes[1].setSet(e0);
+            axes[1].setNonEmpty(nonEmpty0);
+            axes[0].setSet(e1);
+            axes[0].setNonEmpty(nonEmpty1);
             // showSubtotals ???
         }
     }
@@ -893,7 +893,7 @@ public class Query extends QueryPart {
             throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.ex(
                     new Integer(axis));
         }
-        axes[axis].nonEmpty = !showEmpty;
+        axes[axis].setNonEmpty(!showEmpty);
     }
 
     /**
@@ -908,7 +908,7 @@ public class Query extends QueryPart {
         QueryAxis queryAxis = (axis == AxisOrdinal.SlicerOrdinal) ?
                 slicerAxis :
                 axes[axis];
-        return collectHierarchies(queryAxis.exp);
+        return collectHierarchies(queryAxis.getSet());
     }
 
     public Calc compileExpression(Exp exp, boolean scalar) {

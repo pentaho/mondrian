@@ -254,7 +254,7 @@ class RolapResult extends ResultBase {
             }
 
         } else {
-            evaluator.setNonEmpty(axis.nonEmpty);
+            evaluator.setNonEmpty(axis.isNonEmpty());
             Object value = axisCalc.evaluate(evaluator);
             evaluator.setNonEmpty(false);
             if (value == null) {

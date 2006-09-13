@@ -30,16 +30,8 @@ import java.io.PrintWriter;
  */
 public class QueryAxis extends QueryPart {
 
-    /**
-     * public-private: This must be public because it is accessed in olap.Query
-     */
-    public boolean nonEmpty;
-
-    /**
-     * public-private: This must be public because it is accessed in olap.Query
-     */
-    public Exp exp;
-
+    private boolean nonEmpty;
+    private Exp exp;
     private final AxisOrdinal axisOrdinal;
 
     /**

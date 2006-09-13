@@ -363,7 +363,7 @@ public class RolapConnection extends ConnectionBase {
             Result result = new RolapResult(query, true);
             for (int i = 0; i < query.axes.length; i++) {
                 QueryAxis axis = query.axes[i];
-                if (axis.nonEmpty) {
+                if (axis.isNonEmpty()) {
                     result = new NonEmptyResult(result, query, i);
                 }
             }
