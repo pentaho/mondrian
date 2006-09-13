@@ -226,7 +226,7 @@ public class ParameterTest extends FoodMartTestCase {
                 "select {Parameter(\"P\", [Gender], [Gender].[All Gender].[M], \"Which gender?\"), Parameter(\"Q\", [Gender], [Gender].DefaultMember, \"Another gender?\")} ON COLUMNS," + nl +
                 "  {[Measures].[Unit Sales]} ON ROWS" + nl +
                 "from [Sales]" + nl,
-                query.toMdx());
+                Util.unparse(query));
     }
 
     public void testTwoParametersBug1425153() {
