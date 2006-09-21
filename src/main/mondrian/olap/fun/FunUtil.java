@@ -422,12 +422,38 @@ public class FunUtil extends Util {
                 : 1;
     }
 
+    /**
+     * Compares double-precision values according to MDX semantics.
+     *
+     * <p>MDX requires a total order:
+     * <pre>
+     *    -inf &lt; ... &lt; -1 &lt; ... &lt; 0 &lt; ... &lt; NaN &lt; +inf
+     * </pre>
+     * but this is different than Java semantics, specifically with regard
+     * to {@link Double#NaN}.
+     */
     static int compareValues(double d1, double d2) {
-        return (d1 == d2)
-            ? 0
-            : (d1 < d2)
-                ? -1
-                : 1;
+        if (Double.isNaN(d1)) {
+            if (d2 == Double.POSITIVE_INFINITY) {
+                return -1;
+            } else if (Double.isNaN(d2)) {
+                return 0;
+            } else {
+                return 1;
+            }
+        } else if (Double.isNaN(d2)) {
+            if (d1 == Double.POSITIVE_INFINITY) {
+                return 1;
+            } else {
+                return -1;
+            }
+        } else if (d1 == d2) {
+            return 0;
+        } else if (d1 < d2) {
+            return -1;
+        } else {
+            return 1;
+        }
     }
 
     static int compareValues(int i, int j) {
