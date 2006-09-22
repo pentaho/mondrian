@@ -25,8 +25,19 @@ public class CmdRunnerTest extends FoodMartTestCase {
     protected DiffRepository getDiffRepos() {
         return DiffRepository.lookup(CmdRunnerTest.class);
     }
+    public CmdRunnerTest() {
+    }
+    public CmdRunnerTest(String name) {
+        super(name);
+    }
 
     public void testQuery() throws IOException {
+        doTest();
+    }
+    public void test7731() throws IOException {
+        doTest();
+    }
+    protected void doTest() {
         final DiffRepository diffRepos = getDiffRepos();
         String input = diffRepos.expand("input", "${input}");
         final StringWriter sw = new StringWriter();
