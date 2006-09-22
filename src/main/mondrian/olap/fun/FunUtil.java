@@ -427,7 +427,7 @@ public class FunUtil extends Util {
      *
      * <p>MDX requires a total order:
      * <pre>
-     *    -inf &lt; ... &lt; -1 &lt; ... &lt; 0 &lt; ... &lt; NaN &lt; +inf
+     *    -inf &lt; NULL &lt; ... &lt; -1 &lt; ... &lt; 0 &lt; ... &lt; NaN &lt; +inf
      * </pre>
      * but this is different than Java semantics, specifically with regard
      * to {@link Double#NaN}.
@@ -449,6 +449,18 @@ public class FunUtil extends Util {
             }
         } else if (d1 == d2) {
             return 0;
+        } else if (d1 == FunUtil.DoubleNull) {
+            if (d2 == Double.NEGATIVE_INFINITY) {
+                return 1;
+            } else {
+                return -1;
+            }
+        } else if (d2 == FunUtil.DoubleNull) {
+            if (d1 == Double.NEGATIVE_INFINITY) {
+                return -1;
+            } else {
+                return 1;
+            }
         } else if (d1 < d2) {
             return -1;
         } else {
