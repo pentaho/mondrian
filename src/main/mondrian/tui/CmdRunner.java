@@ -52,6 +52,7 @@ public class CmdRunner {
     private static final Map paraNameValues = new HashMap();
 
     private static String[][] commentDelim;
+    private static char[] commentStartChars;
     private static boolean allowNestedComments;
 
     private final Options options;
@@ -944,7 +945,8 @@ public class CmdRunner {
         StringBuffer buf = new StringBuffer(128);
         StringBuffer line = new StringBuffer(128);
         int offset;
-       int i=getLine(reader, line);
+        int i=getLine(reader, line);
+        boolean inName = false;
 
         for (offset = 0; offset < line.length(); offset++) {
             char c = line.charAt(offset);
@@ -952,17 +954,46 @@ public class CmdRunner {
             if (c == ESCAPE_CHAR) {
                 buf.append(ESCAPE_CHAR);
                 buf.append(line.charAt(++offset));
-            } else if ((c == STRING_CHAR_1) || (c == STRING_CHAR_2)) {
+            } else if (!inName &&
+                    ((c == STRING_CHAR_1) || (c == STRING_CHAR_2))) {
                 i = readString(reader, line, offset, buf, i);
                 offset = 0;
             } else {
                 int commentType=-1;
 
-                // check if we have the start of a comment block
-                for (int x = 0; x < commentDelim.length; x++) {
-                    if (line.substring(offset).startsWith(commentDelim[x][0])) {
-                        commentType = x;
-                        break;
+                if (c == BRACKET_START) {
+                    inName = true;
+                } else if (c == BRACKET_END) {
+                    inName = false;
+                } else if (! inName) {
+                    // check if we have the start of a comment block
+                    // check if we have the start of a comment block
+                    for (int x = 0; x < commentDelim.length; x++) {
+                        if (c != commentStartChars[x]) {
+                            continue;
+                        }
+                        String startComment = commentDelim[x][0];
+                        boolean foundCommentStart = true;
+                        for (int j = 1;
+                            j+offset < line.length() && j < startComment.length();
+                                j++) {
+                            if (line.charAt(j+offset) != startComment.charAt(j)) {
+                                foundCommentStart = false;
+                            }
+                        }
+
+                        if (foundCommentStart) {
+                            if (x == 0) {
+                                // A '#' must be the first character on a line
+                                if (offset == 0) {
+                                    commentType = x;
+                                    break;
+                                }
+                            } else {
+                                commentType = x;
+                                break;
+                            }
+                        }
                     }
                 }
 
@@ -1257,6 +1288,8 @@ public class CmdRunner {
     private static final char CANCEL_CHAR         = '~';
     private static final char STRING_CHAR_1       = '"';
     private static final char STRING_CHAR_2       = '\'';
+    private static final char BRACKET_START       = '[';
+    private static final char BRACKET_END         = ']';
 
     private static final String SEMI_COLON_STRING = ";";
 
@@ -2322,15 +2355,20 @@ public class CmdRunner {
         allowNestedComments = mondrian.olap.Scanner.getNestedCommentsState();
         String[][] scannerCommentsDelimiters = mondrian.olap.Scanner.getCommentDelimiters();
         commentDelim = new String[scannerCommentsDelimiters.length+1][2];
+        commentStartChars = new char[scannerCommentsDelimiters.length+1];
+
 
         // CmdRunner has extra delimiter; # to end of line
         commentDelim[0][0] = "#";
         commentDelim[0][1] = null;
+        commentStartChars[0] = commentDelim[0][0].charAt(0);
+
 
         // copy all the rest of the delimiters
         for (int x = 0; x < scannerCommentsDelimiters.length; x++) {
             commentDelim[x + 1][0] = scannerCommentsDelimiters[x][0];
             commentDelim[x + 1][1] = scannerCommentsDelimiters[x][1];
+            commentStartChars[x + 1] = commentDelim[x][0].charAt(0);
         }
     }
 
