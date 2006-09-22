@@ -2368,7 +2368,7 @@ public class CmdRunner {
         for (int x = 0; x < scannerCommentsDelimiters.length; x++) {
             commentDelim[x + 1][0] = scannerCommentsDelimiters[x][0];
             commentDelim[x + 1][1] = scannerCommentsDelimiters[x][1];
-            commentStartChars[x + 1] = commentDelim[x][0].charAt(0);
+            commentStartChars[x + 1] = commentDelim[x+1][0].charAt(0);
         }
     }
 
