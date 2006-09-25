@@ -325,6 +325,8 @@ class CrossJoinFunDef extends FunDefBase {
         // then this results in TWO calls to ArrayList's ensureCapacity method
         // and its associated System.arraycopy method.
         // What is best?
+        // Note that an ArrayList does not have an adjustable "growth factor"
+        // but rather grows by 1.5.
         List result = new ArrayList((list.size() + 2) >> 1);
 
         // Get all Measures
@@ -340,25 +342,33 @@ class CrossJoinFunDef extends FunDefBase {
         // So, here it is assumed that all Measures are known statically by 
         // this stage of the processing.
         Query query = evaluator.getQuery();
-        QueryAxis[] axes = query.getAxes();
         Set measureSet = null;
-        Set queryMeasureSet = evaluator.getQuery().getMeasuresMembers();
-        if (axes.length >  1 && queryMeasureSet.size() > 0 ) {
-            for (int i = 0; i < axes.length; i++) {
-                // for junit test this null test is required
-                if (axes[i] != null) {
-                    MeasureVisitor visitor = new MeasureVisitor(queryMeasureSet);
-                    axes[i].accept(visitor);
-                    if (visitor.measureSet != null) {
-                        if (measureSet != null) {
-                            measureSet.addAll(visitor.measureSet);
-                        } else {
-                            measureSet = visitor.measureSet;
-                        }
+        Set queryMeasureSet = query.getMeasuresMembers();
+        // if the slicer contains a Measure, then the other axes can not
+        // contain a Measure, so look at slicer axis first
+        if (queryMeasureSet.size() > 0) {
+            MeasureVisitor visitor = new MeasureVisitor(queryMeasureSet);
+            QueryAxis[] axes = query.getAxes();
+            QueryAxis slicerAxis = query.getSlicerAxis();
+            if (slicerAxis != null) {
+                slicerAxis.accept(visitor);
+            }
+            if (visitor.measureSet != null) {
+                // Slicer had a Measure, 1) use it and 2) do not need to look at
+                // the other axes.
+                measureSet = visitor.measureSet;
+
+            } else if (axes.length >  1) {
+                for (int i = 0; i < axes.length; i++) {
+                    if (axes[i] != null) {
+                        axes[i].accept(visitor);
                     }
                 }
+                // It maybe null, but thats ok here
+                measureSet = visitor.measureSet;
             }
         }
+
 
         // Determine if there is any data.
         evaluator = evaluator.push();
