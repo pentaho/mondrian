@@ -57,8 +57,8 @@ public class AggregationManager extends RolapAggregationManager {
      * RolapStar creates an Aggregation if needed.
      * 
      * @param measures 
-     * @param columns 
-     * @param bitKey 
+     * @param columns this is the CellRequest's constrained columns
+     * @param bitKey this is the CellRequest's constrained column BitKey
      * @param constraintses 
      * @param pinnedSegments 
      */
@@ -87,7 +87,7 @@ public class AggregationManager extends RolapAggregationManager {
     public Object getCellFromCache(CellRequest request) {
         RolapStar.Measure measure = request.getMeasure();
         Aggregation aggregation = measure.getStar().lookupAggregation(
-            request.getBatchKey());
+            request.getConstrainedColumnsBitKey());
 
         if (aggregation == null) {
             // cell is not in any aggregation
@@ -106,7 +106,7 @@ public class AggregationManager extends RolapAggregationManager {
 
         RolapStar.Measure measure = request.getMeasure();
         Aggregation aggregation = measure.getStar().lookupAggregation(
-            request.getBatchKey());
+            request.getConstrainedColumnsBitKey());
 
         if (aggregation == null) {
             // cell is not in any aggregation
@@ -236,15 +236,18 @@ public class AggregationManager extends RolapAggregationManager {
         // of the combined measure BitKey and foreign-key/level BitKey.
         //
         // On the other hand, if there is at least one distinct count
-        // measure, isDistinct == true, then want is wanted is an AggStar
+        // measure, isDistinct == true, then what is wanted is an AggStar
         // whose measure BitKey is a superset of the measure BitKey,
         // whose level BitKey is an exact match and the aggregate table
         // can NOT have any foreign keys.
         assert rollup != null;
         BitKey fullBitKey = levelBitKey.or(measureBitKey);
-        // superset match
+
+        // The AggStars are already ordered from smallest to largest so
+        // we need only find the first one and return it.
         for (Iterator it = star.getAggStars().iterator(); it.hasNext(); ) {
             AggStar aggStar = (AggStar) it.next();
+            // superset match
             if (!aggStar.superSetMatch(fullBitKey)) {
                 continue;
             }

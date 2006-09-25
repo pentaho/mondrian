@@ -60,6 +60,10 @@ public class Aggregation {
 
     private final RolapStar star;
 
+    /** 
+     * This is a BitKey for ALL columns (Measures and Levels) involved in the 
+     * query. 
+     */
     private final BitKey bitKey;
 
     /**

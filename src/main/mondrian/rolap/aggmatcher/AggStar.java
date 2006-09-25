@@ -175,9 +175,27 @@ public class AggStar {
 
     private final RolapStar star;
     private final AggStar.FactTable aggTable;
+    
+    /** 
+     * This BitKey is for all of the columns in the AggStar (levels and
+     * measures). 
+     */
     private final BitKey bitKey;
+    
+    /** 
+     * BitKey of the levels (levels and foreign keys) of this AggStar. 
+     */
     private final BitKey levelBitKey;
+
+    /** 
+     * BitKey of the measures of this AggStar. 
+     */
     private final BitKey measureBitKey;
+
+    /** 
+     * BitKey of those measures of this AggStar that are distinct count
+     * aggregates. 
+     */
     private final BitKey distinctMeasureBitKey;
     private final AggStar.Table.Column[] columns;
 

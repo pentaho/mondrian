@@ -585,7 +585,10 @@ RME is this right
             // One or more calculated members. Cannot use agg table.
             return null;
         }
-        RolapStar.Column[] columns = request.getColumns();
+        // TODO: RME why is this using the array of constrained columns
+        // from the CellRequest rather than just the constrained columns
+        // BitKey (method getConstrainedColumnsBitKey)?
+        RolapStar.Column[] columns = request.getConstrainedColumns();
         for (int i = 0; i < columns.length; i++) {
             levelBitKey.set(columns[i].getBitPosition());
         }

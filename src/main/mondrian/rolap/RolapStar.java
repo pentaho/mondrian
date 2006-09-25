@@ -442,7 +442,7 @@ public class RolapStar {
 
     private Object getCell(CellRequest request, Connection jdbcConnection) {
         Measure measure = request.getMeasure();
-        Column[] columns = request.getColumns();
+        Column[] columns = request.getConstrainedColumns();
         Object[] values = request.getSingleValues();
         Util.assertTrue(columns.length == values.length);
         SqlQuery sqlQuery = getSqlQuery();

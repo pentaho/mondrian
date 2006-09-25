@@ -86,7 +86,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     }
 
     public RolapStar.Column[] getColumns() {
-        return request.getColumns();
+        return request.getConstrainedColumns();
     }
 
     public String getColumnAlias(final int i) {

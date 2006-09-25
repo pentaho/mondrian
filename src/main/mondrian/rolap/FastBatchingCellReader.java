@@ -141,25 +141,27 @@ public class FastBatchingCellReader implements CellReader {
                 return star.getFactTable().getTableName()+" "+key.toString();
             }
         };
-        BitKey bitkey = request.getBatchKey();
+        BitKey bitkey = request.getConstrainedColumnsBitKey();
         BatchKey key = new BatchKey(bitkey, request.getMeasure().getStar());
         Batch batch = (Batch) batches.get(key);
         if (batch == null) {
             batch = new Batch(request);
+            batches.put(key, batch);
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("FastBatchingCellReader: bitkey=" +
-                        request.getBatchKey());
-                RolapStar star = cube.getStar();
-                if (star != null) {
-                    RolapStar.Column[] columns =
-                            star.lookupColumns((BitKey) request.getBatchKey());
-                    for (int i = 0; i < columns.length; i++) {
-                        LOGGER.debug("  " +columns[i]);
-                    }
+                StringBuffer buf = new StringBuffer(100);
+                buf.append("FastBatchingCellReader: bitkey=");
+                buf.append(request.getConstrainedColumnsBitKey());
+                buf.append(Util.nl);
+
+                RolapStar.Column[] columns = request.getConstrainedColumns();
+                for (int i = 0; i < columns.length; i++) {
+                    buf.append("  ");
+                    buf.append(columns[i]);
+                    buf.append(Util.nl);
                 }
+                LOGGER.debug(buf.toString());
             }
-            batches.put(key, batch);
         }
         batch.add(request);
     }
@@ -220,13 +222,16 @@ public class FastBatchingCellReader implements CellReader {
 
     private static final Logger BATCH_LOGGER = Logger.getLogger(Batch.class);
     class Batch {
+        // these are the CellRequest's constrained columns
         final RolapStar.Column[] columns;
+        // this is the CellRequest's constrained column BitKey
         final BitKey bitKey;
         final List measuresList = new ArrayList();
         final Set[] valueSets;
+
         public Batch(CellRequest request) {
-            columns = request.getColumns();
-            bitKey = request.getBatchKey();
+            columns = request.getConstrainedColumns();
+            bitKey = request.getConstrainedColumnsBitKey();
             valueSets = new HashSet[columns.length];
             for (int i = 0; i < valueSets.length; i++) {
                 valueSets[i] = new HashSet();
@@ -244,18 +249,25 @@ public class FastBatchingCellReader implements CellReader {
                         (measure.getStar() ==
                         ((RolapStar.Measure) measuresList.get(0)).getStar()):
                         "Measure must belong to same star as other measures";
-/*
-System.out.println("Batch.add: size=" +measuresList.size());
-System.out.println(" measure.getName()=" +measure.getName());
-System.out.println(" measure.getTable().getTableName()=" +measure.getTable().getTableName());
-*/
                 measuresList.add(measure);
             }
+        }
+        
+        /** 
+         * This can only be called after the add method has been called. 
+         * 
+         * @return the RolapStar associated with the Batch's first Measure.
+         */
+        private RolapStar getStar() {
+            RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(0);
+            RolapStar star = measure.getStar();
+            return star;
         }
 
         void loadAggregation() {
             if (generateAggregateSql) {
-                if (FastBatchingCellReader.this.cube.isVirtual()) {
+                RolapCube cube = FastBatchingCellReader.this.cube;
+                if (cube == null || cube.isVirtual()) {
                     StringBuffer buf = new StringBuffer(64);
                     buf.append("AggGen: Sorry, can not create SQL for virtual Cube \"");
                     buf.append(FastBatchingCellReader.this.cube.getName());
@@ -301,15 +313,13 @@ System.out.println(" measure.getTable().getTableName()=" +measure.getTable().get
 
                 constraintses[j] = constraints;
             }
-            // todo: optimize key sets; drop a constraint if more than x% of
+            // TODO: optimize key sets; drop a constraint if more than x% of
             // the members are requested; whether we should get just the cells
             // requested or expand to a n-cube
 
             // If the database cannot execute "count(distinct ...)", split the
             // distinct aggregations out.
-            RolapStar.Measure measure =
-                (RolapStar.Measure) measuresList.get(0);
-            if (!measure.getStar().getSqlQueryDialect().allowsCountDistinct()) {
+            if (!getStar().getSqlQueryDialect().allowsCountDistinct()) {
                 while (true) {
                     // Scan for a measure based upon a distinct aggregation.
                     RolapStar.Measure distinctMeasure =
@@ -317,12 +327,12 @@ System.out.println(" measure.getTable().getTableName()=" +measure.getTable().get
                     if (distinctMeasure == null) {
                         break;
                     }
-                    final String expr =
-                        distinctMeasure.getExpression().
+                    final String expr = distinctMeasure.getExpression().
                             getGenericExpression();
                     final List distinctMeasuresList = new ArrayList();
                     for (int i = 0; i < measuresList.size();) {
-                        measure = (RolapStar.Measure) measuresList.get(i);
+                        RolapStar.Measure measure =
+                                (RolapStar.Measure) measuresList.get(i);
                         if (measure.getAggregator().isDistinct() &&
                             measure.getExpression().getGenericExpression().
                                 equals(expr))
@@ -340,13 +350,13 @@ System.out.println(" measure.getTable().getTableName()=" +measure.getTable().get
                             constraintses, pinnedSegments);
                 }
             }
+
             final int measureCount = measuresList.size();
-            if (measureCount > 0) {
-                RolapStar.Measure[] measures = (RolapStar.Measure[])
+            RolapStar.Measure[] measures = (RolapStar.Measure[])
                     measuresList.toArray(new RolapStar.Measure[measureCount]);
-                aggmgr.loadAggregation(measures, columns, bitKey,
+            aggmgr.loadAggregation(measures, columns, bitKey,
                     constraintses, pinnedSegments);
-            }
+
             if (BATCH_LOGGER.isDebugEnabled()) {
                 long t2 = System.currentTimeMillis();
                 BATCH_LOGGER.debug("Batch.loadAggregation (millis) " + (t2 - t1));

@@ -38,14 +38,26 @@ public class CellRequest {
      * that 2 requests for the same columns on measures in the same star get
      * put into the same batch.
      */
-    private final List columnList = new ArrayList();
+    private final List constrainedColumnList = new ArrayList();
     private final List valueList = new ArrayList();
-    private RolapStar.Column[] columns = null;
+    
+    /** 
+     * After all of the columns are loaded into the constrainedColumnList instance
+     * variable, this columnsCache is created the first time the getColumns
+     * method is called. 
+     * <p>
+     * It is assumed that the call to all additional columns, addConstrainedColumn,
+     * will not be called after the first call to getColumns method.
+     */
+    private RolapStar.Column[] columnsCache = null;
     /**
      * A bit is set for each column in the column list. Allows us to rapidly
      * figure out whether two requests are for the same column set.
+     * These are all of the columns that are involved with a query, that is, all 
+     * required to be present in an aggregate table for the table be used to
+     * fulfill the query.
      */
-    private final BitKey bitKey;
+    private final BitKey constrainedColumnsBitKey;
     /**
      * Whether the request is impossible to satisfy. This is set to 'true' if
      * contradictory constraints are applied to the same column. For example,
@@ -65,8 +77,8 @@ public class CellRequest {
         this.measure = measure;
         this.extendedContext = extendedContext;
         this.drillThrough = drillThrough;
-        this.columnList.add(measure.getStar());
-        this.bitKey =
+        this.constrainedColumnList.add(measure.getStar());
+        this.constrainedColumnsBitKey =
             BitKey.Factory.makeBitKey(measure.getStar().getColumnCount());
     }
 
@@ -80,14 +92,18 @@ public class CellRequest {
     public void addConstrainedColumn(
             RolapStar.Column column,
             ColumnConstraint constraint) {
+
+        assert columnsCache == null;
+
         final int bitPosition = column.getBitPosition();
-        if (this.bitKey.get(bitPosition)) {
+        if (this.constrainedColumnsBitKey.get(bitPosition)) {
             // This column is already constrained. Unless the value is the same,
             // or this value or the previous value is null (meaning
             // unconstrained) the request will never return any results.
-            int index = columnList.indexOf(column);
+            int index = constrainedColumnList.indexOf(column);
             Util.assertTrue(index >= 0);
-            --index; // column list has dummy first element
+            // column list has RolapStar as its first element
+            --index; 
             final ColumnConstraint prevValue =
                     (ColumnConstraint) valueList.get(index);
             if (prevValue == null) {
@@ -104,40 +120,40 @@ public class CellRequest {
                 unsatisfiable = true;
             }
             valueList.set(index, constraint);
-            return;
-        }
 
-        this.columnList.add(column);
-        this.bitKey.set(bitPosition);
-        this.valueList.add(constraint);
+        } else {
+            this.constrainedColumnList.add(column);
+            this.constrainedColumnsBitKey.set(bitPosition);
+            this.valueList.add(constraint);
+        }
     }
 
     public RolapStar.Measure getMeasure() {
         return measure;
     }
 
-    public RolapStar.Column[] getColumns() {
-        if (this.columns == null) {
+    public RolapStar.Column[] getConstrainedColumns() {
+        if (this.columnsCache == null) {
             // This is called more than once so caching the value makes
             // sense.
-            makeColumns();
+            makeColumnsCache();
         }
-        return this.columns;
+        return this.columnsCache;
     }
 
-    private void makeColumns() {
-        // ignore the star, the 0th element of columnList
-        this.columns = new RolapStar.Column[columnList.size() - 1];
-        for (int i = 0; i < this.columns.length; i++) {
-            columns[i] = (RolapStar.Column) columnList.get(i + 1);
+    private void makeColumnsCache() {
+        // ignore the star, the 0th element of constrainedColumnList
+        this.columnsCache = new RolapStar.Column[constrainedColumnList.size() - 1];
+        for (int i = 0; i < this.columnsCache.length; i++) {
+            columnsCache[i] = (RolapStar.Column) constrainedColumnList.get(i + 1);
         }
     }
 
     /**
      * Returns the BitKey for the list of columns.
      */
-    public BitKey getBatchKey() {
-        return bitKey;
+    public BitKey getConstrainedColumnsBitKey() {
+        return constrainedColumnsBitKey;
     }
 
     public List getValueList() {
