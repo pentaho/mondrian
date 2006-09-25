@@ -92,7 +92,7 @@ public interface BitKey {
     /**
      * Returns a <code>BitKey</code> containing all of the bits in this
      * <code>BitSet</code> whose corresponding
-     * bit is set in the specified <code>BitSet</code>.
+     * bit is NOT set in the specified <code>BitSet</code>.
      */
     BitKey andNot(BitKey bitKey);
 
