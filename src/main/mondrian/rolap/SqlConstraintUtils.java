@@ -13,6 +13,7 @@ import java.util.*;
 
 import mondrian.olap.Evaluator;
 import mondrian.olap.Member;
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.sql.SqlQuery;
@@ -199,92 +200,10 @@ public class SqlConstraintUtils {
             String q = level.getKeyExp().getExpression(sqlQuery);
             ColumnConstraint[] cc = getColumnConstraints(c);
 
-            // ORA-01795: maximum number of expressions in a list is 1000
-            // It is rumored that for some versions of Oracle the maximum number
-            // is 255.
-            final int ORACLE_MAX_EXPRSSIONS = 1000;
-            if (sqlQuery.getDialect().isOracle() && 
-                    cc.length >= ORACLE_MAX_EXPRSSIONS) {
-
+            if (cc.length >= MondrianProperties.instance().MaxConstraints.get()){
                 // Simply get them all, do not create where-clause.
                 // Below are two alternative approaches (and code). They
                 // both have problems.
-                
-/*
-                // Approach 1
-                // Convert the single, "q in ( .... )", clause into
-                // a union of individual selects
-                // "q in ((select 'a' from dual) union 
-                //    (select 'b' from dual) union ... )"
-                // where 'a', 'b', etc. are the individual values.
-                // In this case, Oracle requires a very large shared memory
-                // pool (ORA-04031: unable to allocate nnn bytes of 
-                // shared memory) and so this is not very reasonable.
-                
-                // NOTE: the following produces legal Oracle SQL, but
-                // Oracle requires very large shared memory buffer.
-                StringBuffer buf = new StringBuffer(cc.length);
-                buf.append(q);
-                buf.append(" in (");
-                // NOTE: this would have to be fixed to account for nulls, etc
-                // as the code in RolapStar.Column.createInExpr does.
-                for (int i = 0; i < cc.length; i++) {
-                    ColumnConstraint constraint = cc[i];
-                    Object key = constraint.getValue();
-                    if (i > 0) {
-                        buf.append(" union ");
-                    }
-                    buf.append("(select ");
-                    if (level.isNumeric()) {
-                        buf.append(key);
-                    } else {
-                        Util.singleQuoteString(key.toString(), buf);
-                    }
-                    buf.append(" from dual)");
-                }
-                buf.append(')');
-                sqlQuery.addWhere(buf.toString());
-*/
-/*
-                // Approach 2
-                // Convert the single, "q in ( .... )", clause into
-                // a set of "or-ed" clauses, 
-                // "q in ( ...) or ... or q in ( ...)"
-                // Oracle can not handle more than 1000 items in an 
-                // expression list.
-                
-                // NOTE: the following produces legal Oracle SQL, but
-                // when one has, say, 11108 column contraints which yield
-                // 12 different parts to the "or-ed" clause, the Oracle 
-                // DB does not return after 30 minutes. On the other hand,
-                // if one simply removes the where-clause (do not create
-                // it), the Oracle returns in less than 0.4 seconds.
-                
-                // multiple in-clauses or-ed together
-                int ccs = cc.length/ORACLE_MAX_EXPRSSIONS;
-                int ccx = cc.length - (ccs * ORACLE_MAX_EXPRSSIONS);
-                // the length will clearly be bigger than cc.length but its a 
-                // good starting point
-                StringBuffer buf = new StringBuffer(cc.length);
-                ColumnConstraint[] tmpcc = new ColumnConstraint[ORACLE_MAX_EXPRSSIONS];
-                for (int i = 0; i < ccs; i++) {
-                    System.arraycopy(cc, i * ORACLE_MAX_EXPRSSIONS, tmpcc, 0, ORACLE_MAX_EXPRSSIONS);
-                    String cond = RolapStar.Column.createInExpr(q, tmpcc, level.isNumeric());
-                    if (i != 0) {
-                        buf.append(" or ");
-                    }
-                    buf.append(cond);
-                }
-                if (ccx > 0) {
-                    buf.append(" or ");
-                    tmpcc = new ColumnConstraint[ccx];
-                    System.arraycopy(cc, ccs * ORACLE_MAX_EXPRSSIONS, tmpcc, 0, ccx);
-                    String cond = RolapStar.Column.createInExpr(q, tmpcc, level.isNumeric());
-                    buf.append(cond);
-                } 
-
-                sqlQuery.addWhere(buf.toString());
-*/
 
             } else {
                 String cond = RolapStar.Column.createInExpr(q, cc, level.isNumeric());
