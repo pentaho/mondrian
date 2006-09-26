@@ -3005,6 +3005,10 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns("Format(1234.5, \"#,#\" || \"#0.00\")", "1,234.50");
     }
 
+    public void testFormatMember() {
+        assertExprReturns("Format([Store].[USA].[CA], \"#,#\" || \"#0.00\")", "74,748.00");
+    }
+
     public void testIIf() {
         assertExprReturns("IIf(([Measures].[Unit Sales],[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]) > 100, \"Yes\",\"No\")",
             "Yes");
