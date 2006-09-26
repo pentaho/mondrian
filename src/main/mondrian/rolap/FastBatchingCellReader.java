@@ -352,10 +352,12 @@ public class FastBatchingCellReader implements CellReader {
             }
 
             final int measureCount = measuresList.size();
-            RolapStar.Measure[] measures = (RolapStar.Measure[])
+            if (measureCount > 0) {
+                RolapStar.Measure[] measures = (RolapStar.Measure[])
                     measuresList.toArray(new RolapStar.Measure[measureCount]);
-            aggmgr.loadAggregation(measures, columns, bitKey,
+                aggmgr.loadAggregation(measures, columns, bitKey,
                     constraintses, pinnedSegments);
+            }
 
             if (BATCH_LOGGER.isDebugEnabled()) {
                 long t2 = System.currentTimeMillis();
