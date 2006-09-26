@@ -153,14 +153,14 @@ public class Query extends QueryPart {
             Formula[] formulas,
             QueryAxis[] axes,
             String cube,
-            Exp slicer,
+            QueryAxis slicerAxis,
             QueryPart[] cellProps,
             boolean load) {
         this(connection,
                 connection.getSchema().lookupCube(cube, true),
                 formulas,
                 axes,
-                slicer,
+                slicerAxis,
                 cellProps,
                 new Parameter[0],
                 load);
@@ -174,7 +174,7 @@ public class Query extends QueryPart {
             Cube mdxCube,
             Formula[] formulas,
             QueryAxis[] axes,
-            Exp slicer,
+            QueryAxis slicerAxis,
             QueryPart[] cellProps,
             Parameter[] parameters,
             boolean load) {
@@ -183,14 +183,7 @@ public class Query extends QueryPart {
         this.formulas = formulas;
         this.axes = axes;
         normalizeAxes();
-        if (slicer == null) {
-            this.slicerAxis = null;
-        } else {
-            this.slicerAxis =
-                    new QueryAxis(
-                            false, slicer, AxisOrdinal.Slicer,
-                            QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
-        }
+        this.slicerAxis = slicerAxis;
         this.cellProps = cellProps;
         this.parameters.addAll(Arrays.asList(parameters));
         this.isExecuting = false;
@@ -255,7 +248,7 @@ public class Query extends QueryPart {
                 cube,
                 Formula.cloneArray(formulas),
                 QueryAxis.cloneArray(axes),
-                (slicerAxis == null) ? null : (Exp) slicerAxis.clone(),
+                (slicerAxis == null) ? null : (QueryAxis) slicerAxis.clone(),
                 cellProps,
                 (Parameter[])
                     parameters.toArray(new Parameter[parameters.size()]),
@@ -286,7 +279,7 @@ public class Query extends QueryPart {
     /**
      * Issues a cancel request on this Query object.  Once the thread
      * running the query detects the cancel request, the query execution will
-     * throw an exception. See {@link BasicQueryTest#testCancel} for an
+     * throw an exception. See <code>BasicQueryTest.testCancel</code> for an
      * example of usage of this method.
      */
     public void cancel() {

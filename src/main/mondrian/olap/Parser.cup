@@ -141,13 +141,22 @@ parser code {:
         }
     }
 
-    /** override this function to make your kind of query */
+    /**
+     * Creates a {@link Query} object.
+     * Override this function to make your kind of query.
+     */
     protected Query makeQuery(
         Formula[] formulae, QueryAxis[] axes,
         String cube, Exp slicer, QueryPart[] cellProps)
     {
+        final QueryAxis slicerAxis =
+            slicer == null ?
+                null :
+                new QueryAxis(
+                    false, slicer, AxisOrdinal.Slicer,
+                    QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
         return new Query(
-            mdxConnection, formulae, axes, cube, slicer, cellProps, load);
+            mdxConnection, formulae, axes, cube, slicerAxis, cellProps, load);
     }
 
     // Override lr_parser methods for NLS.  With this error handling scheme,

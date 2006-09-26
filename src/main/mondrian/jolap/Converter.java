@@ -35,7 +35,7 @@ class Converter {
         for (int i = 0; i < queryAxes.length; i++) {
             queryAxes[i] = convert((MondrianEdgeView) cubeView.getOrdinateEdge().get(i), i);
         }
-        final Exp slicer = null;
+        final QueryAxis slicerAxis = null;
         final QueryPart[] cellProps = new QueryPart[0];
         final Parameter[] parameters = new Parameter[0];
         final MondrianJolapCube mondrianJolapCube = (MondrianJolapCube) cubeView.cube;
@@ -43,7 +43,7 @@ class Converter {
             throw new OLAPException("Cube view " + cubeView + " does not have a cube");
         }
         final Query query = new Query(cubeView.connection.mondrianConnection,
-                mondrianJolapCube.cube, new Formula[0], queryAxes, slicer,
+                mondrianJolapCube.cube, new Formula[0], queryAxes, slicerAxis,
                 cellProps, parameters, false);
         return query;
     }

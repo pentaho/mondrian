@@ -224,6 +224,19 @@ public class ParserTest extends TestCase {
         assertParseExpr("[Foo].&[Bar]", "[Foo].&[Bar]");
     }
 
+    public void testCloneQuery() {
+        Connection connection = TestContext.instance().getFoodMartConnection(false);
+        Query query = connection.parseQuery(
+            "select {[Measures].Members} on columns,\n" +
+                " {[Store].Members} on rows\n" +
+                "from [Sales]\n" +
+                "where ([Gender].[M])");
+
+        Object queryClone = query.clone();
+        assertTrue(queryClone instanceof Query);
+        assertEquals(query.toString(), queryClone.toString());
+    }
+
     /**
      * Parses an MDX query and asserts that the result is as expected when
      * unparsed.
