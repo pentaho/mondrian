@@ -832,7 +832,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         // calculated member defined in schema
         checkNative(18, 3,
             "select " +
-            "{[Measures].[Store Invoice], [Measures].[Profit]} on columns, " +
+            "{[Measures].[Profit Per Unit Shipped]} on columns, " +
             "non empty crossjoin([Product].[All Products].children, " +
             "[Store].[All Stores].children) on rows " +
             "from [Warehouse and Sales]");

@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 import mondrian.olap.*;
+import mondrian.mdx.*;
 import mondrian.rolap.sql.TupleConstraint;
 
 /**
@@ -124,20 +125,17 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         {
             Member member = (Member) it.next();
             if (member instanceof RolapStoredMeasure) {
-                RolapStoredMeasure measure = (RolapStoredMeasure) member;
-                RolapStar.Measure starMeasure =
-                    (RolapStar.Measure) measure.getStarMeasure();
-                RolapStar star = starMeasure.getStar();
-                RolapCube baseCube = measure.getCube();
-                Map levelToColumnMap =
-                    star.getMapLevelToColumn(baseCube);
-                if (baseCubesLevelToColumnMaps.add(levelToColumnMap)) {
-                    measureMap.put(levelToColumnMap, measure);
-                }
+                addMeasure(
+                    (RolapStoredMeasure) member,
+                    baseCubesLevelToColumnMaps,
+                    measureMap);
+            } else if (member instanceof RolapCalculatedMember) {
+                findMeasures(
+                    ((RolapCalculatedMember) member).getExpression(),
+                    baseCubesLevelToColumnMaps,
+                    measureMap);
             }
         }
-        // currently do not handle non stored measures; if no stored measures
-        // are referenced, not possible to use native cross join
         if (measureMap.isEmpty()) {
             return false;
         }
@@ -159,5 +157,69 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         query.setVirtualCubeBaseCubeMaps(baseCubesLevelToColumnMaps);
         query.setLevelMapToMeasureMap(measureMap);
         return true;
+    }
+    
+    /**
+     * Adds information regarding a stored measure to maps
+     * 
+     * @param measure the stored measure
+     * @param baseCubesLevelToColumnMaps level to column maps for the
+     * underlying cubes that make up the virtual cube referenced in a query
+     * @param measureMap maps a level-to-column map to a measure
+     */
+    private void addMeasure(
+        RolapStoredMeasure measure,
+        Set baseCubesLevelToColumnMaps,
+        Map measureMap) 
+    {
+        RolapStar.Measure starMeasure =
+            (RolapStar.Measure) measure.getStarMeasure();
+        RolapStar star = starMeasure.getStar();
+        RolapCube baseCube = measure.getCube();
+        Map levelToColumnMap =
+            star.getMapLevelToColumn(baseCube);
+        if (baseCubesLevelToColumnMaps.add(levelToColumnMap)) {
+            measureMap.put(levelToColumnMap, measure);
+        }
+    }
+    
+    /**
+     * Extracts the stored measures referenced in an expression
+     * 
+     * @param exp expression
+     * @param baseCubesLevelToColumnMaps
+     * @param baseCubesLevelToColumnMaps level to column maps for the
+     * underlying cubes that make up the virtual cube referenced in a query
+     * @param measureMap maps a level-to-column map to a measure
+     */
+    private void findMeasures(
+        Exp exp,
+        Set baseCubesLevelToColumnMaps,
+        Map measureMap)
+    {
+        if (exp instanceof MemberExpr) {
+            MemberExpr memberExpr = (MemberExpr) exp;
+            Member member = memberExpr.getMember();
+            if (member instanceof RolapStoredMeasure) {
+                addMeasure(
+                    (RolapStoredMeasure) member,
+                    baseCubesLevelToColumnMaps,
+                    measureMap);
+            } else if (member instanceof RolapCalculatedMember) {
+                findMeasures(
+                    ((RolapCalculatedMember) member).getExpression(),
+                    baseCubesLevelToColumnMaps,
+                    measureMap);
+            }
+        } else if (exp instanceof ResolvedFunCall) {
+            ResolvedFunCall funCall = (ResolvedFunCall) exp;
+            Exp [] args = funCall.getArgs();
+            for (int i = 0; i < args.length; i++) {
+                findMeasures(
+                    args[i],
+                    baseCubesLevelToColumnMaps,
+                    measureMap);
+            }
+        }
     }
 }

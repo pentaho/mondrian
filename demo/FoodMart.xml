@@ -707,6 +707,9 @@ fullname
   <CalculatedMember name="Profit" dimension="Measures">
     <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>
   </CalculatedMember>
+  <CalculatedMember name="Profit Per Unit Shipped" dimension="Measures">
+    <Formula>[Measures].[Profit] / [Measures].[Units Shipped]</Formula>
+  </CalculatedMember>
 </VirtualCube>
 
 <!-- A California manager can only see customers and stores in California.
