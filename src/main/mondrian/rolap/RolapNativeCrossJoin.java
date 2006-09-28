@@ -136,6 +136,11 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
                 }
             }
         }
+        // currently do not handle non stored measures; if no stored measures
+        // are referenced, not possible to use native cross join
+        if (measureMap.isEmpty()) {
+            return false;
+        }
         
         // we need to make sure all the levels join with each fact table;
         // otherwise, it doesn't make sense to do the processing
