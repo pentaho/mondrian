@@ -1,6 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
 <!--
   == $Id$
   == This software is subject to the terms of the Common Public License
@@ -11,83 +9,78 @@
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
-  <meta http-equiv="Content-Language" content="en-us">
-  <meta name="GENERATOR" content="Microsoft FrontPage 6.0">
-  <meta name="ProgId" content="FrontPage.Editor.Document">
-  <meta http-equiv="Content-Type"
- content="text/html; charset=windows-1252">
-  <title>How to install Mondrian</title>
-  <link rel="stylesheet" href="stylesheet.css" type="text/css">
+<head>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: Cómo instalar Mondrian</title>
 </head>
 <body>
+<!-- doc2web start -->
 
+<!-- page title -->
+<div class="contentheading">Cómo instalar Mondrian</div>
+<!-- end page title -->
 
-<h1>Cómo instalar Mondrian</h1>
-
-<p>Traducido por Félix Alberto Martín. 
-Based on install.html#65 (2006/8/23).</p>
-
-<hr align="center" width="100%" color="black" noshade size="1">
+<hr align="center" width="100%" noshade size="1">
 
 <ol>
-  <li><a href="#1_Introduction%231_Introduction">Introducción</a></li>
-  <li><a href="#2_Set_up_test_data%232_Set_up_test_data">Configuración de los datos de test sobre una base de datos no embebida
+  <li><a href="#1_Introduction">Introducción</a></li>
+  <li><a href="#2_Set_up_test_data">Configuración de los datos de test sobre una base de datos no embebida
   </a>
 
   <ol>
-  <li><a href="#2_1_Microsoft_Access%232_1_Microsoft_Access">Microsoft Access</a>  
+  <li><a href="#2_1_Microsoft_Access">Microsoft Access</a>
   </li>
-  <li><a href="#2_2_Non_Access_setup%232_2_Non_Access_setup">Otras bases de datos</a> 
+  <li><a href="#2_2_Non_Access_setup">Otras bases de datos</a>
   </li>
 </ol>
 
   </li>
   <li>
-  <a href="#3_Deploy_and_run_the_web_app%233_Deploy_and_run_the_web_app">Despliegue y ejecución de una aplicación web con una base de datos no embebida
+  <a href="#3_Deploy_and_run_the_web_app">Despliegue y ejecución de una aplicación web con una base de datos no embebida
   </a></li>
   <li>
-  <a href="#4_Deploy_and_run_the_embedded_web_app%234_Deploy_and_run_the_embedded_web_app">Despliegue y ejecución de una aplicación web con una base de datos embebida</a>  
+  <a href="#4_Deploy_and_run_the_embedded_web_app">Despliegue y ejecución de una aplicación web con una base de datos embebida</a>
   </li>
   <li>
-  <a href="#5_How_to_configure_Mondrian_as_an_XMLA_provider%235_How_to_configure_Mondrian_as_an_XMLA_provider">Cómo configurar Mondrian como un servidor XML/A</a> 
+  <a href="#5_How_to_configure_Mondrian_as_an_XMLA_p">Cómo configurar Mondrian como un servidor XML/A</a>
 
   <ol>
   <li>
-  <a href="#5_1_Describe_the_data_sources_in_datasources.xml%235_1_Describe_the_data_sources_in_datasources.xml">Descripción de las fuentes de datos (datasources) en
+  <a href="#5_1_Describe_the_data_sources_in_datasou">Descripción de las fuentes de datos (datasources) en
   <code>datasources.xml</code></a> </li>
   <li>
-  <a href="#5_2_Configure_XmlaServlet_in_your_web.xml%235_2_Configure_XmlaServlet_in_your_web.xml">Configuración de&nbsp;
+  <a href="#5_2_Configure_XmlaServlet_in_your_web.xm">Configuración de&nbsp;
   <code>XmlaServlet</code> en el archivo <code>web.xml
 </code></a></li>
 </ol>
 </li>
-  <li><a href="#6_Miscellaneous%236_Miscellaneous">Miscelánea</a> 
+  <li><a href="#6_Miscellaneous">Miscelánea</a>
 
   <ol>
   <li><a href="#6_1_mondrian_properties">Configuración de <code>mondrian.properties</code></a> 
   </li>
-  <li><a href="#6_2_Cache_setup%236_2_Cache_setup">Configuración de la caché</a> 
+  <li><a href="#6_2_Cache_setup">Configuración de la caché</a>
   </li>
 </ol>
 </li>
   <li>
-  <a href="#7_Database_compatibility%237_Database_compatibility">Bases de datos compatibles
+  <a href="#7_Database_compatibility">Bases de datos compatibles
   </a></li>
   <li>
-  <a href="#8_Compatibility_issues%238_Compatibility_issues">Aspectos de compatibilidad
+  <a href="#8_Compatibility_issues">Aspectos de compatibilidad
   </a>
 
   <ol>
   <li>
-  <a href="#8_1_Weblogic_6_1_and_Xerces%238_1_Weblogic_6_1_and_Xerces">Weblogic 6.1 y Xerces
+  <a href="#8_1_Weblogic_6_1_and_Xerces">Weblogic 6.1 y Xerces
   </a></li>
-  <li><a href="#8_2_Xalan_and_Tomcat%238_2_Xalan_and_Tomcat">Xalan y Tomcat</a> 
+  <li><a href="#8_2_Xalan_and_Tomcat">Xalan y Tomcat</a>
   </li>
-  <li><a href="#8_3_Log4j_and_Tomcat%238_3_Log4j_and_Tomcat">Log4j y Tomcat</a></li>
+  <li><a href="#8_3_Log4j_and_Tomcat">Log4j y Tomcat</a></li>
 </ol>
 </li>
 </ol>
-<h2><a name="10c00c7a886b165a_1_Introduction">1. Introducción </a></h2>
+<h2>1. Introducción<a name="1_Introduction">&nbsp;</a></h2>
 
 <p>El núcleo de Mondrian es un JAR que actúa como "JDBC para OLAP": proporcionando conexiones y ejecutando consultas SQL contra la base de datos relacional que sirve los datos. Los binarios de Mondrian vienen empaquetados de diferentes maneras:
 </p>
@@ -104,22 +97,22 @@ Based on install.html#65 (2006/8/23).</p>
  desde <a href="http://sourceforge.net/projects/mondrian">SourceForge</a>, y descomprímalo. 
 	</li>
 	<li>Para la distribución sin datos embebidos, configure la base de datos FoodMart, tal y como se describe en el
-	<a href="#2_Set_up_test_data%232_Set_up_test_data">apartado 2</a>. </li>
+	<a href="#2_Set_up_test_data">apartado 2</a>. </li>
 	<li>Configure y ejecute la aplicación web, tal y como se describe en los
-	<a href="#3_Deploy_and_run_the_web_app%233_Deploy_and_run_the_web_app">apartados 3 o 4</a>. 
+	<a href="#3_Deploy_and_run_the_web_app">apartados 3 o 4</a>.
 	</li>
 </ol>
 <p>Si su objetivo es desarrollar con Mondrian, existen instrucciones adicionales para el acceso al servidor de control de fuentes Perforce y&nbsp; para compilar el código fuente en 
 <a href="developer.html">the Developer's Guide</a>.
 </p>
-<h2><a name="10c00c7a886b165a_2_Set_up_test_data">2. Configuración de los datos de test sobre una base de datos no embebida.</a></h2>
+<h2>2. Configuración de los datos de test sobre una base de datos no embebida<a name="2_Set_up_test_data">&nbsp;</a></h2>
 
 <p>La base de datos 'FoodMart' forma parte de la distribución binaria sin base de datos embebida (<i>non-embedded</i>). Se proporciona en dos formatos: como base de datos Microsoft Access (
 <code>demo/access/MondrianFoodMart.mdb</code>) y como un script SQL de sentencias de inserción (<code>
 demo/FoodMartCreateData.sql</code>).</p>
 <p>Bajo Windows, utilizar la base de datos Access es lo mas sencillo de configurar, ya que sólo es necesario definir una fuente de datos ODBC. Si se quiere probar a utilizar una fuente de datos que no sea Access, o si no está utilizando Windows, será necesario crear una base de datos vacía y cargar sobre la misma los datos proporcionado en el script, utilizando la utilidad MondrianFoodMartLoader.
 </p>
-<h3><a name="10c00c7a886b165a_2_1_Microsoft_Access">2.1. Microsoft Access</a></h3>
+<h3>2.1. Microsoft Access<a name="2_1_Microsoft_Access">&nbsp;</a></h3>
 <p>Si está utilizando Windows, utilizar Microsoft Access es la manera más sencilla de configurar la base de datos de prueba. Sólo será necesario configurar una fuente de datos ODBC para los datos de prueba.
 </p>
 <p>La base de datos de pruebe debe ser accesibles para las prueba unitarias si está realizando pruebas con esta base de datos, o cargados en otra base de datos.</p>
@@ -127,8 +120,9 @@ demo/FoodMartCreateData.sql</code>).</p>
 <p>Bajo el menú 'Herramientas Administrativas', situado en el Panel de Control de su equipo, haga click sobre&nbsp; 'Orígenes de datos (ODBC)' para abrir el administrados de fuentes de datos ODBC. A continuación cree un DSN de sistema llamado 
 <code>MondrianFoodMart</code> apuntando a <code><i>MONDRIAN_HOME</i></code><code>
 /demo/access/MondrianFoodMart.mdb</code>. (Esto permitirá que Mondrian acceda a los datos utilizando la cadena de conexión JDBC &quot;<code>jdbc:odbc:MondrianFoodMart</code>&quot;.</p>
-<h3><a name="10c00c7a886b165a_2_2_Non_Access_setup">2.2. Ot</a>ras bases de datos
-</h3>
+
+<h3>2.2. Otras bases de datos<a name="2_2_Non_Access_setup">&nbsp;</a></h3>
+
 <p>Si no utiliza Microsoft Access, utilice la utilidad MondrianFoodMartLoader para crear una base de datos y cargar los datos a partir del script SQL.</p>
 <h4>Sintaxis</h4>
 <blockquote>
@@ -333,8 +327,9 @@ com.mysql.jdbc.Driver</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -inputFile=/mondr
   <code>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=&quot;jdbc:postgresql://localhost/foodmart&quot;</code><br>
   <code>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcUser=postgres</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcPassword=password</code></div>
 </blockquote>
-<h2><a name="10c00c7a886b165a_3_Deploy_and_run_the_web_app">3. Despliegue y ejecución de una aplicación web con una base de datos no embebida
-</a></h2>
+
+<h2>3. Despliegue y ejecución de una aplicación web con una base de datos no embebida<a name="3_Deploy_and_run_the_web_app">&nbsp;</a></h2>
+
 <ol>
 	<li>Instale Tomcat (version 5.0.25 or superior). </li>
 	<li>Desde el paquete descargado con los binarios, descomprímalos y coloque
@@ -390,8 +385,9 @@ com.mysql.jdbc.Driver;</code> </div>
 	<li>Inicialize su base de datos si es necesario. </li>
 	<li>Introduzca <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a> en su navegador.</li>
 </ol>
-<h2><a name="10c00c7a886b165a_4_Deploy_and_run_the_embedded_web_app">4. Despliegue y ejecución de una aplicación web con una base datos embebida
-</a></h2>
+
+<h2>4. Despliegue y ejecución de una aplicación web con una base datos embebida<a name="4_Deploy_and_run_the_embedded_web_app">&nbsp;</a></h2>
+
 <ol>
 	<li>Desde el paquete descargado con los binarios, descomprímalos y coloque
 	<code>lib/mondrian-embedded.war</code>
@@ -401,11 +397,12 @@ com.mysql.jdbc.Driver;</code> </div>
 <li>Introduzca <a href="http://localhost:8080/mondrian-embedded" target="_new">http://localhost:8080/mondrian-embedded</a> en su navegador.</li>
 </ol>
 
-<h2><a name="10c00c7a886b165a_5_How_to_configure_Mondrian_as_an_XMLA_p">5. Cómo configurar Mondrian como un servidor XML/A</a></h2>
+<h2>5. Cómo configurar Mondrian como un servidor XML/A<a name="5_How_to_configure_Mondrian_as_an_XMLA_p">&nbsp;</a></h2>
 
 <p>Para configurar un servicio XMLA, siga los siguientes pasos.</p>
-<h3><a name="10c00c7a886b165a_5_1_Describe_the_data_sources_in_datasou">1. Describa las fuentes de datos en el fichero </a>
-<code>datasources.xml</code></h3>
+
+<h3>1. Describa las fuentes de datos en el fichero <code>datasources.xml</code><a name="5_1_Describe_the_data_sources_in_datasou">&nbsp;</a></h3>
+
 <p>En el directorio WEB-INF de su webapp, cree un fichero <code>datasources.xml</code>, con un contenido como el siguiente:
 </p>
 
@@ -468,8 +465,9 @@ Rex</a> o Jrubik trabajan con múltiples fuentes de datos.</p>
 <code>&lt;Schema name=&quot;FoodMart&quot;&gt;</code>).</p>
 <p>Ya sea, que utilice una fuente de datos o varias, los catálogos en el fichero <code>datasources.xml</code>
  deben contener nombres únicos.</p>
-<h3><a name="10c00c7a886b165a_5_2_Configure_XmlaServlet_in_your_web.xm">2. Configuración de XmlaServlet en el archivo </a><code>
-web.xml</code></h3>
+
+<h3>2. Configuración de XmlaServlet en el archivo <code>web.xml</code><a name="5_2_Configure_XmlaServlet_in_your_web.xm">&nbsp;</a></h3>
+
 <p>Por ejemplo:</p>
 <blockquote>
 	<div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
@@ -477,17 +475,19 @@ web.xml</code></h3>
 		<code>&nbsp; &lt;servlet-class&gt;mondrian.xmla.impl.DefaultXmlaServlet&lt;/servlet-class&gt;</code><br>
 		<code>&lt;/servlet&gt;</code></div>
 </blockquote>
-<h2><a name="10c00c7a886b165a_6_Miscellaneous">6. </a>Miscelánea
-</h2>
-<h3><a name="10c00c7a886b165a_6_1_mondrian_properties">6.1. Configuración de </a><code>
-mondrian.properties</code></h3>
-<p>Las propiedades se describen en la <a href="configuration.html">
-Configuration Guide</a>.</p>
-<h3><a name="10c00c7a886b165a_6_2_Cache_setup">6.2. </a>Configuración de la caché
-</h3>
+
+<h2>6. Miscelánea<a name="6_Miscellaneous">&nbsp;</a></h2>
+
+<h3>6.1. Configuración de <code>mondrian.properties</code><a name="6_1_mondrian_properties">&nbsp;</a></h3>
+
+<p>Las propiedades se describen en la <a href="configuration.html">Configuration Guide</a>.</p>
+
+<h3>6.2. Configuración de la caché<a name="6_2_Cache_setup">&nbsp;</a></h3>
+
 <p>Deberá especificar la cantidad de memoria disponible para la cache utilizando la opción -Xms de la Java VM, por ejemplo -Xms256m para 256 Mb de ram para la JVM.
 </p>
-<h2><a name="10c00c7a886b165a_7_Database_compatibility">7. Bases de datos compatibles</a></h2>
+<h2>7. Bases de datos compatibles<a name="7_Database_compatibility">&nbsp;</a></h2>
+
 <p>Se sabe que Mondrian corre sobre las siguiente bases de datos:</p>
 <ol>
   <li>Apache Derby </li>
@@ -536,8 +536,11 @@ net.sourceforge.jtds.jdbc.Driver;Catalog=/WEB-INF/queries/myCatalog.xml</code>
   <p>(datasources.xml no necesita ser modificado si solo necesitas probar la base de datos, pero si estás utilizando algo como OPENI hay que modificarlo.)
   </p>
 </blockquote>
-<h2><a name="10c00c7a886b165a_8_Compatibility_issues">8. Aspectos de Compatibilidad</a></h2>
-<h3><a name="10c00c7a886b165a_8_1_Weblogic_6_1_and_Xerces">8.1. Weblogic 6.1 y&nbsp; Xerces</a></h3>
+
+<h2>8. Aspectos de Compatibilidad<a name="8_Compatibility_issues">&nbsp;</a></h2>
+
+<h3>8.1. Weblogic 6.1 y Xerces<a name="8_1_Weblogic_6_1_and_Xerces">&nbsp;</a></h3>
+
 <p>Weblogic 6.1 viene con una versión antigua e incompatible de Xerces. El síntoma del error:</p>
 
 <blockquote>
@@ -551,7 +554,9 @@ xercesImpl.jar</code> antes de <code>weblogic.jar</code> en su class-path.</p>
 <p>Generalmente, Mondrian utiliza cualquier parser XML compatible JAXP que proporcione&nbsp; el sistema. Desafortunadamente el analizador de Weblogic no se puede configurar en modo non-validating, y Mondrian lo necesita. Por tanto, en un entorno Weblogic, Mondrian utiliza explícitamenteXerces.&nbsp; 
 <a href="http://xml.apache.org/soap/faq/faq-for-WL6.1beta.html">Esta nota</a> describe cómo cambiar el analizador XML por defecto del Weblogic's.
 </p>
-<h3><a name="10c00c7a886b165a_8_2_Xalan_and_Tomcat">8.2. JDK, Xalan y Tomcat</a></h3>
+
+<h3>8.2. JDK, Xalan y Tomcat<a name="8_2_Xalan_and_Tomcat">&nbsp;</a></h3>
+
 <p>Los binarios de Mondrian, tal y como se pueden descargar de la web, necesitan JDK 1.4.x, Xalan 2.6.0, y Tomcat 5.0.25 o superior.</p>
 <p>Si está ejecutando JDK 1.3.<i>x</i>, necesitará ficheros JAR exta, porque JDK 1.3 no incluye un parser XML. Copie <code>
 xalan.jar</code> y <code>xml-apis.jar</code> a <code><i>TOMCAT_HOME
@@ -586,24 +591,25 @@ DTDConfiguration.java:367)</code><br><code>&nbsp; at org.apache.xerces.parsers.S
 <p>Este error aparece con JDK 1.3.1, Tomcat 4.1.18, Xalan 2.4.1. Las posibles soluciones a este error pasan por (a) cambiarse a JDK 1.4 y eliminar <code>
 xml-apis.jar</code> y <code>xercesImpl.jar</code> del fichero <code>
 mondrian.war</code>, o (b) volver a Xalan 2.3.1.</p>
-<h3><a name="10c00c7a886b165a_8_3_Log4j_and_Tomcat">8.3. Log4j y Tomcat</a></h3>
+
+<h3>8.3. Log4j y Tomcat<a name="8_3_Log4j_and_Tomcat">&nbsp;</a></h3>
+
 <p>Los WARs de Mondrian contienen en su distribución una versión de log4j.jar. Esto puede entrar en conflicto con su servidor de aplicaciones, como en el caso de JBoss, y causar errores en el log. Para solucionar esto, elimine 
 log4j.jar del WAR de Mondrian.</p>
 
 <hr>
-<table class="clsStd" style="border-collapse: collapse;" border="0"
- bordercolor="#111111" cellpadding="0" cellspacing="0" width="100%" id="table1">
-  <tbody>
-    <tr>
-      <td class="content"> <a target="_top" href="index.html">Home</a>
-| <a target="_top" href="#">No frames</a> | This file is<i> 
-      <a href="http://mondrian.sourceforge.net/install_es.html">$Id$ </a></i> (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/install_es.html?ac=22">log</a>)</td>
-      <td align="right"> <a href="http://sourceforge.net"> <img
- src="http://sourceforge.net/sflogo.php?group_id=35302&amp;type=1"
- alt="SourceForge.net Logo" border="0" height="31" width="88"> </a> </td>
-    </tr>
-  </tbody>
-</table>
+
+<p>
+    Author: Julian Hyde and others; traducido por Félix Alberto Martín, based on install.html#65, 23 August, 2006.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/install_es.html?ac=22">log</a>)<br/>
+    Copyright (C) 2001-2002 Kana Software, Inc.<br/>
+    Copyright (C) 2002-2006 Julian Hyde and others
+</p>
+
+<br/>
+
+<!-- doc2web end -->
 
 </body>
 </html>

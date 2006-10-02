@@ -10,57 +10,45 @@
   -->
 
 <head>
-<meta http-equiv="Content-Language" content="en-us">
-<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
-<meta name="ProgId" content="FrontPage.Editor.Document">
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Mondrian and OLAP</title>
-<link rel="stylesheet" href="stylesheet.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: Aggregate Tables</title>
 </head>
-
 <body>
-<h1>Mondrian and OLAP</h1>
+<!-- doc2web start -->
 
-<p>Mondrian is an OLAP engine written in Java. It executes queries written in
-the MDX language, reading data from a relational database (RDBMS), and presents
-the results in a multidimensional format via a Java API. Let's go into what that
-means.</p>
+<!-- page title -->
+<div class="contentheading">Mondrian and OLAP</div>
+<!-- end page title -->
 
-<h2>Online Analytical Processing</h2>
 
-<p><dfn>Online Analytical Processing (OLAP)</dfn>
-means analysing large quantities of data in real-time. Unlike Online Transaction
-Processing (OLTP), where typical operations read and modify individual and small
-numbers of records, OLAP deals with data in bulk, and operations are generally
-read-only. The term 'online' implies that even though huge quantities of data
-are involved — typically many millions of records, occupying several gigabytes
-— the system must respond to queries fast enough to allow an interactive
-exploration of the data. As we shall see, that presents considerable technical
-challenges.</p>
+<p>Mondrian is an OLAP engine written in Java. It executes queries written in the MDX language, reading data from a relational database (RDBMS), and presents the results in a multidimensional format via a Java API. Let's go into what that means.</p>
+<!-- 
+######################################
+##  Online Analytical Processing #####
+###################################### -->
+<h3>Online Analytical Processing</h3>
 
-<p>OLAP employs a technique called <dfn>Multidimensional Analysis</dfn>. Whereas a
-relational database stores all data in the form of rows and columns, a
-multidimensional dataset consists of <dfn>axes</dfn> and
-<dfn>cells</dfn>. Consider the dataset</p>
-<blockquote>
-  <table border="2" style="clsStd; border-collapse:collapse" id="AutoNumber1" cellpadding="2" bordercolor="#111111" cellspacing="0">
+<p>Online Analytical Processing (OLAP) means analysing large quantities of data in real-time. Unlike Online Transaction Processing (OLTP), where typical operations read and modify individual and small numbers of records, OLAP deals with data in bulk, and operations are generally read-only. The term 'online' implies that even though huge quantities of data are involved — typically many millions of records, occupying several gigabytes — the system must respond to queries fast enough to allow an interactive exploration of the data. As we shall see, that presents considerable technical challenges.</p>
+
+<p>OLAP employs a technique called Multidimensional Analysis. Whereas a relational database stores all data in the form of rows and columns, a multidimensional dataset consists of axes and cells. Consider the dataset</p>
+<table width="500" class="grayTable">
     <tr>
       <td nowrap><i>Year</i></td>
-      <th align="right" colspan="2">2000</th>
-      <th align="right" colspan="2">2001</th>
-      <th align="right" colspan="2">Growth</th>
+      <td align="right" colspan="2"><b>2000</b></td>
+      <td align="right" colspan="2"><b>2001</b></td>
+      <td align="right" colspan="2"><b>Growth</b></td>
     </tr>
     <tr>
       <td nowrap><i>Product</i></td>
-      <th align="right">Dollar sales</th>
-      <th align="right">Unit sales</th>
-      <th align="right">Dollar sales</th>
-      <th align="right">Unit sales</th>
-      <th align="right">Dollar sales</th>
-      <th align="right">Unit sales</th>
+      <td align="right"><b>Dollar sales</b></td>
+      <td align="right"><b>Unit sales</b></td>
+      <td align="right"><b>Dollar sales</b></td>
+      <td align="right"><b>Unit sales</b></td>
+      <td align="right"><b>Dollar sales</b></td>
+      <td align="right"><b>Unit sales</b></td>
     </tr>
     <tr>
-      <th nowrap align="left">Total</th>
+      <td align="left"><b>Total</b></td>
       <td align="right">$7,073</td>
       <td align="right">2,693</td>
       <td align="right">$7,636</td>
@@ -69,7 +57,7 @@ multidimensional dataset consists of <dfn>axes</dfn> and
       <td align="right">12%</td>
     </tr>
     <tr>
-      <th nowrap align="left">— Books</th>
+      <td align="left"><b>— Books</b></td>
       <td align="right">$2,753</td>
       <td align="right">824</td>
       <td align="right">$3,331</td>
@@ -78,7 +66,7 @@ multidimensional dataset consists of <dfn>axes</dfn> and
       <td align="right">17%</td>
     </tr>
     <tr>
-      <th nowrap align="left">—— Fiction</th>
+      <td align="left"><b>—— Fiction</b></td>
       <td align="right">$1,341</td>
       <td align="right">424</td>
       <td align="right">$1,202</td>
@@ -87,7 +75,7 @@ multidimensional dataset consists of <dfn>axes</dfn> and
       <td align="right">-10%</td>
     </tr>
     <tr>
-      <th nowrap align="left">—— Non-fiction</th>
+      <td align="left"><b>—— Non-fiction</b></td>
       <td align="right">$1,412</td>
       <td align="right">400</td>
       <td align="right">$2,129</td>
@@ -96,7 +84,7 @@ multidimensional dataset consists of <dfn>axes</dfn> and
       <td align="right">47%</td>
     </tr>
     <tr>
-      <th nowrap align="left">— Magazines</th>
+      <td align="left"><b>— Magazines</b></td>
       <td align="right">$2,753</td>
       <td align="right">824</td>
       <td align="right">$2,426</td>
@@ -105,7 +93,7 @@ multidimensional dataset consists of <dfn>axes</dfn> and
       <td align="right">-7%</td>
     </tr>
     <tr>
-      <th nowrap align="left">&mdash; Greetings cards</th>
+      <td align="left"><b>&mdash; Greetings cards</b></td>
       <td align="right">$1,567</td>
       <td align="right">1,045</td>
       <td align="right">$1,879</td>
@@ -114,58 +102,34 @@ multidimensional dataset consists of <dfn>axes</dfn> and
       <td align="right">22%</td>
     </tr>
     </table>
-</blockquote>
+<p>The rows axis consists of the members 'All products', 'Books', 'Fiction', and so forth, and the columns axis consists of the cartesian product of the years '2000' and '2001', and the calculation 'Growth', and the measures 'Unit sales' and 'Dollar sales'. Each cell represents the sales of a product category in a particular year; for example, the dollar sales of Magazines in 2001 were $2,426.</p>
 
+<p>This is a richer view of the data than would be presented by a relational database. The members of a multidimensional dataset are not always values from a relational column. 'Total', 'Books' and 'Fiction' are members at successive levels in a hierarchy, each of which is rolled up to the next. And even though it is alongside the years '2000' and '2001', 'Growth' is a calculated member, which introduces a formula for computing cells from other cells.</p>
 
-<p>The rows axis consists of the members 'All products', 'Books', 'Fiction', and
-so forth,
-and the columns axis consists of the cartesian product of the years '2000' and
-'2001', and the calculation 'Growth', and the
-<dfn>measures</dfn> 'Unit sales' and 'Dollar sales'. Each cell
-represents the sales of a product category in a particular year; for example,
-the dollar sales of Magazines in 2001 were $2,426.</p>
+<p>The dimensions used here — products, time, and measures — are just three of many dimensions by which the dataset can be categorized and filtered. The collection of dimensions, hierarchies and measures is called a cube.</p>
 
-<p>This is a richer view of the data than would be presented by a relational
-database. The members of a multidimensional dataset are not always values
-from a relational column. 'Total', 'Books' and 'Fiction' are members at
-successive levels in a <dfn>hierarchy</dfn>, each of
-which is rolled up to the next. And even though it is alongside the years '2000'
-and '2001', 'Growth' is
-a <dfn>calculated member</dfn>, which introduces a
-formula for computing cells from other
-cells.</p>
+<!-- 
+########################
+##  Conclusion     #####
+######################## -->
+<h3>Conclusion</h3>
 
-<p>The dimensions used here — products, time, and measures — are just three of
-many dimensions by which the dataset can be categorized and filtered. The
-collection of dimensions, hierarchies and measures is called a <dfn>cube</dfn>.</p>
+<p>I hope I have demonstrated that multidimensional is above all a way of presenting data. Although some multidimensional databases store the data in multidimensional format, I shall argue that it is simpler to store the data in relational format.</p>
 
-<h2>Conclusion</h2>
+<p>Now it's time to look at the architecture of an OLAP system. See <a href="architecture.html">Mondrian architecture</a>.</p>
+<br />
+<br />
 
-<p>I hope I have demonstrated that multidimensional  is above all a way of <em>presenting</em> data. Although some multidimensional
-databases <em>store</em> the data in multidimensional format,
-I shall argue that it is simpler to store the data in relational format.</p>
+<p>
+    Author: Julian Hyde; last modified August 2006.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/olap.html?ac=22">log</a>)<br/>
+    Copyright (C) 2002-2005 Julian Hyde
+</p>
 
-<p>Now it's
-time to look at the architecture of an OLAP system. See
-<a href="architecture.html">Mondrian architecture</a>.</p>
+<br />
 
-<hr>
-
-<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
-  <tr>
-    <td class="content">
-      <a target="_top" href="index.html">Home</a> |
-      <a target="_top" href="noframes.html">No frames</a> | This file is<i>
-      <a href="http://mondrian.sourceforge.net/olap.html">
-        $Id$
-      </a></i> (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/olap.html?ac=22">log</a>)</td>
-    <td align="right">
-      <a href="http://sourceforge.net">
-        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
-      </a>
-    </td>
-  </tr>
-</table>
+<!-- doc2web end -->
 
 </body>
 </html>

@@ -3,353 +3,668 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2005 Kana Software, Inc. and others.
+// Copyright (C) 2006-2006 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-// jhyde, 23 September, 2002
 //
 // Global style-sheet for mondrian project.
 */
 
-a:link {
-  color: #990000;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
+/* http://mondrian.pentaho.org/css/styles.css */
+#mtm_wrap {
+    border:1px solid black;
+    width:642px;
+    }
+#mtm_menu {
+
+    }
+#mtm_menu a {
+	  display: block;
+	  font-family: Tahoma, Helvetica, sans-serif;
+	  float: left;
+		line-height: 25px;
+    padding: 0px 25px;
+    text-decoration:none;
+    font-size: 11px;
+    font-weight:bold;
+    color:#fff;
+    border-right: 1px solid #fff;
+    }
+    
+#mtm_menu a.hover {
+    background: #95A22C;
+    }
+    
+#mtm_menu span.active a {
+	display: inline;
+background: #ED752A;
+}  
+
+#mtm_menu span {
+    XXdisplay:none;
+    }
+  
+    
+#mtm_menu #img {
+    vertical-align:bottom;
+    }
+
+#mtm_menu #subnav {
+    font-size:10px;
+    margin-bottom:2em;
+    }
+#mtm_menu #subnav a {
+    color:#fff;
+    margin-right:1em;
+    }
+#mtm_menu #subnav span {
+    color:#fff;
+    margin-right:1em;
+    }
+    
+table.items tr.item td {
+	color: #fff;
+	font-family: Tahoma, Helvetica, sans-serif;
+	font-size: 11px;
+	font-weight: bold;
 }
 
-a:visited {
-  color: #990000;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
+
+/* http://mondrian.pentaho.org/css/primary.css */
+
+.bodyMain {
+	background-color: #ededed;
+	margin: 0px;
+	padding: 0px;
+}
+/* added to keep ff/nn from using anchors as working links */
+a[name], a[name]:hover, a[name]:active, a[name]:link {
+	font: normal 1em Tahoma, Helvetica, sans-serif;
+	color: #949e3e;
+	text-decoration: none;
+}
+/* end ff fix/nn */
+a {
+	font: normal .80em Tahoma, Helvetica, sans-serif;
+	color: #949e3e;
+	text-decoration: none;
 }
 
-a.nav:link {
-  color: #990000;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+a:link, a:visited {
+	font: normal .80em Tahoma, Helvetica, sans-serif;
+	color: #949e3e;
+	text-decoration: none;
 }
 
-a.nav:visited {
-  color: #990000;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+a:hover, a:active {
+	font: normal .80em Tahoma, Helvetica, sans-serif;
+	color: #ef8033;
+	text-decoration: none;
 }
 
-a.body:link {
-  color: #990000;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+ul { 
+	list-style-image: url(../images/bullet.png);
+	list-style-position: outside; 
+	margin-left: 16px;
 }
 
-a.body:visited {
-  color: #990000;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+ol { 
+	/*list-style-image: url(../images/bullet.png);*/
+	list-style-position: outside;
+	color: #ef8033;
 }
 
-a.purple:link {
-/*  color: #990099; */
-  color: #C8A8FF;
-  text-decoration: none;
-  font-size: x-small;
-  font-style: normal;
-  font-weight: normal;
-  font-family: Verdana, arial, helvetica, sans-serif;
+ol li {
+	color:#808080;
 }
 
-a.purple:visited {
-/*  color: #990099; */
-  color: #C8A8FF;
-  text-decoration: none;
-  font-size: x-small;
-  font-style: normal;
-  font-weight: normal;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.borderBox1_left {
+	background-color: #ededed;
+	border-right: 1px #95a22c solid;
+	width: 50%;
 }
 
-a.td:link {
-  color: #990000;
-  text-decoration: none;
-  font-size: 10px;
-  line-height: 12px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.borderBox1_middle {
+	background-color: #FFFFFF;
+	height: 90px;
 }
 
-a.td:visited {
-  color: #990000;
-  text-decoration: none;
-  font-size: 10px;
-  line-height: 12px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.borderBox1_right {
+	background-color: #ededed;
+	border-left: 1px #95a22c solid;
+	width: 50%;
 }
 
-a.subnav:link {
-  color: #333333;
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: bold;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.borderBox2_left {
+	background-color: #ededed;
+	border-right: 1px #95a22c solid;
 }
 
-a.subnav:visited {
-  color: #333333;
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: bold;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.borderBox2_middle {
+	background-color: #FFFFFF;
+	height: 182px;
+}
+.borderBox2_right {
+	background-color: #ededed;
+	border-left: 1px #95a22c solid;
 }
 
-dl {
-  color: #333333;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.borderBox3_left {
+	background-color: #ededed;
+	border-right: 1px #95a22c solid;
 }
 
-dt {
-  color: #333333;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.borderBox3_middle {
+	background-color: #FFFFFF;
+	vertical-align: top;
 }
 
-dd {
-  color: #333333;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.borderBox3_middle_content {
+	padding: 8px 14px 0px 10px; 
+	background-color: #FFFFFF;
+	vertical-align: top;
 }
 
-table.clsStd {
-  border-collapse: collapse;
-  border: solid #ffffff 1px;
+.borderBox3_right {
+	background-color: #ededed;
+	border-left: 1px #95a22c solid;
 }
 
-td, th {
-  vertical-align:top;
+.content_blend_top {
+	height: 1px;
+	width: 761px;
+	background-color: #ffffff;
 }
 
-td.content {
-  color: #333333;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.content_blend_middle {
+	height: 7px;
+	width: 761px;
 }
 
-td.collcontent {
-  color: #000000;
-  text-decoration: none;
-  font-size: 10px;
-  line-height: 12px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.content_blend_bottom {
+	border-right: 1px #BCC7D2 solid;
+	border-left: 1px BCC7D2 solid;
+	border-top: 1px #C8CFD6 solid;
+	height: 7px;
+	width: 761px;
 }
 
-span.subtitle1 {
-  color: #990000;
-  text-decoration: none;
-  font-size: 16px;
-  font-weight: bold;
-  line-height: 18px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.contentTitle {
+	font: bold 1.2em Tahoma, Helvetica, sans-serif;
+	color: #1A2777;
+	padding: 25px 25px 25px 0px;
 }
 
-span.subtitle2 {
-  color: #333333;
-  text-decoration: none;
-  font-size: 16px;
-  font-weight: bold;
-  line-height: 18px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.contentSectionTitle {
+	vertical-align: top;
+	font: bold .80em Tahoma, Helvetica, sans-serif;
+	line-height: 20px;
+	color: #1A2777;
+	text-align: left;
+	white-space: nowrap;
+	padding-bottom: 3px;
 }
 
-span.subtitle3 {
-  color: #990000;
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: bold;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.contentInlineTitle {	
+	font: bold .80em Tahoma, Helvetica, sans-serif;
+	line-height: 18px;
+	color: #1A2777;
+	text-align: left;
+	white-space: nowrap;
 }
 
-span.subtitle4 {
-  color: #333333;
-  text-decoration: none;
-  font-size: 10px;
-  font-weight: bold;
-  line-height: 12px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.contentInlineSubTitle {
+	font: normal .80em Tahoma, Helvetica, sans-serif;
+	line-height: 8px;
+	color: #1A2777;
+	text-align: left;
+	white-space: nowrap;
 }
 
-span.subtitle5 {
-  color: #333333;
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: bold;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.contentSection_leftMenu_current, a.contentSection_leftMenu_current:link, a.contentSection_leftMenu_current:visited {
+	vertical-align: top;
+	font: bold .80em Tahoma, Helvetica, sans-serif;
+	line-height: 16px;
+	color: #949e3e;
+	text-align: left;
+	text-decoration: none;
 }
 
-span.colldate {
-  color: #333333;
-  text-decoration: none;
-  font-size: 10px;
-  font-style: oblique;
-  line-height: 12px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+a.contentSection_leftMenu_current:hover, a.contentSection_leftMenu_current:active {
+	vertical-align: top;
+	font: bold .80em Tahoma, Helvetica, sans-serif;
+	line-height: 16px;
+	color: #ef8033;
+	text-align: left;
+	text-decoration: none;
 }
 
-span.highlight {
-  background-color: #eeeeee;
+.contentSection_leftMenu, a.contentSection_leftMenu:link, a.contentSection_leftMenu:visited {
+	vertical-align: top;
+	font: normal .80em Tahoma, Helvetica, sans-serif;
+	line-height: 16px;
+	color: #949e3e;
+	text-align: left;
+	text-decoration: none;
 }
 
-textarea {
-  color: #333333;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.contentSection_leftMenu, a.contentSection_leftMenu:hover, a.contentSection_leftMenu:active {
+	vertical-align: top;
+	font: normal .80em Tahoma, Helvetica, sans-serif;
+	line-height: 16px;
+	color: #ef8033;
+	text-align: left;
+	text-decoration: none;
 }
 
-p, td, th {
-  color: #333333;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.contentLeftMargin {
+	background-color: #FFFFFF;
+	width: 160px;
+	height: 100%;
+	vertical-align: top;
+	color: #808080;
+	line-height: 15px;
+	text-align: left;
 }
 
-p.award {
-  color: #333333;
-  text-decoration: none;
-  font-size: 10px;
-  line-height: 12px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.contentRightMargin, .contentRightMargin td{ /* added td entry to catch content inside tables PWH */
+	background-color: #FFFFFF;
+	vertical-align: top;
+	widthz: 538px;
+	font: normal .80em Tahoma, Helvetica, sans-serif;
+	color: #808080;
+	line-height: 17px;
+	text-align: left;
+	background-color: #FFFFFF;	
 }
 
-p.coll {
-  color: #333333;
-  text-decoration: none;
-  font-size: 10px;
-  line-height: 12px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.contentRightMargin a:link, .contentRightMargin a:visited {
+	font: normal 1em Tahoma, Helvetica, sans-serif;
+	color: #949e3e;
+	text-decoration: none;
 }
 
+.contentRightMargin a:hover, .contentRightMargin a:active {
+	font: normal 1em Tahoma, Helvetica, sans-serif;
+	color: #ef8033;
+	text-decoration: none;
+}
+
+.content_table {
+	margin:0px;
+	height: 100%;
+	width: 100%;
+	vertical-align: top;
+}
+
+.bodyTable {
+	margin: 0px;
+	padding: 0px;
+	height: 100%;
+	width: 100%;
+}
+
+.headerTable {
+	margin:0px;
+	padding: 0px;
+	height: 100%;
+	width: 100%;
+}
+
+.header_BG_Bluebar {
+	font: bold 1.2em Tahoma, Helvetica, sans-serif;
+	text-align: right;
+	vertical-align: middle;
+	padding-right: 8px;
+	background-repeat: no-repeat;
+	background-position: left;
+	background-image:  url(../images/header_bg_bluebar.gif);
+	width: 637px;
+	height: 36px;
+	color: #FFFFFF;
+}
+
+.header_BG_Menu {
+	background-repeat: no-repeat;
+	background-position: left;
+	background-image:  url(../images/header_bg_menu.gif);	
+	width: 637px;
+	height: 31px;
+}
+
+.main_content_table_3cols {
+	margin:0px;
+	padding: 0px;
+	height: 100%;
+	width: 100%;
+	vertical-align: top;
+	font-family: Tahoma, Helvetica, sans-serif;
+}
+
+.main_content_col_header {
+	vertical-align: top;
+	font: bold .80em Tahoma, Helvetica, sans-serif;
+	color: #1A2777;
+	text-align: left;
+	white-space: nowrap;
+	padding-bottom: 3px;
+}
+
+.main_content_col_header_middle {
+	vertical-align: top;
+	font: bold .80em Tahoma, Helvetica, sans-serif;
+	color: #1A2777;
+	text-align: left;
+	padding-left: 14px;
+	padding-right: 14px;
+	padding-top: 12px;
+	white-space: nowrap;
+	padding-bottom: 6px;
+}
+
+.main_col_table {
+	width: 100%;
+}
+
+.main_col_content {
+	font-size: 12px;
+	color: #808080;
+	line-height: 19px;
+	vertical-align: top;
+}
+
+.content_3cols_col1 {
+	background-color: #FFFFFF;
+	padding: 14px 14px 0px 14px;
+	width: 251px;
+	vertical-align: top;
+}
+
+.content_3cols_col2 {
+	border-left: 1px #D0D4D8 solid;
+	border-right: 1px #D0D4D8 solid;	
+	padding: 14px 14px 0px 14px;
+	vertical-align: top;
+	width: 230px;
+}
+
+
+DIV#topmenu {
+	BACKGROUND: url(../images/de_topmenu_bg.gif) repeat-x;
+	height: 25px;
+	padding-bottom: 0px; 
+	background-color: #95a22c;
+}
+DIV#topmenu A:hover {
+	BACKGROUND: #7b8622; 
+	COLOR: #ffffff;
+}
+.contentheading {
+	MARGIN: 2px 0px 10px 0px; 
+	font: normal 1.5em Tahoma, Helvetica, sans-serif;
+	COLOR: #ef6507;
+	letter-spacing: .075em;
+}
+
+.line_fade_bg {
+	PADDING-RIGHT: 0px; 
+	PADDING-LEFT: 0px; 
+	PADDING-BOTTOM: 0px; 
+	PADDING-TOP: 0px; 
+	BACKGROUND-COLOR: #95a22c;
+}
+.line_grey_fade_bg {
+	margin-right: 10px;
+	margin-left: 10px; 
+	PADDING-RIGHT: 0px; 
+	PADDING-LEFT: 0px; 
+	PADDING-BOTTOM: 0px; 
+	PADDING-TOP: 0px; 
+	BACKGROUND-COLOR: #cacaca;
+}
+
+
+.subMenu_ready {
+ font: normal .80em Tahoma, Helvetica, sans-serif; 
+ color: #95a22c; 
+ vertical-align: top;
+ text-align:center; 
+ padding: 2pt 12pt 2pt 12pt;
+ border-top: 0px solid #FFFFFF;
+ border-right: 1px solid #CDCDCD;
+ border-bottom: 1px solid #CDCDCD;
+ background-color: #E5E5E5;
+ cursor: pointer;
+ white-space:nowrap;
+}
+ 
+ .subMenu_rollover {
+ font: normal .80em Tahoma, Helvetica, sans-serif;  
+ color: #ffffff; 
+ vertical-align: top; 
+ text-align:center;
+ padding: 2pt 12pt 2pt 12pt;
+ border-top: 0px solid #7b8622;
+ border-right: 1px solid #CDCDCD;
+ border-bottom: 1px solid #CDCDCD;
+ background-color: #a6a6a6;
+ cursor: pointer;
+ white-space:nowrap;
+} 
+  
+ .subMenu_selected {
+ font: normal .80em Tahoma, Helvetica, sans-serif;  
+ color: #7b8622; 
+ vertical-align: top; 
+ text-align:center;
+ padding: 2pt 12pt 2pt 12pt;
+ border-top: 0px solid #be5e22;
+ border-right: 1px solid #CDCDCD;
+ border-bottom: 1px solid #CDCDCD;
+ background-color: #CDCDCD;
+ cursor: pointer;
+ white-space:nowrap;
+}
+  
+  
+.menutitle {
+ font: normal .95em Tahoma, Helvetica, sans-serif; 
+ PADDING-BOTTOM: 1px; 
+ MARGIN: 10px 0px 3px 0px; 
+ WIDTH: 175px; 
+ COLOR: #ff6113; 
+ PADDING-TOP: 1px; 
+ BACKGROUND-IMAGE: url(../images/line_grey_fade_horiz.jpg); 
+ BACKGROUND-POSITION: right bottom; 
+ BACKGROUND-REPEAT: no-repeat;
+}
+
+ 
+TD.botmenu {
+	BACKGROUND: url(../images/de_bottommenu_bg.gif) repeat-x; 
+	PADDING-TOP: 4px; 
+	TEXT-ALIGN: left; 
+	height: 5px; 
+}
+a.mainlevel_footer:link, a.mainlevel_footer:visited  {	
+	PADDING: 3px 10px 2px 10px;  
+	font: normal .80em Tahoma, Helvetica, sans-serif;
+	CURSOR: pointer; 
+	CURSOR: hand; 
+	COLOR: #999999; 
+	WHITE-SPACE: nowrap; 
+	TEXT-ALIGN: left;
+}
+a.mainlevel_footer:hover, a.mainlevel_footer:active{
+	PADDING: 3px 10px 2px 10px; 	
+	font: normal .80em Tahoma, Helvetica, sans-serif;  
+	CURSOR: pointer; 
+	CURSOR: hand; 
+	COLOR: #666666; 
+	WHITE-SPACE: nowrap; 
+	BACKGROUND-COLOR: #cdcdcd; 
+	TEXT-ALIGN: left;
+}
+
+h3 { 
+	font: normal 1.15em Tahoma, Helvetica, sans-serif; 
+	color: #95a22c; 
+	margin: 9px 0px 4px 0px; 
+	letter-spacing: .075em; 
+}
 h1 {
-  color: #990000;
-  text-decoration: bold;
-  font-size: 24px;
-  line-height: 18px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+	font-weight:bolder; /* subs under h3's */
+	font-size:1em;
+}
+/* gray table styles */
+.grayTable, .grayTable tr,.grayTable td {
+	border-color:#808080;
+	border-style:solid; 
+	border-width:1px;
+	border-collapse:collapse;
+}
+/* white table styles */
+.whiteTable, .whiteTable tr,.whiteTable td {
+	border-color:#ffffff;
+	border-style:solid; 
+	border-width:1px;
+	border-collapse:collapse;
+}
+/* added for homepage content 6-29-06 */
+.callout1 {
+	font: normal 1.3em Tahoma, Helvetica, sans-serif;
+	padding: 0px 0px 0px 15px;
+	margin: 0px 25px 15px 15px;
+	color: #949e3e;
+	text-align: left;
+	border-left: 1px solid #cacaca;
 }
 
-h2 {
-  color: #990000;
-  text-decoration: none;
-  font-size: 18px;
-  line-height: 18px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.home_feature {
+	padding: 0px 0px 0px 15px;
+	margin: 0px 25px 15px 15px;
 }
 
-h3 {
-  color: #333333;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+
+.btn_download A {
+	PADDING-RIGHT: 0px; 
+	DISPLAY: block; 
+	PADDING-LEFT: 0px; 
+	BACKGROUND: url(http://www.pentaho.org/images/stories/images/btn_download.gif) no-repeat 0px 0px; 
+	PADDING-BOTTOM: 8px; 
+	FONT: bold 13px sans-serif; 
+	WIDTH: 228px; 
+	PADDING-TOP: 10px; 
+	TEXT-DECORATION: none
+}
+.btn_download A:hover {
+	BACKGROUND-POSITION: 0px -38px
+}
+/* code stylings */
+
+.contentRightMargin code, .contentRightMargin blockquote  {
+	font: normal 1em Courier;
+	color:#000000;
 }
 
-h4 {
-  color: #333333;
-  text-decoration: none;
-  font-size: 10px;
-  line-height: 10px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.contentRightMargin blockquote a:link, .contentRightMargin blockquote a:visited {
+	font: normal 1em Courier;
+	color:#ef8033;
+}
+.contentRightMargin blockquote a:hover {
+	color:#949e3e;
 }
 
-h5 {
-  color: #990000;
-  text-decoration: none;
-  font-size: 10px;
-  line-height: 10px;
-  font-family: Verdana, arial, helvetica, sans-serif;
+.contentRightMargin blockquote {
+	background-color:#ededed;
+	padding:10px;
+	border:1px solid #cdcdcd;
+	margin-left:0px;
 }
 
-ul {
-  color: #333333;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
-  font-family: Verdana, helvetica, arial, sans-serif;
+dfn {
+	font-style:italic;
 }
+/* end code stylings */
 
-ul.coll {
-  color: #333333;
-  text-decoration: none;
-  font-size: 10px;
-  line-height: 12px;
-  font-family: Verdana, helvetica, arial, sans-serif;
-}
 
-li {
-  color: #333333;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
-  font-family: Verdana, helvetica, arial, sans-serif;
-}
 
-ol {
-  color: #333333;
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 14px;
-  font-family: Verdana, helvetica, arial, sans-serif;
-}
+/* http://mondrian.pentaho.org/css/transmenu.css */
 
-ol.coll {
-  color: #333333;
-  text-decoration: none;
-  font-size: 10px;
-  line-height: 12px;
-  font-family: Verdana, helvetica, arial, sans-serif;
-}
 
-.footer {
-  color: #990000;
-  text-decoration: none;
-  font-size: 10px;
-  line-height: 10px;
-  font-family: Verdana, arial, helvetica, sans-serif;
-}
+/* this is the clipping region for the menu. it's width and height get set by script, depending on the size of the items table */
+.transMenu {
+	position:absolute;
+	overflow:hidden;
+	left:-1000px;
+	top:-1000px;
+	}
 
-PRE {
-  background:#EEEEEE;
-  margin-top:1em;   margin-bottom:1em; margin-left:0px;
-  padding:5pt;
-}
+/* this is the main container for the menu itself. it's width and height get set by script, depending on the size of the items table */
+.transMenu .content {
+	position:absolute;
+	}
 
-PRE.clsCode, CODE.clsText {
-  color: #990000;
-  font-family:'courier new',courier,serif;
-  font-size:130%;
-}
+/* this table comprises all menu items. each TR is one item. It is relatively positioned so that the shadow and background transparent divs can be positioned underneath it */
+.transMenu .items {
+	position:relative;
+	left:0px; top:0px;
+	z-index:2;
+	}
 
-PRE.clsSyntax { font-family:Verdana,arial,helvetica,sans-serif; font-size:120%; }
+.transMenu.top .items {
+	border-top:none;
+	}
+
+/* each TR.item is one menu item */
+.transMenu .item {
+    color:#fff;
+    font-size:10px;
+    font-family:sans-serif;
+    text-decoration:none;
+	/* this is a hack for mac/ie5, whom incorrectly cascades the border properties of the parent table to each row */
+	border:none;
+	cursor:pointer;
+	cursor:hand;
+	}
+
+/* this DIV is the semi-transparent white background of each menu. the -moz-opacity is a proprietary way to get transparency in mozilla, the filter is for IE/windows 5.0+. */
+/* we set the background color in script because ie mac does not use it; that browser only uses a semi-transparent white PNG that the spacer gif inside this DIV is replaced by */
+.transMenu .background {
+	position:absolute;
+	left:0px; top:0px;
+	z-index:1;
+	-moz-opacity:.8;
+	filter:alpha(opacity=80);
+	}
+
+/* same concept as .background, but this is the sliver of shadow on the right of the menu. It's left, height, and background are set by script. In IE5/mac, it uses a PNG */
+.transMenu .shadowRight {
+	position:absolute;
+	z-index:3;
+	top:3px; width:2px;
+	-moz-opacity:.4;
+	filter:alpha(opacity=40);
+	}
+
+/* same concept as .background, but this is the sliver of shadow on the bottom of the menu. It's top, width, and background are set by script. In IE5/mac, it uses a PNG */
+.transMenu .shadowBottom {
+	position:absolute;
+	z-index:1;
+	left:3px; height:2px;
+	-moz-opacity:.4;
+	filter:alpha(opacity=40);
+	}
+
+/* this is the class that is used when the mouse is over an item. script sets the row to this class when required. */
+.transMenu .item.hover {
+	background: #7B8622;
+	color: #ffffff;
+	}
+
+/* this is either the dingbat that indicates there is a submenu, or a spacer gif in it's place. We give it extra margin to create some space between the text and the dingbat */
+.transMenu .item img {
+	margin-left:10px;
+	}
 
 /* End stylesheet.css */

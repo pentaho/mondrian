@@ -1,6 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
 <!--
   == $Id$
   == This software is subject to the terms of the Common Public License
@@ -11,18 +9,18 @@
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
-  <meta http-equiv="Content-Language" content="en-us">
-  <meta name="GENERATOR" content="Microsoft FrontPage 6.0">
-  <meta name="ProgId" content="FrontPage.Editor.Document">
-  <meta http-equiv="Content-Type"
- content="text/html; charset=windows-1252">
-  <title>How to install Mondrian</title>
-  <link rel="stylesheet" href="stylesheet.css" type="text/css">
+<head>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: How to Install Mondrian</title>
 </head>
 <body>
-<h1>How to install Mondrian</h1>
-<p>By Julian Hyde and others; last updated August, 2006. Also available in [<a href="install_es.html">Espa&ntilde;ol</a>].</p>
-<hr color="#000000" noshade="noshade" size="1">
+<!-- doc2web start -->
+
+<!-- page title -->
+<div class="contentheading">How to install Mondrian</div>
+<!-- end page title -->
+
+<hr noshade="noshade" size="1">
 <ol>
   <li><a href="#1_Introduction">Introduction</a></li>
   <li><a href="#2_Set_up_test_data">Set up test data with a non-embedded database</a><ol>
@@ -55,7 +53,7 @@ configure Mondrian as an XML/A provider</a><ol>
     <li><a href="#8_3_Log4j_and_Tomcat">Log4j and Tomcat</a></li>
   </ol>
 </ol>
-<h2><a name="1_Introduction">1. Introduction</a></h2>
+<h2>1. Introduction<a name="1_Introduction">&nbsp;</a></h2>
 <p>The core of Mondrian is a JAR that acts as "JDBC for OLAP":
 providing connections and executing SQL against underlying relational
 databases. This can be run within a surrounding application. Mondrian
@@ -87,7 +85,8 @@ as described in <a href="#2_Set_up_test_data">section 2</a>.</li>
 accessing the Perforce source-control server and building the code in
 <a href="developer.html">the Developer's Guide</a>.</p>
 
-<h2><a name="2_Set_up_test_data">2. Set up test data in a non-embedded database</a></h2>
+<h2>2. Set up test data in a non-embedded database<a name="2_Set_up_test_data">&nbsp;</a></h2>
+
 <p>The 'FoodMart' test dataset is part of the non-embedded binary
 distribution. It is shipped in two formats: a Microsoft Access database
 (<code>demo/access/MondrianFoodMart.mdb</code>) and in
@@ -99,7 +98,7 @@ non Access database, or if you are not using Windows, you will need to
 create your own empty database and load it using the
 MondrianFoodMartLoader utility.</p>
 
-<h3><a name="2_1_Microsoft_Access">2.1. Microsoft Access</a></h3>
+<h3>2.1. Microsoft Access<a name="2_1_Microsoft_Access">&nbsp;</a></h3>
 
 <p>If you are using Windows, Microsoft Access is the easiest database
 to use for the test dataset. You just need to set up an ODBC datasource
@@ -115,7 +114,7 @@ pointing to
 (This allows Mondrian to access this data source using the
 JDBC connect string "<code>jdbc:odbc:MondrianFoodMart</code>".</p>
 
-<h3><a name="2_2_Non_Access_setup">2.2. Other database</a></h3>
+<h3>2.2. Other database<a name="2_2_Non_Access_setup">&nbsp;</a></h3>
 
 <p>If not using Access, use the MondrianFoodMartLoader utility to
 create a database, and load data from a SQL script.</p>
@@ -309,8 +308,7 @@ dataset in the Access database:</p>
 &nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcPassword=password</code></div>
 </blockquote>
 
-<h2><a name="3_Deploy_and_run_the_web_app">3. Deploy and run the web
-application with a non-embedded database</a></h2>
+<h2>3. Deploy and run the web application with a non-embedded database<a name="3_Deploy_and_run_the_web_app">&nbsp;</a></h2>
 
 <ol>
   <li>Install Tomcat (version 5.0.25 or later).</li>
@@ -324,9 +322,7 @@ connect strings there to the same database parameters for the FoodMart database
   you installed as per the above instructions. That is,
 
   <blockquote>
-    <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
-    <code>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;</code></div>
-	</p>
+    <code>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;</code>
   </blockquote>
   
   becomes
@@ -364,7 +360,7 @@ jdbcUrl="jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart"
 catalogUri="/WEB-INF/queries/FoodMart.xml"&gt;</code></div>
 	</blockquote></p></li>
 
-<li>Copy the following files:</li>
+<li>Copy the following files:
   <ul>
     <li>If needed, copy your JDBC driver JAR to <code>TOMCAT_HOME/common/endorsed</code></li>
     <li>Copy <code>xalan.jar</code> to <code><i>TOMCAT_HOME</i>/common/endorsed</code></li>
@@ -374,8 +370,7 @@ catalogUri="/WEB-INF/queries/FoodMart.xml"&gt;</code></div>
   <li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li>
 </ol>
 
-<h2><a name="4_Deploy_and_run_the_embedded_web_app">4. Deploy and run
-the web application with the embedded test database</a></h2>
+<h2>4. Deploy and run the web application with the embedded test database<a name="4_Deploy_and_run_the_embedded_web_app">&nbsp;</a></h2>
 
 <ol>
   <li>From the unzipped embedded database binary release, explode <code>lib/mondrian-embedded.war</code>
@@ -383,13 +378,12 @@ to <code><i>TOMCAT_HOME</i>/webapps/mondrian-embedded</code></li>
   <li>Start up Tomcat</li>
   <li>Hit <a href="http://localhost:8080/mondrian-embedded" target="_new">http://localhost:8080/mondrian-embedded</a></li>
 </ol>
-<h2><a name="5_How_to_configure_Mondrian_as_an_XMLA_provider">5. How to
-configure Mondrian as an XML/A provider</a></h2>
+
+<h2>5. How to configure Mondrian as an XML/A provider<a name="5_How_to_configure_Mondrian_as_an_XMLA_provider">&nbsp;</a></h2>
 <p>
 To will setup XMLA service, follow these steps.</p>
 
-<h3><a name="5_1_Describe_the_data_sources_in_datasources.xml">1. Describe the data sources 
-in <code>datasources.xml</code></a></h3>
+<h3>1. Describe the data sources in <code>datasources.xml</code><a name="5_1_Describe_the_data_sources_in_datasources.xml">&nbsp;</a></h3>
 
 <p>In WEB-INF directory of your webapp, create a file called <code>
 datasources.xml</code>, with content like this:</p>
@@ -462,7 +456,7 @@ file. The name of the catalog must match the name attribute in the schema file
 <p>Whether&nbsp; you use one data source or several, the catalogs in the <code>datasources.xml</code> file must 
 have unique names.</p>
 
-<h3><a name="5_2_Configure_XmlaServlet_in_your_web.xml">2. Configure XmlaServlet in your <code>web.xml</code></a></h3>
+<h3>5.2. Configure XmlaServlet in your <code>web.xml</code><a name="5_2_Configure_XmlaServlet_in_your_web.xml">&nbsp;</a></h3>
 
 <p>For example:</p>
 <blockquote>
@@ -473,20 +467,21 @@ have unique names.</p>
 &lt;servlet-class&gt;mondrian.xmla.impl.DefaultXmlaServlet&lt;/servlet-class&gt;<br>
 &lt;/servlet&gt;</code></div>
 </blockquote>
-<h2>
-<a name="6_Miscellaneous">6. Miscellaneous</a></h2>
-<h3><a name="6_1_mondrian_properties">6.1. Configuring <code>mondrian.properties</code></a></h3>
+
+<h2>6. Miscellaneous<a name="6_Miscellaneous">&nbsp;</a></h2>
+
+<h3>6.1. Configuring <code>mondrian.properties</code><a name="6_1_mondrian_properties">&nbsp;</a></h3>
 
 <p>Properties are described in the <a href="configuration.html">Configuration 
 Guide</a>.</p>
 
-<h3><a name="6_2_Cache_setup">6.2. Cache setup</a></h3>
+<h3>6.2. Cache setup<a name="6_2_Cache_setup">&nbsp;</a></h3>
 
 <p>You will need to specify the amount of memory available to the cache
 using the -Xms Java VM option, for example -Xms256m for 256 megs of ram
 for the Java VM.</p>
 
-<h2><a name="7_Database_compatibility">7. Database compatibility</a></h2>
+<h2>7. Database compatibility<a name="7_Database_compatibility">&nbsp;</a></h2>
 
 <p>Mondrian is known to run on the following databases.</p>
 <ol>
@@ -542,9 +537,9 @@ strings for most databases in there.</p>
   </ul>
 </blockquote>
 
-<h2><a name="8_Compatibility_issues">8. Compatibility issues</a></h2>
+<h2>8. Compatibility issues<a name="8_Compatibility_issues">&nbsp;</a></h2>
 
-<h3><a name="8_1_Weblogic_6_1_and_Xerces">8.1. Weblogic 6.1 and Xerces</a></h3>
+<h3>8.1. Weblogic 6.1 and Xerces<a name="8_1_Weblogic_6_1_and_Xerces">&nbsp;</a></h3>
 
 <p>Weblogic 6.1 ships with an older, incompatible, version of Xerces.
 The symptom is the error</p>
@@ -566,7 +561,7 @@ explicitly uses Xerces.&nbsp; Fyi,
 note</a>
 describes how to change Weblogic's default XML parser.</p>
 
-<h3><a name="8_2_Xalan_and_Tomcat">8.2. JDK, Xalan and Tomcat</a></h3>
+<h3>8.2. JDK, Xalan and Tomcat<a name="8_2_Xalan_and_Tomcat">&nbsp;</a></h3>
 
 <p>Mondrian binaries, as shipped, require JDK 1.4.x, Xalan 2.6.0, and
 Tomcat
@@ -626,7 +621,7 @@ and
 revert to Xalan 2.3.1.<br>
 </p>
 
-<h3><a name="8_3_Log4j_and_Tomcat">8.3. Log4j and Tomcat</a></h3>
+<h3>8.3. Log4j and Tomcat<a name="8_3_Log4j_and_Tomcat">&nbsp;</a></h3>
 
 <p>The Mondrian WARs come packaged with a version of log4j.jar. This
 may conflict with your app server, such as JBoss, and cause errors in
@@ -635,20 +630,18 @@ log about log4j appenders. The fix is to remove the log4j.jar from the
 Mondrian WAR.</p>
 <p>&nbsp;</p>
 <hr>
-<table class="clsStd" style="border-collapse: collapse;" border="0"
- bordercolor="#111111" cellpadding="0" cellspacing="0" width="100%">
-  <tbody>
-    <tr>
-      <td class="content"> <a target="_top" href="index.html">Home</a>
-| <a target="_top" href="#">No frames</a> | This file is<i>
-<a href="http://mondrian.sourceforge.net/install.html">
- $Id$
-</a></i> (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/install.html?ac=22">log</a>)</td>
-      <td align="right"> <a href="http://sourceforge.net"> <img
- src="http://sourceforge.net/sflogo.php?group_id=35302&amp;type=1"
- alt="SourceForge.net Logo" border="0" height="31" width="88"> </a> </td>
-    </tr>
-  </tbody>
-</table>
+
+<p>
+    Author: Julian Hyde and others; last updated August, 2006.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/install.html?ac=22">log</a>)<br/>
+    Copyright (C) 2001-2002 Kana Software, Inc.<br/>
+    Copyright (C) 2002-2006 Julian Hyde
+</p>
+
+<br/>
+
+<!-- doc2web end -->
+
 </body>
 </html>

@@ -1,113 +1,115 @@
 <html>
-
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == Copyright (C) 2005-2006 Julian Hyde and others
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  -->
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Optimizing the performance of a Mondrian database</title>
-<link rel="stylesheet" href="stylesheet.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: Aggregate Tables</title>
 </head>
-
 <body>
+<!-- doc2web start -->
 
-<h1>Aggregate Tables</h1>
+<!-- page title -->
+<div class="contentheading">Aggregate Tables</div>
+<!-- end page title -->
 
-<p>By Richard Emberson; last updated by Julian Hyde, March, 2006.</p>
+<!-- 
+########################
+##  Contents       #####
+######################## -->
+<h3>Contents</h3>
+  	<ol>
+		<li><a href="#Introduction">Introduction</a></li>
+		<li><a href="#What_are_aggregates">What are aggregate tables?</a></li>
+			<ol>
+      			<li><a href="#A_simple_aggregate_table">A simple aggregate table</a></li>
+      			<li><a href="#Another_aggregate_table">Another aggregate table</a></li>
+    		</ol>
+		<li><a href="#Defining_aggregate_tables">Defining aggregate tables</a></li>
+		<li><a href="#Building_aggregates">Building aggregate tables</a></li>
+		<li><a href="#How_Mondrian_recognizes_Aggregate_Tables">How Mondrian recognizes aggregate tables</a></li>
+			<ol>
+      			<li><a href="#Recognizing_default">Rules</a></li>
+      			<li><a href="#Recognizing_explicit">Explicit aggregates</a></li>
+    		</ol>
+		<li><a href="#Aggregate_tables_and_parent-child_hierarchies">Aggregate tables and parent-child hierarchies</a></li>
+			<ol>
+				<li><a href="#Aggregate_tables_at_the_leaf_level_of_a_parent-child_hierarchy">Aggregate tables at the leaf level of a parent-child hierarchy</a></li>
+    			<li><a href="#Combined_closure_and_aggregate_tables">Combined closure and aggregate tables</a></li>
+    		</ol>
+    	<li><a href="#How_Mondrian_uses_aggregate_tables">How Mondrian uses aggregate tables</a></li>
+			<ol>
+				<li><a href="#Choosing_between_aggregate_tables">Choosing between aggregate tables</a></li>
+    			<li><a href="#Distinct_count">Distinct count</a></li>
+    		</ol>
+    	<li><a href="#Tools_for_designing_and_maintaining_aggregate_tables">Tools for designing and maintaining aggregate tables</a></li>
+			<ol>
+      			<li><a href="#AggGen_aggregate_generator">AggGen (aggregate generator)</a></li>
+      			<li><a href="#Aggregate_table_populater">Aggregate table populater</a></li>
+      			<li><a href="#Script_generator">Script generator</a></li>
+      			<li><a href="#Recommender">Recommender</a></li>
+      			<li><a href="#Online_offline_control">Online/offline control</a></li>
+			</ol>
+    	<li><a href="#Aggregate_properties">Properties which affect aggregates</a></li>
+		<li><a href="#References">References</a></li>
+	</ol>
+<!-- 
+#########################
+##  1. Introduction #####
+######################### -->
+<h3>1. Introduction<a name="Introduction">&nbsp;</a></h3>
 
-<hr noshade color="#000000" size="1">
-
-<h2>Contents</h2>
-  <ul>
-	<li><a href="#Introduction">Introduction</a></li>
-	<li><a href="#What_are_aggregates">What are aggregate tables?</a><ul>
-      <li><a href="#A_simple_aggregate_table">A simple aggregate table</a></li>
-      <li><a href="#Another_aggregate_table">Another aggregate table</a></li>
-    </ul>
-    </li>
-	<li><a href="#Defining_aggregate_tables">Defining aggregate tables</a></li>
-	<li><a href="#Building_aggregates">Building aggregate tables</a></li>
-	<li><a href="#How_Mondrian_recognizes_Aggregate_Tables">How Mondrian 
-	recognizes aggregate tables</a><ul>
-      <li><a href="#Recognizing_default">Rules</a></li>
-      <li><a href="#Recognizing_explicit">Explicit aggregates</a></li>
-    </ul>
-    </li>
-	<li><a href="#Aggregate_tables_and_parent-child_hierarchies">Aggregate 
-    tables and parent-child hierarchies</a><ul>
-	<li>
-    <a href="#Aggregate_tables_at_the_leaf_level_of_a_parent-child_hierarchy">
-    Aggregate tables at the leaf level of a parent-child hierarchy</a></li>
-    <li><a href="#Combined_closure_and_aggregate_tables">Combined closure and 
-    aggregate tables</a></li>
-    </ul></li>
-    <li><a href="#How_Mondrian_uses_aggregate_tables">How Mondrian uses 
-	aggregate tables</a><ul>
-	<li><a href="#Choosing_between_aggregate_tables">Choosing between aggregate 
-    tables</a></li>
-    <li><a href="#Distinct_count">Distinct count</a></li>
-    </ul>
-
-    </li>
-    <li><a href="#Tools_for_designing_and_maintaining_aggregate_tables">Tools 
-		for designing and maintaining aggregate tables</a><ul>
-      <li><a href="#AggGen_aggregate_generator">AggGen (aggregate generator)</a></li>
-      <li><a href="#Aggregate_table_populater">Aggregate table populater</a></li>
-      <li><a href="#Script_generator">Script generator</a></li>
-      <li><a href="#Recommender">Recommender</a></li>
-      <li><a href="#Online_offline_control">Online/offline control</a></li>
-    </ul>
-    <li><a href="#Aggregate_properties">Properties which affect aggregates</a><li>
-    <a href="#References">References</a></ul>
-
-<h2><a name="Introduction">Introduction</a></h2>
-<p>
-Unlike many OLAP servers, Mondrian does not store data on disk: it just works on 
+<p>Unlike many OLAP servers, Mondrian does not store data on disk: it just works on 
 the data in the RDBMS, and once it has read a piece of data once, it stores that 
 data in its cache. This greatly simplifies the process of installing Mondrian, 
 but it puts limits on Mondrian's performance when Mondrian is applied to a huge 
-dataset.&nbsp;
-</p>
+dataset.</p>
 
-<p>
-Consider what happens when the CEO runs her Sales Report first thing on a Monday 
+<p>Consider what happens when the CEO runs her Sales Report first thing on a Monday 
 morning. This report contains a single number: the total sales of all products, 
 in all regions, this year. In order to get this number, Mondrian generates a 
 query something like this:</p>
 
 <blockquote>
-
-	<p><code>SELECT sum(store_sales)<br>
+	<code>SELECT sum(store_sales)<br>
 	FROM sales_fact, <br>
 &nbsp;&nbsp;&nbsp; time<br>
 	WHERE sales_fact.time_id = time.time_id<br>
-	AND time.year = 2005</code></p>
+	AND time.year = 2005</code>
 </blockquote>
 
-<p>
-and sends it to the DBMS. The DBMS takes several minutes to execute it: which is 
+<p>and sends it to the DBMS. The DBMS takes several minutes to execute it: which is 
 understandable because the DBMS has to read all of this year's records in the 
 fact table (a few million sales, say) and aggregate them into a single total. 
 Clearly, what is needed in this case, and in others like it, is a pre-computed 
 summary of the data: an aggregate table.</p>
 
-<p>
-An <dfn><font face="Verdana">aggregate table</font></dfn> coexists with the base fact table, 
+<p>An <dfn>aggregate table</dfn> coexists with the base fact table, 
 and contains pre-aggregated measures build from the 
 fact table. It is registered in Mondrian's schema, so that Mondrian can choose 
 to use whether to use the aggregate table rather than the fact table, if it is 
 applicable for a particular query.</p>
 
-<p>
-Designing aggregate tables is a fine art.
+<p>Designing aggregate tables is a fine art.
 There is extensive research, both empirical and theoretical, available
 on the web concerning different ways to structure aggregate tables and we will not attempt to duplicate any of it here.
 </p>
-<h2><a name="What_are_aggregates">What are aggregate tables?</a></h2>
+<!-- 
+#######################################
+##  2. What are aggregate tables? #####
+####################################### -->
+<h3>2. What are aggregate tables?<a name="What_are_aggregates">&nbsp;</a></h3>
 
 <p>To explain what aggregate tables are, let's consider a simple star schema.</p>
 
-<blockquote>
-
-	<p><img border="0" src="aggregate_tables_1.png"></p>
-</blockquote>
+	<p>
+	<img border="0" src="images/aggregate_tables_1.png" width="500" height="283"></p>
 
 <p>The star schema has a single fact table <code>Sales</code>, two measure 
 columns (<code>units</code> and <code>dollars</code>) and four dimension tables 
@@ -115,13 +117,16 @@ columns (<code>units</code> and <code>dollars</code>) and four dimension tables
 and <code>Customer</code>).</p>
 
 <p>On top of this star schema, we create the following multidimensional model:</p>
+
 <ul>
 	<li>Cube <code>[Sales]</code> has two measures <code>[Unit sales]</code> and
 	<code>[Dollar sales]</code></li>
 	<li>Dimension <code>[Product]</code> has levels <code>[All Products]</code>,
 	<code>[Manufacturer]</code>, <code>[Brand]</code>, <code>[Prodid]</code></li>
+
 	<li>Dimension <code>[Time]</code> has levels <code>[All Time]</code>, <code>
 	[Year]</code>, <code>[Quarter]</code>, <code>[Month]</code>, <code>[Day]</code></li>
+
 	<li>Dimension <code>[Customer]</code> has levels <code>[All Customers]</code>,
 	<code>[State]</code>, <code>[City]</code>, <code>[Custid]</code></li>
 	<li>Dimension <code>[Payment Method]</code> has levels <code>[All Payment 
@@ -133,25 +138,30 @@ and <code>Customer</code>).</p>
 and the <code>[Payment Method]</code> dimension is contained within the <code>
 payment</code> column in the fact table.</p>
 
-<h3><a name="A_simple_aggregate_table">A simple aggregate table</a></h3>
+<!-- 
+######################################
+##  2.1 A simple aggregate table #####
+###################################### -->
+<h1>2.1 A simple aggregate table<a name="A_simple_aggregate_table">&nbsp;</a></h1>
 
 <p>Now let's create an aggregate table, <code>Agg_1</code>:</p>
 
-<blockquote>
-
-	<p><img border="0" src="aggregate_tables_2.png" width="417" height="172"></p>
-</blockquote>
+	<p>
+	<img border="0" src="images/aggregate_tables_2.png" width="417" height="172"></p>
 
 <p>See how the original star schema columns have been combined into the table:</p>
+
 <ul>
 	<li>The <code>Time</code> dimension has been &quot;collapsed&quot; into the aggregate 
 	table, omitting the <code>month</code> and <code>day</code> columns.</li>
 	<li>The two tables of the <code>Product</code> dimension has been 
 	&quot;collapsed&quot; into the aggregate table.</li>
+
 	<li>The Customer dimension has been &quot;lost&quot;.</li>
 	<li>For each measure column in the fact table (<code>units</code>, <code>dollars</code>), 
 	there are one or more measure columns in the aggregate table (<code>sum units</code>, <code>min 
 	units</code>, <code>max units</code>, <code>sum dollars</code>).</li>
+
 	<li>There is also a measure column, <code>row count</code>, representing the 
 	&quot;count&quot; measure.</li>
 </ul>
@@ -160,152 +170,174 @@ payment</code> column in the fact table.</p>
 
 <blockquote>
 
-	<p><code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;<br>
+	<code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;<br>
 	&nbsp;&nbsp;&lt;<a href="#XML_Table">Table</a> name=&quot;sales&quot;&gt;<br>
 	&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggName">AggName</a> 
 	name=&quot;agg_1&quot;&gt;<br>
+
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggFactCount">AggFactCount</a> column=&quot;row count&quot;/&gt;<br>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Unit 
 	Sales]&quot; column=&quot;sum units&quot;/&gt;<br>
+
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> 
 	name=&quot;[Measures].[Min Units]&quot; column=&quot;min units&quot;/&gt;<br>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Max 
 	Units]&quot; column=&quot;max units&quot;/&gt;<br>
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Dollar 
 	Sales]&quot; column=&quot;sum dollars&quot;/&gt;<br>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Year]&quot; 
 	column=&quot;year&quot;/&gt;<br>
+
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Quarter]&quot; 
 	column=&quot;quarter&quot;/&gt;<br>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Product].[Mfrid]&quot; 
 	column=&quot;mfrid&quot;/&gt;<br>
+
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Product].[Brand]&quot; 
 	column=&quot;brand&quot;/&gt;<br>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Product].[Prodid]&quot; 
 	column=&quot;prodid&quot;/&gt;<br>
+
 	&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_AggName">AggName</a>&gt;<br>
 	&nbsp;&nbsp;&lt;/<a href="#XML_Table">Table</a>&gt;<br>
 	&nbsp;<br>
 	&nbsp;&nbsp;&lt;!-- Rest of the cube definition --&gt;<br>
-	&lt;/<a href="#XML_Cube">Cube</a>&gt;</code></p>
-</blockquote>
+	&lt;/<a href="#XML_Cube">Cube</a>&gt;</code>
 
-<h3><a name="Another_aggregate_table">Another aggregate table</a></h3>
+</blockquote>
+<!-- 
+#####################################
+##  2.2 Another aggregate table #####
+##################################### -->
+<h1>2.2 Another aggregate table<a name="Another_aggregate_table">&nbsp;</a></h1>
 
 <p>Another aggregate table, <code>Agg_2</code>:</p>
 
-<blockquote>
-
-	<p><img border="0" src="aggregate_tables_3.png"></p>
-</blockquote>
+	<p>
+	<img border="0" src="images/aggregate_tables_3.png" width="500" height="148"></p>
 
 <p>and the corresponding XML:</p>
 
 <blockquote>
 
-	<p><code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;<br>
+	<code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;<br>
 	&nbsp;&nbsp;&lt;<a href="#XML_Table">Table</a> name=&quot;sales&quot;&gt;<br>
 	&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggName">AggName</a> 
 	name=&quot;agg_1&quot; ... /&gt;<br>
+
 	&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggName">AggName</a> 
 	name=&quot;agg_2&quot;&gt;<br>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggFactCount">AggFactCount</a> column=&quot;row count&quot;/&gt;<br>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggForeignKey">AggForeignKey</a> factColumn=&quot;prodid&quot; 
 	aggColumn=&quot;prodid&quot;/&gt;<br>
+
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Unit 
 	Sales]&quot; column=&quot;sum units&quot;/&gt;<br>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> 
 	name=&quot;[Measures].[Min Units]&quot; column=&quot;min units&quot;/&gt;<br>
+
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Max 
 	Units]&quot; column=&quot;max units&quot;/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Dollar 
 	Sales]&quot; column=&quot;sum dollars&quot;/&gt;<br>
+
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Year]&quot; 
 	column=&quot;year&quot;/&gt;<br>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Quarter]&quot; 
 	column=&quot;quarter&quot;/&gt;<br>
+
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Month]&quot; 
 	column=&quot;month&quot;/&gt;<br>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Payment 
 	Method].[Payment Method]&quot; 
 	column=&quot;payment&quot;/&gt;<br>
+
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Customer].[State]&quot; 
 	column=&quot;state&quot;/&gt;<br>
 	&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_AggName">AggName</a>&gt;<br>
 	&nbsp;&nbsp;&lt;/<a href="#XML_Table">Table</a>&gt;<br>
+
 	<br>
 &nbsp; &lt;<a href="schema.html#XML_Dimension">Dimension</a> name=&quot;Product&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; 
 	primaryKey=&quot;prodid&quot; primaryKeyTable=&quot;Product&quot;&gt;<br>
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Join">Join</a> leftKey=&quot;mfrid&quot; 
 	rightKey=&quot;mfrid&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Table">Table</a> 
 	name=&quot;Product&quot;/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Table">Table</a> 
 	name=&quot;Mfr&quot;/&gt;<br>
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="schema.html#XML_Join">Join</a>&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Level">Level</a> 
 	name=&quot;Manufacturer&quot; table=&quot;Mfr&quot; column=&quot;mfrid&quot;/&gt;<br>
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Level">Level</a> 
 	name=&quot;Brand&quot; table=&quot;Product&quot; column=&quot;brand&quot;/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Level">Level</a> 
 	name=&quot;Name&quot; table=&quot;Product&quot; column=&quot;prodid&quot;/&gt;<br>
+
 &nbsp;&nbsp;&nbsp; &lt;/<a href="schema.html#XML_Hierarchy">Hierarchy</a>&gt;<br>
 &nbsp; &lt;/<a href="schema.html#XML_Dimension">Dimension</a>&gt;<br>
 	<br>
 	&nbsp;&nbsp;&lt;!-- Rest of the cube definition --&gt;<br>
-	&lt;/<a href="#XML_Cube">Cube</a>&gt;</code></p>
+	&lt;/<a href="#XML_Cube">Cube</a>&gt;</code>
+
 </blockquote>
 
 <p>Several dimensions have been collapsed: <code>[Time]</code> at the <code>
 [Quarter]</code> level; <code>[Customer]</code> at the <code>[State]</code> 
 level; and <code>[Payment Method]</code> at the <code>[Payment Method]</code> 
+
 level. But the <code>[Product]</code> dimension has been retained in its 
 original snowflake form.</p>
 
 <p>The <code>&lt;<a href="#XML_AggForeignKey">AggForeignKey</a>&gt;</code> element is 
 used to&nbsp; declare that the column <code>prodid</code> links to the dimension 
 table, but all other columns remain in the <code>Product</code> and <code>Mfr</code> 
-dimension tables.</p>
 
-<h2><a name="Defining_aggregate_tables">Defining aggregate tables</a></h2>
-<p>
-A fact table can have zero or more aggregate tables.
+dimension tables.</p>
+<!-- 
+######################################
+##  3. Defining aggregate tables #####
+###################################### -->
+<h3>3. Defining aggregate tables<a name="Defining_aggregate_tables">&nbsp;</a></h3>
+
+<p>A fact table can have zero or more aggregate tables.
 Every aggregate table is associated with just one fact table.
 It aggregates the fact table measures over one or more of the dimensions.
 As an example, if a particular column in the fact table represents the
 number of sales of some product on a given day by a given store, then
 an aggregate table might be created that sums the information so that
 applies at a month level rather than by day. Such an aggregate might
-reasonably be 1/30<sup><font face="Verdana">th</font></sup> the size of the fact table (assuming comparable sales
+reasonably be 1/30<sup>th</sup> the size of the fact table (assuming comparable sales
 for every day of a month). Now, if one were to execute a MDX query
 that needed sales information at a month (or quarter or year) level,
 running the query against the aggregate table is faster but yields the
 same answer as if it were run against the base fact table.</p>
-<p>
-Further, one might create an aggregate that not only aggregates at the month
+
+<p>Further, one might create an aggregate that not only aggregates at the month
 level but also, rather than at the individual store level, aggregates at
 the state level. If there were, say, 20 stores per state, then this
-aggregate table would be 1/600<sup><font face="Verdana">th</font></sup> the size of the original fact table. MDX queries interested only at the month or above and state or above levels
-would use this table.
-</p>
-<p>
-When a MDX query runs, what aggregate should be used?
+aggregate table would be 1/600<sup>th</sup> the size of the original fact table. MDX queries interested only at the month or above and state or above levels
+would use this table.</p>
+
+<p>When a MDX query runs, what aggregate should be used?
 This comes down to what measures are needed and with which dimension levels.
 The base fact table always has the correct measures and dimension
 levels. But, it might also be true that there is one or more aggregate
 tables that also have the measures and levels. Of these, the aggregate
 table with the lowest cost to read, the smallest number of rows,
-should be the table used to fulfill the query.
-</p>
-<p>
-Mondrian supports two aggregation techniques which are called "lost"
+should be the table used to fulfill the query.</p>
+
+<p>Mondrian supports two aggregation techniques which are called "lost"
 dimension and "collapsed" dimension. For the creation of any
 given aggregate table these can 
-be applied independently to any number of different dimensions.
-</p>
-<p>
-A "lost" dimension is one which is completely missing from the aggregate
+be applied independently to any number of different dimensions.</p>
+
+<p>A "lost" dimension is one which is completely missing from the aggregate
 table. The measures that appear in the table have been aggregated 
 across all values of the lost dimension. As an example, in a fact table
 with dimensions of time, location, and product and measure sales, for an
@@ -314,41 +346,38 @@ dimension would be "lost". Here, the sales measure would be the aggregation
 over all locations. An aggregate table where all of the dimensions
 are lost is possible - it would have a single row with the measure 
 aggregated over everything - sales for all time, all locations and all
-products.
-</p>
-<code>
+products.</p>
+
 <blockquote>
-<pre>
-fact table
-    time_id
-    product_id
-    location_id
-    measure
-
-lost (time_id) dimension table
-    product_id
-    location_id
-    measure (aggregated over time)
-    fact_count
-
-fully lost dimension table
-    measure (aggregated over everything)
-    fact_count
-</pre>
-</blockquote>
+<code>
+fact table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;time_id<br />
+&nbsp;&nbsp;&nbsp;&nbsp;product_id<br />
+&nbsp;&nbsp;&nbsp;&nbsp;location_id<br />
+&nbsp;&nbsp;&nbsp;&nbsp;measure<br />
+&nbsp;<br />
+lost (time_id) dimension table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;product_id<br />
+&nbsp;&nbsp;&nbsp;&nbsp;location_id<br />
+&nbsp;&nbsp;&nbsp;&nbsp;measure (aggregated over time)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fact_count<br />
+&nbsp;<br />
+fully lost dimension table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;measure (aggregated over everything)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fact_count<br />
 </code>
-<p>
-Note the "fact_count" column in the aggregate table. This additional
+</blockquote>
+
+<p>Note the "fact_count" column in the aggregate table. This additional
 column is a general feature of aggregate tables. It is a count of
 how many fact table columns were aggregated into the one aggregate
 table row. As an example, if for a particular choice of product_id and
 location_id, the time_id occurred 5 times in the fact table, then in the
 aggregate table the fact_count column would contain 5 for that
 product_id/location_id pair (a given product was sold at a given
-location at 5 different times).
-</p>
-<p>
-The second supported aggregation technique provides a finer level of 
+location at 5 different times).</p>
+
+<p>The second supported aggregation technique provides a finer level of 
 control, the "collapsed" dimension technique.
 Recall that the dimension key in the fact table refers (more or less) 
 to the 
@@ -364,38 +393,39 @@ the aggregate table would not have a time_id column but rather
 columns for month, quarter and year. The SQL generated for a
 MDX query for which this aggregate table can be used, would no longer
 refer to the time dimension's table but rather all time related
-information would be gotten from the aggregate table.
-</p>
-<code>
+information would be gotten from the aggregate table.</p>
+
 <blockquote>
-<pre>
-time dimension table
-    time_id
-    day
-    month
-    quarter
-    year
-
-fact table
-    time_id
-    measure
-
-collapsed dimension table
-    month
-    quarter
-    year
-    measure (aggregated to month level)
-    fact_count
-</pre>
-</blockquote>
+<code>
+time dimension table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;time_id<br />
+&nbsp;&nbsp;&nbsp;&nbsp;day<br />
+&nbsp;&nbsp;&nbsp;&nbsp;month<br />
+&nbsp;&nbsp;&nbsp;&nbsp;quarter<br />
+&nbsp;&nbsp;&nbsp;&nbsp;year<br />
+&nbsp;<br />
+fact table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;time_id<br />
+&nbsp;&nbsp;&nbsp;&nbsp;measure<br />
+&nbsp;<br />
+collapsed dimension table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;month<br />
+&nbsp;&nbsp;&nbsp;&nbsp;quarter<br />
+&nbsp;&nbsp;&nbsp;&nbsp;year<br />
+&nbsp;&nbsp;&nbsp;&nbsp;measure (aggregated to month level)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fact_count<br />
 </code>
-<p>
-In the literature, there are other ways of creating aggregate tables
-but they are not supported by Mondrian at this time.
-</p>
-<h2><a name="Building_aggregates">Building aggregate tables</a></h2>
-<p>
-Aggregate tables must be built.
+</blockquote>
+
+<p>In the literature, there are other ways of creating aggregate tables
+but they are not supported by Mondrian at this time.</p>
+<!-- 
+######################################
+##  4. Building aggregate tables #####
+###################################### -->
+<h3>4. Building aggregate tables<a name="Building_aggregates">&nbsp;</a></h3>
+
+<p>Aggregate tables must be built.
 Generally, they not real-time; they are rebuilt,
 for example, every night for use the following day by the analysts.
 Considering the lost and collapsed dimension technique for
@@ -404,10 +434,9 @@ with N levels, there are N+1 possible aggregate tables (N collapsed and
 1 lost). Also, dimensions (with different dimension tables) can
 be aggregated independently. 
 For the FoodMart Sales cube there are 1400 different possible aggregate 
-tables.
-</p>
-<p>
-Clearly, one does not want to create all possible aggregate tables.
+tables.</p>
+
+<p>Clearly, one does not want to create all possible aggregate tables.
 Which ones to create depends upon two considerations. The first
 consideration is application dependent: 
 the nature of the MDX queries that will be executed.
@@ -420,249 +449,228 @@ bang for the buck than aggregating from the N to the N+1 (N&gt;1) level.
 This is because 1) a first level aggregation can be used for all
 queries at that level and above and 2) dimension fanout tends to 
 increase for the lower levels.
-Of course, your mileage may vary.
-</p>
-<p>
-In a sense, picking which aggregate tables to build is analogous to 
+Of course, your mileage may vary.</p>
+
+<p>In a sense, picking which aggregate tables to build is analogous to 
 picking which indexes to build on a table; it is application
-dependent and experience helps.
-</p>
-<p>
-The hardest part about the actually creation and population of 
+dependent and experience helps.</p>
+
+<p>The hardest part about the actually creation and population of 
 aggregate tables is figuring out how to create the first couple;
 what the SQL looks like.
-After that they are pretty much all the same.
-</p>
-<p>
-Four examples will be given. They all concern building
+After that they are pretty much all the same.</p>
+
+<p>Four examples will be given. They all concern building
 aggregate tables for the sales_fact_1997 fact table.
-As a reminder, the sales_fact_1997 fact table looks like:
-</p>
-<code>
-<blockquote>
-<pre>
-sales_fact_1997
-    product_id 
-    time_id 
-    customer_id 
-    promotion_id
-    store_id
-    store_sales
-    store_cost
-    unit_sales
-</pre>
-</blockquote>
-</code>
-<p>
-The first example is a lost time dimension aggregate table, the
-time_id foreign key is missing.
-</p>
-<code>
-<blockquote>
-<pre>
-CREATE TABLE agg_l_05_sales_fact_1997 (
-    product_id INTEGER NOT NULL,
-    customer_id INTEGER NOT NULL,
-    promotion_id INTEGER NOT NULL,
-    store_id INTEGER NOT NULL,
-    store_sales DECIMAL(10,4) NOT NULL,
-    store_cost DECIMAL(10,4) NOT NULL,
-    unit_sales DECIMAL(10,4) NOT NULL,
-    fact_count INTEGER NOT NULL);
+As a reminder, the sales_fact_1997 fact table looks like:</p>
 
-CREATE INDEX i_sls_97_cust_id ON agg_l_05_sales_fact_1997 (customer_id);
-CREATE INDEX i_sls_97_prod_id ON agg_l_05_sales_fact_1997 (product_id);
-CREATE INDEX i_sls_97_promo_id ON agg_l_05_sales_fact_1997 (promotion_id);
-CREATE INDEX i_sls_97_store_id ON agg_l_05_sales_fact_1997 (store_id);
-
-INSERT INTO agg_l_05_sales_fact_1997 (
-    product_id,
-    customer_id,
-    promotion_id,
-    store_id,
-    store_sales,
-    store_cost,
-    unit_sales,
-    fact_count)
-SELECT
-    product_id,
-    customer_id,
-    promotion_id,
-    store_id,
-    SUM(store_sales) AS store_sales,
-    SUM(store_cost) AS store_cost,
-    SUM(unit_sales) AS unit_sales,
-    COUNT(*) AS fact_count
-FROM 
-    sales_fact_1997 
-GROUP BY 
-    product_id, 
-    customer_id, 
-    promotion_id, 
-    store_id;
-</pre>
-</blockquote>
+<blockquote>
+<code>
+sales_fact_1997<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;product_id <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;time_id <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;customer_id <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;promotion_id<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_id<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_sales<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_cost<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;unit_sales
 </code>
-<p>
-A couple of things to note here. 
-</p>
-<p>
-The above is in MySQL's dialect of SQL, and may
+</blockquote>
+
+<p>The first example is a lost time dimension aggregate table, the
+time_id foreign key is missing.</p>
+
+<blockquote>
+<code>
+CREATE TABLE agg_l_05_sales_fact_1997 (<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;product_id INTEGER NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;customer_id INTEGER NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;promotion_id INTEGER NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_id INTEGER NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_sales DECIMAL(10,4) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_cost DECIMAL(10,4) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;unit_sales DECIMAL(10,4) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;fact_count INTEGER NOT NULL);<br />
+&nbsp;<br />
+CREATE INDEX i_sls_97_cust_id ON agg_l_05_sales_fact_1997 (customer_id);<br />
+CREATE INDEX i_sls_97_prod_id ON agg_l_05_sales_fact_1997 (product_id);<br />
+CREATE INDEX i_sls_97_promo_id ON agg_l_05_sales_fact_1997 (promotion_id);<br />
+CREATE INDEX i_sls_97_store_id ON agg_l_05_sales_fact_1997 (store_id);<br />
+&nbsp;<br />
+INSERT INTO agg_l_05_sales_fact_1997 (<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;product_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;customer_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;promotion_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_sales,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_cost,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;unit_sales,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;fact_count)<br />
+SELECT<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;product_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;customer_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;promotion_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;SUM(store_sales) AS store_sales,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;SUM(store_cost) AS store_cost,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;SUM(unit_sales) AS unit_sales,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;COUNT(*) AS fact_count<br />
+FROM <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;sales_fact_1997 <br />
+GROUP BY <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;product_id, <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;customer_id, <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;promotion_id, <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_id;<br />
+</code>
+</blockquote>
+
+<p>A couple of things to note here. </p>
+
+<p>The above is in MySQL's dialect of SQL, and may
 not work for your database - but I hope the general idea is clear.
 The aggregate table "looks like" the base fact table except the
 time_id column is missing and there is a new fact_count column.
 The insert statement populates the aggregate table from the base fact
 table summing the measure columns and counting to populate the
 fact_count column. This done while grouping by the remaining
-foreign keys to the remaining dimension tables.
-</p>
-<p>
-Next, some databases recognize star joins - Oracle for instance.
+foreign keys to the remaining dimension tables.</p>
+
+<p>Next, some databases recognize star joins - Oracle for instance.
 For such database one should not create indexes, not on the fact table
 and not on the aggregate tables. On the other hand, databases that
 do not recognize star joins will require indexes on both the
-fact table and the aggregate tables.
-</p>
-<p>
-For our purposes here, the exact name of the aggregate table is not 
+fact table and the aggregate tables.</p>
+
+<p>For our purposes here, the exact name of the aggregate table is not 
 important; the "agg_l_05_" preceding the base fact table's name
 sales_fact_1997. First, the aggregate table name must be different
 from the base fact table name. Next, the aggregate table name ought to be 
 related to the base fact table name both for human eyeballing of what
 aggregate is associated with which fact table, but also, as described
 below, Mondrian employs mechanism to automagically recognize which
-tables are aggregates of others.
-</p>
-<p>
-The following example is a collapsed dimension aggregate table 
-where the time dimension has been rolled up to the month level.
-</p>
-<code>
-<blockquote>
-<pre>
-CREATE TABLE agg_c_14_sales_fact_1997 (
-    product_id INTEGER NOT NULL,
-    customer_id INTEGER NOT NULL,
-    promotion_id INTEGER NOT NULL,
-    store_id INTEGER NOT NULL,
-    month_of_year SMALLINT(6) NOT NULL,
-    quarter VARCHAR(30) NOT NULL,
-    the_year SMALLINT(6) NOT NULL,
-    store_sales DECIMAL(10,4) NOT NULL,
-    store_cost DECIMAL(10,4) NOT NULL,
-    unit_sales DECIMAL(10,4) NOT NULL,
-    fact_count INTEGER NOT NULL);
+tables are aggregates of others.</p>
 
-CREATE INDEX i_sls_97_cust_id ON agg_c_14_sales_fact_1997 (customer_id);
-CREATE INDEX i_sls_97_prod_id ON agg_c_14_sales_fact_1997 (product_id);
-CREATE INDEX i_sls_97_promo_id ON agg_c_14_sales_fact_1997 (promotion_id);
-CREATE INDEX i_sls_97_store_id ON agg_c_14_sales_fact_1997 (store_id);
+<p>The following example is a collapsed dimension aggregate table 
+where the time dimension has been rolled up to the month level.</p>
 
-INSERT INTO agg_c_14_sales_fact_1997 (
-    product_id,
-    customer_id,
-    promotion_id,
-    store_id,
-    month_of_year,
-    quarter,
-    the_year,
-    store_sales,
-    store_cost,
-    unit_sales,
-    fact_count)
-SELECT
-    BASE.product_id,
-    BASE.customer_id,
-    BASE.promotion_id,
-    BASE.store_id,
-    DIM.month_of_year,
-    DIM.quarter,
-    DIM.the_year,
-    SUM(BASE.store_sales) AS store_sales,
-    SUM(BASE.store_cost) AS store_cost,
-    SUM(BASE.unit_sales) AS unit_sales,
-    COUNT(*) AS fact_count
-FROM 
-    sales_fact_1997 AS BASE, time_by_day AS DIM
-WHERE
-    BASE.time_id = DIM.time_id
-GROUP BY 
-    BASE.product_id,
-    BASE.customer_id,
-    BASE.promotion_id,
-    BASE.store_id,
-    DIM.month_of_year,
-    DIM.quarter,
-    DIM.the_year;
-</pre>
-</blockquote>
-</code>
-<p>
-In this case, one can see that the time_id foreign key in the base
+<blockquote><code>
+CREATE TABLE agg_c_14_sales_fact_1997 (<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;product_id INTEGER NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;customer_id INTEGER NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;promotion_id INTEGER NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_id INTEGER NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;month_of_year SMALLINT(6) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;quarter VARCHAR(30) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;the_year SMALLINT(6) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_sales DECIMAL(10,4) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_cost DECIMAL(10,4) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;unit_sales DECIMAL(10,4) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;fact_count INTEGER NOT NULL);<br />
+&nbsp;<br />
+CREATE INDEX i_sls_97_cust_id ON agg_c_14_sales_fact_1997 (customer_id);<br />
+CREATE INDEX i_sls_97_prod_id ON agg_c_14_sales_fact_1997 (product_id);<br />
+CREATE INDEX i_sls_97_promo_id ON agg_c_14_sales_fact_1997 (promotion_id);<br />
+CREATE INDEX i_sls_97_store_id ON agg_c_14_sales_fact_1997 (store_id);<br />
+&nbsp;<br />
+INSERT INTO agg_c_14_sales_fact_1997 (<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;product_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;customer_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;promotion_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;month_of_year,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;quarter,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;the_year,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_sales,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_cost,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;unit_sales,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;fact_count)<br />
+SELECT<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.product_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.customer_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.promotion_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.store_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.month_of_year,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.quarter,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.the_year,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;SUM(BASE.store_sales) AS store_sales,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;SUM(BASE.store_cost) AS store_cost,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;SUM(BASE.unit_sales) AS unit_sales,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;COUNT(*) AS fact_count<br />
+FROM <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;sales_fact_1997 AS BASE, time_by_day AS DIM<br />
+WHERE<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.time_id = DIM.time_id<br />
+GROUP BY <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.product_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.customer_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.promotion_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.store_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.month_of_year,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.quarter,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.the_year;
+</code></blockquote>
+
+<p>In this case, one can see that the time_id foreign key in the base
 fact table has been replaced with the columns: month_of_year, quarter,
 and the_year in the aggregate table. There is, as always, the fact_count
 column. The measures are inserted as sums. And, the group by clause
 is over the remaining foreign keys as well as the imported time
-dimension levels.
-</p>
-<p>
-When creating a collapsed dimension aggregate one might consider creating
-indexes for the columns imported from the dimension that was collapsed.
-</p>
-<p>
-Below is another aggregate table. This one has two lost dimensions (<code>store_id</code> and 
+dimension levels.</p>
+
+<p>When creating a collapsed dimension aggregate one might consider creating
+indexes for the columns imported from the dimension that was collapsed.</p>
+
+<p>Below is another aggregate table. This one has two lost dimensions (<code>store_id</code> and 
 <code>promotion_id</code>) as well as collapsed dimension on time
 to the quarter level. This shows how aggregate techniques can be
-mixed.
-</p>
-<code>
-<blockquote>
-<pre>
-CREATE TABLE agg_lc_100_sales_fact_1997 (
-    product_id INTEGER NOT NULL,
-    customer_id INTEGER NOT NULL,
-    quarter VARCHAR(30) NOT NULL,
-    the_year SMALLINT(6) NOT NULL,
-    store_sales DECIMAL(10,4) NOT NULL,
-    store_cost DECIMAL(10,4) NOT NULL,
-    unit_sales DECIMAL(10,4) NOT NULL,
-    fact_count INTEGER NOT NULL);
+mixed.</p>
 
-CREATE INDEX i_sls_97_cust_id ON agg_lc_100_sales_fact_1997 (customer_id);
-CREATE INDEX i_sls_97_prod_id ON agg_lc_100_sales_fact_1997 (product_id);
+<blockquote><code>
+CREATE TABLE agg_lc_100_sales_fact_1997 (<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;product_id INTEGER NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;customer_id INTEGER NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;quarter VARCHAR(30) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;the_year SMALLINT(6) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_sales DECIMAL(10,4) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_cost DECIMAL(10,4) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;unit_sales DECIMAL(10,4) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;fact_count INTEGER NOT NULL);<br />
+&nbsp;<br />
+CREATE INDEX i_sls_97_cust_id ON agg_lc_100_sales_fact_1997 (customer_id);<br />
+CREATE INDEX i_sls_97_prod_id ON agg_lc_100_sales_fact_1997 (product_id);<br />
+&nbsp;<br />
+INSERT INTO agg_lc_100_sales_fact_1997 (<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;product_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;customer_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;quarter,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;the_year,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_sales,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;store_cost,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;unit_sales,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;fact_count)<br />
+SELECT<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.product_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.customer_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.quarter,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.the_year,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;SUM(BASE.store_sales) AS store_sales,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;SUM(BASE.store_cost) AS store_cost,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;SUM(BASE.unit_sales) AS unit_sales,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;COUNT(*) AS fact_count<br />
+FROM sales_fact_1997 AS BASE,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;time_by_day AS DIM<br />
+WHERE<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.time_id = DIM.time_id<br />
+GROUP BY <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.product_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.customer_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.quarter,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.the_year;
+</code></blockquote>
 
-INSERT INTO agg_lc_100_sales_fact_1997 (
-    product_id,
-    customer_id,
-    quarter,
-    the_year,
-    store_sales,
-    store_cost,
-    unit_sales,
-    fact_count)
-SELECT
-    BASE.product_id,
-    BASE.customer_id,
-    DIM.quarter,
-    DIM.the_year,
-    SUM(BASE.store_sales) AS store_sales,
-    SUM(BASE.store_cost) AS store_cost,
-    SUM(BASE.unit_sales) AS unit_sales,
-    COUNT(*) AS fact_count
-FROM sales_fact_1997 AS BASE,
-    time_by_day AS DIM
-WHERE
-    BASE.time_id = DIM.time_id
-GROUP BY 
-    BASE.product_id,
-    BASE.customer_id,
-    DIM.quarter,
-    DIM.the_year;
-</pre>
-</blockquote>
-</code>
-<p>
-In the above three examples, for the most part the column names
+<p>In the above three examples, for the most part the column names
 in the aggregate are the same column names that appear in the fact 
 table and dimension tables. These tables would all be
 recognized by the Mondrian 
@@ -671,76 +679,71 @@ aggregate recognizer.
 It is possible to create an aggregate table and name the columns arbitrarily.
 For such an aggregate, an
 <a href="#Recognizing_explicit">explicit</a>
-Mondrian recognizer must be specified.
-</p>
-<code>
-<blockquote>
-<pre>
-CREATE TABLE agg_c_special_sales_fact_1997 (
-    PRODUCT_ID INTEGER NOT NULL,
-    CUSTOMER_ID INTEGER NOT NULL,
-    PROMOTION_ID INTEGER NOT NULL,
-    STORE_ID INTEGER NOT NULL,
-    TIME_MONTH SMALLINT(6) NOT NULL,
-    TIME_QUARTER VARCHAR(30) NOT NULL,
-    TIME_YEAR SMALLINT(6) NOT NULL,
-    STORE_SALES_SUM DECIMAL(10,4) NOT NULL,
-    STORE_COST_SUM DECIMAL(10,4) NOT NULL,
-    UNIT_SALES_SUM DECIMAL(10,4) NOT NULL,
-    FACT_COUNT INTEGER NOT NULL);
+Mondrian recognizer must be specified.</p>
 
-CREATE INDEX i_sls_97_cust_id ON agg_c_special_sales_fact_1997 (CUSTOMER_ID);
-CREATE INDEX i_sls_97_prod_id ON agg_c_special_sales_fact_1997 (PRODUCT_ID);
-CREATE INDEX i_sls_97_promo_id ON agg_c_special_sales_fact_1997 (PROMOTION_ID);
-CREATE INDEX i_sls_97_store_id ON agg_c_special_sales_fact_1997 (STORE_ID);
+<blockquote><code>
+CREATE TABLE agg_c_special_sales_fact_1997 (<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;PRODUCT_ID INTEGER NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;CUSTOMER_ID INTEGER NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;PROMOTION_ID INTEGER NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;STORE_ID INTEGER NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;TIME_MONTH SMALLINT(6) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;TIME_QUARTER VARCHAR(30) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;TIME_YEAR SMALLINT(6) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;STORE_SALES_SUM DECIMAL(10,4) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;STORE_COST_SUM DECIMAL(10,4) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;UNIT_SALES_SUM DECIMAL(10,4) NOT NULL,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;FACT_COUNT INTEGER NOT NULL);<br />
+&nbsp;<br />
+CREATE INDEX i_sls_97_cust_id ON agg_c_special_sales_fact_1997 (CUSTOMER_ID);<br />
+CREATE INDEX i_sls_97_prod_id ON agg_c_special_sales_fact_1997 (PRODUCT_ID);<br />
+CREATE INDEX i_sls_97_promo_id ON agg_c_special_sales_fact_1997 (PROMOTION_ID);<br />
+CREATE INDEX i_sls_97_store_id ON agg_c_special_sales_fact_1997 (STORE_ID);<br />
+&nbsp;<br />
+INSERT INTO agg_c_special_sales_fact_1997 (<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;PRODUCT_ID,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;CUSTOMER_ID,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;PROMOTION_ID,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;STORE_ID,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;TIME_MONTH,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;TIME_QUARTER,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;TIME_YEAR,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;STORE_SALES_SUM,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;STORE_COST_SUM,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;UNIT_SALES_SUM,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;FACT_COUNT)<br />
+SELECT<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.product_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.customer_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.promotion_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.store_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.month_of_year,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.quarter,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.the_year,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;SUM(BASE.store_sales) AS STORE_SALES_SUM,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;SUM(BASE.store_cost) AS STORE_COST_SUM,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;SUM(BASE.unit_sales) AS UNIT_SALES_SUM,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;COUNT(*) AS FACT_COUNT<br />
+FROM <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;sales_fact_1997 BASE, time_by_day DIM<br />
+WHERE<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.time_id = DIM.time_id<br />
+GROUP BY <br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.product_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.customer_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.promotion_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;BASE.store_id,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.month_of_year,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.quarter,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;DIM.the_year;
+</code></blockquote>
 
-INSERT INTO agg_c_special_sales_fact_1997 (
-    PRODUCT_ID,
-    CUSTOMER_ID,
-    PROMOTION_ID,
-    STORE_ID,
-    TIME_MONTH,
-    TIME_QUARTER,
-    TIME_YEAR,
-    STORE_SALES_SUM,
-    STORE_COST_SUM,
-    UNIT_SALES_SUM,
-    FACT_COUNT)
-SELECT
-    BASE.product_id,
-    BASE.customer_id,
-    BASE.promotion_id,
-    BASE.store_id,
-    DIM.month_of_year,
-    DIM.quarter,
-    DIM.the_year,
-    SUM(BASE.store_sales) AS STORE_SALES_SUM,
-    SUM(BASE.store_cost) AS STORE_COST_SUM,
-    SUM(BASE.unit_sales) AS UNIT_SALES_SUM,
-    COUNT(*) AS FACT_COUNT
-FROM 
-    sales_fact_1997 BASE, time_by_day DIM
-WHERE
-    BASE.time_id = DIM.time_id
-GROUP BY 
-    BASE.product_id,
-    BASE.customer_id,
-    BASE.promotion_id,
-    BASE.store_id,
-    DIM.month_of_year,
-    DIM.quarter,
-    DIM.the_year;
-</pre>
-</blockquote>
-</code>
-<p>
-This aggregate table has column names that are not identical to those
+<p>This aggregate table has column names that are not identical to those
 found in the base fact table and dimension table. It is still a 
 valid aggregate but Mondrian has to be told how to map its columns
-into those of the base fact table.
-</p>
-<p>
-Sometimes with multiple aggregate tables, one aggregate table is
+into those of the base fact table.</p>
+
+<p>Sometimes with multiple aggregate tables, one aggregate table is
 an aggregate of not only the base fact table but also another
 aggregate table; an aggregate table with lost time and product
 dimensions (no time_id and product_id foreign keys)
@@ -751,29 +754,32 @@ lost time dimension and then build the aggregate with both lost
 time and product dimensions from that first aggregate - it will be
 faster (in some cases, much faster) 
 to populate the second aggregate from the first rather than
-from the base fact table.
-</p>
-<p>
-One last note, when creating aggregate tables from the base fact table
-pay attention to the size of the numeric columns - what might be big
-enough in the base fact table might not be big enough in an aggregate.
-</p>
-<h2><a name="How_Mondrian_recognizes_Aggregate_Tables">How Mondrian recognizes Aggregate 
-Tables</a></h2>
-<p>
-Mondrian has to know about the aggregate tables in order to use them.
-You can either define an aggregate explicitly, or set up rules to recognize 
-several aggregate tables at the same time. 
-</p>
-<p>
-How Mondrian recognizes aggregate table
-names and columns pretty much dictates how one must name those
-table names and columns when creating them in the first place!
-</p>
+from the base fact table.</p>
 
-<h3><a name="Recognizing_default">Rules</a></h3>
-<p>
-Rules are templates, designed to work for all fact table names 
+<p>One last note, when creating aggregate tables from the base fact table
+pay attention to the size of the numeric columns - what might be big
+enough in the base fact table might not be big enough in an aggregate.</p>
+
+<!-- 
+#####################################################
+##  5. How Mondrian recognizes Aggregate Tables #####
+##################################################### -->
+<h3>5. How Mondrian recognizes Aggregate Tables<a name="How_Mondrian_recognizes_Aggregate_Tables">&nbsp;</a></h3>
+
+<p>Mondrian has to know about the aggregate tables in order to use them.
+You can either define an aggregate explicitly, or set up rules to recognize 
+several aggregate tables at the same time. </p>
+
+<p>How Mondrian recognizes aggregate table
+names and columns pretty much dictates how one must name those
+table names and columns when creating them in the first place!</p>
+<!-- 
+########################
+##  5.1 Rules      #####
+######################## -->
+<h1>5.1 Rules<a name="Recognizing_default">&nbsp;</a></h1>
+
+<p>Rules are templates, designed to work for all fact table names 
 and their column
 names. 
 These rules are templates of regular expressions 
@@ -784,16 +790,15 @@ by "${" and "}". As an example,
 "abc_${name}_xyz" 
 is a rule parameterized
 by "name". When name is "john" the template becomes 
-"abc_john_xyz".
-</p>
-<p>
-The regular expression engine used here and a definition of
+"abc_john_xyz".</p>
+
+<p>The regular expression engine used here and a definition of
 the allowed regular expression grammar is found in
 the Java regular expression Pattern class:
 <a href=" http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/Pattern.html">java.util.regex.Pattern.</a>
 </p>
-<p>
-In order that a table be recognized as an aggregate table, Mondrian
+
+<p>In order that a table be recognized as an aggregate table, Mondrian
 must be able to map from the fact table foreign key columns and measure
 columns and those in the aggregate table. In addition, Mondrian
 must identify the
@@ -802,48 +807,50 @@ would appear in an aggregate table if it had a "collapsed" dimension).
 What follows is a description of the steps taken in the identification
 of aggregate tables by the default recognizer.
 If at any step, a match fails, the table is rejected as an aggregate
-table.
-</p>
-<p>
-Starting off, the candidate aggregate table's name must comply with
+table.</p>
+
+<p>Starting off, the candidate aggregate table's name must comply with
 the aggregate table name rule. Represented as a template regular
-expression the rule is:
-</p>
+expression the rule is:</p>
+
 <blockquote>
-    <code>agg_.+_${fact_table_name}</code></blockquote>
-<p>
-which is parameterized with the fact table's name.
+    <code>agg_.+_${fact_table_name}</code>
+	</blockquote>
+	
+<p>which is parameterized with the fact table's name.
 (In addition, this rule is applied in "ignore case" mode.)
 This means that an aggregate table's name must start with
 "agg_" (ignoring character case), followed by at least one
 character, then the '_' character and, lastly, the name of
 the fact table. The ".+" in the template has special meaning
-in a regular expression - it matches one or more characters.
-</p>
-<p>
-As an example of applying the aggregate table name rule,
+in a regular expression - it matches one or more characters.</p>
+
+<p>As an example of applying the aggregate table name rule,
 let the fact table be called 
 <code>sales_fact_1997</code>, the 
+
 <code>Sales</code>
 cube's fact table from the FoodMart schema. Applying the
 specific fact table name to the regular expression template
-creates the following regular expression:
-</p>
+creates the following regular expression:</p>
+
 <blockquote>
-    <code>agg_.+_sales_fact_1997</code></blockquote>
-<p>
-This will match the following table names:
-</p>
+    <code>agg_.+_sales_fact_1997</code>
+	</blockquote>
+	
+<p>This will match the following table names:</p>
+
 <ul>
 	<li><code>agg_l_05_sales_fact_1997</code></li>
 	<li><code>agg_c_14_sales_fact_1997</code></li>
+
 	<li><code>agg_lc_100_sales_fact_1997</code></li>
 	<li><code>agg_c_special_sales_fact_1997</code></li>
 	<li><code>AGG_45_SALES_FACT_1997</code></li>
-	<li><code>AGG_drop_time_id_sales_fact_1997</code><br></li>
+	<li><code>AGG_drop_time_id_sales_fact_1997</code></li>
 </ul>
-<p>
-The aggregate table name recognition mechanism has one additional
+
+<p>The aggregate table name recognition mechanism has one additional
 programatic feature, one can specify that only a portion of the
 base fact table name be used as the basis of template name.
 For instance, if the DBA demanded that all fact tables begin with the
@@ -859,24 +866,23 @@ used in the matching template. This regular expression containing the
 group clause is specified as the "basename" attribute.
 The default Mondrian aggregate table recognizer does not use this feature.
 For more information see the associated 
-<a href="developer_notes.html">developer's note link.</a>
-</p>
-<p>
-After the default recognizer determines that a table's name matches
+<a href="developer_notes.html">developer's note link.</a></p>
+
+<p>After the default recognizer determines that a table's name matches
 the aggregate table template regular expression for a given
 fact table, it then attempts to match columns. The first column
 tested for is the "fact count" column. Here the candidate
 aggregate table must have a column called "fact_count" (ignoring
 case) and this column's type must be numeric.
-The following examples would match as "fact count" columns.
-</p>
+The following examples would match as "fact count" columns.</p>
+
 <blockquote>
     <code>fact_count<br>
     FACT_COUNT<br>
     fact_COUNT</code><br>
 </blockquote>
-<p>
-Following matching the "fact count" column, the candidate aggregate
+
+<p>Following matching the "fact count" column, the candidate aggregate
 table's columns are examined for possible foreign key matches.
 For each of the foreign key column names in the fact table it
 is determined if there are any character case independent matches
@@ -885,39 +891,40 @@ noted. It is alright if no columns match; the aggregate might
 be a "collapsed" dimension aggregate with no fact table foreign
 keys remaining.
 If the fact table had foreign key columns "store_id" and "time_id",
-then the following aggregate table columns (for example) would match:
-</p>
+then the following aggregate table columns (for example) would match:</p>
+
 <ul>
 	<li><code>time_id</code></li>
 	<li><code>store_id</code></li>
 	<li><code>TIME_ID</code></li>
 	<li><code>STORE_ID</code></li>
 	<li><code>time_ID</code></li>
-	<li><code>STORE_id</code><Br></li>
+
+	<li><code>STORE_id</code></li>
 </ul>
-<p>
-At this point, matches are looked for the level and measure columns.
+
+<p>At this point, matches are looked for the level and measure columns.
 Both of these matching rules are multi-part - has sub rules; 
 each rule has more than
 one possible regular expression that might match where a match on any
-one is a match.
-</p>
-<p>
-There are three sub rules for matching level columns. Each is a template
+one is a match.</p>
+
+<p>There are three sub rules for matching level columns. Each is a template
 which is parameterized with 1) the fact table's cube's dimension
 hierarchy's name, "hierarchy_name", 2) the fact table's cube's dimension
 hierarchy's level name, "level_name", 3) the dimension table's level 
 column name, "level_column_name",
-and 4) a usage prefix, "usage_prefix", which in most cases is null":
-</p>
+and 4) a usage prefix, "usage_prefix", which in most cases is null":</p>
+
 <ul>
 	<li><code>${hierarchy_name}_${level_name}</code></li>
 	<li><code>${hierarchy_name}_${level_column_name}</code></li>
+
         <li><code>${usage_prefix}${level_column_name}</code></li>
-	<li><code>${level_column_name}</code><br></li>
+	<li><code>${level_column_name}</code></li>
 </ul>
-<p>
-The "usage_prefix" is the value of the 
+
+<p>The "usage_prefix" is the value of the 
 <code>DimensionUsage</code>'s
 or
 private <code>Dimension</code>'s
@@ -931,12 +938,12 @@ where the base fact table has two or more dimensions with common
 column names, the attempted recognition will fail unless in the
 schema catalog the 
 <code>usagePrefix</code>
+
 attribute is used to disambiguate those column names.
 Of course, one must also remember to prefix the the column in the aggregate
-table with the same prefix.
-</p>
-<p>
-As an example of 
+table with the same prefix.</p>
+
+<p>As an example of 
 <code>usagePrefix</code>, consider a fact table named
 <code>ORDERS</code> which has two 
 <code>DimensionUsage</code>s, one for the
@@ -944,6 +951,7 @@ As an example of
 and the other for the 
 <code>WHOLESALER</code> dimension where each dimension has a level
 column named
+
 <code>CUST_NM</code>. In this case, a collapsed aggregate table
 could not include a column named
 <code>CUST_NM</code> because there would be no way to tell which
@@ -954,6 +962,7 @@ dimension to associate it with. But if in the
 <code>WHOLESALER</code>'s
 <code>usagePrefix</code> had the value "WS_", and the aggregate
 table column was named
+
 <code>WS_CUST_NM</code>, then the recognizer could associate the
 column with the 
 <code>WHOLESALER</code> dimension.
@@ -967,168 +976,70 @@ shared
 "level_column_name" that is also the same.
 Without the 
 <code>usagePrefix</code> there would be no way of disambiguating
-collapsed dimension aggregate tables.
-</p>
-<p>
-If any of these parameters have space characters, ' ', these are
+collapsed dimension aggregate tables.</p>
+
+<p>If any of these parameters have space characters, ' ', these are
 mapped to underscore characters, '_', and, similarly, dot characters,
 '.', are also mapped to underscores.
 So, if the hierarchy_name is "Time", level_name is "Month" and 
 level_column_name is month_of_year, the possible aggregate table column 
-names are:
-</p>
+names are:</p>
+
 <ul>
 	<li><code>time_month</code></li>
 	<li><code>time_month_of_year</code></li>
-	<li><code>month_of_year</code><br></li>
+	<li><code>month_of_year</code></li>
 </ul>
-<p>
-For this rule, the "hierarchy_name" and "level_name" are converted to
-lower case while the "level_column_name" must match exactly.
-</p>
-<p>
-Lastly, there is the rule for measures. There are three parameters
+
+<p>For this rule, the "hierarchy_name" and "level_name" are converted to
+lower case while the "level_column_name" must match exactly.</p>
+
+<p>Lastly, there is the rule for measures. There are three parameters
 to matching aggregate columns to measures: 1) the fact table's
 cube's measure name, "measure_name", 2) the fact table's cube's measure
 column name, "measure_column_name", and 3) the fact table's cube's measure's
-aggregator (sum, avg, max, etc.), "aggregate_name".
-</p>
+aggregator (sum, avg, max, etc.), "aggregate_name".</p>
+
 <ul>
 	<li><code>${measure_name}</code></li>
 	<li><code>${measure_column_name}</code></li>
-	<li><code>${measure_column_name}_${aggregate_name}</code><br></li>
+	<li><code>${measure_column_name}_${aggregate_name}</code></li>
 </ul>
-<p>
-where the measure name is converted to lower case and both the measure
+
+<p>where the measure name is converted to lower case and both the measure
 column name and aggregate name are matched as they appear.
 If the fact table's cube's measure name was, "Avg Unit Sales", 
 the fact table's measure 
 column name
 is "unit_sales", and, lastly, the fact table's cube's measure's 
 aggregate name is "avg", then possible aggregate table column names 
-that would match are:
-</p>
+that would match are:</p>
+
 <ul>
 	<li><code>avg_unit_sales</code></li>
 	<li><code>unit_sales</code></li>
-	<li><code>unit_sales_avg</code><br></li>
+	<li><code>unit_sales_avg</code></li>
 </ul>
-<!--
-<blockquote>
-<pre>
-aggregate table name
-        template rule: 
-            agg_.+_${fact_table_name}
-                ignore case of parameter (default)
-        example:
-            parameter fact_table_name == sales_fact_1997
-            regular expression becomes:
-                agg_.+_sales_fact_1997
-            matches:
-                agg_l_05_sales_fact_1997
-                agg_c_14_sales_fact_1997
-                agg_lc_100_sales_fact_1997
-                agg_c_special_sales_fact_1997
-
-fact_count column
-        template rule: 
-            fact_count (not parameterized)
-                ignore case (default)
-        example:
-            no parameter
-            regular expression becomes:
-                fact_count
-            matches:
-                fact_count
-                FACT_COUNT
-                FaCt_coUNT
-
-foreign key column
-        template rule: 
-            ${foreign_key}
-                ignore case of parameter (default)
-        example:
-            parameter foreign_key == time_id
-            regular expression becomes: 
-                time_id
-            matches:
-                time_id
-                TIME_ID
-
-level column
-        template rule: 
-            ${hierarchy_name}_${level_name}
-                lower case
-                ' ' maps to '_' (default)
-                '.' maps to '_' (default)
-            ${hierarchy_name}_${level_column_name}
-                lower case
-                ' ' maps to '_' (default)
-                '.' maps to '_' (default)
-            ${level_column_name}
-                exact case match
-                ' ' maps to '_' (default)
-                '.' maps to '_' (default)
-        example:
-            parameter hierarchy_name == Time
-            parameter level_name == Month
-            parameter level_column_name == month_of_year
-            regular expression becomes:
-                time_month
-                time_month_of_year
-                month_of_year
-            matches:
-                time_month
-                time_month_of_year
-                month_of_year
-
-measure column
-        template rule: 
-            ${measure_name}
-                lower case
-                ' ' maps to '_' (default)
-                '.' maps to '_' (default)
-            ${measure_column_name}
-                exact case match
-                ' ' maps to '_' (default)
-                '.' maps to '_' (default)
-            ${measure_column_name}_${aggregate_name}
-                exact case match
-                ' ' maps to '_' (default)
-                '.' maps to '_' (default)
-        example:
-            parameter measure_name == Avg Unit Sales
-            parameter measure_column_name == unit_sales
-            parameter aggregate_name == avg
-            regular expression becomes:
-                avg_unit_sales
-                unit_sales
-                unit_sales_avg
-            matches:
-                avg_unit_sales
-                unit_sales
-                unit_sales_avg
-</pre>
-</blockquote>
--->
-<p>
-For Mondrian developers there are 
+<p>For Mondrian developers there are 
 <a href="developer_notes.html">additional notes</a>
-describing the default rule recognition schema.
-</p>
-<h3><a name="Recognizing_explicit">Explicit aggregates</a></h3>
-<p>
-On a per cube basis, in a schema file a user can both include and
+
+describing the default rule recognition schema.</p>
+<!-- 
+#################################
+##  5.2 Explicit aggregates #####
+################################# -->
+<h1>5.2 Explicit aggregates<a name="Recognizing_explicit">&nbsp;</a></h1>
+
+<p>On a per cube basis, in a schema file a user can both include and
 exclude aggregate tables. A table that would have been include as
 an aggregate by the default rules can be explicitly excluded. A
 table that would not be include by the default rules can be
 explicitly included. A table that would have only been partially
 recognized by the default rules and, therefore, resulted in a
 warning or error message, can be explicitly include in rules
-specified in the cube's definition.
-</p>
-<p>
-Below is an example for the FoodMart
+specified in the cube's definition.</p>
+
+<p>Below is an example for the FoodMart
 <code>
 Sales
 </code>
@@ -1136,47 +1047,53 @@ cube
 with fact table
 <code>sales_fact_1997</code>. There are child elements of the 
 <code>Table</code>
-element that deal with aggregate table recognition.
-</p>
+
+element that deal with aggregate table recognition.</p>
+
 <blockquote>
-<pre>
-&lt;Cube name="Sales"&gt;
-  &lt;Table name="sales_fact_1997"&gt;
-    &lt;AggExclude name="agg_c_14_sales_fact_1997" /&gt;
-    &lt;AggExclude name="agg_lc_10_sales_fact_1997" /&gt;
-    &lt;AggExclude name="agg_pc_10_sales_fact_1997" /&gt;
-    &lt;AggName name="agg_c_special_sales_fact_1997"&gt;
-        &lt;AggFactCount column="FACT_COUNT"/&gt;
-        &lt;AggIgnoreColumn column="admin_one"/&gt;
-        &lt;AggIgnoreColumn column="admin_two"/&gt;
-        &lt;AggForeignKey factColumn="product_id" aggColumn="PRODUCT_ID" /&gt;
-        &lt;AggForeignKey factColumn="customer_id" aggColumn="CUSTOMER_ID" /&gt;
-        &lt;AggForeignKey factColumn="promotion_id" aggColumn="PROMOTION_ID" /&gt;
-        &lt;AggForeignKey factColumn="store_id" aggColumn="STORE_ID" /&gt;
-        &lt;AggMeasure name="[Measures].[Unit Sales]" column="UNIT_SALES_SUM" /&gt;
-        &lt;AggMeasure name="[Measures].[Store Cost]" column="STORE_COST_SUM" /&gt;
-        &lt;AggMeasure name="[Measures].[Store Sales]" column="STORE_SALES_SUM" /&gt;
-        &lt;AggLevel name="[Time].[Year]" column="TIME_YEAR" /&gt;
-        &lt;AggLevel name="[Time].[Quarter]" column="TIME_QUARTER" /&gt;
-        &lt;AggLevel name="[Time].[Month]" column="TIME_MONTH" /&gt;
-    &lt;/AggName&gt;
-    &lt;AggPattern pattern="agg_sales_fact_1997_.*"&gt;
-      ....
-      &lt;AggExclude name="agg_sales_fact_1997_olddata" /&gt;
-      &lt;AggExclude pattern="agg_sales_fact_1997_test.*" /&gt;
-    &lt;/AggPattern&gt;
-  
-  &lt;/Table&gt;
-....
+<code>
+&lt;Cube name="Sales"&gt;<br />
+  &nbsp;&nbsp;&lt;Table name="sales_fact_1997"&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;AggExclude name="agg_c_14_sales_fact_1997" /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;AggExclude name="agg_lc_10_sales_fact_1997" /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;AggExclude name="agg_pc_10_sales_fact_1997" /&gt;<br />
+&nbsp;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;AggName name="agg_c_special_sales_fact_1997"&gt;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AggFactCount column="FACT_COUNT"/&gt;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AggIgnoreColumn column="admin_one"/&gt;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AggIgnoreColumn column="admin_two"/&gt;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AggForeignKey factColumn="product_id" aggColumn="PRODUCT_ID" /&gt;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AggForeignKey factColumn="customer_id" aggColumn="CUSTOMER_ID" /&gt;<br />
+&nbsp;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AggForeignKey factColumn="promotion_id" aggColumn="PROMOTION_ID" /&gt;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AggForeignKey factColumn="store_id" aggColumn="STORE_ID" /&gt;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AggMeasure name="[Measures].[Unit Sales]" column="UNIT_SALES_SUM" /&gt;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AggMeasure name="[Measures].[Store Cost]" column="STORE_COST_SUM" /&gt;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AggMeasure name="[Measures].[Store Sales]" column="STORE_SALES_SUM" /&gt;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AggLevel name="[Time].[Year]" column="TIME_YEAR" /&gt;<br />
+&nbsp;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AggLevel name="[Time].[Quarter]" column="TIME_QUARTER" /&gt;<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;AggLevel name="[Time].[Month]" column="TIME_MONTH" /&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/AggName&gt;<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;AggPattern pattern="agg_sales_fact_1997_.*"&gt;<br />
+      &nbsp;&nbsp;&nbsp;&nbsp;....<br />
+      &nbsp;&nbsp;&nbsp;&nbsp;&lt;AggExclude name="agg_sales_fact_1997_olddata" /&gt;<br />
+      &nbsp;&nbsp;&nbsp;&nbsp;&lt;AggExclude pattern="agg_sales_fact_1997_test.*" /&gt;<br />
+<br />
+   &nbsp;&nbsp;&nbsp;&nbsp; &lt;/AggPattern&gt;<br />
+  <br />
+  &nbsp;&nbsp;&lt;/Table&gt;<br />
+....<br />
 &lt;/Cube&gt;
-</pre>
+</code>
 </blockquote>
-<p>
-The
+
+<p>The
 <code>AggExclude</code>
 elements define tables that should not be considered aggregates of the
 fact table. In this case Mondrian is instructed to ignore the tables
 <code>agg_c_14_sales_fact_1997</code>,
+
 <code>agg_lc_10_sales_fact_1997</code>
 and
 <code>agg_pc_10_sales_fact_1997</code>.
@@ -1192,6 +1109,7 @@ elements are used to specifically state to Mondrian that the columns
 <code>admin_one</code>
 and
 <code>admin_two</code>
+
 are known and should be ignored. If these columns were not so
 identified, Mondrian at the end of determining the fitness of 
 the 
@@ -1207,10 +1125,9 @@ elements define mappings from the
 fact table foreign key column 
 names into the
 <code>agg_c_special_sales_fact_1997</code>
-aggregate table column names.
-</p>
-<p>
-Both the
+aggregate table column names.</p>
+
+<p>Both the
 <code>
 AggMeasure</code>
 and
@@ -1228,16 +1145,15 @@ The most notable exception are
 <code>distinct-count</code>
 measures; such a measure can be aggregated, but one can not
 in general aggregate further on the measure - the "distinctness" of the
-measure has been lost during the first aggregation.
-</p>
-<p>
-The
+measure has been lost during the first aggregation.</p>
+
+<p>The
 <code>
 AggLevel</code> entries correspond to collapsed dimensions. For each collapsed
 dimension there is a hierarchy of levels spanning from the top
 level down to some intermediate level (with no gaps).</p>
-<p>
-The 
+
+<p>The 
 <code>
 AggName</code>
 element is followed by an
@@ -1245,6 +1161,7 @@ element is followed by an
 element.
 This matches candidate aggregate table names using a 
 regular expression. Included as child elements of the
+
 <code>
 AggPattern</code>
 element are two
@@ -1253,12 +1170,12 @@ AggExclude</code>
 elements. These specifically state what table names should not
 be considered by this
 <code>AggPattern</code>
-element.
-</p>
-<p>
-In a given
+element.</p>
+
+<p>In a given
 <code>Table</code>
 element, all of the 
+
 <code>AggExclude</code>
 are applied first, followed by the
 <code>AggName</code>
@@ -1272,11 +1189,9 @@ rules in all of the multiple cube's
 elements.
 The first "Agg" element,
 name or pattern, that matches per candidate aggregate table
-name has its associated rules applied.
-</p>
+name has its associated rules applied.</p>
 
-<p>
-Most of the time, the scope of these
+<p>Most of the time, the scope of these
 include/exclude statements apply only to the cube in question, but
 not always. A cube has a fact table and it is the characteristics
 of the fact table (like column names) against
@@ -1284,6 +1199,7 @@ which some of the aggregate table rules are applied. But, a fact table
 can actually be the basis of more than one cube. In the FoodMart
 schema the 
 <code>sales_fact_1997</code>
+
 fact table applies to both the 
 <code>Sales</code>
 and the
@@ -1293,34 +1209,35 @@ What this means is that any explicit rules defined in the
 <code>Sales</code>
 cube also applies to the 
 <code>Sales Ragged</code>
-cube and visa versa.
-</p>
-<p>
-One feature of the explicit recognizer is very useful. With a single
+cube and visa versa.</p>
+
+<p>One feature of the explicit recognizer is very useful. With a single
 line in the cubes definition in the schema file, 
 one can force Mondrian not to recognize any aggregate tables
 for the cube's fact table. As an example, for the FoodMart Sales cube
 the following excludes all aggregate tables because the regular expression 
 pattern
 <code>".*"</code>
-matches all candidate aggregate table names.
-</p>
+
+matches all candidate aggregate table names.</p>
+
 <blockquote>
-<pre>
+<code>
 &lt;Table name="sales_fact_1997" &gt;
 &nbsp; &nbsp; &lt;AggExclude pattern=".*" /&gt;
 &lt;/Table&gt;
-</pre>
+</code>
 </blockquote>
-<p>
-During aggregate table recognition, 
-rather than fail silently, Mondrian is rather noisy about things
-it can not figure out.
-</p>
 
-<h2>
-<a name="Aggregate_tables_and_parent-child_hierarchies">Aggregate tables and 
-parent-child hierarchies</a></h2>
+<p>During aggregate table recognition, 
+rather than fail silently, Mondrian is rather noisy about things
+it can not figure out.</p>
+<!-- 
+##########################################################
+##  6. Aggregate tables and parent-child hierarchies #####
+########################################################## -->
+<h3>
+6. Aggregate tables and parent-child hierarchies<a name="Aggregate_tables_and_parent-child_hierarchies">&nbsp;</a></h3>
 
 <p>
 A <a href="schema.html#Parent_child_hierarchies">parent-child hierarchy</a> is a 
@@ -1351,8 +1268,9 @@ example.</p>
 
 <blockquote>
 
-	<p><code>Cube:<br>
+	<code>Cube:<br>
 &nbsp;&nbsp;&nbsp; [Salary]<br>
+
 	<br>
 	Dimensions:<br>
 &nbsp;&nbsp;&nbsp; [Employee], with level [Employee]<br>
@@ -1360,22 +1278,24 @@ example.</p>
 	<br>
 	Fact table:<br>
 &nbsp;&nbsp;&nbsp; salary (employee_id, time_id, dollars)<br>
+
 	<br>
 	Parent-child dimension table:<br>
-&nbsp;&nbsp;&nbsp; employee (employee_id, supervisor_id, name)</code></p>
-
-<blockquote>
-<table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="table6">
+&nbsp;&nbsp;&nbsp; employee (employee_id, supervisor_id, name)</code></blockquote>
+&nbsp;<br />
+<table   id="table6" class="grayTable" width="200">
     <tr>
-        <th colspan="3">employee</th>
+        <td colspan="3"><b>employee</b></td>
     </tr>
+
     <tr>
-        <th>supervisor_id</th>
-        <th>employee_id</th>
-        <th>name</th>
+        <td><b>supervisor_id</b></td>
+        <td><b>employee_id</b></td>
+        <td><b>name</b></td>
     </tr>
     <tr>
         <td>null</td>
+
         <td>1</td>
         <td>Frank</td>
     </tr>
@@ -1383,6 +1303,7 @@ example.</p>
         <td>1</td>
         <td>2</td>
         <td>Bill</td>
+
     </tr>
     <tr>
         <td>2</td>
@@ -1390,6 +1311,7 @@ example.</p>
         <td>Eric</td>
     </tr>
     <tr>
+
         <td>1</td>
         <td>4</td>
         <td>Jane</td>
@@ -1397,6 +1319,7 @@ example.</p>
     <tr>
         <td>3</td>
         <td>5</td>
+
         <td>Mark</td>
     </tr>
     <tr>
@@ -1404,106 +1327,119 @@ example.</p>
         <td>6</td>
         <td>Carla</td>
     </tr>
+
 </table>
-</blockquote>
 
-	<p><code>Closure table:<br>
-&nbsp;&nbsp;&nbsp; employee_closure (employee_id, supervisor_id, depth)</code></p>
+	<blockquote><code>Closure table:<br>
+&nbsp;&nbsp;&nbsp; employee_closure (employee_id, supervisor_id, depth)</code></blockquote>
 
-<blockquote>
-<table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="table7">
+<table   id="table7" class="grayTable" width="250">
     <tr>
-        <th colspan="3">employee_closure</th>
+        <td colspan="3"><b>employee_closure</b></td>
     </tr>
     <tr>
-        <th width="91">supervisor_id</th>
-        <th width="85">employee_id</th>
-        <th width="8">distance</th>
+        <td><b>supervisor_id</b></td>
+        <td><b>employee_id</b></td>
+        <td><b>distance</b></td>
     </tr>
     <tr>
-        <td width="91">1</td>
-        <td width="85">1</td>
-        <td width="8">0</td>
+
+        <td>1</td>
+        <td>1</td>
+        <td>0</td>
     </tr>
     <tr>
-        <td width="91">1</td>
-        <td width="85">2</td>
-        <td width="8">1</td>
+        <td>1</td>
+        <td>2</td>
+
+        <td>1</td>
     </tr>
     <tr>
-        <td width="91">1</td>
-        <td width="85">3</td>
-        <td width="8">2</td>
+        <td>1</td>
+        <td>3</td>
+        <td>2</td>
+    </tr>
+
+    <tr>
+        <td>1</td>
+        <td>4</td>
+        <td>1</td>
     </tr>
     <tr>
-        <td width="91">1</td>
-        <td width="85">4</td>
-        <td width="8">1</td>
+        <td>1</td>
+
+        <td>5</td>
+        <td>3</td>
     </tr>
     <tr>
-        <td width="91">1</td>
-        <td width="85">5</td>
-        <td width="8">3</td>
+        <td>1</td>
+        <td>6</td>
+        <td>2</td>
+
     </tr>
     <tr>
-        <td width="91">1</td>
-        <td width="85">6</td>
-        <td width="8">2</td>
+        <td>2</td>
+        <td>2</td>
+        <td>0</td>
     </tr>
     <tr>
-        <td width="91">2</td>
-        <td width="85">2</td>
-        <td width="8">0</td>
+
+        <td>2</td>
+        <td>3</td>
+        <td>1</td>
     </tr>
     <tr>
-        <td width="91">2</td>
-        <td width="85">3</td>
-        <td width="8">1</td>
+        <td>2</td>
+        <td>5</td>
+
+        <td>2</td>
     </tr>
     <tr>
-        <td width="91">2</td>
-        <td width="85">5</td>
-        <td width="8">2</td>
+        <td>2</td>
+        <td>6</td>
+        <td>1</td>
+    </tr>
+
+    <tr>
+        <td>3</td>
+        <td>3</td>
+        <td>0</td>
     </tr>
     <tr>
-        <td width="91">2</td>
-        <td width="85">6</td>
-        <td width="8">1</td>
+        <td>3</td>
+
+        <td>5</td>
+        <td>1</td>
     </tr>
     <tr>
-        <td width="91">3</td>
-        <td width="85">3</td>
-        <td width="8">0</td>
+        <td>4</td>
+        <td>4</td>
+        <td>0</td>
+
     </tr>
     <tr>
-        <td width="91">3</td>
-        <td width="85">5</td>
-        <td width="8">1</td>
+        <td>5</td>
+        <td>5</td>
+        <td>0</td>
     </tr>
     <tr>
-        <td width="91">4</td>
-        <td width="85">4</td>
-        <td width="8">0</td>
-    </tr>
-    <tr>
-        <td width="91">5</td>
-        <td width="85">5</td>
-        <td width="8">0</td>
-    </tr>
-    <tr>
-        <td width="91">6</td>
-        <td width="85">6</td>
-        <td width="8">0</td>
+
+        <td>6</td>
+        <td>6</td>
+        <td>0</td>
     </tr>
     </table>
-</blockquote>
-
+	
+<blockquote>
 	<p><code>Regular dimension table:<br>
 &nbsp;&nbsp;&nbsp; time (year, month, quarter, time_id)</code></p>
 </blockquote>
-
-<h3>
-<a name="Aggregate_tables_at_the_leaf_level_of_a_parent-child_hierarchy">Aggregate tables at the leaf level of a parent-child hierarchy</a></h3>
+<!-- 
+############################################################################
+##  6.1 Aggregate tables at the leaf level of a parent-child hierarchy #####
+############################################################################ -->
+<h1>
+6.1 Aggregate tables at the leaf level of a parent-child hierarchy<a name="Aggregate_tables_at_the_leaf_level_of_a_parent-child_hierarchy">&nbsp;</a></h1>
 
 <p>
 The simplest option is to create an aggregate table which joins at the leaf 
@@ -1513,19 +1449,21 @@ level of the <code>[Time]</code> hierarchy.</p>
 
 <blockquote>
 
-	<p><code>Aggregate table:<br>
+	<code>Aggregate table:<br>
 &nbsp;&nbsp;&nbsp; agg_salary_Employee_Time_Year (employee_id, time_year, 
 	sum_dollars)<br>
 	<br>
 	INSERT INTO agg_salary_Employee_Time_Year<br>
 	SELECT <br>
+
 &nbsp;&nbsp;&nbsp; salary.employee_id,<br>
 &nbsp;&nbsp;&nbsp; time.year AS time_year,<br>
 &nbsp;&nbsp;&nbsp; sum(salary.dollars) AS sum_dollars<br>
 	FROM salary,<br>
 &nbsp;&nbsp;&nbsp; time<br>
 	WHERE time.time_id = salary.time_id<br>
-	GROUP BY salary.employee_id, time.year</code></p>
+
+	GROUP BY salary.employee_id, time.year</code>
 </blockquote>
 
 <p>
@@ -1534,11 +1472,15 @@ Mondrian can use the aggregate table to retrieve salaries of leaf employees
 table has the same foreign key as the <code>salary</code> fact table, Mondrian 
 is able to automatically join <code>salary.employee_id</code> to either <code>
 agg_salary_Employee_Time_Year.employee_id</code>&nbsp; or <code>
+
 agg_salary_Employee_Time_Year.supervisor_id</code>&nbsp; to rollup employees 
 efficiently.</p>
-
-<h3>
-<a name="Combined_closure_and_aggregate_tables">Combined closure and aggregate tables</a></h3>
+<!-- 
+###############################################
+##  Combined closure and aggregate tables #####
+############################################### -->
+<h1>
+6.2 Combined closure and aggregate tables<a name="Combined_closure_and_aggregate_tables">&nbsp;</a></h1>
 
 <p>
 A more advanced option is to combine the closure table and aggregate table into 
@@ -1546,7 +1488,8 @@ one:</p>
 
 <blockquote>
 
-	<p><code>Aggregate table:<br>
+	<code>Aggregate table:<br>
+
 &nbsp;&nbsp;&nbsp; agg_salary_Employee$Closure_Time_Year (supervisor_id, 
 	time_year, sum_dollars)<br>
 	<br>
@@ -1554,24 +1497,30 @@ one:</p>
 	SELECT <br>
 &nbsp;&nbsp;&nbsp; ec.supervisor_id,<br>
 &nbsp;&nbsp;&nbsp; time.year AS time_year,<br>
+
 &nbsp;&nbsp;&nbsp; sum(salary.dollars) AS sum_dollars<br>
 	FROM employee_closure AS ec,<br>
 &nbsp;&nbsp;&nbsp; salary,<br>
 &nbsp;&nbsp;&nbsp; time<br>
 	WHERE ec.supervisor_id = salary.employee_id<br>
 	AND ec.supervisor_id &lt;&gt; ec.employee_id<br>
+
 	AND time.time_id = salary.time_id<br>
-	GROUP BY ec.employee_id, ec.supervisor_id, time.year</code></p>
+	GROUP BY ec.employee_id, ec.supervisor_id, time.year</code>
 </blockquote>
 
 <p>
 The <code>agg_salary_Employee$Closure_Time_Year</code> aggregate table contains 
 the salary of every employee, rolled up to include their direct and indirect 
 reports, aggregated to the <code>[Year]</code> level of the <code>[Time]</code> 
-dimension.</p>
 
-<h4>
-The trick: How combined closure and aggregate tables work</h4>
+dimension.</p>
+<!-- 
+#########################################################################
+##  6.2.1 The trick: How combined closure and aggregate tables work #####
+######################################################################### -->
+<h1>
+6.2.1 The trick: How combined closure and aggregate tables work</h1>
 
 <p>
 Incidentally, this works based upon a 'trick' in Mondrian's internals. Whenever 
@@ -1581,25 +1530,33 @@ employee_closure</code> table, the auxilliary dimension is called <code>[Employe
 
 <blockquote>
 
-	<p><code>Dimension [Employee$Closure], levels [supervisor_id], [employee_id]&nbsp;
-	</code></p>
+	<code>Dimension [Employee$Closure], levels [supervisor_id], [employee_id]&nbsp;
+	</code>
 </blockquote>
 
 <p>
 When an MDX query evaluates a cell which uses a rolled up salary measure, 
 Mondrian translates the coordinates of that cell in the <code>[Employee]</code> 
 dimension into a corresponding coordinate in the <code>[Employee$Closure]</code> 
-dimension. This translation happens <em><font face="Verdana">before</font></em> 
+
+dimension. This translation happens <em>before</em> 
 Mondrian starts to search for a suitable aggregate table, so if your aggregate 
 table contains the name of the auxiliary hierarchy (as <code>
 agg_salary_Employee$Closure_Time_Year</code> contains the name of the [Employee$Closure] 
 hierarchy) it find and use the aggregate table in the ordinary way.</p>
-
-<h2>
-<a name="How_Mondrian_uses_aggregate_tables">How Mondrian uses aggregate tables</a></h2>
-
+<!-- 
+###############################################
+##  7. How Mondrian uses aggregate tables #####
+############################################### -->
 <h3>
-<a name="Choosing_between_aggregate_tables">Choosing between aggregate tables</a></h3>
+7. How Mondrian uses aggregate tables<a name="How_Mondrian_uses_aggregate_tables">&nbsp;</a></h3>
+
+<!-- 
+###############################################
+##  7.1 Choosing between aggregate tables #####
+############################################### -->
+<h1>
+7.1 Choosing between aggregate tables<a name="Choosing_between_aggregate_tables">&nbsp;</a></h1>
 
 <p>
 If more than one aggregate table matches a particular query, Mondrian needs to 
@@ -1613,12 +1570,14 @@ granularity and roll up from it. In general, Mondrian chooses the aggregate
 table with the fewest rows, which is typically the aggregate table with the 
 fewest extra dimensions. See property <code>
 <a href="configuration.html#Properties">mondrian.rolap.aggregates.ChooseByVolume</a></code>.</p>
+<!-- 
+############################
+##  7.2 Distinct count #####
+############################ -->
+<h1>
+7.2 Distinct count<a name="Distinct_count">&nbsp;</a></h1>
 
-<h3>
-<a name="Distinct_count">Distinct count</a></h3>
-
-<p>
-There is an important exception for distinct-count measures: they cannot in be 
+<p>There is an important exception for distinct-count measures: they cannot in be 
 rolled up over arbitrary dimensions. To see why, consider the case of a supermarket chain which has two 
 stores in the same city. Suppose that Store A has 1000 visits from 800 distinct 
 customers in the month of July, while Store B has 1500 visits from 900 distinct 
@@ -1629,8 +1588,7 @@ and the real total will be somewhere in between. &quot;Distinct customers&quot; 
 example of a distinct-count measure, and cannot be deduced by rolling up 
 subtotals. You have to go back to the raw data in the fact table.</p>
 
-<p>
-There is a special case where it is acceptable to roll up distinct count 
+<p>There is a special case where it is acceptable to roll up distinct count 
 measures. Suppose that we know that in July, this city's stores (Store A and B 
 combined) have visits from 600 distinct female customers and 700 distinct male 
 customers. Can we say that the number of distinct customers in July is 1300? Yes 
@@ -1638,14 +1596,13 @@ we can, because we know that the sets of male and female customers cannot
 possibly overlap. In technical terms, gender is <i>functionally dependent on</i> 
 customer id.</p>
 
-<p>
-The rule for rolling up distinct measures can be stated as follows:</p>
+<p>The rule for rolling up distinct measures can be stated as follows:</p>
 
 <blockquote>
 
-  <p><b>A distinct count measure over key <i>k</i> can be computed by rolling up 
+  A distinct count measure over key <i>k</i> can be computed by rolling up 
   more granular subtotals only if the attributes which are being rolled up are 
-  functionally dependent&nbsp; on <i>k</i>.</b> </p>
+  functionally dependent&nbsp; on <i>k</i>. 
 </blockquote>
 
 <p>
@@ -1688,27 +1645,31 @@ an error.
 <p>
 Consider the following aggregate table that has lost dimensions
 <code>customer_id</code>, <code>product_id</code>, <code>promotion_id</code>
+
 and <code>store_id</code>.
 </p>
     
 <blockquote>
-    <p><code>
+    <code>
     INSERT INTO "agg_l_04_sales_fact_1997" (<br>
 &nbsp;&nbsp;&nbsp; "time_id",<br>
 &nbsp;&nbsp;&nbsp; "store_sales",<br>
+
 &nbsp;&nbsp;&nbsp; "store_cost",<br>
 &nbsp;&nbsp;&nbsp; "unit_sales",<br>
 &nbsp;&nbsp;&nbsp; "customer_count",<br>
 &nbsp;&nbsp;&nbsp; "fact_count"<br>
     ) SELECT<br>
 &nbsp;&nbsp;&nbsp; "time_id",<br>
+
 &nbsp;&nbsp;&nbsp; SUM("store_sales") AS "store_sales",<br>
 &nbsp;&nbsp;&nbsp; SUM("store_cost") AS "store_cost",<br>
 &nbsp;&nbsp;&nbsp; SUM("unit_sales") AS "unit_sales",<br>
 &nbsp;&nbsp;&nbsp; COUNT(DISTINCT "customer_id") AS "customer_count",<br>
 &nbsp;&nbsp;&nbsp; COUNT(*) AS "fact_count"<br>
     FROM "sales_fact_1997"<br>
-    GROUP BY "time_id";</code></p>
+
+    GROUP BY "time_id";</code>
 </blockquote>
 
 <p>
@@ -1717,6 +1678,7 @@ measure. Why? The distinct-count measure is rolled up to the
 <code>time_id</code> granularity, the lowest level granularity of the
 physical database table <code>time_by_day</code>. Even a query against the lowest level in the 
 <code>Time</code> dimension would require a rollup from <code>time_id</code> to
+
 <code>month_of_year</code>, and this is impossible to perform.
 </p>
 
@@ -1726,38 +1688,44 @@ that has the same lost dimensions <code>customer_id</code>,
 <code>product_id</code>, <code>promotion_id</code> and <code>store_id</code>.
 The <code>time_id</code> foreign key is no longer present, rather it 
 has been replaced with the logical levels <code>the_year</code>, 
+
 <code>quarter</code> and <code>month_of_year</code>.
 </p>
 
 <blockquote>
-    <p><code>
+   <code>
     INSERT INTO "agg_c_10_sales_fact_1997" ( <br>
 &nbsp;&nbsp;&nbsp; "month_of_year", <br>
 &nbsp;&nbsp;&nbsp; "quarter", <br>
+
 &nbsp;&nbsp;&nbsp; "the_year", <br>
 &nbsp;&nbsp;&nbsp; "store_sales", <br>
 &nbsp;&nbsp;&nbsp; "store_cost", <br>
 &nbsp;&nbsp;&nbsp; "unit_sales", <br>
 &nbsp;&nbsp;&nbsp; "customer_count", <br>
 &nbsp;&nbsp;&nbsp; "fact_count" <br>
+
     ) SELECT <br>
 &nbsp;&nbsp;&nbsp; "D"."month_of_year", <br>
 &nbsp;&nbsp;&nbsp; "D"."quarter", <br>
 &nbsp;&nbsp;&nbsp; "D"."the_year", <br>
 &nbsp;&nbsp;&nbsp; SUM("B"."store_sales") AS "store_sales", <br>
 &nbsp;&nbsp;&nbsp; SUM("B"."store_cost") AS "store_cost", <br>
+
 &nbsp;&nbsp;&nbsp; SUM("B"."unit_sales") AS "unit_sales", <br>
 &nbsp;&nbsp;&nbsp; COUNT(DISTINCT "customer_id") AS "customer_count", <br>
 &nbsp;&nbsp;&nbsp; COUNT(*) AS fact_count <br>
     FROM<br>
 &nbsp;&nbsp;&nbsp; "sales_fact_1997" "B",<br>
 &nbsp;&nbsp;&nbsp; &quot;time_by_day" "D" <br>
+
     WHERE <br>
 &nbsp;&nbsp;&nbsp; "B"."time_id" = "D"."time_id" <br>
     GROUP BY <br>
 &nbsp;&nbsp;&nbsp; "D"."month_of_year", <br>
 &nbsp;&nbsp;&nbsp; "D"."quarter", <br>
-&nbsp;&nbsp;&nbsp; "D"."the_year";</code></p>
+&nbsp;&nbsp;&nbsp; "D"."the_year";</code>
+
 </blockquote>
 
 <p>
@@ -1780,60 +1748,71 @@ to much for one's database system.
 </p>
 
 <p>
+
 A better design for the aggregate table would include a few attributes which are 
 functionally dependent on <code>customer_id</code>, the key for the 
 distinct-count measure:
 </p>
 
 <blockquote>
-    <p><code>
+    <code>
     INSERT INTO "agg_c_12_sales_fact_1997" (<br>
 &nbsp;&nbsp;&nbsp; &quot;country&quot;,<br>
 &nbsp;&nbsp;&nbsp; &quot;gender&quot;,<br>
+
 &nbsp;&nbsp;&nbsp; &quot;marital_status&quot;,<br>
 &nbsp;&nbsp;&nbsp; "month_of_year", <br>
 &nbsp;&nbsp;&nbsp; "quarter", <br>
 &nbsp;&nbsp;&nbsp; "the_year", <br>
 &nbsp;&nbsp;&nbsp; "store_sales", <br>
 &nbsp;&nbsp;&nbsp; "store_cost", <br>
+
 &nbsp;&nbsp;&nbsp; "unit_sales", <br>
 &nbsp;&nbsp;&nbsp; "customer_count", <br>
 &nbsp;&nbsp;&nbsp; "fact_count" <br>
     ) SELECT <br>
 &nbsp;&nbsp;&nbsp; "D"."month_of_year", <br>
 &nbsp;&nbsp;&nbsp; "D"."quarter", <br>
+
 &nbsp;&nbsp;&nbsp; "D"."the_year", <br>
 &nbsp;&nbsp;&nbsp; SUM("B"."store_sales") AS "store_sales", <br>
 &nbsp;&nbsp;&nbsp; SUM("B"."store_cost") AS "store_cost", <br>
 &nbsp;&nbsp;&nbsp; SUM("B"."unit_sales") AS "unit_sales", <br>
 &nbsp;&nbsp;&nbsp; COUNT(DISTINCT "customer_id") AS "customer_count", <br>
 &nbsp;&nbsp;&nbsp; COUNT(*) AS fact_count <br>
+
     FROM<br>
 &nbsp;&nbsp;&nbsp; "sales_fact_1997" "B",<br>
 &nbsp;&nbsp;&nbsp; &quot;time_by_day" "D",<br>
 &nbsp;&nbsp;&nbsp; &quot;customer&quot; &quot;C&quot;<br>
     WHERE <br>
+
 &nbsp;&nbsp;&nbsp; "B"."time_id" = "D"."time_id"<br>
     AND &quot;B&quot;.customer_id&quot; = &quot;C&quot;.&quot;customer_id&quot;<br>
     GROUP BY <br>
 &nbsp;&nbsp;&nbsp; &quot;C&quot;.&quot;country&quot;,<br>
+
 &nbsp;&nbsp;&nbsp; &quot;C&quot;.&quot;gender&quot;,<br>
 &nbsp;&nbsp;&nbsp; &quot;C&quot;.&quot;marital_status&quot;,<br>
 &nbsp;&nbsp;&nbsp; "D"."month_of_year", <br>
 &nbsp;&nbsp;&nbsp; "D"."quarter", <br>
-&nbsp;&nbsp;&nbsp; "D"."the_year";</code></p>
+
+&nbsp;&nbsp;&nbsp; "D"."the_year";</code>
 </blockquote>
 
 <p>
 The added attributes are <code>&quot;country&quot;</code>, <code>&quot;gender&quot;</code> and <code>
 &quot;marital_status&quot;</code>. This table has only appoximately 12x the number of rows 
 of the previous aggregate table (3 values of <code>country</code> x 2 values of
+
 <code>gender</code> x 2 values of <code>marital_status</code>) but can answer 
 many more potential queries.</p>
-
-<h2>
-<a name="Tools_for_designing_and_maintaining_aggregate_tables">Tools for 
-designing and maintaining aggregate tables</a></h2>
+<!-- 
+#################################################################
+##  8. Tools for designing and maintaining aggregate tables #####
+################################################################# -->
+<h3>
+8. Tools for designing and maintaining aggregate tables<a name="Tools_for_designing_and_maintaining_aggregate_tables">&nbsp;</a></h3>
 
 <p>
 Aggregate tables are difficult to design and maintain. We make no bones about it. 
@@ -1845,7 +1824,8 @@ them easy to use.</p>
 Unless your dataset is very large, Mondrian's performance will be just fine 
 without aggregate tables. If Mondrian isn't performing well, you should first 
 check that your DBMS is well-tuned: see our guide to
-<a href="optimizing_performance.html">optimizing performance</a>). If decide to 
+
+<a href="performance.html">optimizing performance</a>). If decide to 
 build aggregate tables anyway, we don't offer any tools to help administrators 
 design them, so unless you are blessed with superhuman patience and intuition, 
 using them won't be smooth sailing.
@@ -1855,9 +1835,12 @@ using them won't be smooth sailing.
 Here are some ideas for tools we'd like to build in the future. I'm thinking of these being utilities, not part of the core runtime engine.
 There's plenty of room to wrap these utilities in nice graphical interfaces,
 make them smarter.</p>
-
-<h3>
-<a name="AggGen_aggregate_generator">AggGen (aggregate generator)</a></h3>
+<!-- 
+##########################################
+##  8.1 AggGen (aggregate generator) #####
+########################################## -->
+<h1>
+8.1 AggGen (aggregate generator)<a name="AggGen_aggregate_generator">&nbsp;</a></h1>
 
 <p>
 <code>AggGen</code> is a tool that generates SQL to support the
@@ -1866,25 +1849,39 @@ template for the creation of materialized views for databases that
 support those. Given an MDX query, the generated create/insert SQL is
 optimal for the given query. The generated SQL covers both the "lost"
 and "collapsed" dimensions. For usage, see the documentation for
-<a href="cmdrunner.html#AggGen">CmdRunner</a>.</p>
-
-<h3>
-<a name="Aggregate_table_populater">Aggregate table populater</a></h3>
+<a href="command_runner.html#AggGen">CmdRunner</a>.</p>
+<!-- 
+#######################################
+##  8.2 Aggregate table populater #####
+####################################### -->
+<h1>
+8.2 Aggregate table populater<a name="Aggregate_table_populater">&nbsp;</a></h1>
 
 <p>This utility populates (or generates INSERT statements to populate) the agg
-tables.<p>For extra credit: populate the tables in topological order, so that 
-higher level aggregations can be built from lower level aggregations. (See [<a href="#Ref_AAD96">AAD<sup>+</sup>96</a>]).<h3>
-<a name="Script_generator">Script 
-generator</a></h3>
+tables.</p>
+
+<p>For extra credit: populate the tables in topological order, so that 
+higher level aggregations can be built from lower level aggregations. 
+(See [<a href="#Ref_AAD96">AAD<sup>+</sup>96</a>]).</p>
+
+<!-- 
+##############################
+##  8.3 Script generator #####
+############################## -->
+<h1>
+8.3 Script generator<a name="Script_generator">&nbsp;</a></h1>
 
 <p>This utility generates a script containing CREATE TABLE and CREATE INDEX
 statements all possible aggregate tables (including indexes), XML for these
 tables, and comments indicating the estimated number of rows in these
 tables. Clearly this will be a huge script, and it would be ridiculous to
 create all of these tables. The person designing the schema could copy/paste
-from this file to create their own schema.
-
-<h3><a name="Recommender">Recommender</a></h3>
+from this file to create their own schema.</p>
+<!-- 
+#########################
+##  8.4 Recommender #####
+######################### -->
+<h1>8.4 Recommender<a name="Recommender">&nbsp;</a></h1>
 
 <p>This utility (maybe graphical, maybe text-based) recommends a set of
 aggregate tables. This is essentially an optimization algorithm, and it is
@@ -1893,65 +1890,73 @@ process are the amount of storage required, the estimated time to populate
 the agg tables.<p>The algorithm could also take into account usage
 information. A set of sample queries could be an input to the utility, or the 
 utility could run as a background task, consuming the query log and dynamically 
-making recommendations.<h3><a name="Online_offline_control">Online/offline control</a></h3>
+making recommendations.</p>
+<!-- 
+####################################
+##  8.5 Online/offline control #####
+#################################### -->
+
+<h1>8.5 Online/offline control<a name="Online_offline_control">&nbsp;</a></h1>
 
 <p>This utility would allow agg tables to be taken offline/online while Mondrian is still
-running.
-
-<h2><a name="Aggregate_properties">Properties which affect aggregates</a></h2>
+running.</p>
+<!-- 
+###############################################
+##  9. Properties which affect aggregates #####
+############################################### -->
+<h3>9. Properties which affect aggregates<a name="Aggregate_properties">&nbsp;</a></h3>
 <p>
 Mondrian has properties that control the behavior of its aggregate
 table sub-system. (You can find the full set of properties in the
 <a href="configuration.html">Configuration Guide</a>.)</p>
-<p>
-</p>
 
-<blockquote>
-<table border="1" style="border-color:#000000; border-width:1px; " class="clsStd">
-  <tbody>
+
+<table class="grayTable" width="500"  >
     <tr>
-      <th>Property</th>
-      <th>Type</th>
-      <th>Default Value</th>
-      <th>Description</th>
+      <td><b>Property</b></td>
+      <td><b>Type</b></td>
+      <td><b>Default Value</b></td>
+      <td><b>Description</b></td>
     </tr>
-
     <tr>
       <td><code>
-		<a href="api/mondrian/olap/MondrianProperties.html#UseAggregates">mondrian.rolap.aggregates.Use</a></code></td>
+		<a href="api/mondrian/olap/MondrianProperties.html#UseAggregates">mondrian. rolap. aggregates. Use</a></code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
+
       <td>
         If set to true, then Mondrian uses any aggregate tables that have
         been read.
         These tables are then candidates
         for use in fulfilling MDX queries.
-        If set to false, then no aggregate table related activity 
+        If set to false, then no aggregate table related activity
         takes place in Mondrian.
       </td>
     </tr>
 
     <tr>
       <td><code>
-		<a href="api/mondrian/olap/MondrianProperties.html#ReadAggregates">mondrian.rolap.aggregates.Read</a></code></td>
+		<a href="api/mondrian/olap/MondrianProperties.html#ReadAggregates">mondrian. rolap. aggregates. Read</a></code></td>
       <td><code>boolean</code></td>
+
       <td><code>false</code></td>
       <td>
         If set to true, then Mondrian reads the database schema and
         recognizes aggregate tables. These tables are then candidates
         for use in fulfilling MDX queries.
-        If set to false, then aggregate table will not be read from 
+        If set to false, then aggregate table will not be read from
         the database. Of course, after aggregate tables have been read,
         they are read, so setting this property false after starting
         with the property being true, has no effect.
         Mondrian will not actually use the aggregate tables unless the
-        <code>mondrian.rolap.aggregates.Use</code> property is set to true.
+        <code>mondrian.rolap. aggregates.Use</code> property is set to true.
       </td>
     </tr>
 
     <tr>
       <td><code>
-		<a href="api/mondrian/olap/MondrianProperties.html#ChooseAggregateByVolume">mondrian.rolap.aggregates.ChooseByVolume</a></code></td>
+
+		<a href="api/mondrian/olap/MondrianProperties.html#ChooseAggregateByVolume">mondrian. rolap. aggregates. ChooseByVolume</a></code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>
@@ -1963,98 +1968,101 @@ table sub-system. (You can find the full set of properties in the
       </td>
     </tr>
     <tr>
+
       <td><code>
-		<a href="api/mondrian/olap/MondrianProperties.html#AggregateRules">mondrian.rolap.aggregates.rules</a></code></td>
+		<a href="api/mondrian/olap/MondrianProperties.html#AggregateRules">mondrian. rolap. aggregates. rules</a></code></td>
       <td><code>resource or url</code></td>
-      <td><code>/DefaultRules.xml</code></td>
+      <td><code>/Default Rules.xml</code></td>
       <td>
         This is a developer property, not a user property.
         Setting this to a url (e.g., <code>file://c:/myrules.xml</code>) allows one
         to use their own "default" Mondrian aggregate table recognition
-        rules. 
+        rules.
         In general use this should never be changed from the default value.
       </td>
+
     </tr>
     <tr>
       <td><code>
-		<a href="api/mondrian/olap/MondrianProperties.html#AggregateRuleTag">mondrian.rolap.aggregates.rule.tag</a></code></td>
+		<a href="api/mondrian/olap/MondrianProperties.html#AggregateRuleTag">mondrian. rolap. aggregates. rule. tag</a></code></td>
       <td><code>string</code></td>
       <td><code>default</code></td>
       <td>
+
         This is also a developer property. It allows one to pick which 
         named rule in the default rule file to use.
         In general use this should never be changed from the default value.
       </td>
     </tr>
-  </tbody>
 </table>
-</blockquote>
+<!-- 
+########################
+##  10. References #####
+######################## -->
+<h3>10. References<a name="References">&nbsp;</a></h3>
 
-
-<h2><a name="References">References</a></h2>
-<table border="0" id="table1" cellpadding="4">
+<table id="table1" class="grayTable" width="500"  >
 	<tr>
-		<td>[<a name="Ref_AAD96">AAD<sup>+</sup>96</a>]</td>
+		<td>[AAD<sup>+</sup>96]<a name="Ref_AAD96">&nbsp;</a></td>
+
 		<td>S. Agarwal, R. Agrawal, P. M. Deshpande, A. Gupta, J. F. Naughton, 
 		R. Ramakrishnan, and S. Sarawagi. On the computation of multidimensional 
 		aggregates. In Proc. 22nd VLDB, pages 506-521, Mumbai, Sept. 1996. [<a href="http://www.almaden.ibm.com/software/quest/Publications/papers/vldb96_cube.pdf">pdf</a>]</td>
 	</tr>
 	<tr>
-		<td>[<a name="ABDGHLS99">ABDGHLS99</a>]</td>
+		<td>[ABDGHLS99]<a name="ABDGHLS99">&nbsp;</a></td>
 		<td>J. Albrecht, A. Bauer, O. Deyerling, H. Gunze, W. Hummer, W. Lehner, 
 		L. Schlesinger. Management of Multidimensional Aggregates for Efficient 
 		Online Analytical Processing. Proceedings of International Database 
 		Engineering and Applications Symposium, 1999, pp. 156–164. [<a href="http://www6.informatik.uni-erlangen.de/research/projects/cubestar/english/Overview.html">pdf</a>]</td>
+
 	</tr>
 	<tr>
-		<td>[<a name="GBLP96">GBLP96</a>]</td>
+		<td>[GBLP96]<a name="GBLP96">&nbsp;</a></td>
 		<td>J. Gray, A. Bosworth, A. Layman, and H. Pirahesh. Data cube: A 
 		relational aggregation operator generalizing group-by, cross-tab, and 
 		sub-totals. In Proc. 12th ICDE, pages 152-159, New Orleans, March 1996. 
 		[<a target="_blank" href="http://paul.rutgers.edu/~aminabdu/cs541/cube_op.pdf">pdf</a>]</td>
 	</tr>
 	<tr>
-		<td>[<a name="HNSS95">HNSS95</a>]</td>
+
+		<td>[HNSS95]<a name="HNSS95">&nbsp;</a></td>
 		<td>P.J. Haas, J.F. Naughton, S. Seshadri, and L. Stokes. Sampling-based 
 		estimation of the number of distinct values of an attribute. Proceedings 
 		of the Eighth International Conference on Very Large Databases (VLDB), 
 		pages 311–322, Zurich, Switzerland, September 1995. [<a href="http://www.vldb.org/conf/1995/P311.PDF">pdf</a>]</td>
 	</tr>
 	<tr>
-		<td>[<a name="Rittman05">Rittman05</a>]</td>
+		<td>[Rittman05]<a name="Rittman05">&nbsp;</a></td>
+
 		<td>M. Rittman. Compressed Composites (Oracle 10g Compression) 
 		Explained. Online article. [<a href="http://www.rittman.net/archives/001173.html">html</a>]</td>
 	</tr>
 	<tr>
-		<td>[<a name="SDNR96">SDNR96</a>]</td>
+		<td>[SDNR96]<a name="SDNR96">&nbsp;</a></td>
 		<td>Amit Shukla, Prasad Deshpande, Jeffrey F. Naughton, Karthikeyan 
 		Ramasamy. Storage Estimation for Multidimensional Aggregates in the 
 		Presence of Hierarchies. VLDB 1996, pp. 522–531. [<a href="http://www.acm.org/sigmod/vldb/conf/1996/P522.PDF">pdf</a>]</td>
+
 	</tr>
 	<tr>
 		<td>&nbsp;</td>
 		<td>&nbsp;</td>
 	</tr>
 </table>
+<br />
 
-<hr>
+<hr noshade size="1"/>
+<p>
+    Author: Richard Emberson; last modified by Julian Hyde, March 2006.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/aggregate_tables.html?ac=22">log</a>)<br/>
+    Copyright (C) 2005-2006 Julian Hyde and others
+</p>
 
-<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
-  <tr>
-    <td class="content">
-      <a target="_top" href="index.html">Home</a> |
-      <a target="_top" href="noframes.html">No frames</a> | This file is<i>
-      <a href="http://mondrian.sourceforge.net/aggregate_tables.html">
-        $Id$
-      </a></i> (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/aggregate_tables.html?ac=22">log</a>)</td>
-    <td align="right">
-      <a href="http://sourceforge.net">
-        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
-      </a>
-    </td>
-  </tr>
-</table>
+<br />
+
+<!-- doc2web end -->
 
 </body>
-
 </html>

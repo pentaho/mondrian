@@ -8,125 +8,91 @@
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
-
 <head>
-<meta http-equiv="Content-Language" content="en-us">
-<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
-<meta name="ProgId" content="FrontPage.Editor.Document">
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>MDX specification</title>
-<link rel="stylesheet" href="stylesheet.css" type="text/css" />
-<style>
-<!--
-.small { font-family: verdana,arial,helvetica,sans-serif; font-size: x-small; }
--->
-</style>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: MDX Specification</title>
 </head>
-
 <body>
-<h1>MDX specification</h1>
+<!-- doc2web start -->
 
-<hr noshade color="#000000" size="1">
+<!-- page title -->
+<div class="contentheading">MDX Specification</div>
+<!-- end page title -->
 
-<h2><a name="What_is_MDX">What is MDX?</a></h2>
+<!-- 
+########################
+##  What is MDX?   #####
+######################## -->
+<h3>What is MDX?</h3>
 
-<p>MDX is stands for 'multi-dimensional expressions'. It is the main query 
-language implemented by Mondrian.</p>
+<p>MDX is stands for 'multi-dimensional expressions'. It is the main query language implemented by Mondrian.</p>
 
-<p>MDX was introduced by Microsoft with Microsoft SQL Server OLAP Services in 
-around 1998, as the language component of the <i>OLE DB for OLAP</i> API. More 
-recently, MDX has appeared as part of the <i>XML for Analysis</i> API. Microsoft 
-proposed MDX as a standard, and its adoption among application writers 
-and other OLAP providers is steadily increasing.</p>
+<p>MDX was introduced by Microsoft with Microsoft SQL Server OLAP Services in around 1998, as the language component of the OLE DB for OLAP API. More recently, MDX has appeared as part of the XML for Analysis API. Microsoft proposed MDX as a standard, and its adoption among application writers and other OLAP providers is steadily increasing.</p>
 
-<h2><a name="What_is_the_syntax_of_MDX">What is the syntax of MDX?</a></h2>
+<!-- 
+####################################
+##  What is the syntax of MDX? #####
+#################################### -->
+<h3>What is the syntax of MDX?</h3>
 
 <p>A basic MDX query looks like this:</p>
 
-<blockquote>
+<blockquote><code>
+SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS,<br />
+  {[Product].members} ON ROWS<br />
+FROM [Sales]<br />
+WHERE [Time].[1997].[Q2]
+</code></blockquote>
 
-	<pre><code>SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS,
-  {[Product].members} ON ROWS
-FROM [Sales]
-WHERE [Time].[1997].[Q2]</code></pre>
-</blockquote>
+<p>It looks a little like SQL, but don't be deceived! The structure of an MDX query is quite different from SQL.</p>
 
-<p>It looks a little like SQL, but don't be deceived! The structure of an MDX 
-query is quite different from SQL.</p>
+<p>Since MDX is a standard language, we don't cover its syntax here. (The Microsoft SQL Server site has an <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/olapdmad/agmdxbasics_04qg.asp" target="_blank" class="included_content_links">MDX specification</a>; there's also a <a href="http://www.databasejournal.com/features/mssql/article.php/10894_1495511_2" target="_blank" class="included_content_links">good tutorial</a> in Database Journal.) This specification describes the differences between Mondrian's dialect and the standard dialect of MDX.</p>
+<!-- 
+###############################
+##  Mondrian-specific MDX #####
+############################### -->
+<h3>Mondrian-specific MDX</h3>
 
-<p>Since MDX is a standard language, we don't cover its syntax here. (The 
-Microsoft SQL Server site has an
-<a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/olapdmad/agmdxbasics_04qg.asp">
-MDX specification</a>; there's also a
-<a href="http://www.databasejournal.com/features/mssql/article.php/10894_1495511_2">
-good tutorial in Database Journal</a>.) This specification describes the 
-differences between Mondrian's dialect and the standard dialect of MDX.</p>
+<h1>StrToSet and StrToTuple</h1>
 
-<h2><a name="Mondrian-specific_MDX">Mondrian-specific MDX</a></h2>
-<h3><code>StrToSet</code> and <code>StrToTuple</code></h3>
+<p>The StrToSet() and StrToTuple() functions take an extra parameter.</p>
 
-<p>The <code>StrToSet()</code> and <code>StrToTuple()</code> functions take
-  an extra parameter.</p>
-
-<h3>Parsing</h3>
+<h1>Parsing</h1>
 
 <p>Parsing is case-sensitive.</p>
 
-<h3>Parameters</h3>
+<h1>Parameters</h1>
 
-<p>Pseudo-functions <code>Param()</code> and <code>ParamRef()</code> allow
-  you to create parameterized MDX statements.</p>
-
-<h3>Current Date Functions</h3>
-
-<p>Mondrian supports two functions that return values based on the current
-date. They are listed below in the table of functions under CurrentDateString()
-and CurrentDateMember().  CurrentDateString() returns a string representing 
-the current date as specified by a format string.  CurrentDateMember() returns
-a member corresponding to the current date, also based on a specified format
-string.  In both cases, the format string matches the formatting specification
-for <a href="http://www.apostate.com/programming/vb-format.html">
-Visual Basic's format function.</a>
-So, be careful when specifying your format string, and remember
-to escape any characters that
-correspond to Visual Basic formatting characters.</p>
-
-<p>For example, to find a member in the <code>[Time]</code> dimension corresponding to the current
-month, you would specify:
-
+<p>Pseudo-functions Param() and ParamRef() allow you to create parameterized MDX statements.</p>
+<h4>Cast operator</h4>
+<p>The Cast operator converts scalar expressions to other types. The syntax is</p>
 <blockquote>
-  <pre><code>CurrentDateMember([Time], "[Ti\me]\.[yyyy]\.[Qq]\.[m]")</code></pre>
+	<p><code>Cast(&lt;Expression&gt; AS &lt;Type&gt;)</code></p>
 </blockquote>
-
-<p>escaping the "m" in "Time" and the "."s that separate each member,
-since "m" and "." are formatting characters. If you prefer, you can also enclose 
-constant parts of the format string in double-quotes (&quot;):</p>
-
+<p>where &lt;Type&gt; is one of:</p>
+<ul>
+	<li>BOOLEAN</li>
+	<li>NUMERIC</li>
+	<li>DECIMAL</li>
+	<li>STRING</li>
+</ul>
+<p>For example,</p>
 <blockquote>
-  <pre>CurrentDateMember([Time], '"[Time].[&quot;yyyy&quot;].[Q&quot;q&quot;].[&quot;m&quot;]"')</pre>
+	<p><code>Cast([Store].CurrentMember.[Store Sqft], INTEGER)</code></p>
 </blockquote>
+<p>returns the value of the <code>[Store Sqft]</code> property as an integer 
+value.</p>
+<!-- 
+########################
+##  Comments       #####
+######################## -->
+<h3>Comments</h3>
 
-<p><code>CurrentDateMember()</code> optionally takes a symbol parameter whose value is
-either <code>EXACT</code>, <code>BEFORE</code>, or <code>AFTER</code>.
-The default value, if that parameter is not specified, is <code>EXACT</code>.
-In the case of <code>EXACT</code>, there needs to be an
-existing member corresponding to the current date.  Otherwise, NULL is returned.
-If BEFORE is specified, and there is no matching member, then the closest
-available member in the past is returned.
-If AFTER is specified, and there is no matching member, then the closest
-available member in the future is returned.</p>
+<p>MDX statements can contain comments. There are 3 syntactic forms for comments:</p>
 
-<p>For example, suppose that today is 29th February, 2000, and we have forgot 
-that 2000 was a leap year, so our time dimension does not contain a member <code>
-[Time].[2000].[2].[29]</code>. Consider the 3 expressions:</p>
-<ol>
-  <li><code>CurrentDateMember([Time], '"[Time].[&quot;yyyy&quot;].[&quot;m&quot;].[&quot;d&quot;]"', EXACT)</code> 
-  returns the null member;</li>
-  <li><code>CurrentDateMember([Time], '"[Time].[&quot;yyyy&quot;].[&quot;m&quot;].[&quot;d&quot;]"', BEFORE)</code> 
-  returns <code>[Time].[2000].[2].[28]</code>;</li>
-  <li><code>CurrentDateMember([Time], '"[Time].[&quot;yyyy&quot;].[&quot;m&quot;].[&quot;d&quot;]"', AFTER)</code> 
-  returns <code>[Time].[2000].[3].[1]</code>.</li>
-</ol>
+<blockquote><p>
+// End-of-line comment
+</p></blockquote>
 
 <h3><code>IN</code> and <code>NOT IN</code></h3>
 
@@ -137,609 +103,684 @@ that 2000 was a leap year, so our time dimension does not contain a member <code
 <p><code>MATCHES</code> and <code>NOT MATCHES</code> are Mondrian-specific functions which take as one of its arguments a <A href="http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/Pattern.html">java regular expression</A>.</p>
 
 
-<h2><a name="Comments">Comments</a></h2>
+<blockquote><p>
+-- End-of-line comment
+</p></blockquote>
 
-<p>MDX statements can contain comments. There are 3 syntactic forms for 
-comments:</p>
-
-<blockquote>
-  <pre><code>// </code><i><code>End-of-line comment</code></i></pre>
-</blockquote>
-
-<blockquote>
-  <pre><code>-- <i>End-of-line comment</i></code></pre>
-</blockquote>
-
-<blockquote>
-  <pre><code>/* <i>Multi-line
-   comment</i> */</code></pre>
-</blockquote>
+<blockquote><p>
+/* Multi-line<br />
+   comment */
+</p></blockquote>
 
 <p>Comments can be nested, for example</p>
 
-<blockquote>
-  <pre><code>/* <i>Multi-line
-   comment</i> /* <i>Comment within a comment</i> */ 
- */</code></pre>
-</blockquote>
+<blockquote><p>
+/* Multi-line<br />
+   comment /* Comment within a comment */ <br />
+ */
+</p></blockquote>
+<!-- 
+########################
+##  Format Strings #####
+######################## -->
+<h3>Format Strings</h3>
 
-<h2><a name="Format_strings">Format strings</a></h2><p>Every member has a 
-FORMAT_STRING property, which affects how its raw value is rendered into text in 
-the user interface. For example, the query</p>
+<p>Every member has a FORMAT_STRING property, which affects how its raw value is rendered into text in the user interface. For example, the query</p>
 
-<blockquote>
-
-	<pre><code>WITH MEMBER [Measures].[Profit] AS '([Measures].[Store Sales] - [Measures].[Store Cost])',
-&nbsp;&nbsp;FORMAT_STRING = &quot;$#,###.00&quot;
-SELECT {[Measures].[Store Sales], [Measures].[Profit]} ON COLUMNS,
-&nbsp;&nbsp;{[Product].CurrentMember.Children} ON ROWS
-FROM [Sales]</code></pre>
-</blockquote>
+<blockquote><code>
+WITH MEMBER [Measures].[Profit] AS '([Measures].[Store Sales] - [Measures].[Store Cost])',<br />
+  FORMAT_STRING = "$#,###.00"<br />
+SELECT {[Measures].[Store Sales], [Measures].[Profit]} ON COLUMNS,<br />
+  {[Product].CurrentMember.Children} ON ROWS<br />
+FROM [Sales]
+</code></blockquote>
 
 <p>yields cells formatted in dollar and cent amounts.</p>
 
-<p>Members defined in a schema file can also have format strings. Measures use 
-the <code>formatString</code> attribute:</p>
+<p>Members defined in a schema file can also have format strings. Measures use the formatString attribute:</p>
 
-<blockquote>
+<blockquote><code>
+&lt;Measure name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.00"/&gt;
+</code></blockquote>
 
-	<p><code>&lt;Measure name=&quot;Store Sales&quot; column=&quot;store_sales&quot; aggregator=&quot;sum&quot; 
-	formatString=&quot;#,###.00&quot;/&gt;</code></p>
-</blockquote>
+<p>and calculated members use the &lt;CalculatedMemberProperty&gt; sub-element:</p>
 
-<p>and calculated members use the <code>&lt;CalculatedMemberProperty&gt;</code> 
-sub-element:</p>
+<blockquote><code>
+&lt;CalculatedMember name="Profit" dimension="Measures" formula="[Measures].[Store Sales] - [Measures].[Store Cost]"&gt;<br />
+&nbsp;&nbsp;&lt;CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/&gt;<br />
+&lt;/CalculatedMember&gt;
+</code></blockquote>
 
-<blockquote>
+<p>Format strings use Visual Basic formatting syntax; see <a href="api/mondrian/olap/Format.html" class="included_content_links" target="_blank">class mondrian.olap.Format</a> for more details.</p>
 
-	<p><code>&lt;CalculatedMember name=&quot;Profit&quot; dimension=&quot;Measures&quot; formula=&quot;[Measures].[Store 
-	Sales] - [Measures].[Store Cost]&quot;&gt;<br>
-&nbsp; &lt;CalculatedMemberProperty name=&quot;FORMAT_STRING&quot; value=&quot;$#,##0.00&quot;/&gt;<br>
-	&lt;/CalculatedMember&gt;</code></p>
-</blockquote>
+<p>A measure's format string is usually a fixed string, but is really an expression, which is evaluated in the same context as the cell. You can therefore change the formatting of a cell depending upon the cell's value.</p>
 
-<p>Format strings use Visual Basic formatting syntax; see
-<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Format.html">class
-mondrian.olap.Format</a> for more details.</p>
+<p>The format string can even contain 'style' attributes which are interpreted specially by JPivot. If present, JPivot will render cells in color.</p>
 
-<p>A measure's format string is usually a fixed string, but is really
-an expression, which is evaluated in the same context as the cell. You can
-therefore change the formatting of a cell depending upon the cell's value.</p>
+<p>The following example combines a dynamic formula with style attributes. The result is that cells are displayed with green background if they are less than $100,000, or a red background if they are greater than $100,000:</p>
 
-<p>The format string can even contain 'style' attributes which are interpreted 
-specially by JPivot. If present, JPivot will render cells in color. 
-
-<p>The following example combines a dynamic formula with style attributes. The 
-result is that cells are displayed with green background if they are less than 
-$100,000, or a red background if they are greater than $100,000:<blockquote>
-<code>WITH MEMBER [Measures].[Profit] AS<br/>
-&nbsp;
-&nbsp;&nbsp;'([Measures].[Store Sales] - [Measures].[Store Cost])',<br>
-&nbsp;&nbsp;&nbsp;FORMAT_STRING = Iif([Measures].[Profit] < 100000, '|#|style=green', '|#|style=red')<br/>
-SELECT {[Measures].[Store Sales], [Measures].[Profit]} ON COLUMNS,<br/>
-&nbsp;&nbsp;{[Product].CurrentMember.Children} ON ROWS<br/>
-FROM [Sales]</code></blockquote>
- 
-</p>
-
-<h2><a name="Function_list">Function list</a></h2>
+<blockquote><code>
+WITH MEMBER [Measures].[Profit] AS<br />
+&nbsp;&nbsp;&nbsp;'([Measures].[Store Sales] - [Measures].[Store Cost])',<br />
+&nbsp;&nbsp;FORMAT_STRING = Iif([Measures].[Profit] < 100000, '|#|style=green', '|#|style=red')<br />
+SELECT {[Measures].[Store Sales], [Measures].[Profit]} ON COLUMNS,<br />
+&nbsp;&nbsp;{[Product].CurrentMember.Children} ON ROWS<br />
+FROM [Sales]
+</code></blockquote>
+<!-- 
+########################
+##  Function List  #####
+######################## -->
+<h3>Function List</h3>
 
 <p>These are the functions implemented in the current Mondrian release.</p>
 
-<p>&nbsp;</p>
+<table width="500" class="grayTable">
+<tr>
+<td><b>Name</b></td>
+<td><b>Description</b></td>
+</tr>
+<tr>
+  <td valign=top><code>$AggregateChildren</code></td>
+  <td>Equivalent to &#39;Aggregate(&lt;Hierarchy&gt;.CurrentMember.Children); for internal use.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; $AggregateChildren(&lt;Hierarchy&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>$Cache</code></td>
+  <td>Evaluates and returns its sole argument, applying statement-level caching
+    <h1>Syntax</h1>
+    $Cache(&lt;&lt;Exp&gt;&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>()</code></td>
+  <td>
+    <h1>Syntax</h1>
 
-<!-- This table is generated using
-     mondrian.olap.fun.FunctionTest.testDumpFunctions.
-     Last generated on 2005/3/2. -->
-
-<table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
-<tr>
-<th>Name</th>
-<th>Description</th>
-</tr>
-<tr>
-  <td valign=top>$AggregateChildren</td>
-  <td>Equivalent to &#39;Aggregate(&lt;Hierarchy&gt;.CurrentMember.Children); for internal use.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; $AggregateChildren(&lt;Hierarchy&gt;)</code><br/>
   </td>
 </tr>
 <tr>
-  <td valign=top>$Cache</td>
-  <td>Evaluates and returns its sole argument, applying statement-level caching    <p><b>Syntax</b></p>
-    <code>$Cache(&lt;&lt;Exp&gt;&gt;)</code><br/>
+  <td valign=top><code>*</code></td>
+  <td>Multiplies two numbers.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; * &lt;Numeric Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>()</td>
-  <td>    <p><b>Syntax</b></p>
+  <td valign=top><code>*</code></td>
+  <td>Returns the cross product of two sets.
+    <h1>Syntax</h1>
+    &lt;Set&gt; * &lt;Set&gt;<br/>
+    &lt;Member&gt; * &lt;Set&gt;<br/>
+    &lt;Set&gt; * &lt;Member&gt;<br/>
+    &lt;Member&gt; * &lt;Member&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>*</td>
-  <td>Multiplies two numbers.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; * &lt;Numeric Expression&gt;</code><br/>
+  <td valign=top><code>+</code></td>
+  <td>Adds two numbers.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; + &lt;Numeric Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>*</td>
-  <td>Returns the cross product of two sets.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; * &lt;Set&gt;</code><br/>
-    <code>&lt;Member&gt; * &lt;Set&gt;</code><br/>
-    <code>&lt;Set&gt; * &lt;Member&gt;</code><br/>
-    <code>&lt;Member&gt; * &lt;Member&gt;</code><br/>
+  <td valign=top><code>-</code></td>
+  <td>Subtracts two numbers.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; - &lt;Numeric Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>+</td>
-  <td>Adds two numbers.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; + &lt;Numeric Expression&gt;</code><br/>
+  <td valign=top><code>-</code></td>
+  <td>Returns the negative of a number.
+    <h1>Syntax</h1>
+    - &lt;Numeric Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>-</td>
-  <td>Subtracts two numbers.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; - &lt;Numeric Expression&gt;</code><br/>
+  <td valign=top><code>/</code></td>
+  <td>Divides two numbers.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; / &lt;Numeric Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>-</td>
-  <td>Returns the negative of a number.    <p><b>Syntax</b></p>
-    <code>- &lt;Numeric Expression&gt;</code><br/>
+  <td valign=top><code>:</code></td>
+  <td>Infix colon operator returns the set of members between a given pair of members.
+    <h1>Syntax</h1>
+    &lt;Member&gt; : &lt;Member&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>/</td>
-  <td>Divides two numbers.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; / &lt;Numeric Expression&gt;</code><br/>
+  <td valign=top><code>&lt;</code></td>
+  <td>Returns whether an expression is less than another.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; &lt; &lt;Numeric Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>:</td>
-  <td>Infix colon operator returns the set of members between a given pair of members.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; : &lt;Member&gt;</code><br/>
+  <td valign=top><code>&lt;</code></td>
+  <td>Returns whether an expression is less than another.
+    <h1>Syntax</h1>
+    &lt;String&gt; &lt; &lt;String&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>&lt;</td>
-  <td>Returns whether an expression is less than another.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; &lt; &lt;Numeric Expression&gt;</code><br/>
+  <td valign=top><code>&lt;=</code></td>
+  <td>Returns whether an expression is less than or equal to another.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; &lt;= &lt;Numeric Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>&lt;</td>
-  <td>Returns whether an expression is less than another.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; &lt; &lt;String&gt;</code><br/>
+  <td valign=top><code>&lt;=</code></td>
+  <td>Returns whether an expression is less than or equal to another.
+    <h1>Syntax</h1>
+    &lt;String&gt; &lt;= &lt;String&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>&lt;=</td>
-  <td>Returns whether an expression is less than or equal to another.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; &lt;= &lt;Numeric Expression&gt;</code><br/>
+  <td valign=top><code>&lt;&gt;</code></td>
+  <td>Returns whether two expressions are not equal.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; &lt;&gt; &lt;Numeric Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>&lt;=</td>
-  <td>Returns whether an expression is less than or equal to another.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; &lt;= &lt;String&gt;</code><br/>
+  <td valign=top><code>&lt;&gt;</code></td>
+  <td>Returns whether two expressions are not equal.
+    <h1>Syntax</h1>
+    &lt;String&gt; &lt;&gt; &lt;String&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>&lt;&gt;</td>
-  <td>Returns whether two expressions are not equal.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; &lt;&gt; &lt;Numeric Expression&gt;</code><br/>
+  <td valign=top><code>=</code></td>
+  <td>Returns whether two expressions are equal.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; = &lt;Numeric Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>&lt;&gt;</td>
-  <td>Returns whether two expressions are not equal.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; &lt;&gt; &lt;String&gt;</code><br/>
+  <td valign=top><code>=</code></td>
+  <td>Returns whether two expressions are equal.
+    <h1>Syntax</h1>
+    &lt;String&gt; = &lt;String&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>=</td>
-  <td>Returns whether two expressions are equal.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; = &lt;Numeric Expression&gt;</code><br/>
+  <td valign=top><code>&gt;</code></td>
+  <td>Returns whether an expression is greater than another.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; &gt; &lt;Numeric Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>=</td>
-  <td>Returns whether two expressions are equal.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; = &lt;String&gt;</code><br/>
+  <td valign=top><code>&gt;</code></td>
+  <td>Returns whether an expression is greater than another.
+    <h1>Syntax</h1>
+    &lt;String&gt; &gt; &lt;String&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>&gt;</td>
-  <td>Returns whether an expression is greater than another.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; &gt; &lt;Numeric Expression&gt;</code><br/>
+  <td valign=top><code>&gt;=</code></td>
+  <td>Returns whether an expression is greater than or equal to another.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; &gt;= &lt;Numeric Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>&gt;</td>
-  <td>Returns whether an expression is greater than another.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; &gt; &lt;String&gt;</code><br/>
+  <td valign=top><code>&gt;=</code></td>
+  <td>Returns whether an expression is greater than or equal to another.
+    <h1>Syntax</h1>
+    &lt;String&gt; &gt;= &lt;String&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>&gt;=</td>
-  <td>Returns whether an expression is greater than or equal to another.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; &gt;= &lt;Numeric Expression&gt;</code><br/>
+  <td valign=top><code>AND</code></td>
+  <td>Returns the conjunction of two conditions.
+    <h1>Syntax</h1>
+    &lt;Logical Expression&gt; AND &lt;Logical Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>&gt;=</td>
-  <td>Returns whether an expression is greater than or equal to another.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; &gt;= &lt;String&gt;</code><br/>
+  <td valign=top><code>AddCalculatedMembers</code></td>
+  <td>Adds calculated members to a set.
+    <h1>Syntax</h1>
+    &lt;Set&gt; AddCalculatedMembers(&lt;Set&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>AND</td>
-  <td>Returns the conjunction of two conditions.    <p><b>Syntax</b></p>
-    <code>&lt;Logical Expression&gt; AND &lt;Logical Expression&gt;</code><br/>
+  <td valign=top><code>Aggregate</code></td>
+  <td>Returns a calculated value using the appropriate aggregate function, based on the context of the query.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Aggregate(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; Aggregate(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>AddCalculatedMembers</td>
-  <td>Adds calculated members to a set.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; AddCalculatedMembers(&lt;Set&gt;)</code><br/>
+  <td valign=top><code>AllMembers</code></td>
+  <td>Returns a set that contains all members, including calculated members, of the specified dimension.
+    <h1>Syntax</h1>
+    &lt;Dimension&gt;.AllMembers
   </td>
 </tr>
 <tr>
-  <td valign=top>Aggregate</td>
-  <td>Returns a calculated value using the appropriate aggregate function, based on the context of the query.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; Aggregate(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Aggregate(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>AllMembers</code></td>
+  <td>Returns a set that contains all members, including calculated members, of the specified hierarchy.
+    <h1>Syntax</h1>
+    &lt;Hierarchy&gt;.AllMembers
   </td>
 </tr>
 <tr>
-  <td valign=top>AllMembers</td>
-  <td>Returns a set that contains all members, including calculated members, of the specified dimension.    <p><b>Syntax</b></p>
-    <code>&lt;Dimension&gt;.AllMembers</code><br/>
+  <td valign=top><code>AllMembers</code></td>
+  <td>Returns a set that contains all members, including calculated members, of the specified level.
+    <h1>Syntax</h1>
+    &lt;Level&gt;.AllMembers
   </td>
 </tr>
 <tr>
-  <td valign=top>AllMembers</td>
-  <td>Returns a set that contains all members, including calculated members, of the specified hierarchy.    <p><b>Syntax</b></p>
-    <code>&lt;Hierarchy&gt;.AllMembers</code><br/>
+  <td valign=top><code>Ancestor</code></td>
+  <td>Returns the ancestor of a member at a specified level.
+    <h1>Syntax</h1>
+    &lt;Member&gt; Ancestor(&lt;Member&gt;, &lt;Level&gt;)<br/>
+    &lt;Member&gt; Ancestor(&lt;Member&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>AllMembers</td>
-  <td>Returns a set that contains all members, including calculated members, of the specified level.    <p><b>Syntax</b></p>
-    <code>&lt;Level&gt;.AllMembers</code><br/>
+  <td valign=top><code>Ascendants</code></td>
+  <td>Returns the set of the ascendants of a specified member.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Ascendants(&lt;Member&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Ancestor</td>
-  <td>Returns the ancestor of a member at a specified level.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; Ancestor(&lt;Member&gt;, &lt;Level&gt;)</code><br/>
-    <code>&lt;Member&gt; Ancestor(&lt;Member&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Avg</code></td>
+  <td>Returns the average value of a numeric expression evaluated over a set.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Avg(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; Avg(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Ascendants</td>
-  <td>Returns the set of the ascendants of a specified member.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Ascendants(&lt;Member&gt;)</code><br/>
+  <td valign=top><code>BottomCount</code></td>
+  <td>Returns a specified number of items from the bottom of a set, optionally ordering the set first.
+    <h1>Syntax</h1>
+    &lt;Set&gt; BottomCount(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Set&gt; BottomCount(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Avg</td>
-  <td>Returns the average value of a numeric expression evaluated over a set.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; Avg(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Avg(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>BottomPercent</code></td>
+  <td>Sorts a set and returns the bottom N elements whose cumulative total is at least a specified percentage.
+    <h1>Syntax</h1>
+    &lt;Set&gt; BottomPercent(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>BottomCount</td>
-  <td>Returns a specified number of items from the bottom of a set, optionally ordering the set first.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; BottomCount(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Set&gt; BottomCount(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>BottomSum</code></td>
+  <td>Sorts a set and returns the bottom N elements whose cumulative total is at least a specified value.
+    <h1>Syntax</h1>
+    &lt;Set&gt; BottomSum(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>BottomPercent</td>
-  <td>Sorts a set and returns the bottom N elements whose cumulative total is at least a specified percentage.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; BottomPercent(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>CalculatedChild</code></td>
+  <td>Returns an existing calculated child member with name &lt;String&gt; from the specified &lt;Member&gt;.
+    <h1>Syntax</h1>
+    &lt;Member&gt; &lt;Member&gt;.CalculatedChild(&lt;String&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>BottomSum</td>
-  <td>Sorts a set and returns the bottom N elements whose cumulative total is at least a specified value.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; BottomSum(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Caption</code></td>
+  <td>Returns the caption of a dimension.
+    <h1>Syntax</h1>
+    &lt;Dimension&gt;.Caption
   </td>
 </tr>
 <tr>
-  <td valign=top>CalculatedChild</td>
-  <td>Returns an existing calculated child member with name &lt;String&gt; from the specified &lt;Member&gt;.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; &lt;Member&gt;.CalculatedChild(&lt;String&gt;)</code><br/>
+  <td valign=top><code>Caption</code></td>
+  <td>Returns the caption of a hierarchy.
+    <h1>Syntax</h1>
+    &lt;Hierarchy&gt;.Caption
   </td>
 </tr>
 <tr>
-  <td valign=top>Caption</td>
-  <td>Returns the caption of a dimension.    <p><b>Syntax</b></p>
-    <code>&lt;Dimension&gt;.Caption</code><br/>
+  <td valign=top><code>Caption</code></td>
+  <td>Returns the caption of a level.
+    <h1>Syntax</h1>
+    &lt;Level&gt;.Caption
   </td>
 </tr>
 <tr>
-  <td valign=top>Caption</td>
-  <td>Returns the caption of a hierarchy.    <p><b>Syntax</b></p>
-    <code>&lt;Hierarchy&gt;.Caption</code><br/>
+  <td valign=top><code>Caption</code></td>
+  <td>Returns the caption of a member.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.Caption
   </td>
 </tr>
 <tr>
-  <td valign=top>Caption</td>
-  <td>Returns the caption of a level.    <p><b>Syntax</b></p>
-    <code>&lt;Level&gt;.Caption</code><br/>
+  <td valign=top><code>Cast</code></td>
+  <td>Converts values to another type
+    <h1>Syntax</h1>
+    Cast(&lt;Expression&gt; AS &lt;Type&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Caption</td>
-  <td>Returns the caption of a member.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.Caption</code><br/>
+  <td valign=top><code>Children</code></td>
+  <td>Returns the children of a member.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.Children
   </td>
 </tr>
 <tr>
-  <td valign=top>Children</td>
-  <td>Returns the children of a member.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.Children</code><br/>
+  <td valign=top><code>ClosingPeriod</code></td>
+  <td>Returns the last descendant of a member at a level.
+    <h1>Syntax</h1>
+    &lt;Member&gt; ClosingPeriod()<br/>
+    &lt;Member&gt; ClosingPeriod(&lt;Level&gt;)<br/>
+    &lt;Member&gt; ClosingPeriod(&lt;Level&gt;, &lt;Member&gt;)<br/>
+    &lt;Member&gt; ClosingPeriod(&lt;Member&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>ClosingPeriod</td>
-  <td>Returns the last descendant of a member at a level.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; ClosingPeriod()</code><br/>
-    <code>&lt;Member&gt; ClosingPeriod(&lt;Level&gt;)</code><br/>
-    <code>&lt;Member&gt; ClosingPeriod(&lt;Level&gt;, &lt;Member&gt;)</code><br/>
-    <code>&lt;Member&gt; ClosingPeriod(&lt;Member&gt;)</code><br/>
+  <td valign=top><code>CoalesceEmpty</code></td>
+  <td>Coalesces an empty cell value to a different value. All of the expressions must be of the same type (number or string).
+    <h1>Syntax</h1>
+    CoalesceEmpty(&lt;Value Expression&gt;[, &lt;Value Expression&gt;...])
   </td>
 </tr>
 <tr>
-  <td valign=top>CoalesceEmpty</td>
-  <td>Coalesces an empty cell value to a different value. All of the expressions must be of the same type (number or string).    <p><b>Syntax</b></p>
-    <code>CoalesceEmpty(&lt;Value Expression&gt;[, &lt;Value Expression&gt;...])</code><br/>
+  <td valign=top><code>Correlation</code></td>
+  <td>Returns the correlation of two series evaluated over a set.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Correlation(&lt;Set&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Numeric Expression&gt; Correlation(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Correlation</td>
-  <td>Returns the correlation of two series evaluated over a set.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; Correlation(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Correlation(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Count</code></td>
+  <td>Returns the number of tuples in a set, empty cells included unless the optional EXCLUDEEMPTY flag is used.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Count(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; Count(&lt;Set&gt;, &lt;Symbol&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Count</td>
-  <td>Returns the number of tuples in a set, empty cells included unless the optional EXCLUDEEMPTY flag is used.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; Count(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Count(&lt;Set&gt;, &lt;Symbol&gt;)</code><br/>
+  <td valign=top><code>Count</code></td>
+  <td>Returns the number of tuples in a set including empty cells.
+    <h1>Syntax</h1>
+    &lt;Set&gt;.Count
   </td>
 </tr>
 <tr>
-  <td valign=top>Count</td>
-  <td>Returns the number of tuples in a set including empty cells.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt;.Count</code><br/>
+  <td valign=top><code>Cousin</code></td>
+  <td>Returns the member with the same relative position under &lt;ancestor member&gt; as the member specified.
+    <h1>Syntax</h1>
+    &lt;Member&gt; Cousin(&lt;Member&gt;, &lt;Member&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Cousin</td>
-  <td>Returns the member with the same relative position under &lt;ancestor member&gt; as the member specified.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; Cousin(&lt;Member&gt;, &lt;Member&gt;)</code><br/>
+  <td valign=top><code>Covariance</code></td>
+  <td>Returns the covariance of two series evaluated over a set (biased).
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Covariance(&lt;Set&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Numeric Expression&gt; Covariance(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Covariance</td>
-  <td>Returns the covariance of two series evaluated over a set (biased).    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; Covariance(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Covariance(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>CovarianceN</code></td>
+  <td>Returns the covariance of two series evaluated over a set (unbiased).
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; CovarianceN(&lt;Set&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Numeric Expression&gt; CovarianceN(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>CovarianceN</td>
-  <td>Returns the covariance of two series evaluated over a set (unbiased).    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; CovarianceN(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; CovarianceN(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Crossjoin</code></td>
+  <td>Returns the cross product of two sets.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Crossjoin(&lt;Set&gt;, &lt;Set&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Crossjoin</td>
-  <td>Returns the cross product of two sets.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Crossjoin(&lt;Set&gt;, &lt;Set&gt;)</code><br/>
+  <td valign=top><code>CurrentDateMember</code></td>
+  <td>Returns the member within the specified dimension corresponding to the current date, in the format specified by the format parameter.
+    <h1>Syntax</h1>
+    &lt;Member&gt; CurrentDateMember(&lt;Hierarchy&gt;, &lt;String&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>CurrentDateMember</td>
-  <td>Returns the member within the specified dimension corresponding to the current date, in the format specified by the format parameter.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; CurrentDateMember(&lt;Hierarchy&gt;, &lt;String&gt;)</code><br/>
+  <td valign=top><code>CurrentDateMember</code></td>
+  <td>Returns the closest or exact member within the specified dimension corresponding to the current date, in the format specified by the format parameter.
+    <h1>Syntax</h1>
+    &lt;Member&gt; CurrentDateMember(&lt;Hierarchy&gt;, &lt;String&gt;, &lt;Symbol&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>CurrentDateMember</td>
-  <td>Returns the closest or exact member within the specified dimension corresponding to the current date, in the format specified by the format parameter.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; CurrentDateMember(&lt;Hierarchy&gt;, &lt;String&gt;, &lt;Symbol&gt;)</code><br/>
+  <td valign=top><code>CurrentDateString</code></td>
+  <td>Returns the current date formatted as specified by the format parameter.
+    <h1>Syntax</h1>
+    &lt;String&gt; CurrentDateString(&lt;String&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>CurrentDateString</td>
-  <td>Returns the current date formatted as specified by the format parameter.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; CurrentDateString(&lt;String&gt;)</code><br/>
+  <td valign=top><code>CurrentMember</code></td>
+  <td>Returns the current member along a dimension during an iteration.
+    <h1>Syntax</h1>
+    &lt;Dimension&gt;.CurrentMember
   </td>
 </tr>
 <tr>
-  <td valign=top>CurrentMember</td>
-  <td>Returns the current member along a dimension during an iteration.    <p><b>Syntax</b></p>
-    <code>&lt;Dimension&gt;.CurrentMember</code><br/>
+  <td valign=top><code>CurrentMember</code></td>
+  <td>Returns the current member along a hierarchy during an iteration.
+    <h1>Syntax</h1>
+    &lt;Hierarchy&gt;.CurrentMember
   </td>
 </tr>
 <tr>
-  <td valign=top>CurrentMember</td>
-  <td>Returns the current member along a hierarchy during an iteration.    <p><b>Syntax</b></p>
-    <code>&lt;Hierarchy&gt;.CurrentMember</code><br/>
+  <td valign=top><code>DataMember</code></td>
+  <td>Returns the system-generated data member that is associated with a nonleaf member of a dimension.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.DataMember
   </td>
 </tr>
 <tr>
-  <td valign=top>DataMember</td>
-  <td>Returns the system-generated data member that is associated with a nonleaf member of a dimension.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.DataMember</code><br/>
+  <td valign=top><code>DefaultMember</code></td>
+  <td>Returns the default member of a dimension.
+    <h1>Syntax</h1>
+    &lt;Dimension&gt;.DefaultMember
   </td>
 </tr>
 <tr>
-  <td valign=top>DefaultMember</td>
-  <td>Returns the default member of a dimension.    <p><b>Syntax</b></p>
-    <code>&lt;Dimension&gt;.DefaultMember</code><br/>
+  <td valign=top><code>DefaultMember</code></td>
+  <td>Returns the default member of a hierarchy.
+    <h1>Syntax</h1>
+    &lt;Hierarchy&gt;.DefaultMember
   </td>
 </tr>
 <tr>
-  <td valign=top>DefaultMember</td>
-  <td>Returns the default member of a hierarchy.    <p><b>Syntax</b></p>
-    <code>&lt;Hierarchy&gt;.DefaultMember</code><br/>
+  <td valign=top><code>Descendants</code></td>
+  <td>Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Descendants(&lt;Member&gt;)<br/>
+    &lt;Set&gt; Descendants(&lt;Member&gt;, &lt;Level&gt;)<br/>
+    &lt;Set&gt; Descendants(&lt;Member&gt;, &lt;Level&gt;, &lt;Symbol&gt;)<br/>
+    &lt;Set&gt; Descendants(&lt;Member&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Set&gt; Descendants(&lt;Member&gt;, &lt;Numeric Expression&gt;, &lt;Symbol&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Descendants</td>
-  <td>Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Descendants(&lt;Member&gt;)</code><br/>
-    <code>&lt;Set&gt; Descendants(&lt;Member&gt;, &lt;Level&gt;)</code><br/>
-    <code>&lt;Set&gt; Descendants(&lt;Member&gt;, &lt;Level&gt;, &lt;Symbol&gt;)</code><br/>
-    <code>&lt;Set&gt; Descendants(&lt;Member&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Set&gt; Descendants(&lt;Member&gt;, &lt;Numeric Expression&gt;, &lt;Symbol&gt;)</code><br/>
+  <td valign=top><code>Dimension</code></td>
+  <td>Returns the dimension that contains a specified hierarchy.
+    <h1>Syntax</h1>
+    &lt;Dimension&gt;.Dimension
   </td>
 </tr>
 <tr>
-  <td valign=top>Dimension</td>
-  <td>Returns the dimension that contains a specified hierarchy.    <p><b>Syntax</b></p>
-    <code>&lt;Dimension&gt;.Dimension</code><br/>
+  <td valign=top><code>Dimension</code></td>
+  <td>Returns the dimension that contains a specified hierarchy.
+    <h1>Syntax</h1>
+    &lt;Hierarchy&gt;.Dimension
   </td>
 </tr>
 <tr>
-  <td valign=top>Dimension</td>
-  <td>Returns the dimension that contains a specified hierarchy.    <p><b>Syntax</b></p>
-    <code>&lt;Hierarchy&gt;.Dimension</code><br/>
+  <td valign=top><code>Dimension</code></td>
+  <td>Returns the dimension that contains a specified level.
+    <h1>Syntax</h1>
+    &lt;Level&gt;.Dimension
   </td>
 </tr>
 <tr>
-  <td valign=top>Dimension</td>
-  <td>Returns the dimension that contains a specified level.    <p><b>Syntax</b></p>
-    <code>&lt;Level&gt;.Dimension</code><br/>
+  <td valign=top><code>Dimension</code></td>
+  <td>Returns the dimension that contains a specified member.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.Dimension
   </td>
 </tr>
 <tr>
-  <td valign=top>Dimension</td>
-  <td>Returns the dimension that contains a specified member.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.Dimension</code><br/>
+  <td valign=top><code>Dimensions</code></td>
+  <td>Returns the dimension whose zero-based position within the cube is specified by a numeric expression.
+    <h1>Syntax</h1>
+    &lt;Dimension&gt; Dimensions(&lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Dimensions</td>
-  <td>Returns the dimension whose zero-based position within the cube is specified by a numeric expression.    <p><b>Syntax</b></p>
-    <code>&lt;Dimension&gt; Dimensions(&lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Dimensions</code></td>
+  <td>Returns the dimension whose name is specified by a string.
+    <h1>Syntax</h1>
+    &lt;Dimension&gt; Dimensions(&lt;String&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Dimensions</td>
-  <td>Returns the dimension whose name is specified by a string.    <p><b>Syntax</b></p>
-    <code>&lt;Dimension&gt; Dimensions(&lt;String&gt;)</code><br/>
+  <td valign=top><code>Distinct</code></td>
+  <td>Eliminates duplicate tuples from a set.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Distinct(&lt;Set&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Distinct</td>
-  <td>Eliminates duplicate tuples from a set.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Distinct(&lt;Set&gt;)</code><br/>
+  <td valign=top><code>DrilldownLevel</code></td>
+  <td>Drills down the members of a set, at a specified level, to one level below. Alternatively, drills down on a specified dimension in the set.
+    <h1>Syntax</h1>
+    &lt;Set&gt; DrilldownLevel(&lt;Set&gt;)<br/>
+    &lt;Set&gt; DrilldownLevel(&lt;Set&gt;, &lt;Level&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>DrilldownLevel</td>
-  <td>Drills down the members of a set, at a specified level, to one level below. Alternatively, drills down on a specified dimension in the set.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; DrilldownLevel(&lt;Set&gt;)</code><br/>
-    <code>&lt;Set&gt; DrilldownLevel(&lt;Set&gt;, &lt;Level&gt;)</code><br/>
+  <td valign=top><code>DrilldownMember</code></td>
+  <td>Drills down the members in a set that are present in a second specified set.
+    <h1>Syntax</h1>
+    &lt;Set&gt; DrilldownMember(&lt;Set&gt;, &lt;Set&gt;)<br/>
+    &lt;Set&gt; DrilldownMember(&lt;Set&gt;, &lt;Set&gt;, &lt;Symbol&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>DrilldownMember</td>
-  <td>Drills down the members in a set that are present in a second specified set.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; DrilldownMember(&lt;Set&gt;, &lt;Set&gt;)</code><br/>
-    <code>&lt;Set&gt; DrilldownMember(&lt;Set&gt;, &lt;Set&gt;, &lt;Symbol&gt;)</code><br/>
+  <td valign=top><code>Except</code></td>
+  <td>Finds the difference between two sets, optionally retaining duplicates.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Except(&lt;Set&gt;, &lt;Set&gt;)<br/>
+    &lt;Set&gt; Except(&lt;Set&gt;, &lt;Set&gt;, &lt;Symbol&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Except</td>
-  <td>Finds the difference between two sets, optionally retaining duplicates.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Except(&lt;Set&gt;, &lt;Set&gt;)</code><br/>
-    <code>&lt;Set&gt; Except(&lt;Set&gt;, &lt;Set&gt;, &lt;Symbol&gt;)</code><br/>
+  <td valign=top><code>Filter</code></td>
+  <td>Returns the set resulting from filtering a set based on a search condition.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Filter(&lt;Set&gt;, &lt;Logical Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Filter</td>
-  <td>Returns the set resulting from filtering a set based on a search condition.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Filter(&lt;Set&gt;, &lt;Logical Expression&gt;)</code><br/>
+  <td valign=top><code>FirstChild</code></td>
+  <td>Returns the first child of a member.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.FirstChild
   </td>
 </tr>
 <tr>
-  <td valign=top>FirstChild</td>
-  <td>Returns the first child of a member.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.FirstChild</code><br/>
+  <td valign=top><code>FirstQ</code></td>
+  <td>Returns the 1st quartile value of a numeric expression evaluated over a set.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; FirstQ(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; FirstQ(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>FirstQ</td>
-  <td>Returns the 1st quartile value of a numeric expression evaluated over a set.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; FirstQ(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; FirstQ(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>FirstSibling</code></td>
+  <td>Returns the first child of the parent of a member.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.FirstSibling
   </td>
 </tr>
 <tr>
-  <td valign=top>FirstSibling</td>
-  <td>Returns the first child of the parent of a member.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.FirstSibling</code><br/>
+  <td valign=top><code>Format</code></td>
+  <td>Formats a number to string.
+    <h1>Syntax</h1>
+    &lt;String&gt; Format(&lt;Member&gt;, &lt;String&gt;)<br/>
+    &lt;String&gt; Format(&lt;Numeric Expression&gt;, &lt;String&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Format</td>
-  <td>Formats a number to string.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; Format(&lt;Member&gt;, &lt;String&gt;)</code><br/>
-    <code>&lt;String&gt; Format(&lt;Numeric Expression&gt;, &lt;String&gt;)</code><br/>
+  <td valign=top><code>Generate</code></td>
+  <td>Applies a set to each member of another set and joins the resulting sets by union.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Generate(&lt;Set&gt;, &lt;Set&gt;)<br/>
+    &lt;Set&gt; Generate(&lt;Set&gt;, &lt;Set&gt;, &lt;Symbol&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Generate</td>
-  <td>Applies a set to each member of another set and joins the resulting sets by union.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Generate(&lt;Set&gt;, &lt;Set&gt;)</code><br/>
-    <code>&lt;Set&gt; Generate(&lt;Set&gt;, &lt;Set&gt;, &lt;Symbol&gt;)</code><br/>
+  <td valign=top><code>Head</code></td>
+  <td>Returns the first specified number of elements in a set.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Head(&lt;Set&gt;)<br/>
+    &lt;Set&gt; Head(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Head</td>
-  <td>Returns the first specified number of elements in a set.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Head(&lt;Set&gt;)</code><br/>
-    <code>&lt;Set&gt; Head(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Hierarchize</code></td>
+  <td>Orders the members of a set in a hierarchy.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Hierarchize(&lt;Set&gt;)<br/>
+    &lt;Set&gt; Hierarchize(&lt;Set&gt;, &lt;Symbol&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Hierarchize</td>
-  <td>Orders the members of a set in a hierarchy.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Hierarchize(&lt;Set&gt;)</code><br/>
-    <code>&lt;Set&gt; Hierarchize(&lt;Set&gt;, &lt;Symbol&gt;)</code><br/>
+  <td valign=top><code>Hierarchy</code></td>
+  <td>Returns a level&#39;s hierarchy.
+    <h1>Syntax</h1>
+    &lt;Level&gt;.Hierarchy
   </td>
 </tr>
 <tr>
-  <td valign=top>Hierarchy</td>
-  <td>Returns a level&#39;s hierarchy.    <p><b>Syntax</b></p>
-    <code>&lt;Level&gt;.Hierarchy</code><br/>
+  <td valign=top><code>Hierarchy</code></td>
+  <td>Returns a member&#39;s hierarchy.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.Hierarchy
   </td>
 </tr>
 <tr>
-  <td valign=top>Hierarchy</td>
-  <td>Returns a member&#39;s hierarchy.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.Hierarchy</code><br/>
+  <td valign=top><code>IIf</code></td>
+  <td>Returns one of two numeric values determined by a logical test.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; IIf(&lt;Logical Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>IIf</td>
-  <td>Returns one of two numeric values determined by a logical test.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; IIf(&lt;Logical Expression&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>IIf</code></td>
+  <td>Returns one of two string values determined by a logical test.
+    <h1>Syntax</h1>
+    &lt;String&gt; IIf(&lt;Logical Expression&gt;, &lt;String&gt;, &lt;String&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>IIf</td>
-  <td>Returns one of two string values determined by a logical test.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; IIf(&lt;Logical Expression&gt;, &lt;String&gt;, &lt;String&gt;)</code><br/>
+  <td valign=top><code>IS</code></td>
+  <td>Returns whether an object is null
+    <h1>Syntax</h1>
+    &lt;Member&gt; IS &lt;Null&gt;<br/>
+    &lt;Level&gt; IS &lt;Null&gt;<br/>
+    &lt;Hierarchy&gt; IS &lt;Null&gt;<br/>
+    &lt;Dimension&gt; IS &lt;Null&gt;
   </td>
 </tr>
 <tr>
@@ -749,134 +790,156 @@ FROM [Sales]</code></blockquote>
   </td>
 </tr>
 <tr>
-  <td valign=top>IS</td>
-  <td>Returns whether two objects are the same (idempotent)    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; IS &lt;Member&gt;</code><br/>
-    <code>&lt;Level&gt; IS &lt;Level&gt;</code><br/>
-    <code>&lt;Hierarchy&gt; IS &lt;Hierarchy&gt;</code><br/>
-    <code>&lt;Dimension&gt; IS &lt;Dimension&gt;</code><br/>
+  <td valign=top><code>IS</code></td>
+  <td>Returns whether two objects are the same
+    <h1>Syntax</h1>
+    &lt;Member&gt; IS &lt;Member&gt;<br/>
+    &lt;Level&gt; IS &lt;Level&gt;<br/>
+    &lt;Hierarchy&gt; IS &lt;Hierarchy&gt;<br/>
+    &lt;Dimension&gt; IS &lt;Dimension&gt;<br/>
+    &lt;Tuple&gt; IS &lt;Tuple&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>IS NULL</td>
-  <td>Returns whether a member is null.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.IS NULL</code><br/>
+  <td valign=top><code>Intersect</code></td>
+  <td>Returns the intersection of two input sets, optionally retaining duplicates.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Intersect(&lt;Set&gt;, &lt;Set&gt;, &lt;Symbol&gt;)<br/>
+    &lt;Set&gt; Intersect(&lt;Set&gt;, &lt;Set&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Intersect</td>
-  <td>Returns the intersection of two input sets, optionally retaining duplicates.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Intersect(&lt;Set&gt;, &lt;Set&gt;, &lt;Symbol&gt;)</code><br/>
-    <code>&lt;Set&gt; Intersect(&lt;Set&gt;, &lt;Set&gt;)</code><br/>
+  <td valign=top><code>IsEmpty</code></td>
+  <td>Determines if an expression evaluates to the empty cell value.
+    <h1>Syntax</h1>
+    &lt;Logical Expression&gt; IsEmpty(&lt;String&gt;)<br/>
+    &lt;Logical Expression&gt; IsEmpty(&lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>IsEmpty</td>
-  <td>Determines if an expression evaluates to the empty cell value.    <p><b>Syntax</b></p>
-    <code>&lt;Logical Expression&gt; IsEmpty(&lt;String&gt;)</code><br/>
-    <code>&lt;Logical Expression&gt; IsEmpty(&lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Item</code></td>
+  <td>Returns a member from the tuple specified in &lt;Tuple&gt;. The member to be returned is specified by the zero-based position of the member in the set in &lt;Index&gt;.
+    <h1>Syntax</h1>
+    &lt;Member&gt; &lt;Tuple&gt;.Item(&lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Item</td>
-  <td>Returns a member from the tuple specified in &lt;Tuple&gt;. The member to be returned is specified by the zero-based position of the member in the set in &lt;Index&gt;.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; &lt;Tuple&gt;.Item(&lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Item</code></td>
+  <td>Returns a tuple from the set specified in &lt;Set&gt;. The tuple to be returned is specified by the zero-based position of the tuple in the set in &lt;Index&gt;.
+    <h1>Syntax</h1>
+    &lt;Member&gt; &lt;Set&gt;.Item(&lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Item</td>
-  <td>Returns a tuple from the set specified in &lt;Set&gt;. The tuple to be returned is specified by the zero-based position of the tuple in the set in &lt;Index&gt;.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; &lt;Set&gt;.Item(&lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Item</code></td>
+  <td>Returns a tuple from the set specified in &lt;Set&gt;. The tuple to be returned is specified by the member name (or names) in &lt;String&gt;.
+    <h1>Syntax</h1>
+    &lt;Set&gt;.Item(&lt;String&gt; [, ...])
   </td>
 </tr>
 <tr>
-  <td valign=top>Item</td>
-  <td>Returns a tuple from the set specified in &lt;Set&gt;. The tuple to be returned is specified by the member name (or names) in &lt;String&gt;.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt;.Item(&lt;String&gt; [, ...])</code><br/>
+  <td valign=top><code>Lag</code></td>
+  <td>Returns a member further along the specified member&#39;s dimension.
+    <h1>Syntax</h1>
+    &lt;Member&gt; &lt;Member&gt;.Lag(&lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Lag</td>
-  <td>Returns a member further along the specified member&#39;s dimension.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; &lt;Member&gt;.Lag(&lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>LastChild</code></td>
+  <td>Returns the last child of a member.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.LastChild
   </td>
 </tr>
 <tr>
-  <td valign=top>LastChild</td>
-  <td>Returns the last child of a member.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.LastChild</code><br/>
+  <td valign=top><code>LastPeriods</code></td>
+  <td>Returns a set of members prior to and including a specified member.
+    <h1>Syntax</h1>
+    &lt;Set&gt; LastPeriods(&lt;Numeric Expression&gt;)<br/>
+    &lt;Set&gt; LastPeriods(&lt;Numeric Expression&gt;, &lt;Member&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>LastPeriods</td>
-  <td>Returns a set of members prior to and including a specified member.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; LastPeriods(&lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Set&gt; LastPeriods(&lt;Numeric Expression&gt;, &lt;Member&gt;)</code><br/>
+  <td valign=top><code>LastSibling</code></td>
+  <td>Returns the last child of the parent of a member.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.LastSibling
   </td>
 </tr>
 <tr>
-  <td valign=top>LastSibling</td>
-  <td>Returns the last child of the parent of a member.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.LastSibling</code><br/>
+  <td valign=top><code>Lead</code></td>
+  <td>Returns a member further along the specified member&#39;s dimension.
+    <h1>Syntax</h1>
+    &lt;Member&gt; &lt;Member&gt;.Lead(&lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Lead</td>
-  <td>Returns a member further along the specified member&#39;s dimension.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; &lt;Member&gt;.Lead(&lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Level</code></td>
+  <td>Returns a member&#39;s level.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.Level
   </td>
 </tr>
 <tr>
-  <td valign=top>Level</td>
-  <td>Returns a member&#39;s level.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.Level</code><br/>
+  <td valign=top><code>Levels</code></td>
+  <td>Returns the level whose position in a hierarchy is specified by a numeric expression.
+    <h1>Syntax</h1>
+    &lt;Level&gt; &lt;Hierarchy&gt;.Levels(&lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Levels</td>
-  <td>Returns the level whose position in a hierarchy is specified by a numeric expression.    <p><b>Syntax</b></p>
-    <code>&lt;Level&gt; &lt;Hierarchy&gt;.Levels(&lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Levels</code></td>
+  <td>Returns the level whose name is specified by a string expression.
+    <h1>Syntax</h1>
+    &lt;Level&gt; Levels(&lt;String&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Levels</td>
-  <td>Returns the level whose name is specified by a string expression.    <p><b>Syntax</b></p>
-    <code>&lt;Level&gt; Levels(&lt;String&gt;)</code><br/>
+  <td valign=top><code>LinRegIntercept</code></td>
+  <td>Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; LinRegIntercept(&lt;Set&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Numeric Expression&gt; LinRegIntercept(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>LinRegIntercept</td>
-  <td>Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; LinRegIntercept(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; LinRegIntercept(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>LinRegPoint</code></td>
+  <td>Calculates the linear regression of a set and returns the value of y in the regression line y = ax + b.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; LinRegPoint(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Numeric Expression&gt; LinRegPoint(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>LinRegPoint</td>
-  <td>Calculates the linear regression of a set and returns the value of y in the regression line y = ax + b.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; LinRegPoint(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; LinRegPoint(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>LinRegR2</code></td>
+  <td>Calculates the linear regression of a set and returns R2 (the coefficient of determination).
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; LinRegR2(&lt;Set&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Numeric Expression&gt; LinRegR2(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>LinRegR2</td>
-  <td>Calculates the linear regression of a set and returns R2 (the coefficient of determination).    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; LinRegR2(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; LinRegR2(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>LinRegSlope</code></td>
+  <td>Calculates the linear regression of a set and returns the value of a in the regression line y = ax + b.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; LinRegSlope(&lt;Set&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Numeric Expression&gt; LinRegSlope(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>LinRegSlope</td>
-  <td>Calculates the linear regression of a set and returns the value of a in the regression line y = ax + b.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; LinRegSlope(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; LinRegSlope(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>LinRegVariance</code></td>
+  <td>Calculates the linear regression of a set and returns the variance associated with the regression line y = ax + b.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; LinRegVariance(&lt;Set&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Numeric Expression&gt; LinRegVariance(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>LinRegVariance</td>
-  <td>Calculates the linear regression of a set and returns the variance associated with the regression line y = ax + b.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; LinRegVariance(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; LinRegVariance(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Max</code></td>
+  <td>Returns the maximum value of a numeric expression evaluated over a set.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Max(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; Max(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
@@ -886,61 +949,69 @@ FROM [Sales]</code></blockquote>
   </td>
 </tr>
 <tr>
-  <td valign=top>Max</td>
-  <td>Returns the maximum value of a numeric expression evaluated over a set.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; Max(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Max(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Median</code></td>
+  <td>Returns the median value of a numeric expression evaluated over a set.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Median(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; Median(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Median</td>
-  <td>Returns the median value of a numeric expression evaluated over a set.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; Median(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Median(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Members</code></td>
+  <td>Returns the set of members in a dimension.
+    <h1>Syntax</h1>
+    &lt;Dimension&gt;.Members
   </td>
 </tr>
 <tr>
-  <td valign=top>Members</td>
-  <td>Returns the set of members in a dimension.    <p><b>Syntax</b></p>
-    <code>&lt;Dimension&gt;.Members</code><br/>
+  <td valign=top><code>Members</code></td>
+  <td>Returns the set of members in a hierarchy.
+    <h1>Syntax</h1>
+    &lt;Hierarchy&gt;.Members
   </td>
 </tr>
 <tr>
-  <td valign=top>Members</td>
-  <td>Returns the set of members in a hierarchy.    <p><b>Syntax</b></p>
-    <code>&lt;Hierarchy&gt;.Members</code><br/>
+  <td valign=top><code>Members</code></td>
+  <td>Returns the set of members in a level.
+    <h1>Syntax</h1>
+    &lt;Level&gt;.Members
   </td>
 </tr>
 <tr>
-  <td valign=top>Members</td>
-  <td>Returns the set of members in a level.    <p><b>Syntax</b></p>
-    <code>&lt;Level&gt;.Members</code><br/>
+  <td valign=top><code>Members</code></td>
+  <td>Returns the member whose name is specified by a string expression.
+    <h1>Syntax</h1>
+    &lt;Member&gt; Members(&lt;String&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Members</td>
-  <td>Returns the member whose name is specified by a string expression.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; Members(&lt;String&gt;)</code><br/>
+  <td valign=top><code>Min</code></td>
+  <td>Returns the minimum value of a numeric expression evaluated over a set.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Min(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; Min(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Min</td>
-  <td>Returns the minimum value of a numeric expression evaluated over a set.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; Min(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Min(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Mtd</code></td>
+  <td>A shortcut function for the PeriodsToDate function that specifies the level to be Month.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Mtd()<br/>
+    &lt;Set&gt; Mtd(&lt;Member&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Mtd</td>
-  <td>A shortcut function for the PeriodsToDate function that specifies the level to be Month.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Mtd()</code><br/>
-    <code>&lt;Set&gt; Mtd(&lt;Member&gt;)</code><br/>
+  <td valign=top><code>NOT</code></td>
+  <td>Returns the negation of a condition.
+    <h1>Syntax</h1>
+    NOT &lt;Logical Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>NOT</td>
-  <td>Returns the negation of a condition.    <p><b>Syntax</b></p>
-    <code>NOT &lt;Logical Expression&gt;</code><br/>
+  <td valign=top><code>Name</code></td>
+  <td>Returns the name of a dimension.
+    <h1>Syntax</h1>
+    &lt;Dimension&gt;.Name
   </td>
 </tr>
 <tr>
@@ -956,395 +1027,443 @@ FROM [Sales]</code></blockquote>
   </td>
 </tr>
 <tr>
-  <td valign=top>Name</td>
-  <td>Returns the name of a dimension.    <p><b>Syntax</b></p>
-    <code>&lt;Dimension&gt;.Name</code><br/>
+  <td valign=top><code>Name</code></td>
+  <td>Returns the name of a hierarchy.
+    <h1>Syntax</h1>
+    &lt;Hierarchy&gt;.Name
   </td>
 </tr>
 <tr>
-  <td valign=top>Name</td>
-  <td>Returns the name of a hierarchy.    <p><b>Syntax</b></p>
-    <code>&lt;Hierarchy&gt;.Name</code><br/>
+  <td valign=top><code>Name</code></td>
+  <td>Returns the name of a level.
+    <h1>Syntax</h1>
+    &lt;Level&gt;.Name
   </td>
 </tr>
 <tr>
-  <td valign=top>Name</td>
-  <td>Returns the name of a level.    <p><b>Syntax</b></p>
-    <code>&lt;Level&gt;.Name</code><br/>
+  <td valign=top><code>Name</code></td>
+  <td>Returns the name of a member.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.Name
   </td>
 </tr>
 <tr>
-  <td valign=top>Name</td>
-  <td>Returns the name of a member.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.Name</code><br/>
+  <td valign=top><code>NextMember</code></td>
+  <td>Returns the next member in the level that contains a specified member.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.NextMember
   </td>
 </tr>
 <tr>
-  <td valign=top>NextMember</td>
-  <td>Returns the next member in the level that contains a specified member.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.NextMember</code><br/>
+  <td valign=top><code>NonEmptyCrossJoin</code></td>
+  <td>Returns the cross product of two sets, excluding empty tuples and tuples without associated fact table data.
+    <h1>Syntax</h1>
+    &lt;Set&gt; NonEmptyCrossJoin(&lt;Set&gt;, &lt;Set&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>NonEmptyCrossJoin</td>
-  <td>Returns the cross product of two sets, excluding empty tuples and tuples without associated fact table data.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; NonEmptyCrossJoin(&lt;Set&gt;, &lt;Set&gt;)</code><br/>
+  <td valign=top><code>OR</code></td>
+  <td>Returns the disjunction of two conditions.
+    <h1>Syntax</h1>
+    &lt;Logical Expression&gt; OR &lt;Logical Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>OR</td>
-  <td>Returns the disjunction of two conditions.    <p><b>Syntax</b></p>
-    <code>&lt;Logical Expression&gt; OR &lt;Logical Expression&gt;</code><br/>
+  <td valign=top><code>OpeningPeriod</code></td>
+  <td>Returns the first descendant of a member at a level.
+    <h1>Syntax</h1>
+    <p>&lt;Member&gt; OpeningPeriod()<br/>&lt;Member&gt; OpeningPeriod(&lt;Level&gt;)<br/>&lt;Member&gt; OpeningPeriod(&lt;Level&gt;, &lt;Member&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>OpeningPeriod</td>
-  <td>Returns the first descendant of a member at a level.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; OpeningPeriod()</code><br/>
-    <code>&lt;Member&gt; OpeningPeriod(&lt;Level&gt;)</code><br/>
-    <code>&lt;Member&gt; OpeningPeriod(&lt;Level&gt;, &lt;Member&gt;)</code><br/>
+  <td valign=top><code>Order</code></td>
+  <td>Arranges members of a set, optionally preserving or breaking the hierarchy.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Order(&lt;Set&gt;, &lt;Value&gt;, &lt;Symbol&gt;)<br/>
+    &lt;Set&gt; Order(&lt;Set&gt;, &lt;Value&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Order</td>
-  <td>Arranges members of a set, optionally preserving or breaking the hierarchy.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Order(&lt;Set&gt;, &lt;Value&gt;, &lt;Symbol&gt;)</code><br/>
-    <code>&lt;Set&gt; Order(&lt;Set&gt;, &lt;Value&gt;)</code><br/>
+  <td valign=top><code>Ordinal</code></td>
+  <td>Returns the zero-based ordinal value associated with a level.
+    <h1>Syntax</h1>
+    &lt;Level&gt;.Ordinal
   </td>
 </tr>
 <tr>
-  <td valign=top>Ordinal</td>
-  <td>Returns the zero-based ordinal value associated with a level.    <p><b>Syntax</b></p>
-    <code>&lt;Level&gt;.Ordinal</code><br/>
+  <td valign=top><code>ParallelPeriod</code></td>
+  <td>Returns a member from a prior period in the same relative position as a specified member.
+    <h1>Syntax</h1>
+    &lt;Member&gt; ParallelPeriod()<br/>
+    &lt;Member&gt; ParallelPeriod(&lt;Level&gt;)<br/>
+    &lt;Member&gt; ParallelPeriod(&lt;Level&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Member&gt; ParallelPeriod(&lt;Level&gt;, &lt;Numeric Expression&gt;, &lt;Member&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>ParallelPeriod</td>
-  <td>Returns a member from a prior period in the same relative position as a specified member.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; ParallelPeriod()</code><br/>
-    <code>&lt;Member&gt; ParallelPeriod(&lt;Level&gt;)</code><br/>
-    <code>&lt;Member&gt; ParallelPeriod(&lt;Level&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Member&gt; ParallelPeriod(&lt;Level&gt;, &lt;Numeric Expression&gt;, &lt;Member&gt;)</code><br/>
+  <td valign=top><code>ParamRef</code></td>
+  <td>Returns the current value of this parameter. If it is null, returns the default value.
+    <h1>Syntax</h1>
+    &lt;Value&gt; ParamRef(&lt;String&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>ParamRef</td>
-  <td>Returns the current value of this parameter. If it is null, returns the default value.    <p><b>Syntax</b></p>
-    <code>&lt;Value&gt; ParamRef(&lt;String&gt;)</code><br/>
+  <td valign=top><code>Parameter</code></td>
+  <td>Returns default value of parameter.
+    <h1>Syntax</h1>
+    &lt;String&gt; Parameter(&lt;String&gt;, &lt;Symbol&gt;, &lt;String&gt;, &lt;String&gt;)<br/>
+    &lt;String&gt; Parameter(&lt;String&gt;, &lt;Symbol&gt;, &lt;String&gt;)<br/>
+    &lt;Numeric Expression&gt; Parameter(&lt;String&gt;, &lt;Symbol&gt;, &lt;Numeric Expression&gt;, &lt;String&gt;)<br/>
+    &lt;Numeric Expression&gt; Parameter(&lt;String&gt;, &lt;Symbol&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Member&gt; Parameter(&lt;String&gt;, &lt;Hierarchy&gt;, &lt;Member&gt;, &lt;String&gt;)<br/>
+    &lt;Member&gt; Parameter(&lt;String&gt;, &lt;Hierarchy&gt;, &lt;Member&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Parameter</td>
-  <td>Returns default value of parameter.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; Parameter(&lt;String&gt;, &lt;Symbol&gt;, &lt;String&gt;, &lt;String&gt;)</code><br/>
-    <code>&lt;String&gt; Parameter(&lt;String&gt;, &lt;Symbol&gt;, &lt;String&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Parameter(&lt;String&gt;, &lt;Symbol&gt;, &lt;Numeric Expression&gt;, &lt;String&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Parameter(&lt;String&gt;, &lt;Symbol&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Member&gt; Parameter(&lt;String&gt;, &lt;Hierarchy&gt;, &lt;Member&gt;, &lt;String&gt;)</code><br/>
-    <code>&lt;Member&gt; Parameter(&lt;String&gt;, &lt;Hierarchy&gt;, &lt;Member&gt;)</code><br/>
+  <td valign=top><code>Parent</code></td>
+  <td>Returns the parent of a member.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.Parent
   </td>
 </tr>
 <tr>
-  <td valign=top>Parent</td>
-  <td>Returns the parent of a member.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.Parent</code><br/>
+  <td valign=top><code>PeriodsToDate</code></td>
+  <td>Returns a set of periods (members) from a specified level starting with the first period and ending with a specified member.
+    <h1>Syntax</h1>
+    &lt;Set&gt; PeriodsToDate()<br/>
+    &lt;Set&gt; PeriodsToDate(&lt;Level&gt;)<br/>
+    &lt;Set&gt; PeriodsToDate(&lt;Level&gt;, &lt;Member&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>PeriodsToDate</td>
-  <td>Returns a set of periods (members) from a specified level starting with the first period and ending with a specified member.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; PeriodsToDate()</code><br/>
-    <code>&lt;Set&gt; PeriodsToDate(&lt;Level&gt;)</code><br/>
-    <code>&lt;Set&gt; PeriodsToDate(&lt;Level&gt;, &lt;Member&gt;)</code><br/>
+  <td valign=top><code>PrevMember</code></td>
+  <td>Returns the previous member in the level that contains a specified member.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.PrevMember
   </td>
 </tr>
 <tr>
-  <td valign=top>PrevMember</td>
-  <td>Returns the previous member in the level that contains a specified member.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.PrevMember</code><br/>
+  <td valign=top><code>Properties</code></td>
+  <td>Returns the value of a member property.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.Properties(&lt;String Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Properties</td>
-  <td>Returns the value of a member property.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.Properties(&lt;String Expression&gt;)</code><br/>
+  <td valign=top><code>Qtd</code></td>
+  <td>A shortcut function for the PeriodsToDate function that specifies the level to be Quarter.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Qtd()<br/>
+    &lt;Set&gt; Qtd(&lt;Member&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Qtd</td>
-  <td>A shortcut function for the PeriodsToDate function that specifies the level to be Quarter.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Qtd()</code><br/>
-    <code>&lt;Set&gt; Qtd(&lt;Member&gt;)</code><br/>
+  <td valign=top><code>Rank</code></td>
+  <td>Returns the one-based rank of a tuple in a set.
+    <h1>Syntax</h1>
+    &lt;Integer&gt; Rank(&lt;Tuple&gt;, &lt;Set&gt;)<br/>
+    &lt;Integer&gt; Rank(&lt;Tuple&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Integer&gt; Rank(&lt;Member&gt;, &lt;Set&gt;)<br/>
+    &lt;Integer&gt; Rank(&lt;Member&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Rank</td>
-  <td>Returns the one-based rank of a tuple in a set.    <p><b>Syntax</b></p>
-    <code>&lt;Integer&gt; Rank(&lt;Tuple&gt;, &lt;Set&gt;)</code><br/>
-    <code>&lt;Integer&gt; Rank(&lt;Tuple&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Integer&gt; Rank(&lt;Member&gt;, &lt;Set&gt;)</code><br/>
-    <code>&lt;Integer&gt; Rank(&lt;Member&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>SetToStr</code></td>
+  <td>Constructs a string from a set.
+    <h1>Syntax</h1>
+    &lt;String&gt; SetToStr(&lt;Set&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>SetToStr</td>
-  <td>Constructs a string from a set.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; SetToStr(&lt;Set&gt;)</code><br/>
+  <td valign=top><code>Siblings</code></td>
+  <td>Returns the siblings of a specified member, including the member itself.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.Siblings
   </td>
 </tr>
 <tr>
-  <td valign=top>Siblings</td>
-  <td>Returns the siblings of a specified member, including the member itself.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.Siblings</code><br/>
+  <td valign=top><code>Stddev</code></td>
+  <td>Alias for Stdev.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Stddev(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; Stddev(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Stddev</td>
-  <td>Alias for Stdev.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; Stddev(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Stddev(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>StddevP</code></td>
+  <td>Alias for StdevP.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; StddevP(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; StddevP(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>StddevP</td>
-  <td>Alias for StdevP.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; StddevP(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; StddevP(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Stdev</code></td>
+  <td>Returns the standard deviation of a numeric expression evaluated over a set (unbiased).
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Stdev(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; Stdev(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Stdev</td>
-  <td>Returns the standard deviation of a numeric expression evaluated over a set (unbiased).    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; Stdev(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Stdev(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>StdevP</code></td>
+  <td>Returns the standard deviation of a numeric expression evaluated over a set (biased).
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; StdevP(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; StdevP(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>StdevP</td>
-  <td>Returns the standard deviation of a numeric expression evaluated over a set (biased).    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; StdevP(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; StdevP(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>StrToMember</code></td>
+  <td>Returns a member from a unique name String in MDX format.
+    <h1>Syntax</h1>
+    &lt;Member&gt; StrToMember(&lt;String&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>StrToMember</td>
-  <td>Returns a member from a unique name String in MDX format.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt; StrToMember(&lt;String&gt;)</code><br/>
+  <td valign=top><code>StrToSet</code></td>
+  <td>Constructs a set from a string expression.
+    <h1>Syntax</h1>
+    StrToSet(&lt;String Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>StrToSet</td>
-  <td>Constructs a set from a string expression.    <p><b>Syntax</b></p>
-    <code>StrToSet(&lt;String Expression&gt;)</code><br/>
+  <td valign=top><code>StrToTuple</code></td>
+  <td>Constructs a tuple from a string.
+    <h1>Syntax</h1>
+    &lt;Tuple&gt; StrToTuple(&lt;String&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>StrToTuple</td>
-  <td>Constructs a tuple from a string.    <p><b>Syntax</b></p>
-    <code>&lt;Tuple&gt; StrToTuple(&lt;String&gt;)</code><br/>
+  <td valign=top><code>StripCalculatedMembers</code></td>
+  <td>Removes calculated members from a set.
+    <h1>Syntax</h1>
+    &lt;Set&gt; StripCalculatedMembers(&lt;Set&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>StripCalculatedMembers</td>
-  <td>Removes calculated members from a set.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; StripCalculatedMembers(&lt;Set&gt;)</code><br/>
+  <td valign=top><code>Subset</code></td>
+  <td>Returns a subset of elements from a set.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Subset(&lt;Set&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Set&gt; Subset(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Subset</td>
-  <td>Returns a subset of elements from a set.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Subset(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Set&gt; Subset(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Sum</code></td>
+  <td>Returns the sum of a numeric expression evaluated over a set.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Sum(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; Sum(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Sum</td>
-  <td>Returns the sum of a numeric expression evaluated over a set.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; Sum(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Sum(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Tail</code></td>
+  <td>Returns a subset from the end of a set.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Tail(&lt;Set&gt;)<br/>
+    &lt;Set&gt; Tail(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Tail</td>
-  <td>Returns a subset from the end of a set.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Tail(&lt;Set&gt;)</code><br/>
-    <code>&lt;Set&gt; Tail(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>ThirdQ</code></td>
+  <td>Returns the 3rd quartile value of a numeric expression evaluated over a set.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; ThirdQ(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; ThirdQ(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>ThirdQ</td>
-  <td>Returns the 3rd quartile value of a numeric expression evaluated over a set.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; ThirdQ(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; ThirdQ(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>ToggleDrillState</code></td>
+  <td>Toggles the drill state of members. This function is a combination of DrillupMember and DrilldownMember.
+    <h1>Syntax</h1>
+    &lt;Set&gt; ToggleDrillState(&lt;Set&gt;, &lt;Set&gt;)<br/>
+    &lt;Set&gt; ToggleDrillState(&lt;Set&gt;, &lt;Set&gt;, &lt;Symbol&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>ToggleDrillState</td>
-  <td>Toggles the drill state of members. This function is a combination of DrillupMember and DrilldownMember.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; ToggleDrillState(&lt;Set&gt;, &lt;Set&gt;)</code><br/>
-    <code>&lt;Set&gt; ToggleDrillState(&lt;Set&gt;, &lt;Set&gt;, &lt;Symbol&gt;)</code><br/>
+  <td valign=top><code>TopCount</code></td>
+  <td>Returns a specified number of items from the top of a set, optionally ordering the set first.
+    <h1>Syntax</h1>
+    &lt;Set&gt; TopCount(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)<br/>
+    &lt;Set&gt; TopCount(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>TopCount</td>
-  <td>Returns a specified number of items from the top of a set, optionally ordering the set first.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; TopCount(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Set&gt; TopCount(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>TopPercent</code></td>
+  <td>Sorts a set and returns the top N elements whose cumulative total is at least a specified percentage.
+    <h1>Syntax</h1>
+    &lt;Set&gt; TopPercent(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>TopPercent</td>
-  <td>Sorts a set and returns the top N elements whose cumulative total is at least a specified percentage.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; TopPercent(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>TopSum</code></td>
+  <td>Sorts a set and returns the top N elements whose cumulative total is at least a specified value.
+    <h1>Syntax</h1>
+    &lt;Set&gt; TopSum(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>TopSum</td>
-  <td>Sorts a set and returns the top N elements whose cumulative total is at least a specified value.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; TopSum(&lt;Set&gt;, &lt;Numeric Expression&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>TupleToStr</code></td>
+  <td>Constructs a string from a tuple.
+    <h1>Syntax</h1>
+    &lt;String&gt; TupleToStr(&lt;Tuple&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>TupleToStr</td>
-  <td>Constructs a string from a tuple.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; TupleToStr(&lt;Tuple&gt;)</code><br/>
+  <td valign=top><code>Union</code></td>
+  <td>Returns the union of two sets, optionally retaining duplicates.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Union(&lt;Set&gt;, &lt;Set&gt;)<br/>
+    &lt;Set&gt; Union(&lt;Set&gt;, &lt;Set&gt;, &lt;Symbol&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Union</td>
-  <td>Returns the union of two sets, optionally retaining duplicates.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Union(&lt;Set&gt;, &lt;Set&gt;)</code><br/>
-    <code>&lt;Set&gt; Union(&lt;Set&gt;, &lt;Set&gt;, &lt;Symbol&gt;)</code><br/>
+  <td valign=top><code>UniqueName</code></td>
+  <td>Returns the unique name of a dimension.
+    <h1>Syntax</h1>
+    &lt;Dimension&gt;.UniqueName
   </td>
 </tr>
 <tr>
-  <td valign=top>UniqueName</td>
-  <td>Returns the unique name of a dimension.    <p><b>Syntax</b></p>
-    <code>&lt;Dimension&gt;.UniqueName</code><br/>
+  <td valign=top><code>UniqueName</code></td>
+  <td>Returns the unique name of a hierarchy.
+    <h1>Syntax</h1>
+    &lt;Hierarchy&gt;.UniqueName
   </td>
 </tr>
 <tr>
-  <td valign=top>UniqueName</td>
-  <td>Returns the unique name of a hierarchy.    <p><b>Syntax</b></p>
-    <code>&lt;Hierarchy&gt;.UniqueName</code><br/>
+  <td valign=top><code>UniqueName</code></td>
+  <td>Returns the unique name of a level.
+    <h1>Syntax</h1>
+    &lt;Level&gt;.UniqueName
   </td>
 </tr>
 <tr>
-  <td valign=top>UniqueName</td>
-  <td>Returns the unique name of a level.    <p><b>Syntax</b></p>
-    <code>&lt;Level&gt;.UniqueName</code><br/>
+  <td valign=top><code>UniqueName</code></td>
+  <td>Returns the unique name of a member.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.UniqueName
   </td>
 </tr>
 <tr>
-  <td valign=top>UniqueName</td>
-  <td>Returns the unique name of a member.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.UniqueName</code><br/>
+  <td valign=top><code>ValidMeasure</code></td>
+  <td>Returns a valid measure in a virtual cube by forcing inapplicable dimensions to their top level.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; ValidMeasure(&lt;Tuple&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Value</td>
-  <td>Returns the value of a measure.    <p><b>Syntax</b></p>
-    <code>&lt;Member&gt;.Value</code><br/>
+  <td valign=top><code>Value</code></td>
+  <td>Returns the value of a measure.
+    <h1>Syntax</h1>
+    &lt;Member&gt;.Value
   </td>
 </tr>
 <tr>
-  <td valign=top>Var</td>
-  <td>Returns the variance of a numeric expression evaluated over a set (unbiased).    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; Var(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Var(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Var</code></td>
+  <td>Returns the variance of a numeric expression evaluated over a set (unbiased).
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Var(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; Var(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>VarP</td>
-  <td>Returns the variance of a numeric expression evaluated over a set (biased).    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; VarP(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; VarP(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>VarP</code></td>
+  <td>Returns the variance of a numeric expression evaluated over a set (biased).
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; VarP(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; VarP(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Variance</td>
-  <td>Alias for Var.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; Variance(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Variance(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>Variance</code></td>
+  <td>Alias for Var.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; Variance(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; Variance(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>VarianceP</td>
-  <td>Alias for VarP.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; VarianceP(&lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; VarianceP(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  <td valign=top><code>VarianceP</code></td>
+  <td>Alias for VarP.
+    <h1>Syntax</h1>
+    &lt;Numeric Expression&gt; VarianceP(&lt;Set&gt;)<br/>
+    &lt;Numeric Expression&gt; VarianceP(&lt;Set&gt;, &lt;Numeric Expression&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>VisualTotals</td>
-  <td>Dynamically totals child members specified in a set using a pattern for the total label in the result set.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; VisualTotals(&lt;Set&gt;)</code><br/>
-    <code>&lt;Set&gt; VisualTotals(&lt;Set&gt;, &lt;String&gt;)</code><br/>
+  <td valign=top><code>VisualTotals</code></td>
+  <td>Dynamically totals child members specified in a set using a pattern for the total label in the result set.
+    <h1>Syntax</h1>
+    &lt;Set&gt; VisualTotals(&lt;Set&gt;)<br/>
+    &lt;Set&gt; VisualTotals(&lt;Set&gt;, &lt;String&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>Wtd</td>
-  <td>A shortcut function for the PeriodsToDate function that specifies the level to be Week.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Wtd()</code><br/>
-    <code>&lt;Set&gt; Wtd(&lt;Member&gt;)</code><br/>
+  <td valign=top><code>Wtd</code></td>
+  <td>A shortcut function for the PeriodsToDate function that specifies the level to be Week.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Wtd()<br/>
+    &lt;Set&gt; Wtd(&lt;Member&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>XOR</td>
-  <td>Returns whether two conditions are mutually exclusive.    <p><b>Syntax</b></p>
-    <code>&lt;Logical Expression&gt; XOR &lt;Logical Expression&gt;</code><br/>
+  <td valign=top><code>XOR</code></td>
+  <td>Returns whether two conditions are mutually exclusive.
+    <h1>Syntax</h1>
+    &lt;Logical Expression&gt; XOR &lt;Logical Expression&gt;
   </td>
 </tr>
 <tr>
-  <td valign=top>Ytd</td>
-  <td>A shortcut function for the PeriodsToDate function that specifies the level to be Year.    <p><b>Syntax</b></p>
-    <code>&lt;Set&gt; Ytd()</code><br/>
-    <code>&lt;Set&gt; Ytd(&lt;Member&gt;)</code><br/>
+  <td valign=top><code>Ytd</code></td>
+  <td>A shortcut function for the PeriodsToDate function that specifies the level to be Year.
+    <h1>Syntax</h1>
+    &lt;Set&gt; Ytd()<br/>
+    &lt;Set&gt; Ytd(&lt;Member&gt;)
   </td>
 </tr>
 <tr>
-  <td valign=top>_CaseMatch</td>
-  <td>Evaluates various expressions, and returns the corresponding expression for the first which matches a particular value.    <p><b>Syntax</b></p>
-    <code>Case &lt;Expression&gt; When &lt;Expression&gt; Then &lt;Expression&gt; [...] [Else &lt;Expression&gt;] End</code><br/>
+  <td valign=top><code>_CaseMatch</code></td>
+  <td>Evaluates various expressions, and returns the corresponding expression for the first which matches a particular value.
+    <h1>Syntax</h1>
+    Case &lt;Expression&gt; When &lt;Expression&gt; Then &lt;Expression&gt; [...] [Else &lt;Expression&gt;] End
   </td>
 </tr>
 <tr>
-  <td valign=top>_CaseTest</td>
-  <td>Evaluates various conditions, and returns the corresponding expression for the first which evaluates to true.    <p><b>Syntax</b></p>
-    <code>Case When &lt;Logical Expression&gt; Then &lt;Expression&gt; [...] [Else &lt;Expression&gt;] End</code><br/>
+  <td valign=top><code>_CaseTest</code></td>
+  <td>Evaluates various conditions, and returns the corresponding expression for the first which evaluates to true.
+    <h1>Syntax</h1>
+    Case When &lt;Logical Expression&gt; Then &lt;Expression&gt; [...] [Else &lt;Expression&gt;] End
   </td>
 </tr>
 <tr>
-  <td valign=top>{}</td>
-  <td>Brace operator constructs a set.    <p><b>Syntax</b></p>
-    <code>{&lt;Member&gt; [, &lt;Member&gt;...]}</code><br/>
+  <td valign=top><code>{}</code></td>
+  <td>Brace operator constructs a set.
+    <h1>Syntax</h1>
+    {&lt;Member&gt; [, &lt;Member&gt;...]}
   </td>
 </tr>
 <tr>
-  <td valign=top>||</td>
-  <td>Concatenates two strings.    <p><b>Syntax</b></p>
-    <code>&lt;String&gt; || &lt;String&gt;</code><br/>
+  <td valign=top><code>||</code></td>
+  <td>Concatenates two strings.
+    <h1>Syntax</h1>
+    &lt;String&gt; || &lt;String&gt;
   </td>
 </tr>
 </table>
+<br />
+<br />
 
-<hr noshade color="#000000" size="1">
+<p>
+    Author: Julian Hyde; last modified August 2006.<br/>
+    Version: $Id$ (<a href="http://p4web.eigenbase.org/open/mondrian/doc/mdx.html?ac=22">log</a>)<br/>
+    Copyright (C) 2005-2006 Julian Hyde
+</p>
 
+<br />
 
-<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
-  <tr>
-    <td class="content">
-      <a target="_top" href="index.html">Home</a> |
-      <a target="_top" href="#">No frames</a> | This file is<i>
-      <a href="http://mondrian.sourceforge.net/mdx.html">$Id$</a></i>
-      (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/mdx.html?ac=22">log</a>)</td>
-    <td align="right">
-      <a href="http://sourceforge.net">
-        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
-      </a>
-    </td>
-  </tr>
-</table>
+<!-- doc2web end -->
 
 </body>
 </html>

@@ -10,21 +10,17 @@
   -->
 
 <head>
-<meta http-equiv="Content-Language" content="en-us">
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Developer Notes</title>
-<link rel="stylesheet" href="stylesheet.css" type="text/css" />
-<style>
-<!--
-.small { font-family: verdana,arial,helvetica,sans-serif; font-size: x-small; }
--->
-</style>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: Developer Notes</title>
 </head>
-
 <body>
-<h1>Developer Notes</h1>
+<!-- doc2web start -->
 
-<hr noshade color="#000000" size="1">
+<!-- page title -->
+<div class="contentheading">Mondrian Developer Notes</div>
+<!-- end page title -->
+
+<hr noshade size="1">
 
 <h2>Contents</h2>
 <ol>
@@ -33,7 +29,8 @@
   <li><a href="#Snowflakes">Snowflakes and the DimensionUsage level attribute</a></li>
 </ol>
 
-<h2><a name="Log_Levels">Logging Levels and Information</a></h2>
+<h2>Logging Levels and Information<a name="Log_Levels">&nbsp;</a></h2>
+
 <p>
 Some of the Mondrian classes are instrumented with Apache Log4J Loggers.
 For some of these classes there are certain logging setting that provide
@@ -165,7 +162,9 @@ while for the log4.xml:
    &nbsp;&nbsp; &lt;priority value="DEBUG"/&gt;<br>
    &lt;/category&gt;<br>
 </blockquote>
-<h2><a name="Agg_default_rules">Default aggregate table recognition rules</a></h2>
+
+<h2>Default aggregate table recognition rules<a name="Agg_default_rules">&nbsp;</a></h2>
+
 <p>
 The default Mondrian rules for recognizing aggregate tables
 are specified by creating an instance of the rule schema
@@ -406,7 +405,6 @@ then end with '_DO_NOT_USE' would be:
 <blockquote>
     .*_DO_NOT_USE<br>
 </blockquote>
-</p>
 <p>
 One might want to use an
 <code>
@@ -654,7 +652,6 @@ rules.
 </p>
 <blockquote>
 <pre>
-<?xml version="1.0"?>
 &lt;AggRules tag="your_mamas_dot_com"&gt;
   &lt;AggRule tag="default" &gt;
     &lt;FactCountMatch id="fca" factCountName="FACT_TABLE_COUNT"
@@ -784,7 +781,8 @@ that they are necessarily
 realistic or usable, rather, it just shows what is possible.
 </p>
 
-<h2><a name="Snowflakes">Snowflakes and the DimensionUsage level attribute</a></h2>
+<h2>Snowflakes and the DimensionUsage level attribute<a name="Snowflakes">&nbsp;</a></h2>
+
 <p>
 Mondrian supports dimensions with all of their levels lumped 
 into a single table (with all the duplication of data that that entails), 
@@ -964,6 +962,17 @@ Note that the
 <code>Level</code>
 element's table attribute MUST use the table alias and NOT the table name. 
 </p>
+
+<hr noshade size="1"/>
+<p>
+    Author: Julian Hyde, Richard Emberson; last updated August, 2006.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/developer_notes.html?ac=22">log</a>)<br/>
+    Copyright (C) 2005-2005 Julian Hyde
+</p>
+
+<br/>
+<!-- doc2web end -->
 
 </body>
 </html>

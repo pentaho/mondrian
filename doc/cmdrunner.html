@@ -8,25 +8,18 @@
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
-
 <head>
-<meta http-equiv="Content-Language" content="en-us">
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Mondrian CmdRunner</title>
-<link rel="stylesheet" href="stylesheet.css" type="text/css" />
-<style>
-<!--
-.small { font-family: verdana,arial,helvetica,sans-serif; font-size: x-small; }
--->
-</style>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: How to Design a Mondrian Schema</title>
 </head>
-
 <body>
-<h1>Mondrian CmdRunner</h1>
+<!-- doc2web start -->
 
-<p>By Richard Emberson; last updated July, 2005.</p>
+<!-- page title -->
+<div class="contentheading">Mondrian CmdRunner</div>
+<!-- end page title -->
 
-<hr noshade color="#000000" size="1">
+<hr noshade size="1">
 
 <h2>Contents</h2>
 <ul>
@@ -56,7 +49,7 @@
     <li><a href="#AggGen">AggGen: Aggregate SQL Generator</a></li>
 </ul>
 
-<h2><a name="What_is_CmdRunner">What is CmdRunner?</a></h2>
+<h2>What is CmdRunner?<a name="What_is_CmdRunner">&nbsp;</a></h2>
 
 <p>
 <code>CmdRunner</code> is a command line interpreter for Mondrian.
@@ -86,14 +79,14 @@ and other times one can always post process the output into
 excel or gnuplot, etc.
 </p>
 
-<h2><a name="Building">Building</a></h2>
+<h2>Building<a name="Building">&nbsp;</a></h2>
 <p>
 There are two ways to run the command interpreter. The first is to
 have a script create a class path with all of the needed mondrian
 and support jars in it and then have java execute the CmdRunner 
 main method. The second is to build a jar that contains all of the
 needed classes and simply have java reference the jar using the 
-<cod>-jar</cod> argument.
+<code>-jar</code> argument.
 </p>
 <p>
 To build the CmdRunner combined jar from the shell command line execute
@@ -123,7 +116,7 @@ around since it bundles up everything that is needed
 (other than the properties and schema files).
 </p>
 
-<h2><a name="Usage">Usage</a></h2>
+<h2>Usage<a name="Usage">&nbsp;</a></h2>
 <p>
 There are two ways to invoke <code>CmdRunner</code>: using the 
 <code>cmdrunner.jar</code> 
@@ -176,7 +169,7 @@ where the jdbc jars are located.
 </blockquote>
 </p>
 
-<h2><a name="Properties_file">Properties File</a></h2>
+<h2>Properties File<a name="Properties_file">&nbsp;</a></h2>
 <p>
 Below is an example properties file:
 </p>
@@ -215,7 +208,7 @@ mondrian.rolap.generate.formatted.sql=true<br>
 </code>
 </blockquote>
 
-<h2><a name="Command_line_arguments">Command line arguments</a></h2>
+<h2>Command line arguments<a name="Command_line_arguments">&nbsp;</a></h2>
 <p>
 <code>CmdRunner</code> has the following command line options:</p>
 
@@ -317,7 +310,7 @@ options.</td>
     </table>
 </blockquote>
 
-<h2><a name="CmdRunner_Commands">CmdRunner Commands</a></h2>
+<h2>CmdRunner Commands<a name="CmdRunner_Commands">&nbsp;</a></h2>
 <p>
 The command interpreter has a fixed set of built in commands.
 When a line is read, if the first word of the line matches one
@@ -327,7 +320,7 @@ a built in command, then all text until a ';' is seen or until
 a '=' is entered by itself on a command continuation line is seen
 will be passed to the Mondrian query engine.
 </p>
-<h3><a name="help">help</a></h3>
+<h3>help<a name="help">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; help &lt;cr&gt;
@@ -337,7 +330,7 @@ Prints help for all commands.
 </p>
 </blockquote>
 
-<h3><a name="set">set</a></h3>
+<h3>set<a name="set">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; set [ property[=value ] ] &lt;cr&gt;
@@ -353,7 +346,7 @@ With "property=value" set property to that value.
 </p>
 </blockquote>
 
-<h3><a name="log">log</a></h3>
+<h3>log<a name="log">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; log [ classname[=level ] ] &lt;cr&gt;
@@ -369,7 +362,7 @@ With "classname=level" set log level to new value.
 </p>
 </blockquote>
 
-<h3><a name="file">file</a></h3>
+<h3>file<a name="file">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; file [ filename | '=' ] &lt;cr&gt;
@@ -385,7 +378,7 @@ With "=" character, re-read and re-execute previous filename.
 </p>
 </blockquote>
 
-<h3><a name="list">list</a></h3>
+<h3>list<a name="list">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; list [ cmd | result ] &lt;cr&gt;
@@ -401,7 +394,7 @@ With "result" argument, list the last mdx query result.
 </p>
 </blockquote>
 
-<h3><a name="func">func</a></h3>
+<h3>func<a name="func">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; func [ name ] &lt;cr&gt;
@@ -414,7 +407,7 @@ With "name" argument, display the functions:
       name, description, and syntax.</p>
 </blockquote>
 
-<h3><a name="param">param</a></h3>
+<h3>param<a name="param">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; param [ name[=value ] ] &lt;cr&gt;
@@ -432,7 +425,7 @@ With "name=value" sets the parameter with name to value.
 </p>
 </blockquote>
 
-<h3><a name="cube">cube</a></h3>
+<h3>cube<a name="cube">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; cube [ cubename [ name [=value | command] ] ] &lt;cr&gt;
@@ -452,7 +445,7 @@ With "name=value" sets the parameter with name to value.
     With "cubename command", executes the commands: clearCache.</p>
 </blockquote>
 
-<h3><a name="error">error</a></h3>
+<h3>error<a name="error">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; error [ msg | stack ] &lt;cr&gt;
@@ -468,7 +461,7 @@ With "stack" argument, the Error stack trace is printed.
 </p>
 </blockquote>
 
-<h3><a name="echo">echo</a></h3>
+<h3>echo<a name="echo">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; echo text &lt;cr&gt;
@@ -478,7 +471,7 @@ Prints text to standard out.
 </p>
 </blockquote>
 
-<h3><a name="expr">expr</a></h3>
+<h3>expr<a name="expr">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; expr cubename expression &lt;cr&gt;
@@ -488,7 +481,7 @@ Evaluates an expression against a cube
 </p>
 </blockquote>
 
-<h3><a name="equals">=</a></h3>
+<h3>=<a name="equals">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; = &lt;cr&gt;
@@ -498,7 +491,7 @@ Re-executes previous MDX query.
 </p>
 </blockquote>
 
-<h3><a name="tilde">~</a></h3>
+<h3>~<a name="tilde">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; ~ &lt;cr&gt;
@@ -508,7 +501,7 @@ Clears any text entered so far for the current command.
 </p>
 </blockquote>
 
-<h3><a name="exit">exit</a></h3>
+<h3>exit<a name="exit">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; exit &lt;cr&gt;
@@ -518,7 +511,7 @@ Exits the MDX command interpreter.
 </p>
 </blockquote>
 
-<h3><a name="run_an_MDX_query">run an MDX query</a></h3>
+<h3>run an MDX query<a name="run_an_MDX_query">&nbsp;</a></h3>
 <blockquote>
 <code>
   &gt; &lt;mdx query&gt; ( [ ';' ] &lt;cr&gt; | &lt;cr&gt; ( '=' | '~' ) &lt;cr&gt;
@@ -601,9 +594,9 @@ and in separate window edit/save MDX in the file.
 There is also no support for a command history (other than the '='
 command).
 </p>
-<h2><a name="AggGen">AggGen: Aggregate SQL Generator</a></h2>
+<h2>AggGen: Aggregate SQL Generator<a name="AggGen">&nbsp;</a></h2>
 <p>
-Mondrian release 1.2 introduces <a href="aggregate_tables.html">Aggregate Tables</a> 
+Mondrian release 1.2 introduces <a href="aggregate_tables.html">Aggregate Tables&nbsp;</a>
 as a means of improving performance, but aggregate tables are difficult to use 
 without tools to support them.
 </p>
@@ -830,22 +823,17 @@ property not be set to true as it will slow down Mondrian and
 generate a lot of text in the log file.
 </p>
 
-<hr>
+<hr noshade size="1"/>
+<p>
+    Author: Richard Emberson; last updated July, 2005.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/cmdrunner.html?ac=22">log&nbsp;</a>)<br/>
+    Copyright (C) 2005-2005 Julian Hyde and others
+</p>
 
-<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
-  <tr>
-    <td class="content">
-      <a target="_top" href="index.html">Home</a> |
-      <a target="_top" href="noframes.html">No frames</a> | This file is<i>
-      <a href="http://mondrian.sourceforge.net/cmdrunner.html">$Id$
-      </a></i> (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/cmdrunner.html?ac=22">log</a>)</td>
-    <td align="right">
-      <a href="http://sourceforge.net">
-        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
-      </a>
-    </td>
-  </tr>
-</table>
+<br />
+
+<!-- doc2web end -->
 
 </body>
 </html>

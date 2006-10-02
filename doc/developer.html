@@ -10,25 +10,19 @@
   -->
 
 <head>
-<meta http-equiv="Content-Language" content="en-us">
-<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
-<meta name="ProgId" content="FrontPage.Editor.Document">
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Mondrian FAQs</title>
-<link rel="stylesheet" href="stylesheet.css" type="text/css" />
-<style>
-<!--
-.small { font-family: verdana,arial,helvetica,sans-serif; font-size: x-small; }
--->
-</style>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: Developer's guide</title>
 </head>
-
 <body>
-<h1>Guide for Mondrian developers</h1>
+<!-- doc2web start -->
+
+<!-- page title -->
+<div class="contentheading">Developer's Guide</div>
+<!-- end page title -->
 
 <p>By Julian Hyde; last updated July, 2005.</p>
 
-<hr noshade color="#000000" size="1">
+<hr noshade size="1">
 
 <p>There are several ways to get Mondrian running. The easiest is to download a 
 binary release, as described in the <a href="install.html">installation guide</a>. 
@@ -41,8 +35,8 @@ you'll need to follow if you want to contribute to the Mondrian project.</p>
 <p>First, you need to get a copy of the source code. You can get the source code 
 from SourceForge or from the project's Perforce source server.</p>
 
-<h3><a name="3_3_Download_the_latest_source_release">Download the latest
-release</a></h3>
+<h3>Download the latest release<a name="3_3_Download_the_latest_source_release">&nbsp;</a></h3>
+
 <p>Download the latest <code>mondrian-<i>version</i>.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
 SourceForge</a>, and unzip. Now find the <code>mondrian-<i>version</i>-src.zip</code> 
 inside this distribution, and unzip it. The directory you unzip this source code to &mdash; 
@@ -50,8 +44,7 @@ typically something like <code>C:\open\mondrian</code>
 or <code>/usr/local/mondrian-<i>x.y.z</i></code> &mdash; will be denoted <code>
 <i>${project.location}</i></code> later in this document.</p>
 
-<h3><a name="3_4_Connect_to_the_Perforce_source_code_server">Connect to the
-Perforce source-code server</a></h3>
+<h3>Connect to the Perforce source-code server<a name="3_4_Connect_to_the_Perforce_source_code_server">&nbsp;</a></h3>
 
 <p>If you are a mondrian developer, and need to access the latest source code 
 and check in changes, you should connect to the Perforce source-code server. If 
@@ -65,7 +58,7 @@ connect as the 'guest' user.</p>
   following; 'p4 help' should get you started.)</li>
   <li>Choose <code>Settings</code> &gt; <code>Switch Port Client User...</code>;
   the following dialog appears.<blockquote>
-    <p><img border="0" src="perforce_setup.gif" width="424" height="258"> </p>
+    <img border="0" alt="Perforce setup" src="perforce_setup.gif" width="424" height="258"/>
   </blockquote>
   </li>
   <li>Set <code>Server</code> to <code>perforce.eigenbase.org</code>;
@@ -176,7 +169,9 @@ install the standard FoodMart dataset. This is described in the
 <p>&nbsp;If you got your files from the Perforce server, you can skip the step 
 where you download the data sets: you should already have the files <code>demo/access/MondrianFoodMart.mdb</code>
 and <code>demo/FoodMartCreateData.zip</code>.</p>
-<h2><a name="6_Run_the_test_suite">Running the test suite</a></h2>
+
+<h2>Running the test suite<a name="6_Run_the_test_suite">&nbsp;</a></h2>
+
 <p>At the command line:</p>
 <blockquote>
   <pre>cd <i>${project.location}</i><br>ant test</pre>
@@ -288,7 +283,8 @@ to the <i></i><code><i>TOMCAT_HOME</i>/webapps</code> directory.</p>
 
 <p>Now, start Tomcat and hit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a>.</p>
 
-<h2><a name="7_2_Coding_guidelines">Coding guidelines</a></h2>
+<h2>Coding guidelines<a name="7_2_Coding_guidelines">&nbsp;</a></h2>
+
 <p>If you are contributing code, please follow the same guidelines used for the 
 rest of the code. (&quot;When in Rome, do as the Romans do.&quot;)</p>
 
@@ -325,24 +321,24 @@ rest of the code. (&quot;When in Rome, do as the Romans do.&quot;)</p>
 
 <p>The following images show my spacing and indentation settings in IntelliJ.</p>
 
-<p><img border="0" src="code_indentation.png" width="909" height="908"></p>
+<p><img border="0" alt="Code indentation" src="code_indentation.png" width="909" height="908"></p>
 
-<p><img border="0" src="code_spacing.png" width="776" height="903"></p>
+<p><img border="0" alt="Code spacing" src="code_spacing.png" width="776" height="903"></p>
 
-<h2><a name="Learning_more_about_Mondrian">Learning more about Mondrian</a></h2>
+<h2>Learning more about Mondrian<a name="Learning_more_about_Mondrian">&nbsp;</a></h2>
 
-<h3><a name="How_Mondrian_generates_SQL">How Mondrian generates SQL</a></h3>
+<h3>How Mondrian generates SQL<a name="How_Mondrian_generates_SQL">&nbsp;</a></h3>
 
 <p>If you're feeling mystified where the various SQL statements come
 from, here's a good way to learn more. Give it a try, and if you have
 more questions I'll be glad to answer them.</p>
  
 <p>In a debugger, put a break point in the <code>
-<a href="api/mondrian/rolap/RolapUtil.html#executeQuery(java.sql.Connection, java.lang.String, java.lang.String)">RolapUtil.executeQuery()</a></code> 
+<a href="api/mondrian/rolap/RolapUtil.html#executeQuery(java.sql.Connection, java.lang.String, java.lang.String)">RolapUtil.executeQuery()</a></code>
 method, and run a
 simple query. The easiest way to run a query is to run a junit testcase such as
-<a href="api/mondrian/test/BasicQueryTest.html#testSample0()">
-BasicQueryTest.testSample0()</a>. The debugger will stop every time a SQL 
+<a href="api/mondrian/test/BasicQueryTest.html#testSample0()">BasicQueryTest.testSample0()</a>.
+The debugger will stop every time a SQL
 statement is executed, and you should be able to loop up the call stack to which component is executing the query.</p>
  
 <p>I expect that you will see the following phases in the execution:<ul>
@@ -384,8 +380,7 @@ you run this in the debugger.</p>
 
 <p>&nbsp;</p>
 
-<h2><a name="Appendix_A_Product_installation_instructions">Appendix A. Product
-installation instructions</a></h2>
+<h2>Appendix A. Product installation instructions<a name="Appendix_A_Product_installation_instructions">&nbsp;</a></h2>
 
 <p>These are the products I used to build mondrian. Install all of the products 
 marked 'required'.</p>
@@ -393,8 +388,7 @@ marked 'required'.</p>
 <p>In the following, the symbol <code><i>${project.location}</i></code> means the root of your
 source tree.</p>
 
-<table style="border-collapse: collapse;" border="1"
- bordercolor="#111111" cellpadding="2" cellspacing="0" id="table1">
+<table style="border-collapse: collapse;" border="1" cellpadding="2" cellspacing="0" id="table1">
   <tbody>
     <tr>
       <th>Product</th>
@@ -403,16 +397,16 @@ source tree.</p>
       <th>Comment</th>
     </tr>
     <tr>
-      <td><a name="JDK">JDK</a></td>
+      <td>JDK<a name="JDK">&nbsp;</a></td>
       <td>Yes</td>
-      <td>1.4 or later (I use version 1.4.2.)</td>
-      <td>Available from <a href="http://developer.java.sun.com/"
- target="_blank">http://developer.java.sun.com/</a>. I downloaded <code>j2sdk-1_4_2_06-windows-i586-p.exe</code>,
-and extracted to <code>E:/j2sdk1.4.2_06</code>. Set <code>JAVA_HOME</code>
-to same.</td>
+      <td>1.4 or later (I use version 1.5.0_08.)</td>
+      <td>Available from <a href="http://developer.java.sun.com/" target="_blank">http://developer.java.sun.com/</a>.
+          I downloaded <code>jdk-1_5_0_08-windows-i586-p.exe</code>,
+          and installed to <code>E:/jdk1.5.0_08</code>, and set <code>JAVA_HOME</code>
+          to the same.</td>
     </tr>
     <tr>
-      <td><a name="Ant">Ant</a></td>
+      <td>Ant<a name="Ant">&nbsp;</a></td>
       <td>Yes</td>
       <td>1.5 or later&nbsp;</td>
       <td>Available from <a
@@ -421,7 +415,7 @@ I downloaded <code>apache-ant-1.6.2-bin.zip</code>, extracted to <code>E:/jakart
 and set <code>ANT_HOME</code> to the same.</td>
     </tr>
     <tr>
-      <td><a name="Tomcat">Tomcat</a></td>
+      <td>Tomcat<a name="Tomcat">&nbsp;</a></td>
       <td>Yes</td>
       <td>5.0.25 or later</td>
       <td>Available from <a href="http://jakarta.apache.org/tomcat"
@@ -430,14 +424,14 @@ jakarta-tomcat-5.0.25.zip</code>, extracted to <code>E:/jakarta-tomcat-5.0.25</c
 and set <code>TOMCAT_HOME</code> to the same.</td>
     </tr>
     <tr>
-      <td><a name="Xerces">Xerces</a></td>
+      <td>Xerces<a name="Xerces">&nbsp;</a></td>
       <td>&nbsp;</td>
       <td>Use the version included with Tomcat</td>
       <td>Xerces is included with Tomcat. If you use a different
 version, compatibility issues may arise.</td>
     </tr>
     <tr>
-      <td><a name="Xalan">Xalan</a></td>
+      <td>Xalan<a name="Xalan">&nbsp;</a></td>
       <td>Yes</td>
       <td>2.6.0 or later</td>
       <td>Available from <a href="http://xml.apache.org/xalan-j/"
@@ -449,7 +443,7 @@ to <code><i>TOMCAT_HOME</i>/common/endorsed/</code>.</p>
       </td>
     </tr>
     <tr>
-      <td><a name="JUnit">JUnit</a></td>
+      <td>JUnit<a name="JUnit">&nbsp;</a></td>
       <td>Yes</td>
       <td>3.8.1 or later</td>
       <td>Available from <a href="http://www.junit.org/">http://www.junit.org/</a>.
@@ -471,23 +465,17 @@ messages in a format which Emacs can parse.</td>
 
 <p>&nbsp;</p>
 
-<hr noshade color="#000000" size="1">
+<hr noshade size="1"/>
+<p>
+    Author: Julian Hyde; last updated July, 2005.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/developer.html?ac=22">log&nbsp;</a>)<br/>
+    Copyright (C) 2005-2005 Julian Hyde
+</p>
 
+<br />
 
-<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
-  <tr>
-    <td class="content">
-      <a target="_top" href="index.html">Home</a> |
-      <a target="_top" href="#">No frames</a> | This file is<i>
-      <a href="http://mondrian.sourceforge.net/developer.html">$Id$</a></i>
-      (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/developer.html?ac=22">log</a>)</td>
-    <td align="right">
-      <a href="http://sourceforge.net">
-        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
-      </a>
-    </td>
-  </tr>
-</table>
+<!-- doc2web end -->
 
 </body>
 </html>

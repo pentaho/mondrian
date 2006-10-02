@@ -4,62 +4,72 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == Copyright (C) 2002-2005 Julian Hyde and others
+  == Copyright (C) 2002-2006 Julian Hyde
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
-
 <head>
-<meta http-equiv="Content-Language" content="en-us">
-<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
-<meta name="ProgId" content="FrontPage.Editor.Document">
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Mondrian FAQs</title>
-<link rel="stylesheet" href="stylesheet.css" type="text/css" />
-<style>
-<!--
-.small { font-family: verdana,arial,helvetica,sans-serif; font-size: x-small; }
--->
-</style>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: Mondrian FAQs</title>
 </head>
-
 <body>
-<h1>Mondrian FAQs</h1>
-<ul>
-  <li><a href="#Applications">How do I use Mondrian in my application?</a></li>
-  <li><a href="#API">Why doesn't Mondrian use a standard API?</a></li>
-  <li><a href="#MDX_dialect">How does Mondrian's dialect of MDX differ from MSOLAP's?</a></li>
-  <li><a href="#Extensiblity">How can Mondrian be extended?</a></li>
-  <li><a href="#Scalability">Can Mondrian handle large datasets?</a></li>
-  <li><a href="#Tracing">How do I enable tracing?</a></li>
-  <li><a href="#connect_string">What is the syntax of a Mondrian connect string?</a></li>
-  <li><a href="#Roadmap">Where is Mondrian going in the future?</a></li>
-  <li><a href="#Further_reading">Where can I find out more? (Further reading)</a></li>
-  <li><a href="#Feedback">Mondrian is wonderful! How can I possibly thank you?</a></li>
-  <li><a href="#Modeling">Modeling</a><ul>
-    <li><a href="#measures_not_stored_in_the_fact_table">Measures not in the fact table</a></li>
-  <li><a href="#fact_table_based_upon_query">How can I define my fact table based on an arbitrary SQL statement?</a></li>
-  <li><a href="#case_sensitive_table_names">Why can't Mondrian find my tables?</a></li>
-  </ul></li>
-  <li><a href="#Build_install">Build/install</a></li>
-  <li><a href="#Performance">Performance</a><ul>
-    <li><a href="#cache_refresh">When I change the data in the RDBMS, the result
-    doesn't change even if i refresh the browser. Why is this?</a></li>
-	<li><a href="#Tuning_the_Aggregate_function">Tuning the Aggregate function</a></li>
-  </ul></li>
-</ul>
+<!-- doc2web start -->
 
-<hr noshade color="#000000" size="1">
+<!-- page title -->
+<div class="contentheading">Mondrian FAQs</div>
+<!-- end page title -->
 
-<h2><a name="Applications">How do I use Mondrian in my application?</a></h2>
+<!-- 
+########################
+##  faq contents   #####
+######################## -->
+<ol>
+	<li><a href="#Applications">How do I use Mondrian in my application?</a></li>
+	<li><a href="#API">Why doesn't Mondrian use a standard API?</a></li>
+	<li><a href="#MDX_dialect">How does Mondrian's dialect of MDX differ from MSOLAP's?</a></li>
+	<li><a href="#Extensiblity">How can Mondrian be extended?</a></li>
+	<li><a href="#Scalability">Can Mondrian handle large datasets?</a></li>
+	<li><a href="#Tracing">How do I enable tracing?</a></li>
+	<li><a href="#logging">How do I enable logging?</a></li>
+	<li><a href="#connect_string">What is the syntax of a Mondrian connect string?</a></li>
+	<li><a href="#Roadmap">Where is Mondrian going in the future?</a></li>
+	<li><a href="#Further_reading">Where can I find out more? (Further reading)</a></li>
+	<li><a href="#Feedback">Mondrian is wonderful! How can I possibly thank you?</a></li>
+	<li><a href="#Modeling">Modeling</a></li>
+	<ol>
+		<li><a href="#measures_not_stored_in_the_fact_table">Measures not in the fact table</a></li>
+		<li><a href="#fact_table_based_upon_query">How can I define my fact table based on an arbitrary SQL statement?</a></li>
+		<li><a href="#case_sensitive_table_names">Why can't Mondrian find my tables?</a></li>
+	</ol>
+	<li><a href="#Build_install">Build/install</a></li>
+	<ol>
+		<li><a href="#compilation_errors">I get compilation errors? Why is this?</a></li>
+	</ol>
+	<li><a href="#Performance">Performance</a></li>
+	<ol>
+		<li><a href="#cache_refresh">When I change the data in the RDBMS, the result doesn't change even if i refresh the browser. Why is this?</a></li>
+		<li><a href="#Tuning_the_Aggregate_function">Tuning the Aggregate function</a></li>
+	</ol>
+</ol>
+<!-- 
+#####################################################
+##  1. How do I use Mondrian in my application? #####
+##################################################### -->
+<h3>1. How do I use Mondrian in my application?<a name="Applications">&nbsp;</a></h3>
 <p>There are several ways. If you have a fixed set of queries which you'd like
 to display as HTML tables, use the tab library. <a href="../webapp/taglib.jsp">
 webapp/taglib.jsp</a> is an example of this.</p>
+
 <p dir="ltr">The JPivot project (<a href="http://jpivot.sourceforge.net">http://jpivot.sourceforge.net</a>)
 is a JSP-based pivot table, and will allow you to dynamically explore a dataset
 over the web. It replaces the prototype pivot table <a href="../webapp/morph.jsp">webapp/morph.jsp</a>.</p>
 <p>You could also build a pivot table in a client technology such as Swing.</p>
-<h2><a name="API">Why doesn't Mondrian use a standard API?</a></h2>
+<!-- 
+#####################################################
+##  2. Why doesn't Mondrian use a standard API? #####
+##################################################### -->
+<h3>2. Why doesn't Mondrian use a standard API?<a name="API">&nbsp;</a></h3>
+
 <p>Because there isn't one. MDX is a component of Microsoft's OLE DB for OLAP
 standard which, as the name implies, only runs on Windows. Mondrian's API is
 fairly similar in flavor to ADO MD (ActiveX Data Objects for Multidimensional),
@@ -71,48 +81,74 @@ already.</p>
 <p>The other query vendors failed to reach consensus several years ago with the
 OLAP Council API, and are now encamped on the JOLAP specification.</p>
 <p>We plan to provide a JOLAP API to Mondrian as soon as JOLAP is available.</p>
-<h2><a name="MDX_dialect">How does Mondrian's dialect of MDX differ from MSOLAP's?</a></h2>
+<!-- 
+#####################################################################
+##  3. How does Mondrian's dialect of MDX differ from MSOLAP's? #####
+##################################################################### -->
+<h3>3. How does Mondrian's dialect of MDX differ from MSOLAP's?<a name="MDX_dialect">&nbsp;</a></h3>
 
 <p>See <a href="mdx.html">MDX language specification</a>.</p>
 <p>Not very much.</p>
 <ol>
   <li>The <code>StrToSet()</code> and <code>StrToTuple()</code> functions take
   an extra parameter.</li>
+
   <li>Parsing is case-sensitive.</li>
   <li>Pseudo-functions <code>Param()</code> and <code>ParamRef()</code> allow
   you to create parameterized MDX statements.</li>
 </ol>
-<h2><a name="Extensiblity">How can Mondrian be extended?</a></h2>
+<!-- 
+##########################################
+##  4. How can Mondrian be extended? #####
+########################################## -->
+<h3>4. How can Mondrian be extended?<a name="Extensiblity">&nbsp;</a></h3>
 <p><i>todo</i>: <a name="User_defined_functions">User-defined functions</a></p>
+
 <p><i>todo</i>: Cell readers</p>
 <p><i>todo</i>: Member readers</p>
-<h2><a name="Scalability">Can Mondrian handle large datasets?</a></h2>
+<!-- 
+################################################
+##  5. Can Mondrian handle large datasets? #####
+################################################ -->
+<h3>5. Can Mondrian handle large datasets?<a name="Scalability">&nbsp;</a></h3>
+
 <p>Yes, if your RDBMS can. We delegate the aggregation to the RDBMS, and if your
 RDBMS happens to have materialized group by views created, your query will fly.
 And the next time you run the same or a similar query, that will really fly,
 because the results will be in the aggregation cache.</p>
-<h2><a name="Tracing">How do I enable tracing?</a></h2>
+<!-- 
+#####################################
+##  6. How do I enable tracing? #####
+##################################### -->
+<h3>6. How do I enable tracing?<a name="Tracing">&nbsp;</a></h3>
+
 <p>To enable tracing, set <code>mondrian.trace.level</code> to 1 in <code>
+
 mondrian.properties</code>. You will see text and execution time of each SQL
 statement, like this:</p>
 <blockquote>
-  <p dir="ltr"><font face="Courier">SqlMemberSource.getLevelMemberCount:
+  <p><code>SqlMemberSource.getLevelMemberCount:
   executing sql [select count(*) as `c0` from (select distinct `store`.`store_country`
   as `c0` from `store` as `store`) as `foo`], 110 ms<br>
   SqlMemberSource.getMembers: executing sql [select distinct `store`.`store_sqft`
-  as `c0` from `store` as `store` order by `store`.`store_sqft`], 50 ms</font></p>
+  as `c0` from `store` as `store` order by `store`.`store_sqft`], 50 ms</code></p>
 </blockquote>
 <p>Notes:</p>
 <ul>
   <li>If you are running mondrian from the command-line, or via Ant, <code>
+
   mondrian.properties</code> should be in the current directory.</li>
   <li>If you are running in Tomcat, <code>mondrian.properties</code> should be
   in <i></i><code><i>TOMCAT_HOME</i>/bin</code>. Changes will only take effect
   when you re-start Tomcat. The output goes to the console from which you
   started Tomcat.</li>
 </ul>
+<!-- 
+#####################################
+##  7. How do I enable logging? #####
+##################################### -->
+<h3>7. How do I enable logging?<a name="logging">&nbsp;</a></h3>
 
-<h2><a name="Tracing">How do I enable logging?</a></h2>
 <p>
 Mondrian uses the <a href="http://logging.apache.org/log4j/docs/">
 Apache Log4j logger</a>. To build, test, and run Mondrian requires a 
@@ -137,6 +173,7 @@ at what level:
 lead the application to abort.
 </li>
 <li>
+
 <code>ERROR</code>: An error event that might still 
 allow the application to continue running.
 </li>
@@ -153,24 +190,39 @@ is most useful to debug an application.
 </li>
 </ul>
 </p>
+
 <p>
 It is recommended for general use that the Mondrian log level be set to
 <code>WARN</code>; arguably, its good to know when things are going South.
 </p>
+<!-- 
+#############################################################
+##  8. What is the syntax of a Mondrian connect string? #####
+############################################################# -->
+<h3>8. What is the syntax of a Mondrian connect string?<a name="connect_string">&nbsp;</a></h3>
 
-<h2><a name="connect_string">What is the syntax of a Mondrian connect string?</a></h2>
 <p>The syntax of the connect string is described in the Javadoc for the method
-<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnection.html#RolapConnection(mondrian.olap.Util.PropertyList,boolean)">
+<a href="api/mondrian/rolap/RolapConnection.html#RolapConnection(mondrian.olap.Util.PropertyList,boolean)">
 mondrian.olap.DriverManager.getConnection(String connectString, boolean fresh)</a>.</p>
-<h2><a name="Roadmap">Where is Mondrian going in the future?</a></h2>
+<!-- 
+###################################################
+##  9. Where is Mondrian going in the future? #####
+################################################### -->
+<h3>9. Where is Mondrian going in the future?<a name="Roadmap">&nbsp;</a></h3>
 <ol>
   <li>Presentation layer (see <a href="http://sourceforge.net/projects/jpivot">
+
   JPivot</a> for more details).</li>
   <li>Complete implementation of MDX (not all of the functions implemented yet)</li>
   <li>Tuning</li>
   <li>Support JOLAP API.</li>
 </ol>
-<h2><a name="Further_reading">Where can I find out more?</a></h2>
+<!-- 
+########################################
+##  10. Where can I find out more? #####
+######################################## -->
+<h3>10. Where can I find out more?<a name="Further_reading">&nbsp;</a></h3>
+
 <p>
 <a href="http://www.amazon.com/exec/obidos/tg/detail/-/0471400467/ref=pd_bxgy_text_1/002-1268646-6661668?v=glance&s=books">
 <i>MDX Solutions with Microsoft SQL Server Analysis Services</i> by George
@@ -182,29 +234,40 @@ it describes can be applied to any RDBMS.</p>
 by Erik Thomsen</a> is a great overview of multidimensional databases, but does
 not deal with MDX.</p>
 <p>
+
 The reference work on data warehousing is
 <a href="http://www.amazon.com/exec/obidos/tg/detail/-/0471200247/qid=1038277569/sr=1-2/ref=sr_1_2/002-1268646-6661668?v=glance&s=books">
 <i>The Data Warehouse Toolkit: The Complete Guide to Dimensional Modeling (Second
 Edition)</i>, by Ralph Kimball, Margy Ross</a>. It covers the business process
-well, but the focus is more on star schemas and ROLAP than OLAP.</font></span></p>
-<p>
-The
+well, but the focus is more on star schemas and ROLAP than OLAP.</p>
+
+<p>The
 <a href="http://msdn.microsoft.com/library/en-us/olapdmad/agmdxbasics_04qg.asp">
 Microsoft Analysis Services online documentation</a> has excellent online
 documentation of MDX, including a
 <a href="http://msdn.microsoft.com/library/en-us/olapdmad/agmdxfunctions_9elw.asp">
 list of MDX functions</a>.</p>
-<h2><a name="Feedback">Mondrian is wonderful! How can I possibly thank you?</a></h2>
+
+<!-- 
+##################################################################
+##  11. Mondrian is wonderful! How can I possibly thank you? #####
+################################################################## -->
+<h3>11. Mondrian is wonderful! How can I possibly thank you?<a name="Feedback">&nbsp;</a></h3>
+
 <p>We'd <a href="mailto:jhyde@users.sourceforge.net">love to hear</a> what you liked and didn't like about
 it. If you can think of ways that Mondrian can be improved, roll up your sleeves
 and help make it better. If you use Mondrian in your application, consider
 sharing your work so that everyone can use it.</p>
-
-<hr noshade color="#000000">
-
-<h2><a name="Modeling">Modeling</a></h2>
-
-<h3><a name="measures_not_stored_in_the_fact_table">Measures not stored in the fact table</a></h3>
+<!-- 
+########################
+##  12. Modeling   #####
+######################## -->
+<h3>12. Modeling<a name="Modeling">&nbsp;</a></h3>
+<!-- 
+####################################################
+##  12.1 Measures not stored in the fact table #####
+#################################################### -->
+<h1>12.1 Measures not stored in the fact table<a name="measures_not_stored_in_the_fact_table">&nbsp;</a></h1>
 
 <p><i>I am trying to build a cube with measures from 2 different tables. I have tried a virtual cube, but it does not seem to work - it only relates measures and dimensions from the same table. Is there a way to specify that a measure is not coming from the fact table? Say using SQL select?</i></p>
 
@@ -213,11 +276,11 @@ sharing your work so that everyone can use it.</p>
 <p>Then create a virtual cube of the dummy cube and the real cube (onto your fact table).</p>
 
 <p>Note that you will need to use shared dimensions for the cubes to join implicitly.</p>
-
-<hr noshade color="#000000" size="1">
-
-<h3><a name="fact_table_based_upon_query">How can I define my fact table based
-on an arbitrary SQL statement?</a></h3>
+<!-- 
+##################################################################################
+##  12.2 How can I define my fact table based on an arbitrary SQL statement? #####
+################################################################################## -->
+<h1>12.2 How can I define my fact table based on an arbitrary SQL statement?<a name="fact_table_based_upon_query">&nbsp;</a></h1>
 
 <p>Use the &lt;View&gt; element INSTEAD OF the &lt;Table&gt; element. You need to specify
 the 'alias' attribute, which Mondrian uses as a table alias.</p>
@@ -225,48 +288,54 @@ the 'alias' attribute, which Mondrian uses as a table alias.</p>
 <p>The XML 'CDATA' construct is useful in case there are strange characters in
 your SQL, but isn't essential.</p>
 
-<pre>&lt;View alias=&quot;DFACD_filtered&quot;&gt;
+<p>
+<code>&lt;View alias=&quot;DFACD_filtered&quot;&gt;
     &lt;SQL dialect=&quot;generic&quot;&gt;
         &lt;![CDATA[select * from DFACD where CSOC = '09']]&gt;
     &lt;/SQL&gt;
-&lt;/View&gt;</pre> <p>
 
-<hr noshade color="#000000" size="1">
-
-<h3><a name="case_sensitive_table_names">Why can't Mondrian find my tables?</a></h3>
+&lt;/View&gt;</code></p>
+<!-- 
+#################################################
+##  12.3 Why can't Mondrian find my tables? #####
+################################################# -->
+<h1>12.3 Why can't Mondrian find my tables?<a name="case_sensitive_table_names">&nbsp;</a></h1>
 
 <p>Consider this scenario. I have created some tables in Oracle, like this:</p>
 
-<blockquote><pre>CREATE TABLE sales (
+<blockquote><code>CREATE TABLE sales (
     prodid INTEGER,
     day INTEGER,
-    amount NUMBER);</pre></blockquote>
+    amount NUMBER);</code></blockquote>
 
 <p>and referenced it in my schema.xml like this:</p>
 
-<blockquote><pre>&lt;Cube name=&quot;Sales&quot;&gt;
+<blockquote><code>&lt;Cube name=&quot;Sales&quot;&gt;
     &lt;Table name=&quot;sales&quot;/&gt;
     ...
     &lt;Measure name=&quot;Sales&quot; column=&quot;amount&quot; aggregator=&quot;sum&quot;/&gt;
+
     &lt;Measure name=&quot;Sales count&quot; column=&quot;prodid&quot; aggregator=&quot;count&quot;/&gt;
-&lt;/Cube&gt;</pre></blockquote>
+&lt;/Cube&gt;</code></blockquote>
 
 <p>Now I start up Mondrian and get an error
 <code>ORA-00942: Table or view &quot;sales&quot; does not exist</code> while executing the
 SQL statement
+
 <code>SELECT &quot;prodid&quot;, count(*) FROM &quot;sales&quot; GROUP BY &quot;prodid&quot;</code>. The query
 looks valid, and the table exists, so why is Oracle giving an error?</p>
 
 <p>The problem is that table and column names are case-sensitive. You told
 Mondrian to look for a table called &quot;sales&quot;, not &quot;SALES&quot; or &quot;Sales&quot;.
 
+
 <p>Oracle's table and column names are case-sensitive too, provided that you
 enclose them in double-quotes, like this:
 
-<blockquote><pre>CREATE TABLE &quot;sales&quot; (
+<blockquote><code>CREATE TABLE &quot;sales&quot; (
     &quot;prodid&quot; INTEGER,
     &quot;day&quot; INTEGER,
-    &quot;amount&quot; NUMBER);</pre></blockquote>
+    &quot;amount&quot; NUMBER);</code></blockquote>
 
 <p>If you omit the double-quotes, Oracle automatically converts the identifiers
 to upper-case, so the first <code>CREATE TABLE</code> command actually created a
@@ -277,35 +346,44 @@ Oracle only has a table called &quot;SALES&quot;.</p>
 <p>There are two possible solutions. The simplest is to change the objects to
 upper-case in your schema.xml file:</p>
 
-<blockquote><pre>&lt;Cube name=&quot;Sales&quot;&gt;
-    &lt;Table name=&quot;<b><font color="#FF0000">SALES</font></b>&quot;/&gt;
+<blockquote><code>&lt;Cube name=&quot;Sales&quot;&gt;
+    &lt;Table name=&quot;SALES&quot;/&gt;
     ...
-    &lt;Measure name=&quot;Sales&quot; column=&quot;<b><font color="#FF0000">AMOUNT</font></b>&quot; aggregator=&quot;sum&quot;/&gt;
-    &lt;Measure name=&quot;Sales count&quot; column=&quot;<b><font color="#FF0000">PRODID</font></b>&quot; aggregator=&quot;count&quot;/&gt;
-&lt;/Cube&gt;</pre></blockquote>
+    &lt;Measure name=&quot;Sales&quot; column=&quot;AMOUNT&quot; aggregator=&quot;sum&quot;/&gt;
+
+    &lt;Measure name=&quot;Sales count&quot; column=&quot;PRODID&quot; aggregator=&quot;count&quot;/&gt;
+&lt;/Cube&gt;</code></blockquote>
 
 <p>Alternatively, if you decide you would like your table and column names to be
 in lower or mixed case (or even, for that matter, to contain spaces), then you
 must double-quote object names when you issue <code>CREATE TABLE</code>
+
 statements to Oracle.</p>
+<!-- 
+################@@@########
+##  13. Build/install #####
+###############@@@######### -->
+<h3>13. Build/install<a name="Build_install">&nbsp;</a></h3>
+<!-- 
+#####################################################
+##  13.1 I get compilation errors? Why is this? #####
+##################################################### -->
+<h1>13.1 I get compilation errors? Why is this?<a name="compilation_errors">&nbsp;</a></h1>
 
-<hr noshade color="#000000" size="1">
-
-
-<h2><a name="Build_install">Build/install</a></h2>
-<h3><a name="compilation_errors">I get compilation errors? Why is this?</a></h3>
 <p>For example:</p>
 <blockquote>
 <p><code>&quot;SchemaTreeModel.java&quot;: Error #: 302 : cannot access class
 MondrianDef.Schema; java.io.IOException: class not found: class
 MondrianDef.Schema at line 29, column 14</code></p>
 </blockquote>
+
 <p>You can't just compile the source code using your IDE; you must build using
 ant, as described in the <a href="install.html">build instructions</a>. This is
 because several Java classes, such as <code>mondrian.olap.MondrianDef</code> (as
 in this case), <code>mondrian.olap.MondrianResource</code> and <code>
 mondrian.olap.Parser</code> are generated from other files. I recommend that you
 do <code>ant clean</code> before trying to build again.</p>
+
 <p>Another example:</p>
 <blockquote>
 <p><code>&quot;NamedObject.java&quot;: Error #: 704 : cannot access directory
@@ -316,12 +394,17 @@ on your classpath. Again, you should have followed the <a href="install.html">
 build instructions</a>. This problem often happens when people try to build
 using an IDE. You must use ant for the first ever build, but you may be able to
 setup your IDE to do incremental builds.</p>
+<!-- 
+########################
+## 14. Performance #####
+######################## -->
+<h3>14. Performance<a name="Performance">&nbsp;</a></h3>
+<!-- 
+#########################################################################################################################
+##  14.1 When I change the data in the RDBMS, the result doesn't change even if i refresh the browser. Why is this? #####
+######################################################################################################################### -->
+<h1>14.1 When I change the data in the RDBMS, the result doesn't change even if i refresh the browser. Why is this?<a name="cache_refresh">&nbsp;</a></h1>
 
-<hr noshade color="#000000" size="1">
-
-<h2><a name="Performance">Performance</a></h2>
-<h3><a name="cache_refresh">When I change the data in the RDBMS, the result
-doesn't change even if i refresh the browser. Why is this?</a></h3>
 <p>Mondrian uses a cache to improve performance. The first time you run a query,
 Mondrian will execute various SQL statements to load the data (you can see these
 statements by turning on tracing). The next time, it will use the information in
@@ -332,12 +415,16 @@ the JPivot web ui and refresh the browser, that will simply regenerate the web
 page, not flush the cache. The only way to refresh the cache is to call the
 following piece of code, which flushes the entire contents:</p>
 <blockquote>
-  <p><code>mondrian.rolap.CachePool.instance().flush();</code></p>
+  <code>mondrian.rolap.CachePool.instance().flush();</code>
 </blockquote>
 <p>See <a href="components.html#caching">caching design</a> for more
 information.</p>
 
-<h3><a name="Tuning_the_Aggregate_function">Tuning the Aggregate function</a></h3>
+<!-- 
+############################################
+##  14.2 Tuning the Aggregate function #####
+############################################ -->
+<h1>14.2 Tuning the Aggregate function<a name="Tuning_the_Aggregate_function">&nbsp;</a></h1>
 
 <p>I am using an MDX query with a calculated &quot;aggregate&quot; member. It aggregates 
 the values between Node A and Node B.&nbsp; The dimension that it is aggregating 
@@ -348,12 +435,12 @@ When executing this MDX query, the performance seems to be fairly bad.</p>
 
 <blockquote>
 
-	<p><code>WITH MEMBER [Time].[AggregateValues] AS <br>
+	<code>WITH MEMBER [Time].[AggregateValues] AS <br>
 &nbsp; 'Aggregate([Time].[2004].[October].[1].[12].[10] : 
 	[Time].[2004].[October].[20].[12].[10])' <br>
 	SELECT [Measures].[Volume] ON ROWS, <br>
 &nbsp; NON EMPTY {[Service].[Name]} <br>
-	WHERE ([Time].[AggregateValues])</code></p>
+	WHERE ([Time].[AggregateValues])</code>
 </blockquote>
 
 <p>Is this normal behavior? Is there any way I can speed this up?</p>
@@ -369,28 +456,31 @@ uses a lot of memory.</p>
 the database as possible. If you were asking for a whole month, it would be 
 easy:</p>
 
-<p>WITH MEMBER [Time].[AggregateValues]<br>
+<p><code>WITH MEMBER [Time].[AggregateValues]<br>
 AS 'Aggregate({[Time].[2004].[October]})'<br>
 SELECT [Measures].[Volume] ON ROWS,<br>
+
 NON EMPTY {[Service].[Name]}<br>
-WHERE ([Time].[AggregateValues])</p>
+WHERE ([Time].[AggregateValues])</code></p>
 
 <p>But since you're working with time periods which are not aligned with the 
 dimensional structure, you'll have to chop up the interval:</p>
 
 <blockquote>
 
-	<p><code>WITH MEMBER [Time].[AggregateValues]<br>
+	<code>WITH MEMBER [Time].[AggregateValues]<br>
 &nbsp; AS 'Aggregate({<br>
 &nbsp;&nbsp;&nbsp; [Time].[2004].[October].[1].[12].[10]<br>
+
 &nbsp;&nbsp;&nbsp;&nbsp; : [Time].[2004].[October].[1].[23].[59],<br>
 &nbsp;&nbsp;&nbsp; [Time].[2004].[October].[2]<br>
 &nbsp;&nbsp;&nbsp;&nbsp; : [Time].[2004].[October].[19],<br>
 &nbsp;&nbsp;&nbsp; [Time].[2004].[October].[20].[0].[00]<br>
 &nbsp;&nbsp;&nbsp;&nbsp; : [Time].[2004].[October].[20].[12].[10]})'<br>
 	SELECT [Measures].[Volume] ON ROWS, <br>
+
 	NON EMPTY {[Service].[Name]} <br>
-	WHERE ([Time].[AggregateValues])</code></p>
+	WHERE ([Time].[AggregateValues])</code>
 </blockquote>
 
 <p>This will retrieve a much smaller number of cells from the database &mdash; 18 
@@ -398,57 +488,50 @@ days + no more than 1440 minutes &mdash; and therefore do more of the heavy lift
 using SQL's <code>GROUP BY</code> operator. If you want to improve it still further, 
 introduce hourly aggregates.</p>
 
-<hr>
-
 <p>Q. I saw the perforce files, but a I couldn't find where to
 register and get new user, or the instructions that you have mentioned
-above;
+above;</p>
 
 <p>A. The project administrators (Julian) register you. I would
 suggest that you start with guest level access and let's see if you need
-update access later.
+update access later.</p>
 
 <p>Q. Do you have some model for development environment (e.g.
-eclipse 3.0 + ant 1.6 + jboss x.x + .....)?
+eclipse 3.0 + ant 1.6 + jboss x.x + .....)?</p>
 
 <p>A. Using Eclipse for Mondrian development works fine. There is an
 Eclipse Perforce plug-in, too, but you can use the Perforce client
 outside of Eclipse. Some people use Intellij (which is free for
-open-source use).
+open-source use).</p>
 
-<p>As a test web-server, most people use Tomcat 5.0.
+<p>As a test web-server, most people use Tomcat 5.0.</p>
  
 <p>Q. Are all the updated documentation in the perforce server? How
 could I get more materials, howtos, etc. to reduce my learn curve?
 
 <p>A. As with any open source project, the documentation is the
 mondrian.sourceforge.net web site (which is in Perforce too), the forums
-and mailing lists, the test suite and the code.
+and mailing lists, the test suite and the code.</p>
 
-<p>Q. How could I enroll myself into mondrian source forge project?
+<p>Q. How could I enroll myself into mondrian source forge project?</p>
 
 <p>A. Sign up as a SourceForge user and subscribe to the
 Mondrian mailing lists and forums. Also, there are a lot of Mondrian
 related questions from the JPivot project - I suggest you subscribe to
-JPivot too.
+JPivot too.</p>
+<br />
+<br />
 
-<hr noshade color="#000000" size="1">
+<p>
+    Author: Julian Hyde; last modified August 2006.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/faq.html?ac=22">log</a>)<br/>
+    Copyright (C) 2002-2006 Julian Hyde
+</p>
 
+<br />
 
-<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
-  <tr>
-    <td class="content">
-      <a target="_top" href="index.html">Home</a> |
-      <a target="_top" href="#">No frames</a> | This file is<i>
-      <a href="http://mondrian.sourceforge.net/faq.html">$Id$</a></i>
-      (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/faq.html?ac=22">log</a>)</td>
-    <td align="right">
-      <a href="http://sourceforge.net">
-        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
-      </a>
-    </td>
-  </tr>
-</table>
+<!-- doc2web end -->
 
 </body>
 </html>
