@@ -65,8 +65,10 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         }
         // Register the column name, and if it's not unique,
         // generate names until it is.
+        // Instead of having mysterious column name like x0, x1 ..
+        // rename columns as ColumnName_0, ColumnName_1 ..
         for (int j = 0; !columnNameSet.add(columnName); j++) {
-            columnName = "x" + Integer.toString(j);
+            columnName = columnName + "_" + Integer.toString(j);
         }
         columnNames.add(columnName);
     }
