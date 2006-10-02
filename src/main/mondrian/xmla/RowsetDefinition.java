@@ -3379,10 +3379,23 @@ boolean restriction, boolean nullable, String description)
             // The '1' might have to do with whether or not the
             // hierarchy has a 'all' member or not - don't know yet.
             // large data set total for Orders cube 0m42.923s
-            Hierarchy hier = dimension.getHierarchies()[0];
-            Level[] ls = hier.getLevels();
-            Level l = ls[ls.length-1];
-            int n = schemaReader.getLevelMembers(l, false).length;
+            Hierarchy firstHierarchy = dimension.getHierarchies()[0];
+            Level[] levels = firstHierarchy.getLevels();
+            Level lastLevel = levels[levels.length-1];
+
+
+
+            /*
+            if override config setting is set
+                if approxRowCount has a value
+                    use it
+            else
+                                    do default
+            */
+
+            // Added by TWI to returned cahed row numbers
+            String approxRowCount = lastLevel.getApproxRowCount();
+            int n=XmlaUtil.getCardinality(schemaReader, lastLevel);
             row.set(DimensionCardinality.name, n+1);
 
             // TODO: I think that this is just the dimension name
@@ -4565,7 +4578,7 @@ boolean restriction, boolean nullable, String description)
             // Get level cardinality
             // According to microsoft this is:
             //   "The number of members in the level."
-            int n = schemaReader.getLevelMembers(level, false).length;
+            int n = XmlaUtil.getCardinality(schemaReader, level);
             row.set(LevelCardinality.name, n);
 
             row.set(LevelType.name, getLevelType(level));

@@ -1918,7 +1918,7 @@
                         <DIMENSION_CAPTION>Marital Status</DIMENSION_CAPTION>
                         <DIMENSION_ORDINAL>11</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>3</DIMENSION_CARDINALITY>
+                        <DIMENSION_CARDINALITY>112</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Marital Status]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>Sales Cube - Marital Status Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
@@ -2593,7 +2593,7 @@
                         <DIMENSION_CAPTION>Marital Status</DIMENSION_CAPTION>
                         <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>3</DIMENSION_CARDINALITY>
+                        <DIMENSION_CARDINALITY>112</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Marital Status]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>Warehouse and Sales Cube - Marital
                             Status Dimension</DESCRIPTION>
@@ -9504,6 +9504,126 @@
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <DESCRIPTION>No description available</DESCRIPTION>
                         <ROLES>No HR Cube,California manager</ROLES>
+                    </row>
+                </root>
+            </xmla:return>
+        </xmla:DiscoverResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testApproxRowCountOverridesCountCallsToDatabase">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+            <xmla:return>
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0"
+                                    name="CATALOG_NAME"
+                                    sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="SCHEMA_NAME"
+                                    sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_NAME"
+                                    sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element
+                                    name="DIMENSION_UNIQUE_NAME"
+                                    sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element
+                                    name="HIERARCHY_UNIQUE_NAME"
+                                    sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element name="LEVEL_NAME"
+                                    sql:field="LEVEL_NAME" type="xsd:string"/>
+                                <xsd:element name="LEVEL_UNIQUE_NAME"
+                                    sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0"
+                                    name="LEVEL_GUID"
+                                    sql:field="LEVEL_GUID" type="uuid"/>
+                                <xsd:element name="LEVEL_CAPTION"
+                                    sql:field="LEVEL_CAPTION" type="xsd:string"/>
+                                <xsd:element name="LEVEL_NUMBER"
+                                    sql:field="LEVEL_NUMBER" type="xsd:unsignedInt"/>
+                                <xsd:element name="LEVEL_CARDINALITY"
+                                    sql:field="LEVEL_CARDINALITY" type="xsd:unsignedInt"/>
+                                <xsd:element name="LEVEL_TYPE"
+                                    sql:field="LEVEL_TYPE" type="xsd:int"/>
+                                <xsd:element
+                                    name="CUSTOM_ROLLUP_SETTINGS"
+                                    sql:field="CUSTOM_ROLLUP_SETTINGS" type="xsd:int"/>
+                                <xsd:element
+                                    name="LEVEL_UNIQUE_SETTINGS"
+                                    sql:field="LEVEL_UNIQUE_SETTINGS" type="xsd:int"/>
+                                <xsd:element name="LEVEL_IS_VISIBLE"
+                                    sql:field="LEVEL_IS_VISIBLE" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0"
+                                    name="DESCRIPTION"
+                                    sql:field="DESCRIPTION" type="xsd:string"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Marital Status]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_NAME>(All)</LEVEL_NAME>
+                        <LEVEL_UNIQUE_NAME>[Marital Status].[(All)]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_CAPTION>(All)</LEVEL_CAPTION>
+                        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+                        <LEVEL_CARDINALITY>1</LEVEL_CARDINALITY>
+                        <LEVEL_TYPE>1</LEVEL_TYPE>
+                        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
+                        <LEVEL_UNIQUE_SETTINGS>3</LEVEL_UNIQUE_SETTINGS>
+                        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
+                        <DESCRIPTION>Sales Cube - Marital Status
+                            Hierarchy(All) Level</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Marital Status]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_NAME>Marital Status</LEVEL_NAME>
+                        <LEVEL_UNIQUE_NAME>[Marital Status].[Marital Status]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_CAPTION>Marital Status</LEVEL_CAPTION>
+                        <LEVEL_NUMBER>1</LEVEL_NUMBER>
+                        <LEVEL_CARDINALITY>111</LEVEL_CARDINALITY>
+                        <LEVEL_TYPE>0</LEVEL_TYPE>
+                        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
+                        <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
+                        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
+                        <DESCRIPTION>Sales Cube - Marital Status
+                            HierarchyMarital Status Level</DESCRIPTION>
                     </row>
                 </root>
             </xmla:return>

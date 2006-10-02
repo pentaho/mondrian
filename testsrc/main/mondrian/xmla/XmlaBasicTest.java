@@ -383,6 +383,21 @@ public class XmlaBasicTest extends FoodMartTestCase {
         doTest(requestType, reqFileName, "${response}", props);
     }
 
+    public void testApproxRowCountOverridesCountCallsToDatabase() throws Exception {
+        String requestType = "MDSCHEMA_LEVELS";
+        String reqFileName = "RT_C_CN_DSI_C_F_C_in.xml";
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(CATALOG_NAME_PROP, CATALOG);
+        props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+        props.setProperty(UNIQUE_NAME_PROP, "[Marital Status]");
+        props.setProperty(UNIQUE_NAME_ELEMENT, "DIMENSION_UNIQUE_NAME");
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+        doTest(requestType, reqFileName, "${response}", props);
+
+    }
     /*
      * NOT IMPLEMENTED MDSCHEMA_SETS_out.xml
      */

@@ -105,7 +105,7 @@ class RolapHierarchy extends HierarchyBase {
                 null, RolapProperty.emptyArray,
                 RolapLevel.ALL | RolapLevel.UNIQUE,
                 RolapLevel.HideMemberCondition.Never,
-                LevelType.Null);
+                LevelType.Null, "");
     }
 
     /**
@@ -145,7 +145,7 @@ class RolapHierarchy extends HierarchyBase {
             null, RolapProperty.emptyArray,
             RolapLevel.ALL | RolapLevel.UNIQUE,
             RolapLevel.HideMemberCondition.Never,
-            LevelType.Regular);
+            LevelType.Regular, "");
         this.allMember = new RolapMember(
             null, allLevel, null, allMemberName, Member.ALL_MEMBER_TYPE);
         // assign "all member" caption
@@ -309,7 +309,7 @@ class RolapHierarchy extends HierarchyBase {
         RolapLevel level = new RolapLevel(
                 this, this.levels.length, name, null, null, null, null,
                 null, null, null, RolapProperty.emptyArray, flags,
-                RolapLevel.HideMemberCondition.Never, LevelType.Regular);
+                RolapLevel.HideMemberCondition.Never, LevelType.Regular, "");
         this.levels = (RolapLevel[]) RolapUtil.addElement(this.levels, level);
         return level;
     }
@@ -642,7 +642,7 @@ class RolapHierarchy extends HierarchyBase {
             keyExp, null, null, null,
             null, null,  // no longer a parent-child hierarchy
             null, RolapProperty.emptyArray, flags,
-            src.getHideMemberCondition(), src.getLevelType());
+            src.getHideMemberCondition(), src.getLevelType(),"");
         peerHier.levels =
             (RolapLevel[]) RolapUtil.addElement(peerHier.levels, level);
 
@@ -667,7 +667,7 @@ class RolapHierarchy extends HierarchyBase {
             RolapProperty.emptyArray,
             flags,
             src.getHideMemberCondition(),
-            src.getLevelType());
+            src.getLevelType(), "");
         peerHier.levels =
             (RolapLevel[]) RolapUtil.addElement(peerHier.levels, sublevel);
 

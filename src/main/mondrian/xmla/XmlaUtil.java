@@ -11,12 +11,12 @@
 */
 package mondrian.xmla;
 
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import mondrian.olap.Level;
+import mondrian.olap.MondrianException;
+import mondrian.olap.SchemaReader;
+import org.apache.log4j.Logger;
+import org.w3c.dom.*;
+import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -24,16 +24,12 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
-import mondrian.olap.MondrianException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.xml.sax.InputSource;
-import org.apache.log4j.Logger;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Utility methods for XML/A implementation.
@@ -328,6 +324,18 @@ way too noisy
         return bytes;
     }
 
+    public static int getCardinality(SchemaReader schemaReader, Level level){
+        String approxRowCount = level.getApproxRowCount();
+
+        boolean notNullAndNumeric = approxRowCount != null && approxRowCount.matches("^\\d+$");
+        if(notNullAndNumeric){
+            return Integer.parseInt(approxRowCount);
+       }
+
+        int length = schemaReader.getLevelMembers(level, false).length;
+        level.setApproxRowCount(length);
+        return length;
+    }
 }
 
 // End XmlaUtil.java

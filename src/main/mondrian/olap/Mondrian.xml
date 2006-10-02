@@ -474,6 +474,14 @@ Revision is $Id$
     </Element>
 
     <Element type="Level">
+        <Attribute name="approxRowCount" required="false">
+            <Doc>
+                The estimated number of members in this level.
+                Setting this property improves the performance of 
+                MDSCHEMA_LEVELS, MDSCHEMA_HIERARCHIES and
+                MDSCHEMA_DIMENSIONS XMLA requests
+            </Doc>
+        </Attribute>
         <Attribute name="name"><Doc></Doc></Attribute>
         <Attribute name="table" required="false">
             <Doc>

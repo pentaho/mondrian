@@ -249,7 +249,7 @@ fullname
   <Dimension name="Marital Status" foreignKey="customer_id">
     <Hierarchy hasAll="true" allMemberName="All Marital Status" primaryKey="customer_id">
       <Table name="customer"/>
-      <Level name="Marital Status" column="marital_status" uniqueMembers="true"/>
+      <Level name="Marital Status" column="marital_status" uniqueMembers="true" approxRowCount="111"/>
     </Hierarchy>
   </Dimension>
   <Dimension name="Yearly Income" foreignKey="customer_id">

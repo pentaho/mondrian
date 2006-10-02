@@ -101,7 +101,7 @@ public class RolapLevel extends LevelBase {
             int flags,
             HideMemberCondition
             hideMemberCondition,
-            LevelType levelType)
+            LevelType levelType, String approxRowCount)
     {
         super(hierarchy, name, depth, levelType);
 
@@ -113,7 +113,7 @@ public class RolapLevel extends LevelBase {
         if (keyExp instanceof MondrianDef.Column) {
             checkColumn((MondrianDef.Column) keyExp);
         }
-
+        this.approxRowCount = approxRowCount;
         this.flags = flags;
         final boolean isAll = (flags & ALL) == ALL;
         this.unique = (flags & UNIQUE) == UNIQUE;
@@ -283,7 +283,7 @@ public class RolapLevel extends LevelBase {
             (xmlLevel.type.equals("Numeric") ? NUMERIC : 0) |
             (xmlLevel.uniqueMembers.booleanValue() ? UNIQUE : 0),
             HideMemberCondition.lookup(xmlLevel.hideMemberIf),
-            LevelType.lookup(xmlLevel.levelType));
+            LevelType.lookup(xmlLevel.levelType), xmlLevel.approxRowCount);
 
         if (!Util.isEmpty(xmlLevel.caption)) {
             setCaption(xmlLevel.caption);
@@ -390,6 +390,9 @@ public class RolapLevel extends LevelBase {
         return inheritedProperties;
     }
 
+    public String getApproxRowCount() {
+        return approxRowCount;
+    }
     /**
      * Conditions under which a level's members may be hidden (thereby creating
      * a <dfn>ragged hierarchy</dfn>).
