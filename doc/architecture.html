@@ -37,7 +37,7 @@ eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=0,lo
 <div class="contentheading">Architecture</div>
 <!-- end page title -->
 
-<!-- 
+<!--
 #####################################
 ##  Layers of a Mondrian system #####
 ##################################### -->
@@ -62,7 +62,7 @@ eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=0,lo
 				<tr>
 					<td>
 						<a href="javascript:popUpSnapsVert('http://mondrian.pentaho.org/images/arch_mondrian_v1_lrg.png')">
-						<img border="0" src="images/arch_mondrian_v1_tn.png" width="200" height="147"></a>
+						<img border="0" alt="Mondrian architecture" src="images/arch_mondrian_v1_tn.png" width="200" height="147"></a>
 					</td>
 				</tr>
 				<tr>
@@ -71,7 +71,7 @@ eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=0,lo
 							<tr>
 								<td width="19">
 									<a href="javascript:popUpSnapsVert('http://mondrian.pentaho.org/images/arch_mondrian_v1_lrg.png')">
-									<img height="15" src="../images/zoom.png" width="14" border="0" /></a>
+									<img height="15" alt="Zoom" src="images/zoom.png" width="14" border="0" /></a>
 								</td>
 								<td>
 									<a href="javascript:popUpSnapsVert('http://mondrian.pentaho.org/images/arch_mondrian_v1_lrg.png')">
@@ -89,7 +89,7 @@ eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=0,lo
 				<tr>
 					<td>
 						<a href="javascript:popUpSnapsVert('http://mondrian.pentaho.org/images/architecture2_big.png')">
-						<img border="0" src="images/arch_mondrian_sketch_tn.png" width="201" height="158" align="middle"></a>
+						<img border="0" alt="Mondrian architecture (hand-drawn)" src="images/arch_mondrian_sketch_tn.png" width="201" height="158" align="middle"></a>
 					</td>
 				</tr>
 				<tr>
@@ -98,7 +98,7 @@ eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=0,lo
 							<tr>
 								<td width="19">
 									<a href="javascript:popUpSnapsVert('http://mondrian.pentaho.org/images/architecture2_big.png')">
-									<img height="15" src="../images/zoom.png" width="14" border="0" /></a>
+									<img height="15" alt="Zoom" src="images/zoom.png" width="14" border="0" /></a>
 								</td>
 								<td>
 									<a href="javascript:popUpSnapsVert('http://mondrian.pentaho.org/images/architecture2_big.png')">
@@ -113,11 +113,11 @@ eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=0,lo
 		</td>
 	</tr>
 </table>
-<!-- 
+<!--
 ############################################
 ##  Storage and aggregation strategies #####
 ############################################ -->
-<h3>Storage and aggregation strategies<a name="Figure_1:_Mondrian_architecture">&nbsp;</a></h3>
+<h3>Storage and aggregation strategies<a name="Storage_and_aggregation_strategies">&nbsp;</a></h3>
 
 <p>OLAP Servers are generally categorized according to how they store their data:</p>
 
@@ -147,7 +147,7 @@ eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=0,lo
 <p>The general idea is to delegate unto the database what is the database's. This places additional burden on the database, but once those features are added to the database, all clients of the database will benefit from them. Multidimensional storage would reduce I/O and result in faster operation in some circumstances, but I don't think it warrants the complexity at this stage.</p>
 
 <p>A wonderful side-effect is that because Mondrian requires no storage of its own, it can be installed by adding a JAR file to the class path and be up and running immediately. Because there are no redundant data sets to manage, the data-loading process is easier, and Mondrian is ideally suited to do OLAP on data sets which change in real time.</p>
-<!-- 
+<!--
 ########################
 ##      API        #####
 ######################## -->
@@ -178,42 +178,42 @@ Result result = connection.execute(query);<br />
 result.print(new PrintWriter(System.out));
 </p></blockquote>
 
-<p>A <a href="api/mondrian/olap/Connection.html">Connection</a> 
+<p>A <a href="api/mondrian/olap/Connection.html">Connection</a>
 is created via a <a href="api/mondrian/olap/DriverManager.html">
-DriverManager</a>, in a similar way to JDBC. A 
-<a href="api/mondrian/olap/Query.html">Query</a> is analogous to 
-a JDBC <a href="http://java.sun.com/j2se/1.4/docs/api/java/sql/Statement.html"> Statement</a>, 
-and is created by parsing an MDX string. A 
-<a href="api/mondrian/olap/Result.html">Result</a> is analogous 
-to a JDBC <a href="http://java.sun.com/j2se/1.4/docs/api/java/sql/ResultSet.html">ResultSet</a>; 
-since we are dealing with multi-dimensional data, it consists of axes and cells, rather than rows and columns. Since OLAP is 
-intended for data exploration, you can modify the parse tree contained in a query by operations such as 
+DriverManager</a>, in a similar way to JDBC. A
+<a href="api/mondrian/olap/Query.html">Query</a> is analogous to
+a JDBC <a href="http://java.sun.com/j2se/1.4/docs/api/java/sql/Statement.html"> Statement</a>,
+and is created by parsing an MDX string. A
+<a href="api/mondrian/olap/Result.html">Result</a> is analogous
+to a JDBC <a href="http://java.sun.com/j2se/1.4/docs/api/java/sql/ResultSet.html">ResultSet</a>;
+since we are dealing with multi-dimensional data, it consists of axes and cells, rather than rows and columns. Since OLAP is
+intended for data exploration, you can modify the parse tree contained in a query by operations such as
 <a href="api/mondrian/olap/Query.html#drillDown(mondrian.olap.Level)">
 drillDown</a> and <a href="api/mondrian/olap/Query.html#sort(int, int, mondrian.olap.Member[])">
 sort</a>, then re-execute the query.</p>
 
-<p>The API also presents the database schema as a set of objects: 
-<a href="api/mondrian/olap/Schema.html">Schema</a>, 
-<a href="api/mondrian/olap/Cube.html">Cube</a>, 
-<a href="api/mondrian/olap/Dimension.html">Dimension</a>, 
-<a href="api/mondrian/olap/Hierarchy.html">Hierarchy</a>, 
-<a href="api/mondrian/olap/Level.html">Level</a>, 
-<a href="api/mondrian/olap/Member.html">Member</a>. For more 
+<p>The API also presents the database schema as a set of objects:
+<a href="api/mondrian/olap/Schema.html">Schema</a>,
+<a href="api/mondrian/olap/Cube.html">Cube</a>,
+<a href="api/mondrian/olap/Dimension.html">Dimension</a>,
+<a href="api/mondrian/olap/Hierarchy.html">Hierarchy</a>,
+<a href="api/mondrian/olap/Level.html">Level</a>,
+<a href="api/mondrian/olap/Member.html">Member</a>. For more
 information about the Mondrian API, see <a href="api/overview-summary.html">
 the javadoc</a>.</p>
 
 <p>To comply with emerging standards, we are adding two APIs to Mondrian:</p>
 
 <ul>
-  <li><a href="http://java.sun.com/aboutJava/communityprocess/jsr/jsr_069_jolap.html">JOLAP</a> 
-  is a standard emerging from the JSR process, and it will become part of J2EE sometime in 2003. We have a few simple JOLAP 
+  <li><a href="http://java.sun.com/aboutJava/communityprocess/jsr/jsr_069_jolap.html">JOLAP</a>
+  is a standard emerging from the JSR process, and it will become part of J2EE sometime in 2003. We have a few simple JOLAP
   queries running in <a href="api/mondrian/test/JolapTest.html">
   class mondrian.test.JolapTest</a>.</li>
-  <li><a href="http://xmla.org/default.asp">XML for Analysis</a> is a standard for accessing 
-  OLAP servers via SOAP (Simple Object Access Protocol). This will allow non-Java components like Microsoft Excel to run 
+  <li><a href="http://xmla.org/default.asp">XML for Analysis</a> is a standard for accessing
+  OLAP servers via SOAP (Simple Object Access Protocol). This will allow non-Java components like Microsoft Excel to run
   queries against Mondrian.</li>
 </ul>
-<!-- 
+<!--
 ########################
 ##     MDX         #####
 ######################## -->
@@ -229,7 +229,7 @@ some great books on MDX available</a>, I won't describe the full MDX language. M
 
 <p>A parameter is a named variable embedded in an MDX query. Every parameter has a default value, but you can supply a different value when you run the query.</p>
 
-<p>Parameters are declared and used by using a special function Parameter:</p>
+<p>Parameters are declared and used by using a special function, <code>Parameter</code>:</p>
 
 <blockquote><p>
 Parameter(&lt;name&gt;, &lt;type&gt;, &lt;defaultValue&gt;[, &lt;description&gt;])
@@ -263,15 +263,15 @@ SELECT {[Measures].[Unit Sales]} on columns,<br />
 FROM Sales
 </p></blockquote>
 
-<p>You can list a query's parameters by calling 
+<p>You can list a query's parameters by calling
 <a href="api/mondrian/olap/Query.html#getParameters()">
-Query.getParameters()</a>, and change a parameter's value by calling 
+Query.getParameters()</a>, and change a parameter's value by calling
 <a href="api/mondrian/olap/Query.html#setParameter(java.lang.String, java.lang.String)">
 Query.setParameter(String name, String value)</a>.</p>
 
 <h1>Builtin Functions</h1>
 
-<p>The StrToSet() and StrToTuple() functions take an optional parameter not present in the 
+<p>The StrToSet() and StrToTuple() functions take an optional parameter not present in the
 standard MDX versions of these functions, describing the hierarchy the result will belong to:</p>
 
 <blockquote><p>

@@ -20,19 +20,19 @@
 <div class="contentheading">Mondrian Roadmap</div>
 <!-- end page title -->
 
-<!-- 
+<!--
 ############################
 ##  roadmap contents   #####
 ############################ -->
 <h3>Contents</h3>
 <ol>
-  <li><a href="#3_Setup_build_environment">Introduction</a>
+  <li><a href="#1_Introduction">Introduction</a>
   <ol>
         <li><a href="#2.1_Purpose_of_this_document">Purpose of this document</a></li>
 
 	<li><a href="#2.2_Mondrians_goals">Mondrian's goals</a></li>
 	<li><a href="#2.3_Scope">Scope</a></li>
-	<li><a href="#2.4_Sponsored_development_and_co-development">Sponsored 
+	<li><a href="#2.4_Sponsored_development_and_co-development">Sponsored
 	development and co-development</a></li>
   </ol>
   </li>
@@ -50,7 +50,7 @@
 </ol>
 
   </li>
-  <li><a href="#4_Build">Feature list</a>
+  <li><a href="#4_Feature_list">Feature list</a>
   <ol>
         <li><a href="#Feature_Internationalization_localization">Internationalization/localization</a></li>
 		<li><a href="#Feature_Improved_cache_control">Improved cache control</a></li>
@@ -58,7 +58,7 @@
 
 	<li><a href="#Feature_Improve_dimension_sharing">Improve dimension sharing</a></li>
 		<li><a href="#Feature_Virtual_cube_enhancements">Virtual cube enhancements</a></li>
-		<li><a href="#Feature_Calculated_members_in_virtual_cubes">Calculated members in 
+		<li><a href="#Feature_Calculated_members_in_virtual_cubes">Calculated members in
 	virtual cubes</a></li>
 		<li><a href="#Feature_Time_function">Time function</a></li>
 		<li><a href="#Feature_Scalar_functions">Scalar functions</a></li>
@@ -66,7 +66,7 @@
 
 		<li><a href="#Feature_Rollups">Rollups</a></li>
 		<li><a href="#Feature_Compound_slicer">Compound slicer</a></li>
-		<li><a href="#Feature_Enhancements_to_schema_cache">Enhancements to schema 
+		<li><a href="#Feature_Enhancements_to_schema_cache">Enhancements to schema
 	cache</a></li>
 		<li><a href="#Feature_JOLAP_support">JOLAP support</a></li>
 		<li><a href="#Feature_Schema_and_query_validation">Schema and query validation</a></li>
@@ -79,42 +79,42 @@
 		<li><a href="#Feature_Graphical_administrator">Graphical administrator</a></li>
 		<li><a href="#Feature_Mondrian_XMLA_server">Mondrian XML/A server</a></li>
 
-		<li><a href="#Feature_User_defined_aggregate_functions">User-defined 
+		<li><a href="#Feature_User_defined_aggregate_functions">User-defined
 		aggregate functions</a></li>
-        <li><a href="#Feature_Time_function_and_scalar_functions">Time function 
+        <li><a href="#Feature_Time_function_and_scalar_functions">Time function
         and scalar functions</a></li>
-        <li><a href="#Feature_Further_work_on_aggregate_tables">Further work on 
+        <li><a href="#Feature_Further_work_on_aggregate_tables">Further work on
         aggregate tables</a></li>
 
   </ol>
 </ol>
-<!-- 
+<!--
 #########################
 ##  1. Introduction #####
 ######################### -->
-<h3>1. Introduction<a name="2_Introduction">&nbsp;</a></h3>
+<h3>1. Introduction<a name="1_Introduction">&nbsp;</a></h3>
 
 <p>This is a list of features we propose to deliver in future releases of
 Mondrian. Each feature is linked to a high-level description. Complex features
 will have more detailed specifications in a separate document.</p>
-<!-- 
+<!--
 ######################################
 ##  1.1 Purpose of this document #####
 ###################################### -->
 <h1>1.1 Purpose of this document<a name="2.1_Purpose_of_this_document">&nbsp;</a></h1>
 
-<p>This document has several goals. First, it lets the Mondrian community know what 
-features we are thinking about implementing. There may be better ways of 
+<p>This document has several goals. First, it lets the Mondrian community know what
+features we are thinking about implementing. There may be better ways of
 delivering the same functionality that we haven't thought of.</p>
 
-<p>Second, since there is always more work than time, it allows us to 
-prioritize. If we hear that a particular feature is important to a lot of 
+<p>Second, since there is always more work than time, it allows us to
+prioritize. If we hear that a particular feature is important to a lot of
 people, we will try to get to it sooner.</p>
 
-<p>Third, it allows us to attract resources.&nbsp;If there are features in this 
-roadmap which are important to your organization, consider sponsoring Mondrian's 
+<p>Third, it allows us to attract resources.&nbsp;If there are features in this
+roadmap which are important to your organization, consider sponsoring Mondrian's
 development.</p>
-<!-- 
+<!--
 #############################
 ##  1.2 Mondrian's goal #####
 ############################# -->
@@ -132,84 +132,84 @@ development.</p>
 	<li>easy to understand</li>
 </ul>
 
-<p>As an open-source olap server written in pure Java, we feel that it meets 
-these goals. We can't anticipate all of our customers' requirements, but 
-open-source combined with Java keeps Mondrian flexible. It's easy to add 
-functionality or to integrate third-party tools, and Mondrian be integrated into 
+<p>As an open-source olap server written in pure Java, we feel that it meets
+these goals. We can't anticipate all of our customers' requirements, but
+open-source combined with Java keeps Mondrian flexible. It's easy to add
+functionality or to integrate third-party tools, and Mondrian be integrated into
 a variety of environments.</p>
-<!-- 
+<!--
 ########################
 ##  1.3 Scope      #####
 ######################## -->
 <h1>1.3 Scope<a name="2.3_Scope">&nbsp;</a></h1>
 
-<p>Mondrian can't do everything. If it did everything, it would be a huge 
-download, difficult to install, and even more difficult to integrate with other 
-software; and we'd never finish writing it. But the good news is, this is open 
-source. If a feature is missing, it's often easy to add the feature to Mondrian 
+<p>Mondrian can't do everything. If it did everything, it would be a huge
+download, difficult to install, and even more difficult to integrate with other
+software; and we'd never finish writing it. But the good news is, this is open
+source. If a feature is missing, it's often easy to add the feature to Mondrian
 or to integrate with another open-source product that provides the feature.</p>
 
-<p><a href="http://jpivot.sourceforge.net">JPivot</a> is Mondrian's sister project. 
-It provides an excellent user-interface, and shows off what Mondrian 
-can do. But we have been careful to keep the two projects separate. (You can use 
-another user-interface to Mondrian, and you can also use JPivot with other 
-data-sources.) If you've run Mondrian's demo and you have suggestions on how to 
+<p><a href="http://jpivot.sourceforge.net">JPivot</a> is Mondrian's sister project.
+It provides an excellent user-interface, and shows off what Mondrian
+can do. But we have been careful to keep the two projects separate. (You can use
+another user-interface to Mondrian, and you can also use JPivot with other
+data-sources.) If you've run Mondrian's demo and you have suggestions on how to
 improve the web interface, please
 
-<a href="http://sourceforge.net/forum/forum.php?forum_id=197389">make your 
+<a href="http://sourceforge.net/forum/forum.php?forum_id=197389">make your
 suggestion to the JPivot project directly</a>.</p>
-<!-- 
+<!--
 ######################################################
 ##  1.4 Sponsored development and co-development #####
 ###################################################### -->
 <h1>1.4 Sponsored development and co-development<a name="2.4_Sponsored_development_and_co-development">&nbsp;</a></h1>
 
-<p>Mondrian encourages companies to sponsor development of features which are 
-important to them. Sponsorship allows Mondrian developers to spend more time to 
-spend more time adding features to Mondrian, rather than having to find other 
-ways to pay the rent. The results are always contributed back to the project as 
+<p>Mondrian encourages companies to sponsor development of features which are
+important to them. Sponsorship allows Mondrian developers to spend more time to
+spend more time adding features to Mondrian, rather than having to find other
+ways to pay the rent. The results are always contributed back to the project as
 open-source.</p>
 
-<p>Another way companies can help Mondrian is to assign employees to co-develop 
-features. We can help specify and design these features, provided that the 
+<p>Another way companies can help Mondrian is to assign employees to co-develop
+features. We can help specify and design these features, provided that the
 resulting code is contributed to the project.</p>
 
-<p>If your organization would like to sponsor development of features, please 
+<p>If your organization would like to sponsor development of features, please
 contact Julian Hyde.</p>
-<!-- 
+<!--
 ############################
 ##  2. Release history #####
 ############################ -->
 <h3>2. Release history<a name="3_Release_history">&nbsp;</a></h3>
-<!-- 
+<!--
 #########################
 ##  2.1 Release 2.1 #####
 ######################### -->
 <h1>2.1 Release 2.1 (2006-04-xx)<a name="Release_2.1">&nbsp;</a></h1>
 
 <ol>
-  <li>Finally, a separate distribution <code>mondrian-*-embedded.zip</code>, 
-  including an embedded Derby database in the WAR. This can be deployed to 
-  Tomcat on any platform by simply exploding the WAR into TOMCAT/webapps, 
+  <li>Finally, a separate distribution <code>mondrian-*-embedded.zip</code>,
+  including an embedded Derby database in the WAR. This can be deployed to
+  Tomcat on any platform by simply exploding the WAR into TOMCAT/webapps,
   allowing folks &quot;kicking the tires&quot; to easily try out Mondrian/JPivot. See
   <a href="install.html#5_Deploy_and_run_the_embedded_web_app">
   how to deploy and run the embedded web app</a>.</li>
   <li>XML/A bug fixes, functionality and test suite improvements.</li>
 
-  <li>Compilation of MDX expressions. This is an architectural change to allow 
-  Mondrian to analyze queries at the start of execution, and trade off various 
-  techniques such as expression-caching and pushing predicates into the 
+  <li>Compilation of MDX expressions. This is an architectural change to allow
+  Mondrian to analyze queries at the start of execution, and trade off various
+  techniques such as expression-caching and pushing predicates into the
   generated SQL. It involves some API changes (see <a href="#API_changes_in_2.1">
   below</a>).</li>
-  <li>Allow distinct-count measures to be rolled up over attributes which are 
-  functionally dependent on the key of the measure (e.g. &quot;gender&quot; is 
-  functionally dependent on the key &quot;customer_id&quot; of the measure &quot;Customer 
-  Count&quot;). This yields performance improvements when using distinct 
+  <li>Allow distinct-count measures to be rolled up over attributes which are
+  functionally dependent on the key of the measure (e.g. &quot;gender&quot; is
+  functionally dependent on the key &quot;customer_id&quot; of the measure &quot;Customer
+  Count&quot;). This yields performance improvements when using distinct
   count-aggregates.</li>
 
   <li>Improved integration of User-Defined Functions.</li>
   <li>Implemented <code>VisualTotals</code>, <code>LastPeriods</code>, <code>
-  AddCalculatedMembers</code>, <code>StripCalculatedMembers</code> MDX 
+  AddCalculatedMembers</code>, <code>StripCalculatedMembers</code> MDX
   functions.</li>
 
   <li>Support for comments in MDX (<code>/* </code>...<code> */</code>, <code>--</code>
@@ -221,7 +221,7 @@ contact Julian Hyde.</p>
   <li>Documentation improvements.</li>
 </ol>
 
-<!-- 
+<!--
 ##################################
 ##  2.1.1 API changes in 2.1 #####
 ################################## -->
@@ -229,11 +229,11 @@ contact Julian Hyde.</p>
 <ol>
 
   <li>FunCall and UnresolvedFunCall. It used to be possible to create a
-  <code>FunCall</code> with the name of a function but no function definition. 
-  This complicated the validation process, because we would discover at runtime 
+  <code>FunCall</code> with the name of a function but no function definition.
+  This complicated the validation process, because we would discover at runtime
   that a function call had no definition. Now you should use the new class <code>
   UnresolvedFunCall</code>.</li>
-  <li>Category methods. Renaming a few of the methods concerning types 
+  <li>Category methods. Renaming a few of the methods concerning types
   and categories.<ul>
     <li><code>Exp.getType()</code> used to return <code>int</code>, now returns
     <code>Type</code></li>
@@ -243,25 +243,25 @@ contact Julian Hyde.</p>
     <li><code>int[] FunDef.getParameterTypes()</code> is renamed to int[] <code>
     FunCall.getParameterCategories()</code></li>
 
-    <li><code>int FunCall.getReturnType()</code> is renamed to <code>int 
+    <li><code>int FunCall.getReturnType()</code> is renamed to <code>int
     FunCall.getReturnCategory()</code></li>
-    <li>Removed the <code>Exp.getTypeX()</code> method; old usages of this 
+    <li>Removed the <code>Exp.getTypeX()</code> method; old usages of this
     method should now use <code>Exp.getType()</code>.</li>
   </ul>
   </li>
 
   <li>OLAP element types. OLAP elements <code>Cube</code>, <code>
-  Dimension</code>, <code>Hierarchy</code>, <code>Level</code> and <code>Member</code> 
-  no longer implement the <code>Exp</code> interface. If you want to use these 
+  Dimension</code>, <code>Hierarchy</code>, <code>Level</code> and <code>Member</code>
+  no longer implement the <code>Exp</code> interface. If you want to use these
   in expressions, there are wrapper classes: <code>DimensionExpr</code>, <code>
 
-  HierarchyExpr</code>, <code>LevelExpr</code>, <code>MemberExpr</code>. These 
-  are in a new package, <code>mondrian.mdx</code>. Some other parse tree classes 
-  (<code>Query</code>, <code>Literal</code>) will move to this package at some 
+  HierarchyExpr</code>, <code>LevelExpr</code>, <code>MemberExpr</code>. These
+  are in a new package, <code>mondrian.mdx</code>. Some other parse tree classes
+  (<code>Query</code>, <code>Literal</code>) will move to this package at some
   time in the future.</li>
 </ol>
 
-<!-- 
+<!--
 #########################
 ##  2.2 Release 2.0 #####
 ######################### -->
@@ -269,27 +269,27 @@ contact Julian Hyde.</p>
 
 <ul>
   <li><a href="aggregate_tables.html">Aggregate tables</a>.</li>
-  <li>Calculated sets defined in the schema, and <code>WITH SET</code> syntax to 
+  <li>Calculated sets defined in the schema, and <code>WITH SET</code> syntax to
   define sets within an MDX query.</li>
-  <li>Cached set expressions. The <code>WITH SET</code> feature and functions such as 
-  <code>RANK</code> cause the same expression to 
-be evaluated many times within the course of a single MDX statement. The set-expression cache 
+  <li>Cached set expressions. The <code>WITH SET</code> feature and functions such as
+  <code>RANK</code> cause the same expression to
+be evaluated many times within the course of a single MDX statement. The set-expression cache
   improves the performance of such queries. </li>
 
   <li><a href="schema.html#User-defined_function">User-defined functions</a>.</li>
   <li>Enhanced support for parent-child hierarchies.</li>
-  <li>Enhanced <a target="_top" href="http://www.xmla.org/">XML for Analysis 
+  <li>Enhanced <a target="_top" href="http://www.xmla.org/">XML for Analysis
   (XML/A)</a> support.</li>
   <li>Enhanced support for internationalized/localized (I18N/L10N) applications.</li>
-  <li>Pushdown SQL. To improve performance, Mondrian automatically translates 
-  filters and aggregations into SQL which can be executed on the underlying 
+  <li>Pushdown SQL. To improve performance, Mondrian automatically translates
+  filters and aggregations into SQL which can be executed on the underlying
   RDBMS.</li>
 
-  <li>Support for the <a target="_top" href="http://db.apache.org/derby/">Apache 
+  <li>Support for the <a target="_top" href="http://db.apache.org/derby/">Apache
   Derby</a> pure Java embedded RDBMS.</li>
 </ul>
 
-<!-- 
+<!--
 #########################
 ##  2.3 Release 1.1 #####
 ######################### -->
@@ -297,7 +297,7 @@ be evaluated many times within the course of a single MDX statement. The set-exp
 <ul>
   <li>Numerous improvements in functionality, performance, and stability.</li>
 </ul>
-<!-- 
+<!--
 #########################
 ##  2.4 Release 1.0 #####
 ######################### -->
@@ -310,7 +310,7 @@ be evaluated many times within the course of a single MDX statement. The set-exp
   <li>Support for XML for Analysis (XML/A).</li>
 </ul>
 
-<!-- 
+<!--
 #########################
 ##  2.5 Release 0.6 #####
 ######################### -->
@@ -320,18 +320,18 @@ be evaluated many times within the course of a single MDX statement. The set-exp
   <li>Parent-child hierarchies.</li>
   <li>Partial support for XML for Analysis (XML/A).</li>
 </ul>
-<!-- 
+<!--
 #########################
 ##  2.6 Release 0.5 #####
 ######################### -->
 <h1>2.6 Release 0.5 (2003-02-20)<a name="Release_0.5">&nbsp;</a></h1>
 <ul>
   <li>Partial support for JOLAP.</li>
-  <li>Implement <code>Hierarchize</code>, &quot;:&quot;, <code>Aggregate</code>, and 
+  <li>Implement <code>Hierarchize</code>, &quot;:&quot;, <code>Aggregate</code>, and
   statistical functions.</li>
 
 </ul>
-<!-- 
+<!--
 ########################
 ## 2.7 Release 0.4 #####
 ######################## -->
@@ -340,7 +340,7 @@ be evaluated many times within the course of a single MDX statement. The set-exp
   <li>Integration with JPivot.</li>
   <li>Improved thread-safety.</li>
 </ul>
-<!-- 
+<!--
 ########################
 ## 2.8 Release 0.3 #####
 ######################## -->
@@ -351,12 +351,12 @@ be evaluated many times within the course of a single MDX statement. The set-exp
   <li>JSP page generates a static table from an MDX query.</li>
   <li>Support for several SQL dialects.</li>
 </ul>
-<!-- 
+<!--
 #########################
 ##  3. Feature list #####
 ######################### -->
 <h3>3. Feature list<a name="4_Feature_list">&nbsp;</a></h3>
-<!-- 
+<!--
 ###############################################
 ##  3.1 Internationalization/localization #####
 ############################################### -->
@@ -364,7 +364,7 @@ be evaluated many times within the course of a single MDX statement. The set-exp
 
 <p><i>Effort: medium; importance: medium.</i></p>
 
-<p>Mondrian's has limited support for internationalization and localization 
+<p>Mondrian's has limited support for internationalization and localization
 (I18N/L10N):</p>
 <ul>
 	<li>Every connection has a locale</li>
@@ -375,10 +375,10 @@ be evaluated many times within the course of a single MDX statement. The set-exp
 <ul>
 	<li>Localized cube, dimension, hierarchy, level and measure names.</li>
 
-	<li>Localized member names. For example, the member [Gender].[M] should have 
+	<li>Localized member names. For example, the member [Gender].[M] should have
 	the caption &quot;Male&quot; in English, &quot;Masculin&quot; in French.</li>
-	<li>Localized format strings. Every locale has its own currency symbol, 
-	thousands separator and decimal separator. In the en-US locale, these are 
+	<li>Localized format strings. Every locale has its own currency symbol,
+	thousands separator and decimal separator. In the en-US locale, these are
 	&quot;$&quot;, &quot;,&quot; and &quot;.&quot;.</li>
 
 </ul>
@@ -388,7 +388,7 @@ be evaluated many times within the course of a single MDX statement. The set-exp
 <p>See the
 <a href="http://sourceforge.net/mailarchive/forum.php?thread_id=6386685&forum_id=8760">
 email thread &quot;MLS cubes RFC&quot;</a>.</p>
-<!-- 
+<!--
 ####################################
 ##  3.2 Improved cache control #####
 #################################### -->
@@ -397,7 +397,7 @@ email thread &quot;MLS cubes RFC&quot;</a>.</p>
 <p><i>Effort: medium; importance: medium.</i></p>
 
 <p>In Mondrian release 1.2, there is an API call to flush the entire cache,
-<code>RolapSchema.clearCache()</code>. For applications where the contents of 
+<code>RolapSchema.clearCache()</code>. For applications where the contents of
 the database are changing rapidly, this makes the cache not very useful.</p>
 
 <p>This feature would allow more fine-grained cache flushing. API:</p>
@@ -416,15 +416,15 @@ the database are changing rapidly, this makes the cache not very useful.</p>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Adds a member to the range.<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void addMember(Member[] members);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Adds a range of members. Either 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Adds a range of members. Either
 	bound may be null, which means unbounded.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void addMemberRange(Member lowerBound, 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void addMemberRange(Member lowerBound,
 	Member upperBound);<br>
 &nbsp;&nbsp;&nbsp; }<br>
 	}</code>
 </blockquote>
 
-<p>The following example shows how to flush all cache entries for Texas and 
+<p>The following example shows how to flush all cache entries for Texas and
 Oklahoma since 2005/9/2:</p>
 
 <blockquote>
@@ -440,7 +440,7 @@ Oklahoma since 2005/9/2:</p>
 </blockquote>
 
 <p>See also <a href="#Feature_Partitioned_cubes">partitioned cubes</a>.</p>
-<!-- 
+<!--
 ###############################
 ##  3.3 Partitioned cubes #####
 ############################### -->
@@ -448,22 +448,22 @@ Oklahoma since 2005/9/2:</p>
 
 <p><i>Effort: medium; importance: medium; priority: medium.</i></p>
 
-<p>Whereas a regular cube has a single fact table, a partitioned cube has 
-several fact tables, which are unioned together. The fact tables must have the 
+<p>Whereas a regular cube has a single fact table, a partitioned cube has
+several fact tables, which are unioned together. The fact tables must have the
 same column names.</p>
 
 <p>Each fact table can have a range (similar to 'cache ranges',
-<a href="#Feature_Improved_cache_control">above</a>) which describes what data 
-ranges are found in each. When looking for a particular cell, Mondrian scans the 
-tables' criteria to determine which table to look in. For example, T1 holds data 
-for Texas, 2005 onwards; T2 holds data for 2004 onwards; T3 holds all other 
+<a href="#Feature_Improved_cache_control">above</a>) which describes what data
+ranges are found in each. When looking for a particular cell, Mondrian scans the
+tables' criteria to determine which table to look in. For example, T1 holds data
+for Texas, 2005 onwards; T2 holds data for 2004 onwards; T3 holds all other
 data.&nbsp; The cell (Oklahoma, January 2005) would be found in T2.</p>
 
-<p>Partitioned tables are useful for real-time analysis. For example, one 
-partition might contain today's data, while another might hold historical data. 
-The 'hot' partition with today's data would typically have fewer or no 
-aggregation tables and have caching disabled; its fact table might have 
-different physical options in the RDBMS, say fewer indexes to maximize insert 
+<p>Partitioned tables are useful for real-time analysis. For example, one
+partition might contain today's data, while another might hold historical data.
+The 'hot' partition with today's data would typically have fewer or no
+aggregation tables and have caching disabled; its fact table might have
+different physical options in the RDBMS, say fewer indexes to maximize insert
 performance.</p>
 
 <p>Example schema:</p>
@@ -472,30 +472,30 @@ performance.</p>
 
 	<code>&lt;Cube name=&quot;Sales&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;Partitions&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Partition name=&quot;partition1&quot; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Partition name=&quot;partition1&quot;
 	cache=&quot;false&quot;&gt;<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Table name=&quot;sales_fact_this_month&quot;/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Ranges&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	&lt;Range dimension=&quot;[Time]&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	&lt;RangeMember bound=&quot;lower&quot; member=&quot;[Time].[2005].[9]&quot;/&gt;<br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	&lt;/Range&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	&lt;Range dimension=&quot;[Store]&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	&lt;RangeMember member=&quot;[Store].[USA].[CA]&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	&lt;RangeMember member=&quot;[Store].[USA].[WA].[Seattle]&quot;/&gt;<br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	&lt;/Range&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/Ranges&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/Partition&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Partition name=&quot;partition2&quot; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Partition name=&quot;partition2&quot;
 	cache=&quot;true&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Table name=&quot;sales_fact&quot;/&gt;<br>
 
@@ -504,7 +504,7 @@ performance.</p>
 &nbsp;&nbsp;&nbsp; &lt;/Partitions&gt;<br>
 	&lt;/Cube&gt;</code>
 </blockquote>
-<!-- 
+<!--
 #######################################
 ##  3.4 Improve dimension sharing #####
 ####################################### -->
@@ -513,7 +513,7 @@ performance.</p>
 <p><i>Effort: high; importance: high; priority: medium.</i></p>
 
 <p>Use the same dimension twice in the same cube.</p>
-<!-- 
+<!--
 #######################################
 ##  3.5 Virtual cube enhancements #####
 ####################################### -->
@@ -521,10 +521,10 @@ performance.</p>
 
 <p><i>Effort: medium; importance: medium; priority: medium.</i></p>
 
-<p>When a cube uses the same dimension twice is involved in a virtual cube, 
-disambiguate which usage of the dimension is involved. Allow the virtual cube to 
+<p>When a cube uses the same dimension twice is involved in a virtual cube,
+disambiguate which usage of the dimension is involved. Allow the virtual cube to
 use the same cube more than once.</p>
-<!-- 
+<!--
 #################################################
 ##  3.6 Calculated members in virtual cubes #####
 ################################################# -->
@@ -532,9 +532,9 @@ use the same cube more than once.</p>
 
 <p><i>Effort: low; importance: medium; priority: medium.</i></p>
 
-<p>One could imagine two levels: 1) simply access calculated measures from base 
+<p>One could imagine two levels: 1) simply access calculated measures from base
 cubes, 2) define new calculated measures spanning measures in the base cubes.</p>
-<!-- 
+<!--
 ########################
 ##  3.7 Time function #####
 ######################## -->
@@ -545,7 +545,7 @@ cubes, 2) define new calculated measures spanning measures in the base cubes.</p
 <p>See
 <a href="https://sourceforge.net/forum/forum.php?thread_id=1222972&forum_id=111375">
 the Open Discussion thread &quot;Accessing the current date in MDX&quot;</a>.</p>
-<!-- 
+<!--
 ##############################
 ##  3.8 Scalar functions #####
 ############################## -->
@@ -553,11 +553,11 @@ the Open Discussion thread &quot;Accessing the current date in MDX&quot;</a>.</p
 
 <p><i>Effort: medium; importance: high; priority: medium.</i></p>
 
-<p>Mondrian's set of functions for operating on numeric and string expressions 
-is limited. This feature would add string manipulation functions (substring, 
-trim, regular expressions) and arithmetic expressions (power, log, sqrt) and 
+<p>Mondrian's set of functions for operating on numeric and string expressions
+is limited. This feature would add string manipulation functions (substring,
+trim, regular expressions) and arithmetic expressions (power, log, sqrt) and
 conversion functions (string to numeric, numeric to string).</p>
-<!-- 
+<!--
 ########################
 ##  3.9 Cold start #####
 ######################## -->
@@ -565,17 +565,17 @@ conversion functions (string to numeric, numeric to string).</p>
 
 <p><i>Effort: medium; importance: medium; priority: low.</i></p>
 
-<p>When Mondrian initializes and starts to process the first queries, it makes 
-sql calls to get member lists and determine cardinality, and then to load 
-segments into the cache. When Mondrian is closed and restarted, it has to do 
-that work again. This can be a significant chunk of time depending on the cube 
-size. For example in one test an 8GB cube (55M row fact table) took 15 minutes 
-(mostly doing a group by) before it returned results from its first query, and 
-absent any caching on the database server would take another 15 minutes if you 
-closed it and reopened the application. Now, this cube was just one month of 
+<p>When Mondrian initializes and starts to process the first queries, it makes
+sql calls to get member lists and determine cardinality, and then to load
+segments into the cache. When Mondrian is closed and restarted, it has to do
+that work again. This can be a significant chunk of time depending on the cube
+size. For example in one test an 8GB cube (55M row fact table) took 15 minutes
+(mostly doing a group by) before it returned results from its first query, and
+absent any caching on the database server would take another 15 minutes if you
+closed it and reopened the application. Now, this cube was just one month of
 data; imagine the time if there was 5 years worth.</p>
 
-<p>What ideas and designs can you come up with to speed that up, in other words to 
+<p>What ideas and designs can you come up with to speed that up, in other words to
 do anything time consuming only once and reuse it between instances?</p>
 
 <p><i>Gang Chen</i>: If it's possible, can we calculate the real levels of a
@@ -584,7 +584,7 @@ AS's.</p>
 
 <p><i>Julian Hyde</i>: Can you give me more details on how that would work?
 Start a discussion forum or feature request on SourceForge.</p>
-<!-- 
+<!--
 ########################
 ##  3.10 Rollups   #####
 ######################## -->
@@ -592,20 +592,20 @@ Start a discussion forum or feature request on SourceForge.</p>
 
 <p><i>Effort: medium; importance: medium; priority: low.</i></p>
 
-<p>If the cache contains aggregates for all children of a member, then Mondrian 
+<p>If the cache contains aggregates for all children of a member, then Mondrian
 would be able to compute the aggregate for the parent member by rolling up.</p>
 
 <p>See the
 <a href="https://sourceforge.net/mailarchive/forum.php?thread_id=6496831&forum_id=8760">
 email thread &quot;grouper in Mondrian&quot;</a>.</p>
-<!-- 
+<!--
 ##############################
 ##  3.11 Compound slicer #####
 ############################## -->
 <h1>3.11 Compound slicer<a name="Feature_Compound_slicer">&nbsp;</a></h1>
 
 <p><i>Effort: medium; importance: low; priority: low.</i></p>
-<!-- 
+<!--
 ###########################################
 ##  3.12 Enhancements to schema cache #####
 ########################################### -->
@@ -613,31 +613,31 @@ email thread &quot;grouper in Mondrian&quot;</a>.</p>
 
 <p><i>Effort: low; importance: medium; priority: high.</i></p>
 
-<p>At present, the schema is read from a URL when the connection is established. 
-If the URL is of <code>http:</code> protocol, Mondrian assumes that the XML 
-content of the schema file never changes, and therefore caches the schema 
-definition in memory. But if the URL is of <code>file:</code> protocol, Mondrian 
-assumes that the XML schema definition is volatile, and therefore it re-creates 
-the schema every time a connection is established. This is expensive, and may 
+<p>At present, the schema is read from a URL when the connection is established.
+If the URL is of <code>http:</code> protocol, Mondrian assumes that the XML
+content of the schema file never changes, and therefore caches the schema
+definition in memory. But if the URL is of <code>file:</code> protocol, Mondrian
+assumes that the XML schema definition is volatile, and therefore it re-creates
+the schema every time a connection is established. This is expensive, and may
 the system's reponsiveness.</p>
 
-<p>This feature adds a <code>cacheSchema</code> parameter to the connect string. 
+<p>This feature adds a <code>cacheSchema</code> parameter to the connect string.
 Values are:</p>
 
 <ul>
 	<li><code>true</code>: Assume that the schema definition never changes.</li>
-	<li><code>false</code>:&nbsp; Assume that the schema definition changes 
-	frequently, and therefore rebuild the schema every time a connection is 
+	<li><code>false</code>:&nbsp; Assume that the schema definition changes
+	frequently, and therefore rebuild the schema every time a connection is
 	established.</li>
-	<li><code>digest</code>:&nbsp; Every time a connection is established, 
+	<li><code>digest</code>:&nbsp; Every time a connection is established,
 	re-read the schema, and compute a
-	<a href="http://www.irnis.net/gloss/md5-digest.shtml">digest</a>. If the 
-	digest is unchanged, assume that the schema is unchanged, and use the schema 
+	<a href="http://www.irnis.net/gloss/md5-digest.shtml">digest</a>. If the
+	digest is unchanged, assume that the schema is unchanged, and use the schema
 	definition from the cache.</li>
 
 </ul>
 
-<!-- 
+<!--
 ############################
 ##  3.13 JOLAP support #####
 ############################ -->
@@ -645,9 +645,9 @@ Values are:</p>
 
 <p><i>Effort: very high; importance: medium; priority: low.</i></p>
 
-<p>Mondrian's support for the JOLAP API is currently incomplete. This feature 
+<p>Mondrian's support for the JOLAP API is currently incomplete. This feature
 would complete the implementation of the API.</p>
-<!-- 
+<!--
 ##########################################
 ##  3.14 Schema and query validation #####
 ########################################## -->
@@ -655,11 +655,11 @@ would complete the implementation of the API.</p>
 
 <p>Process to validate a schema.</p>
 
-<p>Process to validate a set of queries. Maybe an option to ignore errors due to 
+<p>Process to validate a set of queries. Maybe an option to ignore errors due to
 specific members not existing because the data hasn't been loaded yet.</p>
 
 <p>Expose validation via Eclipse plugin.</p>
-<!-- 
+<!--
 ############################
 ##  3.15 Documentation #####
 ############################ -->
@@ -668,25 +668,25 @@ specific members not existing because the data hasn't been loaded yet.</p>
 <ul>
 <li>Document 'ordinalColumn'</li>
 </ul>
-<!-- 
+<!--
 ##############################
 ##  3.16 Name-resolution #####
 ############################## -->
 <h1>3.16 Name-resolution<a name="Feature_Name-resolution">&nbsp;</a></h1>
 
-<p>Mondrian's name resolution is not always compatible with other MDX 
+<p>Mondrian's name resolution is not always compatible with other MDX
 implementations such as MSAS and SAS.</p>
 <ol>
 	<li>Parameterize case-sensitivity: a connection parameter determines whether cube/dimension/hierarchy/level/member names are case-sensitive.</li>
-	<li>Support abbreviated member names. For example, e.g. <code>[Products].[Boston Lager]</code> seems to be valid in MSAS if product names are unique, whereas Mondrian 
+	<li>Support abbreviated member names. For example, e.g. <code>[Products].[Boston Lager]</code> seems to be valid in MSAS if product names are unique, whereas Mondrian
 	currently requires <code>[Products].[Beverages].[Beer].[Samual Adams].[Boston Lager]</code>.</li>
 	<li>Support keys in members, e.g. <code>[Products].#[1234]</code>.</li>
 
-	<li>Alternative axis names. '<code>ON COLUMNS</code>' and '<code>ON AXES(0)</code>' 
+	<li>Alternative axis names. '<code>ON COLUMNS</code>' and '<code>ON AXES(0)</code>'
 	are supported, but '<code>ON 0</code>' is not.</li>
 </ol>
 
-<!-- 
+<!--
 #####################################
 ##  3.17 XML/A interoperability #####
 ##################################### -->
@@ -698,7 +698,7 @@ implementations such as MSAS and SAS.</p>
 <a
 href="https://sourceforge.net/forum/forum.php?thread_id=1306599&forum_id=111376">Excel
 2003 and Mondrian</a>.
-<!-- 
+<!--
 #################################
 ##  3.18 Standard functions #####
 ################################# -->
@@ -711,9 +711,9 @@ href="https://sourceforge.net/forum/forum.php?thread_id=1306599&forum_id=111376"
 <li>DrilldownLevelBottom(&lt;Set&gt;, &lt;Count&gt;[, [&lt;Level&gt;][, &lt;Numeric Expression&gt;]])</li>
 <li>DrilldownLevelTop(&lt;Set&gt;, &lt;Count&gt;[, [&lt;Level&gt;][, &lt;Numeric Expression&gt;]])</li>
 
-<li>DrilldownMemberBottom(&lt;Set1&gt;, &lt;Set2&gt;, &lt;Count&gt;[, [&lt;Numeric Expression&gt;][, 
+<li>DrilldownMemberBottom(&lt;Set1&gt;, &lt;Set2&gt;, &lt;Count&gt;[, [&lt;Numeric Expression&gt;][,
 RECURSIVE]])</li>
-<li>DrilldownMemberTop(&lt;Set1&gt;, &lt;Set2&gt;, &lt;Count&gt;[, [&lt;Numeric Expression&gt;][, 
+<li>DrilldownMemberTop(&lt;Set1&gt;, &lt;Set2&gt;, &lt;Count&gt;[, [&lt;Numeric Expression&gt;][,
 RECURSIVE]])</li>
 
 <li>DrillupLevel(&lt;Set&gt;[, &lt;Level&gt;])</li>
@@ -724,25 +724,25 @@ RECURSIVE]])</li>
 </ul>
 
 
-<p><code>Except</code> is implemented in Mondrian 1.2 except the <code>ALL</code> 
+<p><code>Except</code> is implemented in Mondrian 1.2 except the <code>ALL</code>
 keyword.</p>
-<!-- 
+<!--
 ############################
 ##  3.19 Bridge to CWM #####
 ############################ -->
 <h1>3.19 Bridge to CWM<a name="Feature_Bridge_to_CWM">&nbsp;</a></h1>
 
-<p>CWM (Common Warehouse Model) is a standard model for defining data warehouse 
-and multidimensional schemas. It allows interoperability with tools such as UML 
+<p>CWM (Common Warehouse Model) is a standard model for defining data warehouse
+and multidimensional schemas. It allows interoperability with tools such as UML
 diagrams, relational report design tools, and ETL tools.</p>
 
 <p>This feature will add:</p>
 <ul>
-	<li>A gateway to make present a Mondrian schema via the CWM API. (This is 
+	<li>A gateway to make present a Mondrian schema via the CWM API. (This is
 	already partially implemented as part of JOLAP support.)</li>
 	<li>A bridge to read a CWM schema and create a Mondrian schema from it.</li>
 </ul>
-<!-- 
+<!--
 ######################################
 ##  3.20 Graphical administrator #####
 ###################################### -->
@@ -750,8 +750,8 @@ diagrams, relational report design tools, and ETL tools.</p>
 
 <p><i>Effort: high; importance: high; priority: high.</i></p>
 
-<p>Mondrian has a rich set of tools and components, but they are difficult to 
-install and configure. The administrator will bring many of the components 
+<p>Mondrian has a rich set of tools and components, but they are difficult to
+install and configure. The administrator will bring many of the components
 together in one application, which can easily be installed and launched.</p>
 
 <p>Basic features:</p>
@@ -759,9 +759,9 @@ together in one application, which can easily be installed and launched.</p>
 	<li>Connect to various Mondrian data sources (local, and via XML/A)</li>
 	<li>Browse cubes, and create reports from them.</li>
 
-	<li>Dynamically load JDBC drivers. (Don't require them to be on the 
+	<li>Dynamically load JDBC drivers. (Don't require them to be on the
 	classpath.)</li>
-	<li>Can save MDX queries as reports. (In various formats: OpenI, BIRT, 
+	<li>Can save MDX queries as reports. (In various formats: OpenI, BIRT,
 	JRubik all have their format.)</li>
 	<li>Graphical version of command-runner</li>
 	<li>Run data loader</li>
@@ -776,24 +776,24 @@ together in one application, which can easily be installed and launched.</p>
 </ul>
 
 <p>Will probably be built in Swing, based upon JRubik components.</p>
-<!-- 
+<!--
 ####################################
 ##  3.21 Mondrian XML/A server #####
 #################################### -->
 <h1>3.21 Mondrian XML/A server<a name="Feature_Mondrian_XMLA_server">&nbsp;</a></h1>
 
-<p>The standard installation will include a script to start and stop a Mondrian 
-instance running XML/A. This will invoke a lightweight servlet engine running 
-Mondrian's XML/A adapter. (You will still be able to include Mondrian's XML/A 
+<p>The standard installation will include a script to start and stop a Mondrian
+instance running XML/A. This will invoke a lightweight servlet engine running
+Mondrian's XML/A adapter. (You will still be able to include Mondrian's XML/A
 servlet in your web server of choice.)</p>
-<!-- 
+<!--
 ###############################################
 ##  3.22 User-defined aggregate functions #####
 ############################################### -->
 <h1>3.22 User-defined aggregate functions<a name="Feature_User_defined_aggregate_functions">&nbsp;</a></h1>
 
-<p>The standard aggregate functions are sum, count, distinct-count, min, max and 
-avg. This feature will provide an SPI by which application developers can write 
+<p>The standard aggregate functions are sum, count, distinct-count, min, max and
+avg. This feature will provide an SPI by which application developers can write
 their own aggregate functions.</p>
 
 <p>The SPI will include:</p>
@@ -802,30 +802,30 @@ their own aggregate functions.</p>
 
 	<li>parameter types;</li>
 	<li>return types;</li>
-	<li>a means to generate SQL expression to compute the aggregate from 
-	unaggregated fact table data. (For the &quot;count&quot; function applied to the &quot;unit_sales&quot; 
+	<li>a means to generate SQL expression to compute the aggregate from
+	unaggregated fact table data. (For the &quot;count&quot; function applied to the &quot;unit_sales&quot;
 	column, this would generate &quot;count(unit_sales)&quot;.)</li>
 
-	<li>a means to generate SQL expression to compute the aggregate by rolling 
-	up partially aggregated data. (For the &quot;count&quot; function applied to the &quot;unit_sales&quot; 
-	column, this would generate &quot;sum(unit_sales)&quot;. Some aggregates, such as 
+	<li>a means to generate SQL expression to compute the aggregate by rolling
+	up partially aggregated data. (For the &quot;count&quot; function applied to the &quot;unit_sales&quot;
+	column, this would generate &quot;sum(unit_sales)&quot;. Some aggregates, such as
 	&quot;distinct-count&quot;, do not support rollup.)</li>
-	<li>a means to roll up values in memory. Some aggregates, such as 
+	<li>a means to roll up values in memory. Some aggregates, such as
 	&quot;distinct-count&quot;, do not support this.</li>
 
 </ul>
 
-<p>The SPI will support functions which map to a SQL expression rather than a 
-SQL aggregate function. The &quot;avg&quot; function is an example of this: it works by 
+<p>The SPI will support functions which map to a SQL expression rather than a
+SQL aggregate function. The &quot;avg&quot; function is an example of this: it works by
 expanding itself to sum / count.</p>
 
-<p>The SPI will support functions which can be computed from unaggregate fact 
-table data, but cannot be rolled up. The &quot;distinct-count&quot; function is an example 
+<p>The SPI will support functions which can be computed from unaggregate fact
+table data, but cannot be rolled up. The &quot;distinct-count&quot; function is an example
 of this.</p>
 
-<p>You will be able to include user-defined aggregate functions in aggregate 
+<p>You will be able to include user-defined aggregate functions in aggregate
 tables.</p>
-<!-- 
+<!--
 #################################################
 ##  3.23 Time function and scalar functions #####
 ################################################# -->
@@ -840,7 +840,7 @@ application specified UDFs can also be configured in schema file.</p>
 them an optional part of Mondrian -- in the source tree, but not
 loaded in the MDX dialect by default -- but create a set of tests for
 them. They will serve as great examples for others writing UDFs.</p>
-<!-- 
+<!--
 ###############################################
 ##  3.24 Further work on aggregate tables #####
 ############################################### -->
