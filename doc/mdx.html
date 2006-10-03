@@ -82,7 +82,34 @@ WHERE [Time].[1997].[Q2]
 </blockquote>
 <p>returns the value of the <code>[Store Sqft]</code> property as an integer 
 value.</p>
-<!-- 
+
+<h3><code>IN</code> and <code>NOT IN</code></h3>
+
+<p><code>IN</code> and <code>NOT IN</code> are Mondrian-specific functions.
+For example:</p>
+
+<blockquote>
+    <code>SELECT {[Measures].[Unit Sales]} ON COLUMNS,<br/>
+&nbsp;&nbsp;&nbsp;FILTER([Product].[Product Family].MEMBERS,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Product].[Product Family].CurrentMember NOT IN<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{[Product].[All Products].firstChild,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Product].[All Products].lastChild}) ON ROWS<br/>
+FROM [Sales]</code>
+</blockquote>
+
+<h3><code>MATCHES</code> and <code>NOT MATCHES</code></h3>
+
+<p><code>MATCHES</code> and <code>NOT MATCHES</code> are Mondrian-specific
+functions which compare a string with a <A href="http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/Pattern.html">Java regular expression</A>.
+For example, the following query finds all employees whose name starts with 'sam' (case-insensitive):</p>
+
+<blockquote>
+    <code>SELECT {[Measures].[Org Salary]} ON COLUMNS,<br/>
+&nbsp;&nbsp;&nbsp;Filter({[Employees].MEMBERS},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Employees].CurrentMember.Name MATCHES '(?i)sam.*') ON ROWS<br/>
+FROM [HR]</code>
+</blockquote>
+<!--
 ########################
 ##  Comments       #####
 ######################## -->
@@ -93,14 +120,6 @@ value.</p>
 <blockquote><p>
 // End-of-line comment
 </p></blockquote>
-
-<h3><code>IN</code> and <code>NOT IN</code></h3>
-
-<p><code>IN</code> and <code>NOT IN</code> are Mondrian-specific functions.</p>
-
-<h3><code>MATCHES</code> and <code>NOT MATCHES</code></h3>
-
-<p><code>MATCHES</code> and <code>NOT MATCHES</code> are Mondrian-specific functions which take as one of its arguments a <A href="http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/Pattern.html">java regular expression</A>.</p>
 
 
 <blockquote><p>

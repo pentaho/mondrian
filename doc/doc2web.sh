@@ -93,6 +93,9 @@ doImg images/arch_mondrian_v1_tn.png
 doImg images/arch_mondrian_sketch_tn.png
 doImg images/zoom.png
 doImg images/logo_mondrian_lrg.png
+doImg images/code_spacing.png
+doImg images/code_indentation.png
+doImg images/perforce_setup.png
 
 # Remove archive.
 rm -f mondrianPentaho.tar.gz
