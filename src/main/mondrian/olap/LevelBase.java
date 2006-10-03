@@ -33,7 +33,7 @@ public abstract class LevelBase
     protected final int depth;
     protected final LevelType levelType;
     protected MemberFormatter memberFormatter;
-    protected String approxRowCount;
+    protected int  approxRowCount;
 
     protected LevelBase(
             Hierarchy hierarchy,
@@ -48,7 +48,7 @@ public abstract class LevelBase
     }
 
     public void setApproxRowCount(int length) {
-        approxRowCount = String.valueOf(length);        
+        approxRowCount = length;
     }
 
     // from Element

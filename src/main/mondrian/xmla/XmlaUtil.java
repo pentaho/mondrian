@@ -325,16 +325,19 @@ way too noisy
     }
 
     public static int getCardinality(SchemaReader schemaReader, Level level){
-        String approxRowCount = level.getApproxRowCount();
+        int approxRowCount = level.getApproxRowCount();
 
-        boolean notNullAndNumeric = approxRowCount != null && approxRowCount.matches("^\\d+$");
-        if(notNullAndNumeric){
-            return Integer.parseInt(approxRowCount);
-       }
-
-        int length = schemaReader.getLevelMembers(level, false).length;
-        level.setApproxRowCount(length);
-        return length;
+        if (approxRowCount == Integer.MIN_VALUE)
+        {
+            // if approxRowCount == MIN_VALUE  then it hasn't been set,
+            //  need to retrieve the value.
+            int length = schemaReader.getLevelMembers(level, false).length;
+            // cache it for future
+            level.setApproxRowCount(length);
+            return length;
+        } else {
+            return approxRowCount;
+        }
     }
 }
 

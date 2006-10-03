@@ -3393,8 +3393,7 @@ boolean restriction, boolean nullable, String description)
                                     do default
             */
 
-            // Added by TWI to returned cahed row numbers
-            String approxRowCount = lastLevel.getApproxRowCount();
+            // Added by TWI to returned cached row numbers
             int n=XmlaUtil.getCardinality(schemaReader, lastLevel);
             row.set(DimensionCardinality.name, n+1);
 

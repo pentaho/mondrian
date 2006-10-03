@@ -113,7 +113,7 @@ public class RolapLevel extends LevelBase {
         if (keyExp instanceof MondrianDef.Column) {
             checkColumn((MondrianDef.Column) keyExp);
         }
-        this.approxRowCount = approxRowCount;
+        this.approxRowCount = loadApproxRowCount(approxRowCount);
         this.flags = flags;
         final boolean isAll = (flags & ALL) == ALL;
         this.unique = (flags & UNIQUE) == UNIQUE;
@@ -193,6 +193,19 @@ public class RolapLevel extends LevelBase {
             }
         }
         this.hideMemberCondition = hideMemberCondition;
+    }
+
+    private int loadApproxRowCount(String approxRowCount) {
+        boolean notNullAndNumeric = approxRowCount != null && approxRowCount.matches("^\\d+$");
+        if(notNullAndNumeric){
+
+              return Integer.parseInt(approxRowCount);
+        } else {
+            // if approxRowCount is not set, return MIN_VALUE to indicate
+            return Integer.MIN_VALUE;
+        }
+
+
     }
 
     protected Logger getLogger() {
@@ -390,7 +403,7 @@ public class RolapLevel extends LevelBase {
         return inheritedProperties;
     }
 
-    public String getApproxRowCount() {
+    public int getApproxRowCount() {
         return approxRowCount;
     }
     /**
