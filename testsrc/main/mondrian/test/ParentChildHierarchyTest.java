@@ -755,7 +755,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         // as calculated (even though they are calculated, internally)
         // but that real calculated members are counted as calculated.
         testContext.assertQueryReturns(
-                "with member [Employees].[Foo] as ' Sum([Sheri Nowmer].[Donna Arnold].Children) '\n" +
+                "with member [Employees].[Foo] as ' Sum([Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].Children) '\n" +
                         "member [Measures].[Count1] AS [Employees].MEMBERS.Count\n" +
                         "member [Measures].[Count2] AS [Employees].ALLMEMBERS.COUNT\n" +
                         "select {[Measures].[Count1], [Measures].[Count2]} ON COLUMNS\n" +
