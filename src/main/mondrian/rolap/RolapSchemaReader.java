@@ -173,20 +173,49 @@ public abstract class RolapSchemaReader implements SchemaReader {
     }
 
     /**
-     * check, whether member reader is caching
-     * if yes - return level member count
-     * if no  - return -1
+     * Returns number of members in a level,
+     * if the information can be retrieved from cache.
+     * Otherwise {@link Integer#MIN_VALUE}.
      */
-    public int getLevelCardinalityFromCache(Level level) {
+    private int getLevelCardinalityFromCache(Level level) {
         final Hierarchy hierarchy = level.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
         if( !(memberReader instanceof MemberCache)) {
-            return -1;
+            return Integer.MIN_VALUE;
         }
         List list = ((MemberCache)memberReader).getLevelMembersFromCache((RolapLevel)level, null);
-        if (list == null)
-          return -1;
+        if (list == null) {
+          return Integer.MIN_VALUE;
+        }
         return list.size();
+    }
+
+    public int getLevelCardinality(
+        Level level,
+        boolean approximate,
+        boolean materialize)
+    {
+        int rowCount = Integer.MIN_VALUE;
+        if (approximate) {
+            // See if the schema has an approximation.
+            rowCount = level.getApproxRowCount();
+        }
+
+        if (rowCount == Integer.MIN_VALUE) {
+            // See if the precise row count is available in cache.
+            rowCount = getLevelCardinalityFromCache(level);
+        }
+
+        if (rowCount == Integer.MIN_VALUE) {
+            if (materialize) {
+                // Either the approximate row count hasn't been set,
+                // or they want the precise row count.
+                rowCount = getLevelMembers(level, false).length;
+                // Cache it for future.
+                ((RolapLevel) level).setApproxRowCount(rowCount);
+            }
+        }
+        return rowCount;
     }
 
     public Member[] getMemberChildren(Member[] members) {

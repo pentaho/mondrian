@@ -47,8 +47,12 @@ public abstract class LevelBase
         this.levelType = levelType;
     }
 
-    public void setApproxRowCount(int length) {
-        approxRowCount = length;
+    /**
+     * Sets the approximate number of members in this Level.
+     * @see #getApproxRowCount()
+     */
+    public void setApproxRowCount(int approxRowCount) {
+        this.approxRowCount = approxRowCount;
     }
 
     // from Element

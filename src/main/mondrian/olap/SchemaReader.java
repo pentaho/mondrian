@@ -50,11 +50,17 @@ public interface SchemaReader {
     int getChildrenCountFromCache(Member member);
 
     /**
-     * Returns number of members in a level,
-     *  if the information can be retrieved from cache.
-     * Otherwise  -1 is returned
+     * Returns the number of members in a level, returning an approximation if
+     * acceptable.
+     *
+     * @param level Level
+     * @param approximate Whether an approximation is acceptable
+     * @param materialize Whether to go to disk if no approximation for the count
+     *   is available and the members are not in cache. If false, returns
+     *   {@link Integer#MIN_VALUE} if value is not in cache.
      */
-    int getLevelCardinalityFromCache(Level level);
+    int getLevelCardinality(
+        Level level, boolean approximate, boolean materialize);
 
     /**
      * Returns direct children of <code>member</code>.

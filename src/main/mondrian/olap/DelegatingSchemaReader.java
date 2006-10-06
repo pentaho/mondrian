@@ -165,8 +165,11 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getChildrenCountFromCache(member);
     }
 
-    public int getLevelCardinalityFromCache(Level level) {
-        return schemaReader.getLevelCardinalityFromCache(level);
+    public int getLevelCardinality(
+        Level level, boolean approximate, boolean materialize)
+    {
+        return schemaReader.getLevelCardinality(
+            level, approximate, materialize);
     }
 
     public Member[] getLevelMembers(Level level, Evaluator context) {

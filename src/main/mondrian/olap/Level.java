@@ -47,9 +47,12 @@ public interface Level extends OlapElement {
     /** @return the MemberFormatter
       */
     MemberFormatter getMemberFormatter();
-    int getApproxRowCount();
 
-    void setApproxRowCount(int length);
+    /**
+     * Returns the approximate number of members in this level, or
+     * {@link Integer#MIN_VALUE} if no approximation is known.
+     */
+    int getApproxRowCount();
 }
 
 // End Level.java

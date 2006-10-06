@@ -3394,7 +3394,7 @@ boolean restriction, boolean nullable, String description)
             */
 
             // Added by TWI to returned cached row numbers
-            int n=XmlaUtil.getCardinality(schemaReader, lastLevel);
+            int n=schemaReader.getLevelCardinality(lastLevel, true, true);
             row.set(DimensionCardinality.name, n+1);
 
             // TODO: I think that this is just the dimension name
@@ -4577,7 +4577,7 @@ boolean restriction, boolean nullable, String description)
             // Get level cardinality
             // According to microsoft this is:
             //   "The number of members in the level."
-            int n = XmlaUtil.getCardinality(schemaReader, level);
+            int n = schemaReader.getLevelCardinality(level, true, true);
             row.set(LevelCardinality.name, n);
 
             row.set(LevelType.name, getLevelType(level));

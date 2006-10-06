@@ -11,9 +11,7 @@
 */
 package mondrian.xmla;
 
-import mondrian.olap.Level;
 import mondrian.olap.MondrianException;
-import mondrian.olap.SchemaReader;
 import org.apache.log4j.Logger;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -316,28 +314,13 @@ way too noisy
         String encodedStr = encoder.encodeBuffer(bytes);
         return encodedStr;
     }
+
     public static byte[] decodeBase64(String arg) throws IOException {
         // This uses Sun's private encodes, we need to find public
         // implementation that can be added to Mondrian.
         sun.misc.BASE64Decoder decoder = new sun.misc.BASE64Decoder();
         byte[] bytes = decoder.decodeBuffer(arg);
         return bytes;
-    }
-
-    public static int getCardinality(SchemaReader schemaReader, Level level){
-        int approxRowCount = level.getApproxRowCount();
-
-        if (approxRowCount == Integer.MIN_VALUE)
-        {
-            // if approxRowCount == MIN_VALUE  then it hasn't been set,
-            //  need to retrieve the value.
-            int length = schemaReader.getLevelMembers(level, false).length;
-            // cache it for future
-            level.setApproxRowCount(length);
-            return length;
-        } else {
-            return approxRowCount;
-        }
     }
 }
 
