@@ -239,11 +239,10 @@ public class Aggregation {
 
             if (!done && level != null) {
                 // if the level members are cached, we do not need "count *"
-                int nMembers = -1;
                 SchemaReader scr = star.getSchema().getSchemaReader();
-                nMembers = scr.getLevelCardinalityFromCache(level);
-                if ( nMembers > 0 ) {
-                    bloats[i] = constraintLength / nMembers;
+                int memberCount = scr.getLevelCardinality(level, true, false);
+                if (memberCount > 0) {
+                    bloats[i] = constraintLength / memberCount;
                     done = true;
                 }
             }
@@ -251,7 +250,7 @@ public class Aggregation {
             if (!done) {
                 bloats[i] = constraintLength / columns[i].getCardinality();
             }
-        } // for  i < newConstraintses.length
+        }
 
         // build a list of constraints sorted by 'bloat factor'
         ConstraintComparator comparator = new ConstraintComparator(bloats);
