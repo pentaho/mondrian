@@ -868,8 +868,9 @@ assert is not true.
         if (isVirtual()) {
             // TODO:
             // Currently a virtual cube does not keep a list of all of its
-            // base cubes, so we must just flush all of them.
-            schema.flushRolapStarCaches();
+            // base cubes, so we need to iterate through each and flush
+            // the ones that should be flushed
+            schema.flushRolapStarCaches(false);
         } else {
             star.clearCachedAggregations(false);
         }

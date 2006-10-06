@@ -1460,23 +1460,23 @@ if (! mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
     public Iterator getStars() {
       return getRolapStarRegistry().getStars();
     }
-    public void flushRolapStarCaches() {
+    
+    public void flushRolapStarCaches(boolean forced) {
         for (Iterator itStars = getStars(); itStars.hasNext(); ) {
             RolapStar star = (RolapStar) itStars.next();
             // this will only flush the star's aggregate cache if
-            // 1) DisableCaching is true or the star's cube has
+            // 1) DisableCaching is true or 2) the star's cube has
             // cacheAggregations set to false in the schema.
-            //star.clearCache();
-// XXXXXXXXXXXXXXXXXXXXXXXXX
-star.clearCachedAggregations(true);
+            star.clearCachedAggregations(forced);
         }
     }
+    
     public static void flushAllRolapStarCachedAggregations() {
         for (Iterator itSchemas = RolapSchema.getRolapSchemas();
                 itSchemas.hasNext(); ) {
 
             RolapSchema schema = (RolapSchema) itSchemas.next();
-            schema.flushRolapStarCaches();
+            schema.flushRolapStarCaches(true);
         }
     }
 
