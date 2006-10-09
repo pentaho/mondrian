@@ -30,6 +30,7 @@ import mondrian.olap.fun.FunctionTest;
 import mondrian.olap.fun.SortTest;
 import mondrian.olap.HierarchyBugTest;
 import mondrian.rolap.*;
+import mondrian.rolap.aggmatcher.*;
 import mondrian.test.comp.ResultComparatorTest;
 import mondrian.util.ScheduleTest;
 import mondrian.util.FormatTest;
@@ -182,6 +183,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(ParallelTest.class);
             suite.addTestSuite(SchemaTest.class);
             suite.addTestSuite(CmdRunnerTest.class);
+            suite.addTestSuite(BUG_1541077.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get())

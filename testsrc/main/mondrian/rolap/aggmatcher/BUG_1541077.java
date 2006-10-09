@@ -42,12 +42,12 @@ public class BUG_1541077 extends AggTableTestCase {
         props.UseAggregates.setString("false");
 
         String mdx = "select {[Measures].[Store Count]} on columns from Cheques";
-        Result result = TestContext.instance().executeQuery(mdx);
+        Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
         props.UseAggregates.setString("true");
 
-        Result result1 = TestContext.instance().executeQuery(mdx);
+        Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
 
         assertTrue(v.equals(v1));
@@ -59,12 +59,12 @@ public class BUG_1541077 extends AggTableTestCase {
         props.UseAggregates.setString("false");
 
         String mdx = "select {[Measures].[Sales Count]} on columns from Cheques";
-        Result result = TestContext.instance().executeQuery(mdx);
+        Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
         props.UseAggregates.setString("true");
 
-        Result result1 = TestContext.instance().executeQuery(mdx);
+        Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
 
         assertTrue(v.equals(v1));
@@ -76,12 +76,12 @@ public class BUG_1541077 extends AggTableTestCase {
         props.UseAggregates.setString("false");
 
         String mdx = "select {[Measures].[Total Amount]} on columns from Cheques";
-        Result result = TestContext.instance().executeQuery(mdx);
+        Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
         props.UseAggregates.setString("true");
 
-        Result result1 = TestContext.instance().executeQuery(mdx);
+        Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
 
         assertTrue(v.equals(v1));
@@ -95,13 +95,13 @@ public class BUG_1541077 extends AggTableTestCase {
 
         String mdx = "select {[Measures].[Avg Amount]} on columns from Cheques";
 
-        Result result = TestContext.instance().executeQuery(mdx);
+        Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
         
         // get value with aggregates
         props.UseAggregates.setString("true");
 
-        Result result1 = TestContext.instance().executeQuery(mdx);
+        Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
 
         assertTrue(v.equals(v1));

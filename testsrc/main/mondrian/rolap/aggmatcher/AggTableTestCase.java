@@ -10,6 +10,7 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.test.loader.CsvDBTestCase;
+import mondrian.test.TestContext;
 import mondrian.olap.Schema;
 import mondrian.olap.Cube;
 import mondrian.olap.MondrianProperties;
@@ -29,6 +30,7 @@ public abstract class AggTableTestCase extends CsvDBTestCase {
     private static final String DIRECTORY =
                             "testsrc/main/mondrian/rolap/aggmatcher";
     
+    private TestContext testContext;
     private boolean currentUse;
     private boolean currentRead;
     private boolean do_caching_orig;
@@ -44,9 +46,14 @@ public abstract class AggTableTestCase extends CsvDBTestCase {
         super.setUp();
 
 
+/*
         Schema schema = getConnection().getSchema();
-        String cubeDescription = getCubeDescription();
         final Cube cube = schema.createCube(cubeDescription);
+*/
+        String cubeDescription = getCubeDescription();
+        this.testContext = TestContext.create(null,
+                            cubeDescription, null, null, null);
+
 
         // store current property values
         MondrianProperties props = MondrianProperties.instance();
@@ -86,6 +93,9 @@ public abstract class AggTableTestCase extends CsvDBTestCase {
         super.tearDown();
     }
 
+    protected TestContext getCubeTestContext() {
+        return testContext;
+    }
     protected abstract String getCubeDescription();
 
     protected String getDirectoryName() {
