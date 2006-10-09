@@ -512,10 +512,31 @@ h3 {
 	margin: 9px 0px 4px 0px; 
 	letter-spacing: .075em; 
 }
+/* jhyde added */
+h2 { 
+	font: normal 1.35em Tahoma, Helvetica, sans-serif; 
+	color: #95a22c; 
+	margin: 9px 0px 4px 0px; 
+	letter-spacing: .075em; 
+}
+h4 { 
+	font: normal 1.05em Tahoma, Helvetica, sans-serif; 
+	color: #95a22c; 
+	margin: 9px 0px 4px 0px; 
+	letter-spacing: .075em; 
+}
 h1 {
 	font-weight:bolder; /* subs under h3's */
 	font-size:1em;
 }
+/* jhyde added */
+p {
+	font: normal .80em Tahoma, Helvetica, sans-serif;
+	color: #808080;
+	text-decoration: none;
+}
+
+
 /* gray table styles */
 .grayTable, .grayTable tr,.grayTable td {
 	border-color:#808080;
