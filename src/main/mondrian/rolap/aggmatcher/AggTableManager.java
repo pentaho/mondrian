@@ -143,6 +143,7 @@ public class AggTableManager {
             try {
                 clearJdbcSchema();
                 loadRolapStarAggregates();
+                printResults();
 
             } catch (SQLException ex) {
                 throw mres.AggLoadingError.ex(ex);

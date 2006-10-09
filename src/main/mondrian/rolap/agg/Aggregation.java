@@ -16,6 +16,7 @@ package mondrian.rolap.agg;
 import mondrian.olap.*;
 import mondrian.rolap.BitKey;
 import mondrian.rolap.RolapStar;
+import mondrian.rolap.RolapSchemaReader;
 
 import java.lang.ref.SoftReference;
 import java.util.*;
@@ -64,7 +65,7 @@ public class Aggregation {
      * This is a BitKey for ALL columns (Measures and Levels) involved in the 
      * query. 
      */
-    private final BitKey bitKey;
+    private final BitKey constrainedColumnsBitKey;
 
     /**
      * List of soft references to segments.
@@ -82,9 +83,9 @@ public class Aggregation {
     private RolapStar.Column[] columns;
 
     public Aggregation(RolapStar star,
-                       BitKey bitKey) {
+                       BitKey constrainedColumnsBitKey) {
         this.star = star;
-        this.bitKey = bitKey;
+        this.constrainedColumnsBitKey = constrainedColumnsBitKey;
         this.segmentRefs = new ArrayList();
         this.maxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
@@ -108,9 +109,10 @@ public class Aggregation {
             RolapStar.Measure[] measures,
             ColumnConstraint[][] constraintses,
             Collection pinnedSegments) {
+        // all constrained columns
         this.columns = columns;
 
-        BitKey measureBitKey = bitKey.emptyCopy();
+        BitKey measureBitKey = constrainedColumnsBitKey.emptyCopy();
         int axisCount = columns.length;
         Util.assertTrue(constraintses.length == axisCount);
 
@@ -131,7 +133,10 @@ public class Aggregation {
             segmentRefs.add(ref);
             pinnedSegments.add(segment);
         }
-        Segment.load(segments, bitKey, measureBitKey, pinnedSegments, axes);
+        // The contrainted columns are simply the level and foreign columns
+        BitKey levelBitKey = constrainedColumnsBitKey;
+        Segment.load(segments, levelBitKey, 
+                measureBitKey, pinnedSegments, axes);
     }
 
 

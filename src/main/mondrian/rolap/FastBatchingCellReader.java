@@ -225,13 +225,13 @@ public class FastBatchingCellReader implements CellReader {
         // these are the CellRequest's constrained columns
         final RolapStar.Column[] columns;
         // this is the CellRequest's constrained column BitKey
-        final BitKey bitKey;
+        final BitKey constrainedColumnsBitKey;
         final List measuresList = new ArrayList();
         final Set[] valueSets;
 
         public Batch(CellRequest request) {
             columns = request.getConstrainedColumns();
-            bitKey = request.getConstrainedColumnsBitKey();
+            constrainedColumnsBitKey = request.getConstrainedColumnsBitKey();
             valueSets = new HashSet[columns.length];
             for (int i = 0; i < valueSets.length; i++) {
                 valueSets[i] = new HashSet();
@@ -346,7 +346,8 @@ public class FastBatchingCellReader implements CellReader {
                     RolapStar.Measure[] measures = (RolapStar.Measure[])
                         distinctMeasuresList.toArray(
                             new RolapStar.Measure[distinctMeasuresList.size()]);
-                    aggmgr.loadAggregation(measures, columns, bitKey,
+                    aggmgr.loadAggregation(measures, columns, 
+                            constrainedColumnsBitKey,
                             constraintses, pinnedSegments);
                 }
             }
@@ -355,7 +356,8 @@ public class FastBatchingCellReader implements CellReader {
             if (measureCount > 0) {
                 RolapStar.Measure[] measures = (RolapStar.Measure[])
                     measuresList.toArray(new RolapStar.Measure[measureCount]);
-                aggmgr.loadAggregation(measures, columns, bitKey,
+                aggmgr.loadAggregation(measures, columns, 
+                    constrainedColumnsBitKey,
                     constraintses, pinnedSegments);
             }
 

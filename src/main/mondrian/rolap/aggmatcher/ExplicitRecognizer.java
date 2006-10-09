@@ -14,6 +14,7 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.Hierarchy;
+import mondrian.olap.Util;
 import mondrian.recorder.MessageRecorder;
 import mondrian.rolap.*;
 
@@ -103,16 +104,27 @@ class ExplicitRecognizer extends Recognizer {
 
                     // Column name match is case insensitive
                     if (measure.getColumnName().equalsIgnoreCase(aggColumnName)) {
+
+                        String name = measure.getName();
+                        String[] parts = Util.explode(name);
+                        String nameLast = parts[parts.length-1];
+
+                        RolapStar.Measure m = 
+                            star.getFactTable().lookupMeasureByName(nameLast);
+                        RolapAggregator agg = null;
+                        if (m != null) {
+                            agg = m.getAggregator();
+                        } 
                         // Ok, got a match, so now make a measue
-                        makeMeasure(measure, aggColumn);
+                        makeMeasure(measure, agg, aggColumn);
                         measureColumnCounts++;
                     }
                 }
             }
             // Ok, now look at all of the fact table columns with measure usage
             // that have a sibling foreign key usage. These can be automagically
-            // generated for the aggregate table as long as it still has the foreign
-            // key.
+            // generated for the aggregate table as long as it still has the
+            // foreign key.
             for (Iterator it =
                      dbFactTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
                  it.hasNext(); ) {
@@ -160,6 +172,7 @@ class ExplicitRecognizer extends Recognizer {
      */
     protected void makeMeasure(
             final ExplicitRules.TableDef.Measure measure,
+            RolapAggregator factAgg,
             final JdbcSchema.Table.Column aggColumn) {
         RolapStar.Measure rm = measure.getRolapStarMeasure();
 
@@ -167,8 +180,10 @@ class ExplicitRecognizer extends Recognizer {
             aggColumn.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
 
         aggUsage.setSymbolicName(measure.getSymbolicName());
-        aggUsage.setAggregator(
-                convertAggregator(aggUsage, rm.getAggregator()));
+        RolapAggregator ra = (factAgg == null) 
+                    ? convertAggregator(aggUsage, rm.getAggregator())
+                    : convertAggregator(aggUsage, factAgg, rm.getAggregator());
+        aggUsage.setAggregator(ra);
 
         aggUsage.rMeasure = rm;
     }

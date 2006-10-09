@@ -300,6 +300,7 @@ public class RolapStar {
     /**
      * Looks up an aggregation or creates one if it does not exist in an
      * atomic (synchronized) operation.
+     * @param bitKey this is the contrained column bitkey
      */
     public Aggregation lookupOrCreateAggregation(final BitKey bitKey) {
         synchronized (aggregations) {
@@ -1569,6 +1570,16 @@ public class RolapStar {
 
             pw.print(subprefix);
             pw.print("left=");
+            // print the foreign key bit position if we can figure it out
+            if (left instanceof MondrianDef.Column) {
+                MondrianDef.Column c = (MondrianDef.Column) left;
+                Column col = table.star.getFactTable().lookupColumn(c.name);
+                if (col != null) {
+                    pw.print(" (");
+                    pw.print(col.getBitPosition());
+                    pw.print(") ");
+                }
+             }
             pw.println(left.getExpression(sqlQueuy));
 
             pw.print(subprefix);

@@ -345,11 +345,11 @@ abstract class Recognizer {
             aggColumn.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
 
         aggUsage.setSymbolicName(factUsage.getSymbolicName());
-        aggUsage.setAggregator(
-                convertAggregator(
+        RolapAggregator ra = convertAggregator(
                         aggUsage,
                         factUsage.getAggregator(),
-                        aggSiblingUsage.getAggregator()));
+                        aggSiblingUsage.getAggregator());
+        aggUsage.setAggregator(ra);
         aggUsage.rMeasure = factUsage.rMeasure;
     }
 
@@ -366,8 +366,9 @@ abstract class Recognizer {
             aggColumn.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
 
         aggUsage.setSymbolicName(factUsage.getSymbolicName());
-        aggUsage.setAggregator(
-                convertAggregator(aggUsage, factUsage.getAggregator()));
+        RolapAggregator ra =
+                convertAggregator(aggUsage, factUsage.getAggregator());
+        aggUsage.setAggregator(ra);
         aggUsage.rMeasure = factUsage.rMeasure;
     }
 
@@ -809,6 +810,11 @@ abstract class Recognizer {
         if (factAgg == RolapAggregator.Avg) {
             String columnExpr = getFactCountExpr(aggUsage);
             return new RolapAggregator.AvgFromSum(columnExpr);
+        // RME v
+        } else if (factAgg == RolapAggregator.DistinctCount) {
+            //return RolapAggregator.Count;
+            return RolapAggregator.DistinctCount;
+        // RME ^
         } else {
             return factAgg;
         }
@@ -854,6 +860,8 @@ abstract class Recognizer {
             }
         } else if (factAgg == RolapAggregator.Sum) {
             if (siblingAgg == RolapAggregator.Avg) {
+                rollupAgg =  new RolapAggregator.SumFromAvg(columnExpr);
+            } else if (siblingAgg instanceof RolapAggregator.AvgFromAvg) {
                 rollupAgg =  new RolapAggregator.SumFromAvg(columnExpr);
             }
         }

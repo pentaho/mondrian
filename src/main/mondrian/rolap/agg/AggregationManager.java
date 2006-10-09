@@ -58,18 +58,19 @@ public class AggregationManager extends RolapAggregationManager {
      * 
      * @param measures 
      * @param columns this is the CellRequest's constrained columns
-     * @param bitKey this is the CellRequest's constrained column BitKey
+     * @param constrainedColumnsBitKey this is the CellRequest's constrained column BitKey
      * @param constraintses 
      * @param pinnedSegments 
      */
     public void loadAggregation(
             RolapStar.Measure[] measures,
             RolapStar.Column[] columns,
-            BitKey bitKey,
+            BitKey constrainedColumnsBitKey,
             ColumnConstraint[][] constraintses,
             Collection pinnedSegments) {
         RolapStar star = measures[0].getStar();
-        Aggregation aggregation = star.lookupOrCreateAggregation(bitKey);
+        Aggregation aggregation = 
+                star.lookupOrCreateAggregation(constrainedColumnsBitKey);
 
         // synchronized access
         synchronized (aggregation) {
@@ -255,6 +256,8 @@ public class AggregationManager extends RolapAggregationManager {
             boolean isDistinct = measureBitKey.intersects(
                     aggStar.getDistinctMeasureBitKey());
 
+            // The AggStar has no "distinct count" measures so 
+            // we can use it without looking any further.
             if (!isDistinct) {
                 rollup[0] = !aggStar.getLevelBitKey().equals(levelBitKey);
                 return aggStar;
@@ -263,9 +266,10 @@ public class AggregationManager extends RolapAggregationManager {
             // If there are distinct measures, we can only rollup in limited
             // circumstances.
 
-            // no foreign keys
-            // level key exact match
-            // measure superset match
+            // No foreign keys (except when its used as a distinct count
+            //   measure).
+            // Level key exact match.
+            // Measure superset match.
 
             // Compute the core levels -- those which can be safely
             // rolled up to. For example,
@@ -292,10 +296,61 @@ public class AggregationManager extends RolapAggregationManager {
             }
 
             if (aggStar.hasForeignKeys()) {
-                // TODO: This is a little pessimistic. If the measure is
+/*
+                    StringBuffer buf = new StringBuffer(256);
+                    buf.append("");
+                    buf.append(star.getFactTable().getAlias());
+                    buf.append(Util.nl);
+                    buf.append("foreign =");
+                    buf.append(levelBitKey);
+                    buf.append(Util.nl);
+                    buf.append("measure =");
+                    buf.append(measureBitKey);
+                    buf.append(Util.nl);
+                    buf.append("aggstar =");
+                    buf.append(aggStar.getBitKey());
+                    buf.append(Util.nl);
+                    buf.append("distinct=");
+                    buf.append(aggStar.getDistinctMeasureBitKey());
+                    buf.append(Util.nl);
+                    buf.append("AggStar=");
+                    buf.append(aggStar.getFactTable().getName());
+                    buf.append(Util.nl);
+                    for (Iterator columnIter =
+                            aggStar.getFactTable().getColumns().iterator();
+                         columnIter.hasNext(); ) {
+                        AggStar.Table.Column column =
+                                (AggStar.Table.Column) columnIter.next();
+                        buf.append("   ");
+                        buf.append(column);
+                        buf.append(Util.nl);
+                    }
+System.out.println(buf.toString());
+*/
+                // This is a little pessimistic. If the measure is
                 // 'count(distinct customer_id)' and one of the foreign keys is
                 // 'customer_id' then it is OK to roll up.
-                continue;
+
+                // Some of the measures in this query are distinct count. 
+                // Get all of the foreign key columns.
+                // For each such measure, is it based upon a foreign key.
+                // Are there any foreign keys left over. No, can use AggStar.
+                Iterator mit = aggStar.getFactTable().getMeasures().iterator();
+                BitKey fkBitKey = aggStar.getForeignKeyBitKey().copy();
+                while (mit.hasNext()) {
+                    AggStar.FactTable.Measure m = 
+                        (AggStar.FactTable.Measure) mit.next();
+                    if (m.isDistinct()) {
+                        if (measureBitKey.get(m.getBitPosition())) {
+                            fkBitKey.clear(m.getBitPosition());
+                        }
+                    }
+                 }
+                if (! fkBitKey.isEmpty()) {
+                    // there are foreign keys left so we can not use this 
+                    // AggStar.
+                    continue;
+                }
             }
 
             if (!aggStar.select(

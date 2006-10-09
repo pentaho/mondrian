@@ -193,6 +193,11 @@ public class AggStar {
     private final BitKey measureBitKey;
 
     /** 
+     * BitKey of the foreign keys of this AggStar. 
+     */
+    private final BitKey foreignKeyBitKey;
+
+    /** 
      * BitKey of those measures of this AggStar that are distinct count
      * aggregates. 
      */
@@ -204,6 +209,7 @@ public class AggStar {
         this.bitKey = BitKey.Factory.makeBitKey(star.getColumnCount());
         this.levelBitKey = bitKey.emptyCopy();
         this.measureBitKey = bitKey.emptyCopy();
+        this.foreignKeyBitKey = bitKey.emptyCopy();
         this.distinctMeasureBitKey = bitKey.emptyCopy();
         this.aggTable = new AggStar.FactTable(aggTable);
         this.columns = new AggStar.Table.Column[star.getColumnCount()];
@@ -225,6 +231,12 @@ public class AggStar {
                 getFactTable().getNumberOfRows();
     }
 
+    void setForeignKey(int index) {
+        this.foreignKeyBitKey.set(index);
+    }
+    public BitKey getForeignKeyBitKey() {
+        return this.foreignKeyBitKey;
+    }
 
     /**
      * Is this AggStar's BitKey a super set (proper or not) of the BitKey
@@ -448,6 +460,15 @@ public class AggStar {
 
                 pw.print(subprefix);
                 pw.print("left=");
+                if (left instanceof MondrianDef.Column) {
+                    MondrianDef.Column c = (MondrianDef.Column) left;
+                    mondrian.rolap.RolapStar.Column col = getTable().getAggStar().getStar().getFactTable().lookupColumn(c.name);
+                    if (col != null) {
+                        pw.print(" (");
+                        pw.print(col.getBitPosition());
+                        pw.print(") ");
+                    }
+                }
                 pw.println(left.getExpression(sqlQueuy));
 
                 pw.print(subprefix);
@@ -719,14 +740,14 @@ public class AggStar {
             MondrianDef.Expression rleft = rjoinCondition.getLeft();
             MondrianDef.Expression rright = rjoinCondition.getRight();
 
-            MondrianDef.Expression left = null;
+            MondrianDef.Column left = null;
             if (rightJoinConditionColumnName != null) {
                 left = new MondrianDef.Column(getName(),
                                               rightJoinConditionColumnName);
             } else {
                 if (rleft instanceof MondrianDef.Column) {
-                    MondrianDef.Column rcolumn = (MondrianDef.Column) rleft;
-                    left = new MondrianDef.Column(getName(), rcolumn.name);
+                    MondrianDef.Column lcolumn = (MondrianDef.Column) rleft;
+                    left = new MondrianDef.Column(getName(), lcolumn.name);
                 } else {
 
                     // RME TODO can we catch this during validation
@@ -735,6 +756,15 @@ public class AggStar {
                         rleft.getClass().getName(), left.toString());
                     getLogger().warn(msg);
                 }
+            }
+            // Explicitly set which columns are foreign keys in the 
+            // AggStar. This lets us later determine if a measure is
+            // based upon a foreign key (see AggregationManager findAgg
+            // method).
+            mondrian.rolap.RolapStar.Column col = 
+                getAggStar().getStar().getFactTable().lookupColumn(left.name);
+            if (col != null) {
+                getAggStar().setForeignKey(col.getBitPosition());
             }
             JoinCondition joinCondition = new JoinCondition(left, rright);
             DimTable dimTable =
@@ -857,6 +887,10 @@ public class AggStar {
                 AggStar.this.measureBitKey.set(bitPosition);
             }
 
+            public boolean isDistinct() {
+                return aggregator.isDistinct();
+            }
+
             /**
              * Get this Measure's RolapAggregator.
              */
@@ -879,8 +913,30 @@ public class AggStar {
              */
             public String generateRollupString(SqlQuery query) {
                 String expr = generateExprString(query);
-                final Aggregator rollup = getAggregator().getRollup();
-                return ((RolapAggregator) rollup).getExpression(expr);
+                // final Aggregator rollup = getAggregator().getRollup();
+                
+                Aggregator rollup = (getAggregator().isDistinct()) 
+                    ? getAggregator().getNonDistinctAggregator()
+                    : getAggregator().getRollup();
+
+                String s = ((RolapAggregator) rollup).getExpression(expr);
+                return s;
+            }
+/* RME
+    public String generateExprString(final SqlQuery query) {
+        String s = super.generateExprString(query);
+// RME System.out.println("AggStar.Measure.generateExprString: s=" +s);
+        return s;
+    }
+*/
+            public void print(final PrintWriter pw, final String prefix) {
+                SqlQuery sqlQuery = getSqlQuery();
+                pw.print(prefix);
+                pw.print(getName());
+                pw.print(" (");
+                pw.print(getBitPosition());
+                pw.print("): ");
+                pw.print(generateRollupString(sqlQuery));
             }
         }
 
@@ -1014,6 +1070,8 @@ public class AggStar {
 // RME Note: this should be a Level Object, not a Column
                     ForeignKey c = new ForeignKey(
                             symbolicName, expression, isNumeric, bitPosition);
+// RME SEE IF THIS IS EVER CALLED
+System.out.println("AggStar.ForeignKey XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
                 }
             }
         }
