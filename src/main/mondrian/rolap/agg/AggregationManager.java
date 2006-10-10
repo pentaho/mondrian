@@ -346,7 +346,7 @@ System.out.println(buf.toString());
                         }
                     }
                  }
-                if (! fkBitKey.isEmpty()) {
+                 if (! fkBitKey.isEmpty()) {
                     // there are foreign keys left so we can not use this 
                     // AggStar.
                     continue;

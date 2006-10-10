@@ -115,7 +115,7 @@ class ExplicitRecognizer extends Recognizer {
                         if (m != null) {
                             agg = m.getAggregator();
                         } 
-                        // Ok, got a match, so now make a measue
+                        // Ok, got a match, so now make a measure
                         makeMeasure(measure, agg, aggColumn);
                         measureColumnCounts++;
                     }

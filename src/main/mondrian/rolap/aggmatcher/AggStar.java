@@ -911,10 +911,17 @@ public class AggStar {
              * result. For example, a "COUNT" and "DISTINCT COUNT" measures
              * rollup using "SUM".
              */
+/*
+            public String generateRollupString(SqlQuery query) {
+                String expr = generateExprString(query);
+                final Aggregator rollup = getAggregator().getRollup();
+                return ((RolapAggregator) rollup).getExpression(expr);
+            }
+*/
+/*
             public String generateRollupString(SqlQuery query) {
                 String expr = generateExprString(query);
                 // final Aggregator rollup = getAggregator().getRollup();
-                
                 Aggregator rollup = (getAggregator().isDistinct()) 
                     ? getAggregator().getNonDistinctAggregator()
                     : getAggregator().getRollup();
@@ -922,13 +929,26 @@ public class AggStar {
                 String s = ((RolapAggregator) rollup).getExpression(expr);
                 return s;
             }
-/* RME
-    public String generateExprString(final SqlQuery query) {
-        String s = super.generateExprString(query);
-// RME System.out.println("AggStar.Measure.generateExprString: s=" +s);
-        return s;
-    }
 */
+            public String generateRollupString(SqlQuery query) {
+                String expr = generateExprString(query);
+                Aggregator rollup = null;
+
+                BitKey fkbk = AggStar.this.getForeignKeyBitKey();
+                // When rolling up and the aggregator is distinct and
+                // the measure is based upon a foreign key, then 
+                // one must use "count" rather than "sum"
+                if (fkbk.get(getBitPosition())) {
+                    rollup = (getAggregator().isDistinct()) 
+                        ? getAggregator().getNonDistinctAggregator()
+                        : getAggregator().getRollup();
+                } else {
+                    rollup = getAggregator().getRollup();
+                }
+
+                String s = ((RolapAggregator) rollup).getExpression(expr);
+                return s;
+            }
             public void print(final PrintWriter pw, final String prefix) {
                 SqlQuery sqlQuery = getSqlQuery();
                 pw.print(prefix);
