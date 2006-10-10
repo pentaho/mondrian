@@ -12,6 +12,7 @@ package mondrian.test.loader;
 import mondrian.olap.Schema;
 import mondrian.rolap.RolapConnection;
 import mondrian.test.FoodMartTestCase;
+import mondrian.test.TestContext;
 import java.sql.SQLException;
 import java.sql.Connection;
 import java.io.File;
@@ -33,6 +34,7 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
 
     private CsvDBLoader loader;
     private CsvDBLoader.Table[] tables;
+    private TestContext testContext;
 
     public CsvDBTestCase() {
         super();
@@ -60,6 +62,10 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
 
         // create database tables
         this.loader.executeStatements(this.tables);
+
+        String cubeDescription = getCubeDescription();
+        this.testContext = TestContext.create(null,
+                            cubeDescription, null, null, null);
     }
     protected void tearDown() throws Exception {
         try {
@@ -79,6 +85,11 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
         return getConnection().getSchema();
     }
 
+    protected TestContext getCubeTestContext() {
+        return testContext;
+    }
+
     protected abstract String getDirectoryName();
     protected abstract String getFileName();
+    protected abstract String getCubeDescription();
 }

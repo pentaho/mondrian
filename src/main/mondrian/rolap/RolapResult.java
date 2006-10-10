@@ -140,6 +140,15 @@ class RolapResult extends ResultBase {
                 }
             }
 
+// This is part of the junit test Checkin_7641 that
+// shows that there is a difference when the default
+// member is not the one used in an axis.
+// When Checkin 7641 is resolved, then this System property access and 
+// boolean should go away.
+boolean useCheckin7641 = 
+    (System.getProperty("mondrian.test.checkin.7641") == null);
+
+if (useCheckin7641) {
             purge(axisMembers, slicerMembers);
 
             boolean didEvaluatorReplacementMember = false;
@@ -154,6 +163,7 @@ class RolapResult extends ResultBase {
                     didEvaluatorReplacementMember = true;
                 }
             }
+
             if (didEvaluatorReplacementMember) {
                 // Must re-evaluate axes because one of the evaluator's
                 // members has changed. Do not have to re-evaluate the
@@ -173,6 +183,7 @@ class RolapResult extends ResultBase {
                     this.axes[i] = axisResult;
                 }
             }
+}
 
 
             // Now that the axes are evaluated, make sure that the number of
