@@ -18,6 +18,7 @@ import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.util.Bug;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -134,22 +135,18 @@ class CrossJoinFunDef extends FunDefBase {
         long size = (long)list1.size() * (long)list2.size();
         int resultLimit = MondrianProperties.instance().ResultLimit.get();
 
-// NOTE: RME : These properties are used by the Checkin_7634
-final String USE_PROP_NAME =  "mondrian.test.7634.use";
-final String SIZE_PROP_NAME =  "mondrian.test.7634.size";
-final String OLD_PROP_NAME =  "mondrian.test.7634.old";
-final int opSize = Integer.getInteger(SIZE_PROP_NAME, 1000).intValue();
+        final int opSize = Bug.Checkin7634Size;
 //System.out.println("CrossJoinFunDef.crossjoin: size=" +size);
 //System.out.println("CrossJoinFunDef.crossjoin: opSize=" +opSize);
-boolean useOptimizer = (System.getProperty(USE_PROP_NAME) == null);
-boolean doOld = (System.getProperty(OLD_PROP_NAME) != null);
+        boolean useOptimizer = Bug.Checkin7634UseOptimizer;
+        boolean doOld = Bug.Checkin7634DoOld;
         if (useOptimizer && size > opSize && evaluator.isNonEmpty()) {
             // instead of overflow exception try to further
             // optimize nonempty(crossjoin(a,b)) ==
             // nonempty(crossjoin(nonempty(a),nonempty(b))
             final int missCount = evaluator.getMissCount();
 
-//System.out.println("CrossJoinFunDef.crossjoin: oldprop=" +System.getProperty("mondrian.test.7634.old"));
+//System.out.println("CrossJoinFunDef.crossjoin: oldprop=" +doOld);
             if (doOld) {
                 list1 = nonEmptyListOld(evaluator, list1);
                 list2 = nonEmptyListOld(evaluator, list2);

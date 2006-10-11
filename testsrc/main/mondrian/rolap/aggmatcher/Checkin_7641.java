@@ -2,9 +2,11 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.test.loader.CsvDBTestCase;
+import mondrian.test.TestContext;
 import mondrian.olap.Result;
+import mondrian.util.Bug;
 
-/** 
+/**
  * Checkin 7641 attempted to correct a problem demonstrated by this
  * junit. The original problem involved implicit Time member usage in
  * on axis and the use of the default Time member in the other axis.
@@ -14,8 +16,8 @@ import mondrian.olap.Result;
  * depends upon the existance of a System property) one gets different
  * answers when the mdx is evaluated.
  * 
- * @author <a>Richard M. Emberson</a>
- * @version 
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 public class Checkin_7641 extends CsvDBTestCase {
     private static final String DIRECTORY =
@@ -37,9 +39,10 @@ public class Checkin_7641 extends CsvDBTestCase {
         super.tearDown();
     }
 
-    public void _testImplicitMember() throws Exception {
+    public void testImplicitMember() throws Exception {
+        if (!Bug.Bug1574942Fixed) return;
         // explicit use of [Product].[Class1]
-        String mdx = 
+        String mdx =
         " select NON EMPTY Crossjoin("+
         " Hierarchize(Union({[Product].[Class1]}, [Product].[Class1].Children)), "+
         " {[Measures].[Requested Value], "+
@@ -49,13 +52,13 @@ public class Checkin_7641 extends CsvDBTestCase {
             "[Geography].[All Regions].Children)) ON ROWS"+
         " from [ImplicitMember]";
 
-        System.getProperties().setProperty(PROP_NAME, "not-null");
+        Bug.Checkin7641UseOptimizer = true;
         Result result1 = getCubeTestContext().executeQuery(mdx);
-        String resultString1 = getCubeTestContext().toString(result1);
+        String resultString1 = TestContext.toString(result1);
 //System.out.println(resultString1);
-        System.getProperties().remove(PROP_NAME);
+        Bug.Checkin7641UseOptimizer = false;
         Result result2 = getCubeTestContext().executeQuery(mdx);
-        String resultString2 = getCubeTestContext().toString(result2);
+        String resultString2 = TestContext.toString(result2);
 //System.out.println(resultString2);
 
         assertEquals(resultString1, resultString2);
@@ -101,3 +104,5 @@ public class Checkin_7641 extends CsvDBTestCase {
 
     }
 }
+
+// Checkin_7641.java

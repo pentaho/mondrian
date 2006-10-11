@@ -18,6 +18,7 @@ import mondrian.olap.*;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
+import mondrian.util.Bug;
 
 import org.apache.log4j.Logger;
 
@@ -63,7 +64,8 @@ class RolapResult extends ResultBase {
             return;
         }
 
-// for use in debugging Checkin_7634
+        // for use in debugging Checkin_7634
+        Util.discard(Bug.Checkin7634DoOld);
 // this.evaluator.printCurrentMemberNames();
         try {
             // An array of lists which will hold each axis' implicit members (does
@@ -142,50 +144,42 @@ class RolapResult extends ResultBase {
                 }
             }
 
-// This is part of the junit test Checkin_7641 that
-// shows that there is a difference when the default
-// member is not the one used in an axis.
-// When Checkin 7641 is resolved, then this System property access and 
-// boolean should go away.
-boolean useCheckin7641 = 
-    (System.getProperty("mondrian.test.checkin.7641") == null);
+            if (Bug.Checkin7641UseOptimizer) {
+                purge(axisMembers, slicerMembers);
 
-if (useCheckin7641) {
-            purge(axisMembers, slicerMembers);
+                boolean didEvaluatorReplacementMember = false;
+                RolapEvaluator rolapEval = (RolapEvaluator) evaluator;
+                Iterator it = axisMembers.iterator();
+                while (it.hasNext()) {
+                    Member m = (Member) it.next();
+                    if (rolapEval.setContextConditional(m) != null) {
+                        // Do not break out of loops but set change flag.
+                        // There may be more than one Member that has to be
+                        // replaced.
+                        didEvaluatorReplacementMember = true;
+                    }
+                }
 
-            boolean didEvaluatorReplacementMember = false;
-            RolapEvaluator rolapEval = (RolapEvaluator) evaluator;
-            Iterator it = axisMembers.iterator();
-            while (it.hasNext()) {
-                Member m = (Member) it.next();
-                if (rolapEval.setContextConditional(m) != null) {
-                    // Do not break out of loops but set change flag.
-                    // There may be more than one Member that has to be
-                    // replaced.
-                    didEvaluatorReplacementMember = true;
+                if (didEvaluatorReplacementMember) {
+                    // Must re-evaluate axes because one of the evaluator's
+                    // members has changed. Do not have to re-evaluate the
+                    // slicer axis or any axis whose members used during evaluation
+                    // were not over-ridden by members from the evaluation of
+                    // different axes (if you just have rows and columns, then
+                    // if rows contributed a member to axisMembers, then columns must
+                    // be re-evaluated and if columns contributed, then rows must
+                    // be re-evaluated).
+                    for (int i = 0; i < axes.length; i++) {
+                        QueryAxis axis = query.axes[i];
+                        final Calc calc = query.axisCalcs[i];
+                        evaluator.setCellReader(aggregatingReader);
+                        RolapAxis axisResult =
+                            executeAxis(evaluator.push(), axis, calc, true, null);
+                        evaluator.clearExpResultCache();
+                        this.axes[i] = axisResult;
+                    }
                 }
             }
-
-            if (didEvaluatorReplacementMember) {
-                // Must re-evaluate axes because one of the evaluator's
-                // members has changed. Do not have to re-evaluate the
-                // slicer axis or any axis whose members used during evaluation
-                // were not over-ridden by members from the evaluation of
-                // different axes (if you just have rows and columns, then
-                // if rows contributed a member to axisMembers, then columns must
-                // be re-evaluated and if columns contributed, then rows must
-                // be re-evaluated).
-                for (int i = 0; i < axes.length; i++) {
-                    QueryAxis axis = query.axes[i];
-                    final Calc calc = query.axisCalcs[i];
-                    evaluator.setCellReader(aggregatingReader);
-                    RolapAxis axisResult = 
-                        executeAxis(evaluator.push(), axis, calc, true, null);
-                    evaluator.clearExpResultCache();
-                    this.axes[i] = axisResult;
-                }
-            }
-}
 
 
             // Now that the axes are evaluated, make sure that the number of

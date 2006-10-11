@@ -2,9 +2,11 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.test.loader.CsvDBTestCase;
+import mondrian.test.TestContext;
 import mondrian.olap.Result;
+import mondrian.util.Bug;
 
-/** 
+/**
  * Checkin 7634 attempted to correct a problem demonstrated by this
  * junit. The CrossJoinFunDef class has an optimization that kicks in
  * when the combined lists sizes are greater than 1000. I create a
@@ -20,18 +22,13 @@ import mondrian.olap.Result;
  * data for the default measure. Thus the old optimization fails
  * to produce the correct result.
  * 
- * @author <a>Richard M. Emberson</a>
- * @version 
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 public class Checkin_7634 extends CsvDBTestCase {
     private static final String DIRECTORY =
                             "testsrc/main/mondrian/rolap/aggmatcher";
     private static final String CHECKIN_7634 = "Checkin_7634.csv";
-
-    public static final String USE_PROP_NAME =  "mondrian.test.7634.use";
-    public static final String OLD_PROP_NAME =  "mondrian.test.7634.old";
-    public static final String SIZE_PROP_NAME =  "mondrian.test.7634.size";
-
 
     public Checkin_7634() {
         super();
@@ -42,17 +39,18 @@ public class Checkin_7634 extends CsvDBTestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        System.getProperties().setProperty(SIZE_PROP_NAME, "2");
+        Bug.Checkin7634Size = 2;
     }
     protected void tearDown() throws Exception {
-        System.getProperties().remove(SIZE_PROP_NAME);
+        Bug.Checkin7634Size = 0;
 
         super.tearDown();
     }
 
-    public void _testCrossJoin() throws Exception {
+    public void testCrossJoin() throws Exception {
+        if (!Bug.Bug1574942Fixed) return;
         // explicit use of [Product].[Class1]
-        String mdx = 
+        String mdx =
         "select {[Measures].[Requested Value]} ON COLUMNS,"+
         " NON EMPTY Crossjoin("+
         " {[Geography].[All Regions].Children},"+
@@ -63,30 +61,30 @@ public class Checkin_7634 extends CsvDBTestCase {
 
         // Execute query but do not used the CrossJoin nonEmptyList optimization
 //System.out.println("NO OP");
-        System.getProperties().setProperty(USE_PROP_NAME, "not-null");
+        Bug.Checkin7634UseOptimizer = true;
         Result result1 = getCubeTestContext().executeQuery(mdx);
-        String resultString1 = getCubeTestContext().toString(result1);
+        String resultString1 = TestContext.toString(result1);
 //System.out.println(resultString1);
-        System.getProperties().remove(USE_PROP_NAME);
+        Bug.Checkin7634UseOptimizer = false;
 
         // Execute query using the new version of the CrossJoin 
         // nonEmptyList optimization
 //System.out.println("OP NEW");
         Result result2 = getCubeTestContext().executeQuery(mdx);
-        String resultString2 = getCubeTestContext().toString(result2);
+        String resultString2 = TestContext.toString(result2);
 //System.out.println(resultString2);
-        
+
         // This succeeds.
         assertEquals(resultString1, resultString2);
 
 //System.out.println("OP OLD");
         // Execute query using the old version of the CrossJoin 
         // nonEmptyList optimization
-        System.getProperties().setProperty(OLD_PROP_NAME, "not-null");
+        Bug.Checkin7634DoOld = true;
         Result result3 = getCubeTestContext().executeQuery(mdx);
-        String resultString3 = getCubeTestContext().toString(result3);
+        String resultString3 = TestContext.toString(result3);
 //System.out.println(resultString3);
-        System.getProperties().remove(OLD_PROP_NAME);
+        Bug.Checkin7634DoOld = false;
 
         // This fails.
         assertEquals(resultString1, resultString3);
@@ -132,3 +130,5 @@ public class Checkin_7634 extends CsvDBTestCase {
 
     }
 }
+
+// End Checkin_7634.java
