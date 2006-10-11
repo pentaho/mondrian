@@ -504,6 +504,7 @@ in {mondrian.foodmart.jdbcURL}.">
           prefix="${dist.name}"
           includes="
 ${java.dir}/**/*.properties,
+${java.dir}/META-INF/**,
 ${java.dir}/mondrian/resource/MondrianResource.xml,
 ${java.dir}/mondrian/olap/Mondrian.xml,
 ${java.dir}/mondrian/rolap/aggmatcher/DefaultRules.xml,
@@ -516,6 +517,7 @@ ${java.dir}/**/*.gif,
 ${java.dir}/**/*.html,
 ${lib.dir}/commons-collections.jar,
 ${lib.dir}/commons-dbcp.jar,
+${lib.dir}/commons-math-1.0.jar,
 ${lib.dir}/commons-pool.jar,
 ${lib.dir}/eigenbase-properties.jar,
 ${lib.dir}/eigenbase-resgen.jar,
@@ -529,12 +531,17 @@ ${lib.dir}/mof.jar,
 ${lib.dir}/eigenbase-resgen.jar,
 ${lib.dir}/eigenbase-xom.jar,
 ${lib.dir}/servlet.jar,
+${lib.dir}/xalan.jar,
+${lib.dir}/xercesImpl.jar,
 ${testsrc.dir}/queryFiles/**/*.xml,
+${testsrc.dir}/**/*.csv,
+${testsrc.dir}/**/*.error,
 ${testsrc.dir}/**/*.java,
+${testsrc.dir}/**/*.xml,
 ${testsrc.dir}/**/*.html,
 ${testsrc.dir}/**/*.txt,
-${testlib.dir}/commons-math-1.0.jar,
 ${testlib.dir}/junit.jar,
+${testlib.dir}/xmlunit*.jar,
 ${webapp.dir}/WEB-INF/*.xml,
 ${webapp.dir}/**/*.jsp,
 ${webapp.dir}/WEB-INF/*.xsl,
@@ -874,7 +881,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <fileset dir="${build.dir}/mondrian" excludes="WEB-INF/**/*,*.jsp"/>
       <fileset dir="${webapp.dir}" includes="*.*"/>
       <lib dir="${build.dir}/mondrian/WEB-INF/lib" excludes="${name}.jar,eigenbase-*.jar,*.dtd"/>
-      <lib dir="${lib.dir}" includes="${name}.jar,eigenbase-*.jar,*.dtd"/>
+      <lib dir="${lib.dir}" includes="${name}.jar,eigenbase-*.jar,xalan.jar,*.dtd"/>
       <!-- <lib dir="${lib.dir}" includes="commons-math-1.0.jar"/>  -->
       <lib dir="${testlib.dir}" includes="xmlunit*.jar"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
@@ -936,8 +943,7 @@ Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded data
 
       <fileset dir="${build.dir}/mondrian-embedded" excludes="busy.jsp,WEB-INF/**/*"/>
       <fileset dir="${webapp.dir}" excludes="index.jsp,testpage.jsp,WEB-INF/**/*"/>
-      <lib dir="${lib.dir}" includes="${name}.jar"/>
-      <lib dir="${lib.dir}" includes="eigenbase-*.jar"/>
+      <lib dir="${lib.dir}" includes="${name}.jar,eigenbase-*.jar,xalan.jar,*.dtd"/>
       <!-- <lib dir="${lib.dir}" includes="commons-math-1.0.jar"/>  -->
       <lib dir="${testlib.dir}" includes="xmlunit*.jar,derby.jar"/>
       <classes dir="${demo.dir}/derby" includes="foodmart/**/*.*"/>
