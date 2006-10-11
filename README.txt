@@ -5,7 +5,7 @@ This code is released under the terms of the Common Public
 License; see LICENSE.html.
 
 For installation instructions, see doc/install.html
-(http://mondrian.sourceforge.net/install.html).
+(http://mondrian.pentaho.org/documentation/installation.php).
 
 The version is described in VERSION.txt.
 

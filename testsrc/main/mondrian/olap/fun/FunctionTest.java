@@ -6625,7 +6625,7 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
      * Tests {@link mondrian.olap.FunTable#getFunInfoList()}, but more
      * importantly, generates an HTML table of all implemented functions into
      * a file called "functions.html". You can manually include that table
-     * in the <a href="http://mondrian.sourceforge.net/mdx.html">MDX
+     * in the <a href="{@docRoot}/../mdx.html">MDX
      * specification</a>.
      */
     public void testDumpFunctions() throws IOException {

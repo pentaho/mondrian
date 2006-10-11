@@ -17,7 +17,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="2.1.1"/>
+  <property name="version" value="2.2.1"/>
 
   <!--
     ===================================================================
@@ -801,7 +801,7 @@ META-INF/**"/>
 
   <target name="upload-javadoc" depends="javadoc" description="
 Copies javadoc to sourceforge, where it will be accessible via
-http://mondrian.sourceforge.net/api/index.html.
+http://mondrian.pentaho.org/api/index.html.
 You should set scp.user, scp.password and scp.path in build.properties">
     <exec executable="scp">
       <arg line="-r"/>

@@ -34,7 +34,7 @@
         <!-- 
              The URL of the servlet.
         -->
-        <URL>http://localhost:8080/mondrian/xmla</URL>
+        <URL>http://localhost:8888/mondrian/xmla</URL>
 
         <!--
              Mondrian connect string for the data source. If this data
@@ -45,7 +45,7 @@
              Catalogs can override the connect string with their own
              <DataSourceInfo> element.
           -->
-        <DataSourceInfo>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;Catalog=/WEB-INF/queries/FoodMart.xml</DataSourceInfo>
+        <DataSourceInfo>Provider=mondrian;Jdbc=jdbc:oracle:thin:foodmart/foodmart@//marmalade.hydromatic.net:1521/XE;JdbcUser=foodmart;JdbcPassword=foodmart;JdbcDrivers=oracle.jdbc.OracleDriver;Catalog=/WEB-INF/queries/FoodMart.xml</DataSourceInfo>
 
         <!-- 
              Provider name must be 'Mondrian'.

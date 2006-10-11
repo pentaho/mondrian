@@ -450,7 +450,7 @@ Revision is $Id$
         <Attribute name="memberReaderClass">
             <Doc>
                 Name of the custom member reader class. Must implement
-                the <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberReader.html">mondrian.rolap.MemberReader</a> interface.
+                the <a href="api/mondrian/rolap/MemberReader.html">mondrian.rolap.MemberReader</a> interface.
             </Doc>
         </Attribute>
         <Attribute name="caption" required="false">
@@ -731,7 +731,7 @@ Revision is $Id$
         <Attribute name="formatString">
             <Doc>
                 Format string with which to format cells of this measure. For
-                more details, see the <a href="http://mondrian.sourceforge.net/api/mondrian/util/Format.html">mondrian.util.Format</a> class.
+                more details, see the <a href="api/mondrian/util/Format.html">mondrian.util.Format</a> class.
             </Doc>
         </Attribute>
         <Attribute name="aggregator" required="true">
@@ -1552,7 +1552,7 @@ Revision is $Id$
             <code>access</code> may be "all", "all_dimensions", or "none".
             If <code>access</code> is "all_dimensions", the role has access
             to all dimensions but still needs explicit access to cubes.
-            See <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Schema, int)">mondrian.olap.Role#grant(mondrian.olap.Schema,int)</a>.
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Schema, int)">mondrian.olap.Role#grant(mondrian.olap.Schema,int)</a>.
         </Doc>
         <Array name="cubeGrants" type="CubeGrant"/>
     </Element>
@@ -1561,7 +1561,7 @@ Revision is $Id$
         <Doc>
             Grants (or denies) this role access to a cube.
             <code>access</code> may be "all" or "none".
-            See <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Cube, int)">mondrian.olap.Role#grant(mondrian.olap.Cube,int)</a>.
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Cube, int)">mondrian.olap.Role#grant(mondrian.olap.Cube,int)</a>.
         </Doc>
         <Attribute name="cube" required="true">
             <Doc>The unique name of the cube</Doc>
@@ -1577,7 +1577,7 @@ Revision is $Id$
             Note that a role is implicitly given access to a dimension when it
             is given acess to a cube.
             See also the "all_dimensions" option of the "SchemaGrant" element.
-            See <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Dimension, int)">mondrian.olap.Role#grant(mondrian.olap.Dimension,int)</a>.
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Dimension, int)">mondrian.olap.Role#grant(mondrian.olap.Dimension,int)</a>.
         </Doc>
         <Attribute name="dimension" required="true">
             <Doc>The unique name of the dimension</Doc>
@@ -1591,7 +1591,7 @@ Revision is $Id$
             If <code>access</code> is "custom", you may also specify the
             attributes <code>topLevel</code>, <code>bottomLevel</code>, and
             the member grants.
-            See <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)">mondrian.olap.Role#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)</a>.
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)">mondrian.olap.Role#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)</a>.
         </Doc>
         <Attribute name="hierarchy" required="true">
             <Doc>The unique name of the hierarchy</Doc>
@@ -1616,7 +1616,7 @@ Revision is $Id$
             Grants (or denies) this role access to a member.
             The children of this member inherit that access.
             You can implicitly see a member if you can see any of its children.
-            See <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Member, int)">mondrian.olap.Role#grant(mondrian.olap.Member,int)</a>.
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Member, int)">mondrian.olap.Role#grant(mondrian.olap.Member,int)</a>.
         </Doc>
         <Attribute name="member" required="true">
             <Doc>The unique name of the member</Doc>
@@ -1633,7 +1633,7 @@ Revision is $Id$
             A <code>UserDefinedFunction</code> is a function which
             extends the MDX language. It must be implemented by a Java
             class which implements the interface
-            <a href="http://mondrian.sourceforge.net/api/mondrian/spi/UserDefinedFunction.html">mondrian.spi.UserDefinedFunction</a>.
+            <a href="api/mondrian/spi/UserDefinedFunction.html">mondrian.spi.UserDefinedFunction</a>.
         </Doc>
         <Attribute name="name" required="true">
             <Doc>Name with which the user-defined function will be referenced in MDX expressions.</Doc>

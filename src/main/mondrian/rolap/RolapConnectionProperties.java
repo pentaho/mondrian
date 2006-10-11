@@ -62,18 +62,18 @@ public class RolapConnectionProperties extends EnumeratedValues {
 
     /**
      * The "Catalog" property is the URL of the catalog, an XML file which
-     * describes the schema: cubes, hierarchies, and so forth. Catalogs are
-     * described <a target="_top"
-     * href="http://mondrian.sourceforge.net/schema.html">here</a>.
+     * describes the schema: cubes, hierarchies, and so forth.
+     * Catalogs are described in <a target="_top"
+     * href="{@docRoot}/../schema.html">the Schema Guide</a>.
      * See also {@link #CatalogContent}.
      */
     public static final String Catalog = "Catalog";
 
     /**
      * The "CatalogContent" property is an XML string representing the schema:
-     * cubes, hierarchies, and so forth. Catalogs are described <a
-     * target="_top"
-     * href="http://mondrian.sourceforge.net/schema.html">here</a>.
+     * cubes, hierarchies, and so forth.
+     * Catalogs are described in <a target="_top"
+     * href="{@docRoot}/../schema.html">the Schema Guide</a>.
      * See also {@link #Catalog}.
      */
     public static final String CatalogContent = "CatalogContent";

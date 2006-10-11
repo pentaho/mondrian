@@ -705,7 +705,7 @@ public class MondrianProperties extends TriggerableProperties {
      *
      * <p>Used for the {@link mondrian.rolap.DynamicSchemaProcessor
      * LocalizingDynamicSchemaProcessor}; see
-     * <a href="http://mondrian.sourceforge.net/schema.html#I18n">Internationalization</a>
+     * <a href="{@docRoot}/../schema.html#I18n">Internationalization</a>
      * for more details.</td>
      *
      * <p>Default value is null.

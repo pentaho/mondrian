@@ -20,29 +20,33 @@
 #          Connection.html (javadoc for mondrian.olap.Connection)
 #    (etc.)
 
+beep() {
+  echo x | tr x \\007
+}
+
 doHtml() {
   # LOCALE="en"
   LOCALE="$1"
   # SRCFILE="aggregate_tables.html"
   SRCFILE="$2"
-  # DSTFILE="content/en/documentation/aggregate_tables.html"
+  # DSTFILE="content/en/documentation/aggregate_tables_doc.htm"
   DSTFILE=content/${LOCALE}/documentation/$(echo $SRCFILE|sed -e s/.html$/_doc.htm/)
   if [ "$LOCALE" != "en" ]; then
     SRCFILE=$(echo $SRCFILE | sed -e "s/\.html/_${LOCALE}.html/")
   fi
   mkdir -p content/${LOCALE}/documentation
   echo :: copy $SRCFILE to $DSTFILE
-  cat $SRCFILE |
-  sed -e '
-s! src="images/! src="../images/!;
-s! href="\([^/]*\)\.html! href="\1.php!
-         ' |
-  awk '
+  case "$SRCFILE" in
+  xml_schema.html)
+    cp "$SRCFILE" "$DSTFILE";;
+  *)
+    cat "$SRCFILE" |
+    awk '
 /doc2web start/ {++x;next;}
 /doc2web end/ {++x;next;}
 {if (x == 1) print;}
-      ' >$DSTFILE
-
+        ' >"$DSTFILE";;
+  esac
 }
 
 doImg() {
@@ -52,13 +56,19 @@ doImg() {
 ROOT=$(cd $(dirname $0); pwd -P)
 cd $ROOT
 
+javadoc=true
+deploy=true
+scp=true
+
 # Remove output from previous run.
 rm -rf content
 
 # Build javadoc.
-if false; then
+if $javadoc; then
   (
-  cd $ROOT
+  cd $ROOT/..
+  rm -rf doc/api
+  mkdir -p doc/api
   ant javadoc xml_schema
   )
 fi
@@ -93,6 +103,7 @@ doImg images/arch_mondrian_v1_tn.png
 doImg images/arch_mondrian_sketch_tn.png
 doImg images/zoom.png
 doImg images/logo_mondrian_lrg.png
+doImg images/perforce_setup.gif
 doImg images/code_spacing.png
 doImg images/code_indentation.png
 doImg images/perforce_setup.png
@@ -104,15 +115,36 @@ rm -f mondrianPentaho.tar.gz
 tar -cvz -f mondrianPentaho.tar.gz content images api
 
 # Copy file to server, and deploy.
-if true; then
-  scp mondrianPentaho.tar.gz mondriantest@mondriantest.pentaho.org:httpdocs
-  ssh mondriantest@mondriantest.pentaho.org <<EOF
+if $scp; then
+  beep
+  scp -oConnectTimeout=300 mondrianPentaho.tar.gz mondrian@mondrian.pentaho.org:httpdocs
+fi
+
+if $deploy; then
+  beep
+  ssh -oConnectTimeout=300 mondrian@mondrian.pentaho.org <<EOF
     cd httpdocs
     tar xvfz mondrianPentaho.tar.gz
 
     # Fix up file permissions
     find api content images -type d | xargs chmod go+rx
     find api content images -type f | xargs chmod go+r
+
+    # Replace references to documents from javadoc.
+    find api -name \*.html |
+    xargs perl -p -i -e '
+s!architecture.html!../documentation/architecture.php!;
+s!mdx.html!../documentation/mdx.php!;
+s!schema.html!../documentation/schema.php!;
+                        '
+
+    # Change references to javadoc from documents.
+    find content -name \*.htm |
+    xargs perl -p -i -e '
+s! src="images/! src="../images/!;
+s! href="api! href="../api!;
+s! href="\([^/]*\)\.html! href="\1.php!;
+                        ' 
 EOF
 fi
 

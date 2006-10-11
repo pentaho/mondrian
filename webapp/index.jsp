@@ -29,7 +29,7 @@
 
 <p>Other links:</p>
 <ul>
-<li><a href="http://mondrian.sourceforge.net/">Mondrian home page</a></li>
+<li><a href="http://mondrian.pentaho.org">Mondrian home page</a></li>
 <li><a href="http://sourceforge.net/projects/mondrian">Mondrian project page</a></li>
 <li><a href="http://jpivot.sourceforge.net/">JPivot home page</a></li>
 <li><a href="http://sourceforge.net/projects/jpivot">JPivot project page</a></li>
