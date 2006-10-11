@@ -1121,6 +1121,15 @@ public class SqlQuery
                 return "INTEGER";
             }
         }
+
+        /**
+         * Returns whether this dialect supports common SQL Data Definition
+         * Language (DDL) statements such as <code>CREATE TABLE</code> and
+         * <code>DROP INDEX</code>.
+         */
+        public boolean allowsDdl() {
+            return !isAccess();
+        }
     }
 
     /**

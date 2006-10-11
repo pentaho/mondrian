@@ -138,21 +138,22 @@ public class ResultComparatorTest extends TestCase {
         final Pattern pattern = filePattern == null ? null : Pattern.compile(filePattern);
         final String directory = fileDirectory == null ? "testsrc" + File.separatorChar + "queryFiles" : fileDirectory;
 
-        File[] files = new File(directory).listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                if (name.startsWith("query") && name.endsWith(".xml")) {
-                    if (pattern == null) {
-                        return true;
+        File[] files = new File(directory).listFiles(
+            new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    if (name.startsWith("query") && name.endsWith(".xml")) {
+                        if (pattern == null) {
+                            return true;
+                        } else {
+                            return pattern.matcher(name).matches();
+                        }
                     }
-                    else {
-                        return pattern.matcher(name).matches();
-                    }
+                    return false;
                 }
-
-                return false;
-            }
-        });
-
+            });
+        if (files == null) {
+            files = new File[0];
+        }
         for (int idx = 0; idx < files.length; idx++) {
             suite.addTest(new ResultComparatorTest(files[idx]));
         }

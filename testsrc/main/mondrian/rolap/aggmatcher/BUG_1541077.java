@@ -9,20 +9,16 @@
 */
 package mondrian.rolap.aggmatcher;
 
-import mondrian.olap.*;
-import mondrian.rolap.RolapConnection;
-import mondrian.test.FoodMartTestCase;
-import mondrian.test.TestContext;
-import mondrian.test.loader.CsvDBLoader;
-import java.sql.Connection;
-import java.io.File;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Result;
 
 /** 
- * This is a concrete class used to test Bug 1541077 as well as a couple of
- * other aggregate table ExplicitRecognizer conditions.
+ * Testcase for
+ * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1541077&group_id=35302&atid=414613">bug 1541077<a>
+ * and a couple of other aggregate table ExplicitRecognizer conditions.
  * 
- * @author <a>Richard M. Emberson</a>
- * @version 
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 public class BUG_1541077 extends AggTableTestCase {
 
@@ -36,6 +32,10 @@ public class BUG_1541077 extends AggTableTestCase {
     }
 
     public void testStoreCount() throws Exception {
+        if (!isApplicable()) {
+            return;
+        }
+
         MondrianProperties props = MondrianProperties.instance();
 
         // get value without aggregates
@@ -52,7 +52,12 @@ public class BUG_1541077 extends AggTableTestCase {
 
         assertTrue(v.equals(v1));
     }
+
     public void testSalesCount() throws Exception {
+        if (!isApplicable()) {
+            return;
+        }
+
         MondrianProperties props = MondrianProperties.instance();
 
         // get value without aggregates
@@ -69,7 +74,12 @@ public class BUG_1541077 extends AggTableTestCase {
 
         assertTrue(v.equals(v1));
     }
+
     public void testTotalAmount() throws Exception {
+        if (!isApplicable()) {
+            return;
+        }
+
         MondrianProperties props = MondrianProperties.instance();
 
         // get value without aggregates
@@ -86,7 +96,11 @@ public class BUG_1541077 extends AggTableTestCase {
 
         assertTrue(v.equals(v1));
     }
+
     public void testBug1541077() throws Exception {
+        if (!isApplicable()) {
+            return;
+        }
 
         MondrianProperties props = MondrianProperties.instance();
 
@@ -110,6 +124,7 @@ public class BUG_1541077 extends AggTableTestCase {
     protected String getFileName() {
         return BUG_1541077;
     }
+
     protected String getCubeDescription() {
         return "<Cube name='Cheques'>\n" +
             "<Table name='cheques'>\n" +
@@ -187,6 +202,6 @@ public class BUG_1541077 extends AggTableTestCase {
             "</Cube>";
 
     }
-
-
 }
+
+// End BUG_1541077.java

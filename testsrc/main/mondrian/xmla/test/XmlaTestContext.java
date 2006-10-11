@@ -138,12 +138,16 @@ public class XmlaTestContext {
         MondrianProperties properties = MondrianProperties.instance();
         String filePattern = properties.QueryFilePattern.get();
 
-        final Pattern pattern = filePattern == null ? null : Pattern.compile(filePattern);
+        final Pattern pattern = filePattern == null ?
+            null :
+            Pattern.compile(filePattern);
 
-        File queryFilesDir = servletContext != null ? new File(XmlaTestContext.class.getResource("./queryFiles").getFile())
-                                                   : new File("testsrc/main/mondrian/xmla/test/queryFiles");
-        LOGGER.debug("Loading XML/A test data from queryFilesDir=" + queryFilesDir.getAbsolutePath() +
-                " (exists=" + queryFilesDir.exists() + ")");
+        File queryFilesDir = servletContext != null ?
+            new File(XmlaTestContext.class.getResource("./queryFiles").getFile()) :
+            new File("testsrc/main/mondrian/xmla/test/queryFiles");
+        LOGGER.debug("Loading XML/A test data from queryFilesDir=" +
+            queryFilesDir.getAbsolutePath() +
+            " (exists=" + queryFilesDir.exists() + ")");
         File[] files = queryFilesDir.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 if (name.endsWith(".xml")) {
@@ -157,7 +161,9 @@ public class XmlaTestContext {
                 return false;
             }
         });
-
+        if (files == null) {
+            files = new File[0];
+        }
         return files;
     }
 

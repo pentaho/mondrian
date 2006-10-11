@@ -10,7 +10,6 @@
 
 package mondrian.test.loader;
 
-import mondrian.olap.Util;
 import java.io.FileInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -21,14 +20,16 @@ import java.util.Properties;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** 
- * This concrete subclass of DBLoader gets its Tables by reading CSV files 
- * using the CsvLoader class and is the loader use for CSV junit tests.
+ * Implementation of {@link DBLoader} which gets its Tables by reading CSV files
+ * using the {@link CsvLoader} class and is the loader use for CSV junit tests.
+ *
  * <p>
- * This class requires that the CSV files have a specific format as defined:
+ * <code>CsvDBLoader</code> requires that the CSV files have a specific format
+ * as defined:
+ *
  * <blockquote><pre>
  * list_of_csv_files : (csv_file)+
  * csv_file: table_definitions
@@ -65,8 +66,8 @@ import java.util.regex.Pattern;
  * for an example.
  *
  * 
- * @author <a>Richard M. Emberson</a>
- * @version 
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 public class CsvDBLoader extends DBLoader {
 
@@ -85,27 +86,35 @@ public class CsvDBLoader extends DBLoader {
     public CsvDBLoader() {
         super();
     }
+
     public void setInputDirectory(File inputDirectory) {
         this.inputDirectory = inputDirectory;
     }
+
     public File getInputDirectory() {
         return this.inputDirectory;
     }
+
     public void setInputDirectoryRegex(String inputDirectoryRegex) {
         this.inputDirectoryRegex = inputDirectoryRegex;
     }
+
     public String getInputDirectoryRegex() {
         return this.inputDirectoryRegex;
     }
+
     public void setInputFiles(File[] inputFiles) {
         this.inputFiles = inputFiles;
     }
+
     public File[] getInputFiles() {
         return this.inputFiles;
     }
+
     public void setInputFile(File inputFile) {
         this.inputFile = inputFile;
     }
+
     public File getInputFile() {
         return this.inputFile;
     }
@@ -123,6 +132,7 @@ public class CsvDBLoader extends DBLoader {
             return new Table[0];
         }
     }
+
     public Table[] getTablesFromDirectory() throws Exception {
         File[] files;
         if (this.inputDirectoryRegex == null) {
@@ -136,17 +146,23 @@ public class CsvDBLoader extends DBLoader {
                     }
                 }
             );
+            if (files == null) {
+                files = new File[0];
+            }
         }
         return getTables(files);
     }
+
     public Table[] getTablesFromFiles() throws Exception {
         return getTables(this.inputFiles);
     }
+
     public Table[] getTablesFromFile() throws Exception {
         List list = new ArrayList();
         loadTables(this.inputFile, list);
         return (Table[]) list.toArray(new Table[list.size()]);
     }
+
     public Table[] getTables(File[] files) throws Exception {
         List list = new ArrayList();
         for (int i = 0; i < files.length; i++) {
@@ -171,6 +187,7 @@ public class CsvDBLoader extends DBLoader {
             return this.list.iterator();
         }
     }
+
     public static class CsvLoaderRowStream implements RowStream {
         private final CsvLoader csvloader;
         CsvLoaderRowStream(CsvLoader csvloader) {
@@ -199,6 +216,7 @@ public class CsvDBLoader extends DBLoader {
             };
         }
     }
+
     public void loadTables(File file, List tableList) throws Exception {
 //System.out.println("CsvLoader.loadTables: TOP:");
         CsvLoader csvloader = null;
@@ -214,7 +232,6 @@ public class CsvDBLoader extends DBLoader {
             Reader reader = new FileReader(file);
             csvloader = new CsvLoader(reader);
             int lineNos = 0;
-            LOOP:
             while (csvloader.hasNextLine()) {
                 String[] values = csvloader.nextLine();
                 lineNos++;
@@ -418,7 +435,7 @@ public class CsvDBLoader extends DBLoader {
                             new CsvLoaderRowStream(csvloader);
                         controller.setRowStream(rowStream);
                         csvloader = null;
-                        break LOOP;
+                        break;
                     }
                     
                 }
@@ -430,9 +447,11 @@ public class CsvDBLoader extends DBLoader {
         }
 //System.out.println("CsvLoader.loadTables: BOTTOM:");
     }
-    protected Column[] loadColumns(String[] columnNames, 
-                        String[] columnTypes, int lineNos) 
-            throws Exception {
+
+    protected Column[] loadColumns(
+        String[] columnNames, String[] columnTypes, int lineNos)
+        throws Exception
+    {
         List list = new ArrayList();
         for (int i = 0; i < columnNames.length; i++) {
             String columnName = columnNames[i];
@@ -577,6 +596,7 @@ public class CsvDBLoader extends DBLoader {
         System.out.println(buf.toString());
         System.exit((msg == null) ? 0 : 1);
     }
+
     public static void main(String[] args) throws Exception {
         String propFile = null;
         String jdbcDrivers = null;
@@ -797,3 +817,5 @@ public class CsvDBLoader extends DBLoader {
         loader.executeStatements(tables);
     }
 }
+
+// End CsvDBLoader.java

@@ -11,6 +11,7 @@ package mondrian.test.loader;
 
 import mondrian.olap.Schema;
 import mondrian.rolap.RolapConnection;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import java.sql.SQLException;
@@ -18,33 +19,47 @@ import java.sql.Connection;
 import java.io.File;
 
 /** 
- * This abstract class supports the creation of test that use
+ * Base class for tests that use
  * a CSV database defined in a single file. While the CsvDBLoader
  * supports being defined by a single file, list of files, or
  * directory with optional regular expression for matching files
  * in the directory to be loaded, this is simplest at this point.
+ *
  * <p>
  * To use this file one must define both the directory and file
  * abstract methods.
  * 
- * @author <a>Richard M. Emberson</a>
- * @version 
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 public abstract class CsvDBTestCase extends FoodMartTestCase {
 
     private CsvDBLoader loader;
     private CsvDBLoader.Table[] tables;
     private TestContext testContext;
+    protected final boolean applicable;
 
     public CsvDBTestCase() {
         super();
+        applicable = getTestContext().getDialect().allowsDdl();
     }
+
     public CsvDBTestCase(String name) {
         super(name);
+        applicable = getTestContext().getDialect().allowsDdl();
     }
 
+    protected final boolean isApplicable() {
+        return applicable;
+    }
 
     protected void setUp() throws Exception {
+        // If this database does not allow DDL, the test won't run. Don't bother
+        // setting up.
+        if (!isApplicable()) {
+            return;
+        }
+
         super.setUp();
 
         Connection connection = getSqlConnection();
@@ -64,10 +79,17 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
         this.loader.executeStatements(this.tables);
 
         String cubeDescription = getCubeDescription();
-        this.testContext = TestContext.create(null,
-                            cubeDescription, null, null, null);
+        this.testContext = TestContext.create(
+            null, cubeDescription, null, null, null);
     }
+
     protected void tearDown() throws Exception {
+        // If this database does not allow DDL, we didn't run setUp; so, nothing
+        // to tear down.
+        if (!isApplicable()) {
+            return;
+        }
+
         try {
             // drop database tables
             this.loader.dropTables(this.tables);
@@ -81,6 +103,7 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
     protected Connection getSqlConnection() throws SQLException {
         return ((RolapConnection) getConnection()).getDataSource().getConnection();
     }
+
     protected Schema getSchema() {
         return getConnection().getSchema();
     }
@@ -93,3 +116,5 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
     protected abstract String getFileName();
     protected abstract String getCubeDescription();
 }
+
+// End CsvDBTestCase.java
