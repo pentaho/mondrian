@@ -133,13 +133,30 @@ class CrossJoinFunDef extends FunDefBase {
         //  nonempty(crossjoin(nonempty(a),nonempty(b))
         long size = (long)list1.size() * (long)list2.size();
         int resultLimit = MondrianProperties.instance().ResultLimit.get();
-        if (size > 1000 && evaluator.isNonEmpty()) {
+
+// NOTE: RME : These properties are used by the Checkin_7634
+final String USE_PROP_NAME =  "mondrian.test.7634.use";
+final String SIZE_PROP_NAME =  "mondrian.test.7634.size";
+final String OLD_PROP_NAME =  "mondrian.test.7634.old";
+final int opSize = Integer.getInteger(SIZE_PROP_NAME, 1000).intValue();
+//System.out.println("CrossJoinFunDef.crossjoin: size=" +size);
+//System.out.println("CrossJoinFunDef.crossjoin: opSize=" +opSize);
+boolean useOptimizer = (System.getProperty(USE_PROP_NAME) == null);
+boolean doOld = (System.getProperty(OLD_PROP_NAME) != null);
+        if (useOptimizer && size > opSize && evaluator.isNonEmpty()) {
             // instead of overflow exception try to further
             // optimize nonempty(crossjoin(a,b)) ==
             // nonempty(crossjoin(nonempty(a),nonempty(b))
             final int missCount = evaluator.getMissCount();
-            list1 = nonEmptyList(evaluator, list1);
-            list2 = nonEmptyList(evaluator, list2);
+
+//System.out.println("CrossJoinFunDef.crossjoin: oldprop=" +System.getProperty("mondrian.test.7634.old"));
+            if (doOld) {
+                list1 = nonEmptyListOld(evaluator, list1);
+                list2 = nonEmptyListOld(evaluator, list2);
+            } else {
+                list1 = nonEmptyList(evaluator, list1);
+                list2 = nonEmptyList(evaluator, list2);
+            }
             size = (long)list1.size() * (long)list2.size();
             // both list1 and list2 may be empty after nonEmpty optimization
             if (size == 0) {
@@ -235,6 +252,37 @@ class CrossJoinFunDef extends FunDefBase {
         return result;
     }
 
+    protected static List nonEmptyListOld(Evaluator evaluator, List list) {
+//System.out.println("CrossJoinFunDef.nonEmptyListOld");
+        if (list.isEmpty()) {
+            return list;
+        }
+        List result = new ArrayList();
+        evaluator = evaluator.push();
+        if (list.get(0) instanceof Member[]) {
+            for (Iterator it = list.iterator(); it.hasNext();) {
+                Member[] m = (Member[]) it.next();
+                evaluator.setContext(m);
+                Object value = evaluator.evaluateCurrent();
+                if (value != Util.nullValue && !(value instanceof Throwable)) {
+                    result.add(m);
+                }
+            }
+        } else {
+            for (Iterator it = list.iterator(); it.hasNext();) {
+                Member m = (Member) it.next();
+//System.out.println("CrossJoinFunDef.nonEmptyListOld: m=" +m.getUniqueName());
+                evaluator.setContext(m);
+                Object value = evaluator.evaluateCurrent();
+//System.out.println("CrossJoinFunDef.nonEmptyListOld: value=" +value);
+                if (value != null && !(value instanceof Throwable)) {
+                    result.add(m);
+                }
+            }
+        }
+        return result;
+    }
+
 
     /**
      * Visitor which builds a list of all measures referenced in a query.
@@ -285,6 +333,7 @@ class CrossJoinFunDef extends FunDefBase {
                     if (measureSet == null) {
                         measureSet = new HashSet();
                     }
+//System.out.println("CrossJoinFunDef.MeasureVisitor.visit: measure=" +measure.getUniqueName());
                     measureSet.add(measure);
                     break;
                 }

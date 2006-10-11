@@ -270,6 +270,22 @@ public class RolapEvaluator implements Evaluator {
         return Arrays.equals(this.currentMembers, that.currentMembers);
     }
 
+/** 
+ * RME remove before checkin
+ * This is for debugging only 
+ * For use in debugging Checkin_7634
+ */
+void printCurrentMemberNames() {
+    for (int i = 0; i < currentMembers.length; i++) {
+        Member m = currentMembers[i];
+        if (m == null) {
+        System.out.println("RolapEvaluator.printCurrentMemberNames: i="+i+", member NULL");
+        } else {
+        System.out.println("RolapEvaluator.printCurrentMemberNames: i="+i+", member="+m.getUniqueName());
+        }
+    }
+}
+
     /**             
      * Replace the current member of a given hierarchy with member parameter
      * if the current member is the null, all, or default member.

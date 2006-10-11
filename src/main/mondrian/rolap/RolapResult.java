@@ -63,6 +63,8 @@ class RolapResult extends ResultBase {
             return;
         }
 
+// for use in debugging Checkin_7634
+// this.evaluator.printCurrentMemberNames();
         try {
             // An array of lists which will hold each axis' implicit members (does
             // not include slicer axis).
