@@ -993,6 +993,9 @@ public abstract class DBLoader {
 
         if (value == null) {
             return "NULL";
+        } else if ((value instanceof String) && 
+                (((String)value).length() == 0)) {
+            return "NULL";
         }
 
         /*
