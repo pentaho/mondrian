@@ -11,14 +11,13 @@ package mondrian.test.loader;
 
 import mondrian.olap.Schema;
 import mondrian.rolap.RolapConnection;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import java.sql.SQLException;
 import java.sql.Connection;
 import java.io.File;
 
-/** 
+/**
  * Base class for tests that use
  * a CSV database defined in a single file. While the CsvDBLoader
  * supports being defined by a single file, list of files, or
@@ -28,7 +27,7 @@ import java.io.File;
  * <p>
  * To use this file one must define both the directory and file
  * abstract methods.
- * 
+ *
  * @author Richard M. Emberson
  * @version $Id$
  */
@@ -37,20 +36,17 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
     private CsvDBLoader loader;
     private CsvDBLoader.Table[] tables;
     private TestContext testContext;
-    protected final boolean applicable;
 
     public CsvDBTestCase() {
         super();
-        applicable = getTestContext().getDialect().allowsDdl();
     }
 
     public CsvDBTestCase(String name) {
         super(name);
-        applicable = getTestContext().getDialect().allowsDdl();
     }
 
     protected final boolean isApplicable() {
-        return applicable;
+        return getTestContext().getDialect().allowsDdl();
     }
 
     protected void setUp() throws Exception {
