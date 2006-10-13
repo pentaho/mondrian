@@ -33,7 +33,7 @@ import javax.servlet.RequestDispatcher;
  * If you need to add to this implementation, please do so.
  * 
  * @author <a>Richard M. Emberson</a>
- * @version 
+ * @version $Id$
  */
 public class MockServletContext implements ServletContext {
 
@@ -60,7 +60,6 @@ public class MockServletContext implements ServletContext {
      * Returns a ServletContext object that corresponds to a specified URL on
      * the server.
      * 
-     * @param s 
      */
     public ServletContext getContext(String s) {
         // TODO
@@ -89,7 +88,6 @@ public class MockServletContext implements ServletContext {
      * Returns the MIME type of the specified file, or null if the MIME type is
      * not known.
      * 
-     * @param s 
      */
     public String getMimeType(String s) {
         // TODO
@@ -99,7 +97,6 @@ public class MockServletContext implements ServletContext {
     /** 
      *  
      * 
-     * @param s 
      */
     public Set getResourcePaths(String s) {
         // TODO
@@ -109,8 +106,6 @@ public class MockServletContext implements ServletContext {
     /** 
      *  Returns a URL to the resource that is mapped to a specified path.
      * 
-     * @param name 
-     * @throws MalformedURLException 
      */
     public URL getResource(String name) throws MalformedURLException {
         return (URL) resources.get(name);
@@ -119,7 +114,6 @@ public class MockServletContext implements ServletContext {
     /** 
      *  Returns the resource located at the named path as an InputStream object.
      * 
-     * @param s 
      */
     public InputStream getResourceAsStream(String s) {
         // TODO
@@ -130,7 +124,6 @@ public class MockServletContext implements ServletContext {
      *  Returns a RequestDispatcher object that acts as a wrapper for the
      *  resource located at the given path.
      * 
-     * @param s 
      */
     public RequestDispatcher getRequestDispatcher(String s) {
         // TODO
@@ -141,7 +134,6 @@ public class MockServletContext implements ServletContext {
      * Returns a RequestDispatcher object that acts as a wrapper for the named
      * servlet.
      * 
-     * @param s 
      */
     public RequestDispatcher getNamedDispatcher(String s) {
         // TODO
@@ -161,8 +153,6 @@ public class MockServletContext implements ServletContext {
      * methods on common non-servlet classes.
      * 
      * @deprecated Method getServlet is deprecated
-     * @param s  
-     * @throws ServletException 
      */
 
     public Servlet getServlet(String s) throws ServletException {
@@ -207,7 +197,6 @@ public class MockServletContext implements ServletContext {
     /** 
      * Writes the specified message to a servlet log file, usually an event log.
      * 
-     * @param s 
      */
     public void log(String s) {
         // TODO
@@ -221,8 +210,6 @@ public class MockServletContext implements ServletContext {
      * and an explanatory error message to the servlet log file.
      * 
      * @deprecated Method log is deprecated
-     * @param exception  
-     * @param s 
      */
     public void log(Exception exception, String s) {
         log(s, exception);
@@ -232,8 +219,6 @@ public class MockServletContext implements ServletContext {
      *  Writes an explanatory message and a stack trace for a given Throwable
      *  exception to the servlet log file.
      * 
-     * @param s 
-     * @param throwable 
      */
     public void log(String s, Throwable throwable) {
         // TODO
@@ -242,7 +227,6 @@ public class MockServletContext implements ServletContext {
     /** 
      * Returns a String containing the real path for a given virtual path.
      * 
-     * @param s 
      */
     public String getRealPath(String path) {
         return path;
@@ -262,7 +246,6 @@ public class MockServletContext implements ServletContext {
      * Returns a String containing the value of the named context-wide
      * initialization parameter, or null if the parameter does not exist.
      * 
-     * @param s 
      */
     public String getInitParameter(String name) {
         return parameters.getProperty(name);
@@ -281,7 +264,6 @@ public class MockServletContext implements ServletContext {
     /** 
      *  
      * 
-     * @param s 
      */
     public Object getAttribute(String s) {
         return this.attributes.get(s);
@@ -300,8 +282,6 @@ public class MockServletContext implements ServletContext {
     /** 
      *  Binds an object to a given attribute name in this servlet context.
      * 
-     * @param s 
-     * @param obj 
      */
     public void setAttribute(String s, Object obj) {
         if (this.attributes == Collections.EMPTY_MAP) {
@@ -313,7 +293,6 @@ public class MockServletContext implements ServletContext {
     /** 
      *  Removes the attribute with the given name from the servlet context.
      * 
-     * @param s 
      */
     public void removeAttribute(String s) {
         this.attributes.remove(s);

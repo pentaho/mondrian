@@ -171,7 +171,7 @@ import org.apache.log4j.*;
  * MondrianFoodMartLoader class.
  * 
  * @author <a>Richard M. Emberson</a>
- * @version 
+ * @version $Id$
  */
 public abstract class DBLoader {
     protected static final Logger LOGGER = Logger.getLogger(DBLoader.class);

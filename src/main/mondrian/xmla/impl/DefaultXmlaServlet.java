@@ -205,11 +205,6 @@ public class DefaultXmlaServlet extends XmlaServlet {
      * in the "http://schemas.microsoft.com/analysisservices/2003/xmla"
      * namespace. Here we handle only the session Header elements
      * 
-     * @param hdrElem 
-     * @param encoding 
-     * @param context 
-     * @return 
-     * @throws Exception 
      */
     protected void handleSoapHeader(
             HttpServletResponse response,
@@ -574,9 +569,6 @@ public class DefaultXmlaServlet extends XmlaServlet {
     /** 
      * This produces a SOAP 1.1 version Fault element - not a 1.2 version. 
      * 
-     * @param response 
-     * @param responseSoapParts 
-     * @param t 
      */
     protected void handleFault(
                     HttpServletResponse response,

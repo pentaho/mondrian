@@ -193,6 +193,7 @@ public class AggregationManager extends RolapAggregationManager {
             StringBuffer buf = new StringBuffer(256);
             buf.append("NO MATCH: ");
             buf.append(star.getFactTable().getAlias());
+            buf.append(Util.nl);
             buf.append("   foreign=");
             buf.append(levelBitKey);
             buf.append(Util.nl);

@@ -46,7 +46,7 @@ import javax.servlet.http.HttpServletRequest;
  * If you need to add to this implementation, please do so.
  * 
  * @author <a>Richard M. Emberson</a>
- * @version 
+ * @version $Id$
  */
 public class MockHttpServletRequest implements HttpServletRequest {
     public static String AUTHORIZATION = "Authorization";
@@ -181,7 +181,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
      *  Returns the value of the named attribute as an Object, or null if no
      *  attribute of the given name exists.
      * 
-     * @param name 
      */
     public Object getAttribute(String name) {
         return this.attributes.get(name);
@@ -207,8 +206,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
     /** 
      *  
      * 
-     * @param charEncoding 
-     * @throws UnsupportedEncodingException 
      */
     public void setCharacterEncoding(String charEncoding) 
             throws UnsupportedEncodingException {
@@ -247,7 +244,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * Returns the value of a request parameter as a String, or null if the
      * parameter does not exist.
      * 
-     * @param name 
      */
     public String getParameter(String name) {
         String[] values = getParameterValues(name);
@@ -268,7 +264,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * Returns an array of String objects containing all of the values the given
      * request parameter has, or null if the parameter does not exist.
      * 
-     * @param name 
      */
     public String[] getParameterValues(String name) {
         return (String[]) parameters.get(name);
@@ -342,8 +337,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
     /** 
      *  Stores an attribute in this request.
      * 
-     * @param name 
-     * @param obj 
      */
     public void setAttribute(String name, Object obj) {
         if (attributes  == Collections.EMPTY_MAP) {
@@ -355,7 +348,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
     /** 
      *  Removes an attribute from this request.
      * 
-     * @param name 
      */
     public void removeAttribute(String name) {
         this.attributes.remove(name);
@@ -398,7 +390,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * Returns a RequestDispatcher object that acts as a wrapper for the
      * resource located at the given path.
      * 
-     * @param name 
      */
     public RequestDispatcher getRequestDispatcher(String path) {
         RequestDispatcher dispatcher = 
@@ -415,7 +406,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * ServletContext.getRealPath(java.lang.String) instead.
      * @deprecated Method getRealPath is deprecated
      * 
-     * @param path  
      */
     public String getRealPath(String path) {
         HttpSession session = getSession();
@@ -480,7 +470,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * Returns the value of the specified request header as a long value that
      * represents a Date object.
      * 
-     * @param name 
      */
     public long getDateHeader(String name) {
         String header = getHeader(name);
@@ -498,7 +487,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
     /** 
      * Returns the value of the specified request header as a String.
      * 
-     * @param name 
      */
     public String getHeader(String name) {
 
@@ -513,7 +501,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
      *  Returns all the values of the specified request header as an Enumeration
      *  of String objects.
      * 
-     * @param name 
      */
     public Enumeration getHeaders(String name) {
         List headerList = (List) headers.get(name);
@@ -533,7 +520,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
     /** 
      * Returns the value of the specified request header as an int.
      * 
-     * @param name 
      */
     public int getIntHeader(String name) {
         String header = getHeader(name);
@@ -600,7 +586,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
      *  Returns a boolean indicating whether the authenticated user is included
      *  in the specified logical "role".
      * 
-     * @param role 
      */
     public boolean isUserInRole(String role) {
         return ((Boolean) roles.get(role)).booleanValue();
@@ -655,7 +640,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * Returns the current HttpSession associated with this request or, if if
      * there is no current session and create is true, returns a new session.
      * 
-     * @param flag 
      */
     public HttpSession getSession(boolean create) {
         if (! create && ! sessionCreated) {

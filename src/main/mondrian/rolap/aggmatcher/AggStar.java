@@ -1087,11 +1087,9 @@ public class AggStar {
                     getLogger().warn(msg);
                 } else {
                     int bitPosition = rColumn.getBitPosition();
-// RME Note: this should be a Level Object, not a Column
                     ForeignKey c = new ForeignKey(
                             symbolicName, expression, isNumeric, bitPosition);
-// RME SEE IF THIS IS EVER CALLED
-System.out.println("AggStar.ForeignKey XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+                    getAggStar().setForeignKey(c.getBitPosition());
                 }
             }
         }

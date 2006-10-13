@@ -43,9 +43,6 @@ abstract class Rowset implements XmlaConstants {
      * not XmlaException (which are  specifically for generating SOAP Fault
      * xml).
      *
-     * @param definition
-     * @param request
-     * @param handler
      */
     Rowset(RowsetDefinition definition, XmlaRequest request, XmlaHandler handler) {
         this.rowsetDefinition = definition;
@@ -264,8 +261,6 @@ LOGGER.debug("Rowset<init>: restrictedColumn=\""+restrictedColumn+"\"");
      * Emits a row for this rowset, reading field values from an object using
      * reflection.
      *
-     * @param row
-     * @param response
      */
     protected void emit(Object row, XmlaResponse response)
             throws XmlaException {
@@ -370,8 +365,6 @@ System.out.println("Rowset.getRistrictionTest: requiredValue=" +requiredValue);
      * This returns either null, a String or String[] depending upon
      * what was in the XMLA request.
      * 
-     * @param column 
-     * @return 
      */
     Object getRestrictionValue(RowsetDefinition.Column column) {
         return restrictions.get(column.name);
@@ -383,8 +376,6 @@ System.out.println("Rowset.getRistrictionTest: requiredValue=" +requiredValue);
      * if all members of the array have the same value (in which case
      * one could return, again, simply a single String).
      * 
-     * @param column 
-     * @return 
      */
     String getRestrictionValueAsString(RowsetDefinition.Column column) {
         Object rval = getRestrictionValue(column);
@@ -395,8 +386,6 @@ System.out.println("Rowset.getRistrictionTest: requiredValue=" +requiredValue);
      * This returns the restriction as an integer (not an Integer) if it
      * exists and returns -1 otherwise.
      * 
-     * @param column 
-     * @return 
      */
     int getRestrictionValueAsInt(RowsetDefinition.Column column) {
         Object rval = getRestrictionValue(column);
@@ -423,8 +412,6 @@ System.out.println("Rowset.getRistrictionTest: requiredValue=" +requiredValue);
      * Returns true if there is a restriction for the given column 
      * definition.
      * 
-     * @param column 
-     * @return 
      */
     protected boolean isRestricted(RowsetDefinition.Column column) {
         return (restrictions.get(column.name) != null);

@@ -62,9 +62,6 @@ public abstract class XmlaServlet extends HttpServlet
     /** 
      * If paramName's value is not null and 'true', then return true. 
      * 
-     * @param servletConfig 
-     * @param paramName 
-     * @return 
      */
     public static boolean getBooleanInitParameter(
             ServletConfig servletConfig,
@@ -94,8 +91,6 @@ public abstract class XmlaServlet extends HttpServlet
     /**
      * Initializes servlet and XML/A handler.
      *
-     * @param servletConfig
-     * @throws ServletException
      */
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
@@ -149,10 +144,6 @@ public abstract class XmlaServlet extends HttpServlet
     /**
      * Main entry for HTTP post method
      *
-     * @param request
-     * @param response
-     * @throws ServletException
-     * @throws IOException
      */
     protected void doPost(
             HttpServletRequest request,

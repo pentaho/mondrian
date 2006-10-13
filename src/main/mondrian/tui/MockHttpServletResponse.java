@@ -37,7 +37,7 @@ import javax.servlet.http.Cookie;
  * If you need to add to this implementation, please do so.
  * 
  * @author <a>Richard M. Emberson</a>
- * @version 
+ * @version $Id$
  */
 public class MockHttpServletResponse implements HttpServletResponse {
 
@@ -157,7 +157,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * Sets the length of the content body in the response In HTTP servlets,
      * this method sets the HTTP Content-Length header. 
      * 
-     * @param i 
      */
     public void setContentLength(int len) {
         setIntHeader("Content-Length", len);
@@ -166,7 +165,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      * Sets the content type of the response being sent to the client. 
      * 
-     * @param s 
      */
     public void setContentType(String contentType) {
         setHeader("Content-Type", contentType);
@@ -175,7 +173,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      * Sets the preferred buffer size for the body of the response. 
      * 
-     * @param i 
      */
     public void setBufferSize(int size) {
         this.bufferSize = size;
@@ -226,7 +223,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
      *  Sets the locale of the response, setting the headers (including the
      *  Content-Type's charset) as appropriate. 
      * 
-     * @param locale 
      */
     public void setLocale(Locale locale) {
         this.locale = locale;
@@ -243,7 +239,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      * Adds the specified cookie to the response. 
      * 
-     * @param cookie 
      */
     public void addCookie(Cookie cookie) {
         if (cookies == Collections.EMPTY_LIST) {
@@ -256,7 +251,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * Returns a boolean indicating whether the named response header has
      * already been set. 
      * 
-     * @param s 
      */
     public boolean containsHeader(String name) {
         return headers.containsKey(name);
@@ -266,7 +260,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * Encodes the specified URL by including the session ID in it, or, if
      * encoding is not needed, returns the URL unchanged. 
      * 
-     * @param s 
      */
     public String encodeURL(String url) {
         return encode(url);
@@ -276,7 +269,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * Encodes the specified URL for use in the sendRedirect method or, if
      * encoding is not needed, returns the URL unchanged. 
      * 
-     * @param s 
      */
     public String encodeRedirectURL(String url) {
         return encode(url);
@@ -302,9 +294,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
      *  Sends an error response to the client using the specified status code
      *  and descriptive message. 
      * 
-     * @param i 
-     * @param s 
-     * @throws IOException 
      */
     public void sendError(int code, String msg) throws IOException {
         this.errorCode = code;
@@ -315,8 +304,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      * Sends an error response to the client using the specified status. 
      * 
-     * @param i 
-     * @throws IOException 
      */
     public void sendError(int code) throws IOException {
         this.errorCode = code;
@@ -327,8 +314,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * Sends a temporary redirect response to the client using the specified
      * redirect location URL. 
      * 
-     * @param s 
-     * @throws IOException 
      */
     public void sendRedirect(String location) throws IOException {
         setHeader("Location", location);
@@ -338,8 +323,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      * Sets a response header with the given name and date-value. 
      * 
-     * @param s 
-     * @param l 
      */
     public void setDateHeader(String name, long date) {
         Date dateValue = new Date(date);
@@ -350,8 +333,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      * Adds a response header with the given name and date-value. 
      * 
-     * @param s 
-     * @param l 
      */
     public void addDateHeader(String name, long date) {
         Date dateValue = new Date(date);
@@ -362,8 +343,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      * Sets a response header with the given name and value. 
      * 
-     * @param s 
-     * @param s1 
      */
     public void setHeader(String name, String value) {
         List valueList = (List) headers.get(name);
@@ -378,8 +357,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      * Adds a response header with the given name and value. 
      * 
-     * @param s 
-     * @param s1 
      */
     public void addHeader(String name, String value) {
         List valueList = (List) headers.get(name);
@@ -393,8 +370,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      *  Sets a response header with the given name and integer value. 
      * 
-     * @param s 
-     * @param i 
      */
     public void setIntHeader(String name, int value) {
         String stringValue = new Integer(value).toString();
@@ -404,8 +379,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      * Adds a response header with the given name and integer value. 
      * 
-     * @param s 
-     * @param i 
      */
     public void addIntHeader(String name, int value) {
         String stringValue = new Integer(value).toString();
@@ -415,7 +388,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
     /** 
      *  Sets the status code for this response. 
      * 
-     * @param i 
      */
     public void setStatus(int status) {
         this.statusCode = status;

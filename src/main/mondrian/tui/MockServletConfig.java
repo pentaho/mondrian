@@ -26,7 +26,7 @@ import javax.servlet.ServletContext;
  * If you need to add to this implementation, please do so.
  * 
  * @author <a>Richard M. Emberson</a>
- * @version 
+ * @version $Id$
  */
 public class MockServletConfig implements ServletConfig {
     private String servletName;
@@ -62,7 +62,6 @@ public class MockServletConfig implements ServletConfig {
      * Returns a String containing the value of the named initialization
      * parameter, or null if the parameter does not exist.
      * 
-     * @param s 
      */
     public String getInitParameter(String key) {
         return (String) initParams.get(key);

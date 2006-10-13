@@ -76,12 +76,8 @@ X-Powered-By: ASP.NET
      * Note that it is upto the XMLA client to determine whether or not
      * there is an Expect header entry (ADOMD.NET seems to like to do this).
      * 
-     * @param request 
-     * @param response 
-     * @param context 
      * @return true if XmlaServlet handling is to continue and false if
      *         there was an Expect header "100-continue".
-     * @throws Exception 
      */
     boolean processHttpHeader(HttpServletRequest request, 
                 HttpServletResponse response,
@@ -91,10 +87,6 @@ X-Powered-By: ASP.NET
      * This is called after the headers have been process but before the
      * body (DISCOVER/EXECUTE) has been processed.
      * 
-     * @param request 
-     * @param requestSoapParts 
-     * @param context 
-     * @throws Exception 
      */
     void preAction(HttpServletRequest request,
                 Element[] requestSoapParts,
@@ -105,8 +97,6 @@ X-Powered-By: ASP.NET
      * sequence id was requested by the XMLA client and will be used 
      * for all subsequent communications in the Soap Header block.
      * 
-     * @param context 
-     * @return 
      */
     String generateSessionId(Map context); 
 
@@ -114,11 +104,6 @@ X-Powered-By: ASP.NET
      * This is called after all Mondrian processing (DISCOVER/EXECUTE) has
      * occurred.
      * 
-     * @param request 
-     * @param response 
-     * @param responseSoapParts 
-     * @param context 
-     * @throws Exception 
      */
     void postAction(HttpServletRequest request,
                 HttpServletResponse response,

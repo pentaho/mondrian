@@ -20,7 +20,7 @@ import mondrian.olap.MondrianProperties;
  * The particular cube definition and CSV file to use are abstract methods.
  * 
  * @author <a>Richard M. Emberson</a>
- * @version 
+ * @version  $Id$
  */
 public abstract class AggTableTestCase extends CsvDBTestCase {
 

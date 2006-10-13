@@ -281,7 +281,6 @@ public class XmlaSupport {
      *
      * @param connectString
      * @param catalogNameUrls array of catalog names, catalog url pairs
-     * @return
      */
     public static String getDataSourcesText(
             String connectString,
@@ -534,10 +533,6 @@ public class XmlaSupport {
      * Given a Document and an xpath/namespace-array pair, extract and return
      * the Nodes resulting from applying the xpath.
      *
-     * @param doc
-     * @param xpath
-     * @param nsArray
-     * @return
      * @throws SAXException
      * @throws IOException
      */
@@ -571,12 +566,6 @@ public class XmlaSupport {
     /**
      * Process the given input file as a SOAP-XMLA request.
      *
-     * @param file
-     * @param connectString
-     * @return
-     * @throws IOException
-     * @throws ServletException
-     * @throws SAXException
      */
     public static byte[] processSoapXmla(File file,
             String connectString,
@@ -724,12 +713,6 @@ public class XmlaSupport {
      * and schmema section. This includes both the SOAP elements and the
      * SOAP body content, the XMLA response.
      *
-     * @param bytes
-     * @throws SAXException
-     * @throws IOException
-     * @throws ParserConfigurationException
-     * @throws TransformerException
-     * @throws TransformerConfigurationException
      */
     public static boolean validateSchemaSoapXmla(byte[] bytes)
             throws SAXException, IOException,
@@ -750,11 +733,6 @@ public class XmlaSupport {
     /**
      * Process the given input file as an XMLA request (no SOAP elements).
      *
-     * @param file
-     * @param connectString
-     * @return
-     * @throws IOException
-     * @throws XOMException
      */
     public static byte[] processXmla(File file,
             String connectString,
@@ -806,12 +784,6 @@ public class XmlaSupport {
      * and schmema section. This should not be used when the byte array
      * contains both the SOAP elements and content, but only for the content.
      *
-     * @param bytes
-     * @throws SAXException
-     * @throws IOException
-     * @throws ParserConfigurationException
-     * @throws TransformerException
-     * @throws TransformerConfigurationException
      */
     public static boolean validateSchemaXmla(byte[] bytes)
             throws SAXException, IOException,
@@ -832,10 +804,6 @@ public class XmlaSupport {
      * This validates a SOAP-XMLA response using xpaths to extract the
      * schema and data parts. In addition, it does a little surgery on
      * the DOMs removing the schema nodes from the XMLA root node.
-     *
-     * @param bytes
-     * @throws SAXException
-     * @throws IOException
      */
     public static boolean validateSoapXmlaUsingXpath(byte[] bytes)
             throws SAXException, IOException {
@@ -852,9 +820,6 @@ public class XmlaSupport {
      * schema and data parts. In addition, it does a little surgery on
      * the DOMs removing the schema nodes from the XMLA root node.
      *
-     * @param bytes
-     * @throws SAXException
-     * @throws IOException
      */
     public static boolean validateXmlaUsingXpath(byte[] bytes)
             throws SAXException, IOException {
@@ -871,10 +836,7 @@ public class XmlaSupport {
      * failed, returns true if validation was successful and false if
      * validation was not tried.
      *
-     * @param nodes
      * @return  true if validation succeeded, false if validation was not tried
-     * @throws SAXException
-     * @throws IOException
      */
     public static boolean validateNodes(Node[] nodes)
             throws SAXException, IOException {
@@ -918,14 +880,6 @@ public class XmlaSupport {
     /**
      * See next method for JavaDoc {@link #validateEmbeddedSchema()}.
      *
-     * @param bytes
-     * @param schemaTransform
-     * @param dataTransform
-     * @throws SAXException
-     * @throws IOException
-     * @throws ParserConfigurationException
-     * @throws TransformerException
-     * @throws TransformerConfigurationException
      */
     public static boolean validateEmbeddedSchema(
             byte[] bytes,
@@ -959,14 +913,6 @@ public class XmlaSupport {
      * there is a utility in JAXP that does something like this (but allows
      * for multiple schema/content parts).
      *
-     * @param doc
-     * @param schemaTransform
-     * @param dataTransform
-     * @throws SAXException
-     * @throws IOException
-     * @throws ParserConfigurationException
-     * @throws TransformerException
-     * @throws TransformerConfigurationException
      */
     public static boolean validateEmbeddedSchema(
             Document doc,
@@ -1047,9 +993,6 @@ public class XmlaSupport {
      * Reads a file line by line, adds a '\n' after each line and
      * returns in a String.
      *
-     * @param file
-     * @return
-     * @throws IOException
      */
     public static String readFile(File file) throws IOException {
         StringBuffer buf = new StringBuffer(1024);
@@ -1073,31 +1016,6 @@ public class XmlaSupport {
         return buf.toString();
     }
 
-    /**
-     * This code is basically does the Ant-like property replacement
-     * job. Its take from the XmlaTestContext class - nice code btw.
-     *
-     * @param text
-     * @return
-    public static String replaceProperties(String text, Map env) {
-        StringBuffer buf = new StringBuffer(text.length()+200);
-
-        Pattern pattern = Pattern.compile("\\$\\{([^}]+)\\}");
-        Matcher matcher = pattern.matcher(text);
-        while (matcher.find()) {
-            String varName = matcher.group(1);
-            String varValue = (String) env.get(varName);
-            if (varValue != null) {
-                matcher.appendReplacement(buf, varValue);
-            } else {
-                matcher.appendReplacement(buf, "\\${$1}");
-            }
-        }
-        matcher.appendTail(buf);
-
-        return buf.toString();
-    }
-     */
 
     private XmlaSupport() {}
 }

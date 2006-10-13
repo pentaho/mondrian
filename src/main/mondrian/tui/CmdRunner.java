@@ -591,7 +591,6 @@ public class CmdRunner {
     /**
      * Converts a {@link Result} object to a string
      *
-     * @param result
      * @return String version of mondrian Result object.
      */
     public String toString(Result result) {
@@ -683,7 +682,6 @@ public class CmdRunner {
     /**
      * Gets a Mondrian connection, creating a new one if fresh is true.
      *
-     * @param fresh
      * @return mondrian Connection.
      */
     public synchronized Connection getConnection(boolean fresh) {
@@ -1159,9 +1157,6 @@ public class CmdRunner {
      * This is called to process a file containing XMLA as the contents
      * of SOAP xml.
      *
-     * @param file
-     * @param validateXmlaResponse
-     * @throws Exception
      */
     protected void processSoapXmla(File file, int validateXmlaResponse)
             throws Exception {
@@ -1206,9 +1201,6 @@ public class CmdRunner {
     /**
      * This is called to process a file containing XMLA xml.
      *
-     * @param file
-     * @param validateXmlaResponce
-     * @throws Exception
      */
     protected void processXmla(File file, int validateXmlaResponce)
             throws Exception {

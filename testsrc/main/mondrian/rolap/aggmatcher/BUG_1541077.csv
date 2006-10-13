@@ -1,4 +1,5 @@
 # BUG_1541077.csv
+# @version  $Id:$
 ## TableName: cheques
 ## ColumnNames: prod_id,store_id,amount
 ## ColumnTypes: INTEGER,INTEGER,DECIMAL(10,2)

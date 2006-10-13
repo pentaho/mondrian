@@ -383,12 +383,6 @@ public class XmlUtil {
      * Get your non-cached DOM parser which can be configured to do schema
      * based validation of the instance Document.
      *
-     * @param schemaLocationPropertyValue
-     * @param entityResolver
-     * @param validate
-     * @return
-     * @throws SAXNotRecognizedException
-     * @throws SAXNotSupportedException
      */
     public static DOMParser getParser(
             String schemaLocationPropertyValue,
@@ -420,7 +414,6 @@ public class XmlUtil {
      * See if the DOMParser after parsing a Document has any errors and,
      * if so, throw a RuntimeException exception containing the errors.
      *
-     * @param parser
      */
     private static void checkForParseError(final DOMParser parser, Throwable t) {
         final ErrorHandler errorHandler = parser.getErrorHandler();
@@ -445,8 +438,6 @@ public class XmlUtil {
     /**
      * Parse a String into a Document (no validation).
      *
-     * @param s
-     * @return
      */
     public static Document parseString(String s)
             throws SAXException, IOException {
@@ -467,8 +458,6 @@ public class XmlUtil {
     /**
      * Parse a byte array into a Document (no validation).
      *
-     * @param bytes
-     * @return
      */
     public static Document parse(byte[] bytes)
             throws SAXException, IOException {
@@ -484,10 +473,6 @@ public class XmlUtil {
     /**
      * Parse a stream into a Document (no validation).
      *
-     * @param in
-     * @return
-     * @throws SAXException
-     * @throws IOException
      */
     public static Document parse(InputStream in)
             throws SAXException, IOException {
@@ -523,10 +508,6 @@ public class XmlUtil {
      * context Document as long as the xpath uses the same prefixes
      * that appear in the target Document.
      *
-     * @param nsArray
-     * @return
-     * @throws SAXException
-     * @throws IOException
      */
     public static Document createContextDocument(String[][] nsArray)
             throws SAXException, IOException {
@@ -629,9 +610,6 @@ public class XmlUtil {
     /**
      * Convert an XPathResult object to String.
      *
-     * @param xpathResult
-     * @param prettyPrint
-     * @return
      */
     public static String convertToString(XPathResult xpathResult,
                                          boolean prettyPrint) {
@@ -685,8 +663,6 @@ public class XmlUtil {
     /**
      * Convert an XPathResult to an array of Nodes.
      *
-     * @param xpathResult
-     * @return
      */
     public static Node[] convertToNodes(XPathResult xpathResult) {
         switch (xpathResult.getResultType()) {
@@ -734,9 +710,6 @@ public class XmlUtil {
     /**
      * Convert a Node to a String.
      *
-     * @param node
-     * @param prettyPrint add CRs
-     * @return
      */
     public static String toString(Node node, boolean prettyPrint) {
         if (node == null) {
@@ -1014,8 +987,6 @@ System.out.println("XmlUtil.validate: schemaLocationPropertyValue=" +schemaLocat
     /**
      * This is used to get a Document's namespace attribute value.
      *
-     * @param doc
-     * @return
      */
     public static String getNamespaceAttributeValue(Document doc) {
         Element el = doc.getDocumentElement();
@@ -1042,14 +1013,6 @@ System.out.println("XmlUtil.validate: schemaLocationPropertyValue=" +schemaLocat
     /**
      * Transform a Document and return the transformed Node.
      *
-     * @param inDoc
-     * @param xslFileName
-     * @return
-     * @throws ParserConfigurationException
-     * @throws SAXException
-     * @throws IOException
-     * @throws TransformerConfigurationException
-     * @throws TransformerException
      */
     public static Node transform(Document inDoc,
         String xslFileName,
@@ -1096,15 +1059,6 @@ System.out.println("XmlUtil.validate: schemaLocationPropertyValue=" +schemaLocat
     /**
      * Transform a Document and return the transformed Node.
      *
-     * @param inDoc
-     * @param xslReader
-     * @param namevalueParameters
-     * @return
-     * @throws ParserConfigurationException
-     * @throws SAXException
-     * @throws IOException
-     * @throws TransformerConfigurationException
-     * @throws TransformerException
      */
     public static Node transform(Document inDoc,
         Reader xslReader,
