@@ -663,28 +663,56 @@ public class Util extends XOMUtil {
     {
         // Lookup member at first level.
         Member[] rootMembers = reader.getHierarchyRootMembers(hierarchy);
+        
+        // if doing an inexact search on a non-all hieararchy, create
+        // a member corresponding to the name we're searching for so
+        // we can use it in a hierarchical search
+        Member searchMember = null;
+        if (matchType != MatchType.EXACT && !hierarchy.hasAll() &&
+            rootMembers.length > 0)
+        {
+            searchMember =
+                hierarchy.createMember(
+                    null,
+                    rootMembers[0].getLevel(),
+                    memberName,
+                    null);
+        }
+        
         int bestMatch = -1;
         for (int i = 0; i < rootMembers.length; i++) {
-            int rc = rootMembers[i].getName().compareToIgnoreCase(memberName);
+            int rc;
+            // when searching on the ALL hierarchy, match must be exact
+            if (matchType == MatchType.EXACT || hierarchy.hasAll()) {
+                rc = rootMembers[i].getName().compareToIgnoreCase(memberName);
+            } else {
+                rc = FunUtil.compareSiblingMembers(
+                    rootMembers[i],
+                    searchMember);
+            }
             if (rc == 0) {
                 return rootMembers[i];
             }
-            if (matchType == MatchType.BEFORE) {
-                if (rc < 0 &&
-                    (bestMatch == -1 ||
-                    rootMembers[i].getName().compareToIgnoreCase(
-                        rootMembers[bestMatch].getName()) > 0))
-                {
-                    bestMatch = i;
-                }
-            } else if (matchType == MatchType.AFTER) {
-                if (rc > 0 &&
-                    (bestMatch == -1 ||
-                    rootMembers[i].getName().compareToIgnoreCase(
-                        rootMembers[bestMatch].getName()) < 0))
-                {
-                    bestMatch = i;
-                }
+            if (!hierarchy.hasAll()) {
+                if (matchType == MatchType.BEFORE) {
+                    if (rc < 0 &&
+                        (bestMatch == -1 ||
+                        FunUtil.compareSiblingMembers(
+                            rootMembers[i], 
+                            rootMembers[bestMatch]) > 0))
+                    {
+                        bestMatch = i;
+                    }
+                } else if (matchType == MatchType.AFTER) {
+                    if (rc > 0 &&
+                        (bestMatch == -1 ||
+                        FunUtil.compareSiblingMembers(
+                            rootMembers[i],
+                            rootMembers[bestMatch]) < 0))
+                    {
+                        bestMatch = i;
+                    }
+                }           
             }
         }
         if (matchType != MatchType.EXACT && bestMatch != -1) {
@@ -695,7 +723,9 @@ public class Util extends XOMUtil {
         // Customers)].[USA]'.
         return (rootMembers.length == 1 && rootMembers[0].isAll())
             ? reader.lookupMemberChildByName(
-                rootMembers[0], memberName, matchType)
+                rootMembers[0],
+                memberName,
+                matchType)
             : null;
     }
 
