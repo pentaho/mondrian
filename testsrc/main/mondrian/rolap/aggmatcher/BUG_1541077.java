@@ -110,13 +110,13 @@ public class BUG_1541077 extends AggTableTestCase {
         String mdx = "select {[Measures].[Avg Amount]} on columns from Cheques";
 
         Result result = getCubeTestContext().executeQuery(mdx);
-        Object v = result.getCell(new int[]{0}).getValue();
+        Object v = result.getCell(new int[]{0}).getFormattedValue();
         
         // get value with aggregates
         props.UseAggregates.setString("true");
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
-        Object v1 = result1.getCell(new int[]{0}).getValue();
+        Object v1 = result1.getCell(new int[]{0}).getFormattedValue();
 
         assertTrue(v.equals(v1));
     }
@@ -198,7 +198,7 @@ public class BUG_1541077 extends AggTableTestCase {
             "   formatString='#,###'/>\n" +
             "<Measure name='Avg Amount' \n" +
             "    column='amount' aggregator='avg'\n" +
-            "   formatString='00.00'/>\n" +
+            "   formatString='00.0'/>\n" +
             "</Cube>";
 
     }
