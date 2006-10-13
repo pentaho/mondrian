@@ -446,32 +446,16 @@ public class RolapLevel extends LevelBase {
         SchemaReader schemaReader, String name, int matchType)
     {
         Member[] levelMembers = schemaReader.getLevelMembers(this, true);
-        int bestMatch = -1;
-        for (int i = 0; i < levelMembers.length; i++) {
-            int rc = levelMembers[i].getName().compareTo(name);
-            if (rc == 0) {
-                return levelMembers[i];
-            }
-            if (matchType == MatchType.BEFORE) {
-                if (rc < 0 &&
-                    (bestMatch == -1 ||
-                    levelMembers[i].getName().compareTo(
-                        levelMembers[bestMatch].getName()) > 0))
-                {
-                    bestMatch = i;
-                }
-            } else if (matchType == MatchType.AFTER) {
-                if (rc > 0 &&
-                    (bestMatch == -1 ||
-                    levelMembers[i].getName().compareTo(
-                        levelMembers[bestMatch].getName()) < 0))
-                {
-                    bestMatch = i;
-                }
-            }
-        }
-        if (matchType != MatchType.EXACT && bestMatch != -1) {
-            return levelMembers[bestMatch];
+        if (levelMembers.length > 0) {
+            Member parent = levelMembers[0].getParentMember();
+            return
+                RolapUtil.findBestMemberMatch(
+                    levelMembers,
+                    (RolapMember) parent, 
+                    this,
+                    name,
+                    matchType,
+                    false);
         }
         return null;
     }

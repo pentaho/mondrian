@@ -300,35 +300,15 @@ public abstract class RolapSchemaReader implements SchemaReader {
                         (RolapMember)parent, childName) :
                     sqlConstraintFactory.getMemberChildrenConstraint(null);
             Member[] children = internalGetMemberChildren(parent, constraint);
-            int bestMatch = -1;
-            for (int i = 0; i < children.length; i++){
-                final Member child = children[i];
-                int rc = Util.compareName(child.getName(), childName);
-                if (rc == 0) {
-                    return child;
-                }
-                if (matchType == MatchType.BEFORE) {
-                    if (rc < 0 &&
-                        (bestMatch == -1 ||
-                        Util.compareName(
-                            child.getName(),
-                            children[bestMatch].getName()) > 0))
-                    {
-                        bestMatch = i;
-                    }
-                } else if (matchType == MatchType.AFTER) {
-                    if (rc > 0 &&
-                        (bestMatch == -1 ||
-                        Util.compareName(
-                            child.getName(),
-                            children[bestMatch].getName()) < 0))
-                    {
-                        bestMatch = i;
-                    }
-                }
-            }
-            if (matchType != MatchType.EXACT && bestMatch != -1) {
-                return children[bestMatch];
+            if (children.length > 0) {
+                return
+                    RolapUtil.findBestMemberMatch(
+                        children,
+                        (RolapMember) parent,
+                        ((RolapMember) children[0]).getRolapLevel(),
+                        childName,
+                        matchType,
+                        true);
             }
         } catch (NumberFormatException e) {
             // this was thrown in SqlQuery#quote(boolean numeric, Object value). This happens when

@@ -13,6 +13,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
+import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 
 import org.apache.log4j.Logger;
@@ -306,6 +307,78 @@ public class RolapUtil {
     public static ExpCompiler createDependencyTestingCompiler(
             ExpCompiler compiler) {
         return new RolapDependencyTestingEvaluator.DteCompiler(compiler);
+    }
+    
+    /**
+     * Locates a member specified by its member name, from an array of 
+     * members.  If an exact match isn't found, but a matchType of BEFORE
+     * or AFTER is specified, then the closest matching member is returned.
+     * 
+     * @param members array of members to search from
+     * @param parent parent member corresponding to the member being searched
+     * for
+     * @param level level of the member
+     * @param searchName member name
+     * @param matchType match type
+     * @param caseInsensitive if true, use case insensitive search (if
+     * applicable) when when doing exact searches
+     * 
+     * @return matching member (if it exists) or the closest matching one
+     * in the case of a BEFORE or AFTER search
+     */
+    public static Member findBestMemberMatch(
+        Member[] members,
+        RolapMember parent,
+        RolapLevel level,
+        String searchName,
+        int matchType,
+        boolean caseInsensitive)
+    {
+        // create a member corresponding to the member we're trying
+        // to locate so we can use it to hierarchically compare against
+        // the members array
+        RolapMember searchMember = new RolapMember(parent, level, searchName);
+        int bestMatch = -1;
+        for (int i = 0; i < members.length; i++){
+            int rc;
+            final Member member = members[i];
+            if (matchType == MatchType.EXACT) {
+                if (caseInsensitive) {
+                    rc = Util.compareName(member.getName(), searchName);                   
+                } else {
+                    rc = member.getName().compareTo(searchName);
+                }
+            } else {
+                rc =
+                    FunUtil.compareSiblingMembers(
+                        member,
+                        searchMember);
+            }
+            if (rc == 0) {
+                return member;
+            }
+            if (matchType == MatchType.BEFORE) {
+                if (rc < 0 &&
+                    (bestMatch == -1 ||
+                    FunUtil.compareSiblingMembers(
+                        member, members[bestMatch]) > 0))
+                {
+                    bestMatch = i;
+                }
+            } else if (matchType == MatchType.AFTER) {
+                if (rc > 0 &&
+                    (bestMatch == -1 ||
+                    FunUtil.compareSiblingMembers(
+                        member, members[bestMatch]) < 0))
+                {
+                    bestMatch = i;
+                }
+            }
+        }
+        if (matchType != MatchType.EXACT && bestMatch != -1) {
+            return members[bestMatch];
+        }
+        return null;
     }
 
     /**

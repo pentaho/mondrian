@@ -1332,7 +1332,7 @@ public class FunUtil extends Util {
      *   1 if m1 collates after m2,
      *   0 if m1 == m2.
      */
-    static int compareSiblingMembers(Member m1, Member m2) {
+    public static int compareSiblingMembers(Member m1, Member m2) {
         // calculated members collate after non-calculated
         final boolean calculated1 = m1.isCalculatedInQuery();
         final boolean calculated2 = m2.isCalculatedInQuery();
