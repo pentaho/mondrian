@@ -40,7 +40,13 @@ public interface Cell {
      * @post (return instanceof Util.NullCellValue) == isNull()
      */
     Object getValue();
-
+    
+    
+    /** 
+     * Return the cached formatted string, that survives an aggregate cache clear 
+     */    
+    String getCachedFormatString();
+    
     /**
      * Returns the cell's value formatted according to the current format
      * string, and locale-specific settings such as currency symbol. The

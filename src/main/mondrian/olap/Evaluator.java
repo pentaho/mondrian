@@ -77,12 +77,25 @@ public interface Evaluator {
      * Calculates and returns the value of the cell at the current context.
      */
     Object evaluateCurrent();
+    
+    /**
+     * Returns the format string for this cell. This is computed by evaluating
+     * the format expression in the current context, and therefore different
+     * cells may have different format strings.
+     */
+    public String getFormatString();
 
     /**
      * Formats a value as a string according to the current context's
      * format.
      */
     String format(Object o);
+    
+    /**
+     * Formats a value as a string according to the current context's
+     * format, using a given format string.
+     */
+    String format(Object o, String formatString);
 
     /**
      * Returns number of ancestor evaluators. Used to check for infinite

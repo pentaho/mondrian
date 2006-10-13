@@ -233,6 +233,60 @@ public class VirtualCubeTest extends FoodMartTestCase {
             Boolean.valueOf(expectedVisibility),
             measure.getPropertyValue(Property.VISIBLE.name));
     }
+
+    /**
+     * Test an expression for the format_string of a calculated member that evaluates calculated
+     * members based on a virtual cube,  One cube has cache turned on, the other cache turned off
+     *
+     * Since evaluation of the format_string used to happen after the aggregate cache was cleared,
+     * this used to fail, this should be solved with the caching of the format string
+     * 
+     * Without caching of format string, the query returns green for all styles.
+     */
+    public void testFormatStringExpressionCubeNoCache() {
+        TestContext testContext = TestContext.create(
+            null, null,
+            "<Cube name=\"Warehouse No Cache\" cache=\"false\">\n" +
+                "  <Table name=\"inventory_fact_1997\"/>\n" +
+                "\n" +
+                "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
+                "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n" +
+                "  <Measure name=\"Units Shipped\" column=\"units_shipped\" aggregator=\"sum\" formatString=\"#.0\"/>\n" +
+                "</Cube>\n" +
+            "<VirtualCube name=\"Warehouse and Sales Format Expression Cube No Cache\">\n" +
+                "  <VirtualCubeDimension name=\"Store\"/>\n" +
+                "  <VirtualCubeDimension name=\"Time\"/>\n" +
+                "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Cost]\"/>\n" +
+                "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n" +
+                "  <VirtualCubeMeasure cubeName=\"Warehouse No Cache\" name=\"[Measures].[Units Shipped]\"/>\n" +
+                "  <CalculatedMember name=\"Profit\" dimension=\"Measures\">\n" +
+                "    <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>\n" +
+                "  </CalculatedMember>\n" +
+                "  <CalculatedMember name=\"Profit Per Unit Shipped\" dimension=\"Measures\">\n" +
+                "    <Formula>[Measures].[Profit] / [Measures].[Units Shipped]</Formula>\n" +
+                "    <CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"IIf(([Measures].[Profit Per Unit Shipped] > 2.0), '|0.#|style=green', '|0.#|style=red')\"/>\n" +
+                "  </CalculatedMember>\n" +
+                "</VirtualCube>",
+            null, null);
+
+        testContext.assertQueryReturns(
+            "select {[Measures].[Profit Per Unit Shipped]} ON COLUMNS, " +
+                "{[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR], [Store].[All Stores].[USA].[WA]} ON ROWS " +
+                "from [Warehouse and Sales Format Expression Cube No Cache] " +
+                "where [Time].[1997]",
+            fold(
+                "Axis #0:\n" +
+                    "{[Time].[1997]}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Profit Per Unit Shipped]}\n" +
+                    "Axis #2:\n" +
+                    "{[Store].[All Stores].[USA].[CA]}\n" +
+                    "{[Store].[All Stores].[USA].[OR]}\n" + 
+                    "{[Store].[All Stores].[USA].[WA]}\n" +
+                    "Row #0: |1.6|style=red\n" +
+                    "Row #1: |2.1|style=green\n" +
+                    "Row #2: |1.5|style=red\n"));
+    }
 }
 
 // End VirtualCubeTest.java

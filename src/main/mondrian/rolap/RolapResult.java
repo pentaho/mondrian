@@ -38,6 +38,7 @@ class RolapResult extends ResultBase {
     private final RolapEvaluator evaluator;
     private final CellKey point;
     private final Map cellValues;
+    private final Map formatStrings;
     private final FastBatchingCellReader batchingReader;
     AggregatingCellReader aggregatingReader = new AggregatingCellReader();
     private final int[] modulos;
@@ -59,6 +60,7 @@ class RolapResult extends ResultBase {
         RolapCube rcube = (RolapCube) query.getCube();
         this.batchingReader = new FastBatchingCellReader(rcube);
         this.cellValues = new HashMap();
+        this.formatStrings = new HashMap();
         this.modulos = new int[axes.length + 1];
         if (!execute) {
             return;
@@ -240,8 +242,25 @@ class RolapResult extends ResultBase {
         if (value == null) {
             value = Util.nullValue;
         }
-        return new RolapCell(this, getCellOrdinal(pos), value);
+        String formatString = (String) formatStrings.get(new CellKey(pos));
+        if (formatString == null) {
+            formatString = "Standard";
+        }        
+        return new RolapCell(this, getCellOrdinal(pos), value, formatString);
     }
+        
+    private Cell getCellNoDefaultFormatString(int[] pos) {
+        if (pos.length != point.ordinals.length) {
+            throw Util.newError(
+                    "coordinates should have dimension " + point.ordinals.length);
+        }
+        Object value = cellValues.get(new CellKey(pos));
+        if (value == null) {
+            value = Util.nullValue;
+        }
+        String formatString = (String) formatStrings.get(new CellKey(pos));
+        return new RolapCell(this, getCellOrdinal(pos), value, formatString);
+    }    
 
     private RolapAxis executeAxis(Evaluator evaluator, 
                                   QueryAxis axis, 
@@ -302,6 +321,7 @@ class RolapResult extends ResultBase {
             int count = 0;
             while (true) {
                 cellValues.clear();
+                formatStrings.clear();
 
                 evaluator.setCellReader(this.batchingReader);
                 executeStripe(query.axes.length - 1,
@@ -410,23 +430,28 @@ class RolapResult extends ResultBase {
                 } catch (MondrianEvaluationException e) {
                     o = e;
                 }
-                if (o == null ||
-                        o == Util.nullValue ||
-                        o == RolapUtil.valueNotReadyException) {
-                    continue;
-                }
+                
                 CellKey key = point.copy();
-                cellValues.put(key, o);
                 // Compute the formatted value, to ensure that any needed
-                // values are in the cache.
+                // values are in the cache.  Also compute this when value is null (formatting of null values)
                 try {
-                    Cell cell = getCell(point.ordinals);
-                    Util.discard(cell.getFormattedValue());
+                    // Get the cell without default format string, if it returns null
+                    // getFormattedValue() will try to evaluate a new format string
+                    Cell cell = getCellNoDefaultFormatString(point.ordinals);
+                    Util.discard(cell.getFormattedValue());   
+                    String cachedFormatString = cell.getCachedFormatString(); 
+                    formatStrings.put(key, cachedFormatString);
                 } catch (MondrianEvaluationException e) {
                     // ignore
                 } catch (Throwable e) {
                     Util.discard(e);
                 }
+                if (o == null ||
+                        o == Util.nullValue ||
+                        o == RolapUtil.valueNotReadyException) {
+                    continue;
+                }                
+                cellValues.put(key, o);                
             }
         } else {
             RolapAxis axis = (RolapAxis) axes[axisOrdinal];

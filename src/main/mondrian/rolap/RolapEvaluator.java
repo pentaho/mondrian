@@ -521,7 +521,7 @@ void printCurrentMemberNames() {
      *
      * @post return != null
      */
-    String getFormatString() {
+    public String getFormatString() {
         Exp formatExp = (Exp) getProperty(Property.FORMAT_EXP.name, null);
         if (formatExp == null) {
             return "Standard";
@@ -536,6 +536,10 @@ void printCurrentMemberNames() {
 
     private Format getFormat() {
         String formatString = getFormatString();
+        return getFormat(formatString);
+    }
+    
+    private Format getFormat(String formatString) {
         return Format.get(formatString, root.connection.getLocale());
     }
 
@@ -560,7 +564,21 @@ void printCurrentMemberNames() {
             return format.format(o);
         }
     }
-
+    
+    public String format(Object o, String formatString) {
+        if (o == Util.nullValue) {
+            Format format = getFormat(formatString);
+            return format.format(null);
+        } else if (o instanceof Throwable) {
+            return "#ERR: " + o.toString();
+        } else if (o instanceof String) {
+            return (String) o;
+        } else {
+            Format format = getFormat(formatString);
+            return format.format(o);
+        }
+    }
+    
     /**
      * Creates a key which uniquely identifes an expression and its
      * context. The context includes members of dimensions which the

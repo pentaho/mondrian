@@ -20,18 +20,31 @@ import mondrian.rolap.agg.CellRequest;
 class RolapCell implements Cell {
     private final RolapResult result;
     protected final Object value;
+    protected String cachedFormatString;
     private final int ordinal;
 
     RolapCell(RolapResult result, int ordinal, Object value) {
         this.result = result;
         this.value = value;
         this.ordinal = ordinal;
+        this.cachedFormatString = null;
+    }
+    
+    RolapCell(RolapResult result, int ordinal, Object value, String cachedFormatString) {
+        this.result = result;
+        this.value = value;
+        this.ordinal = ordinal;
+        this.cachedFormatString = cachedFormatString;
     }
 
     public Object getValue() {
         return value;
     }
-
+    
+    public String getCachedFormatString() {
+        return cachedFormatString;
+    }
+    
     public String getFormattedValue() {
         final int[] pos = result.getCellPos(ordinal);
         final Evaluator evaluator = result.getEvaluator(pos);
@@ -40,13 +53,22 @@ class RolapCell implements Cell {
         RolapMeasure m = (RolapMeasure) evaluator.getContext(measuresDim);
 
         CellFormatter cf = m.getFormatter();
-        return (cf != null)
-            ? cf.formatCell(value)
-            : evaluator.format(value);
+        
+        if (cf != null) {
+            return cf.formatCell(value);
+        }
+        else {                                
+            if (cachedFormatString == null) {
+                cachedFormatString = evaluator.getFormatString();
+            }
+            return evaluator.format(value, cachedFormatString);    
+        } 
     }
+    
     public boolean isNull() {
         return (value == Util.nullValue);
     }
+    
     public boolean isError() {
         return (value instanceof Throwable);
     }
