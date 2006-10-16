@@ -423,6 +423,31 @@ public class UdfTest extends FoodMartTestCase {
                 "Row #0: \n"));
     }
 
+    public void testCurrentDateLag()
+    {
+        // Also, try a different style of quoting, because single quote followed
+        // by double quote (used in other examples) is difficult to read.
+        assertQueryReturns(
+            "SELECT\n" +
+                "    { [Measures].[Unit Sales] } ON COLUMNS,\n" +
+                "    { CurrentDateMember([Time], '[\"Time\"]\\.[yyyy]\\.[\"Q\"q]\\.[m]', BEFORE).Lag(3) : " +
+                "      CurrentDateMember([Time], '[\"Time\"]\\.[yyyy]\\.[\"Q\"q]\\.[m]', BEFORE) } ON ROWS\n" +
+                "FROM [Sales]",
+            fold(
+                "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Time].[1998].[Q3].[9]}\n" +
+                    "{[Time].[1998].[Q4].[10]}\n" +
+                    "{[Time].[1998].[Q4].[11]}\n" +
+                    "{[Time].[1998].[Q4].[12]}\n" +
+                    "Row #0: \n" +
+                    "Row #1: \n" +
+                    "Row #2: \n" +
+                    "Row #3: \n"));
+    }
     public void testMatches()
     {
         assertQueryReturns(
