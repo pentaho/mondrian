@@ -14,7 +14,7 @@ import mondrian.olap.Result;
 
 /** 
  * Testcase for
- * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1541077&group_id=35302&atid=414613">bug 1541077<a>
+ * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1541077&group_id=35302&atid=414613">bug 1541077</a>
  * and a couple of other aggregate table ExplicitRecognizer conditions.
  * 
  * @author Richard M. Emberson
