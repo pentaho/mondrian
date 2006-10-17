@@ -74,6 +74,9 @@ import org.eigenbase.util.property.Trigger;
  * <p>
  * NOTE: Instances of this class are NOT thread safe so the user must make
  * sure this is accessed by only one thread at a time.
+ *
+ * @author jhyde
+ * @version $Id$
  */
 public class SqlQuery
 {
@@ -407,6 +410,10 @@ public class SqlQuery
      * @param prepend whether to prepend to the current list of items
      */
     public void addOrderBy(String expr, boolean ascending, boolean prepend) {
+        if (!dialect.isNullsCollateLast()) {
+            expr = dialect.forceNullsCollateLast(expr);
+        }
+
         if (ascending) {
             expr = expr + " ASC";
         } else {
@@ -953,7 +960,7 @@ public class SqlQuery
                 return generateInlineGeneric(
                         columnNames, columnTypes, valueList, "from dual");
             } else if (isAccess()) {
-                // Fall back to using the FoodMart 'days' table, because 
+                // Fall back to using the FoodMart 'days' table, because
                 // Access SQL has no way to generate values not from a table.
                 return generateInlineGeneric(
                         columnNames, columnTypes, valueList, "from [days] where [day] = 1");
@@ -1044,7 +1051,7 @@ public class SqlQuery
                         castTypes[i] =
                             guessSqlType(columnType, valueList, i);
                     }
-                }              
+                }
             }
             for (int i = 0; i < valueList.size(); i++) {
                 if (i > 0) {
@@ -1129,6 +1136,32 @@ public class SqlQuery
          */
         public boolean allowsDdl() {
             return !isAccess();
+        }
+
+        /**
+         * Returns whether NULL values appear last when sorted using ORDER BY.
+         * According to the SQL standard, this is implementation-specific.
+         */
+        public boolean isNullsCollateLast() {
+            if (isMySQL()) {
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * Modifies an expression in the ORDER BY clause to ensure that NULL
+         * values collate after all non-NULL values.
+         * If {@link #isNullsCollateLast()} is true, there's nothing to do.
+         */
+        public String forceNullsCollateLast(String expr) {
+            // If we need to support other DBMSes, note that the SQL standard
+            // provides the syntax 'ORDER BY x ASC NULLS LAST'.
+            if (isMySQL()) {
+                String addIsNull = "ISNULL(" + expr + "), ";
+                expr = addIsNull + expr;
+            }
+            return expr;
         }
     }
 

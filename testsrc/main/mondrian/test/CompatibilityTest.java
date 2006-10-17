@@ -4,16 +4,13 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2005 SAS Institute, Inc.
+// Copyright (C) 2006-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// sasebb, March 30, 2005
 */
 package mondrian.test;
 
-import mondrian.olap.Cube;
 import mondrian.olap.MondrianProperties;
-import mondrian.olap.Schema;
 import junit.framework.Assert;
 
 /**
@@ -24,6 +21,7 @@ import junit.framework.Assert;
  *
  * @author sasebb
  * @since March 30, 2005
+ * @version $Id$
  */
 public class CompatibilityTest extends FoodMartTestCase {
     public CompatibilityTest(String name) {
@@ -200,116 +198,165 @@ public class CompatibilityTest extends FoodMartTestCase {
     /**
      * Tests that a #null member on a Hiearchy Level of type String can
      * still be looked up when case sensitive is off.
-     *
      */
     public void testCaseInsensitiveNullMember() {
-    	boolean old = MondrianProperties.instance().CaseSensitive.get();
-    	MondrianProperties.instance().CaseSensitive.set(false);
-
-    	Schema schema = getConnection().getSchema();
         final String cubeName = "Sales_inline";
-        final Cube cube = schema.createCube(
+        TestContext testContext = TestContext.create(
+            null,
             "<Cube name=\"" + cubeName + "\">\n" +
-            "  <Table name=\"sales_fact_1997\"/>\n" +
-            "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
-            "  <Dimension name=\"Alternative Promotion\" foreignKey=\"promotion_id\">\n" +
-            "    <Hierarchy hasAll=\"true\" primaryKey=\"promo_id\">\n" +
-            "      <InlineTable alias=\"alt_promotion\">\n" +
-            "        <ColumnDefs>\n" +
-            "          <ColumnDef name=\"promo_id\" type=\"Numeric\"/>\n" +
-            "          <ColumnDef name=\"promo_name\" type=\"String\"/>\n" +
-            "        </ColumnDefs>\n" +
-            "        <Rows>\n" +
-            "          <Row>\n" +
-            "            <Value column=\"promo_id\">0</Value>\n" +
-            "            <Value column=\"promo_name\">Promo0</Value>\n" +
-            "          </Row>\n" +
-            "          <Row>\n" +
-            "            <Value column=\"promo_id\">1</Value>\n" +
-            "          </Row>\n" +
-            "        </Rows>\n" +
-            "      </InlineTable>\n" +
-            "      <Level name=\"Alternative Promotion\" column=\"promo_name\" uniqueMembers=\"true\"/> \n" +
-            "    </Hierarchy>\n" +
-            "  </Dimension>\n" +
-            "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
-            "      formatString=\"Standard\" visible=\"false\"/>\n" +
-            "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
-            "      formatString=\"#,###.00\"/>\n" +
-            "</Cube>");
+                "  <Table name=\"sales_fact_1997\"/>\n" +
+                "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
+                "  <Dimension name=\"Alternative Promotion\" foreignKey=\"promotion_id\">\n" +
+                "    <Hierarchy hasAll=\"true\" primaryKey=\"promo_id\">\n" +
+                "      <InlineTable alias=\"alt_promotion\">\n" +
+                "        <ColumnDefs>\n" +
+                "          <ColumnDef name=\"promo_id\" type=\"Numeric\"/>\n" +
+                "          <ColumnDef name=\"promo_name\" type=\"String\"/>\n" +
+                "        </ColumnDefs>\n" +
+                "        <Rows>\n" +
+                "          <Row>\n" +
+                "            <Value column=\"promo_id\">0</Value>\n" +
+                "            <Value column=\"promo_name\">Promo0</Value>\n" +
+                "          </Row>\n" +
+                "          <Row>\n" +
+                "            <Value column=\"promo_id\">1</Value>\n" +
+                "          </Row>\n" +
+                "        </Rows>\n" +
+                "      </InlineTable>\n" +
+                "      <Level name=\"Alternative Promotion\" column=\"promo_name\" uniqueMembers=\"true\"/> \n" +
+                "    </Hierarchy>\n" +
+                "  </Dimension>\n" +
+                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
+                "      formatString=\"Standard\" visible=\"false\"/>\n" +
+                "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
+                "      formatString=\"#,###.00\"/>\n" +
+                "</Cube>",
+            null, null, null);
 
+        boolean old = MondrianProperties.instance().CaseSensitive.get();
+        MondrianProperties.instance().CaseSensitive.set(false);
         try {
-	    	getTestContext().assertQueryReturns(
-		            "select {[Measures].[Unit Sales]} ON COLUMNS,\n" +
-		            "  {[Alternative Promotion].[All Alternative Promotions].[#null]} ON ROWS \n" +
-		            "  from [Sales_inline]",
-		            fold(
-	                        "Axis #0:\n" +
-	                        "{}\n" +
-	                        "Axis #1:\n" +
-	                        "{[Measures].[Unit Sales]}\n" +
-	                        "Axis #2:\n" +
-	                        "{[Alternative Promotion].[All Alternative Promotions].[#null]}\n" +
-	                        "Row #0: \n"));
+            testContext.assertQueryReturns(
+                "select {[Measures].[Unit Sales]} ON COLUMNS,\n" +
+                    "  {[Alternative Promotion].[All Alternative Promotions].[#null]} ON ROWS \n" +
+                    "  from [Sales_inline]",
+                fold("Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Axis #2:\n" +
+                    "{[Alternative Promotion].[All Alternative Promotions].[#null]}\n" +
+                    "Row #0: \n"));
         } finally {
-            schema.removeCube(cubeName);
-        	MondrianProperties.instance().CaseSensitive.set(old);
+            MondrianProperties.instance().CaseSensitive.set(old);
         }
     }
 
     /**
-     * Tests that data in Hiearchy.Level attribute "nameColumn" can be null.  This will map
-     * to the #null memeber.
+     * Tests that data in Hiearchy.Level attribute "nameColumn" can be null.
+     * This will map to the #null memeber.
      */
     public void testNullNameColumn() {
-    	Schema schema = getConnection().getSchema();
         final String cubeName = "Sales_inline";
-        final Cube cube = schema.createCube(
+        TestContext testContext = TestContext.create(
+            null,
             "<Cube name=\"" + cubeName + "\">\n" +
-            "  <Table name=\"sales_fact_1997\"/>\n" +
-            "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
-            "  <Dimension name=\"Alternative Promotion\" foreignKey=\"promotion_id\">\n" +
-            "    <Hierarchy hasAll=\"true\" primaryKey=\"promo_id\">\n" +
-            "      <InlineTable alias=\"alt_promotion\">\n" +
-            "        <ColumnDefs>\n" +
-            "          <ColumnDef name=\"promo_id\" type=\"Numeric\"/>\n" +
-            "          <ColumnDef name=\"promo_name\" type=\"String\"/>\n" +
-            "        </ColumnDefs>\n" +
-            "        <Rows>\n" +
-            "          <Row>\n" +
-            "            <Value column=\"promo_id\">0</Value>\n" +
-            "          </Row>\n" +
-            "          <Row>\n" +
-            "            <Value column=\"promo_id\">1</Value>\n" +
-            "            <Value column=\"promo_name\">Promo1</Value>\n" +
-            "          </Row>\n" +
-            "        </Rows>\n" +
-            "      </InlineTable>\n" +
-            "      <Level name=\"Alternative Promotion\" column=\"promo_id\" nameColumn=\"promo_name\" uniqueMembers=\"true\"/> \n" +
-            "    </Hierarchy>\n" +
-            "  </Dimension>\n" +
-            "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
-            "      formatString=\"Standard\" visible=\"false\"/>\n" +
-            "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
-            "      formatString=\"#,###.00\"/>\n" +
-            "</Cube>");
+                "  <Table name=\"sales_fact_1997\"/>\n" +
+                "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
+                "  <Dimension name=\"Alternative Promotion\" foreignKey=\"promotion_id\">\n" +
+                "    <Hierarchy hasAll=\"true\" primaryKey=\"promo_id\">\n" +
+                "      <InlineTable alias=\"alt_promotion\">\n" +
+                "        <ColumnDefs>\n" +
+                "          <ColumnDef name=\"promo_id\" type=\"Numeric\"/>\n" +
+                "          <ColumnDef name=\"promo_name\" type=\"String\"/>\n" +
+                "        </ColumnDefs>\n" +
+                "        <Rows>\n" +
+                "          <Row>\n" +
+                "            <Value column=\"promo_id\">0</Value>\n" +
+                "          </Row>\n" +
+                "          <Row>\n" +
+                "            <Value column=\"promo_id\">1</Value>\n" +
+                "            <Value column=\"promo_name\">Promo1</Value>\n" +
+                "          </Row>\n" +
+                "        </Rows>\n" +
+                "      </InlineTable>\n" +
+                "      <Level name=\"Alternative Promotion\" column=\"promo_id\" nameColumn=\"promo_name\" uniqueMembers=\"true\"/> \n" +
+                "    </Hierarchy>\n" +
+                "  </Dimension>\n" +
+                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
+                "      formatString=\"Standard\" visible=\"false\"/>\n" +
+                "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
+                "      formatString=\"#,###.00\"/>\n" +
+                "</Cube>",
+            null, null, null);
 
-        try {
-            getTestContext().assertQueryReturns(
-                    fold(
-                        "select {[Alternative Promotion].[All Alternative Promotions].[#null], [Alternative Promotion].[All Alternative Promotions].[Promo1]} ON COLUMNS\n" +
-                        "from [" + cubeName + "] "),
-                    fold(
-                        "Axis #0:\n" +
-                        "{}\n" +
-                        "Axis #1:\n" +
-                        "{[Alternative Promotion].[All Alternative Promotions].[#null]}\n" +
-                        "{[Alternative Promotion].[All Alternative Promotions].[Promo1]}\n" +
-                        "Row #0: 195,448\n" +
-                        "Row #0: \n"));
-        } finally {
-            schema.removeCube(cubeName);
-        }
+        testContext.assertQueryReturns(
+            "select {" +
+                "[Alternative Promotion].[All Alternative Promotions].[#null], " +
+                "[Alternative Promotion].[All Alternative Promotions].[Promo1]} ON COLUMNS\n" +
+                "from [" + cubeName + "] ",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Alternative Promotion].[All Alternative Promotions].[#null]}\n" +
+                "{[Alternative Promotion].[All Alternative Promotions].[Promo1]}\n" +
+                "Row #0: 195,448\n" +
+                "Row #0: \n"));
+    }
+
+    /**
+     * Tests that NULL values sort last on all platforms. On some platforms,
+     * such as MySQL, NULLs naturally come before other values, so we have to
+     * generate a modified ORDER BY clause.
+      */
+    public void testNullCollation() {
+        final String cubeName = "Store_NullsCollation";
+        TestContext testContext = TestContext.create(
+            null,
+            "<Cube name=\"" + cubeName + "\">\n" +
+                "  <Table name=\"store\"/>\n" +
+                "  <Dimension name=\"Store\" foreignKey=\"store_id\">\n" +
+                "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n" +
+                "      <Level name=\"Store Name\" column=\"store_name\"  uniqueMembers=\"true\">\n" +
+                "       <OrdinalExpression>\n" +
+                "        <SQL dialect=\"access\">\n" +
+                "           Iif(store_name = 'HQ', null, store_name)\n" +
+                "       </SQL>\n" +
+                "        <SQL dialect=\"generic\">\n" +
+                "           case store_name when 'HQ' then null else store_name end\n" +
+                "       </SQL>\n" +
+                "       </OrdinalExpression>\n" +
+                "        <Property name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\"/>\n" +
+                "      </Level>\n" +
+                "    </Hierarchy>\n" +
+                "  </Dimension>\n" +
+                "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n" +
+                "      formatString=\"#,###\"/>\n" +
+                "</Cube>",
+            null, null, null);
+
+        testContext.assertQueryReturns(
+            "select { [Measures].[Store Sqft] } on columns,\n" +
+                " NON EMPTY topcount(\n" +
+                "    {[Store].[Store Name].members},\n" +
+                "    5,\n" +
+                "    [measures].[store sqft]) on rows\n" +
+                "from [" + cubeName + "] ",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Store Sqft]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[Store 3]}\n" +
+                "{[Store].[All Stores].[Store 18]}\n" +
+                "{[Store].[All Stores].[Store 9]}\n" +
+                "{[Store].[All Stores].[Store 10]}\n" +
+                "{[Store].[All Stores].[Store 20]}\n" +
+                "Row #0: 39,696\n" +
+                "Row #1: 38,382\n" +
+                "Row #2: 36,509\n" +
+                "Row #3: 34,791\n" +
+                "Row #4: 34,452\n"));
     }
 }
 
