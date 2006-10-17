@@ -408,9 +408,15 @@ public class SqlQuery
      * @param expr the expr to order by
      * @param ascending sort direction
      * @param prepend whether to prepend to the current list of items
+     * @param nullable whether the expression might be null
      */
-    public void addOrderBy(String expr, boolean ascending, boolean prepend) {
-        if (!dialect.isNullsCollateLast()) {
+    public void addOrderBy(
+        String expr,
+        boolean ascending,
+        boolean prepend,
+        boolean nullable)
+    {
+        if (nullable && !dialect.isNullsCollateLast()) {
             expr = dialect.forceNullsCollateLast(expr);
         }
 

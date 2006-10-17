@@ -246,7 +246,7 @@ class SqlMemberSource implements MemberReader, SqlTupleReader.MemberBuilder {
             }
             if (mustCount[0]) {
                 sqlQuery.addSelect(columnList);
-                sqlQuery.addOrderBy(columnList, true, false);
+                sqlQuery.addOrderBy(columnList, true, false, true);
             } else {
                 sqlQuery.addSelect("count(DISTINCT " + columnList + ")");
             }
@@ -412,7 +412,7 @@ RME is this right
             exp = level.getOrdinalExp();
             hierarchy.addToFrom(sqlQuery, exp);
             expString = exp.getExpression(sqlQuery);
-            sqlQuery.addOrderBy(expString, true, false);
+            sqlQuery.addOrderBy(expString, true, false, true);
             sqlQuery.addGroupBy(expString);
 
             RolapProperty[] properties = level.getRolapProperties();
@@ -534,7 +534,7 @@ RME is this right
 
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
-        sqlQuery.addOrderBy(orderBy, true, false);
+        sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(q)) {
             sqlQuery.addGroupBy(orderBy);
         }
@@ -885,7 +885,7 @@ RME is this right
         sqlQuery.addGroupBy(childId);
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
-        sqlQuery.addOrderBy(orderBy, true, false);
+        sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(childId)) {
             sqlQuery.addGroupBy(orderBy);
         }
@@ -936,7 +936,7 @@ RME is this right
         sqlQuery.addGroupBy(childId);
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
-        sqlQuery.addOrderBy(orderBy, true, false);
+        sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(childId)) {
             sqlQuery.addGroupBy(orderBy);
         }

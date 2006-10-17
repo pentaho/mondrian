@@ -322,6 +322,9 @@ public class CompatibilityTest extends FoodMartTestCase {
                 "        <SQL dialect=\"access\">\n" +
                 "           Iif(store_name = 'HQ', null, store_name)\n" +
                 "       </SQL>\n" +
+                "        <SQL dialect=\"oracle\">\n" +
+                "           case \"store_name\" when 'HQ' then null else \"store_name\" end\n" +
+                "       </SQL>\n" +
                 "        <SQL dialect=\"generic\">\n" +
                 "           case store_name when 'HQ' then null else store_name end\n" +
                 "       </SQL>\n" +

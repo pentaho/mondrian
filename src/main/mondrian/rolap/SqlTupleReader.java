@@ -709,7 +709,7 @@ public class SqlTupleReader implements TupleReader {
                     ordinalSql = obyCol.toString();
                     orderByColNo++;
                 }
-                sqlQuery.addOrderBy(ordinalSql, true, false);
+                sqlQuery.addOrderBy(ordinalSql, true, false, true);
             }
             RolapProperty[] properties = level2.getRolapProperties();
             for (int j = 0; j < properties.length; j++) {

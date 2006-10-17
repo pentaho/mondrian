@@ -561,7 +561,7 @@ public class TestAggregationManager extends FoodMartTestCase {
         }
         SqlPattern[] patterns = {
             new SqlPattern(
-                SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
+                SqlPattern.ACCESS_DIALECT,
                 "select `store`.`store_country` as `c0` " +
                     "from `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`," +
                     " `store` as `store` " +
@@ -569,6 +569,16 @@ public class TestAggregationManager extends FoodMartTestCase {
                     "and `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id` " +
                     "group by `store`.`store_country` " +
                     "order by `store`.`store_country` ASC",
+                26),
+            new SqlPattern(
+                SqlPattern.MY_SQL_DIALECT,
+                "select `store`.`store_country` as `c0` " +
+                    "from `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`," +
+                    " `store` as `store` " +
+                    "where `agg_c_14_sales_fact_1997`.`the_year` = 1997 " +
+                    "and `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id` " +
+                    "group by `store`.`store_country` " +
+                    "order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC",
                 26)};
 
         assertQuerySql(
