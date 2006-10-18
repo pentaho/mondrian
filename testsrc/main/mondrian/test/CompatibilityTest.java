@@ -310,6 +310,12 @@ public class CompatibilityTest extends FoodMartTestCase {
      * generate a modified ORDER BY clause.
       */
     public void testNullCollation() {
+        if (getTestContext().getDialect().isDerby()) {
+            // Derby does not support expressions in the GROUP BY clause,
+            // therefore this testing strategy of using an expression for the
+            // store key won't work. Give the test a bye.
+            return;
+        }
         final String cubeName = "Store_NullsCollation";
         TestContext testContext = TestContext.create(
             null,
