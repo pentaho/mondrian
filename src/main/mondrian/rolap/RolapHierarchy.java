@@ -84,6 +84,7 @@ class RolapHierarchy extends HierarchyBase {
      * does not officially have an 'all' member.
      */
     private RolapMember allMember;
+    private static final String ALL_LEVEL_CARDINALITY = "1";
 
     RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll) {
         super(dimension, subName, hasAll);
@@ -145,7 +146,7 @@ class RolapHierarchy extends HierarchyBase {
             null, RolapProperty.emptyArray,
             RolapLevel.ALL | RolapLevel.UNIQUE,
             RolapLevel.HideMemberCondition.Never,
-            LevelType.Regular, "");
+            LevelType.Regular, ALL_LEVEL_CARDINALITY);
         this.allMember = new RolapMember(
             null, allLevel, null, allMemberName, Member.ALL_MEMBER_TYPE);
         // assign "all member" caption

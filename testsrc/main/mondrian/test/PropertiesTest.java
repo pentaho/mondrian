@@ -99,6 +99,14 @@ public class PropertiesTest extends FoodMartTestCase {
         assertEquals(member.getDescription(), stringPropValue);
     }
 
+    public void testGetChildCardinalityPropertyValue(){
+        Cube salesCube = getConnection().getSchema().lookupCube("Sales",true);
+        SchemaReader scr = salesCube.getSchemaReader(null);
+        Member memberForCardinalityTest = scr.getMemberByUniqueName(new String[] {"Marital Status", "All Marital Status"}, true);
+        Integer intPropValue = (Integer)memberForCardinalityTest.getPropertyValue("CHILDREN_CARDINALITY");
+        assertEquals(new Integer(111), intPropValue);
+    }
+
     /**
      * Tests the ability of MDX parser to pass requested member properties
      * to Result object.

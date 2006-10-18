@@ -5574,7 +5574,7 @@
                         <HIERARCHY_UNIQUE_NAME>[Marital Status]</HIERARCHY_UNIQUE_NAME>
                         <HIERARCHY_CAPTION>Marital Status</HIERARCHY_CAPTION>
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <HIERARCHY_CARDINALITY>3</HIERARCHY_CARDINALITY>
+                        <HIERARCHY_CARDINALITY>112</HIERARCHY_CARDINALITY>
                         <DEFAULT_MEMBER>[Marital Status].[All Marital Status]</DEFAULT_MEMBER>
                         <ALL_MEMBER>[Marital Status].[All Marital Status]</ALL_MEMBER>
                         <DESCRIPTION>Sales Cube - Marital Status Hierarchy</DESCRIPTION>
@@ -9629,6 +9629,84 @@
             </xmla:return>
         </xmla:DiscoverResponse>
     </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+ <TestCase name="testApproxRowCountInHierarchyOverridesCountCallsToDatabase">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" >
+<SOAP-ENV:Header>
+</SOAP-ENV:Header>
+<SOAP-ENV:Body>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
+      <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sql="urn:schemas-microsoft-com:xml-sql" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" elementFormDefault="qualified">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="row" type="row" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element sql:field="CATALOG_NAME" name="CATALOG_NAME" type="xsd:string" minOccurs="0"/>
+            <xsd:element sql:field="SCHEMA_NAME" name="SCHEMA_NAME" type="xsd:string" minOccurs="0"/>
+            <xsd:element sql:field="CUBE_NAME" name="CUBE_NAME" type="xsd:string"/>
+            <xsd:element sql:field="DIMENSION_UNIQUE_NAME" name="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element sql:field="HIERARCHY_NAME" name="HIERARCHY_NAME" type="xsd:string"/>
+            <xsd:element sql:field="HIERARCHY_UNIQUE_NAME" name="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element sql:field="HIERARCHY_GUID" name="HIERARCHY_GUID" type="uuid" minOccurs="0"/>
+            <xsd:element sql:field="HIERARCHY_CAPTION" name="HIERARCHY_CAPTION" type="xsd:string"/>
+            <xsd:element sql:field="DIMENSION_TYPE" name="DIMENSION_TYPE" type="xsd:short"/>
+            <xsd:element sql:field="HIERARCHY_CARDINALITY" name="HIERARCHY_CARDINALITY" type="xsd:unsignedInt"/>
+            <xsd:element sql:field="DEFAULT_MEMBER" name="DEFAULT_MEMBER" type="xsd:string" minOccurs="0"/>
+            <xsd:element sql:field="ALL_MEMBER" name="ALL_MEMBER" type="xsd:string" minOccurs="0"/>
+            <xsd:element sql:field="DESCRIPTION" name="DESCRIPTION" type="xsd:string" minOccurs="0"/>
+            <xsd:element sql:field="STRUCTURE" name="STRUCTURE" type="xsd:short"/>
+            <xsd:element sql:field="IS_VIRTUAL" name="IS_VIRTUAL" type="xsd:boolean"/>
+            <xsd:element sql:field="IS_READWRITE" name="IS_READWRITE" type="xsd:boolean"/>
+            <xsd:element sql:field="DIMENSION_UNIQUE_SETTINGS" name="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
+            <xsd:element sql:field="DIMENSION_IS_VISIBLE" name="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+            <xsd:element sql:field="HIERARCHY_ORDINAL" name="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
+            <xsd:element sql:field="DIMENSION_IS_SHARED" name="DIMENSION_IS_SHARED" type="xsd:boolean"/>
+            <xsd:element sql:field="PARENT_CHILD" name="PARENT_CHILD" type="xsd:boolean" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Marital Status</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Marital Status]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Marital Status</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>112</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Marital Status].[All Marital Status]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Marital Status].[All Marital Status]</ALL_MEMBER>
+        <DESCRIPTION>Sales Cube - Marital Status Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>12</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+</SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>

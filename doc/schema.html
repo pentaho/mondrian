@@ -43,7 +43,9 @@
 					<li><a href="#Degenerate_dimensions">Degenerate dimensions</a></li>
 					<li><a href="#Inline_tables">Inline tables</a></li>
 					<li><a href="#Member_properties_and_formatters">Member properties and formatters</a></li>
-				</ol>
+                    <li><a href="#Approximate_level_cardinality">Approximate level cardinality</a></li>
+
+                </ol>
 		</ol>
   	</li>
   	<li><a href="#Star_schemas">Star and snowflake schemas</a>
@@ -732,6 +734,16 @@ for that column, and the column's value will default to NULL.</p>
 
 <p>As we shall see later, a level definition can also define <a href="#Member_properties">member properties</a> 
 and a <a href="#Member_formatter">member formatter</a>.</p>
+<!--
+################################################
+##  3.3.9 Approximate level cardinality #####
+################################################ -->
+<h1>3.3.9 Approximate level cardinality<a name="Approximate_level_cardinality">&nbsp;</a></h1>
+
+<p>The <a
+ href="#XML_Level">&lt;Level&gt;</a> element allows specifying the optional attribute "approxRowCount".  Specifying
+    approxRowCount can improve performance by reducing the need to determine level, hierarchy, and dimension cardinality.
+    This can have a significant impact when connecting to Mondrian via XMLA.</p>
 <!-- 
 #######################################
 ##  4. Star and snowflake schemas #####

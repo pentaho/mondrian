@@ -69,20 +69,25 @@ public class RolapMember extends MemberBase {
             }
         }
     }
-    public static int getHierarchyCardinality(SchemaReader schemaReader, 
+    public static int getHierarchyCardinality(SchemaReader schemaReader,
             Hierarchy hierarchy) {
-        Member[][] membersArray = getAllMembers(schemaReader, hierarchy);
         int cardinality = 0;
-        for (int i = 0; i < membersArray.length; i++) {
-            Member[] members = membersArray[i];
-            cardinality += members.length;
+        Level[] levels = hierarchy.getLevels();
+        for (int i = 0; i < levels.length; i++) {
+            Level level = levels[i];
+            if (level.getApproxRowCount() > Integer.MIN_VALUE){
+                cardinality += level.getApproxRowCount();
+            }
+            else{
+                cardinality += schemaReader.getLevelMembers(level, false).length;
+            }
         }
         return cardinality;
     }
 
-    /** 
+    /**
      * This is a Bottom-up/Top-down algorithm for setting member ordinal
-     * values. An array of members for each level is gotten and the 
+     * values. An array of members for each level is gotten and the
      * array for the lowest level is traversed setting each member's
      * parent's parent's etc. member's ordinal if not set working back
      * down to the leaf member and then going to the next leaf member
@@ -113,9 +118,9 @@ public class RolapMember extends MemberBase {
      *       Foodmart: 17ms
      *       Large Data set: 4241ms
      *
-     * 
-     * @param schemaReader 
-     * @param seedMember 
+     *
+     * @param schemaReader
+     * @param seedMember
      */
     public static void setOrdinals(SchemaReader schemaReader, Member seedMember) {
         long start = System.currentTimeMillis();
@@ -127,7 +132,7 @@ public class RolapMember extends MemberBase {
             Member[][] membersArray = getAllMembers(schemaReader, hierarchy);
             Member[] leafMembers = membersArray[membersArray.length-1];
 
-            // Set all ordinals, 
+            // Set all ordinals,
             for (int i = 0; i < leafMembers.length; i++) {
                 Member child = leafMembers[i];
                 ordinal = bottomUpSetParentOrdinals(ordinal, child);
@@ -215,7 +220,7 @@ public class RolapMember extends MemberBase {
                 // top of the world
                 int ordinal = 0;
 
-                Member[] siblings = 
+                Member[] siblings =
                     schemaReader.getHierarchyRootMembers(member.getHierarchy());
 
                 for (int i = 0; i < siblings.length; i++) {
@@ -485,9 +490,22 @@ public class RolapMember extends MemberBase {
                 return new Integer(getOrdinal());
 
             case Property.CHILDREN_CARDINALITY_ORDINAL:
-                list = new ArrayList();
-                getRolapHierarchy().getMemberReader().getMemberChildren(this, list);
-                return new Integer(list.size());
+                Integer cardinality;
+
+                //when the member is the "All" Member we might want to determin the child cardinality by looking
+                //at the child level approxRowCount
+                if (getLevel().getHierarchy().hasAll()
+                        && getLevel().getDepth() == 0
+                        && getLevel().getChildLevel().getApproxRowCount() > Integer.MIN_VALUE )
+                        {
+                    cardinality =  new Integer(getLevel().getChildLevel().getApproxRowCount());
+                }
+                else{
+                    list = new ArrayList();
+                    getRolapHierarchy().getMemberReader().getMemberChildren(this, list);
+                    cardinality = new Integer(list.size());
+                }
+                return cardinality;
 
             case Property.PARENT_LEVEL_ORDINAL:
                 parentMember = getParentMember();

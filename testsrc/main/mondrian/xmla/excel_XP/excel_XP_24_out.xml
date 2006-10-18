@@ -542,7 +542,7 @@
                                     <Caption>All Marital Status</Caption>
                                     <LName>[Marital Status].[(All)]</LName>
                                     <LNum>0</LNum>
-                                    <DisplayInfo>2</DisplayInfo>
+                                    <DisplayInfo>111</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Yearly Income">
                                     <UName>[Yearly Income].[All Yearly Incomes]</UName>
