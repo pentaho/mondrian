@@ -10,7 +10,6 @@
 package mondrian.xmla;
 
 import mondrian.olap.Util;
-import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import mondrian.tui.*;
 
@@ -37,7 +36,7 @@ import java.util.Properties;
  * @author Richard M. Emberson
  * @version $Id$
  */
-public class XmlaExcelXPTest extends FoodMartTestCase {
+public class XmlaExcelXPTest extends XmlaBaseTestCase {
     // session id properpty
     public static final String SESSION_ID_PROP     = "session.id";
 
@@ -47,6 +46,25 @@ public class XmlaExcelXPTest extends FoodMartTestCase {
     private static final String XMLA_DIRECTORY = "testsrc/main/mondrian/xmla/";
 
     private static final boolean DEBUG = false;
+
+    protected String getSessionId() {
+        return sessionId;
+    }
+
+    protected String generateExpectedString(String nos, Properties props)
+            throws Exception {
+        String expectedFileName = getOutFileName(nos);
+
+        String expectedStr = fileToString(expectedFileName);
+        if (props != null) {
+            // YES, duplicate the above
+            if (getSessionId() != null) {
+                props.put(SESSION_ID_PROP, getSessionId());
+            }
+            expectedStr = Util.replaceProperties(expectedStr, props);
+        }
+        return expectedStr;
+    }
 
     static class CallBack implements XmlaRequestCallback {
         static String MY_SESSION_ID = "my_session_id";
@@ -404,8 +422,8 @@ if (DEBUG) {
         }
 
         Document gotDoc = XmlUtil.parse(bytes);
-        String gotStr = XmlUtil.toString(gotDoc, true);
-        String expectedStr = XmlUtil.toString(expectedDoc, true);
+        String gotStr = XmlUtil.toString(replaceLastSchemaUpdateDate(gotDoc), true);
+        String expectedStr = XmlUtil.toString(replaceLastSchemaUpdateDate(expectedDoc), true);
 
 if (DEBUG) {
 System.out.println("GOT:\n"+gotStr);
@@ -433,20 +451,10 @@ System.out.println("requestText="+requestText);
 }
         return requestText;
     }
-    protected String generateExpectedString(String nos, Properties props)
-            throws Exception {
-        String expectedFileName = "excel_XP_" + nos + "_out.xml";
 
-        String expectedStr = fileToString(expectedFileName);
-        if (props != null) {
-            // YES, duplicate the above
-            if (XmlaExcelXPTest.sessionId != null) {
-                props.put(SESSION_ID_PROP, XmlaExcelXPTest.sessionId);
-            }
-            expectedStr = Util.replaceProperties(expectedStr, props);
-        }
-        return expectedStr;
-    }
+    protected String getOutFileName(String nos) {
+		return "excel_XP_" + nos + "_out.xml";
+	}
 }
 
 // End XmlaExcelXPTest.java

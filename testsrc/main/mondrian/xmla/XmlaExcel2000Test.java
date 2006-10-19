@@ -12,12 +12,11 @@
 package mondrian.xmla;
 
 import mondrian.olap.Util;
-import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
-import mondrian.olap.*;
 import mondrian.tui.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -40,9 +39,7 @@ import javax.servlet.Servlet;
  * @author Richard M. Emberson
  * @version $Id$
  */
-public class XmlaExcel2000Test extends FoodMartTestCase {
-    // session id properpty
-    public static final String SESSION_ID_PROP     = "session.id";
+public class XmlaExcel2000Test extends XmlaBaseTestCase {
 
     private static String EXPECT = XmlaRequestCallback.EXPECT;
     private static String EXPECT_100_CONTINUE = XmlaRequestCallback.EXPECT_100_CONTINUE;
@@ -50,6 +47,42 @@ public class XmlaExcel2000Test extends FoodMartTestCase {
     private static final String XMLA_DIRECTORY = "testsrc/main/mondrian/xmla/";
 
     private static final boolean DEBUG = false;
+    protected File testDir;
+    // session id properpty
+    public static final String SESSION_ID_PROP     = "session.id";
+
+    public XmlaExcel2000Test(String name) {
+        super(name);
+    }
+
+    protected String getOutFileName(String nos) {
+        return "excel_2000_"+ nos + "_out.xml";
+    }
+
+    protected String getSessionId() {
+        return sessionId;
+    }
+
+    protected String fileToString(String filename) throws IOException {
+        File file = new File(testDir, filename);
+        String requestText = XmlaSupport.readFile(file);
+        return requestText;
+    }
+
+    protected String generateExpectedString(String nos, Properties props)
+            throws Exception {
+        String expectedFileName = getOutFileName(nos);
+
+        String expectedStr = fileToString(expectedFileName);
+        if (props != null) {
+            // YES, duplicate the above
+            if (getSessionId() != null) {
+                props.put(SESSION_ID_PROP, getSessionId());
+            }
+            expectedStr = Util.replaceProperties(expectedStr, props);
+        }
+        return expectedStr;
+    }
 
     static class CallBack implements XmlaRequestCallback {
         static String MY_SESSION_ID = "my_session_id";
@@ -115,16 +148,8 @@ public class XmlaExcel2000Test extends FoodMartTestCase {
     }
 
 
-    protected File testDir;
     protected Servlet servlet;
     protected String[][] catalogNameUrls = null;
-
-    public XmlaExcel2000Test() {
-    }
-    public XmlaExcel2000Test(String name) {
-        super(name);
-    }
-
 
     protected void setUp() throws Exception {
         testDir = new File(XMLA_DIRECTORY + "/excel_2000");
@@ -142,12 +167,6 @@ public class XmlaExcel2000Test extends FoodMartTestCase {
         servlet = XmlaSupport.makeServlet(connectString, catalogNameUrls, CallBack.class.getName());
     }
 
-
-    protected String fileToString(String filename) throws IOException {
-        File file = new File(testDir, filename);
-        String requestText = XmlaSupport.readFile(file);
-        return requestText;
-    }
 
     protected Document fileToDocument(String filename)
                 throws IOException , SAXException {
@@ -381,8 +400,8 @@ if (DEBUG) {
         }
 
         Document gotDoc = XmlUtil.parse(bytes);
-        String gotStr = XmlUtil.toString(gotDoc, true);
-        String expectedStr = XmlUtil.toString(expectedDoc, true);
+	    String gotStr = XmlUtil.toString(replaceLastSchemaUpdateDate(gotDoc), true);
+        String expectedStr = XmlUtil.toString(replaceLastSchemaUpdateDate(expectedDoc), true);
 if (DEBUG) {
 System.out.println("GOT:\n"+gotStr);
 System.out.println("EXPECTED:\n"+expectedStr);
@@ -410,20 +429,7 @@ System.out.println("requestText="+requestText);
 }
         return requestText;
     }
-    protected String generateExpectedString(String nos, Properties props)
-            throws Exception {
-        String expectedFileName = "excel_2000_" + nos + "_out.xml";
 
-        String expectedStr = fileToString(expectedFileName);
-        if (props != null) {
-            // YES, duplicate the above
-            if (XmlaExcel2000Test.sessionId != null) {
-                props.put(SESSION_ID_PROP, XmlaExcel2000Test.sessionId);
-            }
-            expectedStr = Util.replaceProperties(expectedStr, props);
-        }
-        return expectedStr;
-    }
 }
 
 // XmlaExcel2000Test.java

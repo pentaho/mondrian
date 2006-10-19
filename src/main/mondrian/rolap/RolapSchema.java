@@ -37,6 +37,7 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.Date;
 import java.sql.*;
 
 /**
@@ -113,6 +114,7 @@ public class RolapSchema implements Schema {
     private MondrianDef.Schema xmlSchema;
 
     final List parameterList = new ArrayList();
+    private Date schemaLoadDate;
 
     /**
      * This is ONLY called by other constructors (and MUST be called
@@ -240,6 +242,15 @@ public class RolapSchema implements Schema {
         }
 
         aggTableManager.initialize();
+	    setSchemaLoadDate();
+    }
+
+	private void setSchemaLoadDate() {
+		schemaLoadDate = new Date();
+	}
+
+	public Date getSchemaLoadDate() {
+		return schemaLoadDate;
     }
 
     Role getDefaultRole() {

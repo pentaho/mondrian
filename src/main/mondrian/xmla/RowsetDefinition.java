@@ -21,6 +21,8 @@ import mondrian.rolap.RolapMember;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.text.SimpleDateFormat;
+import java.text.Format;
 
 /**
  * <code>RowsetDefinition</code> defines a rowset, including the columns it
@@ -3051,10 +3053,18 @@ boolean restriction, boolean nullable, String description)
                     row.set(IsLinkable.name, false);
                     row.set(IsSqlEnabled.name, false);
                     row.set(Description.name, desc);
+                    row.set(LastSchemaUpdate.name,lastUpdateDate(schema));     
                     addRow(row, rows);
                 }
             }
         }
+
+	    private String lastUpdateDate(RolapSchema schema) {
+		    Format formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		    String formattedDate = formatter.format(schema.getSchemaLoadDate());
+		    return formattedDate;
+	    }
+
         protected void setProperty(PropertyDefinition propertyDef, String value) {
             switch (propertyDef.ordinal) {
             case PropertyDefinition.Content_ORDINAL:

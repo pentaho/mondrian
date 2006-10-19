@@ -18,6 +18,8 @@ import mondrian.tui.XmlaSupport;
 
 import org.custommonkey.xmlunit.XMLAssert;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -531,7 +533,7 @@ if (DEBUG) {
             }
         }
 
-        Document gotDoc = XmlUtil.parse(bytes);
+        Document gotDoc = ignoreLastUpdateDate(XmlUtil.parse(bytes));
         String gotStr = XmlUtil.toString(gotDoc, true);
         if (expectedDoc != null) {
             String expectedStr = XmlUtil.toString(expectedDoc, true);
@@ -559,6 +561,20 @@ System.out.println("XXXXXXX");
             }
         }
     }
+
+	private Document ignoreLastUpdateDate(Document document) {
+		NodeList elements = document.getElementsByTagName("LAST_SCHEMA_UPDATE");
+		for (int i = elements.getLength(); i > 0; i--) {
+			removeNode(elements.item(i-1));
+		}
+		return document;
+	}
+
+	private void removeNode(Node node) {
+		Node parentNode = node.getParentNode();
+		parentNode.removeChild(node);
+	}
+
 }
 
 // End XmlaBasicTest.java

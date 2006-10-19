@@ -67,6 +67,7 @@
             <CATALOG_NAME>FoodMart</CATALOG_NAME>
             <CUBE_NAME>Sales</CUBE_NAME>
             <CUBE_TYPE>CUBE</CUBE_TYPE>
+	        <LAST_SCHEMA_UPDATE>${last.schema.update.date}</LAST_SCHEMA_UPDATE>  
             <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
             <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
             <IS_LINKABLE>false</IS_LINKABLE>

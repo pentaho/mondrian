@@ -18,6 +18,9 @@ import org.apache.log4j.Logger;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.w3c.dom.Element;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -73,10 +76,22 @@ public class XmlaTest extends TestCase {
             XmlaTestContext.extractXmlaCycle(testFile, XmlaTestContext.ENV);
         Element requestElem = xmlaCyclePair[0];
         Element expectedResponseElem = xmlaCyclePair[1];
-        Element responseElem = executeRequest(requestElem);
+        Element responseElem = ignoreLastUpdateDate(executeRequest(requestElem));
         compareElement(expectedResponseElem, responseElem);
     }
 
+	private Element ignoreLastUpdateDate(Element element) {
+		NodeList elements = element.getElementsByTagName("LAST_SCHEMA_UPDATE");
+		for (int i = elements.getLength(); i > 0; i--) {
+			removeNode(elements.item(i-1));
+		}
+		return element;
+	}
+
+	private void removeNode(Node node) {
+		Node parentNode = node.getParentNode();
+		parentNode.removeChild(node);
+	}
 
     private static Element executeRequest(Element requestElem) {
         ByteArrayOutputStream resBuf = new ByteArrayOutputStream();
