@@ -74,13 +74,7 @@ public class RolapMember extends MemberBase {
         int cardinality = 0;
         Level[] levels = hierarchy.getLevels();
         for (int i = 0; i < levels.length; i++) {
-            Level level = levels[i];
-            if (level.getApproxRowCount() > Integer.MIN_VALUE){
-                cardinality += level.getApproxRowCount();
-            }
-            else{
-                cardinality += schemaReader.getLevelMembers(level, false).length;
-            }
+            cardinality += schemaReader.getLevelCardinality(levels[i], true, true);
         }
         return cardinality;
     }
@@ -263,12 +257,12 @@ public class RolapMember extends MemberBase {
      * like it to be "20319".
      */
     private static String keyToString(Object key) {
-    	String name = null;
-    	if (key == null) {
-    		name = RolapUtil.mdxNullLiteral;
-    	} else {
-    		name = key.toString();
-    	}
+        String name = null;
+        if (key == null) {
+            name = RolapUtil.mdxNullLiteral;
+        } else {
+            name = key.toString();
+        }
         if ((key instanceof Number) && name.endsWith(".0")) {
             name = name.substring(0, name.length() - 2);
         }
@@ -409,9 +403,9 @@ public class RolapMember extends MemberBase {
         }
         if (name.equals(Property.NAME.name)) {
             if (value == null) {
-            	value = RolapUtil.mdxNullLiteral;
+                value = RolapUtil.mdxNullLiteral;
             }
-        	setUniqueName(value);
+            setUniqueName(value);
         }
 
         if (name.equals(Property.MEMBER_ORDINAL.name)) {
@@ -492,15 +486,10 @@ public class RolapMember extends MemberBase {
             case Property.CHILDREN_CARDINALITY_ORDINAL:
                 Integer cardinality;
 
-                //when the member is the "All" Member we might want to determin the child cardinality by looking
-                //at the child level approxRowCount
-                if (getLevel().getHierarchy().hasAll()
-                        && getLevel().getDepth() == 0
-                        && getLevel().getChildLevel().getApproxRowCount() > Integer.MIN_VALUE )
-                        {
-                    cardinality =  new Integer(getLevel().getChildLevel().getApproxRowCount());
-                }
-                else{
+                if (isAllMember() && childLevelHasApproxRowCount()) {
+                    cardinality =  new Integer(
+                            getLevel().getChildLevel().getApproxRowCount());
+                } else {
                     list = new ArrayList();
                     getRolapHierarchy().getMemberReader().getMemberChildren(this, list);
                     cardinality = new Integer(list.size());
@@ -510,7 +499,7 @@ public class RolapMember extends MemberBase {
             case Property.PARENT_LEVEL_ORDINAL:
                 parentMember = getParentMember();
                 return new Integer(
-                        parentMember == null ? -1 :
+                        parentMember == null ? 0 :
                         parentMember.getLevel().getDepth());
 
             case Property.PARENT_UNIQUE_NAME_ORDINAL:
@@ -536,6 +525,15 @@ public class RolapMember extends MemberBase {
         synchronized (this) {
             return mapPropertyNameToValue.get(name);
         }
+    }
+
+    private boolean childLevelHasApproxRowCount() {
+        return getLevel().getChildLevel().getApproxRowCount() > Integer.MIN_VALUE;
+    }
+
+    private boolean isAllMember() {
+        return getLevel().getHierarchy().hasAll()
+                && getLevel().getDepth() == 0;
     }
 
     public Property[] getProperties() {
