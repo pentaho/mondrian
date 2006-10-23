@@ -38,7 +38,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
         }
 
         Node lastSchemaUpdateNode = elements.item(0);
-        lastSchemaUpdateNode.setTextContent(LAST_SCHEMA_UPDATE_DATE);
+        lastSchemaUpdateNode.getFirstChild().setNodeValue(LAST_SCHEMA_UPDATE_DATE);
         return doc;
     }
 
