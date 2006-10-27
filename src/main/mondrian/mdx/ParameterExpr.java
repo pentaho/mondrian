@@ -26,7 +26,7 @@ import java.io.PrintWriter;
  */
 public class ParameterExpr extends ExpBase {
 
-    private final Parameter parameter;
+    private Parameter parameter;
 
     public ParameterExpr(Parameter parameter)
     {
@@ -51,9 +51,16 @@ public class ParameterExpr extends ExpBase {
         String parameterName = parameter.getName();
         Parameter p = validator.getQuery().getSchemaReader(false).getParameter(
             parameterName);
-        if (p == null || p != this.parameter) {
-            throw Util.newInternal(
-                "parameter '" + parameterName + "' not registered");
+        if (p == null) {
+          this.parameter = validator.createOrLookupParam(
+              true,
+              parameter.getName(),
+              parameter.getType(),
+              parameter.getDefaultExp(),
+              parameter.getDescription());
+        }
+        else {
+          this.parameter = p;
         }
         return this;
     }

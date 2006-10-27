@@ -34,7 +34,37 @@ public class ParameterImpl
     private String description;
     private Exp defaultExp;
     private Type type;
-    private ParameterSlot slot;
+    private ParameterSlot slot = new ParameterSlot() {
+      Object value;
+      public Object getCachedDefaultValue() {
+        throw new UnsupportedOperationException();
+      }
+
+      public Calc getDefaultValueCalc() {
+        throw new UnsupportedOperationException();
+      }
+
+      public int getIndex() {
+        throw new UnsupportedOperationException();
+      }
+
+      public Parameter getParameter() {
+        return ParameterImpl.this;
+      }
+
+      public Object getParameterValue() {
+        return value;
+      }
+
+      public void setCachedDefaultValue(Object value) {
+        throw new UnsupportedOperationException();
+      }
+
+      public void setParameterValue(Object value) {
+        this.value = value;
+      }
+      
+    };
 
     protected ParameterImpl(
         String name,

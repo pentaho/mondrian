@@ -230,6 +230,7 @@ public class AbstractExpCompiler implements ExpCompiler {
         int index = parameterSlots.size();
         ParameterSlotImpl slot2 = new ParameterSlotImpl(parameter, index);
         parameterSlots.put(parameter, slot2);
+        slot2.value = parameter.getValue();
 
         // Compile the expression only AFTER the parameter has been
         // registered with a slot. Otherwise a cycle is possible.

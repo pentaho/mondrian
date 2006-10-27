@@ -49,6 +49,52 @@ public class ParameterTest extends FoodMartTestCase {
 
     // -- Tests --------------
 
+    public void testChangeable() {
+        // jpivot needs to set a parameters value before the query is executed
+        String mdx = "select {Parameter(\"Foo\",[Time],[Time].[1997],\"Foo\")} ON COLUMNS from [Sales]";
+        Query query = getConnection().parseQuery(mdx);
+        SchemaReader sr = query.getSchemaReader(false);
+        Member m = sr.getMemberByUniqueName(new String[]{"Time", "1997", "Q2", "5"}, true);
+        Parameter p = sr.getParameter("Foo");
+        p.setValue(m);
+        assertEquals(m, p.getValue());
+        query.resolve();
+        p.setValue(m);
+        assertEquals(m, p.getValue());
+        mdx = query.toString();
+        assertEquals("select {Parameter(\"Foo\", [Time], [Time].[1997].[Q2].[5], \"Foo\")} ON COLUMNS" + nl +
+        "from [Sales]" + nl,  mdx);
+    }
+
+    public void testParameterInFormatString() {
+      assertQueryReturns(
+          "with member [Measures].[X] as '[Measures].[Store Sales]'," + nl +
+          "format_string = Parameter(\"fmtstrpara\", STRING, \"#\")" + nl +
+          "select {[Measures].[X]} ON COLUMNS" + nl +
+          "from [Sales]",
+
+          "Axis #0:" + nl +
+          "{}" + nl +
+          "Axis #1:" + nl +
+          "{[Measures].[X]}" + nl +
+          "Row #0: 565238" + nl
+
+      );
+    }
+
+    public void testParameterInFormatString_Bug1584439() {
+      String queryString =
+        "with member [Measures].[X] as '[Measures].[Store Sales]'," + nl +
+        "format_string = Parameter(\"fmtstrpara\", STRING, \"#\")" + nl +
+        "select {[Measures].[X]} ON COLUMNS" + nl +
+        "from [Sales]";
+
+      // this used to crash
+      Connection connection = getConnection();
+      Query query = connection.parseQuery(queryString);
+      query.toString();
+    }
+
     public void testParameterOnAxis() {
         assertQueryReturns(
                 "select {[Measures].[Unit Sales]} on rows," + nl +
