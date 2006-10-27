@@ -12,33 +12,69 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.*;
-import mondrian.olap.Member;
-import mondrian.olap.fun.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.StringType;
-import mondrian.olap.type.NumericType;
-import mondrian.olap.type.MemberType;
-import mondrian.spi.UserDefinedFunction;
-import mondrian.rolap.aggmatcher.AggTableManager;
-import mondrian.rolap.sql.SqlQuery;
-import mondrian.resource.MondrianResource;
-
-import org.apache.log4j.Logger;
-import org.eigenbase.xom.*;
-import org.eigenbase.xom.Parser;
-
-import javax.sql.DataSource;
-import java.io.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.ref.SoftReference;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
-import java.sql.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.sql.DataSource;
+
+import mondrian.olap.Access;
+import mondrian.olap.Category;
+import mondrian.olap.Cube;
+import mondrian.olap.Dimension;
+import mondrian.olap.Exp;
+import mondrian.olap.Formula;
+import mondrian.olap.FunTable;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Level;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianDef;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.NamedSet;
+import mondrian.olap.Parameter;
+import mondrian.olap.Role;
+import mondrian.olap.Schema;
+import mondrian.olap.SchemaReader;
+import mondrian.olap.Syntax;
+import mondrian.olap.Util;
+import mondrian.olap.fun.FunTableImpl;
+import mondrian.olap.fun.GlobalFunTable;
+import mondrian.olap.fun.Resolver;
+import mondrian.olap.fun.UdfResolver;
+import mondrian.olap.type.MemberType;
+import mondrian.olap.type.NumericType;
+import mondrian.olap.type.StringType;
+import mondrian.olap.type.Type;
+import mondrian.resource.MondrianResource;
+import mondrian.rolap.aggmatcher.AggTableManager;
+import mondrian.rolap.aggmatcher.JdbcSchema;
+import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.UserDefinedFunction;
+
+import org.apache.log4j.Logger;
+import org.eigenbase.xom.DOMWrapper;
+import org.eigenbase.xom.Parser;
+import org.eigenbase.xom.XOMException;
+import org.eigenbase.xom.XOMUtil;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
@@ -895,6 +931,7 @@ public class RolapSchema implements Schema {
 
             }
             mapUrlToSchema.clear();
+            JdbcSchema.clearAllDBs();
         }
 
         /**

@@ -1390,6 +1390,11 @@ public class JdbcSchema {
     private Map getTablesMap() {
         return tables;
     }
+    
+    public static synchronized void clearAllDBs() {
+        factory = null;
+        makeFactory();
+    }
 }
 
 // End JdbcSchema.java
