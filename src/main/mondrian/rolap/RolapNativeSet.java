@@ -14,6 +14,7 @@ import java.util.List;
 
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
+import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.cache.HardSmartCache;
 import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
@@ -607,6 +608,32 @@ public abstract class RolapNativeSet extends RolapNative {
         } else {
             cache = new SoftSmartCache();
         }
+    }
+
+    /**
+     * Override current members in position by default members in
+     * hierarchies which are involved in this filter/topcount. 
+     * Stores the RolapStoredMeasure into the context because that is needed to
+     * generate a cell request to constraint the sql.
+     * 
+     * The current context may contain a calculated measure, this measure
+     * was translated into an sql condition (filter/topcount). The measure
+     * is not used to constrain the result but only to access the star.
+     * 
+     * @see RolapAggregationManager#makeRequest(Member[], boolean, boolean)
+     */ 
+    protected RolapEvaluator overrideContext(RolapEvaluator evaluator, CrossJoinArg[] cargs, RolapStoredMeasure storedMeasure) {
+        SchemaReader schemaReader = evaluator.getSchemaReader();
+        RolapEvaluator newEvaluator = (RolapEvaluator) evaluator.push();
+        for (int i = 0; i < cargs.length; i++) {
+            Hierarchy hierarchy = cargs[i].getLevel().getHierarchy();
+            Member defaultMember =
+                schemaReader.getHierarchyDefaultMember(hierarchy);
+            newEvaluator.setContext(defaultMember);
+        }
+        if (storedMeasure != null)
+            newEvaluator.setContext(storedMeasure);
+        return newEvaluator;
     }
 }
 

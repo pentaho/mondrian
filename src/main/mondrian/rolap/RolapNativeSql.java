@@ -32,6 +32,30 @@ public class RolapNativeSql {
     CompositeSqlCompiler numericCompiler;
     CompositeSqlCompiler booleanCompiler;
 
+    RolapStoredMeasure storedMeasure;
+    
+    /**
+     * We remember one of the measures so we can generate 
+     * the constraints from RolapAggregationManager. Also 
+     * make sure all measures live in the same star.
+     * 
+     * @see RolapAggregationManager#makeRequest(Member[], boolean, boolean)
+     */
+    private boolean saveStoredMeasure(RolapStoredMeasure m) {
+        if (storedMeasure != null) {
+            RolapStar star1 = getStar(storedMeasure);
+            RolapStar star2 = getStar(m);
+            if (star1 != star2)
+                return false;
+        }
+        this.storedMeasure = m;
+        return true;
+    }
+
+    private RolapStar getStar(RolapStoredMeasure m) {
+        return ((RolapStar.Measure )m.getStarMeasure()).getStar();
+    }
+    
     /**
      * translates an Expr into SQL
      * @author av
@@ -131,6 +155,8 @@ public class RolapNativeSql {
             if (measure.isCalculated()) {
                 return null; // ??
             }
+            if (!saveStoredMeasure(measure))
+            	return null;
             String exprInner = measure.getMondrianDefExpression().getExpression(sqlQuery);
             String expr = measure.getAggregator().getExpression(exprInner);
             if (dialect.isDB2()) {
@@ -139,7 +165,7 @@ public class RolapNativeSql {
             return expr;
         }
 
-        public String toString() {
+		public String toString() {
             return "StoredMeasureSqlCompiler";
         }
     }
@@ -410,6 +436,10 @@ public class RolapNativeSql {
 
     public String generateFilterCondition(Exp exp) {
         return booleanCompiler.compile(exp);
+    }
+
+    public RolapStoredMeasure getStoredMeasure() {
+        return storedMeasure;
     }
 
 }

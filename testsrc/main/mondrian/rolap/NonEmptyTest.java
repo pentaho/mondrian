@@ -54,6 +54,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     public NonEmptyTest(String name) {
         super(name);
     }
+    
     /**
      * must not use native sql optimization because it chooses the wrong RolapStar
      * in SqlContextConstraint/SqlConstraintUtils.
@@ -79,24 +80,77 @@ public class NonEmptyTest extends FoodMartTestCase {
                 18,
                 "select {[Measures].[Store Sales]} ON COLUMNS, "
                         + "Order(Filter(Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name]), ([Measures].[Store Sales] > 200.0)), [Measures].[Store Sales], DESC) ON ROWS "
-                        + "from [Sales] " + "where ([Time].[1997])");
+                        + "from [Sales] " 
+                        + "where ([Time].[1997])");
     }
 
     /**
      * Executes a Filter() whose condition contains a calculated member.
      */
-    public void _testCmNativeFilter() {
+    public void testCmNativeFilter() {
+        String mdx = "with member [Measures].[Rendite] as '([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]' " 
+          + "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Rendite], [Measures].[Store Sales]} ON COLUMNS, "
+          + "NON EMPTY Order(Filter([Product].[Product Name].Members, ([Measures].[Rendite] > 1.8)), [Measures].[Rendite], BDESC) ON ROWS "
+          + "from [Sales] "
+          + "where ([Store].[All Stores].[USA].[CA], [Time].[1997])";
+
         if (!MondrianProperties.instance().EnableNativeFilter.get()) {
-            return;
+          assertQueryReturns(
+              mdx,
+              "Axis #0:" + nl +
+              "{[Store].[All Stores].[USA].[CA], [Time].[1997]}" + nl +
+              "Axis #1:" + nl +
+              "{[Measures].[Unit Sales]}" + nl +
+              "{[Measures].[Store Cost]}" + nl +
+              "{[Measures].[Store Sales]}" + nl +
+              "{[Measures].[Rendite]}" + nl +
+              "Axis #2:" + nl +
+              "{[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Peanut Butter].[Plato].[Plato Extra Chunky Peanut Butter]}" + nl +
+              "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Popcorn].[Horatio].[Horatio Buttered Popcorn]}" + nl +
+              "{[Product].[All Products].[Food].[Canned Foods].[Canned Tuna].[Tuna].[Better].[Better Canned Tuna in Oil]}" + nl +
+              "{[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit].[High Top].[High Top Cantelope]}" + nl +
+              "{[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Lightbulbs].[Denny].[Denny 75 Watt Lightbulb]}" + nl +
+              "{[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods].[Cereal].[Johnson].[Johnson Oatmeal]}" + nl +
+              "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Light Wine]}" + nl +
+              "{[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Ebony].[Ebony Squash]}" + nl +
+              "Row #0: 42" + nl +
+              "Row #0: 24.06" + nl +
+              "Row #0: 70.56" + nl +
+              "Row #0: 1.93" + nl +
+              "Row #1: 36" + nl +
+              "Row #1: 29.02" + nl +
+              "Row #1: 84.60" + nl +
+              "Row #1: 1.91" + nl +
+              "Row #2: 39" + nl +
+              "Row #2: 20.55" + nl +
+              "Row #2: 58.50" + nl +
+              "Row #2: 1.85" + nl +
+              "Row #3: 25" + nl +
+              "Row #3: 21.76" + nl +
+              "Row #3: 61.75" + nl +
+              "Row #3: 1.84" + nl +
+              "Row #4: 43" + nl +
+              "Row #4: 59.62" + nl +
+              "Row #4: 168.99" + nl +
+              "Row #4: 1.83" + nl +
+              "Row #5: 34" + nl +
+              "Row #5: 7.20" + nl +
+              "Row #5: 20.40" + nl +
+              "Row #5: 1.83" + nl +
+              "Row #6: 36" + nl +
+              "Row #6: 33.10" + nl +
+              "Row #6: 93.60" + nl +
+              "Row #6: 1.83" + nl +
+              "Row #7: 46" + nl +
+              "Row #7: 28.34" + nl +
+              "Row #7: 79.58" + nl +
+              "Row #7: 1.81" + nl
+          );
+          return;
+
         }
-        checkNative(
-                32,
-                8,
-                "with member [Measures].[Rendite] as 'IIf(([Measures].[Store Cost] = 0.0), 1.0, (([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]))' "
-                        + "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales], [Measures].[Rendite]} ON COLUMNS, "
-                        + "NON EMPTY Order(Filter([Product].[Product Name].Members, ([Measures].[Rendite] > 1.8)), [Measures].[Rendite], BDESC) ON ROWS "
-                        + "from [Sales] "
-                        + "where ([Store].[All Stores].[USA].[CA], [Time].[1997])");
+        else
+          checkNative(32, 8, mdx);
     }
 
     /**

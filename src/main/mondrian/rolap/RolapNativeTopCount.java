@@ -131,6 +131,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
                 }
             }
             LOGGER.debug("using native topcount");
+            evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
 
             TupleConstraint constraint = new TopCountConstraint(cargs, evaluator, orderByExpr);
             SetEvaluator sev = new SetEvaluator(cargs, schemaReader, constraint);

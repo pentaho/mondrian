@@ -51,8 +51,9 @@ public class SqlConstraintUtils {
 
         Member[] members = e.getMembers();
         if (strict) {
-            assert !containsCalculatedMember(members) :
-                    "can not restrict SQL to calculated Members";
+            if (containsCalculatedMember(members)) {
+                throw Util.newInternal("can not restrict SQL to calculated Members");
+            }
         } else {
             members = removeCalculatedMembers(members);
         }
@@ -60,7 +61,9 @@ public class SqlConstraintUtils {
         CellRequest request =
                 RolapAggregationManager.makeRequest(members, false, false);
         if (request == null) {
-            assert !strict : "CellRequest is null - why?";
+            if (strict) {
+                throw Util.newInternal("CellRequest is null - why?");
+            }
             // One or more of the members was null or calculated, so the
             // request is impossible to satisfy.
             return;
@@ -200,7 +203,7 @@ public class SqlConstraintUtils {
             String q = level.getKeyExp().getExpression(sqlQuery);
             ColumnConstraint[] cc = getColumnConstraints(c);
 
-            if (cc.length >= MondrianProperties.instance().MaxConstraints.get()){
+            if (!strict && cc.length >= MondrianProperties.instance().MaxConstraints.get()){
                 // Simply get them all, do not create where-clause.
                 // Below are two alternative approaches (and code). They
                 // both have problems.

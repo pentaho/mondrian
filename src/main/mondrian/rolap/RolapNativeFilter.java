@@ -109,17 +109,9 @@ public class RolapNativeFilter extends RolapNativeSet {
             }
             LOGGER.debug("using native filter");
 
-            // Override current members in position by default members in
-            // hierarchies which are involved in this filter
-            RolapEvaluator newEvaluator = (RolapEvaluator) evaluator.push();
-            for (int i = 0; i < cargs.length; i++) {
-                Hierarchy hierarchy = cargs[i].getLevel().getHierarchy();
-                Member defaultMember =
-                    schemaReader.getHierarchyDefaultMember(hierarchy);
-                newEvaluator.setContext(defaultMember);
-            }
+            evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
 
-            TupleConstraint constraint = new FilterConstraint(cargs, newEvaluator, filterExpr);
+            TupleConstraint constraint = new FilterConstraint(cargs, evaluator, filterExpr);
             return new SetEvaluator(cargs, schemaReader, constraint);
         } catch (SQLException e) {
             throw Util.newInternal(e, "RolapNativeFilter");

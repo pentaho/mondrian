@@ -4923,8 +4923,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 266,773\n"));
     }
 
-    // TODO: Fix NPE in SqlConstraintUtils.addContextConstraint, and re-enable
-    public void _testOrderBug712702_Original() {
+    public void testOrderBug712702_Original() {
         assertQueryReturns(
                     "with member [Measures].[Average Unit Sales] as 'Avg(Descendants([Time].CurrentMember, [Time].[Month]), \n" +
                     "[Measures].[Unit Sales])' \n" +
