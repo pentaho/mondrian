@@ -56,6 +56,7 @@ public class SqlConstraintUtils {
             }
         } else {
             members = removeCalculatedMembers(members);
+            members = removeDefaultMembers(members);
         }
 
         CellRequest request =
@@ -95,6 +96,37 @@ public class SqlConstraintUtils {
                     RolapUtil.sqlNullLiteral.equals(value) ? " is " : " = ",
                     value);
         }
+    }
+
+    /**
+     * removes the default members. This is required only if the default member
+     * is not the ALL member. The time dimension for example, has 1997 as default
+     * member. When we evaluate the query
+     * <pre>
+     *   select NON EMPTY crossjoin(
+     *     {[Time].[1998]}, [Customer].[All].children
+     *   ) on columns
+     *   from [sales]
+     * </pre>
+     * the <code>[Customer].[All].children</code> is evaluated with the default
+     * member <code>[Time].[1997]</code> in the evaluator context. This is wrong
+     * because the NON EMPTY must filter out Customres with no rows in the fact table
+     * for 1998 not 1997. So we do not restrict the time dimension and fetch
+     * all children.
+     *
+     * @param members
+     * @return
+     */
+    private static Member[] removeDefaultMembers(Member[] members) {
+        List result = new ArrayList();
+        result.add(members[0]); // add the measure
+        for (int i = 1; i < members.length; i++) {
+            Member m = members[i];
+            if (m.getHierarchy().getDefaultMember().equals(m))
+                continue;
+            result.add(m);
+        }
+        return (Member[]) result.toArray(new Member[result.size()]);
     }
 
     private static Member[] removeCalculatedMembers(Member[] members) {

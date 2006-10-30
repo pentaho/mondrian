@@ -47,14 +47,89 @@ public class NonEmptyTest extends FoodMartTestCase {
     private static Logger logger = Logger.getLogger(NonEmptyTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
 
-
+    
     public NonEmptyTest() {
         super();
     }
+
     public NonEmptyTest(String name) {
         super(name);
     }
+
     
+    public void _testBug1515302() {
+//      requires a new entry in FoodMart.xml which breaks other tests:
+//      <Cube name="Bug1515302">
+//        <Table name="sales_fact_1997"/>
+//        <Dimension name="Promotions" foreignKey="promotion_id">
+//          <Hierarchy hasAll="false" primaryKey="promotion_id">
+//            <Table name="promotion"/>
+//            <Level name="Promotion Name" column="promotion_name" uniqueMembers="true"/>
+//          </Hierarchy>
+//        </Dimension>
+//        <Dimension name="Customers" foreignKey="customer_id">
+//          <Hierarchy hasAll="true" allMemberName="All Customers" primaryKey="customer_id">
+//            <Table name="customer"/>
+//            <Level name="Country" column="country" uniqueMembers="true"/>
+//            <Level name="State Province" column="state_province" uniqueMembers="true"/>
+//            <Level name="City" column="city" uniqueMembers="false"/>
+//            <Level name="Name" column="customer_id" type="Numeric" uniqueMembers="true"/>
+//          </Hierarchy>
+//        </Dimension>
+//        <Measure name="Unit Sales" column="unit_sales" aggregator="sum"/>
+//      </Cube>
+        
+        assertQueryReturns(
+                "select {[Measures].[Unit Sales]} on columns, " +
+                "non empty crossjoin({[Promotions].[Big Promo]}, " +
+                "Descendants([Customers].[USA], [City], " +
+                "SELF_AND_BEFORE)) on rows " +
+                "from [Bug1515302]",
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Anacortes]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Ballard]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Bellingham]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Burien]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Everett]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Issaquah]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Kirkland]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Lynnwood]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Marysville]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Olympia]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Puyallup]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Redmond]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Renton]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Seattle]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Sedro Woolley]}" + nl +
+                "{[Promotions].[Big Promo], [Customers].[All Customers].[USA].[WA].[Tacoma]}" + nl +
+                "Row #0: 1,789" + nl +
+                "Row #1: 1,789" + nl +
+                "Row #2: 20" + nl +
+                "Row #3: 35" + nl +
+                "Row #4: 15" + nl +
+                "Row #5: 18" + nl +
+                "Row #6: 60" + nl +
+                "Row #7: 42" + nl +
+                "Row #8: 36" + nl +
+                "Row #9: 79" + nl +
+                "Row #10: 58" + nl +
+                "Row #11: 520" + nl +
+                "Row #12: 438" + nl +
+                "Row #13: 14" + nl +
+                "Row #14: 20" + nl +
+                "Row #15: 65" + nl +
+                "Row #16: 3" + nl +
+                "Row #17: 366" + nl
+
+        );
+    }
+
     /**
      * must not use native sql optimization because it chooses the wrong RolapStar
      * in SqlContextConstraint/SqlConstraintUtils.
@@ -80,7 +155,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                 18,
                 "select {[Measures].[Store Sales]} ON COLUMNS, "
                         + "Order(Filter(Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name]), ([Measures].[Store Sales] > 200.0)), [Measures].[Store Sales], DESC) ON ROWS "
-                        + "from [Sales] " 
+                        + "from [Sales] "
                         + "where ([Time].[1997])");
     }
 
@@ -88,7 +163,7 @@ public class NonEmptyTest extends FoodMartTestCase {
      * Executes a Filter() whose condition contains a calculated member.
      */
     public void testCmNativeFilter() {
-        String mdx = "with member [Measures].[Rendite] as '([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]' " 
+        String mdx = "with member [Measures].[Rendite] as '([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]' "
           + "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Rendite], [Measures].[Store Sales]} ON COLUMNS, "
           + "NON EMPTY Order(Filter([Product].[Product Name].Members, ([Measures].[Rendite] > 1.8)), [Measures].[Rendite], BDESC) ON ROWS "
           + "from [Sales] "
@@ -484,25 +559,25 @@ public class NonEmptyTest extends FoodMartTestCase {
         executeQuery("SELECT DESCENDANTS([Time].[1997], [Month]) ON COLUMNS FROM [Sales]");
     }
 
-    
+
     /**
      * Non Empty CrossJoin (A,B) gets turned into CrossJoin (Non Empty(A), Non Empty(B))
-     * Verify that there is no crash when the length of B could be non-zero length before the non emptyy 
-     * and 0 after the non empty.  
-     * 
+     * Verify that there is no crash when the length of B could be non-zero length before the non emptyy
+     * and 0 after the non empty.
+     *
      */
     public void testNonEmptyCrossJoinList() {
     	boolean oldEnableNativeCJ = MondrianProperties.instance().EnableNativeCrossJoin.get();
     	MondrianProperties.instance().EnableNativeCrossJoin.set(false);
     	boolean oldEnableNativeNonEmpty = MondrianProperties.instance().EnableNativeNonEmpty.get();
     	MondrianProperties.instance().EnableNativeNonEmpty.set(false);
-    	
+
     	executeQuery("select non empty CrossJoin([Customers].[Name].Members, {[Promotions].[All Promotions].[Fantastic Discounts]}) ON COLUMNS FROM [Sales]");
-    	
+
     	MondrianProperties.instance().EnableNativeCrossJoin.set(oldEnableNativeCJ);
     	MondrianProperties.instance().EnableNativeNonEmpty.set(oldEnableNativeNonEmpty);
     }
-    
+
     /**
      * SQL Optimization must be turned off in ragged hierarchies.
      */
@@ -822,7 +897,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                     "Row #0: $339,610.90\n" +
                     "Row #1: $339,610.90\n"));
     }
-    
+
     public void testVirtualCubeCrossJoin()
     {
         checkNative(18, 3,
@@ -832,7 +907,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Store].[All Stores].children) on rows " +
             "from [Warehouse and Sales]");
     }
-    
+
     public void testVirtualCubeCrossJoinNonConformingDim()
     {
         // cross join involves non-conforming dimensions should not use
@@ -845,7 +920,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Warehouse].[All Warehouses].children) on rows " +
             "from [Warehouse and Sales]");
     }
-    
+
     public void testNotNativeVirtualCubeCrossJoin1()
     {
         // native cross join cannot be used due to AllMembers
@@ -856,7 +931,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Store].[All Stores].children) on rows " +
             "from [Warehouse and Sales]");
     }
-    
+
     public void testNotNativeVirtualCubeCrossJoin2()
     {
         // native cross join cannot be used due to the range operator
@@ -867,7 +942,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Store].[All Stores].children) on rows " +
             "from [Warehouse and Sales]");
     }
-    
+
     public void testVirtualCubeCrossJoinCalculatedMember1()
     {
         // calculated member appears in query
@@ -880,7 +955,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Store].[All Stores].children) on rows " +
             "from [Warehouse and Sales]");
     }
-    
+
     public void testVirtualCubeCrossJoinCalculatedMember2()
     {
         // calculated member defined in schema
@@ -905,7 +980,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Store].[All Stores].children) on rows " +
             "from [Warehouse and Sales]");
     }
-    
+
     public void testCjEnumCalcMembers()
     {
         // 3 cross joins -- 2 of the 4 arguments to the cross joins are
@@ -940,7 +1015,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "    on rows " +
             "from [Sales]");
     }
-    
+
     public void testCjEnumEmptyCalcMembers()
     {
         // enumerated list of calculated members results in some empty cells
@@ -965,7 +1040,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "    on rows " +
             "from [Sales]");
     }
-    
+
     public void testCjUnionEnumCalcMembers()
     {
         // native sql should be used to retrieve Product Department members
@@ -988,7 +1063,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "    {[Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]})) on rows " +
             "from [Sales]");
     }
-    
+
     /**
      * make sure the following is not run natively
      */
@@ -1016,7 +1091,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         RolapSchemaReader schemaReader = (RolapSchemaReader) cube.getSchemaReader();
         return schemaReader.getSchema().getNativeRegistry();
     }
-    
+
     /**
      * runs a query twice, with native crossjoin optimization enabled and
      * disabled. If both results are equal, its considered correct.
