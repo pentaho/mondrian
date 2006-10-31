@@ -13,7 +13,7 @@
     <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
 	<title>Pentaho Analysis Services: How to Install Mondrian</title>
 </head>
-<body>
+<body class="contentrightmargin">
 <!-- doc2web start -->
 
 <!-- page title -->
@@ -120,7 +120,6 @@ JDBC connect string "<code>jdbc:odbc:MondrianFoodMart</code>".</p>
 create a database, and load data from a SQL script.</p>
 <h4>Syntax</h4>
 <blockquote>
-  <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
 	<code>MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp; [-verbose] [-tables] [-data] [-indexes]<br>
 &nbsp;&nbsp;&nbsp; -jdbcDrivers=&lt;jdbcDrivers&gt;<br>
@@ -133,13 +132,12 @@ size&gt;] ]<br>
 &nbsp;&nbsp;&nbsp; [ [-inputJdbcURL=&lt;jdbcURL&gt;
 [-inputJdbcUser=user] [-inputJdbcPassword=password] ]<br>
 &nbsp;&nbsp;&nbsp; | [-inputFile=&lt;file name&gt;]<br>
-&nbsp;&nbsp;&nbsp; ]</code></div>
+&nbsp;&nbsp;&nbsp; ]</code>
 </blockquote>
 
 <h4>Options</h4>
 
-<blockquote>
-  <table style="border-color:#000000; text-align: left" border="1" cellpadding="2"
+  <table style="border-color:#000000; text-align: left; margin-left: 10px; margin-right: 10px" border="1" cellpadding="2"
  cellspacing="0" class="clsStd">
     <tbody>
       <tr>
@@ -229,7 +227,7 @@ given, assumes data comes from this file of INSERT statements.</td>
       </tr>
     </tbody>
   </table>
-</blockquote>
+
 <p>The usual source for the MondrianFoodMartLoader utility is
 a SQL script (<code>[-inputFile=&lt;file name&gt;]</code>). But you
 have already loaded the data into one JDBC data source (say Microsoft
@@ -242,11 +240,13 @@ It has been tested against Oracle, Postgres, MySQL and Microsoft Access.</p>
 <p>If you the target is a JDBC database, you must create the necessary
 database or schema first. This is database-specific.</p>
 <p>You can safely ignore any log4j warnings:</p>
+
 <blockquote>
-  <p><code>log4j:WARN No appenders could be found for logger
+  <code>log4j:WARN No appenders could be found for logger
 (mondrian.rolap.RolapUtil).&nbsp;<br>
-log4j:WARN Please initialize the log4j system properly.</code></p>
+log4j:WARN Please initialize the log4j system properly.</code>
 </blockquote>
+
 <h4>Examples</h4>
 
 <p>Here are some examples to give you a general idea how
@@ -263,21 +263,20 @@ scripts. First, create a <code>foodmart</code> database and a <code>foodmart</co
 user:</p>
 
 <blockquote>
-  <p><code><i><b>$</b></i> mysqladmin create foodmart<b><i><br>
+  <code><i><b>$</b></i> mysqladmin create foodmart<b><i><br>
   $</i></b> mysql<b><br>
   <i>mysql&gt;</i> grant all privileges on *.* to 'foodmart'@'localhost' identified 
   by 'foodmart';<br>
   <i>Query OK, 0 rows affected (0.00 sec)<br>
   <br>
   mysql&gt; </i></b>quit<b><i><br>
-  Bye</i></b></code></p>
+  Bye</i></b></code>
 </blockquote>
 
 <p>Now load the data:</p>
 
 <blockquote>
-  
-  <p><code><b><i>$</i></b> java -cp
+  <code><b><i>$</i></b> java -cp
 "/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/usr/local/mysql/mysql-connector-java-3.0.16-ga-bin.jar"<br>
 &nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>
@@ -286,7 +285,6 @@ user:</p>
 -inputFile=/mondrian/demo/FoodMartCreateData.sql <br>
 &nbsp;&nbsp;&nbsp;&nbsp;
 -outputJdbcURL="jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart"</code>
-  </p>
 </blockquote>
 
 <h5>Example 2. Loading PostgreSQL from Access on Windows</h5>
@@ -296,7 +294,6 @@ create FoodMart tables for PostgreSQL from the test
 dataset in the Access database:</p>
 
 <blockquote>
-  <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
 	<code><i><b>C:\mondrian&gt;</b></i> java -cp
 "C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-1.2.9.jar;C:\mondrian\lib\eigenbase-xom.jar;C:\mondrian\lib\eigenbase-resgen.jar;C:\mondrian\lib\eigenbase-properties.jar;C:\mondrian\lib\postgres-jdbc.jar"<br>
 &nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>
@@ -305,7 +302,7 @@ dataset in the Access database:</p>
 &nbsp;&nbsp;&nbsp;&nbsp; -inputJdbcURL="jdbc:odbc:MondrianFoodMart"<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL="jdbc:postgresql://localhost/foodmart"<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcUser=postgres<br>
-&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcPassword=password</code></div>
+&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcPassword=password</code>
 </blockquote>
 
 <h2>3. Deploy and run the web application with a non-embedded database<a name="3_Deploy_and_run_the_web_app">&nbsp;</a></h2>
@@ -328,9 +325,7 @@ connect strings there to the same database parameters for the FoodMart database
   becomes
   
   <blockquote>
-      <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
       <code>Provider=mondrian;Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=com.mysql.jdbc.Driver;</code>
-  	</div>
   </blockquote>
   </li>
 
@@ -340,12 +335,10 @@ and <code>arrows.jsp </code>files in the <code><i>TOMCAT_HOME</i>/webapps/mondri
   Modify the line
 
 <blockquote>
-<div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
 <code>&lt;jp:mondrianQuery id="query01"
 jdbcDriver="sun.jdbc.odbc.JdbcOdbcDriver"
 jdbcUrl="jdbc:odbc:MondrianFoodMart"
 catalogUri="/WEB-INF/queries/FoodMart.xml"&gt;</code>
-</div>
 </blockquote>
 
   <p>to the same database parameters for the FoodMart database you
@@ -353,12 +346,11 @@ installed as per the above instructions. For MySQL, this would be
 something like the following:
 
 <blockquote>
-<div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
 <code>&lt;jp:mondrianQuery id="query01"
 jdbcDriver="com.mysql.jdbc.Driver"
 jdbcUrl="jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart"
-catalogUri="/WEB-INF/queries/FoodMart.xml"&gt;</code></div>
-	</blockquote></p></li>
+catalogUri="/WEB-INF/queries/FoodMart.xml"&gt;</code>
+</blockquote></p></li>
 
 <li>Copy the following files:
   <ul>
@@ -388,7 +380,6 @@ To will setup XMLA service, follow these steps.</p>
 <p>In WEB-INF directory of your webapp, create a file called <code>
 datasources.xml</code>, with content like this:</p>
 <blockquote>
-  <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
 	<code>&lt;?xml version="1.0"?&gt;<br>
 &lt;DataSources&gt;<br>
 &nbsp; &lt;DataSource&gt;<br>
@@ -431,7 +422,7 @@ JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver&lt;/DataSourceInfo&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;/Catalogs&gt;<br>
 &nbsp; &lt;/DataSource&gt;<br>
-&lt;/DataSources&gt;</code></div>
+&lt;/DataSources&gt;</code>
 </blockquote>
 <p>
 <code>&lt;ProviderType&gt;</code> and <code>&lt;AuthenticationMode&gt;</code>
@@ -460,12 +451,11 @@ have unique names.</p>
 
 <p>For example:</p>
 <blockquote>
-  <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
 	<code>&lt;servlet&gt;<br>
 &nbsp; &lt;servlet-name&gt;MondrianXmlaServlet&lt;/servlet-name&gt;<br>
 &nbsp;
 &lt;servlet-class&gt;mondrian.xmla.impl.DefaultXmlaServlet&lt;/servlet-class&gt;<br>
-&lt;/servlet&gt;</code></div>
+&lt;/servlet&gt;</code>
 </blockquote>
 
 <h2>6. Miscellaneous<a name="6_Miscellaneous">&nbsp;</a></h2>
@@ -514,8 +504,7 @@ strings for most databases in there.</p>
 
 <h3>Sybase</h3>
 
-<p><a href="https://sourceforge.net/forum/message.php?msg_id=3755994">mizar_sf 
-  writes</a>:</p>
+<p><a href="https://sourceforge.net/forum/message.php?msg_id=3755994">mizar_sf writes</a>:</p>
 
 <blockquote>
 
@@ -528,9 +517,7 @@ strings for most databases in there.</p>
         <li>mondrian/WEB-INF/datasources.xml</li>
         <li>mondrian/WEB-INF/web.xml</li></ul>
     I modified the parameters line in this way:<blockquote>
-      <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
-      <code>Provider=mondrian;JdbcUser=userName;JdbcPassword=userPass;Jdbc=jdbc:jtds:sybase://xxx.xxx.xxx.xxx:port/dbName;JdbcDrivers=net.sourceforge.jtds.jdbc.Driver;Catalog=/WEB-INF/queries/myCatalog.xml</code>
-    	</div>
+      <code>Provider=mondrian; JdbcUser=userName; JdbcPassword=userPass; Jdbc=jdbc:jtds:sybase://xxx.xxx.xxx.xxx:port/dbName; JdbcDrivers=net.sourceforge.jtds.jdbc.Driver; Catalog=/WEB-INF/queries/myCatalog.xml</code>
     </blockquote>
     (The datasources.xml doesn't need to be modified if you are only testing 
     the db, but if you are using something like OPENI you have to.)</li>
@@ -544,9 +531,7 @@ strings for most databases in there.</p>
 <p>Weblogic 6.1 ships with an older, incompatible, version of Xerces.
 The symptom is the error</p>
 <blockquote>
-  <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
-  <pre>java.lang.VerifyError: (class: org/eigenbase/xom/wrappers/XercesDOMParser,<br> method: parse signature: (Lorg/xml/sax/InputSource;)Lorg/w3c/dom/Document;)<br> Incompatible object argument for function call<br>at java.lang.Class.forName0(Native Method)<br>at java.lang.Class.forName(Class.java:120)<br>at org.eigenbase.xom.XOMUtil.createDefaultParser(XOMUtil.java:165)<br>at org.eigenbase.resgen.Util.load(Util.java:49)<br>...</pre>
-	</div>
+  <code>java.lang.VerifyError: (class: org/eigenbase/xom/wrappers/XercesDOMParser, method: parse signature: (Lorg/xml/sax/InputSource;)Lorg/w3c/dom/Document;) Incompatible object argument for function call<br>at java.lang.Class.forName0(Native Method)<br>at java.lang.Class.forName(Class.java:120)<br>at org.eigenbase.xom.XOMUtil.createDefaultParser(XOMUtil.java:165)<br>at org.eigenbase.resgen.Util.load(Util.java:49)<br>...</code>
 </blockquote>
 <p>The solution is to place <code>xml-apis.jar</code> and <code>xercesImpl.jar</code>
 before <code>weblogic.jar</code> on your class-path.</p>
@@ -573,7 +558,6 @@ to <code><i>TOMCAT_HOME</i>/common/lib</code>. (or <code><i>TOMCAT_HOME</i>/comm
 if your version of Tomcat has one). If you get the configuration wrong,
 a typical error is</p>
 <blockquote>
-  <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
 	<code>java.lang.VerifyError: Cannot inherit from final class<br>
 &nbsp; at java.lang.ClassLoader.defineClass0(Native Method)<br>
 &nbsp; at java.lang.ClassLoader.defineClass(ClassLoader.java:502)<br>
@@ -612,7 +596,7 @@ Source)<br>
 org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown
 Source)<br>
 &nbsp; at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native
-Method)</code></div>
+Method)</code>
 </blockquote>
 <p>This error occurred under JDK 1.3.1, Tomcat 4.1.18, Xalan 2.4.1. The
 solutions to the error were (a) move to JDK 1.4 and remove <code>xml-apis.jar</code>
@@ -632,7 +616,7 @@ Mondrian WAR.</p>
 <hr>
 
 <p>
-    Author: Julian Hyde and others; last updated August, 2006.<br/>
+    Author: Julian Hyde and others; last updated October, 2006.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/install.html?ac=22">log</a>)<br/>
     Copyright (C) 2001-2002 Kana Software, Inc.<br/>

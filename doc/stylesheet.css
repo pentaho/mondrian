@@ -507,20 +507,20 @@ a.mainlevel_footer:hover, a.mainlevel_footer:active{
 }
 
 h3 { 
-	font: normal 1.15em Tahoma, Helvetica, sans-serif; 
+	font: normal 1.05em Tahoma, Helvetica, sans-serif;
 	color: #95a22c; 
 	margin: 9px 0px 4px 0px; 
 	letter-spacing: .075em; 
 }
 /* jhyde added */
 h2 { 
-	font: normal 1.35em Tahoma, Helvetica, sans-serif; 
+	font: normal 1.15em Tahoma, Helvetica, sans-serif;
 	color: #95a22c; 
 	margin: 9px 0px 4px 0px; 
 	letter-spacing: .075em; 
 }
 h4 { 
-	font: normal 1.05em Tahoma, Helvetica, sans-serif; 
+	font: normal 0.95em Tahoma, Helvetica, sans-serif;
 	color: #95a22c; 
 	margin: 9px 0px 4px 0px; 
 	letter-spacing: .075em; 
@@ -531,7 +531,7 @@ h1 {
 }
 /* jhyde added */
 p {
-	font: normal .80em Tahoma, Helvetica, sans-serif;
+	font: normal Tahoma, Helvetica, sans-serif;
 	color: #808080;
 	text-decoration: none;
 }
@@ -583,13 +583,13 @@ p {
 }
 /* code stylings */
 
-.contentRightMargin code, .contentRightMargin blockquote  {
-	font: normal 1em Courier;
+.contentRightMargin code {
+	font: normal 1em Courier New, monospace;
 	color:#000000;
 }
 
 .contentRightMargin blockquote a:link, .contentRightMargin blockquote a:visited {
-	font: normal 1em Courier;
+	font: normal 1em Courier New, monospace;
 	color:#ef8033;
 }
 .contentRightMargin blockquote a:hover {
@@ -597,10 +597,28 @@ p {
 }
 
 .contentRightMargin blockquote {
-	background-color:#ededed;
 	padding:10px;
-	border:1px solid #cdcdcd;
-	margin-left:0px;
+    background-color:#eeeeee;
+    border:1px solid #cdcdcd;
+	margin-left:10px;
+    margin-right:10px;
+}
+
+
+.contentRightMargin blockquote pre  {
+	background-color:#cdcdcd;
+	padding:10px 10px 10px 10px;
+	margin:0px 0px 0px 0px;
+	width:80%;
+	font: normal 1em Courier New, monospace;
+}
+.contentRightMargin blockquote pre a:link, .contentRightMargin blockquote pre a:visited {
+	color:#ef8033;
+	font: normal 1em Courier New, monospace;
+}
+.contentRightMargin blockquote pre a:hover {
+	color:#949e3e;
+	font: normal 1em Courier New, monospace;
 }
 
 dfn {
