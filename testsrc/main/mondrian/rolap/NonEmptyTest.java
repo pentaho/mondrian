@@ -31,6 +31,7 @@ import mondrian.rolap.cache.HardSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.test.FoodMartTestCase;
+import mondrian.test.TestContext;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.IntegerProperty;
@@ -57,29 +58,31 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     
-    public void _testBug1515302() {
-//      requires a new entry in FoodMart.xml which breaks other tests:
-//      <Cube name="Bug1515302">
-//        <Table name="sales_fact_1997"/>
-//        <Dimension name="Promotions" foreignKey="promotion_id">
-//          <Hierarchy hasAll="false" primaryKey="promotion_id">
-//            <Table name="promotion"/>
-//            <Level name="Promotion Name" column="promotion_name" uniqueMembers="true"/>
-//          </Hierarchy>
-//        </Dimension>
-//        <Dimension name="Customers" foreignKey="customer_id">
-//          <Hierarchy hasAll="true" allMemberName="All Customers" primaryKey="customer_id">
-//            <Table name="customer"/>
-//            <Level name="Country" column="country" uniqueMembers="true"/>
-//            <Level name="State Province" column="state_province" uniqueMembers="true"/>
-//            <Level name="City" column="city" uniqueMembers="false"/>
-//            <Level name="Name" column="customer_id" type="Numeric" uniqueMembers="true"/>
-//          </Hierarchy>
-//        </Dimension>
-//        <Measure name="Unit Sales" column="unit_sales" aggregator="sum"/>
-//      </Cube>
+    public void testBug1515302() {
+        TestContext ctx = TestContext.create(
+                null,
+                "<Cube name=\"Bug1515302\"> \n" +
+                "  <Table name=\"sales_fact_1997\"/> \n" + 
+                "  <Dimension name=\"Promotions\" foreignKey=\"promotion_id\"> \n" + 
+                "    <Hierarchy hasAll=\"false\" primaryKey=\"promotion_id\"> \n" + 
+                "      <Table name=\"promotion\"/> \n" + 
+                "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/> \n" + 
+                "    </Hierarchy> \n" + 
+                "  </Dimension> \n" + 
+                "  <Dimension name=\"Customers\" foreignKey=\"customer_id\"> \n" + 
+                "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"customer_id\"> \n" + 
+                "      <Table name=\"customer\"/> \n" + 
+                "      <Level name=\"Country\" column=\"country\" uniqueMembers=\"true\"/> \n" + 
+                "      <Level name=\"State Province\" column=\"state_province\" uniqueMembers=\"true\"/> \n" + 
+                "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/> \n" + 
+                "      <Level name=\"Name\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/> \n" + 
+                "    </Hierarchy> \n" + 
+                "  </Dimension> \n" + 
+                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"/> \n" + 
+                "</Cube> \n",
+                null,null,null);
         
-        assertQueryReturns(
+        ctx.assertQueryReturns(
                 "select {[Measures].[Unit Sales]} on columns, " +
                 "non empty crossjoin({[Promotions].[Big Promo]}, " +
                 "Descendants([Customers].[USA], [City], " +
