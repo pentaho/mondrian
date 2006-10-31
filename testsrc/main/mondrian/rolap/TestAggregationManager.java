@@ -565,7 +565,7 @@ public class TestAggregationManager extends FoodMartTestCase {
                 "select `store`.`store_country` as `c0` " +
                     "from `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`," +
                     " `store` as `store` " +
-                    "where `agg_c_14_sales_fact_1997`.`the_year` = 1997 " +
+                    "where `agg_c_14_sales_fact_1997`.`the_year` = 1998 " +
                     "and `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id` " +
                     "group by `store`.`store_country` " +
                     "order by `store`.`store_country` ASC",
@@ -575,19 +575,19 @@ public class TestAggregationManager extends FoodMartTestCase {
                 "select `store`.`store_country` as `c0` " +
                     "from `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`," +
                     " `store` as `store` " +
-                    "where `agg_c_14_sales_fact_1997`.`the_year` = 1997 " +
+                    "where `agg_c_14_sales_fact_1997`.`the_year` = 1998 " +
                     "and `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id` " +
                     "group by `store`.`store_country` " +
                     "order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC",
                 26)};
 
         assertQuerySql(
-            "select NON EMPTY {[Time].[1997]} ON COLUMNS,\n" +
+            "select NON EMPTY {[Customers].[USA]} ON COLUMNS,\n" +
             "       NON EMPTY Crossjoin(Hierarchize(Union({[Store].[All Stores]},\n" +
             "           [Store].[All Stores].Children)), {[Product].[All Products]}) \n" +
             "           ON ROWS\n" +
             "    from [Sales]\n" +
-            "    where [Measures].[Unit Sales]",
+            "    where ([Measures].[Unit Sales], [Time].[1998])",
             patterns);
     }
 
