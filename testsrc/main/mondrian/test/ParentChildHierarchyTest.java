@@ -51,7 +51,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "          primaryKey=\"employee_id\" primaryKeyTable=\"employee_closure\">\n" +
                 "        <Join leftKey=\"supervisor_id\" rightKey=\"employee_id\">\n" +
                 "          <Table name=\"employee_closure\"/>\n" +
-                "          <Table name=\"employee\"/>\n" +
+                "          <Table name=\"employee\" alias=\"employee2\" />\n" +
                 "        </Join>\n" +
                 "        <Level name=\"Closure\"  type=\"Numeric\" uniqueMembers=\"false\"\n" +
                 "            table=\"employee_closure\" column=\"supervisor_id\"/>\n" +

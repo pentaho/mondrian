@@ -66,7 +66,7 @@ public class RolapCube extends CubeBase {
 
     private RolapStar star;
     private ExplicitRules.Group aggGroup;
-    
+
     /**
      * True if the cube is being created while loading the schema
      */
@@ -345,6 +345,86 @@ public class RolapCube extends CubeBase {
                     load);
         }
         // Note: virtual cubes do not get aggregate
+    }
+
+    protected void validate() {
+        // Make sure that tables referenced in dimensions in this cube have
+        // distinct aliases.
+        Map aliases = new HashMap();
+        List joinPath = new ArrayList();
+        joinPath.add(this);
+        for (int i = 0; i < dimensions.length; i++) {
+            RolapDimension dimension = (RolapDimension) dimensions[i];
+            final Hierarchy[] hierarchies = dimension.getHierarchies();
+            for (int j = 0; j < hierarchies.length; j++) {
+                RolapHierarchy hierarchy = (RolapHierarchy) hierarchies[j];
+                if (hierarchy.getRelation() != null) {
+                    final HierarchyUsage hierarchyUsage =
+                        getFirstUsage(hierarchy);
+                    joinPath.add(hierarchyUsage.getForeignKey());
+                    validateRelation(aliases, hierarchy.getRelation(), joinPath);
+                    joinPath.remove(joinPath.size() - 1);
+                }
+            }
+        }
+    }
+
+    private void validateRelation(
+        Map aliases,
+        MondrianDef.Relation relation,
+        List joinPath) {
+        if (relation instanceof MondrianDef.Join) {
+            MondrianDef.Join join = (MondrianDef.Join) relation;
+
+            validateRelation(aliases, join.left, joinPath);
+
+            int saveSize = joinPath.size();
+            flatten(relation, joinPath);
+            joinPath.add(join.leftKey);
+            joinPath.add(join.rightKey);
+            validateRelation(aliases, join.right, joinPath);
+            while (joinPath.size() > saveSize) {
+                joinPath.remove(joinPath.size() - 1);
+            }
+        } else {
+            String alias;
+            if (relation instanceof MondrianDef.Table) {
+                MondrianDef.Table table = (MondrianDef.Table) relation;
+                alias = table.alias;
+                if (alias == null) {
+                    alias = table.name;
+                }
+            } else if (relation instanceof MondrianDef.InlineTable) {
+                MondrianDef.InlineTable table = (MondrianDef.InlineTable) relation;
+                alias = table.alias;
+            } else {
+                final MondrianDef.View view = (MondrianDef.View) relation;
+                alias = view.alias;
+            }
+            joinPath.add(relation);
+            joinPath.add(alias);
+            List joinPath2 = (List) aliases.get(alias);
+            if (joinPath2 == null) {
+                aliases.put(alias, new ArrayList(joinPath));
+            } else {
+                if (!joinPath.equals(joinPath2)) {
+                    throw MondrianResource.instance().DuplicateAliasInCube.ex(
+                        alias, this.getUniqueName());
+                }
+            }
+            joinPath.remove(joinPath.size() - 1);
+            joinPath.remove(joinPath.size() - 1);
+        }
+    }
+
+    private void flatten(MondrianDef.Relation relation, List joinPath) {
+        if (relation instanceof MondrianDef.Join) {
+            MondrianDef.Join join = (MondrianDef.Join) relation;
+            flatten(join.left, joinPath);
+            flatten(join.right, joinPath);
+        } else {
+            joinPath.add(relation);
+        }
     }
 
     protected Logger getLogger() {
@@ -1863,7 +1943,7 @@ assert is not true.
     public OlapElement lookupChild(SchemaReader schemaReader, String s) {
         return lookupChild(schemaReader, s, MatchType.EXACT);
     }
-    
+
     public OlapElement lookupChild(
         SchemaReader schemaReader, String s, int matchType)
     {
@@ -2110,7 +2190,7 @@ assert is not true.
             return getMemberByUniqueName(
                 uniqueNameParts, failIfNotFound, MatchType.EXACT);
         }
-        
+
         public Member getMemberByUniqueName(
                 String[] uniqueNameParts, boolean failIfNotFound,
                 int matchType)
