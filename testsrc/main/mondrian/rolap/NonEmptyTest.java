@@ -32,6 +32,7 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
+import mondrian.util.Bug;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.IntegerProperty;
@@ -1065,6 +1066,50 @@ public class NonEmptyTest extends FoodMartTestCase {
             "    [Product].[Product Department].Members, " +
             "    {[Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]})) on rows " +
             "from [Sales]");
+    }
+
+    /**
+     * Tests the behavior if you have NON EMPTY on both axes, and the default
+     * member of a hierarchy is not 'all' or the first child.
+     */
+    public void testNonEmptyWithWeirdDefaultMember() {
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n" +
+                "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\" defaultMember=\"[Time].[1997].[Q1].[1]\" >\n" +
+                "      <Table name=\"time_by_day\"/>\n" +
+                "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n" +
+                "          levelType=\"TimeYears\"/>\n" +
+                "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n" +
+                "          levelType=\"TimeQuarters\"/>\n" +
+                "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n" +
+                "          levelType=\"TimeMonths\"/>\n" +
+                "    </Hierarchy>\n" +
+                "  </Dimension>");
+
+        // Check that the grand total is different than when [Time].[1997] is
+        // the default member.
+        testContext.assertQueryReturns("select from [Sales]",
+            fold("Axis #0:\n" +
+                    "{}\n" +
+                    "21,628"));
+
+        // Results of this query agree with MSAS 2000 SP1.
+        // The query gives the same results if the default member of [Time]
+        // is [Time].[1997] or [Time].[1997].[Q1].[1].
+        testContext.assertQueryReturns("select\n" +
+            "NON EMPTY Crossjoin({[Time].[1997].[Q2].[4]}, [Customers].[Country].members) on columns,\n" +
+            "NON EMPTY [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].children on rows\n" +
+            "from sales",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1997].[Q2].[4], [Customers].[All Customers].[USA]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer]}\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Light Beer]}\n" +
+                "Row #0: 3\n" +
+                "Row #1: 21\n"));
     }
 
     /**
