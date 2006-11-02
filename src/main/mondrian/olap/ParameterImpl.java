@@ -63,10 +63,10 @@ public class ParameterImpl
       public void setParameterValue(Object value) {
         this.value = value;
       }
-      
+
     };
 
-    protected ParameterImpl(
+    public ParameterImpl(
         String name,
         Exp defaultExp,
         String description,
