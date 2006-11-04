@@ -1073,6 +1073,7 @@ public class NonEmptyTest extends FoodMartTestCase {
      * member of a hierarchy is not 'all' or the first child.
      */
     public void testNonEmptyWithWeirdDefaultMember() {
+        if (!Bug.Bug1574942Fixed) return;
         TestContext testContext = TestContext.createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n" +
