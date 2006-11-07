@@ -108,7 +108,7 @@ public class DriverManager {
             CatalogLocator locator,
             DataSource dataSource,
             boolean fresh) {
-        String provider = properties.get("PROVIDER");
+        String provider = properties.get("PROVIDER", "mondrian");
         if (!provider.equalsIgnoreCase("mondrian")) {
             throw Util.newError("Provider not recognized: " + provider);
         }

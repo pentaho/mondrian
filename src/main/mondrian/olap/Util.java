@@ -1122,15 +1122,17 @@ public class Util extends XOMUtil {
         List list = new ArrayList();
 
         public String get(String key) {
+            return get(key, null);
+        }
+
+        public String get(String key, String defaultValue) {
             for (int i = 0, n = list.size(); i < n; i++) {
                 String[] pair = (String[]) list.get(i);
                 if (pair[0].equalsIgnoreCase(key)) {
                     return pair[1];
                 }
             }
-            return (key.equalsIgnoreCase("Provider"))
-                ? "MSDASQL"
-                : null;
+            return defaultValue;
         }
 
         public String put(String key, String value) {

@@ -13,9 +13,7 @@ package mondrian.jolap;
 
 import mondrian.olap.DriverManager;
 import mondrian.olap.Util;
-import mondrian.olap.MondrianProperties;
 import mondrian.util.BarfingInvocationHandler;
-import mondrian.rolap.RolapConnectionProperties;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -39,8 +37,6 @@ import java.util.Hashtable;
 public class MondrianJolapConnectionFactory extends RefObjectSupport
         implements ConnectionFactory, InitialContextFactory {
 
-    private static final String FOODMART_CATALOG_URL = "mondrian.test.foodmart.catalogURL";
-
     /** Creates a <code>MondrianJolapConnectionFactory</code>. Generally, the
      * driver manager will call this, as long as you provide it with the name
      * of this class. */
@@ -54,26 +50,16 @@ public class MondrianJolapConnectionFactory extends RefObjectSupport
     public Connection getConnection(ConnectionSpec properties) throws OLAPException {
         Util.PropertyList propertyList = new Util.PropertyList();
         MondrianJolapConnectionSpec cs = (MondrianJolapConnectionSpec) properties;
-        setDefaultProperties(propertyList);
         // Note: "User" and "Password" are not supported properties for a Mondrian connection.
         propertyList.put("User", cs.getName());
         propertyList.put("Password", cs.getPassword());
+        propertyList.put("Jdbc", cs.getJdbc());
+        propertyList.put("JdbcDrivers", cs.getJdbcDrivers());
+        propertyList.put("Catalog", cs.getCatalog());
         final boolean fresh = false;
         mondrian.olap.Connection mondrianConnection = DriverManager.
                 getConnection(propertyList, null, fresh);
         return new MondrianJolapConnection(mondrianConnection);
-    }
-
-    static void setDefaultProperties(Util.PropertyList propertyList) {
-        propertyList.put(RolapConnectionProperties.Provider, "mondrian");
-        propertyList.put(RolapConnectionProperties.Jdbc, "jdbc:odbc:MondrianFoodMart");
-        if (System.getProperty(FOODMART_CATALOG_URL) != null) {
-            propertyList.put(RolapConnectionProperties.Catalog, System.getProperty(FOODMART_CATALOG_URL));
-        } else {
-            propertyList.put(RolapConnectionProperties.Catalog, "file:///e:/mondrian/demo/FoodMart.xml");
-        }
-        propertyList.put(RolapConnectionProperties.JdbcDrivers,
-                MondrianProperties.instance().JdbcDrivers.getDefaultValue());
     }
 
     public ConnectionSpec createConnectionSpec() throws OLAPException {
@@ -113,11 +99,10 @@ public class MondrianJolapConnectionFactory extends RefObjectSupport
      *
      * @see MondrianJolapConnectionFactory#createConnectionSpec
      */
-    static class MondrianJolapConnectionSpec implements ConnectionSpec {
+    public static class MondrianJolapConnectionSpec implements ConnectionSpec {
         final Util.PropertyList propertyList = new Util.PropertyList();
 
         MondrianJolapConnectionSpec() {
-            MondrianJolapConnectionFactory.setDefaultProperties(propertyList);
         }
         public void setName(String name) {
             propertyList.put("name", name);

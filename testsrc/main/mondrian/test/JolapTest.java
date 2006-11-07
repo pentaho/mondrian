@@ -15,6 +15,7 @@ package mondrian.test;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 import mondrian.olap.Util;
+import mondrian.rolap.RolapConnectionProperties;
 import org.omg.java.cwm.objectmodel.core.Attribute;
 
 import javax.naming.Context;
@@ -62,7 +63,8 @@ public class JolapTest extends TestCase {
                 "Dimension name is Time" + nl +
                 "Dimension name is Product" + nl +
                 "Dimension name is Store Type" + nl +
-                "Dimension name is Warehouse" + nl,
+                "Dimension name is Warehouse" + nl +
+                "Dimension name is Time" + nl,
                 sw.toString());
     }
 
@@ -101,6 +103,25 @@ public class JolapTest extends TestCase {
             javax.olap.resource.ConnectionSpec cxs = cxf.createConnectionSpec();
             setProperty(cxs, "name", "jolapuser");
             setProperty(cxs, "password", "guest");
+
+            // Copy crucial properties from test context into the JOLAP connect
+            // string.
+            final String connectString = TestContext.getConnectString();
+            final Util.PropertyList properties =
+                Util.parseConnectString(connectString);
+            String[] props = {
+                RolapConnectionProperties.Jdbc,
+                RolapConnectionProperties.Catalog,
+                RolapConnectionProperties.JdbcDrivers,
+            };
+            for (int i = 0; i < props.length; i++) {
+                String prop = props[i];
+                final String value = properties.get(prop);
+                if (value != null) {
+                    setProperty(cxs, prop, value);
+                }
+            }
+            
             // Note: if the specific type of ConnectionSpec is not known,
             // clients can introspect the returned instance to determine
             // which JavaBean-compliant attributes are required.
@@ -114,8 +135,11 @@ public class JolapTest extends TestCase {
 
     private static void setProperty(Object cxs, String propertyName, Object propertyValue) {
         try {
-            final Method method = cxs.getClass().getMethod("get" + propertyName.substring(0,1).toUpperCase() + propertyName.substring(1),
-                    new Class[] {String.class});
+            final Method method = cxs.getClass().getMethod(
+                "set" +
+                    propertyName.substring(0,1).toUpperCase() +
+                    propertyName.substring(1),
+                new Class[] {String.class});
             method.invoke(cxs, new Object[] {propertyValue});
         } catch (NoSuchMethodException e) {
             throw Util.newError(e, "Error while setting property '" + propertyName + "'");
@@ -130,7 +154,7 @@ public class JolapTest extends TestCase {
         }
     }
 
-    public void testSimpleCubeView() throws OLAPException {
+    public void _testSimpleCubeView() throws OLAPException {
         Connection connection = getConnection();
         Cube salesCube = getCube(connection, "Sales");
         CubeView query = connection.createCubeView();
@@ -154,7 +178,7 @@ public class JolapTest extends TestCase {
         nameFilter.setRhs( "Fred" );
     }
 
-    public void testSimpleDimensionView() throws OLAPException {
+    public void _testSimpleDimensionView2() throws OLAPException {
         Connection someConnection = getConnection();
         final DimensionView products = createSimpleDimensionView(someConnection);
         Util.discard(products);
@@ -565,7 +589,7 @@ public class JolapTest extends TestCase {
         }
     }
 
-    public void testBar() throws OLAPException {
+    public void _testBar() throws OLAPException {
         foo();
 
         StringWriter sw = new StringWriter();

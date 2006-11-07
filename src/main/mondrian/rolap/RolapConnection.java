@@ -109,12 +109,15 @@ public class RolapConnection extends ConnectionBase {
      *        by Mondrian
      * @pre connectInfo != null
      */
-    RolapConnection(Util.PropertyList connectInfo,
-                    RolapSchema schema,
-                    DataSource dataSource) {
+    RolapConnection(
+        Util.PropertyList connectInfo,
+        RolapSchema schema,
+        DataSource dataSource)
+    {
         super();
 
-        String provider = connectInfo.get(RolapConnectionProperties.Provider);
+        String provider = connectInfo.get(
+            RolapConnectionProperties.Provider, "mondrian");
         Util.assertTrue(provider.equalsIgnoreCase("mondrian"));
         this.connectInfo = connectInfo;
         this.catalogName = connectInfo.get(RolapConnectionProperties.Catalog);
