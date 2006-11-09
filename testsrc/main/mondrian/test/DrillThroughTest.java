@@ -13,6 +13,7 @@ package mondrian.test;
 
 import mondrian.olap.Cube;
 import mondrian.olap.Result;
+import mondrian.olap.Cell;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
@@ -84,7 +85,9 @@ public class DrillThroughTest extends FoodMartTestCase {
                 "SELECT {[Measures].[Unit Sales], [Measures].[Price]} on columns," + nl +
                 " {[Product].Children} on rows" + nl +
                 "from Sales");
-        String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(false);
+        final Cell cell = result.getCell(new int[]{0, 0});
+        assertTrue(cell.canDrillThrough());
+        String sql = cell.getDrillThroughSQL(false);
 
         String expectedSql =
                 "select `time_by_day`.`the_year` as `Year`," +
@@ -102,8 +105,11 @@ public class DrillThroughTest extends FoodMartTestCase {
 
         assertSqlEquals(expectedSql, sql);
 
-        sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL(false);
-        assertNull(sql); // because it is a calculated member
+        // Cannot drill through a calc member.
+        final Cell calcCell = result.getCell(new int[]{1, 1});
+        assertFalse(calcCell.canDrillThrough());
+        sql = calcCell.getDrillThroughSQL(false);
+        assertNull(sql);
     }
 
     public void testDrillThrough2() {
@@ -265,6 +271,61 @@ public class DrillThroughTest extends FoodMartTestCase {
         }
 
         assertSqlEquals(expectedSql, sql);
+    }
+
+    /**
+     * Tests that drill-through works if two dimension tables have primary key
+     * columns with the same name. Related to bug 1592556, "XMLA Drill through
+     * bug".
+     */
+    public void testDrillThroughDupKeys() {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "  <Dimension name=\"Store2\" foreignKey=\"store_id\">\n" +
+                "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n" +
+                "      <Table name=\"store_ragged\"/>\n" +
+                "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n" +
+                "      <Level name=\"Store Id\" column=\"store_id\" captionColumn=\"store_name\" uniqueMembers=\"true\"/>\n" +
+                "    </Hierarchy>\n" +
+                "  </Dimension>\n" +
+                "  <Dimension name=\"Store3\" foreignKey=\"store_id\">\n" +
+                "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n" +
+                "      <Table name=\"store\"/>\n" +
+                "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n" +
+                "      <Level name=\"Store Id\" column=\"store_id\" captionColumn=\"store_name\" uniqueMembers=\"true\"/>\n" +
+                "    </Hierarchy>\n" +
+                "  </Dimension>\n");
+        Result result = testContext.executeQuery(
+                "SELECT {[Store2].[Store Id].Members} on columns," + nl +
+                " {[Store3].[Store Id].Members} on rows" + nl +
+                "from Sales");
+        String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(false);
+
+        String expectedSql =
+            "select `time_by_day`.`the_year` =as= `Year`," +
+                " `store_ragged`.`store_id` =as= `Store Id`," +
+                " `store`.`store_id` =as= `Store Id_0`," +
+                " `sales_fact_1997`.`unit_sales` =as= `Unit Sales` " +
+                "from `time_by_day` =as= `time_by_day`," +
+                " `sales_fact_1997` =as= `sales_fact_1997`," +
+                " `store_ragged` =as= `store_ragged`," +
+                " `store` =as= `store` " +
+                "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
+                " and `time_by_day`.`the_year` = 1997" +
+                " and `sales_fact_1997`.`store_id` = `store_ragged`.`store_id`" +
+                " and `store_ragged`.`store_id` = '19'" +
+                " and `sales_fact_1997`.`store_id` = `store`.`store_id`" +
+                " and `store`.`store_id` = '19'";
+        assertSqlEquals(expectedSql, sql);
+    }
+
+    /**
+     * Tests that cells in a virtual cube say they cannot be drilled through.
+     */
+    public void testDrillThroughVirtualCube() {
+        Result result = executeQuery(
+                "SELECT {[Gender]} on 0, {[Customers]} on 1 from [Warehouse and Sales]");
+        assertFalse(result.getCell(new int[] {0, 0}).canDrillThrough());
     }
 }
 

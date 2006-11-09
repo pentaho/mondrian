@@ -417,6 +417,20 @@ public class XmlaBasicTest extends FoodMartTestCase {
 
     }
 
+    public void testDrillThrough() throws Exception {
+       String requestType = "EXECUTE";
+       String reqFileName = "EXECUTE_DrillThrough_in.xml";
+       Properties props = new Properties();
+       props.setProperty(REQUEST_TYPE_PROP, requestType);
+       props.setProperty(CATALOG_PROP, CATALOG);
+       props.setProperty(CATALOG_NAME_PROP, CATALOG);
+       props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
+       props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+       props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+       doTest(requestType, reqFileName, "${response}", props);
+
+   }
+
     /*
      * NOT IMPLEMENTED MDSCHEMA_SETS_out.xml
      */
@@ -458,6 +472,10 @@ public class XmlaBasicTest extends FoodMartTestCase {
             : null;
         doTests(requestText, props, null, connectString, catalogNameUrls,
                 expectedDoc, CONTENT_SCHEMADATA);
+
+        if (requestType.equals("EXECUTE")) {
+            return;
+        }
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(

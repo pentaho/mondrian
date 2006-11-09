@@ -808,7 +808,7 @@ public class XmlaHandler implements XmlaConstants {
                 SERVER_FAULT_FC,
                 HSB_DRILL_THROUGH_NOT_ALLOWED_CODE,
                 HSB_DRILL_THROUGH_NOT_ALLOWED_FAULT_FS,
-                Util.newError("Cannot do DillThrough operation on the cell"));
+                Util.newError("Cannot do DrillThrough operation on the cell"));
         }
 
         String dtSql = dtCell.getDrillThroughSQL(true);
@@ -891,7 +891,7 @@ public class XmlaHandler implements XmlaConstants {
             // populate header
             header = new String[columnCount];
             for (int i = 0; i < columnCount; i++) {
-                header[i] = md.getColumnName(i + 1);
+                header[i] = md.getColumnLabel(i + 1);
             }
 
             // skip to first rowset specified in request

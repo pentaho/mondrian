@@ -9633,7 +9633,7 @@
 ]]>
         </Resource>
     </TestCase>
- <TestCase name="testApproxRowCountInHierarchyOverridesCountCallsToDatabase">
+    <TestCase name="testApproxRowCountInHierarchyOverridesCountCallsToDatabase">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" >
@@ -9707,6 +9707,366 @@
   </xmla:return>
 </xmla:DiscoverResponse>
 </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testDrillThrough">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <xmla:ExecuteResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+            <xmla:return>
+                <root
+                    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified"
+                        targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+                        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:complexType name="MemberType">
+                            <xsd:sequence>
+                                <xsd:element name="UName" type="xsd:string"/>
+                                <xsd:element name="Caption" type="xsd:string"/>
+                                <xsd:element name="LName" type="xsd:string"/>
+                                <xsd:element name="LNum" type="xsd:unsignedInt"/>
+                                <xsd:element name="DisplayInfo" type="xsd:unsignedInt"/>
+                                <xsd:sequence maxOccurs="unbounded" minOccurs="0">
+                                    <xsd:any maxOccurs="unbounded" processContents="lax"/>
+                                </xsd:sequence>
+                            </xsd:sequence>
+                            <xsd:attribute name="Hierarchy" type="xsd:string"/>
+                        </xsd:complexType>
+                        <xsd:complexType name="PropType">
+                            <xsd:attribute name="name" type="xsd:string"/>
+                        </xsd:complexType>
+                        <xsd:complexType name="TupleType">
+                            <xsd:sequence maxOccurs="unbounded">
+                                <xsd:element name="Member" type="MemberType"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                        <xsd:complexType name="MembersType">
+                            <xsd:sequence maxOccurs="unbounded">
+                                <xsd:element name="Member" type="MemberType"/>
+                            </xsd:sequence>
+                            <xsd:attribute name="Hierarchy" type="xsd:string"/>
+                        </xsd:complexType>
+                        <xsd:complexType name="TuplesType">
+                            <xsd:sequence maxOccurs="unbounded">
+                                <xsd:element name="Tuple" type="TupleType"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                        <xsd:complexType name="CrossProductType">
+                            <xsd:sequence>
+                                <xsd:choice maxOccurs="unbounded" minOccurs="0">
+                                    <xsd:element name="Members" type="MembersType"/>
+                                    <xsd:element name="Tuples" type="TuplesType"/>
+                                </xsd:choice>
+                            </xsd:sequence>
+                            <xsd:attribute name="Size" type="xsd:unsignedInt"/>
+                        </xsd:complexType>
+                        <xsd:complexType name="OlapInfo">
+                            <xsd:sequence>
+                                <xsd:element name="CubeInfo">
+                                    <xsd:complexType>
+                                    <xsd:sequence>
+                                    <xsd:element
+                                    maxOccurs="unbounded" name="Cube">
+                                    <xsd:complexType>
+                                    <xsd:sequence>
+                                    <xsd:element
+                                    name="CubeName" type="xsd:string"/>
+                                    </xsd:sequence>
+                                    </xsd:complexType>
+                                    </xsd:element>
+                                    </xsd:sequence>
+                                    </xsd:complexType>
+                                </xsd:element>
+                                <xsd:element name="AxesInfo">
+                                    <xsd:complexType>
+                                    <xsd:sequence>
+                                    <xsd:element
+                                    maxOccurs="unbounded" name="AxisInfo">
+                                    <xsd:complexType>
+                                    <xsd:sequence>
+                                    <xsd:element
+                                    maxOccurs="unbounded"
+                                    minOccurs="0" name="HierarchyInfo">
+                                    <xsd:complexType>
+                                    <xsd:sequence>
+
+                                    <xsd:sequence maxOccurs="unbounded">
+
+                                    <xsd:element
+                                    name="UName" type="PropType"/>
+
+                                    <xsd:element
+                                    name="Caption" type="PropType"/>
+
+                                    <xsd:element
+                                    name="LName" type="PropType"/>
+
+                                    <xsd:element
+                                    name="LNum" type="PropType"/>
+
+                                    <xsd:element
+                                    maxOccurs="unbounded"
+                                    minOccurs="0"
+                                    name="DisplayInfo" type="PropType"/>
+                                    </xsd:sequence>
+                                    <xsd:sequence>
+
+                                    <xsd:any
+                                    maxOccurs="unbounded"
+                                    minOccurs="0" processContents="lax"/>
+                                    </xsd:sequence>
+                                    </xsd:sequence>
+                                    </xsd:complexType>
+
+                                    <xsd:attribute
+                                    name="name"
+                                    type="xsd:string" use="required"/>
+                                    </xsd:element>
+                                    </xsd:sequence>
+                                    <xsd:attribute
+                                    name="name" type="xsd:string"/>
+                                    </xsd:complexType>
+                                    </xsd:element>
+                                    </xsd:sequence>
+                                    </xsd:complexType>
+                                </xsd:element>
+                                <xsd:element name="CellInfo">
+                                    <xsd:complexType>
+                                    <xsd:sequence>
+                                    <xsd:sequence
+                                    maxOccurs="unbounded" minOccurs="0">
+                                    <xsd:choice>
+                                    <xsd:element
+                                    name="Value" type="PropType"/>
+                                    <xsd:element
+                                    name="FmtValue" type="PropType"/>
+                                    <xsd:element
+                                    name="BackColor" type="PropType"/>
+                                    <xsd:element
+                                    name="ForeColor" type="PropType"/>
+                                    <xsd:element
+                                    name="FontName" type="PropType"/>
+                                    <xsd:element
+                                    name="FontSize" type="PropType"/>
+                                    <xsd:element
+                                    name="FontFlags" type="PropType"/>
+                                    <xsd:element
+                                    name="FormatString" type="PropType"/>
+                                    <xsd:element
+                                    name="NonEmptyBehavior" type="PropType"/>
+                                    <xsd:element
+                                    name="SolveOrder" type="PropType"/>
+                                    <xsd:element
+                                    name="Updateable" type="PropType"/>
+                                    <xsd:element
+                                    name="Visible" type="PropType"/>
+                                    <xsd:element
+                                    name="Expression" type="PropType"/>
+                                    </xsd:choice>
+                                    </xsd:sequence>
+                                    <xsd:sequence
+                                    maxOccurs="unbounded" minOccurs="0">
+                                    <xsd:any
+                                    maxOccurs="unbounded" processContents="lax"/>
+                                    </xsd:sequence>
+                                    </xsd:sequence>
+                                    </xsd:complexType>
+                                </xsd:element>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                        <xsd:complexType name="Axes">
+                            <xsd:sequence maxOccurs="unbounded">
+                                <xsd:element name="Axis">
+                                    <xsd:complexType>
+                                    <xsd:choice
+                                    maxOccurs="unbounded" minOccurs="0">
+                                    <xsd:element
+                                    name="CrossProduct" type="CrossProductType"/>
+                                    <xsd:element name="Tuples" type="TuplesType"/>
+                                    <xsd:element name="Members" type="MembersType"/>
+                                    </xsd:choice>
+                                    <xsd:attribute name="name" type="xsd:string"/>
+                                    </xsd:complexType>
+                                </xsd:element>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                        <xsd:complexType name="CellData">
+                            <xsd:sequence>
+                                <xsd:element maxOccurs="unbounded"
+                                    minOccurs="0" name="Cell">
+                                    <xsd:complexType>
+                                    <xsd:sequence maxOccurs="unbounded">
+                                    <xsd:choice>
+                                    <xsd:element name="Value"/>
+                                    <xsd:element
+                                    name="FmtValue" type="xsd:string"/>
+                                    <xsd:element
+                                    name="BackColor" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="ForeColor" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="FontName" type="xsd:string"/>
+                                    <xsd:element
+                                    name="FontSize" type="xsd:unsignedShort"/>
+                                    <xsd:element
+                                    name="FontFlags" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="FormatString" type="xsd:string"/>
+                                    <xsd:element
+                                    name="NonEmptyBehavior" type="xsd:unsignedShort"/>
+                                    <xsd:element
+                                    name="SolveOrder" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="Updateable" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="Visible" type="xsd:unsignedInt"/>
+                                    <xsd:element
+                                    name="Expression" type="xsd:string"/>
+                                    </xsd:choice>
+                                    </xsd:sequence>
+                                    <xsd:attribute
+                                    name="CellOrdinal"
+                                    type="xsd:unsignedInt" use="required"/>
+                                    </xsd:complexType>
+                                </xsd:element>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence maxOccurs="unbounded">
+                                    <xsd:element name="OlapInfo" type="OlapInfo"/>
+                                    <xsd:element name="Axes" type="Axes"/>
+                                    <xsd:element name="CellData" type="CellData"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:schema>
+                    <row>
+                        <Store_x0020_Name>86</Store_x0020_Name>
+                        <Store_x0020_City>86</Store_x0020_City>
+                        <Store_x0020_State>86</Store_x0020_State>
+                        <Store_x0020_Country>86</Store_x0020_Country>
+                        <Store_x0020_Sqft>86</Store_x0020_Sqft>
+                        <Store_x0020_Type>86</Store_x0020_Type>
+                        <Month>86</Month>
+                        <Quarter>86</Quarter>
+                        <Year>86</Year>
+                        <Product_x0020_Name>86</Product_x0020_Name>
+                        <Brand_x0020_Name>86</Brand_x0020_Name>
+                        <Product_x0020_Subcategory>86</Product_x0020_Subcategory>
+                        <Product_x0020_Category>86</Product_x0020_Category>
+                        <Product_x0020_Department>86</Product_x0020_Department>
+                        <Product_x0020_Family>86</Product_x0020_Family>
+                        <Media_x0020_Type>86</Media_x0020_Type>
+                        <Promotion_x0020_Name>86</Promotion_x0020_Name>
+                        <Name_x0020__x0028_Key_x0029_>86</Name_x0020__x0028_Key_x0029_>
+                        <Name>86</Name>
+                        <City>86</City>
+                        <State_x0020_Province>86</State_x0020_Province>
+                        <Education_x0020_Level>86</Education_x0020_Level>
+                        <Gender>86</Gender>
+                        <Marital_x0020_Status>86</Marital_x0020_Status>
+                        <Yearly_x0020_Income>86</Yearly_x0020_Income>
+                        <Unit_x0020_Sales>86</Unit_x0020_Sales>
+                    </row>
+                    <row>
+                        <Store_x0020_Name>Store 14</Store_x0020_Name>
+                        <Store_x0020_City>San Francisco</Store_x0020_City>
+                        <Store_x0020_State>CA</Store_x0020_State>
+                        <Store_x0020_Country>USA</Store_x0020_Country>
+                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
+                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
+                        <Month>3</Month>
+                        <Quarter>Q1</Quarter>
+                        <Year>1997</Year>
+                        <Product_x0020_Name>Denny 60 Watt Lightbulb</Product_x0020_Name>
+                        <Brand_x0020_Name>Denny</Brand_x0020_Name>
+                        <Product_x0020_Subcategory>Lightbulbs</Product_x0020_Subcategory>
+                        <Product_x0020_Category>Electrical</Product_x0020_Category>
+                        <Product_x0020_Department>Household</Product_x0020_Department>
+                        <Product_x0020_Family>Non-Consumable</Product_x0020_Family>
+                        <Media_x0020_Type>No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
+                        <Name_x0020__x0028_Key_x0029_>3944</Name_x0020__x0028_Key_x0029_>
+                        <Name>Nancy Pietrs</Name>
+                        <City>Berkeley</City>
+                        <State_x0020_Province>CA</State_x0020_Province>
+                        <Education_x0020_Level>Partial College</Education_x0020_Level>
+                        <Gender>M</Gender>
+                        <Marital_x0020_Status>S</Marital_x0020_Status>
+                        <Yearly_x0020_Income>$90K - $110K</Yearly_x0020_Income>
+                        <Unit_x0020_Sales>1</Unit_x0020_Sales>
+                    </row>
+                    <row>
+                        <Store_x0020_Name>Store 14</Store_x0020_Name>
+                        <Store_x0020_City>San Francisco</Store_x0020_City>
+                        <Store_x0020_State>CA</Store_x0020_State>
+                        <Store_x0020_Country>USA</Store_x0020_Country>
+                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
+                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
+                        <Month>3</Month>
+                        <Quarter>Q1</Quarter>
+                        <Year>1997</Year>
+                        <Product_x0020_Name>Denny Paper Towels</Product_x0020_Name>
+                        <Brand_x0020_Name>Denny</Brand_x0020_Name>
+                        <Product_x0020_Subcategory>Paper Wipes</Product_x0020_Subcategory>
+                        <Product_x0020_Category>Paper Products</Product_x0020_Category>
+                        <Product_x0020_Department>Household</Product_x0020_Department>
+                        <Product_x0020_Family>Non-Consumable</Product_x0020_Family>
+                        <Media_x0020_Type>No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
+                        <Name_x0020__x0028_Key_x0029_>3944</Name_x0020__x0028_Key_x0029_>
+                        <Name>Nancy Pietrs</Name>
+                        <City>Berkeley</City>
+                        <State_x0020_Province>CA</State_x0020_Province>
+                        <Education_x0020_Level>Partial College</Education_x0020_Level>
+                        <Gender>M</Gender>
+                        <Marital_x0020_Status>S</Marital_x0020_Status>
+                        <Yearly_x0020_Income>$90K - $110K</Yearly_x0020_Income>
+                        <Unit_x0020_Sales>1</Unit_x0020_Sales>
+                    </row>
+                    <row>
+                        <Store_x0020_Name>Store 14</Store_x0020_Name>
+                        <Store_x0020_City>San Francisco</Store_x0020_City>
+                        <Store_x0020_State>CA</Store_x0020_State>
+                        <Store_x0020_Country>USA</Store_x0020_Country>
+                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
+                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
+                        <Month>3</Month>
+                        <Quarter>Q1</Quarter>
+                        <Year>1997</Year>
+                        <Product_x0020_Name>Golden Beef TV Dinner</Product_x0020_Name>
+                        <Brand_x0020_Name>Golden</Brand_x0020_Name>
+                        <Product_x0020_Subcategory>TV Dinner</Product_x0020_Subcategory>
+                        <Product_x0020_Category>Frozen Entrees</Product_x0020_Category>
+                        <Product_x0020_Department>Frozen Foods</Product_x0020_Department>
+                        <Product_x0020_Family>Food</Product_x0020_Family>
+                        <Media_x0020_Type>No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
+                        <Name_x0020__x0028_Key_x0029_>3944</Name_x0020__x0028_Key_x0029_>
+                        <Name>Nancy Pietrs</Name>
+                        <City>Berkeley</City>
+                        <State_x0020_Province>CA</State_x0020_Province>
+                        <Education_x0020_Level>Partial College</Education_x0020_Level>
+                        <Gender>M</Gender>
+                        <Marital_x0020_Status>S</Marital_x0020_Status>
+                        <Yearly_x0020_Income>$90K - $110K</Yearly_x0020_Income>
+                        <Unit_x0020_Sales>2</Unit_x0020_Sales>
+                    </row>
+                </root>
+            </xmla:return>
+        </xmla:ExecuteResponse>
+    </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
