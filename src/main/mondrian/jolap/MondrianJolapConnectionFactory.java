@@ -51,11 +51,27 @@ public class MondrianJolapConnectionFactory extends RefObjectSupport
         Util.PropertyList propertyList = new Util.PropertyList();
         MondrianJolapConnectionSpec cs = (MondrianJolapConnectionSpec) properties;
         // Note: "User" and "Password" are not supported properties for a Mondrian connection.
-        propertyList.put("User", cs.getName());
-        propertyList.put("Password", cs.getPassword());
-        propertyList.put("Jdbc", cs.getJdbc());
-        propertyList.put("JdbcDrivers", cs.getJdbcDrivers());
-        propertyList.put("Catalog", cs.getCatalog());
+        if (cs.getName() != null) {
+            propertyList.put("User", cs.getName());
+        }
+        if (cs.getPassword() != null) {
+            propertyList.put("Password", cs.getPassword());
+        }
+        if (cs.getJdbc() != null) {
+            propertyList.put("Jdbc", cs.getJdbc());
+        }
+        if (cs.getJdbcDrivers() != null) {
+            propertyList.put("JdbcDrivers", cs.getJdbcDrivers());
+        }
+        if (cs.getJdbcUser() != null) {
+            propertyList.put("JdbcUser", cs.getJdbcUser());
+        }
+        if (cs.getJdbcPassword() != null) {
+            propertyList.put("JdbcPassword", cs.getJdbcPassword());
+        }
+        if (cs.getCatalog() != null) {
+            propertyList.put("Catalog", cs.getCatalog());
+        }
         final boolean fresh = false;
         mondrian.olap.Connection mondrianConnection = DriverManager.
                 getConnection(propertyList, null, fresh);
@@ -133,6 +149,18 @@ public class MondrianJolapConnectionFactory extends RefObjectSupport
         }
         public String getJdbcDrivers() {
             return propertyList.get("jdbcDrivers");
+        }
+        public void setJdbcUser(String jdbcUser) {
+            propertyList.put("jdbcUser", jdbcUser);
+        }
+        public String getJdbcUser() {
+            return propertyList.get("jdbcUser");
+        }
+        public void setJdbcPassword(String jdbcPassword) {
+            propertyList.put("jdbcPassword", jdbcPassword);
+        }
+        public String getJdbcPassword() {
+            return propertyList.get("jdbcPassword");
         }
     }
 }

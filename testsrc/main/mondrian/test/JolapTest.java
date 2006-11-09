@@ -113,6 +113,8 @@ public class JolapTest extends TestCase {
                 RolapConnectionProperties.Jdbc,
                 RolapConnectionProperties.Catalog,
                 RolapConnectionProperties.JdbcDrivers,
+                RolapConnectionProperties.JdbcUser,
+                RolapConnectionProperties.JdbcPassword,
             };
             for (int i = 0; i < props.length; i++) {
                 String prop = props[i];
