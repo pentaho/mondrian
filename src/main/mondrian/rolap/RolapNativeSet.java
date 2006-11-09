@@ -519,7 +519,8 @@ public abstract class RolapNativeSet extends RolapNative {
      */
     protected CrossJoinArg[] checkCrossJoin(FunDef fun, Exp[] args) {
         // is this "CrossJoin([A].children, [B].children)"
-        if (!"Crossjoin".equalsIgnoreCase(fun.getName()))
+        if (!"Crossjoin".equalsIgnoreCase(fun.getName()) &&
+            !"NonEmptyCrossJoin".equalsIgnoreCase(fun.getName()))
             return null;
         if (args.length != 2)
             return null;

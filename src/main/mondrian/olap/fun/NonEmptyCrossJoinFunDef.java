@@ -39,11 +39,20 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
         super(dummyFunDef);
     }
 
-    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+    public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc1 = compiler.compileList(call.getArg(0));
         final ListCalc listCalc2 = compiler.compileList(call.getArg(1));
         return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
             public List evaluateList(Evaluator evaluator) {
+                SchemaReader schemaReader = evaluator.getSchemaReader();
+                evaluator.setNonEmpty(true);
+                NativeEvaluator nativeEvaluator =
+                    schemaReader.getNativeSetEvaluator(
+                        call.getFunDef(), call.getArgs(), evaluator, this);
+                if (nativeEvaluator != null) {
+                    return (List) nativeEvaluator.execute();
+                }
+
                 final List list1 = listCalc1.evaluateList(evaluator);
                 if (list1.isEmpty()) {
                     return Collections.EMPTY_LIST;

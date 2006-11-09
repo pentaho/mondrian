@@ -911,6 +911,16 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Store].[All Stores].children) on rows " +
             "from [Warehouse and Sales]");
     }
+    
+    public void testVirtualCubeNonEmptyCrossJoin()
+    {
+        checkNative(18, 3,
+            "select " +
+            "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, " +
+            "nonEmptyCrossJoin([Product].[All Products].children, " +
+            "[Store].[All Stores].children) on rows " +
+            "from [Warehouse and Sales]");
+    }
 
     public void testVirtualCubeCrossJoinNonConformingDim()
     {
