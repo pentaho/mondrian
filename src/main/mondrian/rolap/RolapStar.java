@@ -1102,7 +1102,7 @@ public class RolapStar {
                 measure.getAggregator(),
                 this,
                 measure.getMondrianDefExpression(),
-                true);
+                measure.isNumeric());
 
             measure.setStarMeasure(starMeasure); // reverse mapping
 

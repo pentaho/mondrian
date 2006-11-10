@@ -58,6 +58,31 @@ public class NonEmptyTest extends FoodMartTestCase {
         super(name);
     }
 
+    public void testStrMeasure() {
+      TestContext ctx = TestContext.create(
+              null,
+              "<Cube name=\"StrMeasure\"> \n" +
+              "  <Table name=\"promotion\"/> \n" + 
+              "  <Dimension name=\"Promotions\"> \n" + 
+              "    <Hierarchy hasAll=\"true\" > \n" + 
+              "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/> \n" + 
+              "    </Hierarchy> \n" + 
+              "  </Dimension> \n" + 
+              "  <Measure name=\"Media\" column=\"media_type\" aggregator=\"max\" datatype=\"String\"/> \n" + 
+              "</Cube> \n",
+              null,null,null);
+      
+      ctx.assertQueryReturns(
+              "select {[Measures].[Media]} on columns " +
+              "from [StrMeasure]",
+              "Axis #0:" + nl +
+              "{}" + nl +
+              "Axis #1:" + nl +
+              "{[Measures].[Media]}" + nl +
+              "Row #0: TV" + nl
+
+      );
+  }
     
     public void testBug1515302() {
         TestContext ctx = TestContext.create(

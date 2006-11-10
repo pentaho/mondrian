@@ -115,6 +115,11 @@ class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeasure {
     void setStarMeasure(Object starMeasure) {
         this.starMeasure = starMeasure;
     }
+
+    public boolean isNumeric() {
+        Object datatype = getPropertyValue(Property.DATATYPE.name);
+        return "Integer".equals(datatype) || "Numeric".equals(datatype);
+    }
 }
 
 // End RolapBaseCubeMeasure.java
