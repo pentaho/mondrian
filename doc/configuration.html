@@ -35,6 +35,10 @@
 			<li><a href="#Connect_string_syntax">Syntax</a></li>
     		<li><a href="#Connect_string_properties">Connect string properties</a></li>
     	</ol>
+    <li><a href="#Cache_management">Cache_management</a><ol>
+			<li><a href="#Schema_cache">Schema_cache</a></li>
+    	</ol>
+    </li>
 </ol>
 <!--
 ########################
@@ -718,15 +722,175 @@ suite of regression tests.</p>
 
 <h3>Connect string syntax<a name="Connect_string_syntax">&nbsp;</a></h3>
 
-<p>To be written.</p>
+<p>Mondrian connect strings are a connection of property/value pairs, of the 
+form 'property=value;property=value;...'.</p>
+<p>Values can be enclosed in single-quotes, which allows them to contain spaces 
+and punctuation. See the the
+<a target="_blank" href="http://msdn.microsoft.com/library/en-us/oledb/htm/oledbconnectionstringsyntax.asp">
+OLE DB connect string syntax specification</a>.</p>
+<p>The supported properties are described below.</p>
+<h3>Connect string propertiess<a name="Connect_string_properties">&nbsp;</a></h3>
 
-<h3>Connect string properties<a name="Connect_string_properties">&nbsp;</a></h3>
+<table border="1" id="table1">
+    <tr>
+        <th>Namee</th>
+        <th>Required?</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td>Provider</td>
+        <td>Yes</td>
+        <td>Must have the value &quot;Mondrian&quot;</td>
+    </tr>
+    <tr>
+        <td>Jdbc</td>
+        <td rowspan="2">Exactly one</td>
+        <td>The URL of the JDBC database where the data is stored. You must 
+        specify either <code>DataSource</code> or <code>Jdbc</code>.</td>
+    </tr>
+    <tr>
+        <td>DataSource</td>
+        <td>The name of a data source class. The class must implement the 
+        <a href="http://java.sun.com/j2se/1.5.0/docs/api/javax/sql/DataSource.html">javax.sql.DataSource</a> interface. You must specify either 
+        <code>DataSource</code> or <code>Jdbc</code>.</td>
+    </tr>
+    <tr>
+        <td>JdbcDrivers</td>
+        <td>Yes</td>
+        <td>Comma-separated list of JDBC driver classes, for example,<blockquote>
+            <p>JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver</p>
 
-<p>To be written.</p>
+        </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td>JdbcUser</td>
+        <td>No</td>
+        <td>The name of the user to log on to the JDBC database. (If your JDBC 
+        driver allows you to specify the user name in the JDBC URL, you don't 
+        need to set this property.)</td>
+    </tr>
+    <tr>
+        <td>JdbcPassword</td>
+        <td>No</td>
+        <td>The name of the password to log on to the JDBC database. (If your 
+        JDBC driver allows you to specify the password in the JDBC URL, you 
+        don't need to set this property.)</td>
+    </tr>
+    <tr>
+        <td>Catalog</td>
+        <td rowspan="2">Exactly one</td>
+        <td>The URL of the catalog, an XML file which describes the schema: cubes, hierarchies, and so forth. 
+        For example,<blockquote><code>
+            Catalog=file:demo/FoodMart.xml</code></blockquote>
+        <p>Catalogs are described in <a href="schema.html">the Schema Guide</a>. 
+        See also <code>CatalogContent</code>.</td>
+    </tr>
+    <tr>
+        <td>CatalogContent</td>
+        <td>An XML string representing the schema: cubes, hierarchies, and so forth. 
+        For example,<blockquote><code>
+            CatalogContent=&lt;Schema name=&quot;MySchema&quot;&gt;&lt;Cube name=&quot;Cube1&quot;&gt; ... 
+            &lt;/Schema&gt;</code></blockquote>
+        <p>Catalogs are described in <a href="schema.html">the Schema Guide</a>. 
+        See also <code>Catalog</code>.</td>
+    </tr>
+    <tr>
+        <td>CatalogName</td>
+        <td>No</td>
+        <td>Not used . If, in future, we support multiple catalogs, this property will specify which catalog to use. See also
+        <code>Catalog</code>.</td>
+    </tr>
+    <tr>
+        <td>PoolNeeded</td>
+        <td>No</td>
+        <td>Tells Mondrian whether to add a layer of connection pooling.<p>If 
+        the value &quot;true&quot; is specified, or no value is specified, Mondrian 
+        assumes that:</p>
+
+        <ul>
+            <li>connections created via the <code>Jdbc</code> property are not pooled, 
+            and therefore need to be pooled;</li>
+            <li>connections created via the <code>DataSource</code> are already pooled.</li>
+        </ul>
+
+        <p>If the value &quot;false&quot; is specified, Mondrian does not apply 
+        connection-pooling to any connection.</td>
+    </tr>
+    <tr>
+        <td>Role</td>
+        <td>No</td>
+        <td>The name of the <a href="schema.html#Access_control">role</a> to adopt 
+        for access-control purposes. If not specified, the connection uses a role which has access to every object in the schema.</td>
+    </tr>
+    <tr>
+        <td>jdbc.*</td>
+        <td>No</td>
+        <td>Any property whose name begins with &quot;jdbc.&quot; will be added to the JDBC connection properties, after removing this prefix. This allows you to specify connection properties without a URL.<p>
+        For example, given the properties</p>
+
+        <blockquote>
+            <p><code>jdbc.Timeout=50; jdbc.CacheSize=1m</code></p>
+
+        </blockquote>
+        <p>Mondrian will create a JDBC connection using the properties 
+        {Timeout=&quot;50&quot;, CacheSize=&quot;1m&quot;}.</td>
+    </tr>
+    <tr>
+        <td>DynamicSchemaProcessor</td>
+        <td>No</td>
+        <td>The name of a class which is called at runtime in order to modify 
+        the schema content. The class must implement the
+        <a href="api/mondrian/rolap/DynamicSchemaProcessor.html">
+        mondrian.rolap.DynamicSchemaProcessor</a> interface. For example,<blockquote>
+            <p><code>DynamicSchemaProcessor = 
+            mondrian.i18n.LocalizingDynamicSchemaProcessor</code></p>
+
+        </blockquote>
+        <p>uses the builtin schema processor class
+        <a href="api/mondrian/i18n/LocalizingDynamicSchemaProcessor.html">
+        mondrian.i18n.LocalizingDynamicSchemaProcessor</a> to replace variables 
+        in the schema file, according to resource files and the current locale 
+        (see the <code>Locale</code> property).</td>
+    </tr>
+    <tr>
+        <td>Locale</td>
+        <td>No</td>
+        <td>The requested Locale for the current session. The locale determines 
+        the formatting of numbers and date/time values, and Mondrian's error 
+        messages.<p>Example values are &quot;en&quot; (English), &quot;en_US&quot; 
+        (United States English), &quot;hu&quot; (Hungarian). If Locale is not specified, then the name of system's default will be used, as per 
+        <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Locale.html#getDefault()">java.util.Locale#getDefault()</.</td>
+    </tr>
+</table>
+<p>Connect string properties are also documented in the
+<a href="api/mondrian/rolap/RolapConnectionProperties.html">
+RolapConnectionProperties</a> class.</p>
+
+<h2>Cache management<a name="Cache_management"></a></h2>
+
+<h3>Schema cache<a name="Schema_cache"></a></h3>
+
+<font SIZE="2">
+<p>To flush all schema definitions, use 
+the <a href="api/mondrian/olap/MondrianServer.html#flushSchemaCache()">mondrian.olap.MondrianServer.flushSchemaCache()</a> 
+method:</p>
+
+<blockquote>
+    <p><code>import mondrian.olap.*;<br>
+    <br>
+    Connection connection;<br>
+    MondrianServer.forConnection(connection).flushSchemaCache();</code></p>
+
+</blockquote>
+<p>The cache is only used when creating new connections; existing connections 
+retain their schemas.</p>
+
+</font>
 
 <hr noshade size="1"/>
 <p>
-    Author: Julian Hyde; last modified August 2006.<br/>
+    Author: Julian Hyde; last modified August 2006.6.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/configuration.html?ac=22">log</a>)<br/>
     Copyright (C) 2006-2006 Julian Hyde
