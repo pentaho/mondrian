@@ -29,6 +29,22 @@ public abstract class MultiResolver extends FunUtil implements Resolver {
     private final String[] signatures;
     private final Syntax syntax;
 
+    /**
+     * Creates a <code>MultiResolver</code>.
+     *
+     * @param name Name of function or operator
+     * @param signature Signature of function or operator
+     * @param description Description of function or operator
+     * @param signatures Array of possible signatures, each of which is an
+     *     encoding of the syntactic type, return type, and parameter
+     *     types of this operator. The "Members" operator has a syntactic
+     *     type "pxd" which means "an operator with
+     *     {@link Syntax#Property property} syntax (p) which returns a set
+     *     (x) and takes a dimension (d) as its argument".
+     *     See {@link FunUtil#decodeSyntacticType(String)},
+     *     {@link FunUtil#decodeReturnCategory(String)},
+     *     {@link FunUtil#decodeParameterCategories(String)}.
+     */
     protected MultiResolver(
             String name,
             String signature,

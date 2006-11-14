@@ -702,8 +702,22 @@ term4 ::=
 
 term3 ::=
         term2
-    |   term3:x comp_op:op term2:y {: // e.g. 1 < 5
+    |   term3:x comp_op:op term2:y {: // e.g. "1 < 5"
             RESULT = new UnresolvedFunCall(op, Syntax.Infix, new Exp[] {x, y});
+        :}
+    |
+        // We expect a shift-reduce conflict here, because NULL is a literal and
+        // so is a valid argument to the IS operator. JavaCUP resolves the
+        // conflict by shifting, which is what we want. Compile with expect=61
+        // to ignore the conflicts and continue.
+        term3:x IS NULL {:
+            RESULT = new UnresolvedFunCall("IS NULL", Syntax.Postfix, new Exp[] {x});
+        :}
+    |   term3:x IS term2:y {: // e.g. "x IS y"; but "x IS NULL" is handled elsewhere
+            RESULT = new UnresolvedFunCall("IS", Syntax.Infix, new Exp[] {x, y});
+        :}
+    |   term3:x IS EMPTY {:
+            RESULT = new UnresolvedFunCall("IS EMPTY", Syntax.Postfix, new Exp[] {x});
         :}
     |   term3:x MATCHES term2:y {:
             RESULT = new UnresolvedFunCall("MATCHES", Syntax.Infix, new Exp[] {x, y});
@@ -759,6 +773,7 @@ factor ::=
             RESULT = new UnresolvedFunCall("-", Syntax.Prefix, new Exp[] {p});
         :}
     ;
+
 // <sign> ::= + | -
 //
 // <plus> ::= +
@@ -1006,6 +1021,7 @@ else_clause_opt ::=
 //
 // <boolean_primary> ::= <value_expression> <comp_op> <value_expression>
 //                     | ISEMPTY(<value_expression>)
+//                     | <value_expression> IS EMPTY
 //                     | (<search_condition>)
 // <comp_op> ::= <equals_operator>
 //             | <not_equals_operator>
@@ -1013,6 +1029,7 @@ else_clause_opt ::=
 //             | <greater_than_operator>
 //             | <less_than_or_equals_operator>
 //             | <greater_than_or_equals_operator>
+// "IS" is not a comp_op because of conflict with "<expr> IS EMPTY"
 comp_op ::=
         EQ {: RESULT = "="; :}
     |   NE {: RESULT = "<>"; :}
@@ -1020,7 +1037,6 @@ comp_op ::=
     |   GT {: RESULT = ">"; :}
     |   LE {: RESULT = "<="; :}
     |   GE {: RESULT = ">="; :}
-    |   IS {: RESULT = "IS"; :}
     ;
 //
 // <equals_operator> ::= =

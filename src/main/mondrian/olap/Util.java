@@ -47,8 +47,16 @@ public class Util extends XOMUtil {
 
     private static final Logger LOGGER = Logger.getLogger(Util.class);
 
+    /**
+     * Placeholder which indicates a value NULL.
+     */
     public static final Object nullValue = new Double(FunUtil.DoubleNull);
 
+    /**
+     * Placeholder which indicates an EMPTY value.
+     */
+    public static final Object EmptyValue = new Double(FunUtil.DoubleEmpty);
+    
     /**
      * Cumulative time spent accessing the database.
      */

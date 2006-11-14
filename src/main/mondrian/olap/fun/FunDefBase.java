@@ -128,6 +128,9 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
      *                    type "pxd" which means "an operator with
      *                    {@link Syntax#Property property} syntax (p) which returns a set
      *                    (x) and takes a dimension (d) as its argument".
+     *                    See {@link FunUtil#decodeSyntacticType(String)},
+     *                    {@link FunUtil#decodeReturnCategory(String)},
+     *                    {@link FunUtil#decodeParameterCategories(String)}.
      */
     protected FunDefBase(String name,
             String signature,

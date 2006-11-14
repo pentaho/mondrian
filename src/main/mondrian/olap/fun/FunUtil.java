@@ -46,6 +46,12 @@ public class FunUtil extends Util {
     public static final double DoubleNull = 0.000000012345;
 
     /**
+     * Special value which indicates that a <code>double</code> computation
+     * has returned the MDX EMPTY value. See {@link DoubleCalc}.
+     */
+    public static final double DoubleEmpty = -0.000000012345;
+    
+    /**
      * Special value which indicates that an <code>int</code> computation
      * has returned the MDX null value. See {@link mondrian.calc.IntegerCalc}.
      */
@@ -567,6 +573,8 @@ public class FunUtil extends Util {
             return Syntax.Infix;
         case 'P':
             return Syntax.Prefix;
+        case 'Q':
+            return Syntax.Postfix;
         case 'I':
             return Syntax.Internal;
         default:

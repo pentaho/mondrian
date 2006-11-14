@@ -196,12 +196,40 @@ public class ParserTest extends TestCase {
                     "from [cube]\n"));
     }
 
+    public void _testIsEmpty() {
+        assertParseExpr("[Measures].[Unit Sales] IS EMPTY",
+            "([Measures].[Unit Sales] IS EMPTY)");
+
+        assertParseExpr("[Measures].[Unit Sales] IS EMPTY AND 1 IS NULL",
+            "(([Measures].[Unit Sales] IS EMPTY) AND (1.0 IS NULL))");
+
+        // FIXME: "NULL" should associate as "IS NULL" rather than "NULL + 56.0"
+        assertParseExpr("- x * 5 is empty is empty is null + 56",
+            "(((((- x) * 5.0) IS EMPTY) IS EMPTY) IS (NULL + 56.0))");
+    }
+
+    public void testIs() {
+        assertParseExpr("[Measures].[Unit Sales] IS [Measures].[Unit Sales] AND [Measures].[Unit Sales] IS NULL",
+            "(([Measures].[Unit Sales] IS [Measures].[Unit Sales]) AND ([Measures].[Unit Sales] IS NULL))");
+    }
+
     public void testIsNull() {
         assertParseExpr("[Measures].[Unit Sales] IS NULL",
             "([Measures].[Unit Sales] IS NULL)");
 
         assertParseExpr("[Measures].[Unit Sales] IS NULL AND 1 <> 2",
             "(([Measures].[Unit Sales] IS NULL) AND (1.0 <> 2.0))");
+
+        assertParseExpr("x is null or y is null and z = 5",
+            "((x IS NULL) OR ((y IS NULL) AND (z = 5.0)))");
+
+        assertParseExpr("(x is null) + 56 > 6",
+            "((((x IS NULL)) + 56.0) > 6.0)");
+
+        // FIXME: Should be
+        //  "(((((x IS NULL) AND (a = b)) OR ((c = (d + 5.0))) IS NULL) + 5.0)");
+        assertParseExpr("x is null and a = b or c = d + 5 is null + 5",
+            "(((x IS NULL) AND (a = b)) OR ((c = (d + 5.0)) IS (NULL + 5.0)))");
     }
 
     public void testNull() {

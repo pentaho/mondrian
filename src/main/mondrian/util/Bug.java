@@ -43,6 +43,13 @@ public class Bug {
     // (What's the bug associated with this??)
 
     public static boolean Checkin7641UseOptimizer = false;
+
+    /**
+     * Whether
+     * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1530543&group_id=35302&atid=414613">bug 1530543, "IS EMPTY and IS NULL"</a>
+     * is fixed.
+     */
+    public static final boolean Bug1530543Fixed = false;
 }
 
 // End Bug.java

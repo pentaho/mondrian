@@ -18,13 +18,16 @@ import mondrian.calc.*;
 import mondrian.udf.CurrentDateMemberExactUdf;
 import mondrian.udf.CurrentDateMemberUdf;
 import mondrian.udf.CurrentDateStringUdf;
+import mondrian.util.Bug;
 
 import org.eigenbase.xom.StringEscaper;
 
+import javax.olap.metadata.CurrentMember;
 import java.io.*;
 import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * <code>FunctionTest</code> tests the functions defined in
@@ -262,7 +265,25 @@ public class FunctionTest extends FoodMartTestCase {
                 "Level 'nonexistent' not found");
     }
 
-    public void testIsEmpty() {
+    public void testIsEmptyQuery() {
+        String desiredResult = fold("Axis #0:\n" +
+            "{[Time].[1997].[Q4].[12], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer], [Measures].[Foo]}\n" +
+            "Axis #1:\n" +
+            "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+            "{[Store].[All Stores].[USA].[WA].[Bremerton]}\n" +
+            "{[Store].[All Stores].[USA].[WA].[Seattle]}\n" +
+            "{[Store].[All Stores].[USA].[WA].[Spokane]}\n" +
+            "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n" +
+            "{[Store].[All Stores].[USA].[WA].[Walla Walla]}\n" +
+            "{[Store].[All Stores].[USA].[WA].[Yakima]}\n" +
+            "Row #0: 5\n" +
+            "Row #0: 5\n" +
+            "Row #0: 2\n" +
+            "Row #0: 5\n" +
+            "Row #0: 11\n" +
+            "Row #0: 5\n" +
+            "Row #0: 4\n");
+        
         assertQueryReturns(
             "WITH MEMBER [Measures].[Foo] AS 'Iif(IsEmpty([Measures].[Unit Sales]), 5, [Measures].[Unit Sales])'\n" +
             "SELECT {[Store].[USA].[WA].children} on columns\n" +
@@ -270,23 +291,111 @@ public class FunctionTest extends FoodMartTestCase {
             "WHERE ( [Time].[1997].[Q4].[12],\n" +
             " [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n" +
             " [Measures].[Foo])",
-            fold("Axis #0:\n" +
-                "{[Time].[1997].[Q4].[12], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer], [Measures].[Foo]}\n" +
-                "Axis #1:\n" +
-                "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Bremerton]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Seattle]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Spokane]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Walla Walla]}\n" +
-                "{[Store].[All Stores].[USA].[WA].[Yakima]}\n" +
-                "Row #0: 5\n" +
-                "Row #0: 5\n" +
-                "Row #0: 2\n" +
-                "Row #0: 5\n" +
-                "Row #0: 11\n" +
-                "Row #0: 5\n" +
-                "Row #0: 4\n"));
+            desiredResult);
+
+        assertQueryReturns(
+            "WITH MEMBER [Measures].[Foo] AS 'Iif([Measures].[Unit Sales] IS EMPTY, 5, [Measures].[Unit Sales])'\n" +
+            "SELECT {[Store].[USA].[WA].children} on columns\n" +
+            "FROM Sales\n" +
+            "WHERE ( [Time].[1997].[Q4].[12],\n" +
+            " [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n" +
+            " [Measures].[Foo])",
+            desiredResult);
+    }
+
+    public void testIsEmpty()
+    {
+        assertBooleanExprReturns("[Gender].[All Gender].Parent IS NULL", true);
+
+        // Any functions that return a member from parameters that
+        // include a member and that member is NULL also give a NULL.
+        // Not a runtime exception.
+        assertBooleanExprReturns("[Gender].CurrentMember.Parent.NextMember IS NULL", true);
+
+        // When resolving a tuple's value in the cube, if there is
+        // at least one NULL member in the tuple should return a
+        // NULL cell value.
+        assertBooleanExprReturns("IsEmpty( ([Time].currentMember.Parent, [Measures].[Unit Sales]) )", false);
+        assertBooleanExprReturns("IsEmpty( ([Time].currentMember, [Measures].[Unit Sales]) )", false);
+
+        if (!Bug.Bug1530543Fixed) return;
+
+        // EMPTY refers to a genuine cell value that exists in the cube space,
+        // and has no NULL members in the tuple,
+        // but has no fact data at that crossing,
+        // so it evaluates to EMPTY as a cell value.
+        assertBooleanExprReturns("IsEmpty(\n" +
+            " ([Time].[1997].[Q4].[12],\n" +
+            "  [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n" +
+            "  [Store].[All Stores].[USA].[WA].[Bellingham]) )",
+            true);
+        assertBooleanExprReturns("IsEmpty(\n" +
+            " ([Time].[1997].[Q4].[11],\n" +
+            "  [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n" +
+            "  [Store].[All Stores].[USA].[WA].[Bellingham]) )",
+            false);
+
+        // The empty set is neither EMPTY nor NULL.
+        // should give 0 as a result, not NULL and not EMPTY.
+        assertQueryReturns(
+            "WITH SET [empty set] AS '{}'\n" +
+                " MEMBER [Measures].[Set Size] AS 'Count([empty set])'\n" +
+                " MEMBER [Measures].[Set Size Is Empty] AS 'CASE WHEN IsEmpty([Measures].[Set Size]) THEN 1 ELSE 0 END '\n" +
+                "SELECT [Measures].[Set Size] on columns",
+            "");
+
+        assertQueryReturns(
+            "WITH SET [empty set] AS '{}'\n" +
+                "WITH MEMBER [Measures].[Set Size] AS 'Count([empty set])'\n" +
+                "SELECT [Measures].[Set Size] on columns",
+            "");
+
+        // Run time errors are BAD things.  They should not occur
+        // in almost all cases.  In fact there should be no
+        // logically formed MDX that generates them.  An ERROR
+        // value in a cell though is perfectly legal - e.g. a
+        // divide by 0.
+        // E.g.
+        String foo = "WITH [Measures].[Ratio This Period to Previous] as\n" +
+            "'([Measures].[Sales],[Time].CurrentMember/([Measures].[Sales],[Time].CurrentMember.PrevMember)'\n" +
+            "SELECT [Measures].[Ratio This Period to Previous] ON COLUMNS,\n" +
+            "[Time].Members ON ROWS\n" +
+            "FROM ...";
+
+        // For the [Time].[All Time] row as well as the first
+        // year, first month etc, the PrevMember will evaluate to
+        // NULL, the tuple will evaluate to NULL and the division
+        // will implicitly convert the NULL to 0 and then evaluate
+        // to an ERROR value due to a divide by 0.
+
+        // This leads to another point: NULL and EMPTY values get
+        // implicitly converted to 0 when treated as numeric
+        // values for division and multiplication but for addition
+        // and subtraction, NULL is treated as NULL (5+NULL yields
+        // NULL).
+        // I have no idea about how EMPTY works.  I.e. is does
+        // 5+EMPTY yield 5 or EMPTY or NULL or what?
+        // E.g.
+        String foo2 = "WITH MEMBER [Measures].[5 plus empty] AS\n" +
+            "'5+([Product].[All Products].[Ski boots],[Geography].[All Geography].[Hawaii])'\n" +
+            "SELECT [Measures].[5 plus empty] ON COLUMNS\n" +
+            "FROM ...";
+        // Does this yield EMPTY, 5, NULL or ERROR?
+
+        // Lastly, IS NULL and IS EMPTY are both legal and
+        // distinct.  <<Object>> IS {<<Object>> | NULL}  and
+        // <<Value>> IS EMPTY.
+        // E.g.
+        // a)  [Time].CurrentMember.Parent IS [Time].[Year].[2004]
+        // is also a perfectly legal expression and better than
+        // [Time].CurrentMember.Parent.Name="2004".
+        // b) ([Measures].[Sales],[Time].FirstSibling) IS EMPTY is
+        // a legal expression.
+
+
+        // Microsoft's site says that the EMPTY value participates in 3 value
+        // logic e.g. TRUE AND EMPTY gives EMPTY, FALSE AND EMPTY gives FALSE.
+        // todo: test for this
     }
 
     public void testQueryWithoutValidMeasure() {
@@ -4119,6 +4228,8 @@ public class FunctionTest extends FoodMartTestCase {
     public void testIsTuple() {
         assertBooleanExprReturns(" (Store.[USA], Gender.[M]) IS (Store.[USA], Gender.[M])", true);
         assertBooleanExprReturns(" (Store.[USA], Gender.[M]) IS (Gender.[M], Store.[USA])", true);
+        assertBooleanExprReturns(" (Store.[USA], Gender.[M]) IS (Gender.[M], Store.[USA]) OR [Gender] IS NULL", true);
+        assertBooleanExprReturns(" (Store.[USA], Gender.[M]) IS (Gender.[M], Store.[USA]) AND [Gender] IS NULL", false);
         assertBooleanExprReturns(" (Store.[USA], Gender.[M]) IS (Store.[USA], Gender.[F])", false);
         assertBooleanExprReturns(" (Store.[USA], Gender.[M]) IS (Store.[USA])", false);
         assertBooleanExprReturns(" (Store.[USA], Gender.[M]) IS Store.[USA]", false);

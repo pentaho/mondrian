@@ -281,7 +281,8 @@ public class BuiltinFunTable extends FunTableImpl {
 
         //
         // LOGICAL FUNCTIONS
-        define(IsEmptyFunDef.Resolver);
+        define(IsEmptyFunDef.FunctionResolver);
+        define(IsEmptyFunDef.PostfixResolver);
         define(IsNullFunDef.Resolver);
         define(IsFunDef.Resolver);
 

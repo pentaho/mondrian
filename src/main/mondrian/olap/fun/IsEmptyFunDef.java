@@ -11,6 +11,7 @@ package mondrian.olap.fun;
 
 import mondrian.olap.FunDef;
 import mondrian.olap.Evaluator;
+import mondrian.olap.Util;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.impl.AbstractBooleanCalc;
@@ -24,11 +25,18 @@ import mondrian.mdx.ResolvedFunCall;
  * @since Mar 23, 2006
  */
 class IsEmptyFunDef extends FunDefBase {
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver FunctionResolver = new ReflectiveMultiResolver(
             "IsEmpty",
             "IsEmpty(<Value Expression>)",
             "Determines if an expression evaluates to the empty cell value.",
             new String[] {"fbS", "fbn"},
+            IsEmptyFunDef.class);
+
+    static final ReflectiveMultiResolver PostfixResolver = new ReflectiveMultiResolver(
+            "IS EMPTY",
+            "<Value Expression> IS EMPTY",
+            "Determines if an expression evaluates to the empty cell value.",
+            new String[] {"Qbm", "Qbt"},
             IsEmptyFunDef.class);
 
     public IsEmptyFunDef(FunDef dummyFunDef) {
