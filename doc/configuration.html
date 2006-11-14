@@ -729,7 +729,7 @@ and punctuation. See the the
 <a target="_blank" href="http://msdn.microsoft.com/library/en-us/oledb/htm/oledbconnectionstringsyntax.asp">
 OLE DB connect string syntax specification</a>.</p>
 <p>The supported properties are described below.</p>
-<h3>Connect string propertiess<a name="Connect_string_properties">&nbsp;</a></h3>
+<h3>Connect string properties<a name="Connect_string_properties">&nbsp;</a></h3>
 
 <table border="1" id="table1">
     <tr>
@@ -740,72 +740,81 @@ OLE DB connect string syntax specification</a>.</p>
     <tr>
         <td>Provider</td>
         <td>Yes</td>
-        <td>Must have the value &quot;Mondrian&quot;</td>
+        <td><p>Must have the value &quot;Mondrian&quot;.</p></td>
     </tr>
     <tr>
         <td>Jdbc</td>
         <td rowspan="2">Exactly one</td>
-        <td>The URL of the JDBC database where the data is stored. You must 
-        specify either <code>DataSource</code> or <code>Jdbc</code>.</td>
+        <td><p>The URL of the JDBC database where the data is stored. You must 
+        specify either <code>DataSource</code> or <code>Jdbc</code>.</p></td>
     </tr>
     <tr>
         <td>DataSource</td>
-        <td>The name of a data source class. The class must implement the 
-        <a href="http://java.sun.com/j2se/1.5.0/docs/api/javax/sql/DataSource.html">javax.sql.DataSource</a> interface. You must specify either 
-        <code>DataSource</code> or <code>Jdbc</code>.</td>
+        <td><p>The name of a data source class. The class must implement the 
+        <a href="http://java.sun.com/j2se/1.5.0/docs/api/javax/sql/DataSource.html">javax.sql.DataSource</a> interface. 
+        You must specify either 
+        <code>DataSource</code> or <code>Jdbc</code>.</p></td>
     </tr>
     <tr>
         <td>JdbcDrivers</td>
         <td>Yes</td>
-        <td>Comma-separated list of JDBC driver classes, for example,<blockquote>
-            <p>JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver</p>
-
+        <td><p>Comma-separated list of JDBC driver classes, for example,</p>
+        
+        <blockquote>
+            <code>JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver</code>
         </blockquote>
         </td>
     </tr>
     <tr>
         <td>JdbcUser</td>
         <td>No</td>
-        <td>The name of the user to log on to the JDBC database. (If your JDBC 
+        <td><p>The name of the user to log on to the JDBC database. (If your JDBC 
         driver allows you to specify the user name in the JDBC URL, you don't 
-        need to set this property.)</td>
+        need to set this property.)</p></td>
     </tr>
     <tr>
         <td>JdbcPassword</td>
         <td>No</td>
-        <td>The name of the password to log on to the JDBC database. (If your 
+        <td><p>The name of the password to log on to the JDBC database. (If your 
         JDBC driver allows you to specify the password in the JDBC URL, you 
-        don't need to set this property.)</td>
+        don't need to set this property.)</p></td>
     </tr>
     <tr>
         <td>Catalog</td>
         <td rowspan="2">Exactly one</td>
-        <td>The URL of the catalog, an XML file which describes the schema: cubes, hierarchies, and so forth. 
-        For example,<blockquote><code>
+        <td><p>The URL of the catalog, an XML file which describes the schema: cubes, hierarchies, and so forth. 
+        For example,</p>
+        
+        <blockquote><code>
             Catalog=file:demo/FoodMart.xml</code></blockquote>
+        
         <p>Catalogs are described in <a href="schema.html">the Schema Guide</a>. 
-        See also <code>CatalogContent</code>.</td>
+        See also <code>CatalogContent</code>.</p></td>
     </tr>
     <tr>
         <td>CatalogContent</td>
-        <td>An XML string representing the schema: cubes, hierarchies, and so forth. 
-        For example,<blockquote><code>
+        <td><p>An XML string representing the schema: cubes, hierarchies, and so forth. 
+        For example,</p>
+        
+        <blockquote><code>
             CatalogContent=&lt;Schema name=&quot;MySchema&quot;&gt;&lt;Cube name=&quot;Cube1&quot;&gt; ... 
             &lt;/Schema&gt;</code></blockquote>
+        
         <p>Catalogs are described in <a href="schema.html">the Schema Guide</a>. 
-        See also <code>Catalog</code>.</td>
+        See also <code>Catalog</code>.</p></td>
     </tr>
     <tr>
         <td>CatalogName</td>
         <td>No</td>
-        <td>Not used . If, in future, we support multiple catalogs, this property will specify which catalog to use. See also
-        <code>Catalog</code>.</td>
+        <td><p>Not used. If, in future, Mondrian supports multiple catalogs, this property
+        will specify which catalog to use. See also <code>Catalog</code>.</p></td>
     </tr>
     <tr>
         <td>PoolNeeded</td>
         <td>No</td>
-        <td>Tells Mondrian whether to add a layer of connection pooling.<p>If 
-        the value &quot;true&quot; is specified, or no value is specified, Mondrian 
+        <td><p>Tells Mondrian whether to add a layer of connection pooling.</p>
+        
+        <p>If the value &quot;true&quot; is specified, or no value is specified, Mondrian 
         assumes that:</p>
 
         <ul>
@@ -815,19 +824,23 @@ OLE DB connect string syntax specification</a>.</p>
         </ul>
 
         <p>If the value &quot;false&quot; is specified, Mondrian does not apply 
-        connection-pooling to any connection.</td>
+        connection-pooling to any connection.</p></td>
     </tr>
     <tr>
         <td>Role</td>
         <td>No</td>
-        <td>The name of the <a href="schema.html#Access_control">role</a> to adopt 
-        for access-control purposes. If not specified, the connection uses a role which has access to every object in the schema.</td>
+        <td><p>The name of the <a href="schema.html#Access_control">role</a> to adopt 
+        for access-control purposes. If not specified, the connection uses a role 
+        which has access to every object in the schema.</p></td>
     </tr>
     <tr>
         <td>jdbc.*</td>
         <td>No</td>
-        <td>Any property whose name begins with &quot;jdbc.&quot; will be added to the JDBC connection properties, after removing this prefix. This allows you to specify connection properties without a URL.<p>
-        For example, given the properties</p>
+        <td><p>Any property whose name begins with &quot;jdbc.&quot; will be added to the JDBC 
+        connection properties, after removing this prefix. This allows you to specify connection 
+        properties without a URL.</p>
+        
+        <p>For example, given the properties</p>
 
         <blockquote>
             <p><code>jdbc.Timeout=50; jdbc.CacheSize=1m</code></p>
@@ -839,28 +852,33 @@ OLE DB connect string syntax specification</a>.</p>
     <tr>
         <td>DynamicSchemaProcessor</td>
         <td>No</td>
-        <td>The name of a class which is called at runtime in order to modify 
+        <td><p>The name of a class which is called at runtime in order to modify 
         the schema content. The class must implement the
         <a href="api/mondrian/rolap/DynamicSchemaProcessor.html">
-        mondrian.rolap.DynamicSchemaProcessor</a> interface. For example,<blockquote>
-            <p><code>DynamicSchemaProcessor = 
-            mondrian.i18n.LocalizingDynamicSchemaProcessor</code></p>
-
+        mondrian.rolap.DynamicSchemaProcessor</a> interface. For example,</p>
+        
+        <blockquote>
+            <code>DynamicSchemaProcessor = 
+            mondrian.i18n.LocalizingDynamicSchemaProcessor</code>
         </blockquote>
+        
         <p>uses the builtin schema processor class
         <a href="api/mondrian/i18n/LocalizingDynamicSchemaProcessor.html">
         mondrian.i18n.LocalizingDynamicSchemaProcessor</a> to replace variables 
         in the schema file, according to resource files and the current locale 
-        (see the <code>Locale</code> property).</td>
+        (see the <code>Locale</code> property).</p></td>
     </tr>
     <tr>
         <td>Locale</td>
         <td>No</td>
-        <td>The requested Locale for the current session. The locale determines 
+        <td><p>The requested Locale for the current session. The locale determines 
         the formatting of numbers and date/time values, and Mondrian's error 
-        messages.<p>Example values are &quot;en&quot; (English), &quot;en_US&quot; 
+        messages.</p>
+        
+        <p>Example values are &quot;en&quot; (English), &quot;en_US&quot; 
         (United States English), &quot;hu&quot; (Hungarian). If Locale is not specified, then the name of system's default will be used, as per 
-        <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Locale.html#getDefault()">java.util.Locale#getDefault()</.</td>
+        <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Locale.html#getDefault()">
+        java.util.Locale#getDefault().</td>
     </tr>
 </table>
 <p>Connect string properties are also documented in the
@@ -890,7 +908,7 @@ retain their schemas.</p>
 
 <hr noshade size="1"/>
 <p>
-    Author: Julian Hyde; last modified August 2006.6.<br/>
+    Author: Julian Hyde; last modified August 2006.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/configuration.html?ac=22">log</a>)<br/>
     Copyright (C) 2006-2006 Julian Hyde
