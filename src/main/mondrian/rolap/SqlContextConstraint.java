@@ -10,9 +10,9 @@ package mondrian.rolap;
 
 import java.util.*;
 
-import mondrian.olap.Evaluator;
-import mondrian.olap.Member;
-import mondrian.olap.Util;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
@@ -61,13 +61,131 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         if (context == null) {
             return false;
         }
-        if (disallowVirtualCube) {
-            RolapCube cube = (RolapCube) context.getCube();
+        RolapCube cube = (RolapCube) context.getCube();
+        if (disallowVirtualCube) {           
             if (cube.isVirtual()) {
                 return false;
             }
         }
+        if (cube.isVirtual() &&
+            !findVirtualCubeJoinLevels(context.getQuery()))
+        {
+            return false;
+        }
         return true;
+    }
+    
+    /**
+     * Locates joins required with the underlying fact tables that make up a
+     * virtual cube by validating the measures referenced in the query.
+     * 
+     * @param query query referencing the virtual cube
+     * 
+     * @return true if valid measures exist
+     */
+    private static boolean findVirtualCubeJoinLevels(Query query)
+    {
+        // Gather the unique set of level-to-column maps corresponding
+        // to the underlying star/cube where the measure column
+        // originates from.
+        Set baseCubesLevelToColumnMaps = new HashSet();
+        Map measureMap = new HashMap();
+        Set measureMembers = query.getMeasuresMembers();
+        // if no measures are explicitly referenced, just use the default
+        // measure
+        if (measureMembers.isEmpty()) {
+            Cube cube = query.getCube();
+            Dimension dimension = cube.getDimensions()[0];
+            query.addMeasuresMembers(
+                dimension.getHierarchy().getDefaultMember());
+        }
+        for (Iterator it = query.getMeasuresMembers().iterator();
+            it.hasNext(); )
+        {
+            Member member = (Member) it.next();
+            if (member instanceof RolapStoredMeasure) {
+                addMeasure(
+                    (RolapStoredMeasure) member,
+                    baseCubesLevelToColumnMaps,
+                    measureMap);
+            } else if (member instanceof RolapCalculatedMember) {
+                findMeasures(
+                    ((RolapCalculatedMember) member).getExpression(),
+                    baseCubesLevelToColumnMaps,
+                    measureMap);
+            }
+        }
+        if (measureMap.isEmpty()) {
+            return false;
+        }
+        
+        query.setVirtualCubeBaseCubeMaps(baseCubesLevelToColumnMaps);
+        query.setLevelMapToMeasureMap(measureMap);
+        return true;
+    }
+    
+    /**
+     * Adds information regarding a stored measure to maps
+     * 
+     * @param measure the stored measure
+     * @param baseCubesLevelToColumnMaps level to column maps for the
+     * underlying cubes that make up the virtual cube referenced in a query
+     * @param measureMap maps a level-to-column map to a measure
+     */
+    private static void addMeasure(
+        RolapStoredMeasure measure,
+        Set baseCubesLevelToColumnMaps,
+        Map measureMap) 
+    {
+        RolapStar.Measure starMeasure =
+            (RolapStar.Measure) measure.getStarMeasure();
+        RolapStar star = starMeasure.getStar();
+        RolapCube baseCube = measure.getCube();
+        Map levelToColumnMap =
+            star.getMapLevelToColumn(baseCube);
+        if (baseCubesLevelToColumnMaps.add(levelToColumnMap)) {
+            measureMap.put(levelToColumnMap, measure);
+        }
+    }
+    
+    /**
+     * Extracts the stored measures referenced in an expression
+     * 
+     * @param exp expression
+     * @param baseCubesLevelToColumnMaps
+     * @param baseCubesLevelToColumnMaps level to column maps for the
+     * underlying cubes that make up the virtual cube referenced in a query
+     * @param measureMap maps a level-to-column map to a measure
+     */
+    private static void findMeasures(
+        Exp exp,
+        Set baseCubesLevelToColumnMaps,
+        Map measureMap)
+    {
+        if (exp instanceof MemberExpr) {
+            MemberExpr memberExpr = (MemberExpr) exp;
+            Member member = memberExpr.getMember();
+            if (member instanceof RolapStoredMeasure) {
+                addMeasure(
+                    (RolapStoredMeasure) member,
+                    baseCubesLevelToColumnMaps,
+                    measureMap);
+            } else if (member instanceof RolapCalculatedMember) {
+                findMeasures(
+                    ((RolapCalculatedMember) member).getExpression(),
+                    baseCubesLevelToColumnMaps,
+                    measureMap);
+            }
+        } else if (exp instanceof ResolvedFunCall) {
+            ResolvedFunCall funCall = (ResolvedFunCall) exp;
+            Exp [] args = funCall.getArgs();
+            for (int i = 0; i < args.length; i++) {
+                findMeasures(
+                    args[i],
+                    baseCubesLevelToColumnMaps,
+                    measureMap);
+            }
+        }
     }
 
    /**

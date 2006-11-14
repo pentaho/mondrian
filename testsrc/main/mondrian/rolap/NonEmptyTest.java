@@ -174,6 +174,15 @@ public class NonEmptyTest extends FoodMartTestCase {
                 "from [Warehouse and Sales]");
         c.run();
     }
+    
+    public void testVirtualCubeMembers() throws Exception {
+        // ok to use native sql optimization for members on a virtual cube
+        TestCase c = new TestCase(6, 3,
+                "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Warehouse Sales]} ON COLUMNS, " +
+                "NON EMPTY {[Product].[Product Family].Members} ON ROWS " +
+                "from [Warehouse and Sales]");
+        c.run();
+    }
 
     public void testNativeFilter() {
         if (!MondrianProperties.instance().EnableNativeFilter.get()) {

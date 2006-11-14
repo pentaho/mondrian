@@ -42,7 +42,7 @@ public class SqlConstraintFactory {
     }
 
     public TupleConstraint getLevelMembersConstraint(Evaluator context) {
-        if (!enabled || !SqlContextConstraint.isValidContext(context))
+        if (!enabled || !SqlContextConstraint.isValidContext(context, false))
             return DefaultTupleConstraint.instance();
         return new SqlContextConstraint((RolapEvaluator) context, false);
     }
