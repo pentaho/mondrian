@@ -13,6 +13,7 @@ package mondrian.rolap.agg;
 
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.util.Bug;
 
 /**
  * Base class for {@link QuerySpec} implementations.
@@ -47,10 +48,15 @@ public abstract class AbstractQuerySpec implements QuerySpec {
     protected abstract void addMeasure(final int i, final SqlQuery sqlQuery);
     protected abstract boolean isAggregate();
 
-    protected void nonDistinctGenerateSQL(final SqlQuery sqlQuery) {
+    protected void nonDistinctGenerateSql(
+        final SqlQuery sqlQuery, boolean ordered, boolean countOnly)
+    {
         // add constraining dimensions
         RolapStar.Column[] columns = getColumns();
         int arity = columns.length;
+        if (countOnly) {
+            sqlQuery.addSelect("count(*)");
+        }
         for (int i = 0; i < arity; i++) {
             RolapStar.Column column = columns[i];
             RolapStar.Table table = column.getTable();
@@ -69,9 +75,14 @@ public abstract class AbstractQuerySpec implements QuerySpec {
                                                column.isNumeric()));
             }
 
+            if (countOnly) {
+                continue;
+            }
+
             // some DB2 (AS400) versions throw an error, if a column alias is
             // there and *not* used in a subsequent order by/group by
-            if (sqlQuery.getDialect().isAS400()) {
+            final SqlQuery.Dialect dialect = sqlQuery.getDialect();
+            if (dialect.isAS400()) {
                 sqlQuery.addSelect(expr, null);
             } else {
                 sqlQuery.addSelect(expr, getColumnAlias(i));
@@ -80,11 +91,19 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             if (isAggregate()) {
                 sqlQuery.addGroupBy(expr);
             }
+
+            // Add ORDER BY clause to make the results deterministic.
+            // Derby has a bug with ORDER BY, so ignore it.
+            if (ordered) {
+                sqlQuery.addOrderBy(expr, true, false, false);
+            }
         }
 
         // add measures
-        for (int i = 0, count = getMeasureCount(); i < count; i++) {
-            addMeasure(i, sqlQuery);
+        if (!countOnly) {
+            for (int i = 0, count = getMeasureCount(); i < count; i++) {
+                addMeasure(i, sqlQuery);
+            }
         }
     }
 }

@@ -29,11 +29,16 @@ import java.util.Set;
  */
 class DrillThroughQuerySpec extends AbstractQuerySpec {
     private final CellRequest request;
+    private final boolean countOnly;
     private final String[] columnNames;
 
-    public DrillThroughQuerySpec(final CellRequest request) {
+    public DrillThroughQuerySpec(
+        final CellRequest request,
+        boolean countOnly)
+    {
         super(request.getMeasure().getStar());
         this.request = request;
+        this.countOnly = countOnly;
         this.columnNames = computeDistinctColumnNames();
     }
 
@@ -52,9 +57,11 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         return (String[]) columnNames.toArray(new String[columnNames.size()]);
     }
 
-    private void addColumnName(final RolapStar.Column column, 
-                               final List columnNames, 
-                               final Set columnNameSet) {
+    private void addColumnName(
+        final RolapStar.Column column,
+        final List columnNames,
+        final Set columnNameSet)
+    {
         String columnName = column.getName();
         if (columnName != null) {
             // nothing
@@ -106,10 +113,11 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     public String generateSqlQuery() {
         SqlQuery sqlQuery = newSqlQuery();
 
-        nonDistinctGenerateSQL(sqlQuery);
+        nonDistinctGenerateSql(sqlQuery, true, countOnly);
 
         return sqlQuery.toString();
     }
+
     protected void addMeasure(final int i, final SqlQuery sqlQuery) {
         RolapStar.Measure measure = getMeasure(i);
 
@@ -119,6 +127,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         String expr = measure.generateExprString(sqlQuery);
         sqlQuery.addSelect(expr, getMeasureAlias(i));
     }
+
     protected boolean isAggregate() {
         return false;
     }

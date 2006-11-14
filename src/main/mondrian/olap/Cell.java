@@ -86,6 +86,11 @@ public interface Cell {
     boolean canDrillThrough();
 
     /**
+     * Returns the number of fact table rows which contributed to this Cell.
+     */
+    int getDrillThroughCount();
+
+    /**
      * Returns the value of a property.
      */
     Object getPropertyValue(String propertyName);

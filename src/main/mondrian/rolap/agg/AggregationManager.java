@@ -117,8 +117,14 @@ public class AggregationManager extends RolapAggregationManager {
         }
     }
 
-    public String getDrillThroughSQL(final CellRequest request) {
-        DrillThroughQuerySpec spec = new DrillThroughQuerySpec(request);
+    public String getDrillThroughSql(
+        final CellRequest request,
+        boolean countOnly)
+    {
+        DrillThroughQuerySpec spec =
+            new DrillThroughQuerySpec(
+                request,
+                countOnly);
         String sql = spec.generateSqlQuery();
 
         if (getLogger().isDebugEnabled()) {

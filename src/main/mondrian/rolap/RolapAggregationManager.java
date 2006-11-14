@@ -185,7 +185,17 @@ public abstract class RolapAggregationManager implements CellReader {
         return getCell(rolapEvaluator.getCurrentMembers());
     }
 
-    public abstract String getDrillThroughSQL(CellRequest request);
+    /**
+     * Generates a SQL statement which will return the rows which contribute to
+     * this request.
+     *
+     * @param request Cell request
+     * @param countOnly If true, return a statment which returns only the count
+     * @return SQL statement
+     */
+    public abstract String getDrillThroughSql(
+        CellRequest request,
+        boolean countOnly);
 
     public int getMissCount() {
         return 0; // never lies

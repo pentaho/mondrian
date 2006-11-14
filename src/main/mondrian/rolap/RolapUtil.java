@@ -243,7 +243,9 @@ public class RolapUtil {
         }
         try {
             final long start = System.currentTimeMillis();
-            statement = jdbcConnection.createStatement();
+            statement = jdbcConnection.createStatement(
+                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
             if (maxRows > 0) {
                 statement.setMaxRows(maxRows);
             }

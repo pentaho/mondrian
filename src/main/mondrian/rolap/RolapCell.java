@@ -13,6 +13,10 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 
+import java.sql.Statement;
+import java.sql.SQLException;
+import java.sql.ResultSet;
+
 /**
  * <code>RolapCell</code> implements {@link mondrian.olap.Cell} within a
  * {@link RolapResult}.
@@ -90,7 +94,51 @@ class RolapCell implements Cell {
                 currentMembers, extendedContext, true);
         return (cellRequest == null)
             ? null
-            : aggMan.getDrillThroughSQL(cellRequest);
+            : aggMan.getDrillThroughSql(cellRequest, false);
+    }
+
+
+    public int getDrillThroughCount() {
+        RolapAggregationManager aggMan = AggregationManager.instance();
+
+        final RolapEvaluator evaluator = getEvaluator();
+        final Member[] currentMembers = evaluator.getCurrentMembers();
+        CellRequest cellRequest = RolapAggregationManager.makeRequest(
+            currentMembers, false, true);
+        if (cellRequest == null) {
+            return -1;
+        }
+        RolapConnection connection =
+            (RolapConnection) evaluator.getQuery().getConnection();
+        java.sql.Connection jdbcConnection = null;
+        ResultSet rs = null;
+        final String sql = aggMan.getDrillThroughSql(cellRequest, true);
+        try {
+            jdbcConnection = connection.getDataSource().getConnection();
+            rs = RolapUtil.executeQuery(
+                jdbcConnection, sql, "RolapCell.getDrillThroughCount");
+            rs.next();
+            int count = rs.getInt(1);
+            rs.close();
+            return count;
+        } catch (SQLException e) {
+            throw Util.newError(
+                e,
+                "Error while counting drill-through, SQL ='" + sql + "'");
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (SQLException ignored) {
+            }
+            try {
+                if (jdbcConnection != null && !jdbcConnection.isClosed()) {
+                    jdbcConnection.close();
+                }
+            } catch (SQLException ignored) {
+            }
+        }
     }
 
     /**

@@ -81,7 +81,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         if (!sqlQuery.getDialect().allowsCountDistinct() && hasDistinct()) {
             distinctGenerateSql(sqlQuery);
         } else {
-            nonDistinctGenerateSQL(sqlQuery);
+            nonDistinctGenerateSql(sqlQuery, false, false);
         }
 
         return sqlQuery.toString();

@@ -312,13 +312,13 @@ public class FunctionTest extends FoodMartTestCase {
         // Not a runtime exception.
         assertBooleanExprReturns("[Gender].CurrentMember.Parent.NextMember IS NULL", true);
 
+        if (!Bug.Bug1530543Fixed) return;
+
         // When resolving a tuple's value in the cube, if there is
         // at least one NULL member in the tuple should return a
         // NULL cell value.
         assertBooleanExprReturns("IsEmpty( ([Time].currentMember.Parent, [Measures].[Unit Sales]) )", false);
         assertBooleanExprReturns("IsEmpty( ([Time].currentMember, [Measures].[Unit Sales]) )", false);
-
-        if (!Bug.Bug1530543Fixed) return;
 
         // EMPTY refers to a genuine cell value that exists in the cube space,
         // and has no NULL members in the tuple,

@@ -1169,6 +1169,17 @@ public class SqlQuery
             }
             return expr;
         }
+
+        /**
+         * Returns whether this Dialect supports expressions in the GROUP BY
+         * clause. Derby/Cloudscape do not.
+         *
+         * @return Whether this Dialect allows expressions in the GROUP BY
+         *   clause
+         */
+        public boolean supportsGroupByExpressions() {
+            return !(isDerby() || isCloudscape());
+        }
     }
 
     /**

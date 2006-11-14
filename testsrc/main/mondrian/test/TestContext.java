@@ -767,6 +767,52 @@ public class TestContext {
     }
 
     /**
+     * Checks that expected SQL equals actual SQL.
+     * Performs some normalization on the actual SQL to compensate for
+     * differences between dialects.
+     */
+    public void assertSqlEquals(String expectedSql, String actualSql) {
+        final String search = "fname \\+ ' ' \\+ lname";
+        final SqlQuery.Dialect dialect = getDialect();
+        if (dialect.isMySQL()) {
+            // Mysql would generate "CONCAT( ... )"
+            expectedSql = expectedSql.replaceAll(
+                    search,
+                    "CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)");
+        } else if (dialect.isPostgres()  || dialect.isOracle()) {
+            expectedSql = expectedSql.replaceAll(
+                    search,
+                    "`fname` || ' ' || `lname`");
+        } else if (dialect.isDerby() || dialect.isCloudscape()) {
+            expectedSql = expectedSql.replaceAll(
+                    search,
+                    "`customer`.`fullname`");
+        } else if (dialect.isDB2()) {
+            expectedSql = expectedSql.replaceAll(
+                    search,
+                    "CONCAT(CONCAT(fname, ' '), lname)");
+        }
+
+        // DB2 does not have quotes on identifiers
+        if (dialect.isDB2()) {
+            expectedSql = expectedSql.replaceAll("`", "");
+        }
+
+        // the following replacement is for databases in ANSI mode
+        //  using '"' to quote identifiers
+        actualSql = actualSql.replace('"', '`');
+
+        if (dialect.isOracle()) {
+            // " + tableQualifier + "
+            expectedSql = expectedSql.replaceAll(" =as= ", " ");
+        } else {
+            expectedSql = expectedSql.replaceAll(" =as= ", " as ");
+        }
+
+        Assert.assertEquals(expectedSql, actualSql);
+    }
+
+    /**
      * Creates a TestContext which is based on a variant of the FoodMart
      * schema, which parameter, cube, named set, and user-defined function
      * definitions added.
@@ -777,7 +823,9 @@ public class TestContext {
      * @param cubeDefs Cube definition(s). If not null, the string is
      *   is inserted into the schema XML in the appropriate place for
      *   cube definitions.
-     * @param virtualCubeDefs
+     * @param virtualCubeDefs Definitions of virtual cubes. If not null, the
+     *   string is inserted into the schema XML in the appropriate place for
+     *   virtual cube definitions.
      * @param namedSetDefs Definitions of named sets. If not null, the string
      *   is inserted into the schema XML in the appropriate place for
      *   named set definitions.

@@ -31,52 +31,6 @@ public class DrillThroughTest extends FoodMartTestCase {
         super(name);
     }
 
-    /**
-     * Checks that expected SQL equals actual SQL.
-     * Performs some normalization on the actual SQL to compensate for
-     * differences between dialects.
-     */
-    private void assertSqlEquals(String expectedSql, String actualSql) {
-        final String search = "fname \\+ ' ' \\+ lname";
-        final SqlQuery.Dialect dialect = getTestContext().getDialect();
-        if (dialect.isMySQL()) {
-            // Mysql would generate "CONCAT( ... )"
-            expectedSql = expectedSql.replaceAll(
-                    search,
-                    "CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)");
-        } else if (dialect.isPostgres()  || dialect.isOracle()) {
-            expectedSql = expectedSql.replaceAll(
-                    search,
-                    "`fname` || ' ' || `lname`");
-        } else if (dialect.isDerby() || dialect.isCloudscape()) {
-            expectedSql = expectedSql.replaceAll(
-                    search,
-                    "`customer`.`fullname`");
-        } else if (dialect.isDB2()) {
-            expectedSql = expectedSql.replaceAll(
-                    search,
-                    "CONCAT(CONCAT(fname, ' '), lname)");
-        }
-
-        // DB2 does not have quotes on identifiers
-        if (dialect.isDB2()) {
-            expectedSql = expectedSql.replaceAll("`", "");
-        }
-
-        // the following replacement is for databases in ANSI mode
-        //  using '"' to quote identifiers
-        actualSql = actualSql.replace('"', '`');
-
-        if (dialect.isOracle()) {
-            // " + tableQualifier + "
-            expectedSql = expectedSql.replaceAll(" =as= ", " ");
-        } else {
-            expectedSql = expectedSql.replaceAll(" =as= ", " as ");
-        }
-
-        assertEquals(expectedSql, actualSql);
-    }
-
     // ~ Tests ================================================================
 
     public void testDrillThrough() {
@@ -101,9 +55,11 @@ public class DrillThroughTest extends FoodMartTestCase {
                 " and `time_by_day`.`the_year` = 1997" +
                 " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
                 " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
-                " and `product_class`.`product_family` = 'Drink'";
+                " and `product_class`.`product_family` = 'Drink' " +
+                "order by `time_by_day`.`the_year` ASC," +
+                " `product_class`.`product_family` ASC";
 
-        assertSqlEquals(expectedSql, sql);
+        getTestContext().assertSqlEquals(expectedSql, sql);
 
         // Cannot drill through a calc member.
         final Cell calcCell = result.getCell(new int[]{1, 1});
@@ -162,8 +118,34 @@ public class DrillThroughTest extends FoodMartTestCase {
                 " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
                 " and `product_class`.`product_family` = 'Drink'" +
                 " and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`" +
-                " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`";
-        assertSqlEquals(expectedSql, sql);
+                " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
+                "order by `store`.`store_name` ASC," +
+                " `store`.`store_city` ASC," +
+                " `store`.`store_state` ASC," +
+                " `store`.`store_country` ASC," +
+                " `store`.`store_sqft` ASC," +
+                " `store`.`store_type` ASC," +
+                " `time_by_day`.`month_of_year` ASC," +
+                " `time_by_day`.`quarter` ASC," +
+                " `time_by_day`.`the_year` ASC," +
+                " `product`.`product_name` ASC," +
+                " `product`.`brand_name` ASC," +
+                " `product_class`.`product_subcategory` ASC," +
+                " `product_class`.`product_category` ASC," +
+                " `product_class`.`product_department` ASC," +
+                " `product_class`.`product_family` ASC," +
+                " `promotion`.`media_type` ASC," +
+                " `promotion`.`promotion_name` ASC," +
+                " `customer`.`customer_id` ASC," +
+                " fname + ' ' + lname ASC," +
+                " `customer`.`city` ASC," +
+                " `customer`.`state_province` ASC," +
+                " `customer`.`country` ASC," +
+                " `customer`.`education` ASC," +
+                " `customer`.`gender` ASC," +
+                " `customer`.`marital_status` ASC," +
+                " `customer`.`yearly_income` ASC";
+        getTestContext().assertSqlEquals(expectedSql, sql);
 
         // Drillthrough SQL is null for cell based on calc member
         sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL(true);
@@ -227,8 +209,34 @@ public class DrillThroughTest extends FoodMartTestCase {
                 "and `sales_fact_1997`.`product_id` = `product`.`product_id` " +
                 "and `product`.`product_class_id` = `product_class`.`product_class_id` " +
                 "and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` " +
-                "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`";
-        assertSqlEquals(expectedSql, sql);
+                "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
+                "order by `store`.`store_name` ASC," +
+                " `store`.`store_city` ASC," +
+                " `store`.`store_state` ASC," +
+                " `store`.`store_country` ASC," +
+                " `store`.`store_sqft` ASC," +
+                " `store`.`store_type` ASC," +
+                " `time_by_day`.`month_of_year` ASC," +
+                " `time_by_day`.`quarter` ASC," +
+                " `time_by_day`.`the_year` ASC," +
+                " `product`.`product_name` ASC," +
+                " `product`.`brand_name` ASC," +
+                " `product_class`.`product_subcategory` ASC," +
+                " `product_class`.`product_category` ASC," +
+                " `product_class`.`product_department` ASC," +
+                " `product_class`.`product_family` ASC," +
+                " `promotion`.`media_type` ASC," +
+                " `promotion`.`promotion_name` ASC," +
+                " `customer`.`customer_id` ASC," +
+                " fname + ' ' + lname ASC," +
+                " `customer`.`city` ASC," +
+                " `customer`.`state_province` ASC," +
+                " `customer`.`country` ASC," +
+                " `customer`.`education` ASC," +
+                " `customer`.`gender` ASC," +
+                " `customer`.`marital_status` ASC," +
+                " `customer`.`yearly_income` ASC";
+        getTestContext().assertSqlEquals(expectedSql, sql);
     }
 
     // Test that proper SQL is being generated for a Measure specified
@@ -254,7 +262,8 @@ public class DrillThroughTest extends FoodMartTestCase {
                 " and `time_by_day`.`the_year` = 1997" +
                 " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
                 " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
-                " and `product_class`.`product_family` = 'Drink'";
+                " and `product_class`.`product_family` = 'Drink' " +
+                "order by `time_by_day`.`the_year` ASC, `product_class`.`product_family` ASC";
 
         final Cube cube = result.getQuery().getCube();
         RolapStar star = ((RolapCube) cube).getStar();
@@ -270,7 +279,7 @@ public class DrillThroughTest extends FoodMartTestCase {
                 " `sales_fact_1997`.`store_sales`)");
         }
 
-        assertSqlEquals(expectedSql, sql);
+        getTestContext().assertSqlEquals(expectedSql, sql);
     }
 
     /**
@@ -302,10 +311,11 @@ public class DrillThroughTest extends FoodMartTestCase {
         String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(false);
 
         String expectedSql =
-            "select `time_by_day`.`the_year` =as= `Year`," +
-                " `store_ragged`.`store_id` =as= `Store Id`," +
-                " `store`.`store_id` =as= `Store Id_0`," +
-                " `sales_fact_1997`.`unit_sales` =as= `Unit Sales` " +
+            "select `time_by_day`.`the_year` as `Year`," +
+                " `store_ragged`.`store_id` as `Store Id`," +
+                " `store`.`store_id` as `Store Id_0`," +
+                " `sales_fact_1997`.`unit_sales` as"
+                + " `Unit Sales` " +
                 "from `time_by_day` =as= `time_by_day`," +
                 " `sales_fact_1997` =as= `sales_fact_1997`," +
                 " `store_ragged` =as= `store_ragged`," +
@@ -315,8 +325,9 @@ public class DrillThroughTest extends FoodMartTestCase {
                 " and `sales_fact_1997`.`store_id` = `store_ragged`.`store_id`" +
                 " and `store_ragged`.`store_id` = '19'" +
                 " and `sales_fact_1997`.`store_id` = `store`.`store_id`" +
-                " and `store`.`store_id` = '19'";
-        assertSqlEquals(expectedSql, sql);
+                " and `store`.`store_id` = '19' " +
+                "order by `time_by_day`.`the_year` ASC, `store_ragged`.`store_id` ASC, `store`.`store_id` ASC";
+        getTestContext().assertSqlEquals(expectedSql, sql);
     }
 
     /**

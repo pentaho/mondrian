@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
 import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapUtil;
 import mondrian.spi.CatalogLocator;
 import mondrian.xmla.impl.DefaultSaxWriter;
 
@@ -796,7 +797,8 @@ public class XmlaHandler implements XmlaConstants {
         DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds);
         String role = request.getRole();
 
-        final Connection connection = getConnection(dsCatalog, role);
+        final RolapConnection connection =
+            (RolapConnection) getConnection(dsCatalog, role);
 
         final String statement = request.getStatement();
         final Query query = connection.parseQuery(statement);
@@ -813,37 +815,21 @@ public class XmlaHandler implements XmlaConstants {
 
         String dtSql = dtCell.getDrillThroughSQL(true);
         TabularRowSet rowset = null;
-        java.sql.Connection conn = null;
-        Statement stmt = null;
+        java.sql.Connection sqlConn = null;
         ResultSet rs = null;
 
         try {
-            conn = ((RolapConnection) connection).getDataSource().getConnection();
-            stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-                                        ResultSet.CONCUR_READ_ONLY);
-
             int count = -1;
             if (MondrianProperties.instance().EnableTotalCount.booleanValue()) {
-                String temp = dtSql.toUpperCase();
-                int fromOff = temp.indexOf("FROM");
-                StringBuffer buf = new StringBuffer();
-                buf.append("select count(*) ");
-                buf.append(dtSql.substring(fromOff));
-
-                String countSql = buf.toString();
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("drill through counting sql: " + countSql);
-                }
-                rs = stmt.executeQuery(countSql);
-                rs.next();
-                count = rs.getInt(1);
-                rs.close();
+                count = dtCell.getDrillThroughCount();
             }
 
+            sqlConn = connection.getDataSource().getConnection();
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("drill through sql: " + dtSql);
             }
-            rs = stmt.executeQuery(dtSql);
+            rs = RolapUtil.executeQuery(
+                sqlConn, dtSql, "XmlaHandler.executeDrillThroughQuery");
             rowset = new TabularRowSet(
                     rs, request.drillThroughMaxRows(),
                     request.drillThroughFirstRowset(), count);
@@ -854,19 +840,20 @@ public class XmlaHandler implements XmlaConstants {
                 SERVER_FAULT_FC,
                 HSB_DRILL_THROUGH_SQL_CODE,
                 HSB_DRILL_THROUGH_SQL_FAULT_FS,
-                Util.newError(sqle,
-                    "Errors when executing DrillThrough sql '" + dtSql + "'"));
+                Util.newError(sqle, "Error in drill through"));
+        } catch (RuntimeException e) {
+            throw new XmlaException(
+                SERVER_FAULT_FC,
+                HSB_DRILL_THROUGH_SQL_CODE,
+                HSB_DRILL_THROUGH_SQL_FAULT_FS,
+                Util.newError(e, "Error in drill through"));
         } finally {
             try {
                 if (rs != null) rs.close();
             } catch (SQLException ignored) {
             }
             try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException ignored) {
-            }
-            try {
-                if (conn != null && !conn.isClosed()) conn.close();
+                if (sqlConn != null && !sqlConn.isClosed()) sqlConn.close();
             } catch (SQLException ignored) {
             }
         }

@@ -15,7 +15,7 @@ import junit.framework.Assert;
 import mondrian.olap.Result;
 import mondrian.olap.Member;
 import mondrian.olap.Cell;
-import mondrian.rolap.RolapConnection;
+import mondrian.util.Bug;
 
 /**
  * <code>ParentChildHierarchyTest</code> tests parent-child hierarchies.
@@ -232,8 +232,6 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "Row #0: 2\n" +
                 "Row #0: $117.18\n"));
     }
-
-
 
     public void testLeaf() {
         // Juanita Sharp has no reports
@@ -469,12 +467,6 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 "  {[Employees].Members} ON rows\n" +
                 "from [HR]");
 
-        String tableQualifier = "as ";
-        if (getTestContext().getDialect().isOracle()) {
-            // " + tableQualifier + "
-            tableQualifier = "";
-        }
-
         // Drill-through for row #0, Employees.All.
         // Note that the SQL does not contain the employees or employee_closure
         // tables.
@@ -488,10 +480,11 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "select" +
             " `time_by_day`.`the_year` as `Year`," +
             " `salary`.`salary_paid` as `Org Salary` " +
-            "from `time_by_day` " + tableQualifier + "`time_by_day`," +
-            " `salary` " + tableQualifier + "`salary` " +
+            "from `time_by_day` =as= `time_by_day`," +
+            " `salary` =as= `salary` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
-            " and `time_by_day`.`the_year` = 1997");
+            " and `time_by_day`.`the_year` = 1997 " +
+            "order by `time_by_day`.`the_year` ASC");
 
         // Drill-through for row #1, [Employees].[All].[Sheri Nowmer]
         // Note that the SQL does not contain the employee_closure table.
@@ -506,13 +499,14 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "select `time_by_day`.`the_year` as `Year`," +
             " `employee_1`.`employee_id` as `Employee Id (Key)`," +
             " `salary`.`salary_paid` as `Org Salary` " +
-            "from `time_by_day` " + tableQualifier + "`time_by_day`," +
-            " `salary` " + tableQualifier + "`salary`," +
-            " `employee` " + tableQualifier + "`employee_1` " +
+            "from `time_by_day` =as= `time_by_day`," +
+            " `salary` =as= `salary`," +
+            " `employee` =as= `employee_1` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
             " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
-            " and `employee_1`.`employee_id` = 1");
+            " and `employee_1`.`employee_id` = 1 " +
+            "order by `time_by_day`.`the_year` ASC, `employee_1`.`employee_id` ASC");
 
         // Drill-through for row #2, [Employees].[All].[Sheri Nowmer].
         // Note that the SQL does not contain the employee_closure table.
@@ -525,25 +519,20 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "select `time_by_day`.`the_year` as `Year`," +
             " `employee_1`.`employee_id` as `Employee Id (Key)`," +
             " `salary`.`salary_paid` as `Org Salary` " +
-            "from `time_by_day` " + tableQualifier + "`time_by_day`," +
-            " `salary` " + tableQualifier + "`salary`," +
-            " `employee` " + tableQualifier + "`employee_1` " +
+            "from `time_by_day` =as= `time_by_day`," +
+            " `salary` =as= `salary`," +
+            " `employee` =as= `employee_1` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
             " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
-            " and `employee_1`.`employee_id` = 2");
+            " and `employee_1`.`employee_id` = 2 " +
+            "order by `time_by_day`.`the_year` ASC, `employee_1`.`employee_id` ASC");
     }
 
     public void testParentChildDrillThroughWithContext() {
         Result result = executeQuery("select {[Measures].Members} ON columns,\n" +
                     "  {[Employees].Members} ON rows\n" +
                     "from [HR]");
-
-        String tableQualifier = "as ";
-        if (getTestContext().getDialect().isOracle()) {
-            // " + tableQualifier + "
-            tableQualifier = "";
-        }
 
         // Now with full context.
         final boolean extendedContext = true;
@@ -571,24 +560,27 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " `employee_1`.`full_name` as `Employee Id`," +
             " `salary`.`salary_paid` as `Org Salary` " +
             "from" +
-            " `time_by_day` " + tableQualifier + "`time_by_day`," +
-            " `salary` " + tableQualifier + "`salary`," +
-            " `store` " + tableQualifier + "`store`," +
-            " `employee` " + tableQualifier + "`employee_1`," +
-            " `position` " + tableQualifier + "`position`," +
-            " `department` " + tableQualifier + "`department` " +
+            " `time_by_day` =as= `time_by_day`," +
+            " `salary` =as= `salary`," +
+            " `store` =as= `store`," +
+            " `employee` =as= `employee_1`," +
+            " `position` =as= `position`," +
+            " `department` =as= `department` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
             " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
             " and `employee_1`.`store_id` = `store`.`store_id`" +
             " and `employee_1`.`position_id` = `position`.`position_id`" +
             " and `salary`.`department_id` = `department`.`department_id`" +
-            " and `employee_1`.`employee_id` = 2");
+            " and `employee_1`.`employee_id` = 2 " +
+            "order by `time_by_day`.`month_of_year` ASC, `time_by_day`.`the_month` ASC, `time_by_day`.`quarter` ASC, `time_by_day`.`the_year` ASC, `store`.`store_name` ASC, `store`.`store_city` ASC, `store`.`store_state` ASC, `store`.`store_country` ASC, `position`.`pay_type` ASC, `store`.`store_type` ASC, `employee_1`.`position_title` ASC, `employee_1`.`management_role` ASC, `department`.`department_id` ASC, `employee_1`.`employee_id` ASC, `employee_1`.`full_name` ASC");
     }
 
-    private void checkDrillThroughSql(Result result,
+    private void checkDrillThroughSql(
+        Result result,
         int row,
-        boolean extendedContext, String expectedMember,
+        boolean extendedContext,
+        String expectedMember,
         String expectedCell,
         String expectedSql)
     {
@@ -598,16 +590,8 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         final Cell cell = result.getCell(new int[] {0, row});
         assertEquals(expectedCell, cell.getFormattedValue());
         String sql = cell.getDrillThroughSQL(extendedContext);
-        sql = sql.replace('"', '`');
-        /*
-         * DB2 does not have quotes on identifiers
-         */
-        RolapConnection conn = (RolapConnection) getConnection();
-        String jdbc_url = conn.getConnectInfo().get("Jdbc");
-        if (jdbc_url.toLowerCase().indexOf(":db2:") >= 0) {
-            expectedSql = expectedSql.replaceAll("`", "");
-        }
-        assertEquals(expectedSql, sql);
+
+        getTestContext().assertSqlEquals(expectedSql, sql);
     }
 
     /**
