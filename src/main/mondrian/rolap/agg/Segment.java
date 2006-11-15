@@ -290,6 +290,11 @@ class Segment {
                             // nothing to do
                         } else if (o instanceof Number) {
                             o = new Double(((Number) o).doubleValue());
+                        } else if (o instanceof byte[]) {
+                            // On MySQL 5.0 in German locale, values can come
+                            // out as byte arrays. Don't know why. Bug 1594119.
+                            double d = Double.parseDouble(new String((byte []) o));
+                            o = new Double(d);
                         } else {
                             double d = Double.parseDouble(o.toString());
                             o = new Double(d);
