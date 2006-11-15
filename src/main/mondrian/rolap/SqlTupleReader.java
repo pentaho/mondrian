@@ -629,13 +629,19 @@ public class SqlTupleReader implements TupleReader {
         SqlQuery sqlQuery = newQuery(jdbcConnection, s);
 
         // add the selects for all levels to fetch
+        int orderByColNo = 1;
         for (Iterator it = targets.iterator(); it.hasNext();) {
             Target t = (Target) it.next();
             // if we're going to be enumerating the values for this target,
             // then we don't need to generate sql for it
             if (t.srcMembers == null) {
-                addLevelMemberSql(
-                    sqlQuery, t.getLevel(), levelToColumnMap, finalSelect);
+                orderByColNo = 
+                    addLevelMemberSql(
+                        sqlQuery,
+                        t.getLevel(),
+                        levelToColumnMap,
+                        finalSelect,
+                        orderByColNo);
             }
         }
 
@@ -667,16 +673,22 @@ public class SqlTupleReader implements TupleReader {
      * provides the appropriate mapping for the base cube being processed
      * @param finalSelect true if this is the final sub-select in a larger
      * select containing unions or this is a non-union select
+     * @param orderByColNo current order by column number; used for virtual
+     * cubes
+     * 
+     * @return new current order by column number
      */
-    void addLevelMemberSql(
-        SqlQuery sqlQuery, RolapLevel level, Map levelToColumnMap,
-        boolean finalSelect)
+    private int addLevelMemberSql(
+        SqlQuery sqlQuery,
+        RolapLevel level,
+        Map levelToColumnMap,
+        boolean finalSelect,
+        int orderByColNo)
     {
         RolapHierarchy hierarchy = (RolapHierarchy) level.getHierarchy();
 
         RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
         int levelDepth = level.getDepth();
-        int orderByColNo = 1;
         for (int i = 0; i <= levelDepth; i++) {
             RolapLevel level2 = levels[i];
             if (level2.isAll()) {
@@ -720,6 +732,8 @@ public class SqlTupleReader implements TupleReader {
                 sqlQuery.addGroupBy(propSql);
             }
         }
+        
+        return orderByColNo;
     }
 
     static SqlQuery newQuery(Connection jdbcConnection, String err) {
