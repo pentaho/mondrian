@@ -348,7 +348,9 @@ public abstract class RolapSchemaReader implements SchemaReader {
 
     public Member[] getLevelMembers(Level level, Evaluator context) {
         TupleConstraint constraint =
-                sqlConstraintFactory.getLevelMembersConstraint(context);
+                sqlConstraintFactory.getLevelMembersConstraint(
+                    context,
+                    new Level [] { level });
         final MemberReader memberReader = getMemberReader(level.getHierarchy());
         final List membersInLevel = memberReader.getMembersInLevel(
                 (RolapLevel) level, 0, Integer.MAX_VALUE, constraint);

@@ -46,18 +46,21 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      * @return false if this contstraint will not work for the current context
      */
     public static boolean isValidContext(Evaluator context) {
-        return isValidContext(context, true);
+        return isValidContext(context, true, null);
     }
 
     /**
      * @param context evaluation context
      * @param disallowVirtualCube if true, check for virtual cubes
+     * @param levels levels being referenced in the current context
      *
      * @return false if constraint will not work for current context
      */
     public static boolean isValidContext(
-        Evaluator context, boolean disallowVirtualCube) {
-
+        Evaluator context,
+        boolean disallowVirtualCube,
+        Level [] levels)
+    {
         if (context == null) {
             return false;
         }
@@ -67,10 +70,33 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
                 return false;
             }
         }
-        if (cube.isVirtual() &&
-            !findVirtualCubeJoinLevels(context.getQuery()))
-        {
-            return false;
+        if (cube.isVirtual()) {
+            Query query = context.getQuery();
+            Set baseCubesLevelToColumnMaps = new HashSet();
+            Map measureMap = new HashMap();
+            if (!findVirtualCubeJoinLevels(
+                query,
+                baseCubesLevelToColumnMaps,
+                measureMap))
+            {
+                return false;
+            }
+            assert(levels != null);
+            // we need to make sure all the levels join with each fact table;
+            // otherwise, it doesn't make sense to do the processing
+            // natively, as you'll end up with cartesian product joins!
+            for (Iterator it = baseCubesLevelToColumnMaps.iterator();
+                it.hasNext(); )
+            {
+                Map map = (Map) it.next();
+                for (int i = 0; i < levels.length; i++) {
+                    if (map.get(levels[i]) == null) {
+                        return false;
+                    }
+                }
+            }
+            query.setVirtualCubeBaseCubeMaps(baseCubesLevelToColumnMaps);
+            query.setLevelMapToMeasureMap(measureMap);
         }
         return true;
     }
@@ -80,16 +106,21 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      * virtual cube by validating the measures referenced in the query.
      * 
      * @param query query referencing the virtual cube
+     * @param baseCubesLevelToColumnMaps level to column maps corresponding
+     * to the base cubes referenced from the virtual cube
+     * @param measureMap mapping between a measure and the level to column
+     * maps
      * 
      * @return true if valid measures exist
      */
-    private static boolean findVirtualCubeJoinLevels(Query query)
+    private static boolean findVirtualCubeJoinLevels(
+        Query query,
+        Set baseCubesLevelToColumnMaps,
+        Map measureMap)
     {
         // Gather the unique set of level-to-column maps corresponding
         // to the underlying star/cube where the measure column
         // originates from.
-        Set baseCubesLevelToColumnMaps = new HashSet();
-        Map measureMap = new HashMap();
         Set measureMembers = query.getMeasuresMembers();
         // if no measures are explicitly referenced, just use the default
         // measure
@@ -119,8 +150,6 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
             return false;
         }
         
-        query.setVirtualCubeBaseCubeMaps(baseCubesLevelToColumnMaps);
-        query.setLevelMapToMeasureMap(measureMap);
         return true;
     }
     

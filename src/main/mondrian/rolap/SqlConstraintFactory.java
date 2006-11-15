@@ -11,6 +11,7 @@ package mondrian.rolap;
 import java.util.List;
 
 import mondrian.olap.Evaluator;
+import mondrian.olap.Level;
 import mondrian.olap.MondrianProperties;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
@@ -42,8 +43,17 @@ public class SqlConstraintFactory {
     }
 
     public TupleConstraint getLevelMembersConstraint(Evaluator context) {
-        if (!enabled || !SqlContextConstraint.isValidContext(context, false))
+        return getLevelMembersConstraint(context, null);
+    }
+    
+    public TupleConstraint getLevelMembersConstraint(
+        Evaluator context,
+        Level [] levels) {
+        if (!enabled ||
+            !SqlContextConstraint.isValidContext(context, false, levels))
+        {
             return DefaultTupleConstraint.instance();
+        }
         return new SqlContextConstraint((RolapEvaluator) context, false);
     }
 

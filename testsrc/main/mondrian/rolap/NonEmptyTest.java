@@ -183,6 +183,17 @@ public class NonEmptyTest extends FoodMartTestCase {
                 "from [Warehouse and Sales]");
         c.run();
     }
+    
+    public void testVirtualCubeMembersNonConformingDim() throws Exception {
+        // native sql optimization should not be used when you have a
+        // non-conforming dimensions because it will result in a cartesian
+        // product join
+        checkNotNative(
+            1,
+            "select non empty {[Customers].[Country].members} on columns, " +
+            "{[Measures].[Units Ordered]} on rows from " +
+            "[Warehouse and Sales]");
+    }
 
     public void testNativeFilter() {
         if (!MondrianProperties.instance().EnableNativeFilter.get()) {
