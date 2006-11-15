@@ -13,9 +13,7 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 
-import java.sql.Statement;
-import java.sql.SQLException;
-import java.sql.ResultSet;
+import java.sql.*;
 
 /**
  * <code>RolapCell</code> implements {@link mondrian.olap.Cell} within a
@@ -115,8 +113,14 @@ class RolapCell implements Cell {
         final String sql = aggMan.getDrillThroughSql(cellRequest, true);
         try {
             jdbcConnection = connection.getDataSource().getConnection();
+
             rs = RolapUtil.executeQuery(
-                jdbcConnection, sql, "RolapCell.getDrillThroughCount");
+                jdbcConnection,
+                sql,
+                -1,
+                "RolapCell.getDrillThroughCount",
+                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
             rs.next();
             int count = rs.getInt(1);
             rs.close();

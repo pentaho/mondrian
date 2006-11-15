@@ -218,15 +218,30 @@ public class RolapUtil {
             String component)
             throws SQLException {
 
-        return executeQuery(jdbcConnection, sql, -1, component);
+        return executeQuery(jdbcConnection, sql, -1, component, -1, -1);
     }
 
+    /**
+     * Executes a query.
+     *
+     * @param jdbcConnection Connection
+     * @param sql SQL string
+     * @param maxRows Row limit, or -1 if no limit
+     * @param component Description of a the component executing the query,
+     *   generally a method name, e.g. "SqlTupleReader.readTuples"
+     * @param resultSetType Result set type, or -1 to use default
+     * @param resultSetConcurrency Result set concurrency, or -1 to use default
+     * @return ResultSet
+     * @throws SQLException
+     */
     public static ResultSet executeQuery(
-            Connection jdbcConnection,
-            String sql,
-            int maxRows,
-            String component)
-            throws SQLException {
+        Connection jdbcConnection,
+        String sql,
+        int maxRows,
+        String component,
+        int resultSetType,
+        int resultSetConcurrency) throws SQLException
+    {
         checkTracing();
         getQuerySemaphore().enter();
         Statement statement = null;
@@ -243,9 +258,13 @@ public class RolapUtil {
         }
         try {
             final long start = System.currentTimeMillis();
+            if (resultSetType < 0 || resultSetConcurrency < 0) {
+                statement = jdbcConnection.createStatement();
+            } else {
             statement = jdbcConnection.createStatement(
-                ResultSet.TYPE_SCROLL_INSENSITIVE,
-                ResultSet.CONCUR_READ_ONLY);
+                resultSetType,
+                resultSetConcurrency);
+            }
             if (maxRows > 0) {
                 statement.setMaxRows(maxRows);
             }

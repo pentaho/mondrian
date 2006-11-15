@@ -318,8 +318,9 @@ public class SqlTupleReader implements TupleReader {
                         partialTargets.add(t);
                     }
                 }
-                resultSet = RolapUtil.executeQuery(jdbcConnection, sql, maxRows,
-                    "SqlTupleReader.readTuples " + partialTargets);
+                resultSet = RolapUtil.executeQuery(
+                    jdbcConnection, sql, maxRows,
+                    "SqlTupleReader.readTuples " + partialTargets, -1, -1);
             }
 
             for (Iterator it = targets.iterator(); it.hasNext();) {
@@ -327,13 +328,13 @@ public class SqlTupleReader implements TupleReader {
             }
 
             int limit = MondrianProperties.instance().ResultLimit.get();
-            int nFetch = 0;
+            int fetchCount = 0;
 
             // determine how many enum targets we have
-            int nEnumTargets = getEnumTargetCount();
+            int enumTargetCount = getEnumTargetCount();
             int[] srcMemberIdxes = null;
-            if (nEnumTargets > 0) {
-                srcMemberIdxes = new int[nEnumTargets];
+            if (enumTargetCount > 0) {
+                srcMemberIdxes = new int[enumTargetCount];
             }
 
             boolean moreRows;
@@ -345,13 +346,13 @@ public class SqlTupleReader implements TupleReader {
             }
             while (moreRows) {
 
-                if (limit > 0 && limit < ++nFetch) {
+                if (limit > 0 && limit < ++fetchCount) {
                     // result limit exceeded, throw an exception
                     throw MondrianResource.instance().MemberFetchLimitExceeded
                             .ex(new Long(limit));
                 }
          
-                if (nEnumTargets == 0) {
+                if (enumTargetCount == 0) {
                     int column = 0;
                     for (Iterator it = targets.iterator(); it.hasNext();) {
                         Target t = (Target) it.next();
@@ -381,7 +382,7 @@ public class SqlTupleReader implements TupleReader {
                     }
                     resetCurrMembers(partialRow);
                     addTargets(
-                        0, firstEnumTarget, nEnumTargets, srcMemberIdxes,
+                        0, firstEnumTarget, enumTargetCount, srcMemberIdxes,
                         resultSet, sql);
                     if (newPartialResult != null) {
                         savePartialResult(newPartialResult);
@@ -419,7 +420,7 @@ public class SqlTupleReader implements TupleReader {
             // need to hierarchize the columns from the enumerated targets
             // since we didn't necessarily add them in the order in which
             // they originally appeared in the cross product
-            if (nEnumTargets > 0) {
+            if (enumTargetCount > 0) {
                 FunUtil.hierarchize(tupleList, false);
             }
             return tupleList;
