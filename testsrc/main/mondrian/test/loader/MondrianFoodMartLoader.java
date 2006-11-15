@@ -1779,7 +1779,8 @@ public class MondrianFoodMartLoader {
                     !dialect.isDB2() &&
                     !dialect.isFirebird() &&
                     !dialect.isMSSQL() &&
-                    !dialect.isDerby()) {
+                    !dialect.isDerby() &&
+                    !dialect.isIngres()) {
                 if (trimmedValue.equals("1")) {
                     return "true";
                 } else if (trimmedValue.equals("0")) {
@@ -1954,6 +1955,8 @@ public class MondrianFoodMartLoader {
                 if (dialect.isMSSQL() ||
                         dialect.isMySQL()) {
                     return "DATETIME";
+                } else if (dialect.isIngres()) {
+                    return "DATE";
                 } else {
                     return name;
                 }
