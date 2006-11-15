@@ -138,7 +138,7 @@ size&gt;] ]<br>
 <h4>Options</h4>
 
   <table style="border-color:#000000; text-align: left; margin-left: 10px; margin-right: 10px" border="1" cellpadding="2"
- cellspacing="0" class="clsStd">
+ cellspacing="0">
     <tbody>
       <tr>
         <td style="vertical-align: top; text-align: center;">
@@ -295,7 +295,7 @@ dataset in the Access database:</p>
 
 <blockquote>
 	<code><i><b>C:\mondrian&gt;</b></i> java -cp
-"C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-1.2.9.jar;C:\mondrian\lib\eigenbase-xom.jar;C:\mondrian\lib\eigenbase-resgen.jar;C:\mondrian\lib\eigenbase-properties.jar;C:\mondrian\lib\postgres-jdbc.jar"<br>
+"C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-1.2.9.jar; C:\mondrian\lib\eigenbase-xom.jar; C:\mondrian\lib\eigenbase-resgen.jar; C:\mondrian\lib\eigenbase-properties.jar; C:\mondrian\lib\postgres-jdbc.jar"<br>
 &nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers="org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver"<br>
@@ -475,16 +475,21 @@ for the Java VM.</p>
 
 <p>Mondrian is known to run on the following databases.</p>
 <ol>
-  <li>Apache Derby</li>
+  <li>Apache Derby (formerly known as Cloudscape)</li>
   <li>Firebird</li>
   <li>hsqldb</li>
   <li>IBM DB2</li>
+  <li>Informix</li>
+  <li>Ingres</li>
+  <li>Interbase</li>
+  <li>LucidDB</li>
   <li>Microsoft Access</li>
   <li>Microsoft SQL Server</li>
   <li>MySQL</li>
   <li>Oracle</li>
   <li>PostgreSQL</li>
   <li>Sybase</li>
+  <li>Teradata</li>
 </ol>
 
 <p>Mondrian can work on almost any JDBC data source, so even if your
@@ -499,13 +504,24 @@ property settings, and any other tweaks which were required.</p>
 <h3>General database tips</h3>
 
 <p>For sample connect strings, look in
-<code>mondrian.properties</code>.  There are are sample connect
+<code><a href="http://p4web.eigenbase.org/open/mondrian/mondrian.properties">mondrian.properties</a></code>.  There are are sample connect
 strings for most databases in there.</p>
 
+<h3>Ingres</h3>
+<p>Andy Grimm writes:</p>
+<blockquote>
+    <p>In addition, I had to run a perl script against the demo sql file:<br>
+    <br>
+    &gt; <code>perl -pi -e &quot;s/:00\.0/:00/g&quot; FoodMartCreateData.sql</code><br>
+    <br>
+    That drops the &quot;.0&quot; off each timestamp to make it a valid DATE. Our next 
+    release will support timestamps, so this is a short-term fix that could go 
+    into Release Notes.</p>
+</blockquote>
+<h3>&nbsp;</h3>
 <h3>Sybase</h3>
 
 <p><a href="https://sourceforge.net/forum/message.php?msg_id=3755994">mizar_sf writes</a>:</p>
-
 <blockquote>
 
   <p>I tried some solutions to get mondrian (I used 2.1RC) connected with a Sybase 
