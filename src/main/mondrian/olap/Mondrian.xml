@@ -973,6 +973,9 @@ Revision is $Id$
             <Value>oracle</Value>
             <Value>postgres</Value>
             <Value>sybase</Value>
+            <Value>teradata</Value>
+            <Value>ingres</Value>
+            <Value>luciddb</Value>
         </Attribute>
         <CData/>
         <Code><![CDATA[

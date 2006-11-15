@@ -666,6 +666,12 @@ public class SqlQuery
                 best = "firebird";
             } else if (isInterbase()) {
                 best = "interbase";
+            } else if (isIngres()) {
+                best = "ingres";
+            } else if (isLucidDB()) {
+                best = "luciddb";
+            } else if (isTeradata()) {
+                best = "teradata";
             } else {
                 best = "generic";
             }
@@ -834,6 +840,27 @@ public class SqlQuery
         }
 
         /**
+         * Returns whether the underlying database is Ingres.
+         */
+        public boolean isIngres() {
+            return productName.toUpperCase().equals("INGRES");
+        }
+
+        /**
+         * Returns whether the underlying database is Interbase.
+         */
+        public boolean isInterbase() {
+            return productName.equals("Interbase");
+        }
+
+        /**
+         * Returns whether the underlying database is LucidDB.
+         */
+        public boolean isLucidDB() {
+            return productName.toUpperCase().equals("LUCIDDB");
+        }
+
+        /**
          * Returns whether the underlying database is Microsoft SQL Server.
          */
         public boolean isMSSQL() {
@@ -869,10 +896,10 @@ public class SqlQuery
         }
 
         /**
-         * Returns whether the underlying database is Interbase.
+         * Returns whether the underlying database is Teradata.
          */
-        public boolean isInterbase() {
-            return productName.equals("Interbase");
+        public boolean isTeradata() {
+            return productName.toUpperCase().indexOf("SYBASE") >= 0;
         }
 
         // -- behaviors --
