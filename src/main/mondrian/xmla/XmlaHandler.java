@@ -829,7 +829,9 @@ public class XmlaHandler implements XmlaConstants {
                 LOGGER.debug("drill through sql: " + dtSql);
             }
             rs = RolapUtil.executeQuery(
-                sqlConn, dtSql, "XmlaHandler.executeDrillThroughQuery");
+                sqlConn, dtSql, -1, "XmlaHandler.executeDrillThroughQuery",
+                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
             rowset = new TabularRowSet(
                     rs, request.drillThroughMaxRows(),
                     request.drillThroughFirstRowset(), count);

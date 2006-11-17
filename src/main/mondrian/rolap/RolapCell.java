@@ -117,10 +117,7 @@ class RolapCell implements Cell {
             rs = RolapUtil.executeQuery(
                 jdbcConnection,
                 sql,
-                -1,
-                "RolapCell.getDrillThroughCount",
-                ResultSet.TYPE_SCROLL_INSENSITIVE,
-                ResultSet.CONCUR_READ_ONLY);
+                "RolapCell.getDrillThroughCount");
             rs.next();
             int count = rs.getInt(1);
             rs.close();
