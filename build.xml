@@ -36,6 +36,7 @@
   <property name="javadoc.dir" value="${doc.dir}/api"/>
   <property name="classes.dir" value="classes"/>
   <property name="testclasses.dir" value="testclasses"/>
+  <property name="testclasses-jdk14.dir" value="testclasses-jdk14"/>
   <property name="build.dir" value="build"/>
   <property name="dist.name" value="${name}-${version}"/>
   <property name="embedded.dist.name" value="${name}-${version}-embedded"/>
@@ -48,6 +49,7 @@
   <property name="dist.bin.derby.file" value="${dist.dir}/${dist.name}-derby.zip"/>
   <property name="dist.doc.file" value="${dist.dir}/doc.tar.gz"/>
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
+  <property name="jar-jdk14.file" value="${lib.dir}/${name}-jdk14.jar" />
   <property name="workbench.jar.file" value="workbench.jar"/>
   <property name="resource.jar.file" value="${lib.dir}/eigenbase-resgen.jar"/>
   <property name="xom.jar.file" value="${lib.dir}/eigenbase-xom.jar"/>
@@ -67,6 +69,7 @@ ${java.dir}/mondrian/xmla/DataSourcesConfig*.java,
 ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <property name="generated.lib.files" value="
 ${lib.dir}/mondrian.jar,
+${jar-jdk14.file},
 ${lib.dir}/mondrian.war,
 ${lib.dir}/mondrian.xml,
 ${lib.dir}/mondrian-embedded.war,
@@ -77,7 +80,6 @@ demo/FoodMartCreateData.sql,
 demo/access/MondrianFoodMart.mdb"/>
 
   <path id="project.classpath">
-    <pathelement location="${classes.dir}"/>
     <pathelement location="${lib.dir}/servlet.jar"/>
     <pathelement location="${lib.dir}/jsp-api.jar"/>
     <pathelement location="${lib.dir}/commons-dbcp.jar"/>
@@ -100,14 +102,43 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${ant.home}/lib/optional.jar"/>
   </path>
 
-  <path id="project.test.classpath">
+  <path id="project.build.classpath">
+    <pathelement location="${classes.dir}"/>
     <path refid="project.classpath"/>
-    <fileset dir="${testlib.dir}">
-        <include name="**/*.jar"/>
-    </fileset>
+  </path>
+
+  <path id="project.test.classpath-jdk15">
+    <pathelement location="${classes.dir}"/>
+    <path refid="project.classpath"/>
     <pathelement location="${testclasses.dir}"/>
+    <fileset dir="${testlib.dir}">
+      <include name="**/*.jar"/>
+    </fileset>
     <pathelement location="${driver.classpath}"/>
   </path>
+
+  <path id="project.test.classpath-jdk14">
+    <pathelement location="${jar-jdk14.file}"/>
+    <path refid="project.classpath"/>
+    <pathelement location="${testclasses-jdk14.dir}"/>
+    <fileset dir="${testlib.dir}">
+      <include name="**/*.jar"/>
+    </fileset>
+    <pathelement location="${lib.dir}/retroweaver-rt-1.2.4.jar" />
+    <pathelement location="${driver.classpath}"/>
+  </path>
+
+  <condition property="jdk" id="jdk" value="jdk15">
+    <contains string="${java.version}" substring="1.5." />
+  </condition>
+
+  <condition property="jdk" id="jdk" value="jdk14">
+    <not>
+      <contains string="${ant.java.version}" substring="1.5." />
+    </not>
+  </condition>
+
+  <path id="project.test.classpath" refid="project.test.classpath-${jdk}"/>
 
   <taskdef name="javacup" classname="java_cup.JavaCUPTask">
     <classpath refid="project.classpath"/>
@@ -186,6 +217,7 @@ demo/access/MondrianFoodMart.mdb"/>
       <fileset dir="." includes="${generated.java.files},${generated.lib.files}"/>
       <fileset dir="demo/derby/foodmart"/>
       <fileset dir="${build.dir}" />
+      <fileset dir="${testclasses-jdk14.dir}" />
     </delete>
   </target>
 
@@ -258,7 +290,7 @@ unzip-FoodMartDerbyDB"/>
 
   <target name="generate.resources">
     <taskdef name="resgen" classname="org.eigenbase.resgen.ResourceGenTask">
-      <classpath refid="project.classpath"/>
+      <classpath refid="project.build.classpath"/>
     </taskdef>
 
     <!-- Compile MondrianException first, so that resgen can use
@@ -267,8 +299,8 @@ unzip-FoodMartDerbyDB"/>
         srcdir="${java.dir}"
         destdir="${classes.dir}"
         debug="${project.build.debug}"
-        classpathref="project.classpath"
-        source="1.4">
+        classpathref="project.build.classpath"
+        source="1.5">
       <include name="mondrian/olap/MondrianException.java" />
       <include name="mondrian/olap/ResultLimitExceeded.java" />
       <include name="mondrian/olap/InvalidHierarchy.java" />
@@ -289,8 +321,8 @@ unzip-FoodMartDerbyDB"/>
         srcdir="${java.dir}"
         destdir="${classes.dir}"
         debug="${project.build.debug}"
-        classpathref="project.classpath"
-        source="1.4">
+        classpathref="project.build.classpath"
+        source="1.5">
       <include name="mondrian/**/*.java"/>
       <include name="javax/**/*.java"/>
       <include name="org/**/*.java"/>
@@ -313,7 +345,7 @@ META-INF/**"/>
         destdir="${testclasses.dir}"
         debug="${project.build.debug}"
         classpathref="project.test.classpath"
-        source="1.4">
+        source="1.5">
         <include name="mondrian/**/*.java"/>
     </javac>
   </target>
@@ -402,18 +434,21 @@ META-INF/**"/>
     </java>
   </target>
 
-  <!-- Same prerequisites as FoodMartTest -->
-  <target name="test" description="Runs all JUnit tests.">
-    <antcall target="test-dbms"/>
+  <target name="test"
+      description="Runs all JUnit tests."
+      depends="compile,compile.tests,set.connectString">
+    <antcall target="test-nobuild"/>
   </target>
 
-  <target name="test-dbms" depends="compile,compile.tests,set.connectString"
+  <target name="test-nobuild"
       description="
 Runs all JUnit tests, using the given database connection
 in {mondrian.foodmart.jdbcURL}.">
     <echo>Connecting to ${mondrian.foodmart.jdbcURL}</echo>
     <echo>Connect String: ${mondrian.test.connectString}</echo>
-    <java classpathref="project.test.classpath" classname="mondrian.test.Main"
+    <java
+        classpathref="project.test.classpath"
+        classname="mondrian.test.Main"
         fork="yes">
       <jvmarg line="${junit.jvmargs}"/>
       <sysproperty key="log4j.configuration" 
@@ -656,6 +691,7 @@ ${doc.dir}/**/*.png,
 ${doc.dir}/api/**/*.xml,
 ${war.file},
 ${jar.file},
+${jar-jdk14.file},
 lib/*.dtd,
 demo/FoodMart.xml,
 demo/FoodMartCreateData.sql,
@@ -734,38 +770,34 @@ doc/**/*.xml"
     </tar>
   </target>
 
-  <target name="jar" depends="version,compile,compile.tests">
-    <mkdir dir="${lib.dir}" />
-    <zip
-        zipfile="${jar.file}"
-        update="true">
-      <zipfileset
-          dir="${classes.dir}"
-          includes="
-**/*.class,
-**/*.properties,
-**/*.xml,
-META-INF/**"/>
-      <zipfileset
-          dir="${testclasses.dir}"
-          includes="
-mondrian/test/loader/**/*.class"/>
-      <zipfileset
-          dir="${javatest.dir}"
-          includes="
-mondrian/test/loader/insert.sql"/>
-      <zipfileset
-          dir="."
-          includes="
-LICENSE.html,
-README.txt,
-VERSION.txt"/>
-      <fileset
-          dir="${java.dir}"
-          includes="
-META-INF/**"/>
-    </zip>
-  </target>
+    <target name="jar" depends="version,compile,compile.tests">
+      <mkdir dir="${lib.dir}" />
+      <zip
+          zipfile="${jar.file}"
+          update="true">
+        <zipfileset
+            dir="${classes.dir}"
+            includes="
+  **/*.class,
+  **/*.properties,
+  **/*.xml,
+  META-INF/**"/>
+        <zipfileset
+            dir="${testclasses.dir}"
+            includes="
+  mondrian/test/loader/**/*.class"/>
+        <zipfileset
+            dir="${javatest.dir}"
+            includes="
+  mondrian/test/loader/insert.sql"/>
+        <zipfileset
+            dir="."
+            includes="
+  LICENSE.html,
+  README.txt,
+  VERSION.txt"/>
+      </zip>
+    </target>
 
   <target name="xml_schema"
       description="Generates xml_schema.html from Mondrian.xml">
@@ -784,7 +816,7 @@ META-INF/**"/>
         overview="${java.dir}/overview.html"
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sourceforge.net/sflogo.php?group_id=35302&#38;type=1&quot; width=&quot;88&quot; height=&quot;31&quot; border=&quot;0&quot; alt=&quot;SourceForge.net_Logo&quot;&gt;&lt;/a&gt;"
         author="true"
-        source="1.4"
+        source="1.5"
         access="package"
         Windowtitle="Mondrian OLAP Server, version ${version}"
         additionalparam="-linksource"
@@ -797,7 +829,7 @@ META-INF/**"/>
            scope="constructors,methods"/>
       <tag name="testcase" description="Test-case:"
            scope="constructors,methods,types"/>
-      <link href="http://java.sun.com/j2se/1.4/docs/api/"/>
+      <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
       <link href="http://www.junit.org/junit/javadoc/3.8/"/>
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
       <link href="http://eigenbase.sourceforge.net/resgen/api/"/>
@@ -807,34 +839,23 @@ META-INF/**"/>
         todir="${javadoc.dir}/mondrian/olap"/>
   </target>
 
-  <target name="upload-javadoc" depends="javadoc" description="
-Copies javadoc to sourceforge, where it will be accessible via
-http://mondrian.pentaho.org/api/index.html.
-You should set scp.user, scp.password and scp.path in build.properties">
-    <exec executable="scp">
-      <arg line="-r"/>
-      <arg line="${javadoc.dir}"/>
-      <arg line="${scp.user}:${scp.path}"/>
-    </exec>
+  <target name="copy-jars">
+    <copy todir="${lib.dir}">
+      <fileset dir="${ant.home}/lib" includes="ant.jar,optional.jar"/>
+      <fileset dir="${catalina.home}/common/lib" includes="jsp-api.jar"/>
+    </copy>
+    <copy todir="${lib.dir}">
+      <fileset dir="${catalina.home}/common/lib" includes="servlet*.jar"/>
+      <mapper type="merge" to="servlet.jar"/>
+    </copy>
+    <copy todir="${lib.dir}">
+      <fileset dir="${catalina.home}/common/lib" includes="commons-*.jar" excludes="commons-el*.jar"/>
+      <mapper type="regexp" from="(^.+)-([.0-9]+\.jar$)" to="\1.jar" /> <!-- strip version -->
+    </copy>
+    <copy todir="${testlib.dir}">
+      <fileset dir="${junit.home}" includes="junit.jar"/>
+    </copy>
   </target>
-
-    <target name="copy-jars">
-      <copy todir="${lib.dir}">
-        <fileset dir="${ant.home}/lib" includes="ant.jar,optional.jar"/>
-        <fileset dir="${catalina.home}/common/lib" includes="jsp-api.jar"/>
-      </copy>
-      <copy todir="${lib.dir}">
-        <fileset dir="${catalina.home}/common/lib" includes="servlet*.jar"/>
-        <mapper type="merge" to="servlet.jar"/>
-      </copy>
-      <copy todir="${lib.dir}">
-        <fileset dir="${catalina.home}/common/lib" includes="commons-*.jar" excludes="commons-el*.jar"/>
-        <mapper type="regexp" from="(^.+)-([.0-9]+\.jar$)" to="\1.jar" /> <!-- strip version -->
-      </copy>
-      <copy todir="${testlib.dir}">
-        <fileset dir="${junit.home}" includes="junit.jar"/>
-       </copy>
-    </target>
 
   <target name="war" depends="jar,compile.tests" description="
 Creates mondrian.war based upon jpivot.war.
@@ -999,8 +1020,57 @@ xalan.jar"/>
           dir="."
           includes="images/*.*"/>
     </jar>
-
   </target>
+
+  <!--
+       Retroweaver re-engineers JDK 1.5-compatible code so it can run under
+       JDK 1.4. This task compiles all core and test classes under 1.5 then
+       runs retroweaver to make them 1.4 compatible.
+
+       If you only intend to run on JDK 1.5, there's no need to call this task.
+
+       The inputs to this process are the mondrian.jar file (containing core
+       files) and the testclasses directory (containing test classes).
+
+       The outputs from this process are the mondrian-jdk14.jar file
+       and the testclasses-jdk14 directory.
+
+       Note that, to keep things sane, this task does not modify classes in
+       place.
+
+       After you've run this task, you can invoke 'ant test' from a JDK 1.4
+       and all the tests will run. You should also be able replace mondrian.jar
+       with mondrian-jdk14.jar and retroweaver-rt-1.2.4.jar (retroweaver's
+       runtime library) in your web application and run jpivot, but I haven't
+       tried that. Exercise for the reader.
+
+       Choosing the right ant version is a bit tricky. The retroweaver task
+       requires ant-1.6.5 or higher (and JDK 1.5), but when you run the
+       regression under JDK 1.4, you must use ant-1.6.0. Later versions of
+       ant include junit4, which requires JDK 1.5.
+    -->
+  <target name="retroweave" depends="jar, compile.tests">
+    <taskdef name="retroweaver"
+        classname="com.rc.retroweaver.ant.RetroWeaverTask">
+      <classpath>
+        <pathelement location="${lib.dir}/asm-2.2.3.jar" />
+        <pathelement location="${lib.dir}/asm-commons-2.2.3.jar" />
+        <pathelement location="${lib.dir}/retroweaver-1.2.4.jar" />
+        <pathelement location="${lib.dir}/retroweaver-rt-1.2.4.jar" />
+      </classpath>
+    </taskdef>
+
+    <delete quiet="true">
+      <fileset dir="." includes="${jar-jdk14.file}" />
+      <fileset dir="${testclasses-jdk14.dir}" />
+    </delete>
+
+    <mkdir dir="${testclasses-jdk14.dir}"/>
+      
+    <retroweaver inputjar="${jar.file}" outputjar="${jar-jdk14.file}" />
+    <retroweaver srcdir="${testclasses.dir}" destdir="${testclasses-jdk14.dir}" />
+  </target>
+
 </project>
 
 <!-- End build.xml -->
