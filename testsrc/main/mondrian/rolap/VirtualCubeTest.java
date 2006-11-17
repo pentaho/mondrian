@@ -293,15 +293,16 @@ public class VirtualCubeTest extends FoodMartTestCase {
         // calculated measures reference measures defined in the base cube
         assertQueryReturns(
             "select\n" +
-            "{[Measures].[Profit], [Measures].[Average Warehouse Sale] }\n" +
+            "{[Measures].[Profit Growth], " +
+            "[Measures].[Average Warehouse Sale] }\n" +
             "ON COLUMNS\n" +
             "from [Warehouse and Sales]",
             fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
-                "{[Measures].[Profit]}\n" +
+                "{[Measures].[Profit Growth]}\n" +
                 "{[Measures].[Average Warehouse Sale]}\n" +
-                "Row #0: $339,610.90\n" +
+                "Row #0: 0.0%\n" +
                 "Row #0: $2.21\n"));
     }
 }

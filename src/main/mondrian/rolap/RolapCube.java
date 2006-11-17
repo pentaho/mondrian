@@ -16,6 +16,7 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.resource.MondrianResource;
+import mondrian.mdx.*;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
@@ -280,11 +281,10 @@ public class RolapCube extends CubeBase {
                 if (cubeMeasures[j].getUniqueName().equals(xmlMeasure.name)) {
                     found = true;
                     if (cubeMeasures[j] instanceof RolapCalculatedMember) {
-                        // We have a calulated member!  The
-                        // dimensional ordinals will be incorrect for
-                        // evaluating the expression so we need to
-                        // recreate this member.  Keep track of which base
-                        // cube each calculated member is associated with.
+                        // We have a calulated member!  Keep track of which
+                        // base cube each calculated member is associated
+                        // with, so we can resolve the calculated member
+                        // relative to its base cube.
                         MondrianDef.CalculatedMember calcMember =
                             schema.lookupXmlCalculatedMember(
                                     xmlMeasure.name, xmlMeasure.cubeName);
@@ -326,44 +326,60 @@ public class RolapCube extends CubeBase {
                     "could not find measure '" + xmlMeasure.name +
                     "' in cube '" + xmlMeasure.cubeName + "'");
             }
-        }
-
-        RolapMember[] measures = (RolapMember[])
-            measureList.toArray(new RolapMember[measureList.size()]);
-        this.measuresHierarchy.setMemberReader(
-            new CacheMemberReader(
-                  new MeasureMemberSource(this.measuresHierarchy,  measures)));
-
+        }     
+        
         // Must init the dimensions before dealing with calculated members
         init(xmlVirtualCube.dimensions);
         
         // Loop through the base cubes containing calculated members
-        // referenced by this virtual cube and resolve the calculated
-        // members referenced from each of those cubes
+        // referenced by this virtual cube.  Resolve those members relative
+        // to their base cubes first, then resolve them relative to this
+        // cube so the correct dimension ordinals are used
         for (Object o : calculatedMembers.keySet()) {
             RolapCube baseCube = (RolapCube) o;
             List calculatedMemberList =
                 (List) calculatedMembers.get(baseCube);
-            createCalcMembersAndNamedSets(
+            Query queryExp = resolveCalcMembers(
                 (MondrianDef.CalculatedMember[])
                 calculatedMemberList.toArray(
                     new MondrianDef.CalculatedMember[
                         calculatedMemberList.size()]),
                 new MondrianDef.NamedSet[0],
-                new ArrayList(),
-                new ArrayList(),
-                baseCube,
-                load);
+                baseCube);
+            MeasureFinder measureFinder =
+                new MeasureFinder(this, baseCube, measuresLevel);
+            queryExp.accept(measureFinder);
+            measureList.addAll(measureFinder.getMeasuresFound());
         }
-
-        // handle the calculated members defined in this virtual cube
+        
+        // Add the original calculated members from the base cubes to our
+        // list of calculated members
+        List calculatedMemberList = new ArrayList();
+        for (Object o : calculatedMembers.keySet()) {
+            RolapCube baseCube = (RolapCube) o;
+            calculatedMemberList.addAll(
+                (List) calculatedMembers.get(baseCube));
+        }
+        calculatedMemberList.addAll(
+            Arrays.asList(xmlVirtualCube.calculatedMembers));         
+        
+        // Resolve all calculated members relative to this virtual cube,
+        // whose measureHierarcy member reader now contains all base
+        // measures referenced in those calculated members
+        RolapMember[] measures = (RolapMember[])
+            measureList.toArray(new RolapMember[measureList.size()]);
+        this.measuresHierarchy.setMemberReader(
+        new CacheMemberReader(
+              new MeasureMemberSource(this.measuresHierarchy,  measures)));
         createCalcMembersAndNamedSets(
-                xmlVirtualCube.calculatedMembers,
+                (MondrianDef.CalculatedMember[])
+                calculatedMemberList.toArray(
+                    new MondrianDef.CalculatedMember[
+                            calculatedMemberList.size()]),
                 new MondrianDef.NamedSet[0],
                 new ArrayList(),
                 new ArrayList(),
-                this,
-                load);
+                this);
         
         // Note: virtual cubes do not get aggregate
     }
@@ -518,7 +534,7 @@ return dim;
         List formulaList = new ArrayList();
         createCalcMembersAndNamedSets(
                 xmlCube.calculatedMembers, xmlCube.namedSets,
-                memberList, formulaList, this, load);
+                memberList, formulaList, this);
     }
 
 
@@ -589,20 +605,43 @@ return dim;
      * @param memberList Output list of {@link Member} objects
      * @param formulaList Output list of {@link Formula} objects
      * @param cube the cube that the calculated members originate from
-     * @param load true if loading schema
      */
     private void createCalcMembersAndNamedSets(
             MondrianDef.CalculatedMember[] xmlCalcMembers,
             MondrianDef.NamedSet[] xmlNamedSets,
             List memberList,
             List formulaList,
-            RolapCube cube,
-            boolean load) {
-        // If there are no objects to create, our generated SQL will so silly
-        // the parser will laugh.
-        if (xmlCalcMembers.length == 0 &&
-                xmlNamedSets.length == 0) {
+            RolapCube cube) {
+        
+        final Query queryExp =
+            resolveCalcMembers(
+                xmlCalcMembers,
+                xmlNamedSets,
+                cube);
+        if (queryExp == null) {
             return;
+        }
+
+        // Now pick through the formulas.
+        Util.assertTrue(queryExp.formulas.length ==
+                xmlCalcMembers.length + xmlNamedSets.length);
+        for (int i = 0; i < xmlCalcMembers.length; i++) {
+            postCalcMember(xmlCalcMembers, i, queryExp, memberList);
+        }
+        for (int i = 0; i < xmlNamedSets.length; i++) {
+            postNamedSet(xmlNamedSets, xmlCalcMembers.length, i, queryExp, formulaList);
+        }
+    }
+    
+    private Query resolveCalcMembers(
+        MondrianDef.CalculatedMember[] xmlCalcMembers,
+        MondrianDef.NamedSet[] xmlNamedSets,
+        RolapCube cube)
+    {
+        // If there are no objects to create, our generated SQL will be so
+        // silly, the parser will laugh.
+        if (xmlCalcMembers.length == 0 && xmlNamedSets.length == 0) {
+            return null;
         }
 
         StringBuffer buf = new StringBuffer(256);
@@ -637,16 +676,7 @@ return dim;
                 getUniqueName(), e);
         }
         queryExp.resolve();
-
-        // Now pick through the formulas.
-        Util.assertTrue(queryExp.formulas.length ==
-                xmlCalcMembers.length + xmlNamedSets.length);
-        for (int i = 0; i < xmlCalcMembers.length; i++) {
-            postCalcMember(xmlCalcMembers, i, queryExp, memberList);
-        }
-        for (int i = 0; i < xmlNamedSets.length; i++) {
-            postNamedSet(xmlNamedSets, xmlCalcMembers.length, i, queryExp, formulaList);
-        }
+        return queryExp;
     }
 
     private void postNamedSet(
@@ -2108,8 +2138,7 @@ assert is not true.
                 new MondrianDef.NamedSet[0],
                 memberList,
                 new ArrayList(),
-                this,
-                load);
+                this);
         assert memberList.size() == 1;
         return (Member) memberList.get(0);
     }
@@ -2236,6 +2265,114 @@ assert is not true.
 
         public Cube getCube() {
             return RolapCube.this;
+        }
+    }
+    
+    /**
+     * Visitor that walks an MDX parse tree containing formulas
+     * associated with calculated members defined in a base cube but
+     * referenced from a virtual cube.  When walking the tree, look
+     * for other calculated members as well as stored measures.  Keep
+     * track of all stored measures found, and for the calculated members,
+     * once the formula of that calculated member has been visited, resolve
+     * the calculated member relative to the virtual cube.
+     */
+    private class MeasureFinder extends MdxVisitorImpl
+    {
+        /**
+         * The virtual cube where the original calculated member was
+         * referenced from
+         */
+        private RolapCube virtualCube;
+        
+        /**
+         * The base cube where the original calculated member is defined
+         */
+        private RolapCube baseCube;
+        
+        /**
+         * The measures level corresponding to the virtual cube
+         */
+        private RolapLevel measuresLevel;
+        
+        /**
+         * List of measures found
+         */
+        private List measuresFound;
+        
+        /**
+         * List of calculated members found
+         */
+        private List calcMembersSeen;
+        
+        public MeasureFinder(
+            RolapCube virtualCube,
+            RolapCube baseCube,
+            RolapLevel measuresLevel)
+        {
+            this.virtualCube = virtualCube;
+            this.baseCube = baseCube;
+            this.measuresLevel = measuresLevel;
+            this.measuresFound = new ArrayList();
+            this.calcMembersSeen = new ArrayList();
+        }
+        
+        public Object visit(MemberExpr memberExpr)
+        {
+            Member member = memberExpr.getMember();
+            if (member instanceof RolapCalculatedMember) {
+                // ignore the calculated member if we've already processed
+                // it in another reference
+                if (calcMembersSeen.contains(member)) {
+                    return null;
+                }
+                RolapCalculatedMember calcMember =
+                    (RolapCalculatedMember) member;
+                Formula formula = calcMember.getFormula();
+                formula.accept(this);
+                calcMembersSeen.add(calcMember);
+                
+                // now that we've located all measures referenced in the
+                // calculated member's formula, resolve the calculated
+                // member relative to the virtual cube
+                RolapMember[] measures = (RolapMember[])
+                    measuresFound.toArray(
+                        new RolapMember[measuresFound.size()]);
+                virtualCube.measuresHierarchy.setMemberReader(
+                    new CacheMemberReader(
+                        new MeasureMemberSource(
+                            virtualCube.measuresHierarchy, measures)));
+                MondrianDef.CalculatedMember xmlCalcMember =
+                    schema.lookupXmlCalculatedMember(
+                        calcMember.getUniqueName(),
+                        baseCube.name);
+                createCalcMembersAndNamedSets(
+                    new MondrianDef.CalculatedMember [] { xmlCalcMember },
+                    new MondrianDef.NamedSet[0],
+                    new ArrayList(),
+                    new ArrayList(),
+                    virtualCube);
+                return null;
+                
+            } else if (member instanceof RolapBaseCubeMeasure) {
+                RolapBaseCubeMeasure baseMeasure =
+                    (RolapBaseCubeMeasure) member;
+                RolapVirtualCubeMeasure virtualCubeMeasure =
+                    new RolapVirtualCubeMeasure(
+                        null,
+                        measuresLevel,
+                        baseMeasure);
+                if (!measuresFound.contains(virtualCubeMeasure)) {
+                    measuresFound.add(virtualCubeMeasure);
+                }
+            }
+            
+            return null;
+        }
+
+        public List getMeasuresFound()
+        {
+            return measuresFound;
         }
     }
 }
