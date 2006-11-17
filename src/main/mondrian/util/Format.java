@@ -133,7 +133,8 @@ public class Format {
      * Maps strings representing locales (for example, "en_US_Boston", "en_US",
      * "en", or "" for the default) to a {@link Format.FormatLocale}.
      */
-    static final Map mapLocaleToFormatLocale = new HashMap();
+    private static final Map<String, FormatLocale> mapLocaleToFormatLocale = 
+        new HashMap<String, FormatLocale>();
 
     /**
      * Locale for US English, also the default for English and for all
@@ -1562,7 +1563,7 @@ public class Format {
             locale = Locale.US;
         }
         String key = locale.toString();
-        return (FormatLocale) mapLocaleToFormatLocale.get(key);
+        return mapLocaleToFormatLocale.get(key);
     }
 
     /**
@@ -1577,7 +1578,7 @@ public class Format {
         }
         String key = locale.toString();
         // Look in the cache first.
-        formatLocale = (FormatLocale) mapLocaleToFormatLocale.get(key);
+        formatLocale = mapLocaleToFormatLocale.get(key);
         if (formatLocale == null) {
             // Not in the cache, so ask the factory.
             formatLocale = getFormatLocaleUsingFactory(locale);
@@ -1625,20 +1626,7 @@ public class Format {
         FormatLocale formatLocale, Locale locale)
     {
         String key = locale.toString(); // e.g. "en_us_Boston"
-        FormatLocale previous = (FormatLocale) mapLocaleToFormatLocale.put(
-            key, formatLocale);
-        key = locale.getLanguage() + "_" + locale.getCountry(); // e.g. "en_us"
-        if (mapLocaleToFormatLocale.get(key) == null) {
-            mapLocaleToFormatLocale.put(key, formatLocale);
-        }
-        key = locale.getLanguage(); // e.g. "en"
-        if (mapLocaleToFormatLocale.get(key) == null) {
-            mapLocaleToFormatLocale.put(key, formatLocale);
-        }
-        key = ""; // special key for the 'default' locale
-        if (mapLocaleToFormatLocale.get(key) == null) {
-            mapLocaleToFormatLocale.put(key, formatLocale);
-        }
+        FormatLocale previous = mapLocaleToFormatLocale.put(key, formatLocale);
         return previous;
     }
 
