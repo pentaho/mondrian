@@ -287,6 +287,23 @@ public class VirtualCubeTest extends FoodMartTestCase {
                     "Row #1: |2.1|style=green\n" +
                     "Row #2: |1.5|style=red\n"));
     }
+    
+    public void testCalculatedMeasure()
+    {
+        // calculated measures reference measures defined in the base cube
+        assertQueryReturns(
+            "select\n" +
+            "{[Measures].[Profit], [Measures].[Average Warehouse Sale] }\n" +
+            "ON COLUMNS\n" +
+            "from [Warehouse and Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Profit]}\n" +
+                "{[Measures].[Average Warehouse Sale]}\n" +
+                "Row #0: $339,610.90\n" +
+                "Row #0: $2.21\n"));
+    }
 }
 
 // End VirtualCubeTest.java

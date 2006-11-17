@@ -267,8 +267,8 @@ public class RolapCube extends CubeBase {
 
         // Recreate CalculatedMembers, as the original members point to
         // incorrect dimensional ordinals for the virtual cube.
-        List calculatedMemberList = new ArrayList();
         List measureList = new ArrayList();
+        Map calculatedMembers = new HashMap();
         for (int i = 0; i < xmlVirtualCube.measures.length; i++) {
             // Lookup a measure in an existing cube.
             MondrianDef.VirtualCubeMeasure xmlMeasure =
@@ -283,7 +283,8 @@ public class RolapCube extends CubeBase {
                         // We have a calulated member!  The
                         // dimensional ordinals will be incorrect for
                         // evaluating the expression so we need to
-                        // recreate this member.
+                        // recreate this member.  Keep track of which base
+                        // cube each calculated member is associated with.
                         MondrianDef.CalculatedMember calcMember =
                             schema.lookupXmlCalculatedMember(
                                     xmlMeasure.name, xmlMeasure.cubeName);
@@ -293,7 +294,12 @@ public class RolapCube extends CubeBase {
                                     xmlMeasure.name + "' in XML cube '" +
                                     xmlMeasure.cubeName + "'");
                         }
-                        calculatedMemberList.add(calcMember);
+                        List memberList = (List) calculatedMembers.get(cube);
+                        if (memberList == null) {
+                            memberList = new ArrayList();
+                        }
+                        memberList.add(calcMember);
+                        calculatedMembers.put(cube, memberList);
                     } else {
                         // This is the a standard measure. (Don't know
                         // whether it will confuse things that this
@@ -330,20 +336,35 @@ public class RolapCube extends CubeBase {
 
         // Must init the dimensions before dealing with calculated members
         init(xmlVirtualCube.dimensions);
-
-        calculatedMemberList.addAll(
-                Arrays.asList(xmlVirtualCube.calculatedMembers));
-        if (calculatedMemberList.size() > 0) {
+        
+        // Loop through the base cubes containing calculated members
+        // referenced by this virtual cube and resolve the calculated
+        // members referenced from each of those cubes
+        for (Object o : calculatedMembers.keySet()) {
+            RolapCube baseCube = (RolapCube) o;
+            List calculatedMemberList =
+                (List) calculatedMembers.get(baseCube);
             createCalcMembersAndNamedSets(
-                    (MondrianDef.CalculatedMember[])
-                    calculatedMemberList.toArray(
-                            new MondrianDef.CalculatedMember[
-                                    calculatedMemberList.size()]),
-                    new MondrianDef.NamedSet[0],
-                    new ArrayList(),
-                    new ArrayList(),
-                    load);
+                (MondrianDef.CalculatedMember[])
+                calculatedMemberList.toArray(
+                    new MondrianDef.CalculatedMember[
+                        calculatedMemberList.size()]),
+                new MondrianDef.NamedSet[0],
+                new ArrayList(),
+                new ArrayList(),
+                baseCube,
+                load);
         }
+
+        // handle the calculated members defined in this virtual cube
+        createCalcMembersAndNamedSets(
+                xmlVirtualCube.calculatedMembers,
+                new MondrianDef.NamedSet[0],
+                new ArrayList(),
+                new ArrayList(),
+                this,
+                load);
+        
         // Note: virtual cubes do not get aggregate
     }
 
@@ -497,7 +518,7 @@ return dim;
         List formulaList = new ArrayList();
         createCalcMembersAndNamedSets(
                 xmlCube.calculatedMembers, xmlCube.namedSets,
-                memberList, formulaList, load);
+                memberList, formulaList, this, load);
     }
 
 
@@ -567,6 +588,7 @@ return dim;
      * @param xmlNamedSets Array of XML definition of named set
      * @param memberList Output list of {@link Member} objects
      * @param formulaList Output list of {@link Formula} objects
+     * @param cube the cube that the calculated members originate from
      * @param load true if loading schema
      */
     private void createCalcMembersAndNamedSets(
@@ -574,6 +596,7 @@ return dim;
             MondrianDef.NamedSet[] xmlNamedSets,
             List memberList,
             List formulaList,
+            RolapCube cube,
             boolean load) {
         // If there are no objects to create, our generated SQL will so silly
         // the parser will laugh.
@@ -587,7 +610,7 @@ return dim;
 
         // Check the members individually, and generate SQL.
         for (int i = 0; i < xmlCalcMembers.length; i++) {
-            preCalcMember(xmlCalcMembers, i, buf);
+            preCalcMember(xmlCalcMembers, i, buf, cube);
         }
 
         // Check the named sets individually (for uniqueness) and generate SQL.
@@ -601,7 +624,7 @@ return dim;
         }
 
         buf.append("SELECT FROM ")
-            .append(Util.quoteMdxIdentifier(getUniqueName()));
+            .append(Util.quoteMdxIdentifier(cube.getUniqueName()));
 
         // Parse and validate this huge MDX query we've created.
         final String queryString = buf.toString();
@@ -687,7 +710,8 @@ return dim;
     private void preCalcMember(
             MondrianDef.CalculatedMember[] xmlCalcMembers,
             int j,
-            StringBuffer buf) {
+            StringBuffer buf,
+            RolapCube cube) {
         MondrianDef.CalculatedMember xmlCalcMember = xmlCalcMembers[j];
 
         // Lookup dimension
@@ -735,7 +759,7 @@ return dim;
                 xmlCalcMember.name);
 
         final int measureCount =
-                this.measuresHierarchy.getMemberReader().getMemberCount();
+                cube.measuresHierarchy.getMemberReader().getMemberCount();
 
         // Generate SQL.
         assert memberUniqueName.startsWith("[");
@@ -2084,6 +2108,7 @@ assert is not true.
                 new MondrianDef.NamedSet[0],
                 memberList,
                 new ArrayList(),
+                this,
                 load);
         assert memberList.size() == 1;
         return (Member) memberList.get(0);

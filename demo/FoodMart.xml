@@ -341,6 +341,12 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
       </SQL>
     </MeasureExpression>
   </Measure>
+  <CalculatedMember
+      name="Average Warehouse Sale"
+      dimension="Measures">
+    <Formula>[Measures].[Warehouse Sales] / [Measures].[Warehouse Cost]</Formula>
+    <CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
+  </CalculatedMember>
 </Cube>
 
 <!-- Test a cube based upon a single table. -->
@@ -694,6 +700,7 @@ fullname
   <VirtualCubeMeasure cubeName="Sales" name="[Measures].[Store Cost]"/>
   <VirtualCubeMeasure cubeName="Sales" name="[Measures].[Store Sales]"/>
   <VirtualCubeMeasure cubeName="Sales" name="[Measures].[Unit Sales]"/>
+  <VirtualCubeMeasure cubeName="Sales" name="[Measures].[Profit]"/>
   <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Store Invoice]"/>
   <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Supply Time]"/>
   <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Units Ordered]"/>
@@ -701,12 +708,10 @@ fullname
   <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Warehouse Cost]"/>
   <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Warehouse Profit]"/>
   <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Warehouse Sales]"/>
+  <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Average Warehouse Sale]"/>
   <!--
   <VirtualCubeMeasure cubeName="Sales" name="[Measures].[Store Sales Net]"/>
   -->
-  <CalculatedMember name="Profit" dimension="Measures">
-    <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>
-  </CalculatedMember>
   <CalculatedMember name="Profit Per Unit Shipped" dimension="Measures">
     <Formula>[Measures].[Profit] / [Measures].[Units Shipped]</Formula>
   </CalculatedMember>
