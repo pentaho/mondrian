@@ -124,10 +124,11 @@ class AggQuerySpec {
             ColumnConstraint[] constraints = getConstraints(i);
             if (constraints != null) {
                 sqlQuery.addWhere(
-                        RolapStar.Column.createInExpr(
-                                expr,
-                                constraints,
-                                column.isNumeric()));
+                    RolapStar.Column.createInExpr(
+                        expr,
+                        constraints,
+                        column.getDatatype(),
+                        sqlQuery.getDialect()));
             }
 
             // some DB2 (AS400) versions throw an error, if a column alias is

@@ -13,7 +13,6 @@ package mondrian.rolap.agg;
 
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.util.Bug;
 
 /**
  * Base class for {@link QuerySpec} implementations.
@@ -70,9 +69,12 @@ public abstract class AbstractQuerySpec implements QuerySpec {
 
             ColumnConstraint[] constraints = getConstraints(i);
             if (constraints != null) {
-                sqlQuery.addWhere(RolapStar.Column.createInExpr(expr,
-                                               constraints,
-                                               column.isNumeric()));
+                sqlQuery.addWhere(
+                    RolapStar.Column.createInExpr(
+                        expr,
+                        constraints,
+                        column.getDatatype(), 
+                        sqlQuery.getDialect()));
             }
 
             if (countOnly) {

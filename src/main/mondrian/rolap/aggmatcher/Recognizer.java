@@ -182,7 +182,10 @@ abstract class Recognizer {
                     continue;
                 }
                 if (factCountMatcher.matches(aggColumn.getName())) {
-                    if (! aggColumn.isNumeric()) {
+                    if (aggColumn.getDatatype().isNumeric()) {
+                        makeFactCount(aggColumn);
+                        nosOfFactCounts++;
+                    } else {
                         String msg = mres.NonNumericFactCountColumn.str(
                                 aggTable.getName(),
                                 dbFactTable.getName(),
@@ -191,9 +194,6 @@ abstract class Recognizer {
                         msgRecorder.reportError(msg);
 
                         returnValue = false;
-                    } else {
-                        makeFactCount(aggColumn);
-                        nosOfFactCounts++;
                     }
                 }
 

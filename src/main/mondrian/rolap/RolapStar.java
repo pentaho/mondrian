@@ -544,7 +544,7 @@ public class RolapStar {
     public static class Column {
         private final Table table;
         private final MondrianDef.Expression expression;
-        private final boolean isNumeric;
+        private final SqlQuery.Datatype datatype;
         private final String name;
         /**
          * When a Column is a column, and not a Measure, the parent column
@@ -572,24 +572,28 @@ public class RolapStar {
 
         private int cardinality = -1;
 
-        private Column(String name,
-                       Table table,
-                       MondrianDef.Expression expression,
-                       boolean isNumeric) {
-            this(name, table, expression, isNumeric, null, null, null);
+        private Column(
+            String name,
+            Table table,
+            MondrianDef.Expression expression,
+            SqlQuery.Datatype datatype)
+        {
+            this(name, table, expression, datatype, null, null, null);
         }
-        private Column(String name,
-                       Table table,
-                       MondrianDef.Expression expression,
-                       boolean isNumeric,
-                       Column nameColumn,
-                       Column parentColumn,
-                       String usagePrefix
-                       ) {
+
+        private Column(
+            String name,
+            Table table,
+            MondrianDef.Expression expression,
+            SqlQuery.Datatype datatype,
+            Column nameColumn,
+            Column parentColumn,
+            String usagePrefix)
+        {
             this.name = name;
             this.table = table;
             this.expression = expression;
-            this.isNumeric = isNumeric;
+            this.datatype = datatype;
             this.bitPosition = table.star.nextColumnCount();
             this.nameColumn = nameColumn;
             this.parentColumn = parentColumn;
@@ -607,16 +611,14 @@ public class RolapStar {
             // Note: both columns have to be from the same table
             return (other.table == this.table) &&
                    other.expression.equals(this.expression) &&
-                   (other.isNumeric == this.isNumeric) &&
+                   (other.datatype == this.datatype) &&
                    other.name.equals(this.name);
         }
 
         public String getName() {
             return name;
         }
-        public boolean isNumeric() {
-            return isNumeric;
-        }
+
         public int getBitPosition() {
             return bitPosition;
         }
@@ -628,18 +630,23 @@ public class RolapStar {
         public RolapStar.Table getTable() {
             return table;
         }
+
         public SqlQuery getSqlQuery() {
             return getTable().getStar().getSqlQuery();
         }
+
         public RolapStar.Column getNameColumn() {
             return nameColumn;
         }
+
         public RolapStar.Column getParentColumn() {
             return parentColumn;
         }
+
         public String getUsagePrefix() {
             return usagePrefix;
         }
+
         public boolean isNameColumn() {
             return isNameColumn;
         }
@@ -654,22 +661,6 @@ public class RolapStar {
          */
         public String generateExprString(SqlQuery query) {
             return getExpression().getExpression(query);
-        }
-
-        private static void quoteValue(
-                Object o,
-                StringBuffer buf,
-                boolean isNumeric) {
-            String s = o.toString();
-            if (isNumeric) {
-                buf.append(s);
-            } else {
-                if (s == null) {
-                    buf.append("NULL");
-                } else {
-                    Util.singleQuoteString(s, buf);
-                }
-            }
         }
 
         public int getCardinality() {
@@ -759,9 +750,11 @@ public class RolapStar {
          * <li>String values: <code>foo.bar in ('a', 'b', 'c')</code></li></ul>
          */
         public static String createInExpr(
-                String expr,
-                ColumnConstraint[] constraints,
-                boolean isNumeric) {
+            String expr,
+            ColumnConstraint[] constraints,
+            SqlQuery.Datatype datatype,
+            SqlQuery.Dialect dialect)
+        {
             if (constraints.length == 1) {
                 final ColumnConstraint constraint = constraints[0];
                 Object key = constraint.getValue();
@@ -769,13 +762,13 @@ public class RolapStar {
                     StringBuffer buf = new StringBuffer(64);
                     buf.append(expr);
                     buf.append(" = ");
-                    quoteValue(key, buf, isNumeric);
+                    dialect.quote(buf, key, datatype);
                     return buf.toString();
                 }
             }
             int notNullCount = 0;
-            StringBuffer sb = new StringBuffer(expr);
-            sb.append(" in (");
+            StringBuffer buf = new StringBuffer(expr);
+            buf.append(" in (");
             for (int i = 0; i < constraints.length; i++) {
                 final ColumnConstraint constraint = constraints[i];
                 Object key = constraint.getValue();
@@ -783,15 +776,14 @@ public class RolapStar {
                     continue;
                 }
                 if (notNullCount > 0) {
-                    sb.append(", ");
+                    buf.append(", ");
                 }
                 ++notNullCount;
-                quoteValue(key, sb, isNumeric);
+                dialect.quote(buf, key, datatype);
             }
-            sb.append(')');
+            buf.append(')');
             if (notNullCount < constraints.length) {
                 // There was at least one null.
-                StringBuffer buf;
                 switch (notNullCount) {
                 case 0:
                     // Special case -- there were no values besides null.
@@ -800,11 +792,11 @@ public class RolapStar {
                 case 1:
                     // Special case -- one not-null value, and null, for
                     // example "(x = 1 or x is null)".
-                    buf = new StringBuffer(64);
+                    buf.setLength(0);
                     buf.append('(');
                     buf.append(expr);
                     buf.append(" = ");
-                    quoteValue(constraints[0].getValue(), buf, isNumeric);
+                    dialect.quote(buf, constraints[0].getValue(), datatype);
                     buf.append(" or ");
                     buf.append(expr);
                     buf.append(" is null)");
@@ -812,9 +804,10 @@ public class RolapStar {
                 default:
                     // Nulls and values, for example,
                     // "(x in (1, 2) or x IS NULL)".
-                    buf = new StringBuffer(64);
+                    final String str = buf.toString();
+                    buf.setLength(0);
                     buf.append('(');
-                    buf.append(sb.toString());
+                    buf.append(str);
                     buf.append(" or ");
                     buf.append(expr);
                     buf.append(" is null)");
@@ -822,7 +815,7 @@ public class RolapStar {
                 }
             } else {
                 // No nulls. Return, for example, "x in (1, 2, 3)".
-                return sb.toString();
+                return buf.toString();
             }
         }
 
@@ -846,6 +839,10 @@ public class RolapStar {
             pw.print("): ");
             pw.print(generateExprString(sqlQuery));
         }
+
+        public SqlQuery.Datatype getDatatype() {
+            return datatype;
+        }
     }
 
     /**
@@ -862,8 +859,8 @@ public class RolapStar {
                 RolapAggregator aggregator,
                 Table table,
                 MondrianDef.Expression expression,
-                boolean isNumeric) {
-            super(name, table, expression, isNumeric);
+                SqlQuery.Datatype datatype) {
+            super(name, table, expression, datatype);
             this.aggregator = aggregator;
         }
 
@@ -1102,7 +1099,7 @@ public class RolapStar {
                 measure.getAggregator(),
                 this,
                 measure.getMondrianDefExpression(),
-                measure.isNumeric());
+                measure.getDatatype());
 
             measure.setStarMeasure(starMeasure); // reverse mapping
 
@@ -1135,7 +1132,7 @@ public class RolapStar {
                     level,
                     level.getName(),
                     level.getNameExp(),
-                    false,
+                    SqlQuery.Datatype.String,
                     null,
                     null,
                     null);
@@ -1154,7 +1151,7 @@ public class RolapStar {
                 level,
                 name,
                 level.getKeyExp(),
-                (level.getFlags() & RolapLevel.NUMERIC) != 0,
+                level.getDatatype(),
                 nameColumn,
                 parentColumn,
                 usagePrefix);
@@ -1172,7 +1169,7 @@ public class RolapStar {
                 RolapLevel level,
                 String name,
                 MondrianDef.Expression xmlExpr,
-                boolean isNumeric,
+                SqlQuery.Datatype datatype,
                 Column nameColumn,
                 Column parentColumn,
                 String usagePrefix) {
@@ -1213,13 +1210,14 @@ public class RolapStar {
                 column = c;
             } else {
                 // Make a new column and add it
-                column = new RolapStar.Column(name,
-                                              table,
-                                              xmlExpr,
-                                              isNumeric,
-                                              nameColumn,
-                                              parentColumn,
-                                              usagePrefix);
+                column = new RolapStar.Column(
+                    name,
+                    table,
+                    xmlExpr,
+                    datatype,
+                    nameColumn,
+                    parentColumn,
+                    usagePrefix);
                 addColumn(column);
             }
             return column;

@@ -10,6 +10,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.rolap.sql.SqlQuery;
 
 import java.util.List;
 import java.util.Arrays;
@@ -116,9 +117,15 @@ class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeasure {
         this.starMeasure = starMeasure;
     }
 
-    public boolean isNumeric() {
+    public SqlQuery.Datatype getDatatype() {
         Object datatype = getPropertyValue(Property.DATATYPE.name);
-        return "Integer".equals(datatype) || "Numeric".equals(datatype);
+        try {
+            return SqlQuery.Datatype.valueOf((String) datatype);
+        } catch (ClassCastException e) {
+            return SqlQuery.Datatype.String;
+        } catch (IllegalArgumentException e) {
+            return SqlQuery.Datatype.String;
+        }
     }
 }
 

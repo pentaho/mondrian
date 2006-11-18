@@ -140,10 +140,11 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
             ColumnConstraint[] constraints = getConstraints(i);
             if (constraints != null) {
                 innerSqlQuery.addWhere(
-                        RolapStar.Column.createInExpr(
-                                expr,
-                                constraints,
-                                column.isNumeric()));
+                    RolapStar.Column.createInExpr(
+                        expr,
+                        constraints,
+                        column.getDatatype(),
+                        innerSqlQuery.getDialect()));
             }
             final String alias = "d" + i;
             innerSqlQuery.addSelect(expr, alias);

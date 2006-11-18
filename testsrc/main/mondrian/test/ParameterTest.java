@@ -473,7 +473,7 @@ public class ParameterTest extends FoodMartTestCase {
             "1",
             "In element 'Schema': In element 'Parameter': " +
                 "Value 'Bad type' of attribute 'type' has illegal value 'Bad type'.  " +
-                "Legal values: {String, Numeric, Member}");
+                "Legal values: {String, Numeric, Integer, Boolean, Date, Time, Timestamp, Member}");
     }
 
     public void testSchemaPropInvalidDefaultExpFails() {

@@ -72,7 +72,7 @@ public class SqlConstraintUtils {
         RolapStar.Column[] columns = request.getConstrainedColumns();
         Object[] values = request.getSingleValues();
         int arity = columns.length;
-        // following code is similar to AbsractQuerySpec#nonDistinctGenerateSQL()
+        // following code is similar to AbstractQuerySpec#nonDistinctGenerateSQL()
         for (int i = 0; i < arity; i++) {
             RolapStar.Column column = columns[i];
 
@@ -91,10 +91,24 @@ public class SqlConstraintUtils {
                 expr = column.generateExprString(sqlQuery);
             }
 
-            String value = sqlQuery.quote(column.isNumeric(), values[i]);
-            sqlQuery.addWhere(expr,
-                    RolapUtil.sqlNullLiteral.equals(value) ? " is " : " = ",
-                    value);
+            final String value = String.valueOf(values[i]);
+            if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(value)) {
+                sqlQuery.addWhere(
+                    expr,
+                    " is ",
+                    RolapUtil.sqlNullLiteral);
+            } else {
+                if (column.getDatatype().isNumeric()) {
+                    // make sure it can be parsed
+                    Double.valueOf(value);
+                }
+                final StringBuffer buf = new StringBuffer();
+                sqlQuery.getDialect().quote(buf, value, column.getDatatype());
+                sqlQuery.addWhere(
+                    expr,
+                    " = ",
+                    buf.toString());
+            }
         }
     }
 
@@ -241,14 +255,14 @@ public class SqlConstraintUtils {
                 // both have problems.
 
             } else {
-                String cond = RolapStar.Column.createInExpr(q, cc, level.isNumeric());
+                String cond = RolapStar.Column.createInExpr(
+                    q, cc, level.getDatatype(), sqlQuery.getDialect());
                 sqlQuery.addWhere(cond);
             }
             if (level.isUnique()) {
                 break; // no further qualification needed
             }
         }
-
     }
 
     private static ColumnConstraint[] getColumnConstraints(Collection members) {

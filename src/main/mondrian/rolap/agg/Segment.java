@@ -285,7 +285,7 @@ class Segment {
                     Object o = resultSet.getObject(k++);
                     if (o == null) {
                         o = Util.nullValue; // convert to placeholder
-                    } else if (segments[i].measure.isNumeric()) {
+                    } else if (segments[i].measure.getDatatype().isNumeric()) {
                         if (o instanceof Double) {
                             // nothing to do
                         } else if (o instanceof Number) {

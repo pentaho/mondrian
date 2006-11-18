@@ -16,6 +16,7 @@ import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.agg.MemberColumnConstraint;
+import mondrian.rolap.sql.SqlQuery;
 
 import org.apache.log4j.Logger;
 import java.lang.reflect.Constructor;
@@ -42,7 +43,6 @@ public class RolapLevel extends LevelBase {
         return null;
     }
 
-    static final int NUMERIC = 1;
     static final int ALL = 2;
     static final int UNIQUE = 4;
 
@@ -56,7 +56,7 @@ public class RolapLevel extends LevelBase {
      * unique (as opposed to unique only within the context of the parent
      * member). */
     private final boolean unique;
-    private final boolean numeric;
+    private final SqlQuery.Datatype datatype;
     private final int flags;
     private final RolapProperty[] properties;
     private final RolapProperty[] inheritedProperties;
@@ -99,6 +99,7 @@ public class RolapLevel extends LevelBase {
             MondrianDef.Closure xmlClosure,
             RolapProperty[] properties,
             int flags,
+            SqlQuery.Datatype datatype,
             HideMemberCondition
             hideMemberCondition,
             LevelType levelType, String approxRowCount)
@@ -117,7 +118,7 @@ public class RolapLevel extends LevelBase {
         this.flags = flags;
         final boolean isAll = (flags & ALL) == ALL;
         this.unique = (flags & UNIQUE) == UNIQUE;
-        this.numeric = (flags & NUMERIC) == NUMERIC;
+        this.datatype = datatype;
         this.keyExp = keyExp;
         if (nameExp != null) {
             if (nameExp instanceof MondrianDef.Column) {
@@ -238,21 +239,27 @@ public class RolapLevel extends LevelBase {
     public MondrianDef.Expression getCaptionExp() {
         return captionExp;
     }
+
     public boolean hasCaptionColumn(){
         return captionExp != null;
     }
+
     int getFlags() {
         return flags;
     }
+
     HideMemberCondition getHideMemberCondition() {
         return hideMemberCondition;
     }
+
     public boolean isUnique() {
         return unique;
     }
-    boolean isNumeric() {
-        return numeric;
+
+    SqlQuery.Datatype getDatatype() {
+        return datatype;
     }
+
     RolapProperty[] getRolapProperties() {
         return properties;
     }
@@ -293,8 +300,8 @@ public class RolapLevel extends LevelBase {
             xmlLevel.getNameExp(), xmlLevel.getCaptionExp(), xmlLevel.getOrdinalExp(),
             xmlLevel.getParentExp(), xmlLevel.nullParentValue,
             xmlLevel.closure, createProperties(xmlLevel),
-            (xmlLevel.type.equals("Numeric") ? NUMERIC : 0) |
             (xmlLevel.uniqueMembers.booleanValue() ? UNIQUE : 0),
+            xmlLevel.getDatatype(),
             HideMemberCondition.lookup(xmlLevel.hideMemberIf),
             LevelType.lookup(xmlLevel.levelType), xmlLevel.approxRowCount);
 

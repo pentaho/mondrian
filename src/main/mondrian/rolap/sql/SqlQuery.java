@@ -24,7 +24,6 @@ import java.util.List;
 import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
-import mondrian.rolap.RolapUtil;
 
 import org.eigenbase.util.property.Property;
 import org.eigenbase.util.property.Trigger;
@@ -712,12 +711,11 @@ public class SqlQuery
         }
 
         /**
-         * This is the implementation of the quoteIdentifier method which quotes the
-         * the val parameter (identifier) placing the result in the StringBuffer
-         * parameter.
+         * Appends to a buffer an identifier, quoted appropriately for this
+         * Dialect.
          *
          * @param val identifier to quote (must not be null).
-         * @param buf
+         * @param buf Buffer
          */
         public void quoteIdentifier(final String val, final StringBuffer buf) {
             String q = getQuoteIdentifierString();
@@ -784,16 +782,18 @@ public class SqlQuery
         }
 
         /**
-         * This implements the quoting of a qualifier and name allowing one to
-         * pass in a StringBuffer thus saving the allocation and copying.
+         * Appends to a buffer an identifier and optional qualifier, quoted
+         * appropriately for this Dialect.
          *
          * @param qual optional qualifier to be quoted.
          * @param name name to be quoted (must not be null).
-         * @param buf
+         * @param buf Buffer
          */
-        public void quoteIdentifier(final String qual,
-                                    final String name,
-                                    final StringBuffer buf) {
+        public void quoteIdentifier(
+            final String qual,
+            final String name,
+            final StringBuffer buf)
+        {
             if (qual == null) {
                 quoteIdentifier(name, buf);
 
@@ -808,6 +808,10 @@ public class SqlQuery
             }
         }
 
+        /**
+         * Returns the character which is used to quote identifiers, or null
+         * if quoting is not supported.
+         */
         public String getQuoteIdentifierString() {
             if (isDB2()) {
                 return "";
@@ -817,12 +821,68 @@ public class SqlQuery
         }
 
         /**
-         * Converts a string into a SQL single-quoted string.
-         * For example, <code>quoteString("Can't")</code> returns
-         * <code>'Can''t'</code>.
+         * Appends to a buffer a single-quoted SQL string.
+         *
+         * <p>For example, in the default dialect,
+         * <code>quoteStringLiteral(buf, "Can't")</code> appends
+         * "<code>'Can''t'</code>" to <code>buf</code>.
          */
-        public String quoteString(String s) {
-            return Util.singleQuoteString(s);
+        public void quoteStringLiteral(StringBuffer buf, String s) {
+            Util.singleQuoteString(s, buf);
+        }
+
+        /**
+         * Appends to a buffer a numeric literal.
+         *
+         * <p>In the default dialect, numeric literals are printed as is.
+         */
+        public void quoteNumericLiteral(StringBuffer buf, String value) {
+            buf.append(value);
+        }
+
+        /**
+         * Appends to a buffer a boolean literal.
+         *
+         * <p>In the default dialect, boolean literals are printed as is.
+         */
+        public void quoteBooleanLiteral(StringBuffer buf, String value) {
+            buf.append(value);
+        }
+
+        /**
+         * Appends to a buffer a date literal.
+         *
+         * <p>For example, in the default dialect,
+         * <code>quoteStringLiteral(buf, "1969-03-17")</code>
+         * appends <code>DATE '1969-03-17'</code>.
+         */
+        public void quoteDateLiteral(StringBuffer buf, String value) {
+            buf.append("DATE ");
+            Util.singleQuoteString(value, buf);
+        }
+
+        /**
+         * Appends to a buffer a time literal.
+         *
+         * <p>For example, in the default dialect,
+         * <code>quoteStringLiteral(buf, "12:34:56")</code>
+         * appends <code>TIME '12:34:56'</code>.
+         */
+        public void quoteTimeLiteral(StringBuffer buf, String value) {
+            buf.append("TIME ");
+            Util.singleQuoteString(value, buf);
+        }
+
+        /**
+         * Appends to a buffer a timestamp literal.
+         *
+         * <p>For example, in the default dialect,
+         * <code>quoteStringLiteral(buf, "1969-03-17 12:34:56")</code>
+         * appends <code>TIMESTAMP '1969-03-17 12:34:56'</code>.
+         */
+        public void quoteTimestampLiteral(StringBuffer buf, String value) {
+            buf.append("TIMESTAMP ");
+            Util.singleQuoteString(value, buf);
         }
 
         /**
@@ -1029,13 +1089,8 @@ public class SqlQuery
                     }
                     final String columnType = (String) columnTypes.get(j);
                     final String columnName = (String) columnNames.get(j);
-                    if (value == null) {
-                        buf.append("null");
-                    } else if (columnType.equals("String")) {
-                        buf.append(quoteString(value));
-                    } else {
-                        buf.append(value);
-                    }
+                    Datatype datatype = Datatype.valueOf(columnType);
+                    quote(buf, value, datatype);
                     if (allowsAs()) {
                         buf.append(" as ");
                     } else {
@@ -1098,6 +1153,7 @@ public class SqlQuery
                         buf.append(", ");
                     }
                     final String columnType = (String) columnTypes.get(j);
+                    Datatype datatype = Datatype.valueOf(columnType);
                     if (value == null) {
                         String sqlType =
                             guessSqlType(columnType, valueList, j);
@@ -1105,13 +1161,13 @@ public class SqlQuery
                             .append(sqlType)
                             .append(")");
                     } else if (isDerby() && castTypes[j] != null) {
-                        buf.append("CAST(")
-                            .append(quote(value, columnType))
-                            .append(" AS ")
+                        buf.append("CAST(");
+                        quote(buf, value, datatype);
+                        buf.append(" AS ")
                             .append(castTypes[j])
                             .append(")");
                     } else {
-                        buf.append(quote(value, columnType));
+                        quote(buf, value, datatype);
                     }
                 }
                 buf.append(")");
@@ -1131,13 +1187,14 @@ public class SqlQuery
         }
 
         /**
-         * Returns a value quoted for its type.
+         * Appends to a buffer a value quoted for its type.
          */
-        private String quote(String value, String type) {
-            if (type.equals("String")) {
-                value = quoteString(value);
+        public void quote(StringBuffer buf, Object value, Datatype datatype) {
+            if (value == null) {
+                buf.append("null");
+            } else {
+                datatype.quoteValue(buf, this, value.toString());
             }
-            return value;
         }
 
         /**
@@ -1210,23 +1267,74 @@ public class SqlQuery
     }
 
     /**
-     * Quotes a value so it may be used in SQL.
-     *
-     * @throws NumberFormatException if numeric == true and value can not
-     * be parsed as a number
+     * Datatype of a column.
      */
-    public String quote(boolean numeric, Object value) throws NumberFormatException {
-        String string = String.valueOf(value);
-        if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(string)) { // for member key is RolapUtil.sqlNullValue
-            return RolapUtil.sqlNullLiteral;
-        } else {
-            if (numeric) {
-                if (value instanceof Number) return string;
-                // make sure it can be parsed
-                Double.valueOf(string);
-                return string;
+    public enum Datatype {
+        String {
+            public void quoteValue(StringBuffer buf, Dialect dialect, String value) {
+                dialect.quoteStringLiteral(buf, value);
             }
-            return Util.singleQuoteString(string);
+        },
+
+        Numeric {
+            public void quoteValue(StringBuffer buf, Dialect dialect, String value) {
+                dialect.quoteNumericLiteral(buf, value);
+            }
+
+            public boolean isNumeric() {
+                return true;
+            }
+        },
+
+        Integer {
+            public void quoteValue(StringBuffer buf, Dialect dialect, String value) {
+                dialect.quoteNumericLiteral(buf, value);
+            }
+
+            public boolean isNumeric() {
+                return true;
+            }
+        },
+
+        Boolean {
+            public void quoteValue(StringBuffer buf, Dialect dialect, String value) {
+                dialect.quoteBooleanLiteral(buf, value);
+            }
+        },
+
+        Date {
+            public void quoteValue(StringBuffer buf, Dialect dialect, String value) {
+                dialect.quoteDateLiteral(buf, value);
+            }
+        },
+
+        Time {
+            public void quoteValue(StringBuffer buf, Dialect dialect, String value) {
+                dialect.quoteTimeLiteral(buf, value);
+            }
+        },
+
+        Timestamp {
+            public void quoteValue(StringBuffer buf, Dialect dialect, String value) {
+                dialect.quoteTimestampLiteral(buf, value);
+            }
+        };
+
+        /**
+         * Appends to a buffer a value of this type, in the appropriate format
+         * for this dialect.
+         *
+         * @param buf Buffer
+         * @param dialect Dialect
+         * @param value Value
+         */
+        public abstract void quoteValue(
+            StringBuffer buf,
+            Dialect dialect,
+            String value);
+
+        public boolean isNumeric() {
+            return false;
         }
     }
 }

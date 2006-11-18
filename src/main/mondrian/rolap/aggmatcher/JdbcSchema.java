@@ -14,6 +14,7 @@ import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianDef;
 import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapStar;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
 
 import javax.sql.DataSource;
@@ -313,22 +314,33 @@ public class JdbcSchema {
     }
 
     /**
-     * Returns true if the parameter is a java.sql.Type numeric type.
+     * Converts a {@link java.sql.Types} value to a {@link SqlQuery.Datatype}.
      */
-    public static boolean isNumeric(int javaType) {
+    public static SqlQuery.Datatype getDatatype(int javaType) {
         switch (javaType) {
-        case Types.TINYINT :
-        case Types.SMALLINT :
-        case Types.INTEGER :
-        case Types.BIGINT :
-        case Types.FLOAT :
-        case Types.REAL :
-        case Types.DOUBLE :
-        case Types.NUMERIC :
-        case Types.DECIMAL :
-            return true;
-        default :
-            return false;
+        case Types.TINYINT:
+        case Types.SMALLINT:
+        case Types.INTEGER:
+        case Types.BIGINT:
+            return SqlQuery.Datatype.Integer;
+        case Types.FLOAT:
+        case Types.REAL:
+        case Types.DOUBLE:
+        case Types.NUMERIC:
+        case Types.DECIMAL:
+            return SqlQuery.Datatype.Numeric;
+        case Types.BOOLEAN:
+            return SqlQuery.Datatype.Boolean;
+        case Types.DATE:
+            return SqlQuery.Datatype.Date;
+        case Types.TIME:
+            return SqlQuery.Datatype.Time;
+        case Types.TIMESTAMP:
+            return SqlQuery.Datatype.Timestamp;
+        case Types.CHAR:
+        case Types.VARCHAR:
+        default:
+            return SqlQuery.Datatype.String;
         }
     }
 
@@ -634,8 +646,8 @@ public class JdbcSchema {
             /**
              * Return true if this column is numeric.
              */
-            public boolean isNumeric() {
-                return JdbcSchema.isNumeric(getType());
+            public SqlQuery.Datatype getDatatype() {
+                return JdbcSchema.getDatatype(getType());
             }
 
             /**

@@ -249,7 +249,8 @@ the default schema, you can provide an explicit schema using the "schema" attrib
 
 <p>The optional <code>datatype</code> attribute specifies how cell values are represented in Mondrian's 
 cache, and how they are returned via XML for Analysis. The <code>datatype</code> attribute can have 
-values "<code>String</code>", "<code>Integer</code>" and "<code>Numeric</code>". 
+values "<code>String</code>", "<code>Integer</code>", &quot;<code>Numeric</code>", &quot;<code>Boolean</code>&quot;, 
+&quot;<code>Date</code>&quot;, &quot;<code>Time</code>&quot;, and &quot;<code>Timestamp</code>&quot;. 
 The default is "<code>Numeric</code>", except for "<code>count</code>" and 
 "<code>distinct-count</code>" measures, which are "<code>Integer</code>".</p>
 
@@ -322,12 +323,12 @@ between different databases is handled by specifying the dialect in the SQL tag.
 <p>Let's look at a simple dimension. </p>
 <blockquote>
   	<code>
-		&lt;<a href="#XML_Dimension">Dimension</a> name="Gender" foreignKey="customer_id"&gt;<br>
-			<span style="padding-left:10px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="customer_id"&gt;</span><br>
-				<span style="padding-left:20px;">&lt;<a href="#XML_Table">Table</a> name="customer"/&gt;</span><br>
-				<span style="padding-left:20px;">&lt;<a href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"/&gt;</span><br>
-			<span style="padding-left:10px;">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</span><br>
-		&lt;/<a href="#XML_Dimension">Dimension</a>&gt;
+&lt;<a href="#XML_Dimension">Dimension</a> name="Gender" foreignKey="customer_id"&gt;<br>
+&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="customer_id"&gt;<br>
+&nbsp; &lt;<a href="#XML_Table">Table</a> name="customer"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"/&gt;<br>
+&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
+&lt;/<a href="#XML_Dimension">Dimension</a>&gt;
  	</code>
 </blockquote>
 
@@ -432,22 +433,14 @@ indicated by the level's <code>levelType</code> attribute, whose allowable value
 <blockquote>
   	<code>
 		&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Time&quot; type=&quot;TimeDimension&quot;&gt;<br>
-			<span style="padding-left:10px">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Periods&quot;</span><br />
-			<span style="padding-left:10px">primaryKey=&quot;dateid&quot;&gt;</span><br>
-				<span style="padding-left:20px">&lt;<a href="#XML_Table">Table</a> name=&quot;datehierarchy&quot;/&gt;</span><br>
-				<span style="padding-left:20px">&lt;<a href="#XML_Level">Level</a> name=&quot;Year&quot; column=&quot;year&quot; uniqueMembers=&quot;true&quot;</span><br />
-				<span style="padding-left:20px">levelType=&quot;TimeYears&quot; type=&quot;Numeric&quot;/&gt;</span><br>
-				<span style="padding-left:20px">&lt;<a href="#XML_Level">Level</a> name=&quot;Quarter&quot; column=&quot;quarter&quot;</span><br>
-				<span style="padding-left:20px">uniqueMembers=&quot;false&quot; levelType=&quot;TimeQuarters&quot; /&gt;</span><br>
-				<span style="padding-left:20px">&lt;<a href="#XML_Level">Level</a> name=&quot;Month&quot; column=&quot;month&quot; uniqueMembers=&quot;false&quot;</span><br>
-				<span style="padding-left:20px">ordinalColumn=&quot;month&quot; nameColumn=&quot;month_name&quot;</span><br>
-				<span style="padding-left:20px">levelType=&quot;TimeMonths&quot; type=&quot;Numeric&quot;/&gt;</span><br>
-				<span style="padding-left:20px">&lt;<a href="#XML_Level">Level</a> name=&quot;Week&quot; column=&quot;week_in_month&quot;</span><br>
-				<span style="padding-left:20px">uniqueMembers=&quot;false&quot; levelType=&quot;TimeWeeks&quot; /&gt;</span><br>
-				<span style="padding-left:20px">&lt;<a href="#XML_Level">Level</a> name=&quot;Day&quot; column=&quot;day_in_month&quot;</span><br>
-				<span style="padding-left:20px">uniqueMembers=&quot;false&quot; ordinalColumn=&quot;day_in_month&quot;</span><br>
-				<span style="padding-left:20px">nameColumn=&quot;day_name&quot; levelType=&quot;TimeDays&quot; type=&quot;Numeric&quot;/&gt;</span><br>
-			<span style="padding-left:10px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</span><br>
+			<span style="padding-left:10px">&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Periods&quot; primaryKey=&quot;dateid&quot;&gt;</span><br>
+				<span style="padding-left:20px">&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name=&quot;datehierarchy&quot;/&gt;</span><br>
+				<span style="padding-left:20px">&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Year&quot; column=&quot;year&quot; uniqueMembers=&quot;true&quot; levelType=&quot;TimeYears&quot; type=&quot;Numeric&quot;/&gt;</span><br>
+				<span style="padding-left:20px">&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Quarter&quot; column=&quot;quarter&quot; uniqueMembers=&quot;false&quot; levelType=&quot;TimeQuarters&quot; /&gt;</span><br>
+				<span style="padding-left:20px">&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Month&quot; column=&quot;month&quot; uniqueMembers=&quot;false&quot; ordinalColumn=&quot;month&quot; nameColumn=&quot;month_name&quot; levelType=&quot;TimeMonths&quot; type=&quot;Numeric&quot;/&gt;</span><br>
+				<span style="padding-left:20px">&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Week&quot; column=&quot;week_in_month&quot; uniqueMembers=&quot;false&quot; levelType=&quot;TimeWeeks&quot; /&gt;</span><br>
+				<span style="padding-left:20px">&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Day&quot; column=&quot;day_in_month&quot; uniqueMembers=&quot;false&quot; ordinalColumn=&quot;day_in_month&quot; nameColumn=&quot;day_name&quot; levelType=&quot;TimeDays&quot; type=&quot;Numeric&quot;/&gt;</span><br>
+			<span style="padding-left:10px">&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</span><br>
 		&lt;/<a href="#XML_Dimension">Dimension</a>&gt;
  	</code>
 </blockquote>
@@ -459,7 +452,7 @@ indicated by the level's <code>levelType</code> attribute, whose allowable value
 
 <p>Notice that in the time hierarchy example above the <code>ordinalColumn</code> and 
 <code>nameColumn</code> attributes on the <code>&lt;Level&gt;</code> element. These 
-effect how levels are displsyed in a result. The <code>ordinalColumn</code> attribute specifies a 
+effect how levels are displayed in a result. The <code>ordinalColumn</code> attribute specifies a 
 column in the Hierarchy table that provides the order of the members in a given Level, while the 
 <code>nameColumn</code> specifies a column that will be displayed.</p>
 
@@ -468,6 +461,15 @@ and month_name (January, February, ...) columns. The column value that will be u
 month column, so valid member specifications will be of the form: 
 <code>[Time].[2005].[Q1].[<b><i>1</i></b>]</code>. Members of the <code>[Month]</code> 
 level will displayed in the order January, February, etc.</p>
+<p>Levels contain a <code>type</code> attribute, which can have values &quot;<code>String</code>", "<code>Integer</code>", &quot;<code>Numeric</code>", &quot;<code>Boolean</code>&quot;, 
+&quot;<code>Date</code>&quot;, &quot;<code>Time</code>&quot;, and &quot;<code>Timestamp</code>&quot;. 
+The default value is <code>&quot;Numeric&quot;</code> because key columns generally have a numeric type. If it is a 
+different type, Mondrian needs to know this so it can generate SQL statements 
+correctly; for example, string values will be generated enclosed in single 
+quotes:</p>
+<blockquote>
+    <p><code>WHERE productSku = '123-455-AA'</code></p>
+</blockquote>
 <!-- 
 ####################################
 ##  3.3.5 Multiple hierarchies #####
@@ -477,39 +479,22 @@ level will displayed in the order January, February, etc.</p>
 <p>A dimension can contain more than one hierarchy:</p>
 
 <blockquote>
-  <p><code>&lt;<a href="#XML_Dimension">Dimension</a> name="Time" foreignKey="time_id"&gt;<br>&nbsp;  &lt;<a
- href="#XML_Hierarchy">Hierarchy</a> hasAll="false" primaryKey="time_id"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name="time_by_day"/&gt;<br>&nbsp;&nbsp;&nbsp;    &lt;<a
- href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric"<br />
- &nbsp;&nbsp;&nbsp;&nbsp;uniqueMembers="true"/&gt;<br>
-
-&nbsp;&nbsp;&nbsp; &lt;<a
- href="#XML_Level">Level</a> name="Quarter" column="quarter"<br />
- &nbsp;&nbsp;&nbsp;&nbsp;uniqueMembers="false"/&gt;<br>
-&nbsp;&nbsp;&nbsp;    &lt;<a
- href="#XML_Level">Level</a> name="Month" column="month_of_year"<br />
- &nbsp;&nbsp;&nbsp;&nbsp;type="Numeric" uniqueMembers="false"/&gt;<br>
-&nbsp; &lt;/<a
- href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-&nbsp;  &lt;<a
- href="#XML_Hierarchy">Hierarchy</a> name="Time Weekly" hasAll="false"<br />
- &nbsp;&nbsp;&nbsp;&nbsp;primaryKey="time_id"&gt;<br>
-
-&nbsp;&nbsp;&nbsp;    &lt;<a
- href="#XML_Table">Table</a> name="time_by_week"/&gt;<br>
-&nbsp;&nbsp;&nbsp;    &lt;<a
- href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric"<br />
- &nbsp;&nbsp;&nbsp;&nbsp;uniqueMembers="true"/&gt;<br>
-  &nbsp;&nbsp;&nbsp; &lt;<a
- href="#XML_Level">Level</a> name="Week" column="week"<br />
- &nbsp;&nbsp;&nbsp;&nbsp;uniqueMembers="false"/&gt;<br>
-  &nbsp;&nbsp;&nbsp;    &lt;<a
- href="#XML_Level">Level</a> name="Day" column="day_of_week" type="String"<br />
- &nbsp;&nbsp;&nbsp;&nbsp;uniqueMembers="false"/&gt;<br>
-
-&nbsp; &lt;/<a
- href="#XML_Hierarchy">Hierarchy</a>&gt;<br>&lt;/<a
- href="#XML_Dimension">Dimension</a>&gt;</code></p>
+  <code>
+&lt;<a href="#XML_Dimension">Dimension</a> name="Time" foreignKey="time_id"&gt;<br>
+&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="false" primaryKey="time_id"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name="time_by_day"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric" uniqueMembers="true"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Quarter" column="quarter" uniqueMembers="false"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Month" column="month_of_year" type="Numeric" uniqueMembers="false"/&gt;<br>
+&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
+&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> name="Time Weekly" hasAll="false" primaryKey="time_id"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name="time_by_week"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric"&nbsp;uniqueMembers="true"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Week" column="week" uniqueMembers="false"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name="Day" column="day_of_week" type="String" uniqueMembers="false"/&gt;<br>
+&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
+&lt;/<a href="#XML_Dimension">Dimension</a>&gt;
+</code>
 </blockquote>
 
 <p>Notice that the first hierarchy doesn't have a name. By default, a hierarchy has the 
@@ -742,7 +727,7 @@ and a <a href="#Member_formatter">member formatter</a>.</p>
 
 <p>The <a
  href="#XML_Level">&lt;Level&gt;</a> element allows specifying the optional attribute "approxRowCount".  Specifying
-    approxRowCount can improve performance by reducing the need to determine level, hierarchy, and dimension cardinality.
+    <code>approxRowCount</code> can improve performance by reducing the need to determine level, hierarchy, and dimension cardinality.
     This can have a significant impact when connecting to Mondrian via XMLA.</p>
 <!-- 
 #######################################
@@ -1247,7 +1232,7 @@ FROM [Sales]</code>
 </blockquote>
 
 <p>Mondrian deduces the type of the property expression, if it can. If the property name is a 
-constant string, the type is based upon the type attribute ("String", "Numeric" or "Boolean") 
+constant string, the type is based upon the <code>type</code> attribute ("String", "Numeric" or "Boolean") 
 of the property definition. If the property name is an expression (for example 
 <code>CurrentMember.Properties("Store " + "Type")</code>), Mondrian will return an untyped 
 value.</p>

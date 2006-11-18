@@ -540,12 +540,6 @@ public class RolapMember extends MemberBase {
         return level.getInheritedProperties();
     }
 
-    String quoteKeyForSql() {
-        return ((getRolapLevel().getFlags() & RolapLevel.NUMERIC) != 0)
-            ? key.toString()
-            : Util.singleQuoteString(key.toString());
-    }
-
 
     public int getOrdinal() {
         return ordinal;

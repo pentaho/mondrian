@@ -485,7 +485,7 @@ public class AggStar {
 
             private final String name;
             private final MondrianDef.Expression expression;
-            private final boolean isNumeric;
+            private final SqlQuery.Datatype datatype;
             /**
              * This is only used in RolapAggregationManager and adds
              * non-constraining columns making the drill-through queries
@@ -499,11 +499,11 @@ public class AggStar {
             protected Column(
                     final String name,
                     final MondrianDef.Expression expression,
-                    final boolean isNumeric,
+                    final SqlQuery.Datatype datatype,
                     final int bitPosition) {
                 this.name = name;
                 this.expression = expression;
-                this.isNumeric = isNumeric;
+                this.datatype = datatype;
                 this.bitPosition = bitPosition;
 
                 this.nameColumn = null;
@@ -538,10 +538,10 @@ public class AggStar {
             }
 
             /**
-             * Return true if this is a numeric column.
+             * Returns the datatype of this column.
              */
-            public boolean isNumeric() {
-                return isNumeric;
+            public SqlQuery.Datatype getDatatype() {
+                return datatype;
             }
 
             public SqlQuery getSqlQuery() {
@@ -587,9 +587,9 @@ public class AggStar {
             private ForeignKey(
                     final String name,
                     final MondrianDef.Expression expression,
-                    final boolean isNumeric,
+                    final SqlQuery.Datatype datatype,
                     final int bitPosition) {
-                super(name, expression, isNumeric, bitPosition);
+                super(name, expression, datatype, bitPosition);
                 AggStar.this.levelBitKey.set(bitPosition);
             }
         }
@@ -606,7 +606,7 @@ public class AggStar {
                     final MondrianDef.Expression expression,
                     final int bitPosition,
                     RolapStar.Column starColumn) {
-                super(name, expression, starColumn.isNumeric(), bitPosition);
+                super(name, expression, starColumn.getDatatype(), bitPosition);
                 this.starColumn = starColumn;
                 AggStar.this.levelBitKey.set(bitPosition);
             }
@@ -873,11 +873,11 @@ public class AggStar {
             private Measure(
                     final String name,
                     final MondrianDef.Expression expression,
-                    final boolean isNumeric,
+                    final SqlQuery.Datatype datatype,
                     final int bitPosition,
                     final RolapAggregator aggregator,
                     final MondrianDef.Expression argument) {
-                super(name, expression, isNumeric, bitPosition);
+                super(name, expression, datatype, bitPosition);
                 this.aggregator = aggregator;
                 this.argument = argument;
                 assert (argument != null) == aggregator.isDistinct();
@@ -1078,7 +1078,7 @@ public class AggStar {
 
                 MondrianDef.Expression expression =
                     new MondrianDef.Column(getName(), name);
-                boolean isNumeric = column.isNumeric();
+                SqlQuery.Datatype datatype = column.getDatatype();
                 RolapStar.Column rColumn = usage.rColumn;
                 if (rColumn == null) {
                     String msg = "loadForeignKey: for column " +
@@ -1087,8 +1087,9 @@ public class AggStar {
                     getLogger().warn(msg);
                 } else {
                     int bitPosition = rColumn.getBitPosition();
-                    ForeignKey c = new ForeignKey(
-                            symbolicName, expression, isNumeric, bitPosition);
+                    ForeignKey c =
+                        new ForeignKey(
+                            symbolicName, expression, datatype, bitPosition);
                     getAggStar().setForeignKey(c.getBitPosition());
                 }
             }
@@ -1106,7 +1107,7 @@ public class AggStar {
             if (symbolicName == null) {
                 symbolicName = name;
             }
-            boolean isNumeric = column.isNumeric();
+            SqlQuery.Datatype datatype = column.getDatatype();
             RolapAggregator aggregator = usage.getAggregator();
 
             MondrianDef.Expression expression;
@@ -1129,7 +1130,7 @@ public class AggStar {
             Measure aggMeasure = new Measure(
                     symbolicName,
                     expression,
-                    isNumeric,
+                    datatype,
                     bitPosition,
                     aggregator,
                     argument);
@@ -1155,13 +1156,13 @@ public class AggStar {
 
             MondrianDef.Expression expression =
                 new MondrianDef.Column(getName(), name);
-            boolean isNumeric = usage.getColumn().isNumeric();
+            SqlQuery.Datatype datatype = usage.getColumn().getDatatype();
             int bitPosition = -1;
 
             Column aggColumn = new Column(
                     symbolicName,
                     expression,
-                    isNumeric,
+                    datatype,
                     bitPosition);
 
             factCountColumn = aggColumn;

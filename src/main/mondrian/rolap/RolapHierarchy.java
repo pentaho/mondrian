@@ -105,6 +105,7 @@ class RolapHierarchy extends HierarchyBase {
                 this, 0, this.allLevelName, null, null, null, null, null, null,
                 null, RolapProperty.emptyArray,
                 RolapLevel.ALL | RolapLevel.UNIQUE,
+                null,
                 RolapLevel.HideMemberCondition.Never,
                 LevelType.Null, "");
     }
@@ -145,6 +146,7 @@ class RolapHierarchy extends HierarchyBase {
             this, 0, this.allLevelName, null, null, null, null, null, null,
             null, RolapProperty.emptyArray,
             RolapLevel.ALL | RolapLevel.UNIQUE,
+            null,
             RolapLevel.HideMemberCondition.Never,
             LevelType.Regular, ALL_LEVEL_CARDINALITY);
         this.allMember = new RolapMember(
@@ -309,7 +311,7 @@ class RolapHierarchy extends HierarchyBase {
     RolapLevel newLevel(String name, int flags) {
         RolapLevel level = new RolapLevel(
                 this, this.levels.length, name, null, null, null, null,
-                null, null, null, RolapProperty.emptyArray, flags,
+                null, null, null, RolapProperty.emptyArray, flags, null,
                 RolapLevel.HideMemberCondition.Never, LevelType.Regular, "");
         this.levels = (RolapLevel[]) RolapUtil.addElement(this.levels, level);
         return level;
@@ -642,8 +644,13 @@ class RolapHierarchy extends HierarchyBase {
             "Closure",
             keyExp, null, null, null,
             null, null,  // no longer a parent-child hierarchy
-            null, RolapProperty.emptyArray, flags,
-            src.getHideMemberCondition(), src.getLevelType(),"");
+            null, 
+            RolapProperty.emptyArray,
+            flags,
+            src.getDatatype(),
+            src.getHideMemberCondition(),
+            src.getLevelType(),
+            "");
         peerHier.levels =
             (RolapLevel[]) RolapUtil.addElement(peerHier.levels, level);
 
@@ -667,6 +674,7 @@ class RolapHierarchy extends HierarchyBase {
             null,
             RolapProperty.emptyArray,
             flags,
+            src.getDatatype(),
             src.getHideMemberCondition(),
             src.getLevelType(), "");
         peerHier.levels =

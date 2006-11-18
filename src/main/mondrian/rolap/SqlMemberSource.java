@@ -19,8 +19,6 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 
-import org.eigenbase.util.property.IntegerProperty;
-
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.*;
@@ -910,7 +908,10 @@ RME is this right
 
         hierarchy.addToFrom(sqlQuery, level.getParentExp());
         String parentId = level.getParentExp().getExpression(sqlQuery);
-        sqlQuery.addWhere(parentId, " = ", member.quoteKeyForSql());
+
+        StringBuffer buf = new StringBuffer();
+        sqlQuery.getDialect().quote(buf, member.getKey(), level.getDatatype());
+        sqlQuery.addWhere(parentId, " = ", buf.toString());
 
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
         String childId = level.getKeyExp().getExpression(sqlQuery);

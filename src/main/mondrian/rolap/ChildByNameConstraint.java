@@ -30,6 +30,11 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
     String childName;
     Object cacheKey;
 
+    /**
+     * Creates a <code>ChildByNameConstraint</code>.
+     *
+     * @param childName Name of child
+     */
     public ChildByNameConstraint(String childName) {
         this.childName = childName;
         this.cacheKey = Arrays.asList(
@@ -43,29 +48,41 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
     {
         super.addLevelConstraint(query, aggStar, level, levelToColumnMap);
         MondrianDef.Expression exp = level.getNameExp();
-        boolean numeric;
+        SqlQuery.Datatype datatype;
         if (exp == null) {
             exp = level.getKeyExp();
-            numeric = level.isNumeric();
+            datatype = level.getDatatype();
         } else {
-            // The schema doesn't specify whether the name column is numeric
-            // but we presume that it is not.
-            numeric = false;
+            // The schema doesn't specify the datatype of the name column, but
+            // we presume that it is a string.
+            datatype = SqlQuery.Datatype.String;
         }
         String column = exp.getExpression(query);
         String value = childName;
-        if (!numeric) {
+        if (datatype == SqlQuery.Datatype.String) {
             // some dbs (like DB2) compare case sensitive
             if (!MondrianProperties.instance().CaseSensitive.get()) {
                 column = query.getDialect().toUpper(column);
                 value = value.toUpperCase();
             }
         }
-        value = query.quote(numeric, value);
-        query.addWhere(
-            column,
-            RolapUtil.sqlNullLiteral.equals(value) ? " is " : " = ",
-            value);
+        if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(value)) {
+            query.addWhere(
+                column,
+                " is ",
+                RolapUtil.sqlNullLiteral);
+        } else {
+            if (datatype.isNumeric()) {
+                // make sure it can be parsed
+                Double.valueOf(value);
+            }
+            final StringBuffer buf = new StringBuffer();
+            query.getDialect().quote(buf, value, datatype);
+            query.addWhere(
+                column,
+                " = ",
+                buf.toString());
+        }
     }
 
     public String toString() {

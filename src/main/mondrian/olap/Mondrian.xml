@@ -526,13 +526,23 @@ Revision is $Id$
         </Attribute>
         <Attribute name="type" default="String">
             <Doc>
-                Indicates the type of this level's key column: String or
-                Numeric. When generating SQL statements, Mondrian
+                Indicates the type of this level's key column:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+                When generating SQL statements, Mondrian
                 encloses values for String columns in quotation marks,
-                but leaves values for Numeric columns un-quoted.
+                but leaves values for Integer and Numeric columns un-quoted.
+
+                <p/>Date, Time, and Timestamp values are quoted according to the
+                SQL dialect. For a SQL-compliant dialect, the values appear
+                prefixed by their typename, for example, "DATE '2006-06-01'".
             </Doc>
             <Value>String</Value>
             <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
         </Attribute>
         <Attribute name="uniqueMembers" type="Boolean" default="false">
             <Doc>
@@ -626,6 +636,7 @@ Revision is $Id$
                     return null;
                 }
             }
+
             public Expression getNameExp() {
                 if (nameExp != null) {
                     return nameExp;
@@ -635,6 +646,7 @@ Revision is $Id$
                     return null;
                 }
             }
+
             public Expression getCaptionExp() {
                 if (captionColumn != null) {
                     return new Column(table, captionColumn);
@@ -642,6 +654,7 @@ Revision is $Id$
                     return null;
                 }
             }
+
             public Expression getOrdinalExp() {
                 if (ordinalExp != null) {
                     return ordinalExp;
@@ -651,6 +664,7 @@ Revision is $Id$
                     return null;
                 }
             }
+
             public Expression getParentExp() {
                 if (parentExp != null) {
                     return parentExp;
@@ -660,8 +674,13 @@ Revision is $Id$
                     return null;
                 }
             }
+
             public Expression getPropertyExp(int i) {
                 return new Column(table, properties[i].column);
+            }
+
+            public mondrian.rolap.sql.SqlQuery.Datatype getDatatype() {
+                return mondrian.rolap.sql.SqlQuery.Datatype.valueOf(type);
             }
         </Code>
     </Element>
@@ -685,10 +704,17 @@ Revision is $Id$
         <Attribute name="name"><Doc></Doc></Attribute>
         <Attribute name="column"><Doc></Doc></Attribute>
         <Attribute name="type" default="String">
-            <Doc>Data type of this property</Doc>
+            <Doc>
+                Data type of this property:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+            </Doc>
             <Value>String</Value>
             <Value>Numeric</Value>
+            <Value>Integer</Value>
             <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
         </Attribute>
         <Attribute name="formatter" required="false">
             <Doc>
@@ -718,15 +744,20 @@ Revision is $Id$
         </Attribute>
         <Attribute name="datatype" required="false">
             <Doc>
-                The datatype of this measure. 
-                Valid values are 'String', 'Numeric' and 'Integer'.
-                The default datatype of a measure is
+                The datatype of this measure:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+
+                <p/>The default datatype of a measure is
                 'Integer' if the measure's aggregator is 'Count',
                 otherwise it is 'Numeric'.
             </Doc>
+            <Value>String</Value>
             <Value>Numeric</Value>
             <Value>Integer</Value>
-            <Value>String</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
         </Attribute>
         <Attribute name="formatString">
             <Doc>
@@ -1194,8 +1225,16 @@ Revision is $Id$
         </Attribute>
         <Attribute name="type" required="true">
             <Doc>
-                Type of the column (String or Numeric)
+                Type of the column:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
             </Doc>
+            <Value>String</Value>
+            <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
         </Attribute>
     </Element>
 
@@ -1668,11 +1707,16 @@ Revision is $Id$
         </Attribute>
         <Attribute name="type" default="String" required="true">
             <Doc>
-                Indicates the type of this parameter: String,
-                Numeric or Member.
+                Indicates the type of this parameter:
+                String, Numeric, Integer, Boolean, Date, Time, Timestamp, or Member.
             </Doc>
             <Value>String</Value>
             <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
             <Value>Member</Value>
         </Attribute>
         <Attribute name="modifiable" type="Boolean" required="false" default="true">
