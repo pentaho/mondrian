@@ -167,12 +167,12 @@ class RolapCell implements Cell {
     }
 
     public Object getPropertyValue(String propertyName) {
-        Property property = Property.lookup(propertyName);
+        Property property = Property.lookup(propertyName, true);
         Object defaultValue = null;
         if (property != null) {
             switch (property.ordinal) {
             case Property.CELL_ORDINAL_ORDINAL:
-                return new Integer(ordinal);
+                return ordinal;
             case Property.VALUE_ORDINAL:
                 return getValue();
             case Property.FORMAT_STRING_ORDINAL:
@@ -180,10 +180,10 @@ class RolapCell implements Cell {
             case Property.FORMATTED_VALUE_ORDINAL:
                 return getFormattedValue();
             case Property.FONT_FLAGS_ORDINAL:
-                defaultValue = new Integer(0);
+                defaultValue = 0;
                 break;
             case Property.SOLVE_ORDER_ORDINAL:
-                defaultValue = new Integer(0);
+                defaultValue = 0;
                 break;
             default:
                 // fall through

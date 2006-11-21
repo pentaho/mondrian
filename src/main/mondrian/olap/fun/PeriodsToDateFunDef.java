@@ -53,8 +53,8 @@ class PeriodsToDateFunDef extends FunDefBase {
                     MemberType.forHierarchy(hierarchy));
         }
         final Type type = args[0].getType();
-        if (type.getHierarchy().getDimension()
-                .getDimensionType() !=
+        if (type.getDimension() == null ||
+            type.getDimension().getDimensionType() !=
                 mondrian.olap.DimensionType.TimeDimension) {
             throw MondrianResource.instance().TimeArgNeeded.ex(getName());
         }

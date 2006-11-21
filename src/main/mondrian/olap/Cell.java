@@ -92,6 +92,9 @@ public interface Cell {
 
     /**
      * Returns the value of a property.
+     *
+     * @param propertyName Case-sensitive property name
+     * @return Value of property
      */
     Object getPropertyValue(String propertyName);
 

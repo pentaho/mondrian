@@ -117,8 +117,15 @@ public interface Member extends OlapElement, Comparable {
 
     /**
      * Returns the value of the property named <code>propertyName</code>.
+     * Name match is case-sensitive.
      */
     Object getPropertyValue(String propertyName);
+
+    /**
+     * Returns the value of the property named <code>propertyName</code>,
+     * matching according to the required case-sensitivity.
+     */
+    Object getPropertyValue(String propertyName, boolean matchCase);
 
     /**
      * Returns the formatted value of the property named <code>propertyName</code>.

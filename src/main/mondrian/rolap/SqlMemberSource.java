@@ -979,15 +979,15 @@ RME is this right
             return dataMember;
         }
 
-        public Object getPropertyValue(String name) {
-            if (name.equals(Property.CONTRIBUTING_CHILDREN.name)) {
+        public Object getPropertyValue(String propertyName, boolean matchCase) {
+            if (Util.equal(propertyName, Property.CONTRIBUTING_CHILDREN.name, matchCase)) {
                 List list = new ArrayList();
                 list.add(dataMember);
                 RolapHierarchy hierarchy = (RolapHierarchy) getHierarchy();
                 hierarchy.getMemberReader().getMemberChildren(dataMember, list);
                 return list;
             } else {
-                return super.getPropertyValue(name);
+                return super.getPropertyValue(propertyName, matchCase);
             }
         }
 

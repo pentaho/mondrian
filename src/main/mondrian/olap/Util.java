@@ -164,9 +164,9 @@ public class Util extends XOMUtil {
 
     /**
      * Returns whether two names are equal.
-     * Takes into account the {@link MondrianProperties#CaseSensitive case
-     * sensitive option}.
-     * Names must not be null.
+     * Takes into account the
+     * {@link MondrianProperties#CaseSensitive case sensitive option}.
+     * Names may be null.
      */
     public static boolean equalName(String s, String t) {
         if (s == null) {
@@ -176,6 +176,18 @@ public class Util extends XOMUtil {
         return caseSensitive ? s.equals(t) : s.equalsIgnoreCase(t);
     }
 
+    /**
+     * Tests two strings for equality, optionally ignoring case.
+     *
+     * @param s First string
+     * @param t Second string
+     * @param matchCase Whether to perform case-sensitive match
+     * @return Whether strings are equal
+     */
+    public static boolean equal(String s, String t, boolean matchCase) {
+        return matchCase ? s.equals(t) : s.equalsIgnoreCase(t);
+    }
+    
     /**
      * Compares two names.
      * Takes into account the {@link MondrianProperties#CaseSensitive case
@@ -881,7 +893,9 @@ public class Util extends XOMUtil {
             level = level.getParentLevel();
         } while (level != null);
         // Now try a standard property.
-        final Property property = Property.lookup(propertyName);
+        boolean caseSensitive =
+            MondrianProperties.instance().CaseSensitive.get();
+        final Property property = Property.lookup(propertyName, caseSensitive);
         if (property != null &&
                 property.isMemberProperty() &&
                 property.isStandard()) {

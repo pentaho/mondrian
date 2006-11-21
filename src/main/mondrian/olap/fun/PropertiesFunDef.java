@@ -51,7 +51,8 @@ class PropertiesFunDef extends FunDefBase {
     }
 
     static Object properties(Member member, String s) {
-        Object o = member.getPropertyValue(s);
+        boolean matchCase = MondrianProperties.instance().CaseSensitive.get();
+        Object o = member.getPropertyValue(s, matchCase);
         if (o == null) {
             if (!Util.isValidProperty(member, s)) {
                 throw new MondrianEvaluationException(

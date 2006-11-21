@@ -26,7 +26,7 @@ import java.util.*;
  */
 public class EnumeratedValues implements Cloneable {
     /** map symbol names to values */
-    private Map valuesByName = new HashMap();
+    private Map<String, Value> valuesByName = new HashMap<String, Value>();
 
     /** the smallest ordinal value */
     private int min = Integer.MAX_VALUE;
@@ -47,16 +47,20 @@ public class EnumeratedValues implements Cloneable {
     public EnumeratedValues() {
     }
 
-    /** Creates an enumeration, with an array of values, and freezes it. */
+    /**
+     * Creates an enumeration, with an array of values, and freezes it.
+     */
     public EnumeratedValues(Value[] values) {
-        for (int i = 0; i < values.length; i++) {
-            register(values[i]);
+        for (Value value : values) {
+            register(value);
         }
         makeImmutable();
     }
 
-    /** Creates an enumeration, initialize it with an array of strings, and
-     * freezes it. */
+    /**
+     * Creates an enumeration, initialize it with an array of strings, and
+     * freezes it.
+     */
     public EnumeratedValues(String[] names) {
         for (int i = 0; i < names.length; i++) {
             register(new BasicValue(names[i], i, names[i]));
@@ -64,8 +68,10 @@ public class EnumeratedValues implements Cloneable {
         makeImmutable();
     }
 
-    /** Create an enumeration, initializes it with arrays of code/name pairs,
-     * and freezes it. */
+    /**
+     * Create an enumeration, initializes it with arrays of code/name pairs,
+     * and freezes it.
+     */
     public EnumeratedValues(String[] names, int[] codes) {
         for (int i = 0; i < names.length; i++) {
             register(new BasicValue(names[i], codes[i], names[i]));
@@ -73,8 +79,10 @@ public class EnumeratedValues implements Cloneable {
         makeImmutable();
     }
 
-    /** Create an enumeration, initializes it with arrays of code/name pairs,
-     * and freezes it. */
+    /**
+     * Create an enumeration, initializes it with arrays of code/name pairs,
+     * and freezes it.
+     */
     public EnumeratedValues(String[] names, int[] codes, String[] descriptions) {
         for (int i = 0; i < names.length; i++) {
             register(new BasicValue(names[i], codes[i], descriptions[i]));
@@ -82,14 +90,14 @@ public class EnumeratedValues implements Cloneable {
         makeImmutable();
     }
 
-    protected Object clone() {
-        EnumeratedValues clone = null;
+    public Object clone() {
+        EnumeratedValues clone;
         try {
             clone = (EnumeratedValues) super.clone();
-        } catch(CloneNotSupportedException ex) {
-            // IMPLEMENT internal error?
+        } catch (CloneNotSupportedException ex) {
+            throw Util.newInternal(ex, "error while cloning " + this);
         }
-        clone.valuesByName = (Map) ((HashMap) valuesByName).clone();
+        clone.valuesByName = new HashMap<String, Value>(valuesByName);
         clone.ordinalToValueMap = null;
         return clone;
     }
@@ -110,11 +118,11 @@ public class EnumeratedValues implements Cloneable {
      * @pre value.getName() != null
      */
     public void register(Value value) {
-        Util.assertPrecondition(value != null, "value != null");
+        assert value != null : "pre: value != null";
         Util.assertPrecondition(!isImmutable(), "isImmutable()");
         final String name = value.getName();
         Util.assertPrecondition(name != null, "value.getName() != null");
-        Value old = (Value) valuesByName.put(name, value);
+        Value old = valuesByName.put(name, value);
         if (old != null) {
             throw Util.newInternal("Enumeration already contained a value '" + old.getName() + "'");
         }
@@ -128,12 +136,12 @@ public class EnumeratedValues implements Cloneable {
      */
     public void makeImmutable() {
         ordinalToValueMap = new Value[1 + max - min];
-        for (Iterator values = valuesByName.values().iterator();
-                values.hasNext(); ) {
-            Value value = (Value) values.next();
+        for (Value value : valuesByName.values()) {
             final int index = value.getOrdinal() - min;
             if (ordinalToValueMap[index] != null) {
-                throw Util.newInternal("Enumeration has more than one value with ordinal " + value.getOrdinal());
+                throw Util.newInternal(
+                    "Enumeration has more than one value with ordinal " +
+                        value.getOrdinal());
             }
             ordinalToValueMap[index] = value;
         }
@@ -236,29 +244,48 @@ public class EnumeratedValues implements Cloneable {
      *       <code>fail</code> is true
      */
     public Value getValue(String name, final boolean fail) {
-        final Value value = (Value) valuesByName.get(name);
+        final Value value = valuesByName.get(name);
         if (value == null && fail) {
-            throw new Error("Unknown enum name:  "+name);
+            throw new Error("Unknown enum name:  " + name);
         }
         return value;
+    }
+
+    /**
+     * Returns the value associated with a name, case insensitive.
+     *
+     * @param name Name of enumerated value
+     * @param fail Whether to throw if not found
+     * @throws Error if the name is not a member of the enumeration and
+     *       <code>fail</code> is true
+     */
+    public Value getValueIgnoreCase(String name, boolean fail) {
+        for (Value value : ordinalToValueMap) {
+            if (value != null && value.getName().equalsIgnoreCase(name)) {
+                return value;
+            }
+        }
+        if (fail) {
+            throw new Error("Unknown enum name:  " + name);
+        }
+        return null;
     }
 
     /**
      * Returns the names in this enumeration, in no particular order.
      */
     public String[] getNames() {
-        return (String[]) valuesByName.keySet().toArray(emptyStringArray);
+        return valuesByName.keySet().toArray(emptyStringArray);
     }
 
     /**
      * Returns the members of this enumeration, sorted by name.
      */
-    public List getValuesSortedByName() {
-        List list = new ArrayList();
+    public List<Value> getValuesSortedByName() {
+        List<Value> list = new ArrayList<Value>();
         final String[] names = getNames();
         Arrays.sort(names);
-        for (int i = 0; i < names.length; i++) {
-            String name = names[i];
+        for (String name : names) {
             list.add(getValue(name, true));
         }
         return list;

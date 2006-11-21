@@ -2076,6 +2076,10 @@ public class FunUtil extends Util {
             throw new UnsupportedOperationException();
         }
 
+        public Object getPropertyValue(String propertyName, boolean matchCase) {
+            throw new UnsupportedOperationException();
+        }
+
         public String getPropertyFormattedValue(String propertyName) {
             throw new UnsupportedOperationException();
         }

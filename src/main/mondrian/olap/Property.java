@@ -523,10 +523,17 @@ public class Property extends EnumeratedValues.BasicValue {
 
     /**
      * Looks up a Property with a given name.
-     * Returns null if not found.
+     *
+     * @param name Name of property
+     * @param matchCase Whether to perform case-sensitive match
+     * @return Property with given name, or null if not found.
      */
-    public static Property lookup(String name) {
-        return (Property) enumeration.getValue(name, false);
+    public static Property lookup(String name, boolean matchCase) {
+        if (!matchCase) {
+            return (Property) enumeration.getValueIgnoreCase(name, false);
+        } else {
+            return (Property) enumeration.getValue(name, false);
+        }
     }
 }
 

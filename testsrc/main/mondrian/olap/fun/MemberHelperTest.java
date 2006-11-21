@@ -11,7 +11,6 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
-import mondrian.olap.type.Type;
 
 import junit.framework.TestCase;
 
@@ -145,6 +144,10 @@ public class MemberHelperTest extends TestCase {
         }
 
         public Object getPropertyValue(String propertyName) {
+            return null;
+        }
+
+        public Object getPropertyValue(String propertyName, boolean matchCase) {
             return null;
         }
 

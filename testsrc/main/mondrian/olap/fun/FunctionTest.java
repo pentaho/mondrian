@@ -236,6 +236,69 @@ public class FunctionTest extends FoodMartTestCase {
                 "0");
     }
 
+    /**
+     * Tests use of NULL literal to generate a null cell value.
+     * Testcase is from bug 1440344.
+     */
+    public void testNullValue() {
+        assertQueryReturns("with member [Measures].[X] as 'IIF([Measures].[Store Sales]>10000,[Measures].[Store Sales],Null)'\n" +
+            "select\n" +
+            "{[Measures].[X]} on columns,\n" +
+            "{[Product].[Product Department].members} on rows\n" +
+            "from Sales",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[X]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
+                "{[Product].[All Products].[Drink].[Beverages]}\n" +
+                "{[Product].[All Products].[Drink].[Dairy]}\n" +
+                "{[Product].[All Products].[Food].[Baked Goods]}\n" +
+                "{[Product].[All Products].[Food].[Baking Goods]}\n" +
+                "{[Product].[All Products].[Food].[Breakfast Foods]}\n" +
+                "{[Product].[All Products].[Food].[Canned Foods]}\n" +
+                "{[Product].[All Products].[Food].[Canned Products]}\n" +
+                "{[Product].[All Products].[Food].[Dairy]}\n" +
+                "{[Product].[All Products].[Food].[Deli]}\n" +
+                "{[Product].[All Products].[Food].[Eggs]}\n" +
+                "{[Product].[All Products].[Food].[Frozen Foods]}\n" +
+                "{[Product].[All Products].[Food].[Meat]}\n" +
+                "{[Product].[All Products].[Food].[Produce]}\n" +
+                "{[Product].[All Products].[Food].[Seafood]}\n" +
+                "{[Product].[All Products].[Food].[Snack Foods]}\n" +
+                "{[Product].[All Products].[Food].[Snacks]}\n" +
+                "{[Product].[All Products].[Food].[Starchy Foods]}\n" +
+                "{[Product].[All Products].[Non-Consumable].[Carousel]}\n" +
+                "{[Product].[All Products].[Non-Consumable].[Checkout]}\n" +
+                "{[Product].[All Products].[Non-Consumable].[Health and Hygiene]}\n" +
+                "{[Product].[All Products].[Non-Consumable].[Household]}\n" +
+                "{[Product].[All Products].[Non-Consumable].[Periodicals]}\n" +
+                "Row #0: 14,029.08\n" +
+                "Row #1: 27,748.53\n" +
+                "Row #2: \n" +
+                "Row #3: 16,455.43\n" +
+                "Row #4: 38,670.41\n" +
+                "Row #5: \n" +
+                "Row #6: 39,774.34\n" +
+                "Row #7: \n" +
+                "Row #8: 30,508.85\n" +
+                "Row #9: 25,318.93\n" +
+                "Row #10: \n" +
+                "Row #11: 55,207.50\n" +
+                "Row #12: \n" +
+                "Row #13: 82,248.42\n" +
+                "Row #14: \n" +
+                "Row #15: 67,609.82\n" +
+                "Row #16: 14,550.05\n" +
+                "Row #17: 11,756.07\n" +
+                "Row #18: \n" +
+                "Row #19: \n" +
+                "Row #20: 32,571.86\n" +
+                "Row #21: 60,469.89\n" +
+                "Row #22: \n"));
+    }
+
     public void testMemberLevel() {
         assertExprReturns("[Time].[1997].[Q1].[1].Level.UniqueName", "[Time].[Month]");
     }
@@ -5677,6 +5740,39 @@ public class FunctionTest extends FoodMartTestCase {
                     "Axis #1:\n" +
                     "{[Measures].[Foo]}\n" +
                     "Row #0: {}\n"));
+
+        // Testcase for bug 1598379, which caused NPE because the args[0].type
+        // knew its dimension but not its hierarchy.
+        assertQueryReturns("with member [Measures].[Position] as\n" +
+            " 'Sum(PeriodsToDate([Time].Levels(0), [Time].CurrentMember), [Measures].[Store Sales])'\n" +
+            "select {[Time].[1997],\n" +
+            " [Time].[1997].[Q1],\n" +
+            " [Time].[1997].[Q1].[1],\n" +
+            " [Time].[1997].[Q1].[2],\n" +
+            " [Time].[1997].[Q1].[3]} ON COLUMNS,\n" +
+            "{[Measures].[Store Sales], [Measures].[Position] } ON ROWS\n" +
+            "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1997]}\n" +
+                "{[Time].[1997].[Q1]}\n" +
+                "{[Time].[1997].[Q1].[1]}\n" +
+                "{[Time].[1997].[Q1].[2]}\n" +
+                "{[Time].[1997].[Q1].[3]}\n" +
+                "Axis #2:\n" +
+                "{[Measures].[Store Sales]}\n" +
+                "{[Measures].[Position]}\n" +
+                "Row #0: 565,238.13\n" +
+                "Row #0: 139,628.35\n" +
+                "Row #0: 45,539.69\n" +
+                "Row #0: 44,058.79\n" +
+                "Row #0: 50,029.87\n" +
+                "Row #1: 565,238.13\n" +
+                "Row #1: 139,628.35\n" +
+                "Row #1: 45,539.69\n" +
+                "Row #1: 89,598.48\n" +
+                "Row #1: 139,628.35\n"));
     }
 
     public void testSetToStr() {

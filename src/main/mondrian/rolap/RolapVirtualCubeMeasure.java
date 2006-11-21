@@ -38,14 +38,14 @@ public class RolapVirtualCubeMeasure
         this.cubeMeasure = cubeMeasure;
     }
 
-    public Object getPropertyValue(String name) {
+    public Object getPropertyValue(String propertyName, boolean matchCase) {
         // Look first in this member (against the virtual cube), then
         // fallback on the base measure.
         // This allows, for instance, a measure to be invisible in a virtual
         // cube but visible in its base cube.
-        Object value = super.getPropertyValue(name);
+        Object value = super.getPropertyValue(propertyName, matchCase);
         if (value == null) {
-            value = cubeMeasure.getPropertyValue(name);
+            value = cubeMeasure.getPropertyValue(propertyName, matchCase);
         }
         return value;
     }

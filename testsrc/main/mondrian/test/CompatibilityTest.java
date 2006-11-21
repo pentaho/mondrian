@@ -11,6 +11,9 @@
 package mondrian.test;
 
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.Result;
+import mondrian.olap.Cell;
+import mondrian.olap.Util;
 import junit.framework.Assert;
 
 /**
@@ -233,23 +236,20 @@ public class CompatibilityTest extends FoodMartTestCase {
                 "</Cube>",
             null, null, null);
 
-        boolean old = MondrianProperties.instance().CaseSensitive.get();
-        MondrianProperties.instance().CaseSensitive.set(false);
-        try {
-            testContext.assertQueryReturns(
-                "select {[Measures].[Unit Sales]} ON COLUMNS,\n" +
-                    "  {[Alternative Promotion].[All Alternative Promotions].[#null]} ON ROWS \n" +
-                    "  from [Sales_inline]",
-                fold("Axis #0:\n" +
-                    "{}\n" +
-                    "Axis #1:\n" +
-                    "{[Measures].[Unit Sales]}\n" +
-                    "Axis #2:\n" +
-                    "{[Alternative Promotion].[All Alternative Promotions].[#null]}\n" +
-                    "Row #0: \n"));
-        } finally {
-            MondrianProperties.instance().CaseSensitive.set(old);
-        }
+        // This test should work irrespective of the case-sensitivity setting.
+        Util.discard(MondrianProperties.instance().CaseSensitive.get());
+
+        testContext.assertQueryReturns(
+            "select {[Measures].[Unit Sales]} ON COLUMNS,\n" +
+                "  {[Alternative Promotion].[All Alternative Promotions].[#null]} ON ROWS \n" +
+                "  from [Sales_inline]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Alternative Promotion].[All Alternative Promotions].[#null]}\n" +
+                "Row #0: \n"));
     }
 
     /**
@@ -366,6 +366,57 @@ public class CompatibilityTest extends FoodMartTestCase {
                 "Row #2: 36,509\n" +
                 "Row #3: 34,791\n" +
                 "Row #4: 34,452\n"));
+    }
+
+    /**
+     * Tests that property names are case sensitive iff the
+     * "mondrian.olap.case.sensitive" property is set.
+     *
+     * <p>The test does not alter this property: for testing coverage, we assume
+     * that you run the test once with mondrian.olap.case.sensitive=true,
+     * and once with mondrian.olap.case.sensitive=false.
+     */
+    public void testPropertyCaseSensitivity() {
+        boolean caseSensitive = MondrianProperties.instance().CaseSensitive.get();
+
+        // A user-defined property of a member.
+        assertExprReturns(
+            "[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"Store Type\")",
+            "Gourmet Supermarket");
+
+        if (caseSensitive) {
+            assertExprThrows(
+                "[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"store tYpe\")",
+                "Property 'store tYpe' is not valid for member '[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]'");
+        } else {
+            assertExprReturns(
+                "[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"store tYpe\")",
+                "Gourmet Supermarket");
+        }
+
+        // A builtin property of a member.
+
+        assertExprReturns(
+            "[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"LEVEL_NUMBER\")",
+            "4");
+        if (caseSensitive) {
+            assertExprThrows(
+                "[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"Level_Number\")",
+                "Property 'store tYpe' is not valid for member '[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]'");
+        } else {
+            assertExprReturns(
+                "[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"Level_Number\")",
+                "4");
+        }
+
+        // The cell property API is ALWAYS case-sensitive.
+        Result result = executeQuery(
+            "select {[Measures].[Unit Sales],[Measures].[Store Sales]} on columns,\n" +
+                " {[Gender].[M]} on rows\n" +
+                "from Sales");
+        Cell cell = result.getCell(new int[]{0, 0});
+        assertEquals("135,215", cell.getPropertyValue("FORMATTED_VALUE"));
+        assertNull(cell.getPropertyValue("Formatted_Value"));
     }
 }
 

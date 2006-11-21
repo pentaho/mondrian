@@ -40,8 +40,9 @@ public class RolapMember extends MemberBase {
      * members all at once is much faster than getting members one at
      * a time. 
      * 
-     * @param schemaReader 
-     * @param hierarchy 
+     * @param schemaReader Schema reader
+     * @param hierarchy  Hierarchy
+     * @return Array of arrays of members
      */
     public static Member[][] getAllMembers(SchemaReader schemaReader, 
             Hierarchy hierarchy) {
@@ -49,19 +50,18 @@ public class RolapMember extends MemberBase {
         long start = System.currentTimeMillis();
 
         try {
-            List list = new ArrayList(500);
+            List<Member[]> list = new ArrayList<Member[]>(500);
 
             // Getting the members by Level is the fastest way that I could
             // find for getting all of a hierarchy's members.
             Level[] levels = hierarchy.getLevels();
-            for (int i = 0; i < levels.length; i++) {
-                Level level = levels[i];
+            for (Level level : levels) {
                 Member[] members = schemaReader.getLevelMembers(level, false);
                 if (members != null) {
                     list.add(members);
                 }
             }
-            return (Member[][]) list.toArray(new Member[list.size()][]);
+            return list.toArray(new Member[list.size()][]);
         } finally {
             if (LOGGER.isDebugEnabled()) {
                 long end = System.currentTimeMillis();
@@ -69,12 +69,15 @@ public class RolapMember extends MemberBase {
             }
         }
     }
-    public static int getHierarchyCardinality(SchemaReader schemaReader,
-            Hierarchy hierarchy) {
+
+    public static int getHierarchyCardinality(
+        SchemaReader schemaReader,
+        Hierarchy hierarchy)
+    {
         int cardinality = 0;
         Level[] levels = hierarchy.getLevels();
-        for (int i = 0; i < levels.length; i++) {
-            cardinality += schemaReader.getLevelCardinality(levels[i], true, true);
+        for (Level level1 : levels) {
+            cardinality += schemaReader.getLevelCardinality(level1, true, true);
         }
         return cardinality;
     }
@@ -127,8 +130,7 @@ public class RolapMember extends MemberBase {
             Member[] leafMembers = membersArray[membersArray.length-1];
 
             // Set all ordinals,
-            for (int i = 0; i < leafMembers.length; i++) {
-                Member child = leafMembers[i];
+            for (Member child : leafMembers) {
                 ordinal = bottomUpSetParentOrdinals(ordinal, child);
                 ordinal = setOrdinal(child, ordinal);
             }
@@ -139,8 +141,7 @@ public class RolapMember extends MemberBase {
             boolean needsFullTopDown = false;
             for (int i = 0; i < membersArray.length-1; i++) {
                 Member[] members = membersArray[i];
-                for (int j = 0; j < members.length; j++) {
-                    Member member = members[j];
+                for (Member member : members) {
                     if (member.getOrdinal() == -1) {
                         needsFullTopDown = true;
                         break;
@@ -152,8 +153,7 @@ public class RolapMember extends MemberBase {
             if (needsFullTopDown) {
                 for (int i = 0; i < membersArray.length-1; i++) {
                     Member[] members = membersArray[i];
-                    for (int j = 0; j < members.length; j++) {
-                        Member member = members[j];
+                    for (Member member : members) {
                         if (member instanceof RolapMember) {
                             ((RolapMember) member).resetOrdinal();
                         }
@@ -217,8 +217,7 @@ public class RolapMember extends MemberBase {
                 Member[] siblings =
                     schemaReader.getHierarchyRootMembers(member.getHierarchy());
 
-                for (int i = 0; i < siblings.length; i++) {
-                    Member sibling = siblings[i];
+                for (Member sibling : siblings) {
                     ordinal = setAllChildren(ordinal, schemaReader, sibling);
                 }
 
@@ -238,8 +237,7 @@ public class RolapMember extends MemberBase {
         ordinal = setOrdinal(member, ordinal);
 
         Member[] children = schemaReader.getMemberChildren(member);
-        for (int i = 0; i < children.length; i++) {
-            Member child = children[i];
+        for (Member child : children) {
             ordinal = setAllChildren(ordinal, schemaReader, child);
         }
 
@@ -257,7 +255,7 @@ public class RolapMember extends MemberBase {
      * like it to be "20319".
      */
     private static String keyToString(Object key) {
-        String name = null;
+        String name;
         if (key == null) {
             name = RolapUtil.mdxNullLiteral;
         } else {
@@ -281,7 +279,7 @@ public class RolapMember extends MemberBase {
      * have properties. So to reduce memory usage, when empty, this is set to
      * an immutable empty set.
      */
-    private Map mapPropertyNameToValue;
+    private Map<String, Object> mapPropertyNameToValue;
 
     /**
      * Creates a RolapMember
@@ -302,7 +300,7 @@ public class RolapMember extends MemberBase {
 
         this.key = key;
         this.ordinal = -1;
-        this.mapPropertyNameToValue = Collections.EMPTY_MAP;
+        this.mapPropertyNameToValue = Collections.emptyMap();
 
         if (name != null &&
                 !(key != null && name.equals(key.toString()))) {
@@ -399,7 +397,7 @@ public class RolapMember extends MemberBase {
 
         if (mapPropertyNameToValue.isEmpty()) {
             // the empty map is shared and immutable; create our own
-            mapPropertyNameToValue = new HashMap();
+            mapPropertyNameToValue = new HashMap<String, Object>();
         }
         if (name.equals(Property.NAME.name)) {
             if (value == null) {
@@ -420,8 +418,12 @@ public class RolapMember extends MemberBase {
         mapPropertyNameToValue.put(name, value);
     }
 
-    public Object getPropertyValue(String name) {
-        Property property = Property.lookup(name);
+    public final Object getPropertyValue(String propertyName) {
+        return getPropertyValue(propertyName, true);
+    }
+
+    public Object getPropertyValue(String propertyName, boolean matchCase) {
+        Property property = Property.lookup(propertyName, matchCase);
         if (property != null) {
             Schema schema;
             Member parentMember;
@@ -463,7 +465,7 @@ public class RolapMember extends MemberBase {
                 return getLevel().getUniqueName();
 
             case Property.LEVEL_NUMBER_ORDINAL:
-                return new Integer(getLevel().getDepth());
+                return getLevel().getDepth();
 
             case Property.MEMBER_UNIQUE_NAME_ORDINAL:
                 return getUniqueName();
@@ -472,7 +474,7 @@ public class RolapMember extends MemberBase {
                 return getName();
 
             case Property.MEMBER_TYPE_ORDINAL:
-                return new Integer(getMemberType());
+                return getMemberType();
 
             case Property.MEMBER_GUID_ORDINAL:
                 return null;
@@ -481,26 +483,24 @@ public class RolapMember extends MemberBase {
                 return getCaption();
 
             case Property.MEMBER_ORDINAL_ORDINAL:
-                return new Integer(getOrdinal());
+                return getOrdinal();
 
             case Property.CHILDREN_CARDINALITY_ORDINAL:
                 Integer cardinality;
 
                 if (isAllMember() && childLevelHasApproxRowCount()) {
-                    cardinality =  new Integer(
-                            getLevel().getChildLevel().getApproxRowCount());
+                    cardinality = getLevel().getChildLevel().getApproxRowCount();
                 } else {
                     list = new ArrayList();
                     getRolapHierarchy().getMemberReader().getMemberChildren(this, list);
-                    cardinality = new Integer(list.size());
+                    cardinality = list.size();
                 }
                 return cardinality;
 
             case Property.PARENT_LEVEL_ORDINAL:
                 parentMember = getParentMember();
-                return new Integer(
-                        parentMember == null ? 0 :
-                        parentMember.getLevel().getDepth());
+                return parentMember == null ? 0 :
+                    parentMember.getLevel().getDepth();
 
             case Property.PARENT_UNIQUE_NAME_ORDINAL:
                 parentMember = getParentMember();
@@ -509,7 +509,7 @@ public class RolapMember extends MemberBase {
 
             case Property.PARENT_COUNT_ORDINAL:
                 parentMember = getParentMember();
-                return new Integer(parentMember == null ? 0 : 1);
+                return parentMember == null ? 0 : 1;
 
             case Property.DESCRIPTION_ORDINAL:
                 return getDescription();
@@ -523,7 +523,16 @@ public class RolapMember extends MemberBase {
             }
         }
         synchronized (this) {
-            return mapPropertyNameToValue.get(name);
+            if (matchCase) {
+                return mapPropertyNameToValue.get(propertyName);
+            } else {
+                for (String key : mapPropertyNameToValue.keySet()) {
+                    if (key.equalsIgnoreCase(propertyName)) {
+                        return mapPropertyNameToValue.get(key);
+                    }
+                }
+                return null;
+            }
         }
     }
 
@@ -650,9 +659,9 @@ public class RolapMember extends MemberBase {
         // do we have a formatter ? if yes, use it
         Property[] props = getLevel().getProperties();
         Property prop = null;
-        for (int i = 0; i < props.length; i++) {
-            if (props[i].getName().equals(propertyName)) {
-                prop = props[i];
+        for (Property prop1 : props) {
+            if (prop1.getName().equals(propertyName)) {
+                prop = prop1;
                 break;
             }
         }

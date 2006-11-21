@@ -41,15 +41,15 @@ class RolapCalculatedMember extends RolapMember {
         return formula.getSolveOrder();
     }
 
-    public Object getPropertyValue(String name) {
-        if (name.equals(Property.FORMULA.name)) {
+    public Object getPropertyValue(String propertyName, boolean matchCase) {
+        if (Util.equal(propertyName, Property.FORMULA.name, matchCase)) {
             return formula;
-        } else if (name.equals(Property.CHILDREN_CARDINALITY.name)) {
+        } else if (Util.equal(propertyName, Property.CHILDREN_CARDINALITY.name, matchCase)) {
             // Looking up children is unnecessary for calculated member.
             // If do that, SQLException will be thrown.
             return new Integer(0);
         } else {
-            return super.getPropertyValue(name);
+            return super.getPropertyValue(propertyName, matchCase);
         }
     }
 
