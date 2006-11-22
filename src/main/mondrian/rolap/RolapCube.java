@@ -345,7 +345,8 @@ public class RolapCube extends CubeBase {
                     new MondrianDef.CalculatedMember[
                         calculatedMemberList.size()]),
                 new MondrianDef.NamedSet[0],
-                baseCube);
+                baseCube,
+                false);
             MeasureFinder measureFinder =
                 new MeasureFinder(this, baseCube, measuresLevel);
             queryExp.accept(measureFinder);
@@ -379,7 +380,8 @@ public class RolapCube extends CubeBase {
                 new MondrianDef.NamedSet[0],
                 new ArrayList(),
                 new ArrayList(),
-                this);
+                this,
+                false);
         
         // Note: virtual cubes do not get aggregate
     }
@@ -534,7 +536,7 @@ return dim;
         List formulaList = new ArrayList();
         createCalcMembersAndNamedSets(
                 xmlCube.calculatedMembers, xmlCube.namedSets,
-                memberList, formulaList, this);
+                memberList, formulaList, this, true);
     }
 
 
@@ -605,19 +607,22 @@ return dim;
      * @param memberList Output list of {@link Member} objects
      * @param formulaList Output list of {@link Formula} objects
      * @param cube the cube that the calculated members originate from
+     * @param errOnDups throws an error if a duplicate member is found
      */
     private void createCalcMembersAndNamedSets(
             MondrianDef.CalculatedMember[] xmlCalcMembers,
             MondrianDef.NamedSet[] xmlNamedSets,
             List memberList,
             List formulaList,
-            RolapCube cube) {
+            RolapCube cube,
+            boolean errOnDups) {
         
         final Query queryExp =
             resolveCalcMembers(
                 xmlCalcMembers,
                 xmlNamedSets,
-                cube);
+                cube,
+                errOnDups);
         if (queryExp == null) {
             return;
         }
@@ -636,7 +641,8 @@ return dim;
     private Query resolveCalcMembers(
         MondrianDef.CalculatedMember[] xmlCalcMembers,
         MondrianDef.NamedSet[] xmlNamedSets,
-        RolapCube cube)
+        RolapCube cube,
+        boolean errOnDups)
     {
         // If there are no objects to create, our generated SQL will be so
         // silly, the parser will laugh.
@@ -649,7 +655,7 @@ return dim;
 
         // Check the members individually, and generate SQL.
         for (int i = 0; i < xmlCalcMembers.length; i++) {
-            preCalcMember(xmlCalcMembers, i, buf, cube);
+            preCalcMember(xmlCalcMembers, i, buf, cube, errOnDups);
         }
 
         // Check the named sets individually (for uniqueness) and generate SQL.
@@ -741,7 +747,8 @@ return dim;
             MondrianDef.CalculatedMember[] xmlCalcMembers,
             int j,
             StringBuffer buf,
-            RolapCube cube) {
+            RolapCube cube,
+            boolean errOnDup) {
         MondrianDef.CalculatedMember xmlCalcMember = xmlCalcMembers[j];
 
         // Lookup dimension
@@ -753,19 +760,30 @@ return dim;
                     getUniqueName());
         }
 
-        // Check there isn't another calc member with the same name and
-        // dimension.
+        // If we're processing a virtual cube, it's possible that we've
+        // already processed this calculated member because it's
+        // referenced in another measure; in that case, remove it from the
+        // list, since we'll add it back in later; otherwise, in the
+        // non-virtual cube case, throw an exception
+        List newCalcMemberList = new ArrayList();
         for (int i = 0; i < calculatedMembers.length; i++) {
             Formula formula = calculatedMembers[i];
             if (formula.getName().equals(xmlCalcMember.name) &&
                     formula.getMdxMember().getDimension().getName().equals(
                     dimension.getName())) {
-
-                throw MondrianResource.instance().CalcMemberNotUnique.ex(
+                if (errOnDup) {
+                    throw MondrianResource.instance().CalcMemberNotUnique.ex(
                         Util.makeFqName(dimension, xmlCalcMember.name),
-                        getUniqueName());
+                        getUniqueName()); 
+                }
+                continue;
+            } else {
+                newCalcMemberList.add(formula);
             }
         }
+        calculatedMembers =
+            (Formula [])
+            newCalcMemberList.toArray(new Formula[newCalcMemberList.size()]);
 
         // Check this calc member doesn't clash with one earlier in this
         // batch.
@@ -2138,7 +2156,8 @@ assert is not true.
                 new MondrianDef.NamedSet[0],
                 memberList,
                 new ArrayList(),
-                this);
+                this,
+                true);
         assert memberList.size() == 1;
         return (Member) memberList.get(0);
     }
@@ -2351,7 +2370,8 @@ assert is not true.
                     new MondrianDef.NamedSet[0],
                     new ArrayList(),
                     new ArrayList(),
-                    virtualCube);
+                    virtualCube,
+                    false);
                 return null;
                 
             } else if (member instanceof RolapBaseCubeMeasure) {

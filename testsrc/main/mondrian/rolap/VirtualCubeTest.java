@@ -294,6 +294,7 @@ public class VirtualCubeTest extends FoodMartTestCase {
         assertQueryReturns(
             "select\n" +
             "{[Measures].[Profit Growth], " +
+            "[Measures].[Profit], " +
             "[Measures].[Average Warehouse Sale] }\n" +
             "ON COLUMNS\n" +
             "from [Warehouse and Sales]",
@@ -301,8 +302,10 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Profit Growth]}\n" +
+                "{[Measures].[Profit]}\n" +
                 "{[Measures].[Average Warehouse Sale]}\n" +
                 "Row #0: 0.0%\n" +
+                "Row #0: $339,610.90\n" +
                 "Row #0: $2.21\n"));
     }
 }
