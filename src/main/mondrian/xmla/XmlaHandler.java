@@ -1247,9 +1247,22 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement("Tuple");
 
             final QueryAxis slicerAxis = result.getQuery().getSlicerAxis();
+            final Member[] slicerMembers =
+                result.getSlicerAxis().positions[0].getMembers();
             for (int i = 0; i < hierarchies.length; i++) {
                 Hierarchy hierarchy = hierarchies[i];
+
+                // Find which member is on the slicer. If it's not explicitly
+                // there, use the default member.
                 Member member = hierarchy.getDefaultMember();
+                for (int j = 0; j < slicerMembers.length; j++) {
+                    Member slicerMember = slicerMembers[j];
+                    if (slicerMember.getHierarchy().equals(hierarchy)) {
+                        member = slicerMember;
+                        break;
+                    }
+                }
+
                 if (member != null) {
                     slicerAxis(writer, member, getProps(slicerAxis));
                 } else {

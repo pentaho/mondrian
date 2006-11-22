@@ -431,6 +431,19 @@ public class XmlaBasicTest extends FoodMartTestCase {
 
    }
 
+    public void testExecuteSlicer() throws Exception {
+       String requestType = "EXECUTE";
+       String reqFileName = "EXECUTE_Slicer_in.xml";
+       Properties props = new Properties();
+       props.setProperty(REQUEST_TYPE_PROP, requestType);
+       props.setProperty(CATALOG_PROP, CATALOG);
+       props.setProperty(CATALOG_NAME_PROP, CATALOG);
+       props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
+       props.setProperty(FORMAT_PROP, FORMAT_MULTI_DIMENSIONAL);
+       props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+       doTest(requestType, reqFileName, "${response}", props);
+   }
+
     /*
      * NOT IMPLEMENTED MDSCHEMA_SETS_out.xml
      */
