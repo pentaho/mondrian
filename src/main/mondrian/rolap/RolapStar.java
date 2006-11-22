@@ -1019,6 +1019,9 @@ public class RolapStar {
         public Column lookupColumnByExpression(MondrianDef.Expression xmlExpr) {
             for (Iterator it = getColumns().iterator(); it.hasNext(); ) {
                 Column column = (Column) it.next();
+                if (column instanceof RolapStar.Measure) {
+                    continue;
+                }
                 if (column.getExpression().equals(xmlExpr)) {
                     return column;
                 }
