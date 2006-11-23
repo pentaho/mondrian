@@ -30,48 +30,35 @@ public class VirtualCubeTest extends FoodMartTestCase {
     /**
      * This method demonstrates bug 1449929
      */
-    public void _testNoTimeDimension() {
-        Schema schema = getConnection().getSchema();
-        final Cube cube = schema.createCube(
-                "<VirtualCube name=\"Sales vs Warehouse\">\n" +
+    public void testNoTimeDimension() {
+        TestContext testContext = TestContext.create(
+            null, null,
+            "<VirtualCube name=\"Sales vs Warehouse\">\n" +
                 "<VirtualCubeDimension name=\"Product\"/>\n" +
                 "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n" +
                 "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n" +
-                "</VirtualCube>");
-
-        try  {
-            checkXxx();
-        } finally {
-            schema.removeCube(cube.getName());
-        }
+                "</VirtualCube>",
+            null, null);
+        checkXxx(testContext);
     }
 
-    /**
-     * I do not know/believe that the return values are correct.
-     */
     public void testWithTimeDimension() {
-        Schema schema = getConnection().getSchema();
-        final Cube cube = schema.createCube(
-                "<VirtualCube name=\"Sales vs Warehouse\">\n" +
+        TestContext testContext = TestContext.create(
+            null, null,
+            "<VirtualCube name=\"Sales vs Warehouse\">\n" +
                 "<VirtualCubeDimension name=\"Time\"/>\n" +
                 "<VirtualCubeDimension name=\"Product\"/>\n" +
                 "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n" +
                 "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n" +
-                "</VirtualCube>");
-
-        try  {
-            checkXxx();
-
-        } finally {
-            schema.removeCube(cube.getName());
-        }
+                "</VirtualCube>",
+            null, null);
+        checkXxx(testContext);
     }
 
 
-    private void checkXxx() {
+    private void checkXxx(TestContext testContext) {
         // I do not know/believe that the return values are correct.
-
-        assertQueryReturns(
+        testContext.assertQueryReturns(
             "select\n" +
             "{ [Measures].[Warehouse Sales], [Measures].[Unit Sales] }\n" +
             "ON COLUMNS,\n" +
@@ -235,13 +222,16 @@ public class VirtualCubeTest extends FoodMartTestCase {
     }
 
     /**
-     * Test an expression for the format_string of a calculated member that evaluates calculated
-     * members based on a virtual cube,  One cube has cache turned on, the other cache turned off
+     * Test an expression for the format_string of a calculated member that
+     * evaluates calculated members based on a virtual cube.  One cube has cache
+     * turned on, the other cache turned off.
      *
-     * Since evaluation of the format_string used to happen after the aggregate cache was cleared,
-     * this used to fail, this should be solved with the caching of the format string
+     * <p>Since evaluation of the format_string used to happen after the
+     * aggregate cache was cleared, this used to fail, this should be solved
+     * with the caching of the format string.
      * 
-     * Without caching of format string, the query returns green for all styles.
+     * <p>Without caching of format string, the query returns green for all
+     * styles.
      */
     public void testFormatStringExpressionCubeNoCache() {
         TestContext testContext = TestContext.create(
@@ -307,6 +297,154 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "Row #0: 0.0%\n" +
                 "Row #0: $339,610.90\n" +
                 "Row #0: $2.21\n"));
+    }
+
+    /**
+     * Tests a calc measure which combines a measures from the Sales cube with a
+     * measures from the Warehouse cube.
+     */
+    public void testCalculatedMeasureAcrossCubes()
+    {
+        assertQueryReturns(
+            "with member [Measures].[Shipped per Ordered] as ' [Measures].[Units Shipped] / [Measures].[Unit Sales] ', format_string='#.00%'\n" +
+                " member [Measures].[Profit per Unit Shipped] as ' [Measures].[Profit] / [Measures].[Units Shipped] '\n" +
+                "select\n" +
+                " {[Measures].[Unit Sales], \n" +
+                "  [Measures].[Units Shipped],\n" +
+                "  [Measures].[Shipped per Ordered],\n" +
+                "  [Measures].[Profit per Unit Shipped]} on 0,\n" +
+                " NON EMPTY Crossjoin([Product].Children, [Time].[1997].Children) on 1\n" +
+                "from [Warehouse and Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "{[Measures].[Units Shipped]}\n" +
+                "{[Measures].[Shipped per Ordered]}\n" +
+                "{[Measures].[Profit per Unit Shipped]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products].[Drink], [Time].[1997].[Q1]}\n" +
+                "{[Product].[All Products].[Drink], [Time].[1997].[Q2]}\n" +
+                "{[Product].[All Products].[Drink], [Time].[1997].[Q3]}\n" +
+                "{[Product].[All Products].[Drink], [Time].[1997].[Q4]}\n" +
+                "{[Product].[All Products].[Food], [Time].[1997].[Q1]}\n" +
+                "{[Product].[All Products].[Food], [Time].[1997].[Q2]}\n" +
+                "{[Product].[All Products].[Food], [Time].[1997].[Q3]}\n" +
+                "{[Product].[All Products].[Food], [Time].[1997].[Q4]}\n" +
+                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q1]}\n" +
+                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q2]}\n" +
+                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q3]}\n" +
+                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q4]}\n" +
+                "Row #0: 5,976\n" +
+                "Row #0: 4637.0\n" +
+                "Row #0: 77.59%\n" +
+                "Row #0: $1.50\n" +
+                "Row #1: 5,895\n" +
+                "Row #1: 4501.0\n" +
+                "Row #1: 76.35%\n" +
+                "Row #1: $1.60\n" +
+                "Row #2: 6,065\n" +
+                "Row #2: 6258.0\n" +
+                "Row #2: 103.18%\n" +
+                "Row #2: $1.15\n" +
+                "Row #3: 6,661\n" +
+                "Row #3: 5802.0\n" +
+                "Row #3: 87.10%\n" +
+                "Row #3: $1.38\n" +
+                "Row #4: 47,809\n" +
+                "Row #4: 37153.0\n" +
+                "Row #4: 77.71%\n" +
+                "Row #4: $1.64\n" +
+                "Row #5: 44,825\n" +
+                "Row #5: 35459.0\n" +
+                "Row #5: 79.11%\n" +
+                "Row #5: $1.62\n" +
+                "Row #6: 47,440\n" +
+                "Row #6: 41545.0\n" +
+                "Row #6: 87.57%\n" +
+                "Row #6: $1.47\n" +
+                "Row #7: 51,866\n" +
+                "Row #7: 34706.0\n" +
+                "Row #7: 66.91%\n" +
+                "Row #7: $1.91\n" +
+                "Row #8: 12,506\n" +
+                "Row #8: 9161.0\n" +
+                "Row #8: 73.25%\n" +
+                "Row #8: $1.76\n" +
+                "Row #9: 11,890\n" +
+                "Row #9: 9227.0\n" +
+                "Row #9: 77.60%\n" +
+                "Row #9: $1.65\n" +
+                "Row #10: 12,343\n" +
+                "Row #10: 9986.0\n" +
+                "Row #10: 80.90%\n" +
+                "Row #10: $1.59\n" +
+                "Row #11: 13,497\n" +
+                "Row #11: 9291.0\n" +
+                "Row #11: 68.84%\n" +
+                "Row #11: $1.86\n"));
+    }
+
+    /**
+     * Tests a calc member defined in the cube.
+     */
+    public void testCalculatedMemberInSchema() {
+        TestContext testContext =
+            TestContext.createSubstitutingCube(
+                "Warehouse and Sales",
+                null,
+                "  <CalculatedMember name=\"Shipped per Ordered\" dimension=\"Measures\">\n" +
+                    "    <Formula>[Measures].[Units Shipped] / [Measures].[Unit Sales]</Formula>\n" +
+                    "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"#.0%\"/>\n" +
+                    "  </CalculatedMember>\n");
+        testContext.assertQueryReturns(
+            "select\n" +
+                " {[Measures].[Unit Sales], \n" +
+                "  [Measures].[Shipped per Ordered]} on 0,\n" +
+                " NON EMPTY Crossjoin([Product].Children, [Time].[1997].Children) on 1\n" +
+                "from [Warehouse and Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "{[Measures].[Shipped per Ordered]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products].[Drink], [Time].[1997].[Q1]}\n" +
+                "{[Product].[All Products].[Drink], [Time].[1997].[Q2]}\n" +
+                "{[Product].[All Products].[Drink], [Time].[1997].[Q3]}\n" +
+                "{[Product].[All Products].[Drink], [Time].[1997].[Q4]}\n" +
+                "{[Product].[All Products].[Food], [Time].[1997].[Q1]}\n" +
+                "{[Product].[All Products].[Food], [Time].[1997].[Q2]}\n" +
+                "{[Product].[All Products].[Food], [Time].[1997].[Q3]}\n" +
+                "{[Product].[All Products].[Food], [Time].[1997].[Q4]}\n" +
+                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q1]}\n" +
+                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q2]}\n" +
+                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q3]}\n" +
+                "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q4]}\n" +
+                "Row #0: 5,976\n" +
+                "Row #0: 77.6%\n" +
+                "Row #1: 5,895\n" +
+                "Row #1: 76.4%\n" +
+                "Row #2: 6,065\n" +
+                "Row #2: 103.2%\n" +
+                "Row #3: 6,661\n" +
+                "Row #3: 87.1%\n" +
+                "Row #4: 47,809\n" +
+                "Row #4: 77.7%\n" +
+                "Row #5: 44,825\n" +
+                "Row #5: 79.1%\n" +
+                "Row #6: 47,440\n" +
+                "Row #6: 87.6%\n" +
+                "Row #7: 51,866\n" +
+                "Row #7: 66.9%\n" +
+                "Row #8: 12,506\n" +
+                "Row #8: 73.3%\n" +
+                "Row #9: 11,890\n" +
+                "Row #9: 77.6%\n" +
+                "Row #10: 12,343\n" +
+                "Row #10: 80.9%\n" +
+                "Row #11: 13,497\n" +
+                "Row #11: 68.8%\n"));
     }
 }
 

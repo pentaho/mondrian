@@ -858,23 +858,94 @@ queries:</p>
 	<code>[Gender]</code> and <code>[Age]</code> might both be columns in the 
 	<code>customers</code> table, joined via <code>sales_1997.cust_id = customers.cust_id</code>.</li>
 </ul>
+
 <!-- 
 ########################################
 ##  5. Advanced logical constructs #####
 ######################################## -->
 <h3>5. Advanced logical constructs<a name="Advanced_logical_constructs">&nbsp;</a></h3>
+
 <!-- 
 ###########################
 ##  5.1 Virtual cubes #####
 ########################### -->
 <h1>5.1 Virtual cubes<a name="Virtual_cubes">&nbsp;</a></h1>
 
-<p>Defined by the <code><a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a></code> element. 
-(To be continued...)</p>
+<p>A virtual cube combines two regular cubes. It is defined by the <code><a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a></code> 
+element:</p>
+
+<blockquote>
+    <p><code>&lt;<a href="#XML_VirtualCube">VirtualCube</a> name=&quot;Warehouse and Sales&quot;&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Customers&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Education Level&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Gender&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Marital Status&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> name=&quot;Product&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Promotion Media&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Promotions&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> name=&quot;Store&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> name=&quot;Time&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Sales&quot; name=&quot;Yearly Income&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a> cubeName=&quot;Warehouse&quot; name=&quot;Warehouse&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Sales Count]&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Store Cost]&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Store Sales]&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Unit Sales]&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Profit Growth]&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Store Invoice]&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Supply Time]&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Units Ordered]&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Units Shipped]&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Warehouse Cost]&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Warehouse Profit]&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Warehouse Sales]&quot;/&gt;<br>
+    &nbsp; &lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Warehouse&quot; name=&quot;[Measures].[Average Warehouse Sale]&quot;/&gt;<br>
+    &nbsp; &lt;<span><a href="#XML_CalculatedMember">CalculatedMember</a></span> name=&quot;Profit Per Unit Shipped&quot; dimension=&quot;Measures&quot;&gt;<br>
+    &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Profit] / [Measures].[Units Shipped]&lt;/<a href="#XML_Formula">Formula</a>&gt;<br>
+    &nbsp; &lt;/<span><a href="#XML_CalculatedMember">CalculatedMember</a></span>&gt;<br>
+    &lt;/<a href="#XML_VirtualCube">VirtualCube</a>&gt;</code></p>
+</blockquote>
+
+<p>The <code>&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a>&gt;</code> 
+element imports a dimension from one of the constituent cubes. If you do not 
+specify the <code>cubeName</code> attribute, this means you 
+are importing a shared dimension. (If a shared dimension is used more than once 
+in a cube, there is no way, at present, to disambiguate which usage of the 
+shared dimension you intend to import.)</p>
+
+<p>The <code>&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a>&gt;</code> 
+element imports a measure from one of the constituent cubes. It is imported with 
+the same name. If you want to create a formula, or just to rename a measure as 
+you import it, use the&nbsp; <code>&lt;<span><a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</span></code> 
+element.</p>
+
+<p>Virtual cubes occur surprisingly frequently in real-world applications. They 
+occur when you have fact tables of different granularities (say one measured at 
+the day level, another at the month level), or fact tables of different 
+dimensionalities (say one on Product, Time and Customer, another on Product, 
+Time and Warehouse), and want to present the results to an end-user who doesn't 
+know or care how the data is structured.</p>
+
+<p>Any common dimensions -- shared dimensions which are used by both constituent 
+cubes -- are automatically synchronized. In this example, <code>[Time]</code> 
+and <code>[Product]</code> are common dimensions. So if the context is (<code>[Time].[1997].[Q2]</code>,
+<code>[Product].[Beer].[Miller Lite]</code>), measures from either cube will 
+relate to this context.</p>
+
+<p>Dimensions which only belong to one cube are called non-conforming 
+dimensions. The <code>[Gender]</code> dimension is an example of this: it exists 
+in the <code>Sales</code> cube but not <code>Warehouse</code>. If the context is
+(<code>[Gender].[F]</code>, <code>[Time].[1997].[Q1]</code>), it makes sense to 
+ask the value of the <code>[Unit Sales]</code> measure (which comes from the
+<code>[Sales]</code> cube) but not the <code>[Units Ordered]</code> measure (from <code>
+[Warehouse]</code>). In the context of <code>[Gender].[F]</code>, <code>[Units 
+Ordered]</code> has value NULL.</p>
+
 <!-- 
 ######################################
 ##  5.2 Parent-child hierarchies #####
 ###################################### -->
+
 <h1>5.2 Parent-child hierarchies<a name="Parent_child_hierarchies">&nbsp;</a></h1>
 
 <p>A conventional hierarchy has a rigid set of levels, and members which adhere to those 
@@ -2287,8 +2358,16 @@ Schema.lookupRole(String)</a>.</li>
 A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;</code>.</td>
     </tr>
     <tr>
+      	<td><code>&lt;<a name="XML_VirtualCubeDimension" href="xml_schema.html#VirtualCubeDimension">VirtualCubeDimension</a>&gt;</code></td>
+      	<td>Usage of a dimension by a virtual cube.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_VirtualCubeMeasure" href="xml_schema.html#VirtualCubeMeasure">VirtualCubeMeasure</a>&gt;</code></td>
+      	<td>Usage of a measure by a virtual cube.</td>
+    </tr>
+    <tr>
       	<td><code>&lt;<a name="XML_Dimension" href="xml_schema.html#Dimension">Dimension</a>&gt;</code></td>
-      	<td>&nbsp;</td>
+      	<td>Dimension.</td>
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_DimensionUsage" href="xml_schema.html#DimensionUsage">DimensionUsage</a>&gt;</code></td>
@@ -2297,9 +2376,6 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
     <tr>
       	<td><code>&lt;<a name="XML_Hierarchy" href="xml_schema.html#Hierarchy">Hierarchy</a>&gt;</code></td>
       	<td>Hierarchy.</td>
-    </tr>
-    <tr>
-      	<td colspan="2">&nbsp;</td>
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_Level" href="xml_schema.html#Level">Level</a>&gt;</code></td>
@@ -2311,7 +2387,7 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_Measure" href="xml_schema.html#Measure">Measure</a>&gt;</code></td>
-      	<td>&nbsp;</td>
+      	<td>Measure.</td>
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_CalculatedMember" href="xml_schema.html#CalculatedMember">CalculatedMember</a>&gt;</code></td>

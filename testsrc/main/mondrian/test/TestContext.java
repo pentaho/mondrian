@@ -288,7 +288,8 @@ public class TestContext {
      */
     public String getFoodMartSchemaSubstitutingCube(
         String cubeName,
-        String dimensionDefs)
+        String dimensionDefs,
+        String memberDefs)
     {
         // First, get the unadulterated schema.
         String s;
@@ -297,10 +298,18 @@ public class TestContext {
             s = SnoopingSchemaProcessor.catalogContent;
         }
 
-        // Search for the cube.
+        // Search for the <Cube> or <VirtualCube> element.
         int h = s.indexOf("<Cube name=\"" + cubeName + "\"");
+        int end;
         if (h < 0) {
-            throw new RuntimeException("cube '" + cubeName + "' not found");
+            h = s.indexOf("<VirtualCube name=\"" + cubeName + "\"");
+            if (h < 0) {
+                throw new RuntimeException("cube '" + cubeName + "' not found");
+            } else {
+                end = s.indexOf("</VirtualCube", h);
+            }
+        } else {
+            end = s.indexOf("</Cube>", h);
         }
 
         // Add dimension definitions, if specified.
@@ -308,6 +317,17 @@ public class TestContext {
             int i = s.indexOf("<Dimension ", h);
             s = s.substring(0, i) +
                 dimensionDefs +
+                s.substring(i);
+        }
+
+        // Add calculated member definitions, if specified.
+        if (memberDefs != null) {
+            int i = s.indexOf("<CalculatedMember ", h);
+            if (i < 0 || i > end) {
+                i = end;
+            }
+            s = s.substring(0, i) +
+                memberDefs +
                 s.substring(i);
         }
 
@@ -852,16 +872,36 @@ public class TestContext {
 
     /**
      * Creates a TestContext, adding hierarchy definitions to a cube definition.
+     *
      * @param cubeName Name of a cube in the schema (cube must exist)
      * @param dimensionDefs String defining dimensions, or null
+     * @return TestContext with modified cube defn
      */
     public static TestContext createSubstitutingCube(
         final String cubeName,
-        final String dimensionDefs) {
+        final String dimensionDefs)
+    {
+        return createSubstitutingCube(cubeName, dimensionDefs, null);
+    }
+
+    /**
+     * Creates a TestContext, adding hierarchy and calculated member definitions
+     * to a cube definition.
+     *
+     * @param cubeName Name of a cube in the schema (cube must exist)
+     * @param dimensionDefs String defining dimensions, or null
+     * @param memberDefs String defining calculated members, or null
+     * @return TestContext with modified cube defn
+     */
+    public static TestContext createSubstitutingCube(
+        final String cubeName,
+        final String dimensionDefs, final String memberDefs
+    ) {
         return new TestContext() {
             public synchronized Connection getFoodMartConnection(boolean fresh) {
                 final String schema =
-                    getFoodMartSchemaSubstitutingCube(cubeName,  dimensionDefs);
+                    getFoodMartSchemaSubstitutingCube(
+                        cubeName, dimensionDefs, memberDefs);
                 return getFoodMartConnection(schema);
             }
         };

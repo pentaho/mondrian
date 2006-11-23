@@ -20,7 +20,7 @@
 <div class="contentheading">Developer's Guide</div>
 <!-- end page title -->
 
-<p>By Julian Hyde; last updated July, 2005.</p>
+<p>By Julian Hyde; last updated November, 2006.</p>
 
 <hr noshade size="1">
 
@@ -164,7 +164,7 @@ Total time: 46 seconds</code>
 
 <p>Before you run the regression test suite or the web application, you must 
 install the standard FoodMart dataset. This is described in the
-<a href="install.html#4_Load_the_database">installation guide</a>.</p>
+<a href="install.html#2_Set_up_test_data">installation guide</a>.</p>
 
 <p>&nbsp;If you got your files from the Perforce server, you can skip the step 
 where you download the data sets: you should already have the files <code>demo/access/MondrianFoodMart.mdb</code>
@@ -183,70 +183,137 @@ ant test</code>
 <p>Running the test via the Mondrian Ant build in Eclipse works, too.</p><p>Example output:</p>
 
 <blockquote>
-<code>Buildfile: C:\Documents and Settings\swood\My Documents\perforce\open\mondrian\build.xml<br/>
-<br/>
-test-postgres:<br/>
-<br/>
-sniff:<br/>
-<br/>
-prepare:<br/>
-<br/>
-parser:<br/>
-&nbsp; [javacup] Files are up to date.<br/>
-<br/>
-compile.xom:<br/>
-<br/>
-compile.resgen:<br/>
-<br/>
-generate.resources:<br/>
-&nbsp;&nbsp; [resgen] C:\...\src\main\mondrian\olap\MondrianResource.java is up to date<br/>
-&nbsp;&nbsp; [resgen] C:\...\src\main\mondrian\olap\MondrianResource.properties is up to date<br/>
-&nbsp;&nbsp; [resgen] C:\...\main\mondrian\olap\MondrianResource_en_US.java is up to date<br/>
-&nbsp;&nbsp; [resgen] C:\...\src\main\mondrian\olap\MondrianResource_en_US.properties is up to date<br/>
-&nbsp;&nbsp; [resgen] C:\...\src\main\mondrian\olap\MondrianResource_de_DE.java is up to date<br/>
-&nbsp;&nbsp; [resgen] C:\...\src\main\mondrian\olap\MondrianResource_de_DE.properties is up to date<br/>
-<br/>
-def:<br/>
-<br/>
-compile.java:<br/>
-<br/>
-compile.jsp.maybe:<br/>
-<br/>
-copy.properties:<br/>
-<br/>
-compile:<br/>
-<br/>
-info:<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo] ==============================================================<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo] | Mondrian configuration info&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo] ==============================================================<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo] project.location&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = C:\...<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo] jdk.home&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = C:\j2sdk1.4.2_06<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo] catalina.home&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = ${env.CATALINA_HOME}<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo] xalan.home&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = ${env.XALAN_HOME}<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo] junit.home&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = ${env.JUNIT_HOME}<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo] weblogic.home&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = ${env.WEBLOGIC_HOME}<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo] mondrian.foodmart.catalogURL = file:///C:\.../demo/FoodMart.xml<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo] ==============================================================<br/>
+<code>Buildfile: build.xml<br>
+Overriding previous definition of reference to jdk<br/>
+<br>
+prepare:<br>
+[mkdir] Created dir: C:\open\mondrian\build<br>
+<br>
+parser:<br>
+[javacup] Opening files...<br>
+[javacup] Parsing specification from 
+C:\open\mondrian\src\main\mondrian\olap\Parser.cup...<br>
+[javacup] Checking specification...<br>
+[javacup] Warning: Terminal &quot;UNKNOWN&quot; was declared but never used<br>
+[javacup] Warning: Non terminal &quot;unsigned_integer&quot; was declared but never used<br>
+[javacup] Building parse tables...<br>
+[javacup] Computing non-terminal nullability...<br>
+[javacup] Computing first sets...<br>
+[javacup] Building state machine...<br>
+[javacup] Filling in tables...<br>
+[javacup] *** Reduce/Reduce conflict found in state #99<br>
+[javacup] between value_expression_primary ::= NULL (*)<br>
+[javacup] and term3 ::= term3 IS NULL (*)<br>
+[javacup] under symbols: {EOF, AND, AS, CELL, DIMENSION, ELSE, END, IN, IS, 
+MATCHES, MEMBER, NOT, ON, OR, PROPERTIES, SELECT, SE<br>
+T, THEN, WHEN, XOR, COLON, COMMA, EQ, GE, GT, LE, LT, NE, RBRACE, RPAREN}<br>
+[javacup] Resolved in favor of the second production.<br>
+<br>
+[javacup] *** Shift/Reduce conflict found in state #99<br>
+[javacup] between value_expression_primary ::= NULL (*)<br>
+[javacup] under symbol EOF<br>
+[javacup] Resolved in favor of shifting.<br>
+<br>
+...<br>
+<br>
+[javacup] *** Shift/Reduce conflict found in state #99<br>
+[javacup] between term3 ::= term3 IS NULL (*)<br>
+[javacup] under symbol RPAREN<br>
+[javacup] Resolved in favor of shifting.<br>
+<br>
+[javacup] Checking for non-reduced productions...<br>
+[javacup] Writing parser...<br>
+[javacup] Closing files...<br>
+[javacup] ------- CUP v0.10k Parser Generation Summary -------<br>
+[javacup] 0 errors and 63 warnings<br>
+[javacup] 56 terminals, 60 non-terminals, and 125 productions declared,<br>
+[javacup] producing 194 unique parse states.<br>
+[javacup] 2 terminals declared but not used.<br>
+[javacup] 0 non-terminals declared but not used.<br>
+[javacup] 0 productions never reduced.<br>
+[javacup] 61 conflicts detected (61 expected).<br>
+[javacup] Code written to &quot;Parser.java&quot;, and &quot;ParserSym.java&quot;.<br>
+[javacup] ---------------------------------------------------- (v0.10k)<br>
+<br>
+generate.resources:<br>
+[javac] Compiling 3 source files to C:\open\mondrian\classes<br>
+[resgen] Generating 
+C:\open\mondrian\src\main\mondrian\resource\MondrianResource.java<br>
+[resgen] Generating 
+C:\open\mondrian\classes\mondrian\resource\MondrianResource.properties<br>
+[resgen] Generating 
+C:\open\mondrian\src\main\mondrian\resource\MondrianResource_en_US.java<br>
+[resgen] Generating 
+C:\open\mondrian\classes\mondrian\resource\MondrianResource_en_US.properties<br>
+[resgen] Generating 
+C:\open\mondrian\src\main\mondrian\resource\MondrianResource_de_DE.java<br>
+[resgen] Generating 
+C:\open\mondrian\classes\mondrian\resource\MondrianResource_de_DE.properties<br>
+[resgen] Generating 
+C:\open\mondrian\src\main\mondrian\resource\MondrianResource_de.java<br>
+[resgen] Generating 
+C:\open\mondrian\classes\mondrian\resource\MondrianResource_de.properties<br>
+[resgen] Generating 
+C:\open\mondrian\src\main\mondrian\resource\MondrianResource_es_ES.java<br>
+[resgen] Generating 
+C:\open\mondrian\classes\mondrian\resource\MondrianResource_es_ES.properties<br>
+<br>
+def:<br>
+[xomgen] Writing src\main\mondrian\olap\mondrian.dtd<br>
+[xomgen] Writing src\main\mondrian\olap\MondrianDef.java<br>
+[xomgen] Done<br>
+[copy] Copying 1 file to C:\open\mondrian\lib<br>
+[copy] Copying 1 file to C:\open\mondrian\lib<br>
+[xomgen] Writing src\main\mondrian\xmla\datasourcesconfig.dtd<br>
+[xomgen] Writing src\main\mondrian\xmla\DataSourcesConfig.java<br>
+[xomgen] Done<br>
+[copy] Copying 1 file to C:\open\mondrian\lib<br>
+<br>
+compile.java:<br>
+[javac] Compiling 987 source files to C:\open\mondrian\classes<br>
+[javac] Note: Some input files use or override a deprecated API.<br>
+[javac] Note: Recompile with -Xlint:deprecation for details.<br>
+[javac] Note: Some input files use unchecked or unsafe operations.<br>
+[javac] Note: Recompile with -Xlint:unchecked for details.<br>
+<br>
+check-FoodMartCreateData-uptodate:<br>
+<br>
+unzip-FoodMartCreateData:<br>
+[unzip] Expanding: C:\open\mondrian\demo\FoodMartCreateData.zip into 
+C:\open\mondrian\demo<br>
+<br>
+check-FoodMartAccessDB-uptodate:<br>
+<br>
+unzip-FoodMartAccessDB:<br>
+[unzip] Expanding: C:\open\mondrian\demo\access\MondrianFoodMart-Access.zip into 
+C:\open\mondrian\demo\access<br>
+<br>
+check-FoodMartDerbyDB-uptodate:<br>
+<br>
+unzip-FoodMartDerbyDB:<br>
+[unzip] Expanding: C:\open\mondrian\demo\derby\derby-foodmart.zip into 
+C:\open\mondrian\demo\derby<br>
+<br>
+compile:<br>
 <br/>
 compile.tests:<br/>
-&nbsp;&nbsp;&nbsp; [javac] Compiling 28 source files to C:\...\testclasses<br/>
-&nbsp;&nbsp;&nbsp; [javac] Note: C:\...\testsrc\main\mondrian\test\ParameterTest.java uses or overrides a deprecated API.<br/>
+&nbsp;&nbsp;&nbsp; [javac] Compiling 69 source files to C:\open\mondrian\testclasses<br/>
+&nbsp;&nbsp;&nbsp; [javac] Note: C:\open\mondrian\testsrc\main\mondrian\test\ParameterTest.java uses or overrides a deprecated API.<br/>
 &nbsp;&nbsp;&nbsp; [javac] Note: Recompile with -deprecation for details.<br/>
 <br/>
 test-dbms:<br/>
 &nbsp;&nbsp;&nbsp;&nbsp; [echo] Connecting to jdbc:postgresql://localhost/FM3<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] Mondrian: properties loaded from 'file:/C:/.../mondrian.properties'<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] Mondrian: properties loaded from 'file:/C:/../build.properties'<br/>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Mondrian: properties loaded from 'file:/C:/open/mondrian/mondrian.properties'<br/>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Mondrian: properties loaded from 'file:/C:/open/mondrian/build.properties'<br/>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] Mondrian: loaded 4 system properties<br/>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] testName: null<br/>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] testClass: null<br/>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] All 1 thread(s) started.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] [0] .Mondrian: JDBC driver org.postgresql.Driver loaded successfully<br/>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Mondrian: JDBC driver org.postgresql.Driver loaded successfully<br/>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] Mondrian: JDBC driver sun.jdbc.odbc.JdbcOdbcDriver loaded successfully<br/>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] Mondrian: JDBC driver com.mysql.jdbc.Driver loaded successfully<br/>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] Mondrian: JDBC driver oracle.jdbc.OracleDriver loaded successfully<br/>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] .......................................<br/>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] [0] ........................................<br/>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] [40] ........................................<br/>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] [80] ........................................<br/>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] [120] ........................................<br/>
@@ -266,9 +333,7 @@ test-dbms:<br/>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] Time: 711.63<br/>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] Normal termination.<br/>
 BUILD SUCCESSFUL<br/>
-Total time: 12 minutes 13 seconds<br/>
-</code>
-</blockquote>
+Total time: 12 minutes 13 seconds</code></blockquote>
 
 <p/>
 
@@ -320,7 +385,7 @@ manage to fetch all cell values, it will repeat this step until it
 does.</li></ul></p><p>Remember that the purpose of these queries is to populate cache. There are two caches. The dimension cache which maps a member to its children, e.g.</p><blockquote><code>[Store].[All Stores]</code>&nbsp;&rarr; <code>{ [Store].[USA], [Store].[Canada], [Store].[Mexico]}</code></blockquote><p>The aggregation cache maps a tuple a measure value, e.g.</p><blockquote><code>([Store].[USA], [Gender].[F], [Measures].[Unit Sales])</code> 
 	&rarr; <code>123,456</code></blockquote><p>Once the cache has been populated, the query won't be executed
 again. That's why I recommend that you restart the process each time
-you run this in the debugger.</p><p>&nbsp;</p>
+you run this in the debugger.</p>
 
 <p>&nbsp;</p>
 
@@ -332,27 +397,27 @@ source tree.</p><table style="border-collapse: collapse;" border="1" cellpadding
       <th>Product</th><th>Required?</th><th>Version</th><th>Comment</th></tr><tr>
       <td>JDK<a name="JDK">&nbsp;</a></td><td>Yes</td><td>1.4 or later (I use version 1.5.0_08.)</td><td>Available from <a href="http://developer.java.sun.com/" target="_blank">http://developer.java.sun.com/</a>.
           I downloaded <code>jdk-1_5_0_08-windows-i586-p.exe</code>,
-          and installed to <code>E:/jdk1.5.0_08</code>, and set <code>JAVA_HOME</code>
+          and installed to <code>C:/jdk1.5.0_08</code>, and set <code>JAVA_HOME</code>
           to the same.</td></tr><tr>
       <td>Ant<a name="Ant">&nbsp;</a></td><td>Yes</td><td>1.5 or later&nbsp;</td><td>Available from <a
  href="http://ant.apache.org/bindownload.cgi">http://ant.apache.org/bindownload.cgi</a>.
-I downloaded <code>apache-ant-1.6.2-bin.zip</code>, extracted to <code>E:/jakarta-ant-1.6.2</code>,
+I downloaded <code>apache-ant-1.6.2-bin.zip</code>, extracted to <code>C:/jakarta-ant-1.6.2</code>,
 and set <code>ANT_HOME</code> to the same.</td></tr><tr>
       <td>Tomcat<a name="Tomcat">&nbsp;</a></td><td>Yes</td><td>5.0.25 or later</td><td>Available from <a href="http://jakarta.apache.org/tomcat"
  target="_blank"> http://jakarta.apache.org/tomcat</a>. I downloaded <code>
-jakarta-tomcat-5.0.25.zip</code>, extracted to <code>E:/jakarta-tomcat-5.0.25</code>,
+jakarta-tomcat-5.0.25.zip</code>, extracted to <code>C:/jakarta-tomcat-5.0.25</code>,
 and set <code>TOMCAT_HOME</code> to the same.</td></tr><tr>
       <td>Xerces<a name="Xerces">&nbsp;</a></td><td>&nbsp;</td>
       <td>Use the version included with Tomcat</td><td>Xerces is included with Tomcat. If you use a different
 version, compatibility issues may arise.</td></tr><tr>
       <td>Xalan<a name="Xalan">&nbsp;</a></td><td>Yes</td><td>2.6.0 or later</td><td>Available from <a href="http://xml.apache.org/xalan-j/"
  target="_blank"> http://xml.apache.org/xalan-j/</a>. I downloaded <code>xalan-j_2_6_0-bin.zip</code>,
-extracted to <code>E:/xalan-j_2_6_0</code>, and set <code>XALAN_HOME</code>
+extracted to <code>C:/xalan-j_2_6_0</code>, and set <code>XALAN_HOME</code>
 to the same.
       <p><b>Important</b>: copy <i><code>XALAN_HOME</code></i><code>/bin/xalan.jar</code>
 to <code><i>TOMCAT_HOME</i>/common/endorsed/</code>.</p></td></tr><tr>
       <td>JUnit<a name="JUnit">&nbsp;</a></td><td>Yes</td><td>3.8.1 or later</td><td>Available from <a href="http://www.junit.org/">http://www.junit.org/</a>.
-I downloaded <code> junit3.8.1.zip</code>, extracted to <code>E:/junit3.8.1</code>,
+I downloaded <code> junit3.8.1.zip</code>, extracted to <code>C:/junit3.8.1</code>,
 and set <code>JUNIT_HOME</code> to the same.</td></tr><tr>
       <td>JavaCUP (parser generator)</td><td>Included with source distribution, as <code>lib/javacup.jar</code>.&nbsp;</td><td>v0.10g (with modifications)</td><td>Available from <a
  href="http://www.cs.princeton.edu/%7Eappel/modern/java/CUP/"
@@ -362,7 +427,7 @@ messages in a format which Emacs can parse.</td></tr></tbody></table><p>&nbsp;</
 
 <hr noshade size="1"/>
 <p>
-    Author: Julian Hyde; last updated July, 2005.<br/>
+    Author: Julian Hyde; last updated November, 2006.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/developer.html?ac=22">log&nbsp;</a>)<br/>
     Copyright (C) 2005-2005 Julian Hyde
