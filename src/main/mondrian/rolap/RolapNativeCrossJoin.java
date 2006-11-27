@@ -8,10 +8,6 @@
 */
 package mondrian.rolap;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
 import mondrian.olap.*;
 import mondrian.rolap.sql.TupleConstraint;
 
@@ -76,7 +72,7 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         if (isPreferInterpreter(cargs))
             return null;
         RolapLevel [] levels = new RolapLevel[cargs.length];
-        for (int i = 0; i < args.length; i++) {
+        for (int i = 0; i < cargs.length; i++) {
             levels[i] = cargs[i].getLevel();
         }
         if ((cube.isVirtual() &&
