@@ -1060,6 +1060,13 @@ public class SqlQuery
             } else if (isMySQL()) {
                 return generateInlineGeneric(
                         columnNames, columnTypes, valueList, null);
+            } else if (isLucidDB()) {
+                // TODO jvs 26-Nov-2006:  Eliminate this once LucidDB
+                // can support applying column names to a VALUES clause
+                // (needed by generateInlineForAnsi).
+                return generateInlineGeneric(
+                        columnNames, columnTypes, valueList,
+                        " from (values(0))");
             } else {
                 return generateInlineForAnsi("t", columnNames, columnTypes, valueList);
             }
