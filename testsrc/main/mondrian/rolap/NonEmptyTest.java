@@ -1178,6 +1178,35 @@ public class NonEmptyTest extends FoodMartTestCase {
                 "Row #0: 3\n" +
                 "Row #1: 21\n"));
     }
+    
+    public void testCrossJoinNamedSets1()
+    {
+        checkNative(
+            3,
+            3,
+            "with " +
+            "SET [ProductChildren] as '[Product].[All Products].children' " +
+            "SET [StoreMembers] as '[Store].[Store Country].members' " +
+            "select {[Measures].[Store Sales]} on columns, " +
+            "non empty crossjoin([ProductChildren], [StoreMembers]) " +
+            "on rows from [Sales]");
+    }
+    
+    public void testCrossJoinNamedSets2()
+    {
+        checkNative(
+            3,
+            3,
+            "with " +
+            "SET [ProductChildren] as '{[Product].[All Products].[Drink], " +
+            "[Product].[All Products].[Food], " +
+            "[Product].[All Products].[Non-Consumable]}' " +
+            "SET [StoreChildren] as '[Store].[All Stores].children' " +
+            "select {[Measures].[Store Sales]} on columns, " +
+            "non empty crossjoin([ProductChildren], [StoreChildren]) on rows from " +
+            "[Sales]");
+
+    }
 
     /**
      * make sure the following is not run natively

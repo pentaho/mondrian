@@ -540,6 +540,10 @@ public abstract class RolapNativeSet extends RolapNative {
      * Scans for memberChildren, levelMembers, memberDescendants, crossJoin.
      */
     protected CrossJoinArg[] checkCrossJoinArg(Exp exp) {
+        if (exp instanceof NamedSetExpr) {
+            NamedSet namedSet = ((NamedSetExpr) exp).getNamedSet();
+            exp = namedSet.getExp();
+        }
         if (!(exp instanceof ResolvedFunCall)) {
             return null;
         }
