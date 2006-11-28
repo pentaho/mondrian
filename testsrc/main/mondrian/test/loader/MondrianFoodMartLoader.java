@@ -20,9 +20,11 @@ import java.sql.*;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -113,7 +115,8 @@ public class MondrianFoodMartLoader {
     private boolean jdbcInput = false;
     private boolean jdbcOutput = false;
     private boolean populationQueries = false;
-    private int inputBatchSize = 50;
+    private boolean generateUniqueConstraints = false;
+    private int inputBatchSize = -1;
     private Connection connection;
     private Connection inputConnection;
 
@@ -121,6 +124,8 @@ public class MondrianFoodMartLoader {
 
     private final Map tableMetadataToLoad = new HashMap();
     private final Map aggregateTableMetadataToLoad = new HashMap();
+    private final Map<String, List<UniqueConstraint>> tableConstraints =
+        new HashMap<String, List<UniqueConstraint>>();
     private SqlQuery.Dialect dialect;
 
 
@@ -211,7 +216,7 @@ public class MondrianFoodMartLoader {
                 "-jdbcDrivers=<jdbcDriver> " +
                 "-outputJdbcURL=<jdbcURL> " +
                 "[-outputJdbcUser=user] " +
-                "[-outputJdbcPassword=password]" +
+                "[-outputJdbcPassword=password] " +
                 "[-outputJdbcBatchSize=<batch size>] " +
                 "| " +
                 "[-outputDirectory=<directory name>] " +
@@ -281,7 +286,29 @@ public class MondrianFoodMartLoader {
 
         dialect = SqlQuery.Dialect.create(metaData);
 
+        if (inputBatchSize == -1) {
+            // No explicit batch size was set by user, so assign a good
+            // default now
+            if (dialect.isLucidDB()) {
+                // LucidDB column-store writes perform better with large batches
+                inputBatchSize = 1000;
+            } else {
+                inputBatchSize = 50;
+            }
+        }
+
+        if (dialect.isLucidDB()) {
+            // LucidDB doesn't support CREATE UNIQUE INDEX, but it
+            // does support standard UNIQUE constraints
+            generateUniqueConstraints = true;
+        }
+
         try {
+            if (generateUniqueConstraints) {
+                // Initialize tableConstraints
+                createIndexes(false, false);
+            }
+            
             createTables();  // This also initializes tableMetadataToLoad
             if (data) {
                 if (!populationQueries) {
@@ -442,6 +469,7 @@ public class MondrianFoodMartLoader {
                 ++tableRowCount;
 
                 batch[batchSize++] = line;
+                
                 if (batchSize >= inputBatchSize) {
                     writeBatch(batch, batchSize);
                     batchSize = 0;
@@ -735,13 +763,43 @@ public class MondrianFoodMartLoader {
      * @throws SQLException
      */
     private int writeBatch(String[] batch, int batchSize) throws IOException, SQLException {
+        if (batchSize == 0) {
+            // nothing to do
+            return batchSize;
+        }
+
         if (outputDirectory != null) {
             for (int i = 0; i < batchSize; i++) {
                 fileOutput.write(batch[i]);
                 fileOutput.write(";" + nl);
             }
         } else {
-            connection.setAutoCommit(false);
+            boolean useTxn =
+                connection.getMetaData().supportsTransactions();
+            if (useTxn) {
+                connection.setAutoCommit(false);
+            }
+
+            if (dialect.isLucidDB()) {
+                // LucidDB doesn't perform well with single-row inserts,
+                // and its JDBC driver doesn't support batch writes,
+                // so collapse the batch into one big multi-row insert.
+                String VALUES_TOKEN = "VALUES";
+                StringBuilder sb = new StringBuilder(batch[0]);
+                for (int i = 1; i < batchSize; i++) {
+                    sb.append(",\n");
+                    int valuesPos = batch[i].indexOf(VALUES_TOKEN);
+                    if (valuesPos < 0) {
+                        throw new RuntimeException(
+                            "Malformed INSERT:  " + batch[i]);
+                    }
+                    valuesPos += VALUES_TOKEN.length();
+                    sb.append(batch[i].substring(valuesPos));
+                }
+                batch[0] = sb.toString();
+                batchSize = 1;
+            }
+            
             Statement stmt = connection.createStatement();
             if (batchSize == 1) {
                 // Don't use batching if there's only one item. This allows
@@ -773,7 +831,9 @@ public class MondrianFoodMartLoader {
                 }
             }
             stmt.close();
-            connection.setAutoCommit(true);
+            if (useTxn) {
+                connection.setAutoCommit(true);
+            }
         }
         return batchSize;
     }
@@ -948,6 +1008,31 @@ public class MondrianFoodMartLoader {
             boolean baseTables,
             boolean aggregateTables)
     {
+        if (!baseTables && !aggregateTables) {
+            // This is just a dry run to record the unique indexes
+            // so that we can implement them as standard
+            // UNIQUE constraints if desired.
+            if (!isUnique || !generateUniqueConstraints) {
+                return;
+            }
+            List<UniqueConstraint> constraintList =
+                tableConstraints.get(tableName);
+            if (constraintList == null) {
+                constraintList = new ArrayList<UniqueConstraint>();
+                tableConstraints.put(tableName, constraintList);
+            }
+            constraintList.add(
+                new UniqueConstraint(
+                    indexName,
+                    columnNames));
+            return;
+        } else {
+            if (isUnique && generateUniqueConstraints) {
+                // We'll implement this via a UNIQUE constraint instead
+                return;
+            }
+        }
+        
         try {
 
             // Is it an aggregate table or a base table?
@@ -1528,6 +1613,29 @@ public class MondrianFoodMartLoader {
                     buf.append(" ").append(column.constraint);
                 }
             }
+
+            List<UniqueConstraint> uniqueConstraints =
+                tableConstraints.get(name);
+
+            if (uniqueConstraints != null) {
+                for (UniqueConstraint uniqueConstraint : uniqueConstraints) {
+                    buf.append(",");
+                    buf.append(nl);
+                    buf.append("    ");
+                    buf.append("CONSTRAINT ");
+                    buf.append(quoteId(uniqueConstraint.name));
+                    buf.append(" UNIQUE(");
+                    String [] columnNames = uniqueConstraint.columnNames;
+                    for (int i = 0; i < columnNames.length; i++) {
+                        if (i > 0) {
+                            buf.append(",");
+                        }
+                        buf.append(quoteId(columnNames[i]));
+                    }
+                    buf.append(")");
+                }
+            }
+            
             buf.append(")");
             final String ddl = buf.toString();
             executeDDL(ddl);
@@ -1673,7 +1781,11 @@ public class MondrianFoodMartLoader {
          */
         } else if (columnType.startsWith("TIMESTAMP")) {
             Timestamp ts = (Timestamp) obj;
-            if (dialect.isOracle()) {
+
+            // REVIEW jvs 26-Nov-2006:  Is it safe to replace
+            // these with dialect.quoteTimestampLiteral, etc?
+            
+            if (dialect.isOracle() || dialect.isLucidDB()) {
                 return "TIMESTAMP '" + ts + "'";
             } else {
                 return "'" + ts + "'";
@@ -1685,7 +1797,7 @@ public class MondrianFoodMartLoader {
          */
         } else if (columnType.startsWith("DATE")) {
             Date dt = (Date) obj;
-            if (dialect.isOracle()) {
+            if (dialect.isOracle() || dialect.isLucidDB()) {
                 return "DATE '" + dateFormatter.format(dt) + "'";
             } else {
                 return "'" + dateFormatter.format(dt) + "'";
@@ -1757,7 +1869,7 @@ public class MondrianFoodMartLoader {
          * Output for a TIMESTAMP
          */
         if (columnType.startsWith("TIMESTAMP")) {
-            if (dialect.isOracle()) {
+            if (dialect.isOracle() || dialect.isLucidDB()) {
                 return "TIMESTAMP " + columnValue;
             }
 
@@ -1765,7 +1877,7 @@ public class MondrianFoodMartLoader {
          * Output for a DATE
          */
         } else if (columnType.startsWith("DATE")) {
-            if (dialect.isOracle()) {
+            if (dialect.isOracle() || dialect.isLucidDB()) {
                 return "DATE " + columnValue;
             }
 
@@ -1882,10 +1994,21 @@ public class MondrianFoodMartLoader {
         }
     }
 
+    private static class UniqueConstraint {
+        final String name;
+        final String [] columnNames;
+
+        public UniqueConstraint(String name, String [] columnNames)
+        {
+            this.name = name;
+            this.columnNames = columnNames;
+        }
+    }
+
     /**
      * Represents a logical type, such as "BOOLEAN".<p/>
      *
-     * Specific databases will represent this their own particular physical
+     * Specific databases will represent this with their own particular physical
      * type, for example "TINYINT(1)", "BOOLEAN" or "BIT";
      * see {@link #toPhysical(mondrian.rolap.sql.SqlQuery.Dialect)}.
      */
@@ -1926,7 +2049,7 @@ public class MondrianFoodMartLoader {
                 return name;
             }
             if (this == Boolean) {
-                if (dialect.isPostgres()) {
+                if (dialect.isPostgres() || dialect.isLucidDB()) {
                     return name;
                 } else if (dialect.isMySQL()) {
                     return "TINYINT(1)";
