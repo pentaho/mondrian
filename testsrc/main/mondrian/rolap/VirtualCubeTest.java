@@ -446,6 +446,51 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "Row #11: 13,497\n" +
                 "Row #11: 68.8%\n"));
     }
+    
+    public void testAllMeasureMembers()
+    {
+        // result should exclude measures that are not explicitly defined
+        // in the virtual cube (e.g., [Profit last Period])
+        executeQuery(
+            "select {[Measures].allMembers} on columns from [Warehouse and Sales");
+        assertQueryReturns(
+            "select\n" +
+            "{[Measures].allMembers} on columns\n" +
+            "from [Warehouse and Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Sales Count]}\n" +
+                "{[Measures].[Store Cost]}\n" +
+                "{[Measures].[Store Sales]}\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "{[Measures].[Store Invoice]}\n" +
+                "{[Measures].[Supply Time]}\n" +
+                "{[Measures].[Units Ordered]}\n" +
+                "{[Measures].[Units Shipped]}\n" +
+                "{[Measures].[Warehouse Cost]}\n" +
+                "{[Measures].[Warehouse Profit]}\n" +
+                "{[Measures].[Warehouse Sales]}\n" +
+                "{[Measures].[Average Warehouse Sale]}\n" +
+                "{[Measures].[Profit]}\n" +
+                "{[Measures].[Profit Growth]}\n" +             
+                "{[Measures].[Profit Per Unit Shipped]}\n" +
+                "Row #0: 86,837\n" +
+                "Row #0: 225,627.23\n" +
+                "Row #0: 565,238.13\n" +
+                "Row #0: 266,773\n" +
+                "Row #0: 102,278.409\n" +
+                "Row #0: 10,425\n" +
+                "Row #0: 227238.0\n" +
+                "Row #0: 207726.0\n" +
+                "Row #0: 89,043.253\n" +
+                "Row #0: 107,727.635\n" +
+                "Row #0: 196,770.888\n" + 
+                "Row #0: $2.21\n" +
+                "Row #0: $339,610.90\n" +
+                "Row #0: 0.0%\n" +          
+                "Row #0: $1.63\n"));
+    }
 }
 
 // End VirtualCubeTest.java

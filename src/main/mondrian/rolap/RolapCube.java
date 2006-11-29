@@ -268,8 +268,9 @@ public class RolapCube extends CubeBase {
 
         // Recreate CalculatedMembers, as the original members point to
         // incorrect dimensional ordinals for the virtual cube.
-        List measureList = new ArrayList();
-        Map calculatedMembers = new HashMap();
+        List origMeasureList = new ArrayList();
+        List origCalcMeasureList = new ArrayList();
+        Map calculatedMembersMap = new HashMap();
         for (int i = 0; i < xmlVirtualCube.measures.length; i++) {
             // Lookup a measure in an existing cube.
             MondrianDef.VirtualCubeMeasure xmlMeasure =
@@ -294,12 +295,14 @@ public class RolapCube extends CubeBase {
                                     xmlMeasure.name + "' in XML cube '" +
                                     xmlMeasure.cubeName + "'");
                         }
-                        List memberList = (List) calculatedMembers.get(cube);
+                        List memberList =
+                            (List) calculatedMembersMap.get(cube);
                         if (memberList == null) {
                             memberList = new ArrayList();
                         }
                         memberList.add(calcMember);
-                        calculatedMembers.put(cube, memberList);
+                        origCalcMeasureList.add(calcMember);
+                        calculatedMembersMap.put(cube, memberList);
                     } else {
                         // This is the a standard measure. (Don't know
                         // whether it will confuse things that this
@@ -316,7 +319,7 @@ public class RolapCube extends CubeBase {
                             visible = Boolean.TRUE;
                         }
                         virtualCubeMeasure.setProperty(Property.VISIBLE.name, visible);
-                        measureList.add(virtualCubeMeasure);
+                        origMeasureList.add(virtualCubeMeasure);
                     }
                     break;
                 }
@@ -335,10 +338,11 @@ public class RolapCube extends CubeBase {
         // referenced by this virtual cube.  Resolve those members relative
         // to their base cubes first, then resolve them relative to this
         // cube so the correct dimension ordinals are used
-        for (Object o : calculatedMembers.keySet()) {
+        List modifiedMeasureList = new ArrayList(origMeasureList);
+        for (Object o : calculatedMembersMap.keySet()) {
             RolapCube baseCube = (RolapCube) o;
             List calculatedMemberList =
-                (List) calculatedMembers.get(baseCube);
+                (List) calculatedMembersMap.get(baseCube);
             Query queryExp = resolveCalcMembers(
                 (MondrianDef.CalculatedMember[])
                 calculatedMemberList.toArray(
@@ -350,28 +354,29 @@ public class RolapCube extends CubeBase {
             MeasureFinder measureFinder =
                 new MeasureFinder(this, baseCube, measuresLevel);
             queryExp.accept(measureFinder);
-            measureList.addAll(measureFinder.getMeasuresFound());
+            modifiedMeasureList.addAll(measureFinder.getMeasuresFound());
         }
         
         // Add the original calculated members from the base cubes to our
         // list of calculated members
         List calculatedMemberList = new ArrayList();
-        for (Object o : calculatedMembers.keySet()) {
+        for (Object o : calculatedMembersMap.keySet()) {
             RolapCube baseCube = (RolapCube) o;
             calculatedMemberList.addAll(
-                (List) calculatedMembers.get(baseCube));
+                (List) calculatedMembersMap.get(baseCube));
         }
         calculatedMemberList.addAll(
             Arrays.asList(xmlVirtualCube.calculatedMembers));         
         
         // Resolve all calculated members relative to this virtual cube,
-        // whose measureHierarcy member reader now contains all base
+        // whose measureHierarchy member reader now contains all base
         // measures referenced in those calculated members
         RolapMember[] measures = (RolapMember[])
-            measureList.toArray(new RolapMember[measureList.size()]);
+            modifiedMeasureList.toArray(
+                new RolapMember[modifiedMeasureList.size()]);
         this.measuresHierarchy.setMemberReader(
-        new CacheMemberReader(
-              new MeasureMemberSource(this.measuresHierarchy,  measures)));
+            new CacheMemberReader(
+                new MeasureMemberSource(this.measuresHierarchy, measures)));
         createCalcMembersAndNamedSets(
                 (MondrianDef.CalculatedMember[])
                 calculatedMemberList.toArray(
@@ -383,7 +388,57 @@ public class RolapCube extends CubeBase {
                 this,
                 false);
         
+        // reset the measureHierarchy member reader back to the list of
+        // measures that are only defined on this virtual cube
+        measures = (RolapMember[])
+            origMeasureList.toArray(new RolapMember[origMeasureList.size()]);
+        this.measuresHierarchy.setMemberReader(
+            new CacheMemberReader(
+                new MeasureMemberSource(this.measuresHierarchy, measures)));
+        
+        // remove from the calculated members array those members that weren't
+        // originally defined on this virtual cube
+        List finalCalcMemberList = new ArrayList();
+        for (int i = 0; i < calculatedMembers.length; i++) {
+            if (findOriginalMembers(
+                calculatedMembers[i],
+                origCalcMeasureList,
+                finalCalcMemberList))
+            {
+                continue; 
+            }
+            findOriginalMembers(
+                calculatedMembers[i],
+                Arrays.asList(xmlVirtualCube.calculatedMembers),
+                finalCalcMemberList);
+        }
+        calculatedMembers =
+            (Formula [])
+                finalCalcMemberList.toArray(
+                    new Formula[finalCalcMemberList.size()]); 
+        
         // Note: virtual cubes do not get aggregate
+    }
+    
+    private boolean findOriginalMembers(
+        Formula formula,
+        List calcMemberList,
+        List finalCalcMemberList)
+    {
+        for (int i = 0; i < calcMemberList.size(); i++) {
+            MondrianDef.CalculatedMember xmlCalcMember =
+                (MondrianDef.CalculatedMember) calcMemberList.get(i);
+            Dimension dimension =
+                (Dimension) lookupDimension(xmlCalcMember.dimension);
+            if (formula.getName().equals(xmlCalcMember.name) &&
+                formula.getMdxMember().getDimension().getName().equals(
+                    dimension.getName()))
+            {
+                finalCalcMemberList.add(formula);
+                return true;
+            }
+        }
+        return false;
     }
 
     protected void validate() {

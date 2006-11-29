@@ -2610,7 +2610,7 @@
                         <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
                         <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>2</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>16</DIMENSION_CARDINALITY>
+                        <DIMENSION_CARDINALITY>12</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>Warehouse and Sales Cube - Measures Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
