@@ -470,10 +470,10 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "{[Measures].[Units Shipped]}\n" +
                 "{[Measures].[Warehouse Cost]}\n" +
                 "{[Measures].[Warehouse Profit]}\n" +
-                "{[Measures].[Warehouse Sales]}\n" +
-                "{[Measures].[Average Warehouse Sale]}\n" +
+                "{[Measures].[Warehouse Sales]}\n" +                
                 "{[Measures].[Profit]}\n" +
-                "{[Measures].[Profit Growth]}\n" +             
+                "{[Measures].[Profit Growth]}\n" + 
+                "{[Measures].[Average Warehouse Sale]}\n" +
                 "{[Measures].[Profit Per Unit Shipped]}\n" +
                 "Row #0: 86,837\n" +
                 "Row #0: 225,627.23\n" +
@@ -485,10 +485,10 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "Row #0: 207726.0\n" +
                 "Row #0: 89,043.253\n" +
                 "Row #0: 107,727.635\n" +
-                "Row #0: 196,770.888\n" + 
-                "Row #0: $2.21\n" +
+                "Row #0: 196,770.888\n" +               
                 "Row #0: $339,610.90\n" +
-                "Row #0: 0.0%\n" +          
+                "Row #0: 0.0%\n" +    
+                "Row #0: $2.21\n" +
                 "Row #0: $1.63\n"));
     }
 }

@@ -270,7 +270,8 @@ public class RolapCube extends CubeBase {
         // incorrect dimensional ordinals for the virtual cube.
         List origMeasureList = new ArrayList();
         List origCalcMeasureList = new ArrayList();
-        Map calculatedMembersMap = new HashMap();
+        CubeComparator cubeComparator = new CubeComparator();
+        Map calculatedMembersMap = new TreeMap(cubeComparator);
         for (int i = 0; i < xmlVirtualCube.measures.length; i++) {
             // Lookup a measure in an existing cube.
             MondrianDef.VirtualCubeMeasure xmlMeasure =
@@ -285,7 +286,9 @@ public class RolapCube extends CubeBase {
                         // We have a calulated member!  Keep track of which
                         // base cube each calculated member is associated
                         // with, so we can resolve the calculated member
-                        // relative to its base cube.
+                        // relative to its base cube.  We're using a treeMap
+                        // to store the mapping to ensure a deterministic
+                        // order for the members.
                         MondrianDef.CalculatedMember calcMember =
                             schema.lookupXmlCalculatedMember(
                                     xmlMeasure.name, xmlMeasure.cubeName);
@@ -2449,6 +2452,16 @@ assert is not true.
         {
             return measuresFound;
         }
+    }
+    
+    private class CubeComparator implements Comparator
+    {
+        public int compare(Object o1, Object o2)
+        {
+            RolapCube c1 = (RolapCube) o1;
+            RolapCube c2 = (RolapCube) o2;
+            return c1.getName().compareTo(c2.getName());     
+         }
     }
 }
 
