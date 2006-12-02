@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde and others.
+// Copyright (C) 2005-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -30,7 +30,7 @@ public abstract class AbstractRecorder implements MessageRecorder {
             final String msg,
             final int msgType,
             final org.apache.log4j.Logger logger) {
-        StringBuffer buf = new StringBuffer(64);
+        StringBuilder buf = new StringBuilder(64);
         buf.append(context);
         buf.append(": ");
         buf.append(msg);
@@ -62,7 +62,7 @@ public abstract class AbstractRecorder implements MessageRecorder {
     public static final int DEFAULT_MSG_LIMIT = 10;
 
     private final int errorMsgLimit;
-    private final List contexts;
+    private final List<String> contexts;
     private int errorMsgCount;
     private int warningMsgCount;
     private int infoMsgCount;
@@ -74,7 +74,7 @@ public abstract class AbstractRecorder implements MessageRecorder {
     }
     protected AbstractRecorder(final int errorMsgLimit) {
         this.errorMsgLimit = errorMsgLimit;
-        this.contexts = new ArrayList();
+        this.contexts = new ArrayList<String>();
         this.startTime = System.currentTimeMillis();
     }
 
@@ -120,23 +120,25 @@ public abstract class AbstractRecorder implements MessageRecorder {
     public String getContext() {
         // heavy weight
         if (contextMsgCache == null) {
-            final StringBuffer buf = new StringBuffer();
-            for (Iterator it = contexts.iterator(); it.hasNext();) {
-                String name = (String) it.next();
-                buf.append(name);
-                if (it.hasNext()) {
+            final StringBuilder buf = new StringBuilder();
+            int k = 0;
+            for (String name : contexts) {
+                if (k++ > 0) {
                     buf.append(':');
                 }
+                buf.append(name);
             }
             contextMsgCache = buf.toString();
         }
         return contextMsgCache;
     }
+
     public void pushContextName(final String name) {
         // light weight
         contexts.add(name);
         contextMsgCache = null;
     }
+
     public void popContextName() {
         // light weight
         contexts.remove(contexts.size()-1);
@@ -146,9 +148,9 @@ public abstract class AbstractRecorder implements MessageRecorder {
     public void throwRTException() throws RecorderException {
         if (hasErrors()) {
             final String errorMsg =
-                    MondrianResource.instance().ForceMessageRecorderError.str(
-                            getContext(),
-                            new Integer(errorMsgCount));
+                MondrianResource.instance().ForceMessageRecorderError.str(
+                    getContext(),
+                    errorMsgCount);
             throw new RecorderException(errorMsg);
         }
     }
@@ -174,9 +176,9 @@ public abstract class AbstractRecorder implements MessageRecorder {
 
         if (errorMsgCount >= errorMsgLimit) {
             final String errorMsg =
-                    MondrianResource.instance().TooManyMessageRecorderErrors.str(
-                            getContext(),
-                            new Integer(errorMsgCount));
+                MondrianResource.instance().TooManyMessageRecorderErrors.str(
+                    getContext(),
+                    errorMsgCount);
             throw new RecorderException(errorMsg);
         }
     }

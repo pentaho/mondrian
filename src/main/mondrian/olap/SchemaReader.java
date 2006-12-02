@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2003-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -267,17 +267,17 @@ public interface SchemaReader {
     /**
      * Returns a list of calculated members in a given hierarchy.
      */
-    List getCalculatedMembers(Hierarchy hierarchy);
+    List<Member> getCalculatedMembers(Hierarchy hierarchy);
 
     /**
      * Returns a list of calculated members in a given level.
      */
-    List getCalculatedMembers(Level level);
+    List<Member> getCalculatedMembers(Level level);
 
     /**
      * Returns the list of calculated members.
      */
-    List getCalculatedMembers();
+    List<Member> getCalculatedMembers();
 
     /**
      * Finds a child of a member with a given name.

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -31,7 +31,7 @@ public class HierarchyType implements Type {
     public HierarchyType(Dimension dimension, Hierarchy hierarchy) {
         this.dimension = dimension;
         this.hierarchy = hierarchy;
-        StringBuffer buf = new StringBuffer("HierarchyType<");
+        StringBuilder buf = new StringBuilder("HierarchyType<");
         if (hierarchy != null) {
             buf.append("hierarchy=").append(hierarchy.getUniqueName());
         } else if (dimension != null) {

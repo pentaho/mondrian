@@ -3,16 +3,14 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2005 Julian Hyde and others
+// Copyright (C) 2004-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.rolap.agg.AggregationManager;
-import mondrian.rolap.agg.CellRequest;
-import mondrian.rolap.agg.ColumnConstraint;
+import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggGen;
 
 import org.apache.log4j.Logger;
@@ -59,7 +57,7 @@ public class FastBatchingCellReader implements CellReader {
 
     private final RolapCube cube;
     private final Set pinnedSegments;
-    private final Map batches;
+    private final Map<BatchKey, Batch> batches;
     private int requestCount;
 
     RolapAggregationManager aggMgr = AggregationManager.instance();
@@ -71,7 +69,7 @@ public class FastBatchingCellReader implements CellReader {
     public FastBatchingCellReader(RolapCube cube) {
         this.cube = cube;
         this.pinnedSegments = new HashSet();
-        this.batches = new HashMap();
+        this.batches = new HashMap<BatchKey, Batch>();
     }
 
     public Object get(Evaluator evaluator) {
@@ -110,54 +108,23 @@ public class FastBatchingCellReader implements CellReader {
         }
         ++requestCount;
 
-        //
-        // This is needed because for a Virtual Cube, two CellRequests
-        // could have the same BitKey but have different underlying
-        // base cubes. Without this, one get the result in the
-        // SegmentArrayQuerySpec addMeasure Util.assertTrue being
-        // triggered (which is what happened).
-        // Note that this class need not be seen by any other method, 
-        // hence it is method private!!
-        //
-        class BatchKey {
-            BitKey key;
-            RolapStar star;
-            BatchKey(BitKey key, RolapStar star) {
-                this.key = key;
-                this.star = star;
-            }
-            public int hashCode() {
-                return key.hashCode() ^ star.hashCode();
-            }
-            public boolean equals(Object other) {
-                if (other instanceof BatchKey) {
-                    BatchKey bkey = (BatchKey) other;
-                    return key.equals(bkey.key) && star.equals(bkey.star);
-                } else {
-                    return false;
-                }
-            }
-            public String toString() {
-                return star.getFactTable().getTableName()+" "+key.toString();
-            }
-        };
         BitKey bitkey = request.getConstrainedColumnsBitKey();
         BatchKey key = new BatchKey(bitkey, request.getMeasure().getStar());
-        Batch batch = (Batch) batches.get(key);
+        Batch batch = batches.get(key);
         if (batch == null) {
             batch = new Batch(request);
             batches.put(key, batch);
 
             if (LOGGER.isDebugEnabled()) {
-                StringBuffer buf = new StringBuffer(100);
+                StringBuilder buf = new StringBuilder(100);
                 buf.append("FastBatchingCellReader: bitkey=");
                 buf.append(request.getConstrainedColumnsBitKey());
                 buf.append(Util.nl);
 
                 RolapStar.Column[] columns = request.getConstrainedColumns();
-                for (int i = 0; i < columns.length; i++) {
+                for (RolapStar.Column column : columns) {
                     buf.append("  ");
-                    buf.append(columns[i]);
+                    buf.append(column);
                     buf.append(Util.nl);
                 }
                 LOGGER.debug(buf.toString());
@@ -195,12 +162,17 @@ public class FastBatchingCellReader implements CellReader {
         if (batches.isEmpty() && !dirty) {
             return false;
         }
-        Iterator it = batches.values().iterator();
-        while (it.hasNext()) {
+
+        // Sort the batches into deterministic order.
+        List<Batch> batchList = new ArrayList<Batch>(batches.values());
+        Collections.sort(batchList, BatchComparator.instance);
+
+        // Load batches in turn.
+        for (Batch batch : batchList) {
             if (query != null) {
                 query.checkCancelOrTimeout();
             }
-            ((Batch) it.next()).loadAggregation();
+            (batch).loadAggregation();
         }
         batches.clear();
 
@@ -221,25 +193,26 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     private static final Logger BATCH_LOGGER = Logger.getLogger(Batch.class);
+
     class Batch {
         // these are the CellRequest's constrained columns
         final RolapStar.Column[] columns;
         // this is the CellRequest's constrained column BitKey
         final BitKey constrainedColumnsBitKey;
-        final List measuresList = new ArrayList();
-        final Set[] valueSets;
+        final List<RolapStar.Measure> measuresList = new ArrayList<RolapStar.Measure>();
+        final Set<ColumnConstraint>[] valueSets;
 
         public Batch(CellRequest request) {
             columns = request.getConstrainedColumns();
             constrainedColumnsBitKey = request.getConstrainedColumnsBitKey();
             valueSets = new HashSet[columns.length];
             for (int i = 0; i < valueSets.length; i++) {
-                valueSets[i] = new HashSet();
+                valueSets[i] = new HashSet<ColumnConstraint>();
             }
         }
 
         public void add(CellRequest request) {
-            List values = request.getValueList();
+            List<ColumnConstraint> values = request.getValueList();
             for (int j = 0; j < columns.length; j++) {
                 valueSets[j].add(values.get(j));
             }
@@ -247,7 +220,7 @@ public class FastBatchingCellReader implements CellReader {
             if (!measuresList.contains(measure)) {
                 assert (measuresList.size() == 0) ||
                         (measure.getStar() ==
-                        ((RolapStar.Measure) measuresList.get(0)).getStar()):
+                        (measuresList.get(0)).getStar()):
                         "Measure must belong to same star as other measures";
                 measuresList.add(measure);
             }
@@ -259,16 +232,15 @@ public class FastBatchingCellReader implements CellReader {
          * @return the RolapStar associated with the Batch's first Measure.
          */
         private RolapStar getStar() {
-            RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(0);
-            RolapStar star = measure.getStar();
-            return star;
+            RolapStar.Measure measure = measuresList.get(0);
+            return measure.getStar();
         }
 
         void loadAggregation() {
             if (generateAggregateSql) {
                 RolapCube cube = FastBatchingCellReader.this.cube;
                 if (cube == null || cube.isVirtual()) {
-                    StringBuffer buf = new StringBuffer(64);
+                    StringBuilder buf = new StringBuilder(64);
                     buf.append("AggGen: Sorry, can not create SQL for virtual Cube \"");
                     buf.append(FastBatchingCellReader.this.cube.getName());
                     buf.append("\", operation not currently supported");
@@ -329,10 +301,10 @@ public class FastBatchingCellReader implements CellReader {
                     }
                     final String expr = distinctMeasure.getExpression().
                             getGenericExpression();
-                    final List distinctMeasuresList = new ArrayList();
+                    final List<RolapStar.Measure> distinctMeasuresList = new ArrayList<RolapStar.Measure>();
                     for (int i = 0; i < measuresList.size();) {
                         RolapStar.Measure measure =
-                                (RolapStar.Measure) measuresList.get(i);
+                            measuresList.get(i);
                         if (measure.getAggregator().isDistinct() &&
                             measure.getExpression().getGenericExpression().
                                 equals(expr))
@@ -343,10 +315,10 @@ public class FastBatchingCellReader implements CellReader {
                             i++;
                         }
                     }
-                    RolapStar.Measure[] measures = (RolapStar.Measure[])
+                    RolapStar.Measure[] measures =
                         distinctMeasuresList.toArray(
                             new RolapStar.Measure[distinctMeasuresList.size()]);
-                    aggmgr.loadAggregation(measures, columns, 
+                    aggmgr.loadAggregation(measures, columns,
                             constrainedColumnsBitKey,
                             constraintses, pinnedSegments);
                 }
@@ -354,9 +326,10 @@ public class FastBatchingCellReader implements CellReader {
 
             final int measureCount = measuresList.size();
             if (measureCount > 0) {
-                RolapStar.Measure[] measures = (RolapStar.Measure[])
+                RolapStar.Measure[] measures =
                     measuresList.toArray(new RolapStar.Measure[measureCount]);
-                aggmgr.loadAggregation(measures, columns, 
+                aggmgr.loadAggregation(
+                    measures, columns,
                     constrainedColumnsBitKey,
                     constraintses, pinnedSegments);
             }
@@ -371,18 +344,90 @@ public class FastBatchingCellReader implements CellReader {
          * Returns the first measure based upon a distinct aggregation, or null if
          * there is none.
          */
-        RolapStar.Measure getFirstDistinctMeasure(List measuresList) {
+        RolapStar.Measure getFirstDistinctMeasure(List<RolapStar.Measure> measuresList) {
             for (int i = 0; i < measuresList.size(); i++) {
-                RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(i);
+                RolapStar.Measure measure = measuresList.get(i);
                 if (measure.getAggregator().isDistinct()) {
                     return measure;
                 }
             }
             return null;
         }
-
     }
 
+    /**
+     * This is needed because for a Virtual Cube: two CellRequests
+     * could have the same BitKey but have different underlying
+     * base cubes. Without this, one get the result in the
+     * SegmentArrayQuerySpec addMeasure Util.assertTrue being
+     * triggered (which is what happened).
+     */
+    class BatchKey {
+        BitKey key;
+        RolapStar star;
+        BatchKey(BitKey key, RolapStar star) {
+            this.key = key;
+            this.star = star;
+        }
+        public int hashCode() {
+            return key.hashCode() ^ star.hashCode();
+        }
+        public boolean equals(Object other) {
+            if (other instanceof BatchKey) {
+                BatchKey bkey = (BatchKey) other;
+                return key.equals(bkey.key) && star.equals(bkey.star);
+            } else {
+                return false;
+            }
+        }
+        public String toString() {
+            return star.getFactTable().getTableName() + " " + key.toString();
+        }
+    }
+
+    private static class BatchComparator implements Comparator<Batch> {
+        static final BatchComparator instance = new BatchComparator();
+
+        private BatchComparator() {}
+
+        public int compare(
+            Batch o1, Batch o2) {
+            if (o1.columns.length != o2.columns.length) {
+                return o1.columns.length - o2.columns.length;
+            }
+            for (int i = 0; i < o1.columns.length; i++) {
+                int c = o1.columns[i].getName().compareTo(
+                    o2.columns[i].getName());
+                if (c != 0) {
+                    return c;
+                }
+            }
+            for (int i = 0; i < o1.columns.length; i++) {
+                int c = compare(o1.valueSets[i], o2.valueSets[i]);
+                if (c != 0) {
+                    return c;
+                }
+            }
+            return 0;
+        }
+
+        <T> int compare(Set<T> set1, Set<T> set2) {
+            if (set1.size() != set2.size()) {
+                return set1.size() - set2.size();
+            }
+            Iterator<T> iter1 = set1.iterator();
+            Iterator<T> iter2 = set2.iterator();
+            while (iter1.hasNext()) {
+                T v1 = iter1.next();
+                T v2 = iter2.next();
+                int c = ((Comparable) v1).compareTo(v2);
+                if (c != 0) {
+                    return c;
+                }
+            }
+            return 0;
+        }
+    }
 }
 
 // End FastBatchingCellReader.java

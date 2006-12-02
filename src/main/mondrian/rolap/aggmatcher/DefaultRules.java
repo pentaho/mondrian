@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2005-2002 Kana Software, Inc.
-// Copyright (C) 2005-2005 Julian Hyde and others
+// Copyright (C) 2005-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -247,16 +247,16 @@ public class DefaultRules {
 
 
     private final DefaultDef.AggRules rules;
-    private final Map factToPattern;
-    private final Map foreignKeyMatcherMap;
+    private final Map<String, Recognizer.Matcher> factToPattern;
+    private final Map<String, Recognizer.Matcher> foreignKeyMatcherMap;
     private Recognizer.Matcher ignoreMatcherMap;
     private Recognizer.Matcher factCountMatcher;
     private String tag;
 
     private DefaultRules(final DefaultDef.AggRules rules) {
         this.rules = rules;
-        this.factToPattern = new HashMap();
-        this.foreignKeyMatcherMap = new HashMap();
+        this.factToPattern = new HashMap<String, Recognizer.Matcher>();
+        this.foreignKeyMatcherMap = new HashMap<String, Recognizer.Matcher>();
         this.tag = MondrianProperties.instance().AggregateRuleTag.
                 getDefaultValue();
     }
@@ -309,8 +309,7 @@ public class DefaultRules {
      * @param tableName
      */
     public Recognizer.Matcher getTableMatcher(final String tableName) {
-        Recognizer.Matcher matcher =
-            (Recognizer.Matcher) factToPattern.get(tableName);
+        Recognizer.Matcher matcher = factToPattern.get(tableName);
         if (matcher == null) {
             // get default AggRule
             DefaultDef.AggRule rule = getAggRule();
@@ -368,7 +367,7 @@ public class DefaultRules {
      */
     public Recognizer.Matcher getForeignKeyMatcher(String foreignKeyName) {
         Recognizer.Matcher matcher =
-            (Recognizer.Matcher) foreignKeyMatcherMap.get(foreignKeyName);
+            foreignKeyMatcherMap.get(foreignKeyName);
         if (matcher == null) {
             // get default AggRule
             DefaultDef.AggRule rule = getAggRule();

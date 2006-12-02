@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -30,8 +30,7 @@ public class TupleType implements Type {
     }
 
     public boolean usesDimension(Dimension dimension, boolean maybe) {
-        for (int i = 0; i < elementTypes.length; i++) {
-            Type elementType = elementTypes[i];
+        for (Type elementType : elementTypes) {
             if (elementType.usesDimension(dimension, maybe)) {
                 return true;
             }
@@ -52,8 +51,7 @@ public class TupleType implements Type {
     }
 
     public Type getValueType() {
-        for (int i = 0; i < elementTypes.length; i++) {
-            Type elementType = elementTypes[i];
+        for (Type elementType : elementTypes) {
             if (elementType instanceof MemberType) {
                 MemberType memberType = (MemberType) elementType;
                 if (memberType.getDimension().isMeasures()) {

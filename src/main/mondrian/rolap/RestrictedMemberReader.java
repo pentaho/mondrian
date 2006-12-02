@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2003-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -80,23 +80,34 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         return member;
     }
 
-    public void getMemberChildren(RolapMember parentMember, List children) {
-        MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+    public void getMemberChildren(
+        RolapMember parentMember,
+        List<RolapMember> children)
+    {
+        MemberChildrenConstraint constraint =
+            sqlConstraintFactory.getMemberChildrenConstraint(null);
         getMemberChildren(parentMember, children, constraint);
     }
 
-    public void getMemberChildren(RolapMember parentMember, List children,
-            MemberChildrenConstraint constraint) {
-        List fullChildren = new ArrayList();
+    public void getMemberChildren(
+        RolapMember parentMember,
+        List<RolapMember> children,
+        MemberChildrenConstraint constraint)
+    {
+        List<RolapMember> fullChildren = new ArrayList<RolapMember>();
         memberReader.getMemberChildren(parentMember, fullChildren, constraint);
         processMemberChildren(fullChildren, children, constraint);
     }
 
-    private void processMemberChildren(List fullChildren, List children, MemberChildrenConstraint constraint) {
+    private void processMemberChildren(
+        List<RolapMember> fullChildren,
+        List<RolapMember> children,
+        MemberChildrenConstraint constraint)
+    {
         // todo: optimize if parentMember is beyond last level
-        List grandChildren = null;
+        List<RolapMember> grandChildren = null;
         for (int i = 0; i < fullChildren.size(); i++) {
-            RolapMember member = (RolapMember) fullChildren.get(i);
+            RolapMember member = fullChildren.get(i);
             // If a child is hidden (due to raggedness) include its children.
             // This must be done before applying access-control.
             if (ragged) {
@@ -107,7 +118,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
                     // we deal with raggedness before we apply access-control.
                     fullChildren.remove(i);
                     if (grandChildren == null) {
-                        grandChildren = new ArrayList();
+                        grandChildren = new ArrayList<RolapMember>();
                     } else {
                         grandChildren.clear();
                     }
@@ -136,9 +147,11 @@ class RestrictedMemberReader extends DelegatingMemberReader {
      * @param members Input list
      * @param filteredMembers Output list
      */
-    private void filterMembers(List members, List filteredMembers) {
-        for (int i = 0, n = members.size(); i < n; i++) {
-            RolapMember member = (RolapMember) members.get(i);
+    private void filterMembers(
+        List<RolapMember> members,
+        List<RolapMember> filteredMembers)
+    {
+        for (RolapMember member : members) {
             if (canSee(member)) {
                 filteredMembers.add(member);
             }
@@ -156,29 +169,29 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         return true;
     }
 
-    public void getMemberChildren(List parentMembers, List children) {
+    public void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children) {
         MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
         getMemberChildren(parentMembers, children, constraint);
     }
 
-    public synchronized void getMemberChildren(List parentMembers, List children, MemberChildrenConstraint constraint) {
+    public synchronized void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children, MemberChildrenConstraint constraint) {
 //        for (Iterator i = parentMembers.iterator(); i.hasNext();) {
 //            RolapMember parentMember = (RolapMember) i.next();
 //            getMemberChildren(parentMember, children, constraint);
 //        }
-        List fullChildren = new ArrayList();
+        List<RolapMember> fullChildren = new ArrayList<RolapMember>();
         super.getMemberChildren(parentMembers, fullChildren, constraint);
         processMemberChildren(fullChildren, children, constraint);
     }
 
-    public List getMembersInLevel(RolapLevel level,
+    public List<RolapMember> getMembersInLevel(RolapLevel level,
                                   int startOrdinal,
                                   int endOrdinal) {
         TupleConstraint constraint = sqlConstraintFactory.getLevelMembersConstraint(null);
         return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
     }
 
-    public List getMembersInLevel(RolapLevel level,
+    public List<RolapMember> getMembersInLevel(RolapLevel level,
                                 int startOrdinal,
                                 int endOrdinal,
                                 TupleConstraint constraint) {
@@ -186,16 +199,16 @@ class RestrictedMemberReader extends DelegatingMemberReader {
             final int depth = level.getDepth();
             if (hierarchyAccess.getTopLevel() != null &&
                     depth < hierarchyAccess.getTopLevel().getDepth()) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
             if (hierarchyAccess.getBottomLevel() != null &&
                     depth > hierarchyAccess.getBottomLevel().getDepth()) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
         }
-        final List membersInLevel = super.getMembersInLevel(level,
+        final List<RolapMember> membersInLevel = super.getMembersInLevel(level,
                 startOrdinal, endOrdinal, constraint);
-        List filteredMembers = new ArrayList();
+        List<RolapMember> filteredMembers = new ArrayList<RolapMember>();
         filterMembers(membersInLevel, filteredMembers);
         return filteredMembers;
     }

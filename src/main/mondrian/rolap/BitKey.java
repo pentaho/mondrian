@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -457,7 +457,7 @@ public interface BitKey {
         }
 
         public String toString() {
-            StringBuffer buf = new StringBuffer(64);
+            StringBuilder buf = new StringBuilder(64);
             buf.append("0x");
             for (int i = 63; i >= 0; i--) {
                 buf.append((get(i)) ? '1' : '0');
@@ -705,7 +705,7 @@ public interface BitKey {
             return (int)((h >> 32) ^ h);
         }
         public String toString() {
-            StringBuffer buf = new StringBuffer(64);
+            StringBuilder buf = new StringBuilder(64);
             buf.append("0x");
             for (int i = 127; i >= 0; i--) {
                 buf.append((get(i)) ? '1' : '0');
@@ -1004,7 +1004,7 @@ public interface BitKey {
             return (int)((h >> 32) ^ h);
         }
         public String toString() {
-            StringBuffer buf = new StringBuffer(64);
+            StringBuilder buf = new StringBuilder(64);
             buf.append("0x");
             int start = bits.length*64 -1;
             for (int i = start; i >= 0; i--) {

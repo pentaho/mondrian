@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -132,7 +132,7 @@ public abstract class MemberBase
             final SchemaReader schemaReader =
                 hierarchy.getDimension().getSchema().getSchemaReader();
             String[] parentUniqueNameParts = Util.explode(parentUniqueName);
-            parentMember = (MemberBase) schemaReader.getMemberByUniqueName(
+            parentMember = schemaReader.getMemberByUniqueName(
                     parentUniqueNameParts, failIfNotFound);
             return parentMember;
         }
@@ -196,13 +196,13 @@ public abstract class MemberBase
 
     // implement Member
     public Member[] getAncestorMembers() {
-        List list = new ArrayList();
+        List<Member> list = new ArrayList<Member>();
         Member parentMember = getParentMember();
         while (parentMember != null) {
             list.add(parentMember);
-            parentMember = (MemberBase) parentMember.getParentMember();
+            parentMember = parentMember.getParentMember();
         }
-        return (Member[]) list.toArray(new Member[list.size()]);
+        return list.toArray(new Member[list.size()]);
     }
 
     /**

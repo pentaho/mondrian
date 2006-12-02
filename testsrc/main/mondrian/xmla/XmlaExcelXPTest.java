@@ -61,7 +61,8 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
             if (getSessionId() != null) {
                 props.put(SESSION_ID_PROP, getSessionId());
             }
-            expectedStr = Util.replaceProperties(expectedStr, props);
+            expectedStr = Util.replaceProperties(
+                expectedStr, Util.toMap(props));
         }
         return expectedStr;
     }
@@ -73,15 +74,18 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
 
         public void init(ServletConfig servletConfig) throws ServletException {
         }
-        public boolean processHttpHeader(HttpServletRequest request,
-                HttpServletResponse response,
-                Map context) throws Exception {
+
+        public boolean processHttpHeader(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Map<String, String> context) throws Exception
+        {
             String expect = request.getHeader(XmlaRequestCallback.EXPECT);
             if ((expect != null) &&
                 expect.equalsIgnoreCase(XmlaRequestCallback.EXPECT_100_CONTINUE)) {
 
                 XmlaRequestCallback.Helper.generatedExpectResponse(
-                                    request, response, context);
+                    request, response, context);
                 return false;
             } else {
                 return true;
@@ -90,9 +94,10 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
         public void preAction(
                 HttpServletRequest request,
                 Element[] requestSoapParts,
-                Map context) throws Exception {
+                Map<String, String> context) throws Exception {
         }
-        private void setSessionId(Map context) {
+
+        private void setSessionId(Map<String, String> context) {
             if (XmlaExcelXPTest.sessionId == null) {
                 makeSessionId();
             }
@@ -100,15 +105,16 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
             context.put(MY_SESSION_ID, XmlaExcelXPTest.sessionId);
         }
 
-        public String generateSessionId(Map context) {
+        public String generateSessionId(Map<String, String> context) {
             setSessionId(context);
-            return (String) context.get(MY_SESSION_ID);
+            return context.get(MY_SESSION_ID);
         }
+
         public void postAction(
-                    HttpServletRequest request,
-                    HttpServletResponse response,
-                    byte[][] responseSoapParts,
-                    Map context) throws Exception {
+            HttpServletRequest request,
+            HttpServletResponse response,
+            byte[][] responseSoapParts,
+            Map<String, String> context) throws Exception {
         }
     }
 
@@ -117,7 +123,7 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
 
     protected static void makeSessionId() {
         int id = XmlaExcelXPTest.sessionIdCounter++;
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("XmlaExcelXPTest-");
         buf.append(id);
         buf.append("-foo");
@@ -444,7 +450,7 @@ System.out.println("reqFileName="+reqFileName);
             if (XmlaExcelXPTest.sessionId != null) {
                 props.put(SESSION_ID_PROP, XmlaExcelXPTest.sessionId);
             }
-            requestText = Util.replaceProperties(requestText, props);
+            requestText = Util.replaceProperties(requestText, Util.toMap(props));
         }
 if (DEBUG) {
 System.out.println("requestText="+requestText);

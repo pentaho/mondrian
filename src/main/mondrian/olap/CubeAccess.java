@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -28,8 +28,8 @@ public class CubeAccess {
     private Hierarchy[] noAccessHierarchies;
     /** array of members which have limited access */
     private Member[]  limitedMembers;
-    private final List hierarchyList;
-    private final List memberList;
+    private final List<Hierarchy> hierarchyList = new ArrayList<Hierarchy>();
+    private final List<Member> memberList = new ArrayList<Member>();
     private final Cube mdxCube;
 
     /**
@@ -45,32 +45,35 @@ public class CubeAccess {
         noAccessHierarchies = null;
         limitedMembers = null;
         hasRestrictions = false;
-        hierarchyList = new ArrayList();
-        memberList = new ArrayList();
     }
 
     public boolean hasRestrictions() {
         return hasRestrictions;
     }
+
     public Hierarchy[] getNoAccessHierarchies() {
         return noAccessHierarchies;
     }
+
     public Member[] getLimitedMembers() {
         return limitedMembers;
     }
-    public List getNoAccessHierarchyList() {
+
+    public List<Hierarchy> getNoAccessHierarchyList() {
         return hierarchyList;
     }
-    public List getLimitedMemberList() {
+
+    public List<Member> getLimitedMemberList() {
         return memberList;
     }
+
     public boolean isHierarchyAllowed(Hierarchy mdxHierarchy) {
         String hierName = mdxHierarchy.getUniqueName();
         if(noAccessHierarchies == null || hierName == null) {
             return true;
         }
-        for(int i = 0; i < noAccessHierarchies.length; i++) {
-            if(hierName.equalsIgnoreCase(noAccessHierarchies[i].getUniqueName()) ) {
+        for (Hierarchy noAccessHierarchy : noAccessHierarchies) {
+            if (hierName.equalsIgnoreCase(noAccessHierarchy.getUniqueName())) {
                 return false;
             }
         }
@@ -82,11 +85,10 @@ public class CubeAccess {
         if (limitedMembers == null || hierName == null) {
             return null;
         }
-        for (int i = 0; i < limitedMembers.length; i++) {
-            Hierarchy limitedHierarchy =
-                limitedMembers[i].getHierarchy();
+        for (Member limitedMember : limitedMembers) {
+            Hierarchy limitedHierarchy = limitedMember.getHierarchy();
             if (hierName.equalsIgnoreCase(limitedHierarchy.getUniqueName())) {
-                return limitedMembers[i];
+                return limitedMember;
             }
         }
         return null;
@@ -122,43 +124,42 @@ public class CubeAccess {
         }
     }
 
-    /** Initializes internal arrays of restricted hierarchies and limited
+    /**
+     * Initializes internal arrays of restricted hierarchies and limited
      * members. It has to be called  after all 'addSlicer()' calls.
      */
     public void normalizeCubeAccess() {
         if (memberList.size() > 0) {
-            limitedMembers = (Member[])
-                memberList.toArray(new Member[memberList.size()]);
+            limitedMembers = memberList.toArray(new Member[memberList.size()]);
             hasRestrictions = true;
         }
         if (hierarchyList.size() > 0) {
-            noAccessHierarchies = (Hierarchy[])
-                hierarchyList.toArray(new Hierarchy[ hierarchyList.size()]);
+            noAccessHierarchies =
+                hierarchyList.toArray(
+                    new Hierarchy[ hierarchyList.size()]);
             hasRestrictions = true;
         }
     }
 
-    /**compares this CubeAccess to the specified Object
-     */
     public boolean equals(Object object) {
         if (!(object instanceof CubeAccess)) {
            return false;
         }
         CubeAccess cubeAccess = (CubeAccess) object;
-        List hierarchyList = cubeAccess.getNoAccessHierarchyList();
-        List limitedMemberList = cubeAccess.getLimitedMemberList();
+        List<Hierarchy> hierarchyList = cubeAccess.getNoAccessHierarchyList();
+        List<Member> limitedMemberList = cubeAccess.getLimitedMemberList();
 
         if ((this.hierarchyList.size() != hierarchyList.size()) ||
             (this.memberList.size() != limitedMemberList.size())) {
             return false;
         }
-        for (int i = 0; i < hierarchyList.size(); i++) {
-            if (!this.hierarchyList.contains(hierarchyList.get(i))) {
+        for (Hierarchy o : hierarchyList) {
+            if (!this.hierarchyList.contains(o)) {
                 return false;
             }
         }
-        for (int i = 0; i < limitedMemberList.size(); i++ ) {
-            if (!this.memberList.contains( limitedMemberList.get(i))) {
+        for (Member member : limitedMemberList) {
+            if (!this.memberList.contains(member)) {
                 return false;
             }
         }

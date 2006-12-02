@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -712,27 +712,27 @@ public class TestContext {
      * that an axis has the results you expected.
      */
     public static String toString(Position[] positions) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < positions.length; i++) {
             Position position = positions[i];
             if (i > 0) {
-                sb.append(nl);
+                buf.append(nl);
             }
             if (position.members.length != 1) {
-                sb.append("{");
+                buf.append("{");
             }
             for (int j = 0; j < position.members.length; j++) {
                 Member member = position.members[j];
                 if (j > 0) {
-                    sb.append(", ");
+                    buf.append(", ");
                 }
-                sb.append(member.getUniqueName());
+                buf.append(member.getUniqueName());
             }
             if (position.members.length != 1) {
-                sb.append("}");
+                buf.append("}");
             }
         }
-        return sb.toString();
+        return buf.toString();
     }
 
     /**
@@ -745,7 +745,7 @@ public class TestContext {
      * they handle concatenations of large numbers of string fragments.
      */
     public static String fold(String[] strings) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < strings.length; i++) {
             if (i > 0) {
                 buf.append(nl);

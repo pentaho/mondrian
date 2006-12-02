@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2003-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -16,7 +16,6 @@ import java.util.List;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
-import mondrian.olap.Evaluator;
 
 /**
  * A <code>DelegatingMemberReader</code> is a {@link MemberReader} which
@@ -37,20 +36,28 @@ class DelegatingMemberReader implements MemberReader {
         return memberReader.getLeadMember(member, n);
     }
 
-    public List getMembersInLevel(RolapLevel level,
-                                  int startOrdinal,
-                                  int endOrdinal) {
+    public List<RolapMember> getMembersInLevel(
+        RolapLevel level,
+        int startOrdinal,
+        int endOrdinal)
+    {
         return memberReader.getMembersInLevel(level, startOrdinal, endOrdinal);
     }
 
-    public void getMemberRange(RolapLevel level,
-                               RolapMember startMember,
-                               RolapMember endMember,
-                               List list) {
+    public void getMemberRange(
+        RolapLevel level,
+        RolapMember startMember,
+        RolapMember endMember,
+        List<RolapMember> list)
+    {
         memberReader.getMemberRange(level, startMember, endMember, list);
     }
 
-    public int compare(RolapMember m1, RolapMember m2, boolean siblingsAreEqual) {
+    public int compare(
+        RolapMember m1,
+        RolapMember m2,
+        boolean siblingsAreEqual)
+    {
         return memberReader.compare(m1, m2, siblingsAreEqual);
     }
 
@@ -66,15 +73,15 @@ class DelegatingMemberReader implements MemberReader {
         return memberReader.getMembers();
     }
 
-    public List getRootMembers() {
+    public List<RolapMember> getRootMembers() {
         return memberReader.getRootMembers();
     }
 
-    public void getMemberChildren(RolapMember parentMember, List children) {
+    public void getMemberChildren(RolapMember parentMember, List<RolapMember> children) {
         memberReader.getMemberChildren(parentMember, children);
     }
 
-    public void getMemberChildren(List parentMembers, List children) {
+    public void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children) {
         memberReader.getMemberChildren(parentMembers, children);
     }
 
@@ -87,15 +94,15 @@ class DelegatingMemberReader implements MemberReader {
         return memberReader.lookupMember(uniqueNameParts, failIfNotFound);
     }
 
-    public void getMemberChildren(RolapMember member, List children, MemberChildrenConstraint constraint) {
+    public void getMemberChildren(RolapMember member, List<RolapMember> children, MemberChildrenConstraint constraint) {
         memberReader.getMemberChildren(member, children, constraint);
     }
 
-    public void getMemberChildren(List parentMembers, List children, MemberChildrenConstraint constraint) {
+    public void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children, MemberChildrenConstraint constraint) {
         memberReader.getMemberChildren(parentMembers, children, constraint);
     }
 
-    public List getMembersInLevel(RolapLevel level, int startOrdinal, int endOrdinal, TupleConstraint constraint) {
+    public List<RolapMember> getMembersInLevel(RolapLevel level, int startOrdinal, int endOrdinal, TupleConstraint constraint) {
         return memberReader.getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
     }
 

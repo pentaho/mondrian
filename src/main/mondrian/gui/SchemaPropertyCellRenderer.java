@@ -41,10 +41,10 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
                 stringRenderer.setText((String)value);
                 return stringRenderer;
             } else if (value instanceof Boolean) {
-                booleanRenderer.setSelected(((Boolean)value).booleanValue());
+                booleanRenderer.setSelected((Boolean) value);
                 return booleanRenderer;
             } else if (value instanceof Integer) {
-                integerRenderer.setText((String)value);
+                integerRenderer.setText(value.toString());
                 return integerRenderer;
             } else if (value == null) {
                 return null;

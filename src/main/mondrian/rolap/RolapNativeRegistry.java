@@ -9,7 +9,6 @@
 package mondrian.rolap;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import mondrian.olap.Exp;
@@ -22,7 +21,7 @@ import mondrian.olap.NativeEvaluator;
  */
 public class RolapNativeRegistry extends RolapNative {
 
-    private List natives = new ArrayList();
+    private List<RolapNative> natives = new ArrayList<RolapNative>();
 
     public RolapNativeRegistry() {
         super.setEnabled(true);
@@ -32,16 +31,17 @@ public class RolapNativeRegistry extends RolapNative {
     }
 
     /**
-     * returns the matching NativeEvaluator or null if <code>fun</code> can not
+     * Returns the matching NativeEvaluator or null if <code>fun</code> can not
      * be executed in SQL for the given context and arguments.
      */
-    public NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
-        if (!isEnabled())
+    public NativeEvaluator createEvaluator(
+        RolapEvaluator evaluator, FunDef fun, Exp[] args)
+    {
+        if (!isEnabled()) {
             return null;
-        RolapEvaluator revaluator = (RolapEvaluator) evaluator;
-        for (Iterator it = natives.iterator(); it.hasNext();) {
-            RolapNative rn = (RolapNative) it.next();
-            NativeEvaluator ne = rn.createEvaluator(revaluator, fun, args);
+        }
+        for (RolapNative rn : natives) {
+            NativeEvaluator ne = rn.createEvaluator(evaluator, fun, args);
             if (ne != null) {
                 if (listener != null) {
                     NativeEvent e = new NativeEvent(this, ne);
@@ -60,16 +60,14 @@ public class RolapNativeRegistry extends RolapNative {
     /** for testing */
     void setListener(Listener listener) {
         super.setListener(listener);
-        for (Iterator it = natives.iterator(); it.hasNext();) {
-            RolapNative rn = (RolapNative) it.next();
+        for (RolapNative rn : natives) {
             rn.setListener(listener);
         }
     }
     
     /** for testing */
     void useHardCache(boolean hard) {
-        for (Iterator it = natives.iterator(); it.hasNext();) {
-            RolapNative rn = (RolapNative) it.next();
+        for (RolapNative rn : natives) {
             rn.useHardCache(hard);
         }
     }

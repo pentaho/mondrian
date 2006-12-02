@@ -15,7 +15,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Collection;
@@ -53,46 +52,46 @@ public class GlobalFunTable extends FunTableImpl {
 
     protected void defineFunctions() {
         final FunTable builtinFunTable = BuiltinFunTable.instance();
-        final List reservedWords = builtinFunTable.getReservedWords();
-        for (int i = 0; i < reservedWords.size(); i++) {
-            String reservedWord = (String) reservedWords.get(i);
+        final List<String> reservedWords = builtinFunTable.getReservedWords();
+        for (String reservedWord : reservedWords) {
             defineReserved(reservedWord);
         }
-        final List resolvers = builtinFunTable.getResolvers();
-        for (int i = 0; i < resolvers.size(); i++) {
-            Resolver resolver = (Resolver) resolvers.get(i);
+        final List<Resolver> resolvers = builtinFunTable.getResolvers();
+        for (Resolver resolver : resolvers) {
             define(resolver);
         }
 
-        for (Iterator it = lookupUdfImplClasses().iterator(); it.hasNext(); ) {
-            String className = (String)it.next();
+        for (String className : lookupUdfImplClasses()) {
             defineUdf(className);
         }
     }
 
 
-    private Collection lookupUdfImplClasses() {
+    private Collection<String> lookupUdfImplClasses() {
         ClassLoader cl = this.getClass().getClassLoader();
-        List serviceUrls = new ArrayList();
+        List<URL> serviceUrls = new ArrayList<URL>();
         try {
-            Enumeration serviceEnum = cl.getResources("META-INF/services/mondrian.spi.UserDefinedFunction");
+            Enumeration<URL> serviceEnum = cl.getResources("META-INF/services/mondrian.spi.UserDefinedFunction");
             for (; serviceEnum.hasMoreElements();) {
                 serviceUrls.add(serviceEnum.nextElement());
             }
         } catch (IOException e) {
             logger.warn("Error while finding service files for user-defined functions", e);
         }
-        Set classNames = new HashSet();
-        for (Iterator it = serviceUrls.iterator(); it.hasNext();) {
-            URL url = (URL) it.next();
+        Set<String> classNames = new HashSet<String>();
+        for (URL url : serviceUrls) {
             BufferedReader reader = null;
             try {
-                reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
-                String line = null;
+                reader =
+                    new BufferedReader(new InputStreamReader(url.openStream(),
+                        "UTF-8"));
+                String line;
                 while ((line = reader.readLine()) != null) {
                     line = line.trim();
                     if (line.length() > 0) {
-                        if (line.charAt(0) == '#') continue;
+                        if (line.charAt(0) == '#') {
+                            continue;
+                        }
                         int comment = line.indexOf('#');
                         if (comment != -1) {
                             line = line.substring(0, comment).trim();
@@ -104,7 +103,10 @@ public class GlobalFunTable extends FunTableImpl {
                 logger.warn("Error when loading service file '" + url + "'", e);
             } finally {
                 if (reader != null) {
-                    try { reader.close(); } catch (IOException ignored) { }
+                    try {
+                        reader.close();
+                    } catch (IOException ignored) {
+                    }
                 }
             }
         }
@@ -122,7 +124,7 @@ public class GlobalFunTable extends FunTableImpl {
      */
     private void defineUdf(String className) {
         // Load class.
-        final Class udfClass;
+        final Class<?> udfClass;
         try {
             udfClass = Class.forName(className);
         } catch (ClassNotFoundException e) {

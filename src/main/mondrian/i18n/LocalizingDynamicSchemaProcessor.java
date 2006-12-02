@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -46,10 +46,10 @@ public class LocalizingDynamicSchemaProcessor
     private static final int INVALID_LOCALE = 1;
     private static final int FULL_LOCALE = 3;
     private static final int LANG_LOCALE = 2;
-    private static final Set countries = Collections.unmodifiableSet(
-            new HashSet(Arrays.asList(Locale.getISOCountries())));
-    private static final Set languages = Collections.unmodifiableSet(
-            new HashSet(Arrays.asList(Locale.getISOLanguages())));
+    private static final Set<String> countries = Collections.unmodifiableSet(
+            new HashSet<String>(Arrays.asList(Locale.getISOCountries())));
+    private static final Set<String> languages = Collections.unmodifiableSet(
+            new HashSet<String>(Arrays.asList(Locale.getISOLanguages())));
     private int localeType = INVALID_LOCALE;
 
     void populate(String propFile) {
@@ -140,7 +140,7 @@ public class LocalizingDynamicSchemaProcessor
 
         loadProperties();
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(
                         schemaUrl.openStream()));
@@ -184,8 +184,7 @@ public class LocalizingDynamicSchemaProcessor
     private String extractKey(String group) {
         // removes leading '%{' and tailing '%' from the matched string
         // to obtain the required key
-        String key = group.substring(2, group.length() - 1);
-        return key;
+        return group.substring(2, group.length() - 1);
     }
 
     /**
@@ -217,7 +216,7 @@ public class LocalizingDynamicSchemaProcessor
                 localeType = FULL_LOCALE;
             }
         } else {
-            if (locale!=null && locale.length()==2){
+            if (locale.length()==2){
             //make sure that the language field is valid since that is all that was provided
                 if (languages.contains(locale.substring(0, 2))) {
                     localeType = LANG_LOCALE;

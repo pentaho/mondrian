@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -16,6 +16,7 @@ import mondrian.olap.DriverManager;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * todo:
@@ -131,13 +132,13 @@ public class Test {
         pw.println();
 
         pw.println("First children of first children: {");
-        ArrayList firstChildren = new ArrayList();
+        List<RolapMember> firstChildren = new ArrayList<RolapMember>();
         RolapMember member = rootMembers[0];
         while (member != null) {
             firstChildren.add(member);
             pw.print("\t");
             print(member);
-            ArrayList children = new ArrayList();
+            ArrayList<RolapMember> children = new ArrayList<RolapMember>();
             reader.getMemberChildren(member, children);
             if (children.isEmpty()) {
                 break;
@@ -147,9 +148,9 @@ public class Test {
             pw.print(", lead(5)=");
             print(leadMember);
             if (children.size() > 1) {
-                member = (RolapMember) children.get(1);
+                member = children.get(1);
             } else if (children.size() > 0) {
-                member = (RolapMember) children.get(0);
+                member = children.get(0);
             } else {
                 member = null;
             }

@@ -53,7 +53,7 @@ public class HierarchyExpr extends ExpBase implements Exp {
         return HierarchyType.forHierarchy(hierarchy);
     }
 
-    public Object clone() {
+    public HierarchyExpr clone() {
         return new HierarchyExpr(hierarchy);
     }
 

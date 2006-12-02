@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2005 Julian Hyde and others.
+// Copyright (C) 2004-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -49,12 +49,12 @@ class ResultComparator {
 
         Cube cube = result.getQuery().getCube();
         Dimension[] dims = cube.getDimensions();
-        HashSet defaultDimMembers = new HashSet();
+        HashSet<String> defaultDimMembers = new HashSet<String>();
 
-        for (int idx = 0; idx < dims.length; idx++) {
+        for (Dimension dim : dims) {
 
-            String uniqueName = dims[idx].getHierarchies()[0].
-                    getDefaultMember().getUniqueName();
+            String uniqueName = dim.getHierarchies()[0].
+                getDefaultMember().getUniqueName();
             defaultDimMembers.add(uniqueName);
         }
 
@@ -96,8 +96,8 @@ class ResultComparator {
 
     private boolean resultMembersContainsExpected(String expectedMemberName,
             Member[] members) {
-        for (int idx = 0; idx < members.length; idx++) {
-            if (members[idx].getUniqueName().equals(expectedMemberName)) {
+        for (Member member : members) {
+            if (member.getUniqueName().equals(expectedMemberName)) {
                 return true;
             }
         }
@@ -169,7 +169,7 @@ class ResultComparator {
     private void stripWhitespace(Element element) {
         final NodeList childNodeList = element.getChildNodes();
         for (int i = 0; i < childNodeList.getLength(); i++) {
-            Node node = (Node) childNodeList.item(i);
+            Node node = childNodeList.item(i);
             switch (node.getNodeType()) {
             case Node.TEXT_NODE:
             case Node.CDATA_SECTION_NODE:
@@ -244,8 +244,7 @@ class ResultComparator {
         axisXml.appendChild(tuplesXml);
         final Element tupleXml = document.createElement("tuple");
         tuplesXml.appendChild(tupleXml);
-        for (int i = 0; i < dimensions.length; i++) {
-            Dimension dimension = dimensions[i];
+        for (Dimension dimension : dimensions) {
             Member member = findSlicerAxisMember(result, dimension);
             if (member == null) {
                 continue;
@@ -254,14 +253,14 @@ class ResultComparator {
             final Element dimXml = document.createElement("dim");
             dimensionsXml.appendChild(dimXml);
             final Text textXml = document.createTextNode(
-                    member.getDimension().getUniqueName());
+                member.getDimension().getUniqueName());
             dimXml.appendChild(textXml);
 
             // Append to the <tuple> element.
             final Element memberXml = document.createElement("member");
             tupleXml.appendChild(memberXml);
             final Text memberTextXml = document.createTextNode(
-                    member.getUniqueName());
+                member.getUniqueName());
             memberXml.appendChild(memberTextXml);
         }
     }
@@ -279,20 +278,17 @@ class ResultComparator {
         if (slicerAxis != null &&
                 slicerAxis.positions.length == 1) {
             final Member[] members = slicerAxis.positions[0].members;
-            for (int j = 0; j < members.length; j++) {
-                Member member = members[j];
+            for (Member member : members) {
                 if (member.getDimension() == dimension) {
                     return member;
                 }
             }
         }
         final Axis[] axes = result.getAxes();
-        for (int i = 0; i < axes.length; i++) {
-            Axis axis = axes[i];
+        for (Axis axis : axes) {
             if (axis.positions.length > 0) {
                 final Member[] members = axis.positions[0].members;
-                for (int j = 0; j < members.length; j++) {
-                    Member member = members[j];
+                for (Member member : members) {
                     if (member.getDimension() == dimension) {
                         // Dimension occurs on non-slicer axis, so it should
                         // not appear in the slicer.
@@ -315,26 +311,23 @@ class ResultComparator {
             final Element dimensionsXml = document.createElement("dimensions");
             axisXml.appendChild(dimensionsXml);
             final Position position0 = axis.positions[0];
-            for (int i = 0; i < position0.members.length; i++) {
-                Member member = position0.members[i];
+            for (Member member : position0.members) {
                 final Element dimXml = document.createElement("dim");
                 dimensionsXml.appendChild(dimXml);
                 final Text textXml = document.createTextNode(
-                        member.getDimension().getUniqueName());
+                    member.getDimension().getUniqueName());
                 dimXml.appendChild(textXml);
             }
             final Element tuplesXml = document.createElement("tuples");
             axisXml.appendChild(tuplesXml);
-            for (int i = 0; i < axis.positions.length; i++) {
-                Position position = axis.positions[i];
+            for (Position position : axis.positions) {
                 final Element tupleXml = document.createElement("tuple");
                 tuplesXml.appendChild(tupleXml);
-                for (int j = 0; j < position.members.length; j++) {
-                    final Member member = position.members[j];
+                for (final Member member : position.members) {
                     final Element memberXml = document.createElement("member");
                     tupleXml.appendChild(memberXml);
                     final Text textXml = document.createTextNode(
-                            member.getUniqueName());
+                        member.getUniqueName());
                     memberXml.appendChild(textXml);
                 }
             }
@@ -345,7 +338,7 @@ class ResultComparator {
     private void _assertEquals(String message, int expected, int actual)
     {
         if (expected != actual) {
-            _failNotEquals(message, new Integer(expected), new Integer(actual));
+            _failNotEquals(message, expected, actual);
         }
     }
 
@@ -367,11 +360,11 @@ class ResultComparator {
             String message, double expected, double actual, double delta) {
         if (Double.isInfinite(expected)) {
             if (!(expected == actual)) {
-                _failNotEquals(message, new Double(expected), new Double(actual));
+                _failNotEquals(message, expected, actual);
             }
         } else if (!(Math.abs(expected-actual) <= delta)) {
             // Because comparison with NaN always returns false
-            _failNotEquals(message, new Double(expected), new Double(actual));
+            _failNotEquals(message, expected, actual);
         }
     }
 
@@ -481,8 +474,6 @@ class ResultComparator {
             String expectedValue = cellList.item(colIdx).getFirstChild().getNodeValue();
             compareCell(coord, expectedValue, cell);
         }
-
-        return;
     }
 
     private void compareRowsAndColumns(NodeList expectedRows, Axis[] axes) {
@@ -537,7 +528,7 @@ class ResultComparator {
     }
 
     private String getErrorMessage(String s, int[] coord) {
-        StringBuffer errorAddr = new StringBuffer();
+        StringBuilder errorAddr = new StringBuilder();
         errorAddr.append(s);
 
         errorAddr.append(" (");

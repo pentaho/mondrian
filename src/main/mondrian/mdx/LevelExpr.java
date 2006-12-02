@@ -53,7 +53,7 @@ public class LevelExpr extends ExpBase implements Exp {
         return LevelType.forLevel(level);
     }
 
-    public Object clone() {
+    public LevelExpr clone() {
         return new LevelExpr(level);
     }
 

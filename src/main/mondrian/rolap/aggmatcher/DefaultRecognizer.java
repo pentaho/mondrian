@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -53,8 +53,7 @@ class DefaultRecognizer extends Recognizer {
      * Get the Matcher to be used to match columns to be ignored.
      */
     protected Recognizer.Matcher getIgnoreMatcher() {
-        Recognizer.Matcher matcher = getRules().getIgnoreMatcher();
-        return matcher;
+        return getRules().getIgnoreMatcher();
     }
 
     /**
@@ -75,11 +74,10 @@ class DefaultRecognizer extends Recognizer {
         String measureColumnName = factUsage.getColumn().getName();
         String aggregateName = factUsage.getAggregator().getName();
 
-        Recognizer.Matcher matcher =
-            getRules().getMeasureMatcher(measureName,
-                                    measureColumnName,
-                                    aggregateName);
-        return matcher;
+        return getRules().getMeasureMatcher(
+            measureName,
+            measureColumnName,
+            aggregateName);
     }
 
     /**
@@ -99,7 +97,7 @@ class DefaultRecognizer extends Recognizer {
         msgRecorder.pushContextName("DefaultRecognizer.checkMeasures");
 
         try {
-            int nosOfMeasureColumns = 0;
+            int measureCountCount = 0;
 
             for (Iterator it =
                     dbFactTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
@@ -109,11 +107,8 @@ class DefaultRecognizer extends Recognizer {
 
                 Matcher matcher = getMeasureMatcher(factUsage);
 
-                int nosMatched = 0;
-                for (Iterator aggit = aggTable.getColumns(); aggit.hasNext();) {
-                    JdbcSchema.Table.Column aggColumn =
-                        (JdbcSchema.Table.Column) aggit.next();
-
+                int matchCount = 0;
+                for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
                     // if marked as ignore, then do not consider
                     if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
                         continue;
@@ -122,27 +117,26 @@ class DefaultRecognizer extends Recognizer {
                     if (matcher.matches(aggColumn.getName())) {
                         makeMeasure(factUsage, aggColumn);
 
-                        nosOfMeasureColumns++;
-                        nosMatched++;
+                        measureCountCount++;
+                        matchCount++;
                     }
                 }
-                if (nosMatched > 1) {
 
+                if (matchCount > 1) {
                     String msg = mres.AggMultipleMatchingMeasure.str(
-                            msgRecorder.getContext(),
-                            aggTable.getName(),
-                            dbFactTable.getName(),
-                            new Integer(nosMatched),
-                            factUsage.getSymbolicName(),
-                            factUsage.getColumn().getName(),
-                            factUsage.getAggregator().getName()
-                        );
+                        msgRecorder.getContext(),
+                        aggTable.getName(),
+                        dbFactTable.getName(),
+                        matchCount,
+                        factUsage.getSymbolicName(),
+                        factUsage.getColumn().getName(),
+                        factUsage.getAggregator().getName());
                     msgRecorder.reportError(msg);
 
                     returnValue = false;
                 }
             }
-            return nosOfMeasureColumns;
+            return measureCountCount;
 
         } finally {
             msgRecorder.popContextName();
@@ -164,11 +158,8 @@ class DefaultRecognizer extends Recognizer {
         Recognizer.Matcher matcher =
             getRules().getForeignKeyMatcher(factColumn.getName());
 
-        int nosMatched = 0;
-        for (Iterator aggit = aggTable.getColumns(); aggit.hasNext(); ) {
-            JdbcSchema.Table.Column aggColumn =
-                (JdbcSchema.Table.Column) aggit.next();
-
+        int matchCount = 0;
+        for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
             // if marked as ignore, then do not consider
             if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
                 continue;
@@ -176,10 +167,10 @@ class DefaultRecognizer extends Recognizer {
 
             if (matcher.matches(aggColumn.getName())) {
                 makeForeignKey(factUsage, aggColumn, null);
-                nosMatched++;
+                matchCount++;
             }
         }
-        return nosMatched;
+        return matchCount;
     }
 
     /**
@@ -207,17 +198,15 @@ class DefaultRecognizer extends Recognizer {
             Recognizer.Matcher matcher = getRules().getLevelMatcher(
                 usagePrefix, hierName, levelName, levelColumnName);
 
-            for (Iterator aggit = aggTable.getColumns(); aggit.hasNext(); ) {
-                JdbcSchema.Table.Column aggColumn =
-                    (JdbcSchema.Table.Column) aggit.next();
-
+            for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
                 if (matcher.matches(aggColumn.getName())) {
-                    makeLevel(aggColumn,
-                              hierarchy,
-                              hierarchyUsage,
-                              getColumnName(level.getKeyExp()),
-                              getColumnName(level.getKeyExp()),
-                              level.getName());
+                    makeLevel(
+                        aggColumn,
+                        hierarchy,
+                        hierarchyUsage,
+                        getColumnName(level.getKeyExp()),
+                        getColumnName(level.getKeyExp()),
+                        level.getName());
                     return true;
                 }
             }

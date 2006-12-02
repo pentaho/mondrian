@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -81,14 +81,18 @@ public interface MemberSource {
      *
      * @return {@link List} of {@link RolapMember}s
      */
-    List getRootMembers();
+    List<RolapMember> getRootMembers();
+
     /**
      * Writes all children <code>parentMember</code> to <code>children</code>.
      *
      * <p>If this object {@link #setCache supports cache-writeback}, also
      * writes these members to the cache.
      */
-    void getMemberChildren(RolapMember parentMember, List children);
+    void getMemberChildren(
+        RolapMember parentMember,
+        List<RolapMember> children);
+
     /**
      * Returns all members which are a child of one of the members in
      * <code>parentMembers</code>, sorted by ordinal.
@@ -96,11 +100,15 @@ public interface MemberSource {
      * <p>If this object {@link #setCache supports cache-writeaback}, also
      * writes these members to the cache.
      */
-    void getMemberChildren(List parentMembers, List children);
+    void getMemberChildren(
+        List<RolapMember> parentMembers,
+        List<RolapMember> children);
+
     /**
      * Returns an estimate of number of members in this hierarchy.
      */
     int getMemberCount();
+
     /**
      * Finds a member based upon its unique name.
      */

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -37,7 +37,7 @@ public abstract class ConnectionBase implements Connection {
         String catalogName = getCatalogName();
         if (catalogName != null) {
             int len = s.length() + catalogName.length() + 32;
-            StringBuffer buf = new StringBuffer(len);
+            StringBuilder buf = new StringBuilder(len);
             buf.append(s);
             if (!s.endsWith(";")) {
                 buf.append(';');
@@ -58,7 +58,7 @@ public abstract class ConnectionBase implements Connection {
         boolean debug = false;
         if (getLogger().isDebugEnabled()) {
             //debug = true;
-            StringBuffer buf = new StringBuffer(256);
+            StringBuilder buf = new StringBuilder(256);
             buf.append(Util.nl);
             buf.append(s);
             getLogger().debug(buf.toString());
@@ -77,7 +77,7 @@ public abstract class ConnectionBase implements Connection {
         boolean debug = false;
         if (getLogger().isDebugEnabled()) {
             //debug = true;
-            StringBuffer buf = new StringBuffer(256);
+            StringBuilder buf = new StringBuilder(256);
             buf.append(Util.nl);
             buf.append(s);
             getLogger().debug(buf.toString());

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2002 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -56,10 +56,7 @@ import mondrian.olap.Schema;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Syntax;
 import mondrian.olap.Util;
-import mondrian.olap.fun.FunTableImpl;
-import mondrian.olap.fun.GlobalFunTable;
-import mondrian.olap.fun.Resolver;
-import mondrian.olap.fun.UdfResolver;
+import mondrian.olap.fun.*;
 import mondrian.olap.type.MemberType;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.StringType;
@@ -104,18 +101,18 @@ public class RolapSchema implements Schema {
     /**
      * Holds cubes in this schema.
      */
-    private final Map mapNameToCube;
+    private final Map<String, RolapCube> mapNameToCube;
     /**
      * Maps {@link String shared hierarchy name} to {@link MemberReader}.
      * Shared between all statements which use this connection.
      */
-    private final Map mapSharedHierarchyToReader;
+    private final Map<String, MemberReader> mapSharedHierarchyToReader;
 
     /**
      * Maps {@link String names of shared hierarchies} to {@link
      * RolapHierarchy the canonical instance of those hierarchies}.
      */
-    private final Map mapSharedHierarchyNameToHierarchy;
+    private final Map<String, RolapHierarchy> mapSharedHierarchyNameToHierarchy;
     /**
      * The default role for connections to this schema.
      */
@@ -136,11 +133,11 @@ public class RolapSchema implements Schema {
     /**
      * Maps {@link String names of roles} to {@link Role roles with those names}.
      */
-    private final Map mapNameToRole;
+    private final Map<String, Role> mapNameToRole;
     /**
      * Maps {@link String names of sets} to {@link NamedSet named sets}.
      */
-    private final Map mapNameToSet = new HashMap();
+    private final Map<String, NamedSet> mapNameToSet = new HashMap<String, NamedSet>();
     /**
      * Table containing all standard MDX functions, plus user-defined functions
      * for this schema.
@@ -149,7 +146,9 @@ public class RolapSchema implements Schema {
 
     private MondrianDef.Schema xmlSchema;
 
-    final List parameterList = new ArrayList();
+    final List<RolapSchemaParameter > parameterList =
+        new ArrayList<RolapSchemaParameter >();
+
     private Date schemaLoadDate;
 
     /**
@@ -173,10 +172,10 @@ public class RolapSchema implements Schema {
         this.internalConnection =
             new RolapConnection(connectInfo, this, dataSource);
 
-        this.mapSharedHierarchyNameToHierarchy = new HashMap();
-        this.mapSharedHierarchyToReader = new HashMap();
-        this.mapNameToCube = new HashMap();
-        this.mapNameToRole = new HashMap();
+        this.mapSharedHierarchyNameToHierarchy = new HashMap<String, RolapHierarchy>();
+        this.mapSharedHierarchyToReader = new HashMap<String, MemberReader>();
+        this.mapNameToCube = new HashMap<String, RolapCube>();
+        this.mapNameToRole = new HashMap<String, Role>();
         this.aggTableManager = new AggTableManager(this);
     }
 
@@ -337,9 +336,9 @@ public class RolapSchema implements Schema {
         // Validate user-defined functions. Must be done before we validate
         // calculated members, because calculated members will need to use the
         // function table.
-        final Map mapNameToUdf = new HashMap();
-        for (int i = 0; i < xmlSchema.userDefinedFunctions.length; i++) {
-            MondrianDef.UserDefinedFunction udf = xmlSchema.userDefinedFunctions[i];
+        final Map<String, UserDefinedFunction> mapNameToUdf =
+            new HashMap<String, UserDefinedFunction>();
+        for (MondrianDef.UserDefinedFunction udf : xmlSchema.userDefinedFunctions) {
             defineFunction(mapNameToUdf, udf.name, udf.className);
         }
         final RolapSchemaFunctionTable funTable =
@@ -348,19 +347,17 @@ public class RolapSchema implements Schema {
         this.funTable = funTable;
 
         // Validate public dimensions.
-        for (int i = 0; i < xmlSchema.dimensions.length; i++) {
-            MondrianDef.Dimension xmlDimension = xmlSchema.dimensions[i];
+        for (MondrianDef.Dimension xmlDimension : xmlSchema.dimensions) {
             if (xmlDimension.foreignKey != null) {
                 throw MondrianResource.instance()
-                        .PublicDimensionMustNotHaveForeignKey.ex(
-                                xmlDimension.name);
+                    .PublicDimensionMustNotHaveForeignKey.ex(
+                    xmlDimension.name);
             }
         }
 
         // Create parameters.
-        Set parameterNames = new HashSet();
-        for (int i = 0; i < xmlSchema.parameters.length; i++) {
-            MondrianDef.Parameter xmlParameter = xmlSchema.parameters[i];
+        Set<String> parameterNames = new HashSet<String>();
+        for (MondrianDef.Parameter xmlParameter : xmlSchema.parameters) {
             String name = xmlParameter.name;
             if (!parameterNames.add(name)) {
                 throw MondrianResource.instance().DuplicateSchemaParameter.ex(
@@ -375,7 +372,7 @@ public class RolapSchema implements Schema {
                 type = new MemberType(null, null, null, null);
             }
             final String description = xmlParameter.description;
-            final boolean modifiable = xmlParameter.modifiable.booleanValue();
+            final boolean modifiable = xmlParameter.modifiable;
             String defaultValue = xmlParameter.defaultValue;
             RolapSchemaParameter param =
                 new RolapSchemaParameter(
@@ -384,8 +381,7 @@ public class RolapSchema implements Schema {
         }
 
         // Create cubes.
-        for (int i = 0; i < xmlSchema.cubes.length; i++) {
-            MondrianDef.Cube xmlCube = xmlSchema.cubes[i];
+        for (MondrianDef.Cube xmlCube : xmlSchema.cubes) {
             if (xmlCube.isEnabled()) {
                 RolapCube cube = new RolapCube(this, xmlSchema, xmlCube, true);
                 cube.validate();
@@ -393,8 +389,7 @@ public class RolapSchema implements Schema {
         }
 
         // Create virtual cubes.
-        for (int i = 0; i < xmlSchema.virtualCubes.length; i++) {
-            MondrianDef.VirtualCube xmlVirtualCube = xmlSchema.virtualCubes[i];
+        for (MondrianDef.VirtualCube xmlVirtualCube : xmlSchema.virtualCubes) {
             if (xmlVirtualCube.isEnabled()) {
                 RolapCube cube =
                     new RolapCube(this, xmlSchema, xmlVirtualCube, true);
@@ -403,14 +398,12 @@ public class RolapSchema implements Schema {
         }
 
         // Create named sets.
-        for (int i = 0; i < xmlSchema.namedSets.length; i++) {
-            MondrianDef.NamedSet xmlNamedSet = xmlSchema.namedSets[i];
+        for (MondrianDef.NamedSet xmlNamedSet : xmlSchema.namedSets) {
             mapNameToSet.put(xmlNamedSet.name, createNamedSet(xmlNamedSet));
         }
 
         // Create roles.
-        for (int i = 0; i < xmlSchema.roles.length; i++) {
-            MondrianDef.Role xmlRole = xmlSchema.roles[i];
+        for (MondrianDef.Role xmlRole : xmlSchema.roles) {
             Role role = createRole(xmlRole);
             mapNameToRole.put(xmlRole.name, role);
         }
@@ -442,30 +435,25 @@ public class RolapSchema implements Schema {
 
     private Role createRole(MondrianDef.Role xmlRole) {
         Role role = new Role();
-        for (int i = 0; i < xmlRole.schemaGrants.length; i++) {
-            MondrianDef.SchemaGrant schemaGrant = xmlRole.schemaGrants[i];
+        for (MondrianDef.SchemaGrant schemaGrant : xmlRole.schemaGrants) {
             role.grant(this, getAccess(schemaGrant.access, schemaAllowed));
-            for (int j = 0; j < schemaGrant.cubeGrants.length; j++) {
-                MondrianDef.CubeGrant cubeGrant = schemaGrant.cubeGrants[j];
-                Cube cube = lookupCube(cubeGrant.cube);
+            for (MondrianDef.CubeGrant cubeGrant : schemaGrant.cubeGrants) {
+                RolapCube cube = lookupCube(cubeGrant.cube);
                 if (cube == null) {
                     throw Util.newError("Unknown cube '" + cube + "'");
                 }
                 role.grant(cube, getAccess(cubeGrant.access, cubeAllowed));
                 final SchemaReader schemaReader = cube.getSchemaReader(null);
-                for (int k = 0; k < cubeGrant.dimensionGrants.length; k++) {
-                    MondrianDef.DimensionGrant dimensionGrant =
-                        cubeGrant.dimensionGrants[k];
+                for (MondrianDef.DimensionGrant dimensionGrant : cubeGrant.dimensionGrants) {
                     Dimension dimension = (Dimension)
                         schemaReader.lookupCompound(
                             cube, Util.explode(dimensionGrant.dimension), true,
                             Category.Dimension);
-                    role.grant(dimension,
+                    role.grant(
+                        dimension,
                         getAccess(dimensionGrant.access, dimensionAllowed));
                 }
-                for (int k = 0; k < cubeGrant.hierarchyGrants.length; k++) {
-                    MondrianDef.HierarchyGrant hierarchyGrant =
-                        cubeGrant.hierarchyGrants[k];
+                for (MondrianDef.HierarchyGrant hierarchyGrant : cubeGrant.hierarchyGrants) {
                     Hierarchy hierarchy = (Hierarchy)
                         schemaReader.lookupCompound(
                             cube, Util.explode(hierarchyGrant.hierarchy), true,
@@ -475,7 +463,8 @@ public class RolapSchema implements Schema {
                     Level topLevel = null;
                     if (hierarchyGrant.topLevel != null) {
                         if (hierarchyAccess != Access.CUSTOM) {
-                            throw Util.newError("You may only specify 'topLevel' if access='custom'");
+                            throw Util.newError(
+                                "You may only specify 'topLevel' if access='custom'");
                         }
                         topLevel = (Level) schemaReader.lookupCompound(
                             cube, Util.explode(hierarchyGrant.topLevel), true,
@@ -484,23 +473,33 @@ public class RolapSchema implements Schema {
                     Level bottomLevel = null;
                     if (hierarchyGrant.bottomLevel != null) {
                         if (hierarchyAccess != Access.CUSTOM) {
-                            throw Util.newError("You may only specify 'bottomLevel' if access='custom'");
+                            throw Util.newError(
+                                "You may only specify 'bottomLevel' if access='custom'");
                         }
                         bottomLevel = (Level) schemaReader.lookupCompound(
                             cube, Util.explode(hierarchyGrant.bottomLevel),
                             true, Category.Level);
                     }
-                    role.grant(hierarchy, hierarchyAccess, topLevel, bottomLevel);
-                    for (int m = 0; m < hierarchyGrant.memberGrants.length; m++) {
+                    role.grant(
+                        hierarchy, hierarchyAccess, topLevel, bottomLevel);
+                    for (MondrianDef.MemberGrant memberGrant : hierarchyGrant.memberGrants) {
                         if (hierarchyAccess != Access.CUSTOM) {
-                            throw Util.newError("You may only specify <MemberGrant> if <Hierarchy> has access='custom'");
+                            throw Util.newError(
+                                "You may only specify <MemberGrant> if <Hierarchy> has access='custom'");
                         }
-                        MondrianDef.MemberGrant memberGrant = hierarchyGrant.memberGrants[m];
-                        Member member = schemaReader.getMemberByUniqueName(Util.explode(memberGrant.member),true);
+                        Member member = schemaReader.getMemberByUniqueName(
+                            Util.explode(memberGrant.member), true);
                         if (member.getHierarchy() != hierarchy) {
-                            throw Util.newError("Member '" + member + "' is not in hierarchy '" + hierarchy + "'");
+                            throw Util.newError(
+                                "Member '" +
+                                    member +
+                                    "' is not in hierarchy '" +
+                                    hierarchy +
+                                    "'");
                         }
-                        role.grant(member, getAccess(memberGrant.access, memberAllowed));
+                        role.grant(
+                            member,
+                            getAccess(memberGrant.access, memberAllowed));
                     }
                 }
             }
@@ -511,8 +510,8 @@ public class RolapSchema implements Schema {
 
     private int getAccess(String accessString, int[] allowed) {
         final int access = Access.instance().getOrdinal(accessString);
-        for (int i = 0; i < allowed.length; i++) {
-            if (access == allowed[i]) {
+        for (int anAllowed : allowed) {
+            if (access == anAllowed) {
                 return access; // value is ok
             }
         }
@@ -520,7 +519,7 @@ public class RolapSchema implements Schema {
     }
 
     public Dimension createDimension(Cube cube, String xml) {
-        MondrianDef.CubeDimension xmlDimension = null;
+        MondrianDef.CubeDimension xmlDimension;
         try {
             final Parser xmlParser = XOMUtil.createDefaultParser();
             final DOMWrapper def = xmlParser.parse(xml);
@@ -542,7 +541,7 @@ public class RolapSchema implements Schema {
 
     public Cube createCube(String xml) {
 
-        RolapCube cube = null;
+        RolapCube cube;
         try {
             final Parser xmlParser = XOMUtil.createDefaultParser();
             final DOMWrapper def = xmlParser.parse(xml);
@@ -606,7 +605,8 @@ public class RolapSchema implements Schema {
 
         private static Pool pool = new Pool();
 
-        private Map mapUrlToSchema = new HashMap();
+        private Map<String, SoftReference<RolapSchema>> mapUrlToSchema =
+            new HashMap<String, SoftReference<RolapSchema>>();
 
 
         private Pool() {
@@ -713,11 +713,11 @@ public class RolapSchema implements Schema {
                 try {
                     final URL url = new URL(catalogName);
 
-                    final Class clazz = Class.forName(dynProcName);
-                    final Constructor ctor = clazz.getConstructor(new Class[0]);
-                    final DynamicSchemaProcessor dynProc =
-                        (DynamicSchemaProcessor)
-                            ctor.newInstance(new Object[0]);
+                    final Class<DynamicSchemaProcessor> clazz =
+                        (Class<DynamicSchemaProcessor>) Class.forName(dynProcName);
+                    final Constructor<DynamicSchemaProcessor> ctor =
+                        clazz.getConstructor();
+                    final DynamicSchemaProcessor dynProc = ctor.newInstance();
                     catalogStr = dynProc.processSchema(url, connectInfo);
                     hadDynProc = true;
 
@@ -757,10 +757,10 @@ public class RolapSchema implements Schema {
                 }
 
                 if (md5Bytes != null) {
-                    SoftReference ref =
-                        (SoftReference) mapUrlToSchema.get(md5Bytes);
+                    SoftReference<RolapSchema> ref =
+                        mapUrlToSchema.get(md5Bytes);
                     if (ref != null) {
-                        schema = (RolapSchema) ref.get();
+                        schema = ref.get();
                         if (schema == null) {
                             // clear out the reference since schema is null
                             mapUrlToSchema.remove(key);
@@ -782,7 +782,7 @@ public class RolapSchema implements Schema {
                         connectInfo,
                         dataSource);
 
-                    SoftReference ref = new SoftReference(schema);
+                    SoftReference<RolapSchema> ref = new SoftReference<RolapSchema>(schema);
                     if (md5Bytes != null) {
                         mapUrlToSchema.put(md5Bytes, ref);
                     }
@@ -814,9 +814,9 @@ public class RolapSchema implements Schema {
                     dataSource);
 
             } else {
-                SoftReference ref = (SoftReference) mapUrlToSchema.get(key);
+                SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);
                 if (ref != null) {
-                    schema = (RolapSchema) ref.get();
+                    schema = ref.get();
                     if (schema == null) {
                         // clear out the reference since schema is null
                         mapUrlToSchema.remove(key);
@@ -840,7 +840,7 @@ public class RolapSchema implements Schema {
                             dataSource);
                     }
 
-                    mapUrlToSchema.put(key, new SoftReference(schema));
+                    mapUrlToSchema.put(key, new SoftReference<RolapSchema>(schema));
 
                     if (LOGGER.isDebugEnabled()) {
                         String msg = "Pool.get: create schema \"" +
@@ -900,9 +900,9 @@ public class RolapSchema implements Schema {
         }
 
         private void remove(String key) {
-            SoftReference ref = (SoftReference) mapUrlToSchema.get(key);
+            SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);
             if (ref != null) {
-                RolapSchema schema = (RolapSchema) ref.get();
+                RolapSchema schema = ref.get();
                 if (schema != null) {
                     if (schema.md5Bytes != null) {
                         mapUrlToSchema.remove(schema.md5Bytes);
@@ -919,11 +919,9 @@ public class RolapSchema implements Schema {
                 LOGGER.debug(msg);
             }
 
-            Iterator it = mapUrlToSchema.values().iterator();
-            while (it.hasNext()) {
-                SoftReference ref = (SoftReference) it.next();
+            for (SoftReference<RolapSchema> ref : mapUrlToSchema.values()) {
                 if (ref != null) {
-                    RolapSchema schema = (RolapSchema) ref.get();
+                    RolapSchema schema = ref.get();
                     if (schema != null) {
                         schema.finalCleanUp();
                     }
@@ -939,12 +937,12 @@ public class RolapSchema implements Schema {
          *
          * @return Iterator over RolapSchemas.
          */
-        synchronized Iterator getRolapSchemas() {
-            List list = new ArrayList();
-            for (Iterator it = mapUrlToSchema.values().iterator();
+        synchronized Iterator<RolapSchema> getRolapSchemas() {
+            List<RolapSchema> list = new ArrayList<RolapSchema>();
+            for (Iterator<SoftReference<RolapSchema>> it = mapUrlToSchema.values().iterator();
                     it.hasNext(); ) {
-                SoftReference ref = (SoftReference) it.next();
-                RolapSchema schema = (RolapSchema) ref.get();
+                SoftReference<RolapSchema> ref = it.next();
+                RolapSchema schema = ref.get();
                 // Schema is null if already garbage collected
                 if (schema != null) {
                     list.add(schema);
@@ -974,7 +972,7 @@ public class RolapSchema implements Schema {
                                       final String connectionKey,
                                       final String jdbcUser,
                                       final String dataSourceStr) {
-            final StringBuffer buf = new StringBuffer(100);
+            final StringBuilder buf = new StringBuilder(100);
 
             appendIfNotNull(buf, catalogName);
             appendIfNotNull(buf, connectionKey);
@@ -990,7 +988,7 @@ public class RolapSchema implements Schema {
          */
         private static String makeKey(final String catalogName,
                                       final DataSource dataSource) {
-            final StringBuffer buf = new StringBuffer(100);
+            final StringBuilder buf = new StringBuilder(100);
 
             appendIfNotNull(buf, catalogName);
             buf.append('.');
@@ -1001,7 +999,7 @@ public class RolapSchema implements Schema {
             return key;
         }
 
-        private static void appendIfNotNull(StringBuffer buf, String s) {
+        private static void appendIfNotNull(StringBuilder buf, String s) {
             if (s != null) {
                 if (buf.length() > 0) {
                     buf.append('.');
@@ -1030,7 +1028,7 @@ public class RolapSchema implements Schema {
     public static void clearCache() {
         Pool.instance().clear();
     }
-    public static Iterator getRolapSchemas() {
+    public static Iterator<RolapSchema> getRolapSchemas() {
         return Pool.instance().getRolapSchemas();
     }
     public static boolean cacheContains(RolapSchema rolapSchema) {
@@ -1038,7 +1036,7 @@ public class RolapSchema implements Schema {
     }
 
     public Cube lookupCube(final String cube, final boolean failIfNotFound) {
-        Cube mdxCube = lookupCube(cube);
+        RolapCube mdxCube = lookupCube(cube);
         if (mdxCube == null && failIfNotFound) {
             throw MondrianResource.instance().MdxCubeNotFound.ex(cube);
         }
@@ -1049,8 +1047,8 @@ public class RolapSchema implements Schema {
      * Finds a cube called 'cube' in the current catalog, or return null if no
      * cube exists.
      */
-    protected Cube lookupCube(final String cubeName) {
-        return (Cube) mapNameToCube.get(Util.normalizeName(cubeName));
+    protected RolapCube lookupCube(final String cubeName) {
+        return mapNameToCube.get(Util.normalizeName(cubeName));
     }
 
     /**
@@ -1062,17 +1060,14 @@ public class RolapSchema implements Schema {
             final String calcMemberName,
             final String cubeName) {
         String nameParts[] = Util.explode(calcMemberName);
-        for (int c = 0; c < xmlSchema.cubes.length; c++) {
-            final MondrianDef.Cube cube = xmlSchema.cubes[c];
+        for (final MondrianDef.Cube cube : xmlSchema.cubes) {
             if (Util.equalName(cube.name, cubeName)) {
-                for (int m = 0; m < cube.calculatedMembers.length; m++) {
-                    final MondrianDef.CalculatedMember calculatedMember =
-                            cube.calculatedMembers[m];
+                for (final MondrianDef.CalculatedMember calculatedMember : cube.calculatedMembers) {
                     if (Util.equalName(
-                            calculatedMember.dimension, nameParts[0]) &&
-                            Util.equalName(
-                                    calculatedMember.name,
-                                    nameParts[nameParts.length - 1])) {
+                        calculatedMember.dimension, nameParts[0]) &&
+                        Util.equalName(
+                            calculatedMember.name,
+                            nameParts[nameParts.length - 1])) {
                         return calculatedMember;
                     }
                 }
@@ -1081,10 +1076,9 @@ public class RolapSchema implements Schema {
         return null;
     }
 
-    public List getCubesWithStar(RolapStar star) {
-        List list = new ArrayList();
-        for (Iterator it = mapNameToCube.values().iterator(); it.hasNext(); ) {
-            RolapCube cube = (RolapCube) it.next();
+    public List<RolapCube> getCubesWithStar(RolapStar star) {
+        List<RolapCube> list = new ArrayList<RolapCube>();
+        for (RolapCube cube : mapNameToCube.values()) {
             if (star == cube.getStar()) {
                 list.add(cube);
             }
@@ -1096,30 +1090,31 @@ public class RolapSchema implements Schema {
      * Adds a cube to the cube name map.
      * @see #lookupCube(String)
      */
-    protected void addCube(final Cube cube) {
-        this.mapNameToCube.put(
+    protected void addCube(final RolapCube cube) {
+        mapNameToCube.put(
                 Util.normalizeName(cube.getName()),
                 cube);
     }
 
     public boolean removeCube(final String cubeName) {
-        final Cube cube =
-                (Cube) this.mapNameToCube.remove(Util.normalizeName(cubeName));
+        final RolapCube cube =
+            mapNameToCube.remove(Util.normalizeName(cubeName));
         return cube != null;
     }
 
     public Cube[] getCubes() {
-        return (Cube[]) mapNameToCube.values().toArray(new RolapCube[0]);
+        Collection<RolapCube> cubes = mapNameToCube.values();
+        return cubes.toArray(new RolapCube[cubes.size()]);
     }
 
-    public Iterator getCubeIterator() {
-        return mapNameToCube.values().iterator();
+    public List<RolapCube> getCubeList() {
+        return new ArrayList<RolapCube>(mapNameToCube.values());
     }
 
     public Hierarchy[] getSharedHierarchies() {
-        return (RolapHierarchy[])
-                mapSharedHierarchyNameToHierarchy.values().toArray(
-                        new RolapHierarchy[0]);
+        Collection<RolapHierarchy> hierarchies =
+            mapSharedHierarchyNameToHierarchy.values();
+        return hierarchies.toArray(new RolapHierarchy[hierarchies.size()]);
     }
 
     RolapHierarchy getSharedHierarchy(final String name) {
@@ -1138,18 +1133,18 @@ System.out.println("RolapSchema.getSharedHierarchy: "+
         }
         return rh;
 */
-        return (RolapHierarchy) mapSharedHierarchyNameToHierarchy.get(name);
+        return mapSharedHierarchyNameToHierarchy.get(name);
     }
 
     public NamedSet getNamedSet(String name) {
-        return (NamedSet) mapNameToSet.get(name);
+        return mapNameToSet.get(name);
     }
 
     public Role lookupRole(final String role) {
-        return (Role) mapNameToRole.get(role);
+        return mapNameToRole.get(role);
     }
 
-    public Set roleNames() {
+    public Set<String> roleNames() {
         return mapNameToRole.keySet();
     }
 
@@ -1158,7 +1153,7 @@ System.out.println("RolapSchema.getSharedHierarchy: "+
     }
 
     public Parameter[] getParameters() {
-        return (Parameter[]) parameterList.toArray(
+        return parameterList.toArray(
                 new Parameter[parameterList.size()]);
     }
 
@@ -1173,11 +1168,11 @@ System.out.println("RolapSchema.getSharedHierarchy: "+
      *   (otherwise it is a user-error).
      */
     private void defineFunction(
-            Map mapNameToUdf,
+            Map<String, UserDefinedFunction> mapNameToUdf,
             String name,
             String className) {
         // Lookup class.
-        final Class klass;
+        final Class<?> klass;
         try {
             klass = Class.forName(className);
         } catch (ClassNotFoundException e) {
@@ -1185,11 +1180,11 @@ System.out.println("RolapSchema.getSharedHierarchy: "+
                     className);
         }
         // Find a constructor.
-        Constructor constructor;
+        Constructor<?> constructor;
         Object[] args = {};
         // 1. Look for a constructor "public Udf(String name)".
         try {
-            constructor = klass.getConstructor(new Class[] {String.class});
+            constructor = klass.getConstructor(String.class);
             if (Modifier.isPublic(constructor.getModifiers())) {
                 args = new Object[] {name};
             } else {
@@ -1201,7 +1196,7 @@ System.out.println("RolapSchema.getSharedHierarchy: "+
         // 2. Otherwise, look for a constructor "public Udf()".
         if (constructor == null) {
             try {
-                constructor = klass.getConstructor(new Class[] {});
+                constructor = klass.getConstructor();
                 if (Modifier.isPublic(constructor.getModifiers())) {
                     args = new Object[] {};
                 } else {
@@ -1236,8 +1231,7 @@ System.out.println("RolapSchema.getSharedHierarchy: "+
         // Validate function.
         validateFunction(udf);
         // Check for duplicate.
-        UserDefinedFunction existingUdf =
-                (UserDefinedFunction) mapNameToUdf.get(name);
+        UserDefinedFunction existingUdf = mapNameToUdf.get(name);
         if (existingUdf != null) {
             throw MondrianResource.instance().UdfDuplicateName.ex(name);
         }
@@ -1299,7 +1293,7 @@ System.out.println("RolapSchema.getSharedHierarchy: "+
 
         MemberReader reader;
         if (sharedName != null) {
-            reader = (MemberReader) mapSharedHierarchyToReader.get(sharedName);
+            reader = mapSharedHierarchyToReader.get(sharedName);
             if (reader == null) {
                 reader = createMemberReader(hierarchy, memberReaderClass);
                 // share, for other uses of the same shared hierarchy
@@ -1317,9 +1311,9 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
                 mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
 }
 */
-if (! mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
-    mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
-}
+                if (! mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
+                    mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
+                }
                 //mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
             } else {
 //                final RolapHierarchy sharedHierarchy = (RolapHierarchy)
@@ -1346,14 +1340,14 @@ if (! mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
             final String memberReaderClass) {
 
         if (memberReaderClass != null) {
-            Exception e2 = null;
+            Exception e2;
             try {
                 Properties properties = null;
-                Class clazz = Class.forName(memberReaderClass);
-                Constructor constructor = clazz.getConstructor(new Class[] {
-                    RolapHierarchy.class, Properties.class});
-                Object o = constructor.newInstance(
-                    new Object[] {hierarchy, properties});
+                Class<?> clazz = Class.forName(memberReaderClass);
+                Constructor<?> constructor = clazz.getConstructor(
+                    RolapHierarchy.class,
+                    Properties.class);
+                Object o = constructor.newInstance(hierarchy, properties);
                 if (o instanceof MemberReader) {
                     return (MemberReader) o;
                 } else if (o instanceof MemberSource) {
@@ -1396,7 +1390,7 @@ if (! mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
 
             return (memberCount > largeDimensionThreshold)
                 ? new SmartMemberReader(source)
-                : (MemberReader) new CacheMemberReader(source);
+                : new CacheMemberReader(source);
         }
     }
 
@@ -1425,15 +1419,14 @@ if (! mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
 
     private RolapStar makeRolapStar(final MondrianDef.Relation fact) {
         DataSource dataSource = getInternalConnection().getDataSource();
-        RolapStar star = new RolapStar(this, dataSource, fact);
-        return star;
+        return new RolapStar(this, dataSource, fact);
     }
 
     /**
      * <code>RolapStarRegistry</code> is a registry for {@link RolapStar}s.
      */
     class RolapStarRegistry {
-        private final Map stars = new HashMap();
+        private final Map<String, RolapStar> stars = new HashMap<String, RolapStar>();
 
         RolapStarRegistry() {
         }
@@ -1445,7 +1438,7 @@ if (! mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
          */
         synchronized RolapStar getOrCreateStar(final MondrianDef.Relation fact) {
             String factTableName = fact.toString();
-            RolapStar star = (RolapStar) stars.get(factTableName);
+            RolapStar star = stars.get(factTableName);
             if (star == null) {
                 star = makeRolapStar(fact);
                 stars.put(factTableName, star);
@@ -1453,10 +1446,10 @@ if (! mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
             return star;
         }
         synchronized RolapStar getStar(final String factTableName) {
-            return (RolapStar) stars.get(factTableName);
+            return stars.get(factTableName);
         }
-        synchronized Iterator getStars() {
-            return stars.values().iterator();
+        synchronized Collection<RolapStar> getStars() {
+            return stars.values();
         }
     }
 
@@ -1471,32 +1464,27 @@ if (! mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
      * schema, plus all of the standard functions.
      */
     class RolapSchemaFunctionTable extends FunTableImpl {
-        private final List udfList;
+        private final List<UserDefinedFunction> udfList;
 
-        RolapSchemaFunctionTable(Collection udfs) {
-            udfList = new ArrayList(udfs);
+        RolapSchemaFunctionTable(Collection<UserDefinedFunction> udfs) {
+            udfList = new ArrayList<UserDefinedFunction>(udfs);
         }
 
         protected void defineFunctions() {
             final FunTable globalFunTable = GlobalFunTable.instance();
-            final List reservedWords = globalFunTable.getReservedWords();
-            for (int i = 0; i < reservedWords.size(); i++) {
-                String reservedWord = (String) reservedWords.get(i);
+            for (String reservedWord : globalFunTable.getReservedWords()) {
                 defineReserved(reservedWord);
             }
-            final List resolvers = globalFunTable.getResolvers();
-            for (int i = 0; i < resolvers.size(); i++) {
-                Resolver resolver = (Resolver) resolvers.get(i);
+            for (Resolver resolver : globalFunTable.getResolvers()) {
                 define(resolver);
             }
-            for (int i = 0; i < udfList.size(); i++) {
-                UserDefinedFunction udf = (UserDefinedFunction) udfList.get(i);
+            for (UserDefinedFunction udf : udfList) {
                 define(new UdfResolver(udf));
             }
         }
 
 
-        public List getFunInfoList() {
+        public List<FunInfo> getFunInfoList() {
             return Collections.unmodifiableList(this.funInfoList);
         }
     }
@@ -1505,13 +1493,12 @@ if (! mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
       return getRolapStarRegistry().getStar(factTableName);
     }
 
-    public Iterator getStars() {
+    public Collection<RolapStar> getStars() {
       return getRolapStarRegistry().getStars();
     }
     
     public void flushRolapStarCaches(boolean forced) {
-        for (Iterator itStars = getStars(); itStars.hasNext(); ) {
-            RolapStar star = (RolapStar) itStars.next();
+        for (RolapStar star : getStars()) {
             // this will only flush the star's aggregate cache if
             // 1) DisableCaching is true or 2) the star's cube has
             // cacheAggregations set to false in the schema.
@@ -1520,10 +1507,10 @@ if (! mapSharedHierarchyNameToHierarchy.containsKey(sharedName)) {
     }
     
     public static void flushAllRolapStarCachedAggregations() {
-        for (Iterator itSchemas = RolapSchema.getRolapSchemas();
+        for (Iterator<RolapSchema> itSchemas = RolapSchema.getRolapSchemas();
                 itSchemas.hasNext(); ) {
 
-            RolapSchema schema = (RolapSchema) itSchemas.next();
+            RolapSchema schema = itSchemas.next();
             schema.flushRolapStarCaches(true);
         }
     }

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -50,19 +50,22 @@ interface MemberCache {
      * returns the children of <code>member</code> if they are currently in the cache.
      * Otherwise returns null. The children may be garbage collected as soon as the
      * returned list may be garbage collected.
+     *
      * @param parent the parent member
-     * @param constraint the condition that was used when the members were fetched. May
-     * be null for all members (no constraint)
+     * @param constraint the condition that was used when the members were
+     *    fetched. May be null for all members (no constraint)
      */
-    List getChildrenFromCache(RolapMember parent, MemberChildrenConstraint constraint);
+    List<RolapMember> getChildrenFromCache(
+        RolapMember parent,
+        MemberChildrenConstraint constraint);
 
     /**
      * returns the members of <code>level</code> if they are currently in the cache.
      * Otherwise returns null. The members may be garbage collected as soon as the
      * returned list may be garbage collected.
      * @param level the level whose members should be fetched
-     * @param constraint the condition that was used when the members were fetched. May
-     * be null for all members (no constraint)
+     * @param constraint the condition that was used when the members were
+     *   fetched. May be null for all members (no constraint)
      */
     List getLevelMembersFromCache(RolapLevel level, TupleConstraint constraint);
 
@@ -70,10 +73,13 @@ interface MemberCache {
      * Registers that the children of <code>member</code> are
      * <code>children</code> (a list of {@link RolapMember}s).
      * @param member the parent member
-     * @param constraint the condition that was used when the members were fetched. May
-     * be null for all members (no constraint)
+     * @param constraint the condition that was used when the members were
+     *   fetched. May be null for all members (no constraint)
      */
-    void putChildren(RolapMember member, MemberChildrenConstraint constraint, List children);
+    void putChildren(
+        RolapMember member,
+        MemberChildrenConstraint constraint, 
+        List<RolapMember> children);
 }
 
 

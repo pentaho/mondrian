@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -103,10 +103,10 @@ public class MDXQueryServlet extends HttpServlet {
                 // if it has more than 1 dimension
                 if (j == 0 && result.getAxes().length > 1) {
                     // Print the top-left cell, and fill it with slicer members.
-                    html.append("<td nowrap class='slicer' rowspan='" +
-                            columnWidth + "' colspan='" + rowWidth + "'>");
-                    for (int i=0; i<slicers.length; i++) {
-                        Position position = slicers[i];
+                    html.append("<td nowrap class='slicer' rowspan='").append(
+                        columnWidth).append("' colspan='").append(rowWidth)
+                        .append("'>");
+                    for (Position position : slicers) {
                         for (int k = 0; k < position.members.length; k++) {
                             if (k > 0) {
                                 html.append("<br/>");
@@ -115,7 +115,7 @@ public class MDXQueryServlet extends HttpServlet {
                             html.append(member.getUniqueName());
                         }
                     }
-                    html.append("&nbsp;</td>" + Util.nl);
+                    html.append("&nbsp;</td>").append(Util.nl);
                 }
 
                 // Print the column headings.
@@ -127,20 +127,20 @@ public class MDXQueryServlet extends HttpServlet {
                         i++;
                         width++;
                     }
-                    html.append("<td nowrap class='columnheading' colspan='" +
-                            width + "'>" + member.getUniqueName() + "</td>");
+                    html.append("<td nowrap class='columnheading' colspan='")
+                        .append(width).append("'>")
+                        .append(member.getUniqueName()).append("</td>");
                 }
-                html.append("</tr>" + Util.nl);
+                html.append("</tr>").append(Util.nl);
             }
             //if is two axes, show
             if (result.getAxes().length > 1) {
                 for (int i=0; i<rows.length; i++) {
                     html.append("<tr>");
                     final Position row = rows[i];
-                    for (int j = 0; j < row.members.length; j++) {
-                        Member member = row.members[j];
-                        html.append("<td nowrap class='rowheading'>" +
-                                member.getUniqueName() + "</td>");
+                    for (Member member : row.members) {
+                        html.append("<td nowrap class='rowheading'>").append(
+                            member.getUniqueName()).append("</td>");
                     }
                     for (int j=0; j<columns.length; j++) {
                         showCell(html,result.getCell(new int[]{j,i}));
@@ -158,8 +158,8 @@ public class MDXQueryServlet extends HttpServlet {
         } catch (Throwable e) {
             final String[] strings = Util.convertStackToString(e);
             html.append("Error:<pre><blockquote>");
-            for (int i = 0; i < strings.length; i++) {
-                StringEscaper.htmlEscaper.appendEscapedString(strings[i], html);
+            for (String string : strings) {
+                StringEscaper.htmlEscaper.appendEscapedString(string, html);
             }
             html.append("</blockquote></pre>");
         } finally {
@@ -174,7 +174,8 @@ public class MDXQueryServlet extends HttpServlet {
     }
 
     private void showCell( StringBuffer out, Cell cell) {
-        out.append("<td class='cell'>" + cell.getFormattedValue() + "</td>");
+        out.append("<td class='cell'>").append(cell.getFormattedValue()).append(
+            "</td>");
     }
     private void processTransform(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

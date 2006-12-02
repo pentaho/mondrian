@@ -33,14 +33,22 @@ public class Scanner {
     private int lookaheadChars[] = new int[16];
     private int firstLookaheadChar = 0;
     private int lastLookaheadChar = 0;
-    private Hashtable m_resWordsTable;
+    private Hashtable<String, Integer> m_resWordsTable;
     private int iMaxResword;
     private String m_aResWords[];
     protected boolean debug;
-    private List lines;        // lines[x] is the start of the x'th line
-    private int iChar;          // number of times advance() has been called
-    private int iPrevChar;      // end of previous token
-    private int previousSymbol; // previous symbol returned
+
+    /** lines[x] is the start of the x'th line */
+    private List<Integer> lines;
+
+    /** number of times advance() has been called */
+    private int iChar;
+
+    /** end of previous token */
+    private int iPrevChar;
+
+    /** previous symbol returned */
+    private int previousSymbol;
     private boolean inFormula;
 
     /**
@@ -76,7 +84,7 @@ public class Scanner {
     }
 
     /* Advance input by one character, setting {@link #nextChar}. */
-    private final void advance()
+    private void advance()
         throws java.io.IOException {
 
         if (firstLookaheadChar == lastLookaheadChar) {
@@ -91,13 +99,13 @@ public class Scanner {
             }
         }
         if (nextChar == '\012') {
-            lines.add(new Integer(iChar));
+            lines.add(iChar);
         }
         iChar++;
     }
 
     /** Peek at the character after {@link #nextChar} without advancing. */
-    private final int lookahead()
+    private int lookahead()
         throws java.io.IOException {
 
         return lookahead(1);
@@ -108,7 +116,7 @@ public class Scanner {
      * lookahead(0) returns the current char (nextChar).
      * lookahead(1) returns the next char (was lookaheadChar, same as lookahead());
      */
-    private final int lookahead(int n)
+    private int lookahead(int n)
         throws java.io.IOException {
 
         if (n == 0) {
@@ -133,9 +141,8 @@ public class Scanner {
                         t = lookaheadChars;
                     }
 
-                    for (int x = 0; x < len; x++) {
-                        t[x] = lookaheadChars[x + firstLookaheadChar];
-                    }
+                    System.arraycopy(
+                        lookaheadChars, firstLookaheadChar, t, 0, len);
                     lookaheadChars = t;
                     firstLookaheadChar = 0;
                     lastLookaheadChar = len;
@@ -163,7 +170,7 @@ public class Scanner {
         throws java.io.IOException {
 
         initReswords();
-        lines = new ArrayList();
+        lines = new ArrayList<Integer>();
         iChar = iPrevChar = 0;
         advance();
     }
@@ -182,7 +189,7 @@ public class Scanner {
             iLineStart = iLineEnd;
             iLineEnd = Integer.MAX_VALUE;
             if (iLine < lines.size()) {
-                iLineEnd = ((Integer) lines.get(iLine)).intValue();
+                iLineEnd = lines.get(iLine);
             }
         } while (iLineEnd < iTarget);
 
@@ -205,7 +212,7 @@ public class Scanner {
     }
 
     private void initResword(int id, String s) {
-        m_resWordsTable.put(s, new Integer(id));
+        m_resWordsTable.put(s, id);
         if (id > iMaxResword) {
             iMaxResword = id;
         }
@@ -217,7 +224,7 @@ public class Scanner {
         //   grep -list // |
         //   sed -e 's/,//' |
         //   awk '{printf "initResword(%20s,%c%s%c);",$1,34,$1,34}'
-        m_resWordsTable = new Hashtable();
+        m_resWordsTable = new Hashtable<String, Integer>();
         iMaxResword = 0;
 //      initResword(ParserSym.ALL                 ,"ALL");
         initResword(ParserSym.AND                 ,"AND");
@@ -281,11 +288,11 @@ public class Scanner {
         initResword(ParserSym.XOR                 ,"XOR");
 
         m_aResWords = new String[iMaxResword + 1];
-        Enumeration e = m_resWordsTable.keys();
+        Enumeration<String> e = m_resWordsTable.keys();
         while (e.hasMoreElements()) {
             Object o = e.nextElement();
             String s = (String) o;
-            int i = ((Integer) m_resWordsTable.get(s)).intValue();
+            int i = (m_resWordsTable.get(s)).intValue();
             m_aResWords[i] = s;
         }
     }
@@ -303,7 +310,7 @@ public class Scanner {
     }
     private Symbol makeNumber(double mantissa, int exponent) {
         double d = mantissa * java.lang.Math.pow(10, exponent);
-        return makeSymbol(ParserSym.NUMBER, new Double(d));
+        return makeSymbol(ParserSym.NUMBER, d);
     }
 
     private Symbol makeId(String s, boolean quoted, boolean ampersand) {
@@ -392,14 +399,14 @@ public class Scanner {
         boolean foundComment;
         do {
             foundComment = false;
-            for (int x = 0; x < commentDelim.length; x++) {
-                if (checkForSymbol(commentDelim[x][0])) {
-                    if (commentDelim[x][1] == null) {
+            for (String[] aCommentDelim : commentDelim) {
+                if (checkForSymbol(aCommentDelim[0])) {
+                    if (aCommentDelim[1] == null) {
                         foundComment = true;
                         skipToEOL();
                     } else {
                         foundComment = true;
-                        skipComment(commentDelim[x][0], commentDelim[x][1]);
+                        skipComment(aCommentDelim[0], aCommentDelim[1]);
                     }
                 }
             }
@@ -423,7 +430,7 @@ public class Scanner {
      */
     public Symbol next_token() throws IOException {
 
-        StringBuffer id;
+        StringBuilder id;
         boolean ampersandId = false;
         for (;;) {
             searchForComments();
@@ -536,7 +543,7 @@ public class Scanner {
             case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
             case 'Y': case 'Z':
                 /* parse an identifier */
-                id = new StringBuffer();
+                id = new StringBuilder();
                 for (;;) {
                     id.append((char)nextChar);
                     advance();
@@ -557,14 +564,14 @@ public class Scanner {
                         break;
                     default:
                         String strId = id.toString();
-                        Integer i = (Integer) m_resWordsTable.get(
+                        Integer i = m_resWordsTable.get(
                             strId.toUpperCase());
                         if (i == null) {
                             // identifier
                             return makeId(strId, false, false);
                         } else {
                             // reserved word
-                            return makeRes(i.intValue());
+                            return makeRes(i);
                         }
                     }
                 }
@@ -580,7 +587,7 @@ public class Scanner {
 
             case '[':
                 /* parse a delimited identifier */
-                id = new StringBuffer();
+                id = new StringBuilder();
                 for (;;) {
                     advance();
                     switch (nextChar) {
@@ -644,7 +651,7 @@ public class Scanner {
 
             case '"':
                 /* parse a double-quoted string */
-                id = new StringBuffer();
+                id = new StringBuilder();
                 for (;;) {
                     advance();
                     switch (nextChar) {
@@ -671,7 +678,7 @@ public class Scanner {
                 }
 
                 /* parse a single-quoted string */
-                id = new StringBuffer();
+                id = new StringBuilder();
                 for (;;) {
                     advance();
                     switch (nextChar) {

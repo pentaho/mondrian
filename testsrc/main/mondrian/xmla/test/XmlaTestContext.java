@@ -53,12 +53,13 @@ public class XmlaTestContext {
     public static final String DATASOURCE_NAME = "MondrianFoodMart";
     public static final String DATASOURCE_DESCRIPTION = "Mondrian FoodMart Test data source";
     public static final String DATASOURCE_INFO = "Provider=Mondrian;DataSource=MondrianFoodMart;";
-    public static final Map ENV = new HashMap() {
-        {
-            put("catalog", CATALOG_NAME);
-            put("datasource", DATASOURCE_INFO);
-        }
-    };
+    public static final Map<String, String> ENV =
+        new HashMap<String, String>() {
+            {
+                put("catalog", CATALOG_NAME);
+                put("datasource", DATASOURCE_INFO);
+            }
+        };
     private static DataSourcesConfig.DataSources DATASOURCES;
     public static final CatalogLocator CATALOG_LOCATOR = new CatalogLocatorImpl();
     public static final String[] REQUEST_ELEMENT_NAMES = new String[]{
@@ -167,13 +168,19 @@ public class XmlaTestContext {
         return files;
     }
 
-    public static Element[] extractXmlaCycle(File file, Map env) {
+    public static Element[] extractXmlaCycle(
+        File file,
+        Map<String, String> env)
+    {
         Element xmlacycleElem = XmlaUtil.text2Element(xmlFromTemplate(file, env));
-        for (int i = 0; i < XmlaTestContext.REQUEST_ELEMENT_NAMES.length; i++) {
-            String requestElemName = XmlaTestContext.REQUEST_ELEMENT_NAMES[i];
-            Element requestElem = XmlaUtil.firstChildElement(xmlacycleElem, null, requestElemName);
+        for (String requestElemName : XmlaTestContext.REQUEST_ELEMENT_NAMES) {
+            Element requestElem = XmlaUtil.firstChildElement(xmlacycleElem,
+                null,
+                requestElemName);
             if (requestElem != null) {
-                Element responseElem = XmlaUtil.firstChildElement(xmlacycleElem, null, requestElemName + "Response");
+                Element responseElem = XmlaUtil.firstChildElement(xmlacycleElem,
+                    null,
+                    requestElemName + "Response");
                 if (responseElem == null) {
                     throw new RuntimeException("Invalid XML/A query file");
                 } else {
@@ -184,7 +191,7 @@ public class XmlaTestContext {
         return null;
     }
 
-    private static String xmlFromTemplate(File file, Map env) {
+    private static String xmlFromTemplate(File file, Map<String, String> env) {
         StringBuffer buf = new StringBuffer();
         BufferedReader reader = null;
         try {
@@ -210,7 +217,7 @@ public class XmlaTestContext {
         Matcher matcher = pattern.matcher(xmlText);
         while (matcher.find()) {
             String varName = matcher.group(1);
-            String varValue = (String) env.get(varName);
+            String varValue = env.get(varName);
             if (varValue != null) {
                 matcher.appendReplacement(buf, varValue);
             } else {
@@ -228,7 +235,7 @@ public class XmlaTestContext {
      * @param env
      * @return new Object[]{fileName:String, request:org.w3c.dom.Element, resposne:org.w3c.dom.Element}
      */
-    public Object[] fileRequestResponsePairs(Map env) {
+    public Object[] fileRequestResponsePairs(Map<String, String> env) {
         File[] files = retrieveQueryFiles();
 
         Object[] pairs = new Object[files.length];

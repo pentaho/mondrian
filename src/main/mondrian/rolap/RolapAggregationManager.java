@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -20,8 +20,7 @@ import mondrian.olap.Member;
 import mondrian.olap.Util;
 import mondrian.rolap.agg.CellRequest;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <code>RolapAggregationManager</code> manages all {@link
@@ -47,14 +46,15 @@ public abstract class RolapAggregationManager implements CellReader {
      * @param extendedContext If true, add non-constraining columns to the
      * query for levels below each current member. This additional context
      * makes the drill-through queries easier for humans to understand.
-     * @param drillThrough
+     * @param drillThrough If true, request returns the list of fact table
+     *   rows contributing to the cell
      * @return Cell request, or null if the requst is unsatisfiable
      */
-    static CellRequest makeRequest(
+    public static CellRequest makeRequest(
             Member[] members,
             boolean extendedContext,
             final boolean drillThrough) {
-        Map mapLevelToColumn;
+        Map<RolapLevel, RolapStar.Column> mapLevelToColumn;
         CellRequest request;
         if (members[0] instanceof RolapStoredMeasure) {
             RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
@@ -77,8 +77,8 @@ public abstract class RolapAggregationManager implements CellReader {
 
                 final RolapLevel level = (RolapLevel) member.getLevel();
                 boolean needToReturnNull =
-                        level.getLevelReader().constrainRequest(
-                                member, mapLevelToColumn, request);
+                    level.getLevelReader().constrainRequest(
+                        member, mapLevelToColumn, request);
                 if (needToReturnNull) {
                     return null;
                 }
@@ -88,8 +88,8 @@ public abstract class RolapAggregationManager implements CellReader {
                 RolapMember member = (RolapMember) members[i];
                 final RolapLevel level = (RolapLevel) member.getLevel();
                 boolean needToReturnNull =
-                        level.getLevelReader().constrainRequest(
-                                member, mapLevelToColumn, request);
+                    level.getLevelReader().constrainRequest(
+                        member, mapLevelToColumn, request);
                 if (needToReturnNull) {
                     return null;
                 }
@@ -126,7 +126,7 @@ public abstract class RolapAggregationManager implements CellReader {
      */
     private static void addNonConstrainingColumns(
             RolapMember member,
-            Map mapLevelToColumn,
+            Map<RolapLevel, RolapStar.Column> mapLevelToColumn,
             CellRequest request) {
 
         Hierarchy hierarchy = member.getHierarchy();
@@ -135,7 +135,7 @@ public abstract class RolapAggregationManager implements CellReader {
              j > depth; j--) {
             final RolapLevel level = (RolapLevel) levels[j];
             RolapStar.Column column =
-                    (RolapStar.Column) mapLevelToColumn.get(level);
+                mapLevelToColumn.get(level);
 
             if (column != null) {
                 request.addConstrainedColumn(column, null);
@@ -173,7 +173,7 @@ public abstract class RolapAggregationManager implements CellReader {
         final RolapStar.Measure starMeasure = (RolapStar.Measure)
                 measure.getStarMeasure();
 
-        Util.assertTrue(starMeasure != null);
+        assert starMeasure != null;
 
         RolapStar star = starMeasure.getStar();
         return star.getCell(request);

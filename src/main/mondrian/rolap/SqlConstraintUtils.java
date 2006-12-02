@@ -103,7 +103,7 @@ public class SqlConstraintUtils {
                     // make sure it can be parsed
                     Double.valueOf(value);
                 }
-                final StringBuffer buf = new StringBuffer();
+                final StringBuilder buf = new StringBuilder();
                 sqlQuery.getDialect().quote(buf, value, column.getDatatype());
                 sqlQuery.addWhere(
                     expr,
@@ -133,30 +133,31 @@ public class SqlConstraintUtils {
      * @return
      */
     private static Member[] removeDefaultMembers(Member[] members) {
-        List result = new ArrayList();
+        List<Member> result = new ArrayList<Member>();
         result.add(members[0]); // add the measure
         for (int i = 1; i < members.length; i++) {
             Member m = members[i];
-            if (m.getHierarchy().getDefaultMember().equals(m))
+            if (m.getHierarchy().getDefaultMember().equals(m)) {
                 continue;
+            }
             result.add(m);
         }
-        return (Member[]) result.toArray(new Member[result.size()]);
+        return result.toArray(new Member[result.size()]);
     }
 
     private static Member[] removeCalculatedMembers(Member[] members) {
-        List result = new ArrayList();
-        for (int i = 0; i < members.length; i++) {
-            if (!members[i].isCalculated()) {
-                result.add(members[i]);
+        List<Member> result = new ArrayList<Member>();
+        for (Member member : members) {
+            if (!member.isCalculated()) {
+                result.add(member);
             }
         }
-        return (Member[]) result.toArray(new Member[result.size()]);
+        return result.toArray(new Member[result.size()]);
     }
 
     private static boolean containsCalculatedMember(Member[] members) {
-        for (int i = 0; i < members.length; i++) {
-            if (members[i].isCalculated()) {
+        for (Member member : members) {
+            if (member.isCalculated()) {
                 return true;
             }
         }
@@ -171,22 +172,21 @@ public class SqlConstraintUtils {
      * @param aggStar
      * @param e evaluator corresponding to query
      * @param level level to be added to query
-     * @param levelToColumnMap maps level to star columns; set only in the
+     * @param mapLevelToColumn maps level to star columns; set only in the
      */
     public static void joinLevelTableToFactTable(
-        SqlQuery sqlQuery, AggStar aggStar, Evaluator e, RolapLevel level,
-        Map levelToColumnMap)
+        SqlQuery sqlQuery,
+        AggStar aggStar,
+        Evaluator e,
+        RolapLevel level,
+        Map<RolapLevel, RolapStar.Column> mapLevelToColumn)
     {
         RolapCube cube = (RolapCube) e.getCube();
-        Map mapLevelToColumnMap;
-        if (cube.isVirtual()) {
-            mapLevelToColumnMap = levelToColumnMap;
-        } else {
+        if (!cube.isVirtual()) {
             RolapStar star = cube.getStar();
-            mapLevelToColumnMap = star.getMapLevelToColumn(cube);
+            mapLevelToColumn = star.getMapLevelToColumn(cube);
         }
-        RolapStar.Column starColumn =
-            (RolapStar.Column) mapLevelToColumnMap.get(level);
+        RolapStar.Column starColumn = mapLevelToColumn.get(level);
         assert starColumn != null;
         if (aggStar != null) {
             int bitPos = starColumn.getBitPosition();
@@ -201,7 +201,8 @@ public class SqlConstraintUtils {
     }
 
     /**
-     * creates a WHERE parent = value
+     * Creates a "WHERE parent = value" constraint.
+     * 
      * @param sqlQuery the query to modify
      * @param aggStar Definition of the aggregate table, or null if query is
      * @param parent the list of parent members
@@ -211,7 +212,7 @@ public class SqlConstraintUtils {
     public static void addMemberConstraint(
         SqlQuery sqlQuery, AggStar aggStar, RolapMember parent, boolean strict)
     {
-        List list = Collections.singletonList(parent);
+        List<RolapMember> list = Collections.singletonList(parent);
         addMemberConstraint(sqlQuery, aggStar, list, strict, false);
     }
 
@@ -239,7 +240,7 @@ public class SqlConstraintUtils {
     public static void addMemberConstraint(
         SqlQuery sqlQuery,
         AggStar aggStar,
-        List parents,
+        List<RolapMember> parents,
         boolean strict,
         boolean crossJoin)
     {
@@ -258,8 +259,11 @@ public class SqlConstraintUtils {
             }
         }
 
-        for (Collection c = parents; !c.isEmpty(); c = getUniqueParentMembers(c)) {
-            RolapMember m = (RolapMember) c.iterator().next();
+        for (Collection<RolapMember> c = parents;
+            !c.isEmpty();
+            c = getUniqueParentMembers(c))
+        {
+            RolapMember m = c.iterator().next();
             if (m.isAll()) {
                 continue;
             }
@@ -276,15 +280,18 @@ public class SqlConstraintUtils {
             String q = level.getKeyExp().getExpression(sqlQuery);
             ColumnConstraint[] cc = getColumnConstraints(c);
             
-            if (!strict && cc.length >= MondrianProperties.instance().MaxConstraints.get()){
+            if (!strict &&
+                cc.length >= MondrianProperties.instance().MaxConstraints.get())
+            {
                 // Simply get them all, do not create where-clause.
                 // Below are two alternative approaches (and code). They
                 // both have problems.
-
             } else {
-                String cond = RolapStar.Column.createInExpr(
+                final String where = RolapStar.Column.createInExpr(
                     q, cc, level.getDatatype(), sqlQuery.getDialect());
-                sqlQuery.addWhere(cond);
+                if (!where.equals("true")) {
+                    sqlQuery.addWhere(where);
+                }
             }
             if (level.isUnique()) {
                 break; // no further qualification needed
@@ -302,10 +309,11 @@ public class SqlConstraintUtils {
         return constraints;
     }
 
-    private static Collection getUniqueParentMembers(Collection members) {
-        Set set = new HashSet();
-        for (Iterator it = members.iterator(); it.hasNext();) {
-            RolapMember m = (RolapMember) it.next();
+    private static LinkedHashSet<RolapMember> getUniqueParentMembers(
+        Collection<RolapMember> members)
+    {
+        LinkedHashSet<RolapMember> set = new LinkedHashSet<RolapMember>();
+        for (RolapMember m : members) {
             m = (RolapMember) m.getParentMember();
             if (m != null) {
                 set.add(m);
@@ -475,7 +483,7 @@ public class SqlConstraintUtils {
                 // make sure it can be parsed
                 Double.valueOf(value);
             }
-            final StringBuffer buf = new StringBuffer();
+            final StringBuilder buf = new StringBuilder();
             query.getDialect().quote(buf, value, datatype);
             constraint = column + " = " + buf.toString();
         }

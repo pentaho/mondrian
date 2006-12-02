@@ -24,12 +24,12 @@ import junit.framework.TestSuite;
  */
 public class SimpleTestRunner {
     protected static void usage(String msg) {
-        StringBuffer buf = new StringBuffer(64);
+        StringBuilder buf = new StringBuilder(64);
         if (msg != null) {
             buf.append(msg);
             buf.append('\n');
         }
-        buf.append("Usage: mondrian.test.StringBuffer options tests*");
+        buf.append("Usage: mondrian.test.SimpleTestRunner options tests*");
         buf.append('\n');
         buf.append("  options:");
         buf.append('\n');

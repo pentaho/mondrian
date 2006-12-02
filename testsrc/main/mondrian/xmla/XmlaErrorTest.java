@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -76,9 +76,12 @@ public class XmlaErrorTest extends FoodMartTestCase
 
         public void init(ServletConfig servletConfig) throws ServletException {
         }
-        public boolean processHttpHeader(HttpServletRequest request,
-                HttpServletResponse response,
-                Map context) throws Exception {
+
+        public boolean processHttpHeader(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Map<String, String> context) throws Exception
+        {
 
             // look for authorization
             // Authorization: Basic ZWRnZTphYmNkMTIzNC4=
@@ -162,7 +165,7 @@ System.out.println("password=" +password);
         public void preAction(
                 HttpServletRequest request,
                 Element[] requestSoapParts,
-                Map context) throws Exception {
+                Map<String, String> context) throws Exception {
 
             if (XmlaExcelXPTest.sessionId == null) {
                 makeSessionId();
@@ -171,14 +174,14 @@ System.out.println("password=" +password);
 
         }
 
-        public String generateSessionId(Map context) {
+        public String generateSessionId(Map<String, String> context) {
             return (String) context.get(MY_SESSION_ID);
         }
         public void postAction(
                     HttpServletRequest request,
                     HttpServletResponse response,
                     byte[][] responseSoapParts,
-                    Map context) throws Exception {
+                    Map<String, String> context) throws Exception {
         }
     }
 
@@ -303,7 +306,7 @@ System.out.println("password=" +password);
             return errorDesc;
         }
         public String toString() {
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append("faultCode=");
             buf.append(faultCode);
             buf.append(", faultString=");
@@ -358,7 +361,7 @@ System.out.println("password=" +password);
 
     protected static void makeSessionId() {
         int id = XmlaExcelXPTest.sessionIdCounter++;
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("XmlaExcelXPTest-");
         buf.append(id);
         buf.append("-foo");

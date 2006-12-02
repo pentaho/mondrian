@@ -16,10 +16,11 @@ package mondrian.rolap.agg;
 import mondrian.olap.*;
 import mondrian.rolap.BitKey;
 import mondrian.rolap.RolapStar;
-import mondrian.rolap.RolapSchemaReader;
+import mondrian.rolap.RolapAggregationManager;
 
 import java.lang.ref.SoftReference;
 import java.util.*;
+import java.io.PrintWriter;
 
 /**
  * A <code>Aggregation</code> is a pre-computed aggregation over a set of
@@ -61,9 +62,9 @@ public class Aggregation {
 
     private final RolapStar star;
 
-    /** 
-     * This is a BitKey for ALL columns (Measures and Levels) involved in the 
-     * query. 
+    /**
+     * This is a BitKey for ALL columns (Measures and Levels) involved in the
+     * query.
      */
     private final BitKey constrainedColumnsBitKey;
 
@@ -71,7 +72,7 @@ public class Aggregation {
      * List of soft references to segments.
      * Access must be inside of synchronized methods.
      */
-    private final List segmentRefs;
+    private final List<SoftReference<Segment>> segmentRefs;
 
     /**
      * This is set in the load method and is used during
@@ -86,7 +87,7 @@ public class Aggregation {
                        BitKey constrainedColumnsBitKey) {
         this.star = star;
         this.constrainedColumnsBitKey = constrainedColumnsBitKey;
-        this.segmentRefs = new ArrayList();
+        this.segmentRefs = new ArrayList<SoftReference<Segment>>();
         this.maxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
     }
@@ -129,14 +130,15 @@ public class Aggregation {
             measureBitKey.set(measure.getBitPosition());
             Segment segment = new Segment(this, measure, constraintses, axes);
             segments[i] = segment;
-            SoftReference ref = new SoftReference(segment);
+            SoftReference<Segment> ref = new SoftReference<Segment>(segment);
             segmentRefs.add(ref);
             pinnedSegments.add(segment);
         }
-        // The contrainted columns are simply the level and foreign columns
+        // The constrained columns are simply the level and foreign columns
         BitKey levelBitKey = constrainedColumnsBitKey;
-        Segment.load(segments, levelBitKey, 
-                measureBitKey, pinnedSegments, axes);
+        Segment.load(
+            segments, levelBitKey,
+            measureBitKey, pinnedSegments, axes);
     }
 
 
@@ -222,11 +224,9 @@ public class Aggregation {
                     //  cache for the drilldown case, the children will be
                     //  in the cache
                     // - if not, forget this optimization.
-                    int nChildren = -1;
                     SchemaReader scr = star.getSchema().getSchemaReader();
-                    nChildren = scr.getChildrenCountFromCache(parent);
-
-                    if (nChildren == -1) {
+                    int childCount = scr.getChildrenCountFromCache(parent);
+                    if (childCount == -1) {
                         // nothing gotten from cache
                         if (!parent.isAll()) {
                             // parent is in constraints
@@ -236,7 +236,7 @@ public class Aggregation {
                             done = true;
                         }
                     } else {
-                        bloats[i] = constraintLength / nChildren;
+                        bloats[i] = constraintLength / childCount;
                         done = true;
                     }
                 }
@@ -261,7 +261,7 @@ public class Aggregation {
         ConstraintComparator comparator = new ConstraintComparator(bloats);
         Integer[] indexes = new Integer[columns.length];
         for (int i = 0; i < columns.length; i++) {
-            indexes[i] = new Integer(i);
+            indexes[i] = i;
         }
 
         // sort indexes by bloat descending
@@ -276,7 +276,7 @@ public class Aggregation {
         double abloat = 1.0;
         final double aBloatLimit = 0.5;
         for (int i = 0; i < indexes.length; i++) {
-            int j = indexes[i].intValue();
+            int j = indexes[i];
             abloat = abloat * bloats[j];
             if (abloat > aBloatLimit) {
                 // eliminate this constraint
@@ -288,7 +288,7 @@ public class Aggregation {
         return newConstraintses;
     }
 
-    private class ConstraintComparator implements Comparator {
+    private class ConstraintComparator implements Comparator<Integer> {
         private final double[] bloats;
 
         ConstraintComparator(double[] bloats) {
@@ -297,9 +297,9 @@ public class Aggregation {
 
         // implement Comparator
         // order by bloat descending
-        public int compare(Object o0, Object o1) {
-            double bloat0 = bloats[((Integer)o0).intValue()];
-            double bloat1 = bloats[((Integer)o1).intValue()];
+        public int compare(Integer o0, Integer o1) {
+            double bloat0 = bloats[o0];
+            double bloat1 = bloats[o1];
             return (bloat0 == bloat1)
                 ? 0
                 : (bloat0 < bloat1)
@@ -374,8 +374,13 @@ public class Aggregation {
         // null if no constraint
         private final ColumnConstraint[] constraints;
 
-        // inversion of keys
-        private final Map mapKeyToOffset;
+        /**
+         * Map holding the position of each key value.
+         *
+         * <p>TODO: Hold keys in a sorted array, then deduce ordinal by doing
+         * binary search.
+         */
+        private final Map<Object, Integer> mapKeyToOffset;
 
         // actual keys retrieved
         private Object[] keys;
@@ -404,12 +409,9 @@ public class Aggregation {
         int loadKeys() {
             int size = mapKeyToOffset.size();
             this.keys = new Object[size];
-            Iterator it = mapKeyToOffset.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry e = (Map.Entry) it.next();
+            for (Map.Entry<Object, Integer> e : mapKeyToOffset.entrySet()) {
                 Object key = e.getKey();
-                Integer offsetInteger = (Integer) e.getValue();
-                int offset = offsetInteger.intValue();
+                int offset = e.getValue();
 
                 this.keys[offset] = key;
             }
@@ -417,14 +419,24 @@ public class Aggregation {
         }
 
         Integer getOffset(Object key) {
-            return (Integer) mapKeyToOffset.get(key);
+            return mapKeyToOffset.get(key);
         }
 
         void addNextOffset(Object key) {
             int size = mapKeyToOffset.size();
-            mapKeyToOffset.put(key, new Integer(size));
+            mapKeyToOffset.put(key, size);
         }
 
+        /**
+         * Returns whether this axis contains a given key, or would contain it
+         * if it existed.
+         *
+         * <p>For example, if this axis is unconstrained, then this method
+         * returns <code>true</code> for any value.
+         *
+         * @param key Key
+         * @return Whether this axis would contain <code>key</code>
+         */
         boolean contains(Object key) {
             if (constraints == null) {
                 return true;
@@ -432,7 +444,6 @@ public class Aggregation {
             return valueSet.contains(key);
         }
     }
-
 }
 
 // End Aggregation.java

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -55,18 +55,17 @@ public class ExpCacheDescriptor {
     }
 
     private void computeDepends(Calc calc, Evaluator evaluator) {
-        final List ordinalList = new ArrayList();
+        final List<Integer> ordinalList = new ArrayList<Integer>();
         final Member[] members = evaluator.getMembers();
         for (int i = 0; i < members.length; i++) {
             Dimension dimension = members[i].getDimension();
             if (calc.dependsOn(dimension)) {
-                ordinalList.add(new Integer(i));
+                ordinalList.add(i);
             }
         }
         dependentDimensionOrdinals = new int[ordinalList.size()];
         for (int i = 0; i < dependentDimensionOrdinals.length; i++) {
-            dependentDimensionOrdinals[i] =
-                    ((Integer) ordinalList.get(i)).intValue();
+            dependentDimensionOrdinals[i] = ordinalList.get(i);
         }
     }
 

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -128,8 +128,7 @@ public class Formula extends QueryPart {
             // member.
             final List formatPropertyList =
                     Arrays.asList(Property.FORMAT_PROPERTIES);
-            for (int i = 0; i < memberProperties.length; i++) {
-                MemberProperty memberProperty = memberProperties[i];
+            for (MemberProperty memberProperty : memberProperties) {
                 if (formatPropertyList.contains(memberProperty.getName())) {
                     continue; // we already dealt with format_string props
                 }
@@ -216,9 +215,9 @@ public class Formula extends QueryPart {
         exp.unparse(pw);
         pw.print("'");
         if (memberProperties != null) {
-            for (int i = 0; i < memberProperties.length; i++) {
+            for (MemberProperty memberProperty : memberProperties) {
                 pw.print(", ");
-                memberProperties[i].unparse(pw);
+                memberProperty.unparse(pw);
             }
         }
     }
@@ -325,8 +324,8 @@ public class Formula extends QueryPart {
     private Exp getFormatExp() {
         // If they have specified a format string (which they can do under
         // several names) reutrn that.
-        for (int i = 0; i < Property.FORMAT_PROPERTIES.length; i++) {
-            Exp formatExp = getMemberProperty(Property.FORMAT_PROPERTIES[i]);
+        for (String prop : Property.FORMAT_PROPERTIES) {
+            Exp formatExp = getMemberProperty(prop);
             if (formatExp != null) {
                 return formatExp;
             }

@@ -75,9 +75,10 @@ public class Query extends QueryPart {
     /**
      * Definitions of all parameters used in this query.
      */
-    private final List/*<Parameter>*/ parameters = new ArrayList();
+    private final List<Parameter> parameters = new ArrayList<Parameter>();
 
-    private final Map parametersByName = new HashMap();
+    private final Map<String, Parameter> parametersByName =
+        new HashMap<String, Parameter>();
 
     /**
      * Cell properties. Not currently used.
@@ -118,7 +119,7 @@ public class Query extends QueryPart {
      * Will be used to determine if cross joins can be processed natively
      * for virtual cubes.
      */
-    private Set measuresMembers;
+    private Set<Member> measuresMembers;
     
     /**
      * If true, virtual cubes can be processed using native cross joins.
@@ -131,14 +132,14 @@ public class Query extends QueryPart {
      * levels referenced in a virtual cube to the columns in the underlying
      * base cubes.
      */
-    private Set virtualCubeBaseCubeMaps;
+    private Set<Map<RolapLevel, RolapStar.Column>> virtualCubeBaseCubeMaps;
     
     /**
      * Maps one of the level-to-column maps stored in
      * virtualCubeBaseCubeMaps to a measure corresponding to the underlying
      * cube that the level-to-column map corrsponds to
      */
-    private Map levelMapToMeasureMap;
+    private Map<Map<RolapLevel, RolapStar.Column>, RolapMember> levelMapToMeasureMap;
     
     /**
      * If true, loading schema
@@ -189,7 +190,7 @@ public class Query extends QueryPart {
         this.isExecuting = false;
         this.queryTimeout =
             MondrianProperties.instance().QueryTimeout.get() * 1000;
-        this.measuresMembers = new HashSet();
+        this.measuresMembers = new HashSet<Member>();
         // assume, for now, that cross joins on virtual cubes can be
         // processed natively; as we parse the query, we'll know otherwise
         this.nativeCrossJoinVirtualCube = true;
@@ -208,9 +209,7 @@ public class Query extends QueryPart {
             formulaCount = formulas.length;
         }
         Formula[] newFormulas = new Formula[formulaCount + 1];
-        for (int i = 0; i < formulaCount; i++ ) {
-            newFormulas[i] = formulas[i];
-        }
+        System.arraycopy(formulas, 0, newFormulas, 0, formulaCount);
         newFormulas[formulaCount] = newFormula;
         formulas = newFormulas;
         resolve();
@@ -230,9 +229,7 @@ public class Query extends QueryPart {
             formulaCount = formulas.length;
         }
         Formula[] newFormulas = new Formula[formulaCount + 1];
-        for (int i = 0; i < formulaCount; i++ ) {
-            newFormulas[i] = formulas[i];
-        }
+        System.arraycopy(formulas, 0, newFormulas, 0, formulaCount);
         newFormulas[formulaCount] = newFormula;
         formulas = newFormulas;
         resolve();
@@ -250,8 +247,7 @@ public class Query extends QueryPart {
                 QueryAxis.cloneArray(axes),
                 (slicerAxis == null) ? null : (QueryAxis) slicerAxis.clone(),
                 cellProps,
-                (Parameter[])
-                    parameters.toArray(new Parameter[parameters.size()]),
+                parameters.toArray(new Parameter[parameters.size()]),
                 load);
     }
 
@@ -305,7 +301,7 @@ public class Query extends QueryPart {
             long currTime = System.currentTimeMillis();
             if ((currTime - startTime) >= queryTimeout) {
                 throw MondrianResource.instance().QueryTimeout.ex(
-                    new Long(queryTimeout/1000));
+                    (long) queryTimeout / 1000);
             }
         }
     }
@@ -369,7 +365,7 @@ public class Query extends QueryPart {
     public boolean ignoreInvalidMembers()
     {
         return load &&
-            MondrianProperties.instance().IgnoreInvalidMembers.get() == true;
+            MondrianProperties.instance().IgnoreInvalidMembers.get();
     }
 
     /**
@@ -379,8 +375,8 @@ public class Query extends QueryPart {
      */
     private void compile(ExpCompiler compiler) {
         if (formulas != null) {
-            for (int i = 0; i < formulas.length; i++) {
-                formulas[i].compile();
+            for (Formula formula : formulas) {
+                formula.compile();
             }
         }
 
@@ -407,8 +403,8 @@ public class Query extends QueryPart {
             // Resolving of formulas should be done in two parts
             // because formulas might depend on each other, so all calculated
             // mdx elements have to be defined during resolve.
-            for (int i = 0; i < formulas.length; i++) {
-                formulas[i].createElement(validator.getQuery());
+            for (Formula formula : formulas) {
+                formula.createElement(validator.getQuery());
             }
         }
 
@@ -453,15 +449,15 @@ public class Query extends QueryPart {
 
         // Validate formulas.
         if (formulas != null) {
-            for (int i = 0; i < formulas.length; i++) {
-                validator.validate(formulas[i]);
+            for (Formula formula : formulas) {
+                validator.validate(formula);
             }
         }
 
         // Validate axes.
         if (axes != null) {
-            for (int i = 0; i < axes.length; i++) {
-                validator.validate(axes[i]);
+            for (QueryAxis axis : axes) {
+                validator.validate(axis);
             }
         }
         if (slicerAxis != null) {
@@ -470,8 +466,7 @@ public class Query extends QueryPart {
 
         // Make sure that no dimension is used on more than one axis.
         final Dimension[] dimensions = getCube().getDimensions();
-        for (int i = 0; i < dimensions.length; i++) {
-            Dimension dimension = dimensions[i];
+        for (Dimension dimension : dimensions) {
             int useCount = 0;
             for (int j = -1; j < axes.length; j++) {
                 final QueryAxis axisExp;
@@ -483,7 +478,8 @@ public class Query extends QueryPart {
                 } else {
                     axisExp = axes[j];
                 }
-                if (axisExp.getSet().getType().usesDimension(dimension, false)) {
+                if (axisExp.getSet().getType().usesDimension(dimension,
+                    false)) {
                     ++useCount;
                 }
             }
@@ -544,15 +540,15 @@ public class Query extends QueryPart {
     public Object[] getChildren() {
         // Chidren are axes, slicer, and formulas (in that order, to be
         // consistent with replaceChild).
-        List list = new ArrayList();
-        for (int i = 0; i < axes.length; i++) {
-            list.add(axes[i]);
+        List<QueryPart> list = new ArrayList<QueryPart>();
+        for (QueryAxis axis : axes) {
+            list.add(axis);
         }
         if (slicerAxis != null) {
             list.add(slicerAxis);
         }
-        for (int i = 0; i < formulas.length; i++) {
-            list.add(formulas[i]);
+        for (Formula formula : formulas) {
+            list.add(formula);
         }
         return list.toArray();
     }
@@ -604,12 +600,11 @@ public class Query extends QueryPart {
         }
         if (exprType instanceof TupleType) {
             final Type[] types = ((TupleType) exprType).elementTypes;
-            ArrayList hierarchyList = new ArrayList();
-            for (int i = 0; i < types.length; i++) {
-                hierarchyList.add(getTypeHierarchy(types[i]));
+            ArrayList<Hierarchy> hierarchyList = new ArrayList<Hierarchy>();
+            for (Type type : types) {
+                hierarchyList.add(getTypeHierarchy(type));
             }
-            return (Hierarchy[])
-                    hierarchyList.toArray(new Hierarchy[hierarchyList.size()]);
+            return hierarchyList.toArray(new Hierarchy[hierarchyList.size()]);
         }
         return new Hierarchy[] {getTypeHierarchy(exprType)};
     }
@@ -688,8 +683,7 @@ public class Query extends QueryPart {
      * Returns the parameters defined in this query.
      */
     public Parameter[] getParameters() {
-        return (Parameter[]) parameters.toArray(
-            new Parameter[parameters.size()]);
+        return parameters.toArray(new Parameter[parameters.size()]);
     }
 
     public Cube getCube() {
@@ -710,11 +704,9 @@ public class Query extends QueryPart {
      */
     public Member lookupMemberFromCache(String s) {
         // first look in defined members
-        Iterator definedMembers = getDefinedMembers().iterator();
-        while (definedMembers.hasNext()) {
-            Member mdxMember = (Member) definedMembers.next();
-            if (Util.equalName(mdxMember.getUniqueName(), s)) {
-                return mdxMember;
+        for (Member member : getDefinedMembers()) {
+            if (Util.equalName(member.getUniqueName(), s)) {
+                return member;
             }
         }
         return null;
@@ -724,11 +716,10 @@ public class Query extends QueryPart {
      * Looks up a named set.
      */
     private NamedSet lookupNamedSet(String name) {
-        for (int i = 0; i < formulas.length; i++) {
-            Formula formula = formulas[i];
+        for (Formula formula : formulas) {
             if (!formula.isMember() &&
-                    formula.getElement() != null &&
-                    formula.getName().equals(name)) {
+                formula.getElement() != null &&
+                formula.getName().equals(name)) {
                 return (NamedSet) formula.getElement();
             }
         }
@@ -811,15 +802,15 @@ public class Query extends QueryPart {
         }
 
         // remove formula from query
-        List formulaList = new ArrayList();
-        for (int i = 0; i < formulas.length; i++) {
-            if (!formulas[i].getUniqueName().equalsIgnoreCase(uniqueName)) {
-                formulaList.add(formulas[i]);
+        List<Formula> formulaList = new ArrayList<Formula>();
+        for (Formula formula1 : formulas) {
+            if (!formula1.getUniqueName().equalsIgnoreCase(uniqueName)) {
+                formulaList.add(formula1);
             }
         }
 
         // it has been found and removed
-        this.formulas = (Formula[]) formulaList.toArray(new Formula[0]);
+        this.formulas = formulaList.toArray(new Formula[0]);
     }
 
     /**
@@ -847,15 +838,17 @@ public class Query extends QueryPart {
 
     /** finds calculated member or set in array of formulas */
     public Formula findFormula(String uniqueName) {
-        for (int i = 0; i < formulas.length; i++) {
-            if (formulas[i].getUniqueName().equalsIgnoreCase(uniqueName)) {
-                return formulas[i];
+        for (Formula formula : formulas) {
+            if (formula.getUniqueName().equalsIgnoreCase(uniqueName)) {
+                return formula;
             }
         }
         return null;
     }
 
-    /** finds formula by name and renames it to new name */
+    /**
+     * Finds formula by name and renames it to new name.
+     */
     public void renameFormula(String uniqueName, String newName) {
         Formula formula = findFormula(uniqueName);
         if (formula == null) {
@@ -865,14 +858,13 @@ public class Query extends QueryPart {
         formula.rename(newName);
     }
 
-    List getDefinedMembers() {
-        List definedMembers = new ArrayList();
-        for (int i = 0; i < formulas.length; i++) {
-            final Formula formula = formulas[i];
+    List<Member> getDefinedMembers() {
+        List<Member> definedMembers = new ArrayList<Member>();
+        for (final Formula formula : formulas) {
             if (formula.isMember() &&
-                    formula.getElement() != null &&
-                    getConnection().getRole().canAccess(formula.getElement())) {
-                definedMembers.add(formula.getElement());
+                formula.getElement() != null &&
+                getConnection().getRole().canAccess(formula.getElement())) {
+                definedMembers.add((Member) formula.getElement());
             }
         }
         return definedMembers;
@@ -883,8 +875,8 @@ public class Query extends QueryPart {
      */
     public void setAxisShowEmptyCells(int axis, boolean showEmpty) {
         if (axis >= axes.length) {
-            throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.ex(
-                    new Integer(axis));
+            throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.
+                ex(axis);
         }
         axes[axis].setNonEmpty(!showEmpty);
     }
@@ -895,8 +887,8 @@ public class Query extends QueryPart {
      */
     public Hierarchy[] getMdxHierarchiesOnAxis(int axis) {
         if (axis >= axes.length) {
-            throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.ex(
-                    new Integer(axis));
+            throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.
+                ex(axis);
         }
         QueryAxis queryAxis = (axis == AxisOrdinal.SlicerOrdinal) ?
                 slicerAxis :
@@ -946,7 +938,7 @@ public class Query extends QueryPart {
      * @return set of members from the measures dimension referenced within
      * this query
      */
-    public Set getMeasuresMembers()
+    public Set<Member> getMeasuresMembers()
     {
         return measuresMembers;
     }
@@ -975,7 +967,7 @@ public class Query extends QueryPart {
      * 
      * @param maps the set of maps to be saved
      */
-    public void setVirtualCubeBaseCubeMaps(Set maps)
+    public void setVirtualCubeBaseCubeMaps(Set<Map<RolapLevel, RolapStar.Column>> maps)
     {
         virtualCubeBaseCubeMaps = maps;
     }
@@ -984,7 +976,7 @@ public class Query extends QueryPart {
      * @return the set of level to column maps associated with the virtual
      * cube this query references
      */
-    public Set getVirtualCubeBaseCubeMaps()
+    public Set<Map<RolapLevel, RolapStar.Column>> getVirtualCubeBaseCubeMaps()
     {
         return virtualCubeBaseCubeMaps;
     }
@@ -994,7 +986,8 @@ public class Query extends QueryPart {
      * 
      * @param map map to be saved
      */
-    public void setLevelMapToMeasureMap(Map map)
+    public void setLevelMapToMeasureMap(
+        Map<Map<RolapLevel, RolapStar.Column>, RolapMember> map)
     {
         levelMapToMeasureMap = map;
     }
@@ -1002,7 +995,7 @@ public class Query extends QueryPart {
     /**
      * @return the level-to-column-to-measure map
      */
-    public Map getLevelMapToMeasureMap()
+    public Map<Map<RolapLevel, RolapStar.Column>, RolapMember> getLevelMapToMeasureMap()
     {
         return levelMapToMeasureMap;
     }
@@ -1011,13 +1004,11 @@ public class Query extends QueryPart {
         Object o = visitor.visit(this);
 
         // visit formulas
-        for (int i = 0; i < formulas.length; i++) {
-            Formula formula = formulas[i];
+        for (Formula formula : formulas) {
             formula.accept(visitor);
         }
         // visit axes
-        for (int i = 0; i < axes.length; i++) {
-            QueryAxis axis = axes[i];
+        for (QueryAxis axis : axes) {
             axis.accept(visitor);
         }
         if (slicerAxis != null) {
@@ -1041,10 +1032,11 @@ public class Query extends QueryPart {
      * operation.)
      */
     private class StackValidator implements Validator {
-        private final Stack stack = new Stack();
+        private final Stack<QueryPart> stack = new Stack<QueryPart>();
         private final FunTable funTable;
-        private final Map resolvedNodes = new HashMap();
-        private final Object placeHolder = "dummy";
+        private final Map<QueryPart, QueryPart> resolvedNodes =
+            new HashMap<QueryPart, QueryPart>();
+        private final QueryPart placeHolder = Literal.zero;
 
         /**
          * Creates a StackValidator.
@@ -1075,13 +1067,13 @@ public class Query extends QueryPart {
             }
             if (resolved == null) {
                 try {
-                    stack.push(exp);
+                    stack.push((QueryPart) exp);
                     // To prevent recursion, put in a placeholder while we're
                     // resolving.
-                    resolvedNodes.put(exp, placeHolder);
+                    resolvedNodes.put((QueryPart) exp, placeHolder);
                     resolved = exp.accept(this);
                     Util.assertTrue(resolved != null);
-                    resolvedNodes.put(exp, resolved);
+                    resolvedNodes.put((QueryPart) exp, (QueryPart) resolved);
                 } finally {
                     stack.pop();
                 }
@@ -1320,15 +1312,14 @@ public class Query extends QueryPart {
             return lookupMemberFromCache(uniqueName);
         }
 
-        public List getCalculatedMembers(Hierarchy hierarchy) {
-            List result = new ArrayList();
+        public List<Member> getCalculatedMembers(Hierarchy hierarchy) {
+            List<Member> result = new ArrayList<Member>();
             // Add calculated members in the cube.
-            final List calculatedMembers = super.getCalculatedMembers(hierarchy);
+            final List<Member> calculatedMembers =
+                super.getCalculatedMembers(hierarchy);
             result.addAll(calculatedMembers);
             // Add calculated members defined in the query.
-            List definedMembers = getDefinedMembers();
-            for (int i = 0; i < definedMembers.size(); i++) {
-                Member member = (Member) definedMembers.get(i);
+            for (Member member : getDefinedMembers()) {
                 if (member.getHierarchy().equals(hierarchy)) {
                     result.add(member);
                 }
@@ -1336,11 +1327,11 @@ public class Query extends QueryPart {
             return result;
         }
 
-        public List getCalculatedMembers(Level level) {
-            List hierarchyMembers = getCalculatedMembers(level.getHierarchy());
-            List result = new ArrayList();
-            for (int i = 0; i < hierarchyMembers.size(); i++) {
-                Member member = (Member) hierarchyMembers.get(i);
+        public List<Member> getCalculatedMembers(Level level) {
+            List<Member> hierarchyMembers =
+                getCalculatedMembers(level.getHierarchy());
+            List<Member> result = new ArrayList<Member>();
+            for (Member member : hierarchyMembers) {
                 if (member.getLevel().equals(level)) {
                     result.add(member);
                 }
@@ -1348,7 +1339,7 @@ public class Query extends QueryPart {
             return result;
         }
 
-        public List getCalculatedMembers() {
+        public List<Member> getCalculatedMembers() {
             return getDefinedMembers();
         }
 
@@ -1369,8 +1360,7 @@ public class Query extends QueryPart {
             // then look in defined members (removed sf#1084651)
 
             // then in defined sets
-            for (int i = 0; i < formulas.length; i++) {
-                Formula formula = formulas[i];
+            for (Formula formula : formulas) {
                 if (formula.isMember()) {
                     continue;       // have already done these
                 }
@@ -1449,8 +1439,7 @@ public class Query extends QueryPart {
 
         public Parameter getParameter(String name) {
             // Look for a parameter defined in the query.
-            for (int i = 0; i < parameters.size(); i++) {
-                Parameter parameter = (Parameter) parameters.get(i);
+            for (Parameter parameter : parameters) {
                 if (parameter.getName().equals(name)) {
                     return parameter;
                 }

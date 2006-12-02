@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2005 Julian Hyde and others.
+// Copyright (C) 2004-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -38,8 +38,7 @@ public class CoalesceEmptyFunDef extends FunDefBase {
         }
         return new GenericCalc(call) {
             public Object evaluate(Evaluator evaluator) {
-                for (int i = 0; i < calcs.length; i++) {
-                    Calc calc = calcs[i];
+                for (Calc calc : calcs) {
                     final Object o = calc.evaluate(evaluator);
                     if (o != null) {
                         return o;
@@ -70,8 +69,7 @@ public class CoalesceEmptyFunDef extends FunDefBase {
             }
             final int[] types = {Category.Numeric, Category.String};
             final int[] argTypes = new int[args.length];
-            for (int j = 0; j < types.length; j++) {
-                int type = types[j];
+            for (int type : types) {
                 int matchingArgs = 0;
                 conversionCount[0] = 0;
                 for (int i = 0; i < args.length; i++) {

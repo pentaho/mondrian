@@ -44,7 +44,7 @@ class TupleToStrFunDef extends FunDefBase {
                     if (member.isNull()) {
                         return "";
                     }
-                    StringBuffer buf = new StringBuffer();
+                    StringBuilder buf = new StringBuilder();
                     buf.append(member.getUniqueName());
                     return buf.toString();
                 }
@@ -59,7 +59,7 @@ class TupleToStrFunDef extends FunDefBase {
                     if (members == null) {
                         return "";
                     }
-                    StringBuffer buf = new StringBuffer();
+                    StringBuilder buf = new StringBuilder();
                     SetToStrFunDef.appendTuple(buf, members);
                     return buf.toString();
                 }

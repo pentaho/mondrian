@@ -66,20 +66,21 @@ class GenerateFunDef extends FunDefBase {
                 List result = new ArrayList();
                 if (tuple) {
                     if (all) {
-                        for (int i = 0; i < list1.size(); i++) {
-                            final Member[] members = (Member[]) list1.get(i);
+                        for (Object aList1 : list1) {
+                            final Member[] members = (Member[]) aList1;
                             evaluator2.setContext(members);
-                            final List result2 = listCalc2.evaluateList(evaluator2);
+                            final List result2 = listCalc2.evaluateList(
+                                evaluator2);
                             result.addAll(result2);
                         }
                     } else {
-                        final Set emitted = new HashSet();
-                        for (int i = 0; i < list1.size(); i++) {
-                            final Member[] members = (Member[]) list1.get(i);
+                        final Set<Object> emitted = new HashSet<Object>();
+                        for (Object aList1 : list1) {
+                            final Member[] members = (Member[]) aList1;
                             evaluator2.setContext(members);
-                            final List result2 = listCalc2.evaluateList(evaluator2);
-                            for (int j = 0; j < result2.size(); j++) {
-                                Object row = result2.get(j);
+                            final List result2 = listCalc2.evaluateList(
+                                evaluator2);
+                            for (Object row : result2) {
                                 if (emitted.add(row)) {
                                     result.add(row);
                                 }
@@ -88,20 +89,21 @@ class GenerateFunDef extends FunDefBase {
                     }
                 } else {
                     if (all) {
-                        for (int i = 0; i < list1.size(); i++) {
-                            final Member member = (Member) list1.get(i);
+                        for (Object aList1 : list1) {
+                            final Member member = (Member) aList1;
                             evaluator2.setContext(member);
-                            final List result2 = listCalc2.evaluateList(evaluator2);
+                            final List result2 = listCalc2.evaluateList(
+                                evaluator2);
                             result.addAll(result2);
                         }
                     } else {
-                        Set emitted = new HashSet();
-                        for (int i = 0; i < list1.size(); i++) {
-                            final Member member = (Member) list1.get(i);
+                        Set<Object> emitted = new HashSet<Object>();
+                        for (Object aList1 : list1) {
+                            final Member member = (Member) aList1;
                             evaluator2.setContext(member);
-                            final List result2 = listCalc2.evaluateList(evaluator2);
-                            for (int j = 0; j < result2.size(); j++) {
-                                Object row = result2.get(j);
+                            final List result2 = listCalc2.evaluateList(
+                                evaluator2);
+                            for (Object row : result2) {
                                 if (emitted.add(row)) {
                                     result.add(row);
                                 }

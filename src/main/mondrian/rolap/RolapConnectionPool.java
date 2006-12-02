@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Robin Bagot, Julian Hyde and others.
+// Copyright (C) 2003-2006 Robin Bagot, Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -30,10 +30,10 @@ class RolapConnectionPool {
     }
     private static final RolapConnectionPool instance = new RolapConnectionPool();
 
-    private final Map mapConnectKeyToPool;
+    private final Map<Object, ObjectPool> mapConnectKeyToPool =
+        new HashMap<Object, ObjectPool>();
 
     private RolapConnectionPool() {
-        this.mapConnectKeyToPool = new HashMap();
     }
 
 
@@ -74,9 +74,11 @@ class RolapConnectionPool {
      * Gets or creates a connection pool for a particular connect
      * specification.
      */
-    private synchronized ObjectPool getPool(Object key, 
-                                       ConnectionFactory connectionFactory) {
-        ObjectPool connectionPool = (ObjectPool) mapConnectKeyToPool.get(key);
+    private synchronized ObjectPool getPool(
+        Object key,
+        ConnectionFactory connectionFactory)
+    {
+        ObjectPool connectionPool = mapConnectKeyToPool.get(key);
         if (connectionPool == null) {
             // use GenericObjectPool, which provides for resource limits
             connectionPool = new GenericObjectPool(

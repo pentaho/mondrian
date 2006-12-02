@@ -15,7 +15,6 @@ import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Usage of a {@link mondrian.olap.NamedSet} in an MDX expression.
@@ -51,7 +50,7 @@ public class NamedSetExpr extends ExpBase implements Exp {
         return namedSet.getUniqueName();
     }
 
-    public Object clone() {
+    public NamedSetExpr clone() {
         return new NamedSetExpr(namedSet);
     }
 

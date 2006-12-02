@@ -427,7 +427,7 @@ public class RolapMember extends MemberBase {
         if (property != null) {
             Schema schema;
             Member parentMember;
-            List list;
+            List<RolapMember> list;
             switch (property.ordinal) {
             case Property.NAME_ORDINAL:
                 // Do NOT call getName() here. This property is internal,
@@ -438,7 +438,7 @@ public class RolapMember extends MemberBase {
                 return getCaption();
 
             case Property.CONTRIBUTING_CHILDREN_ORDINAL:
-                list = new ArrayList();
+                list = new ArrayList<RolapMember>();
                 getRolapHierarchy().getMemberReader().getMemberChildren(this, list);
                 return list;
 
@@ -491,7 +491,7 @@ public class RolapMember extends MemberBase {
                 if (isAllMember() && childLevelHasApproxRowCount()) {
                     cardinality = getLevel().getChildLevel().getApproxRowCount();
                 } else {
-                    list = new ArrayList();
+                    list = new ArrayList<RolapMember>();
                     getRolapHierarchy().getMemberReader().getMemberChildren(this, list);
                     cardinality = list.size();
                 }

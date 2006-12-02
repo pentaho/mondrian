@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2005 Julian Hyde
+// Copyright (C) 2004-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -158,32 +158,31 @@ public class CsvDBLoader extends DBLoader {
     }
 
     public Table[] getTablesFromFile() throws Exception {
-        List list = new ArrayList();
+        List<Table> list = new ArrayList<Table>();
         loadTables(this.inputFile, list);
-        return (Table[]) list.toArray(new Table[list.size()]);
+        return list.toArray(new Table[list.size()]);
     }
 
     public Table[] getTables(File[] files) throws Exception {
-        List list = new ArrayList();
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
+        List<Table> list = new ArrayList<Table>();
+        for (File file : files) {
             loadTables(file, list);
         }
-        return (Table[]) list.toArray(new Table[list.size()]);
+        return list.toArray(new Table[list.size()]);
     }
 
     public static class ListRowStream implements RowStream {
-        private List list;
+        private List<Row> list;
         ListRowStream() {
-            this(new ArrayList());
+            this(new ArrayList<Row>());
         }
-        ListRowStream(List list) {
+        ListRowStream(List<Row> list) {
             this.list = list;
         }
         void add(Row row) {
             this.list.add(row);
         }
-        public Iterator iterator() {
+        public Iterator<Row> iterator() {
             return this.list.iterator();
         }
     }
@@ -193,8 +192,8 @@ public class CsvDBLoader extends DBLoader {
         CsvLoaderRowStream(CsvLoader csvloader) {
             this.csvloader = csvloader;
         }
-        public Iterator iterator() {
-            return new Iterator() {
+        public Iterator<Row> iterator() {
+            return new Iterator<Row>() {
                 public boolean hasNext() {
                     try {
                         boolean hasNext = 
@@ -208,7 +207,7 @@ public class CsvDBLoader extends DBLoader {
                     }
                     return false;
                 }
-                public Object next() {
+                public Row next() {
                     return new RowDefault(
                         CsvLoaderRowStream.this.csvloader.nextLine());
                 }
@@ -217,7 +216,7 @@ public class CsvDBLoader extends DBLoader {
         }
     }
 
-    public void loadTables(File file, List tableList) throws Exception {
+    public void loadTables(File file, List<Table> tableList) throws Exception {
 //System.out.println("CsvLoader.loadTables: TOP:");
         CsvLoader csvloader = null;
         try {
@@ -228,7 +227,7 @@ public class CsvDBLoader extends DBLoader {
             String fileName = null;
             int nosOfRowsStr = -1;
             boolean ok = false;
-            Column[] columns = null;
+            Column[] columns;
             Reader reader = new FileReader(file);
             csvloader = new CsvLoader(reader);
             int lineNos = 0;
@@ -359,7 +358,7 @@ public class CsvDBLoader extends DBLoader {
                                 ", linenos " +lineNos;
                             throw new IOException(msg);
                         }
-                        nosOfRowsStr = new Integer(s.trim()).intValue();
+                        nosOfRowsStr = Integer.parseInt(s.trim());
                     }
                 } else if (value0.startsWith("# ")) {
                     // comment, do nothing
@@ -405,7 +404,7 @@ public class CsvDBLoader extends DBLoader {
 
                     } else if (nosOfRowsStr != -1) {
 //System.out.println("CsvLoader.loadTables: nosOfRowsStr="+nosOfRowsStr);
-                        List list = new ArrayList();
+                        List<Row> list = new ArrayList<Row>();
 
                         list.add(new RowDefault(values));
                         nosOfRowsStr--;
@@ -452,7 +451,7 @@ public class CsvDBLoader extends DBLoader {
         String[] columnNames, String[] columnTypes, int lineNos)
         throws Exception
     {
-        List list = new ArrayList();
+        List<Column> list = new ArrayList<Column>();
         for (int i = 0; i < columnNames.length; i++) {
             String columnName = columnNames[i];
 //System.out.println("columnName="+columnName);
@@ -495,7 +494,7 @@ public class CsvDBLoader extends DBLoader {
             Column column = new Column(columnName, type, nullsAllowed);
             list.add(column);
         }
-        return (Column[]) list.toArray(new Column[list.size()]);
+        return list.toArray(new Column[list.size()]);
     }
 
     protected void check() throws Exception {
@@ -531,7 +530,7 @@ public class CsvDBLoader extends DBLoader {
     }
 
     protected static void usage(String msg) {
-        StringBuffer buf = new StringBuffer(500);
+        StringBuilder buf = new StringBuilder(500);
         if (msg != null) {
             buf.append(msg);
             buf.append(nl);
@@ -606,7 +605,7 @@ public class CsvDBLoader extends DBLoader {
         String batchSizeStr = null;
         String outputDirectory = null;
         boolean force = false;
-        List files = new ArrayList();
+        List<File> files = new ArrayList<File>();
         String inputDirectory = null;
         String regex = null;
 
@@ -746,7 +745,7 @@ public class CsvDBLoader extends DBLoader {
 
             String v = props.getProperty(BATCH_SIZE_PROP);
             if (v != null) {
-                loader.setBatchSize(new Integer(v).intValue());
+                loader.setBatchSize(Integer.parseInt(v));
             }
             v = props.getProperty(JDBC_DRIVER_PROP);
             if (v != null) {
@@ -771,12 +770,12 @@ public class CsvDBLoader extends DBLoader {
             }
             v = props.getProperty(FORCE_PROP);
             if (v != null) {
-                force = Boolean.valueOf(v).booleanValue();
+                force = Boolean.valueOf(v);
             }
         }
 
         if (batchSizeStr != null) {
-            loader.setBatchSize(new Integer(batchSizeStr).intValue());
+            loader.setBatchSize(Integer.parseInt(batchSizeStr));
         }
         if (jdbcDrivers != null) {
             loader.setJdbcDriver(jdbcDrivers);
@@ -797,10 +796,9 @@ public class CsvDBLoader extends DBLoader {
         loader.setForce(force);
 
         if (files.size() == 1) {
-            loader.setInputFile((File) files.get(0));
+            loader.setInputFile(files.get(0));
         } else if (files.size() > 1) {
-            loader.setInputFiles((File[]) 
-                files.toArray(new File[files.size()]));
+            loader.setInputFiles(files.toArray(new File[files.size()]));
         }
 
         if (inputDirectory != null) {

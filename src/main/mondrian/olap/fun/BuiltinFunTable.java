@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -817,7 +817,7 @@ public class BuiltinFunTable extends FunTableImpl {
         //
         // SET FUNCTIONS
 
-        define(AddCalculatedMembersFunDef.instance);
+        define(AddCalculatedMembersFunDef.resolver);
 
         define(new FunDefBase(
                 "Ascendants",
@@ -835,12 +835,13 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            List ascendants(Member member) {
+            List<Member> ascendants(Member member) {
                 if (member.isNull()) {
-                    return Collections.EMPTY_LIST;
+                    return Collections.emptyList();
                 }
                 Member[] members = member.getAncestorMembers();
-                final List result = new ArrayList(members.length + 1);
+                final List<Member> result =
+                    new ArrayList<Member>(members.length + 1);
                 result.add(member);
                 XOMUtil.addAll(result, members);
                 return result;
@@ -899,16 +900,14 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
 
-            List distinct(List list) {
-                HashSet hashSet = new HashSet(list.size());
-                Iterator iter = list.iterator();
-                List result = new ArrayList();
+            List<Object> distinct(List list) {
+                Set<MemberHelper> set = new HashSet<MemberHelper>(list.size());
+                List<Object> result = new ArrayList<Object>();
 
-                while (iter.hasNext()) {
-                    Object element = iter.next();
+                for (Object element : list) {
                     MemberHelper lookupObj = new MemberHelper(element);
 
-                    if (hashSet.add(lookupObj)) {
+                    if (set.add(lookupObj)) {
                         result.add(element);
                     }
                 }
@@ -1126,10 +1125,8 @@ public class BuiltinFunTable extends FunTableImpl {
                         compiler.compileList(call.getArg(0));
                 return new AbstractListCalc(call, new Calc[] {listCalc}) {
                     public List evaluateList(Evaluator evaluator) {
-                        final List list = listCalc.evaluateList(evaluator);
-                        if (list != null) {
-                            removeCalculatedMembers(list);
-                        }
+                        final List<Member> list = listCalc.evaluateList(evaluator);
+                        removeCalculatedMembers(list);
                         return list;
                     }
                 };
@@ -1932,14 +1929,6 @@ public class BuiltinFunTable extends FunTableImpl {
         define(CastFunDef.Resolver);
     }
 
-    /**
-     * Returns a read-only version of the name-to-resolvers map. Used by the
-     * testing framework.
-     */
-    protected static Map getNameToResolversMap() {
-        return Collections.unmodifiableMap(((BuiltinFunTable)instance()).mapNameToResolvers);
-    }
-
     /** Returns (creating if necessary) the singleton. */
     public static BuiltinFunTable instance() {
         if (instance == null) {
@@ -1973,12 +1962,13 @@ public class BuiltinFunTable extends FunTableImpl {
         return sr.getLevelMembers(level, true);
     }
 
-    static List levelMembers(
+    static List<Member> levelMembers(
             Level level,
             Evaluator evaluator,
             final boolean includeCalcMembers) {
         Member[] members = getNonEmptyLevelMembers(evaluator, level);
-        ArrayList memberList = new ArrayList(Arrays.asList(members));
+        List<Member> memberList =
+            new ArrayList<Member>(Arrays.asList(members));
         if (!includeCalcMembers) {
             FunUtil.removeCalculatedMembers(memberList);
         }
@@ -1986,12 +1976,14 @@ public class BuiltinFunTable extends FunTableImpl {
         return memberList;
     }
 
-    static List hierarchyMembers(
+    static List<Member> hierarchyMembers(
             Hierarchy hierarchy,
             Evaluator evaluator,
             final boolean includeCalcMembers) {
-        List memberList = FunUtil.addMembers(evaluator.getSchemaReader(),
-                new ArrayList(), hierarchy);
+        List<Member> memberList =
+            FunUtil.addMembers(
+                evaluator.getSchemaReader(),
+                new ArrayList<Member>(), hierarchy);
         if (!includeCalcMembers && memberList != null) {
             FunUtil.removeCalculatedMembers(memberList);
         }
@@ -1999,13 +1991,14 @@ public class BuiltinFunTable extends FunTableImpl {
         return memberList;
     }
 
-    static List dimensionMembers(
+    static List<Member> dimensionMembers(
             Dimension dimension,
             Evaluator evaluator,
             final boolean includeCalcMembers) {
         Hierarchy hierarchy = dimension.getHierarchy();
-        List memberList = FunUtil.addMembers(evaluator.getSchemaReader(),
-                new ArrayList(), hierarchy);
+        List<Member> memberList = FunUtil.addMembers(
+            evaluator.getSchemaReader(),
+            new ArrayList<Member>(), hierarchy);
         if (!includeCalcMembers && memberList != null) {
             FunUtil.removeCalculatedMembers(memberList);
         }

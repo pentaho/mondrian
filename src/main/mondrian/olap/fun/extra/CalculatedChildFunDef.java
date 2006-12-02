@@ -42,8 +42,7 @@ public class CalculatedChildFunDef extends FunDefBase {
             public Member evaluateMember(Evaluator evaluator) {
                 Member member = memberCalc.evaluateMember(evaluator);
                 String name = stringCalc.evaluateString(evaluator);
-                Member child = getCalculatedChild(member, name, evaluator);
-                return child;
+                return getCalculatedChild(member, name, evaluator);
             }
          };
     }
@@ -57,14 +56,14 @@ public class CalculatedChildFunDef extends FunDefBase {
         if (childLevel == null) {
             return parent.getHierarchy().getNullMember();
         }
-        List calcMemberList = schemaReader.getCalculatedMembers(childLevel);
+        List<Member> calcMemberList =
+            schemaReader.getCalculatedMembers(childLevel);
 
-        for (int i = 0; i < calcMemberList.size(); i++) {
-            Member child = (Member) calcMemberList.get(i);
+        for (Member child : calcMemberList) {
             // the parent check is required in case there are parallel children
             // with the same names
             if (child.getParentMember() == parent &&
-                    child.getName().equals(childName)) {
+                child.getName().equals(childName)) {
                 return child;
             }
         }

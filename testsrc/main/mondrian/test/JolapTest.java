@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -378,7 +378,7 @@ public class JolapTest extends TestCase {
                 steps.createDimensionStep(DimensionStepTypeEnum.EXCEPTION_MEMBER_FILTER);
         prodsGT500.setSetAction(SetActionTypeEnum.INITIAL);
         prodsGT500.setOp(OperatorTypeEnum.EQ);
-        prodsGT500.setRhs(new Integer(500));
+        prodsGT500.setRhs(500);
         QualifiedMemberReference qmr1 = (QualifiedMemberReference)
                 prodsGT500.createDataBasedMemberFilterInput(DataBasedMemberFilterInputTypeEnum.QUALIFIED_MEMBER_REFERENCE);
         final MemberObjectFactories memberObjectFactories = someConnection.getMemberObjectFactories();

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -56,11 +56,11 @@ public class AggregationManager extends RolapAggregationManager {
      * Called by FastBatchingCellReader.loadAggregation where the
      * RolapStar creates an Aggregation if needed.
      * 
-     * @param measures 
+     * @param measures Measures to load
      * @param columns this is the CellRequest's constrained columns
      * @param constrainedColumnsBitKey this is the CellRequest's constrained column BitKey
-     * @param constraintses 
-     * @param pinnedSegments 
+     * @param constraints Array of constraints on each column
+     * @param pinnedSegments Set of pinned segments
      */
     public void loadAggregation(
             RolapStar.Measure[] measures,
@@ -82,8 +82,6 @@ public class AggregationManager extends RolapAggregationManager {
             aggregation.load(columns, measures, constraintses, pinnedSegments);
         }
     }
-
-
 
     public Object getCellFromCache(CellRequest request) {
         RolapStar.Measure measure = request.getMeasure();
@@ -128,7 +126,7 @@ public class AggregationManager extends RolapAggregationManager {
         String sql = spec.generateSqlQuery();
 
         if (getLogger().isDebugEnabled()) {
-            StringBuffer buf = new StringBuffer(256);
+            StringBuilder buf = new StringBuilder(256);
             buf.append("DrillThroughSQL: ");
             buf.append(sql);
             buf.append(Util.nl);
@@ -157,7 +155,7 @@ public class AggregationManager extends RolapAggregationManager {
                 // Got a match, hot damn
 
                 if (getLogger().isDebugEnabled()) {
-                    StringBuffer buf = new StringBuffer(256);
+                    StringBuilder buf = new StringBuilder(256);
                     buf.append("MATCH: ");
                     buf.append(star.getFactTable().getAlias());
                     buf.append("   foreign=");
@@ -196,7 +194,7 @@ public class AggregationManager extends RolapAggregationManager {
         if (getLogger().isDebugEnabled()) {
             RolapStar star = segments[0].aggregation.getStar();
 
-            StringBuffer buf = new StringBuffer(256);
+            StringBuilder buf = new StringBuilder(256);
             buf.append("NO MATCH: ");
             buf.append(star.getFactTable().getAlias());
             buf.append(Util.nl);
@@ -253,15 +251,14 @@ public class AggregationManager extends RolapAggregationManager {
 
         // The AggStars are already ordered from smallest to largest so
         // we need only find the first one and return it.
-        for (Iterator it = star.getAggStars().iterator(); it.hasNext(); ) {
-            AggStar aggStar = (AggStar) it.next();
+        for (AggStar aggStar : star.getAggStars()) {
             // superset match
             if (!aggStar.superSetMatch(fullBitKey)) {
                 continue;
             }
 
             boolean isDistinct = measureBitKey.intersects(
-                    aggStar.getDistinctMeasureBitKey());
+                aggStar.getDistinctMeasureBitKey());
 
             // The AggStar has no "distinct count" measures so 
             // we can use it without looking any further.
@@ -284,27 +281,27 @@ public class AggregationManager extends RolapAggregationManager {
             // and the agg table has levels customer_id,
             // then gender is a core level.
             final BitKey distinctMeasuresBitKey =
-                    measureBitKey.and(aggStar.getDistinctMeasureBitKey());
+                measureBitKey.and(aggStar.getDistinctMeasureBitKey());
             final BitSet distinctMeasures = distinctMeasuresBitKey.toBitSet();
             BitKey combinedLevelBitKey = null;
             for (int k = distinctMeasures.nextSetBit(0); k >= 0;
-                 k = distinctMeasures.nextSetBit(k + 1)) {
+                k = distinctMeasures.nextSetBit(k + 1)) {
                 final AggStar.FactTable.Measure distinctMeasure =
-                        aggStar.lookupMeasure(k);
+                    aggStar.lookupMeasure(k);
                 BitKey rollableLevelBitKey =
-                        distinctMeasure.getRollableLevelBitKey();
+                    distinctMeasure.getRollableLevelBitKey();
                 if (combinedLevelBitKey == null) {
                     combinedLevelBitKey = rollableLevelBitKey;
                 } else {
                     // TODO use '&=' to remove unnecessary copy
                     combinedLevelBitKey =
-                            combinedLevelBitKey.and(rollableLevelBitKey);
+                        combinedLevelBitKey.and(rollableLevelBitKey);
                 }
             }
 
             if (aggStar.hasForeignKeys()) {
 /*
-                    StringBuffer buf = new StringBuffer(256);
+                    StringBuilder buf = new StringBuilder(256);
                     buf.append("");
                     buf.append(star.getFactTable().getAlias());
                     buf.append(Util.nl);
@@ -345,15 +342,15 @@ System.out.println(buf.toString());
                 Iterator mit = aggStar.getFactTable().getMeasures().iterator();
                 BitKey fkBitKey = aggStar.getForeignKeyBitKey().copy();
                 while (mit.hasNext()) {
-                    AggStar.FactTable.Measure m = 
+                    AggStar.FactTable.Measure m =
                         (AggStar.FactTable.Measure) mit.next();
                     if (m.isDistinct()) {
                         if (measureBitKey.get(m.getBitPosition())) {
                             fkBitKey.clear(m.getBitPosition());
                         }
                     }
-                 }
-                 if (! fkBitKey.isEmpty()) {
+                }
+                if (!fkBitKey.isEmpty()) {
                     // there are foreign keys left so we can not use this 
                     // AggStar.
                     continue;
@@ -361,7 +358,7 @@ System.out.println(buf.toString());
             }
 
             if (!aggStar.select(
-                    levelBitKey, combinedLevelBitKey, measureBitKey)) {
+                levelBitKey, combinedLevelBitKey, measureBitKey)) {
                 continue;
             }
 

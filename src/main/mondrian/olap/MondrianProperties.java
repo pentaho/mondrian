@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -272,20 +272,19 @@ public class MondrianProperties extends TriggerableProperties {
      * <p>todo: Move to base class, {@link TriggerableProperties}, and rename
      * base method {@link TriggerableProperties#getProperties()}}.
      */
-    public List getPropertyList() {
+    public List<Property> getPropertyList() {
         Field[] fields = getClass().getFields();
-        List list = new ArrayList();
-        for (int i = 0; i < fields.length; i++) {
-            Field field = fields[i];
+        List<Property> list = new ArrayList<Property>();
+        for (Field field : fields) {
             if (!Modifier.isStatic(field.getModifiers()) &&
-                    org.eigenbase.util.property.Property.class.isAssignableFrom(
-                        field.getType())) {
+                Property.class.isAssignableFrom(
+                    field.getType())) {
                 try {
-                    list.add(field.get(this));
+                    list.add((Property) field.get(this));
                 } catch (IllegalAccessException e) {
                     throw Util.newInternal(
-                            e,
-                            "While accessing property '" + field.getName() + "'");
+                        e,
+                        "While accessing property '" + field.getName() + "'");
                 }
             }
         }

@@ -51,22 +51,6 @@ import java.util.*;
  * @version $Id$
  */
 class Segment {
-
-    /**
-     * <code>State</code> enumerates the allowable values of a segment's
-     * state.
-     */
-    private static class State extends EnumeratedValues {
-        public static final State instance = new State();
-        private State() {
-            super(new String[] {"init","loading","ready","failed"});
-        }
-        public static final int Initial = 0;
-        public static final int Loading = 1;
-        public static final int Ready = 2;
-        public static final int Failed = 3;
-    }
-
     private static int nextId = 0; // generator for "id"
 
     private final int id; // for debug
@@ -139,7 +123,7 @@ class Segment {
     }
 
     private String makeDescription() {
-        StringBuffer buf = new StringBuffer(64);
+        StringBuilder buf = new StringBuilder(64);
         buf.append("Segment #");
         buf.append(id);
         buf.append(" {measure=");
@@ -202,7 +186,7 @@ class Segment {
                     return null;
                 }
             }
-            cellKey.ordinals[i] = integer.intValue();
+            cellKey.ordinals[i] = integer;
         }
         if (missed > 0) {
             // the value should be in this segment, but isn't, because one
@@ -264,7 +248,7 @@ class Segment {
         try {
             resultSet = RolapUtil.executeQuery(
                     jdbcConnection, sql, "Segment.load");
-            List rows = new ArrayList();
+            List<Object[]> rows = new ArrayList<Object[]>();
             while (resultSet.next()) {
                 Object[] row = new Object[arity + measureCount];
                 // get the columns
@@ -289,15 +273,13 @@ class Segment {
                         if (o instanceof Double) {
                             // nothing to do
                         } else if (o instanceof Number) {
-                            o = new Double(((Number) o).doubleValue());
+                            o = ((Number) o).doubleValue();
                         } else if (o instanceof byte[]) {
                             // On MySQL 5.0 in German locale, values can come
                             // out as byte arrays. Don't know why. Bug 1594119.
-                            double d = Double.parseDouble(new String((byte []) o));
-                            o = new Double(d);
+                            o = Double.parseDouble(new String((byte []) o));
                         } else {
-                            double d = Double.parseDouble(o.toString());
-                            o = new Double(d);
+                            o = Double.parseDouble(o.toString());
                         }
                     }
                     row[arity + i] = o;
@@ -349,20 +331,19 @@ class Segment {
             // now convert the rows into a sparse array
             int[] pos = new int[arity];
             for (int i = 0, count = rows.size(); i < count; i++) {
-                Object[] row = (Object[]) rows.get(i);
+                Object[] row = rows.get(i);
                 int k = 0;
                 for (int j = 0; j < arity; j++) {
                     k *= axes[j].getKeys().length;
                     Object o = row[j];
                     Aggregation.Axis axis = axes[j];
-                    Integer offsetInteger = axis.getOffset(o);
-                    int offset = offsetInteger.intValue();
+                    int offset = axis.getOffset(o);
                     pos[j] = offset;
                     k += offset;
                 }
-                CellKey key = null;
+                CellKey key;
                 if (sparse) {
-                    key = new CellKey((int[]) pos.clone());
+                    key = new CellKey(pos.clone());
                     for (int j = 0; j < segments.length; j++) {
                         final Object o = row[arity + j];
                         sparseDatasets[j].put(key, o);
@@ -397,8 +378,8 @@ class Segment {
                 //ignore
             }
             // Any segments which are still loading have failed.
-            for (int i = 0; i < segments.length; i++) {
-                segments[i].setFailed();
+            for (Segment segment : segments) {
+                segment.setFailed();
             }
         }
     }
@@ -469,6 +450,22 @@ class Segment {
             }
         }
     }
+
+    /**
+     * <code>State</code> enumerates the allowable values of a segment's
+     * state.
+     */
+    private static class State extends EnumeratedValues {
+        public static final State instance = new State();
+        private State() {
+            super(new String[] {"init","loading","ready","failed"});
+        }
+        public static final int Initial = 0;
+        public static final int Loading = 1;
+        public static final int Ready = 2;
+        public static final int Failed = 3;
+    }
+
 }
 
 // End Segment.java

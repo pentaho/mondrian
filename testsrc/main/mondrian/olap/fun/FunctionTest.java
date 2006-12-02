@@ -22,12 +22,10 @@ import mondrian.util.Bug;
 
 import org.eigenbase.xom.StringEscaper;
 
-import javax.olap.metadata.CurrentMember;
 import java.io.*;
 import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
-import java.util.Set;
 
 /**
  * <code>FunctionTest</code> tests the functions defined in
@@ -107,7 +105,7 @@ public class FunctionTest extends FoodMartTestCase {
         for (int i = 0; i < dims.length; i++) {
             assert contains(AllDims, dims[i]) : "unknown dimension " + dims[i];
         }
-        StringBuffer buf = new StringBuffer("{");
+        StringBuilder buf = new StringBuilder("{");
         int j = 0;
         for (int i = 0; i < AllDims.length; i++) {
             if (!contains(dims, AllDims[i])) {
@@ -2670,7 +2668,7 @@ public class FunctionTest extends FoodMartTestCase {
             final boolean scalar) {
         final Calc calc = query.compileExpression(expression, scalar);
         final Dimension[] dimensions = query.getCube().getDimensions();
-        StringBuffer buf = new StringBuffer("{");
+        StringBuilder buf = new StringBuilder("{");
         int dependCount = 0;
         for (int i = 0; i < dimensions.length; i++) {
             Dimension dimension = dimensions[i];
@@ -4816,7 +4814,7 @@ public class FunctionTest extends FoodMartTestCase {
         // [Measures].[Unit Sales] is a constant member, so it is evaluated in
         // a ContextCalc.
         // Note that a CopyListCalc is required because Children returns an
-        // immutable list, and Order wants to sort it.
+        // immutable list, and Order wants to sortMembers it.
         assertAxisCompilesTo(
                 "order([Product].children, [Measures].[Unit Sales])",
                 "{}(Sublist(ContextCalc([Measures].[Unit Sales], Order(CopyListCalc(Children(CurrentMember([Product]))), ValueCalc, ASC))))");
@@ -5342,21 +5340,19 @@ public class FunctionTest extends FoodMartTestCase {
     // bug 634860
     public void testToggleDrillStateTuple() {
         assertAxisReturns(
-                fold(
-                    "ToggleDrillState(\n" +
-                    "{([Store].[All Stores].[USA].[CA]," +
+            fold("ToggleDrillState(\n" +
+                "{([Store].[All Stores].[USA].[CA]," +
                 "  [Product].[All Products].[Drink].[Alcoholic Beverages]),\n" +
-                    " ([Store].[All Stores].[USA]," +
+                " ([Store].[All Stores].[USA]," +
                 "  [Product].[All Products].[Drink])},\n" +
-                    "{[Store].[All stores].[USA].[CA]})"),
-                fold(
-                    "{[Store].[All Stores].[USA].[CA], [Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
-                    "{[Store].[All Stores].[USA].[CA].[Alameda], [Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
-                    "{[Store].[All Stores].[USA].[CA].[Beverly Hills], [Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
-                    "{[Store].[All Stores].[USA].[CA].[Los Angeles], [Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
-                    "{[Store].[All Stores].[USA].[CA].[San Diego], [Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
-                    "{[Store].[All Stores].[USA].[CA].[San Francisco], [Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
-                    "{[Store].[All Stores].[USA], [Product].[All Products].[Drink]}"));
+                "{[Store].[All stores].[USA].[CA]})"),
+            fold("{[Store].[All Stores].[USA].[CA], [Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Alameda], [Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills], [Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles], [Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego], [Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco], [Product].[All Products].[Drink].[Alcoholic Beverages]}\n" +
+                "{[Store].[All Stores].[USA], [Product].[All Products].[Drink]}"));
     }
 
     public void testToggleDrillStateRecursive() {

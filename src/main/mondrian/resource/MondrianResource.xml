@@ -776,6 +776,24 @@
 </message>
 <!-- Aggregate tables: end -->
 
+<exception id="7000500" name="CacheFlushRegionMustContainMembers">
+    <text>
+        Region of cells to be flushed must contain measures.
+    </text>
+</exception>
+
+<exception id="7000510" name="CacheFlushUnionDimensionalityMismatch">
+    <text>
+        Cannot union cell regions of different dimensionalities. (Dimensionalities are ''{0}'', ''{1}''.)
+    </text>
+</exception>
+
+<exception id="7000520" name="CacheFlushCrossjoinDimensionsInCommon">
+    <text>
+        Cannot crossjoin cell regions which have dimensions in common. (Dimensionalities are ''{0}'', ''{1}''.)
+    </text>
+</exception>
+
 <!-- End of last error section ============================================ -->
 
 </resourceBundle>

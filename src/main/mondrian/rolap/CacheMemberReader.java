@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 
 import mondrian.olap.Util;
-import mondrian.olap.Evaluator;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
@@ -39,7 +38,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
     private final MemberSource source;
     private final RolapMember[] members;
     /** Maps a {@link MemberKey} to a {@link RolapMember}. */
-    private final Map mapKeyToMember;
+    private final Map<Object, RolapMember> mapKeyToMember;
 
     CacheMemberReader(MemberSource source) {
         this.source = source;
@@ -47,7 +46,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
             // we don't want the reader to write back to our cache
             Util.discard(source.setCache(this));
         }
-        this.mapKeyToMember = new HashMap();
+        this.mapKeyToMember = new HashMap<Object, RolapMember>();
         this.members = source.getMembers();
         for (int i = 0; i < members.length; i++) {
             members[i].setOrdinal(i);
@@ -77,7 +76,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
 
     // implement MemberCache
     public RolapMember getMember(Object key) {
-        return (RolapMember) mapKeyToMember.get(key);
+        return mapKeyToMember.get(key);
     }
 
     // implement MemberCache
@@ -87,13 +86,20 @@ class CacheMemberReader implements MemberReader, MemberCache {
 
     // don't need to implement this MemberCache method because we're never
     // used in a context where it is needed
-    public void putChildren(RolapMember member, MemberChildrenConstraint constraint, List children) {
+    public void putChildren(
+        RolapMember member,
+        MemberChildrenConstraint constraint,
+        List<RolapMember> children)
+    {
         throw new UnsupportedOperationException();
     }
 
     // don't need to implement this MemberCache method because we're never
     // used in a context where it is needed
-    public List getChildrenFromCache(RolapMember member, MemberChildrenConstraint constraint) {
+    public List<RolapMember> getChildrenFromCache(
+        RolapMember member,
+        MemberChildrenConstraint constraint)
+    {
         return null;
     }
 
@@ -108,60 +114,77 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return RolapUtil.lookupMember(this, uniqueNameParts, failIfNotFound);
     }
 
-    public List getRootMembers() {
-        List list = new ArrayList();
-        for (int i = 0; i < members.length; i++) {
-            if (members[i].getParentUniqueName() == null) {
-                list.add(members[i]);
+    public List<RolapMember> getRootMembers() {
+        List<RolapMember> list = new ArrayList<RolapMember>();
+        for (RolapMember member : members) {
+            if (member.getParentUniqueName() == null) {
+                list.add(member);
             }
         }
         return list;
     }
 
-    public List getMembersInLevel(RolapLevel level,
-                                  int startOrdinal,
-                                  int endOrdinal) {
-        List list = new ArrayList();
+    public List<RolapMember> getMembersInLevel(
+        RolapLevel level,
+        int startOrdinal,
+        int endOrdinal)
+    {
+        List<RolapMember> list = new ArrayList<RolapMember>();
         int levelDepth = level.getDepth();
-        for (int i = 0; i < members.length; i++) {
-            RolapMember member = members[i];
+        for (RolapMember member : members) {
             if ((member.getLevel().getDepth() == levelDepth) &&
                 (startOrdinal <= member.getOrdinal()) &&
                 (member.getOrdinal() < endOrdinal)) {
 
-                list.add(members[i]);
+                list.add(member);
             }
         }
         return list;
     }
 
-    public List getMembersInLevel(RolapLevel level, int startOrdinal, int endOrdinal, TupleConstraint constraint) {
+    public List<RolapMember> getMembersInLevel(
+        RolapLevel level,
+        int startOrdinal,
+        int endOrdinal,
+        TupleConstraint constraint)
+    {
         return getMembersInLevel(level, startOrdinal, endOrdinal);
     }
 
-    public void getMemberChildren(RolapMember parentMember, List children) {
-        for (int i = 0; i < members.length; i++) {
-            RolapMember member = members[i];
+    public void getMemberChildren(
+        RolapMember parentMember,
+        List<RolapMember> children)
+    {
+        for (RolapMember member : members) {
             if (member.getParentMember() == parentMember) {
                 children.add(member);
             }
         }
     }
 
-    public void getMemberChildren(RolapMember member, List children, MemberChildrenConstraint constraint) {
+    public void getMemberChildren(
+        RolapMember member,
+        List<RolapMember> children,
+        MemberChildrenConstraint constraint)
+    {
         getMemberChildren(member, children);
     }
 
-    public void getMemberChildren(List parentMembers, List children) {
-        for (int i = 0; i < members.length; i++) {
-            RolapMember member = members[i];
-            if (parentMembers.contains(member.getParentMember())) {
+    public void getMemberChildren(
+        List<RolapMember> parentMembers,
+        List<RolapMember> children) {
+        for (RolapMember member : members) {
+            if (parentMembers.contains((RolapMember) member.getParentMember())) {
                 children.add(member);
             }
         }
     }
 
-    public void getMemberChildren(List parentMembers, List children, MemberChildrenConstraint constraint) {
+    public void getMemberChildren(
+        List<RolapMember> parentMembers,
+        List<RolapMember> children,
+        MemberChildrenConstraint constraint)
+    {
         getMemberChildren(parentMembers, children);
     }
 
@@ -188,10 +211,12 @@ class CacheMemberReader implements MemberReader, MemberCache {
         }
     }
 
-    public void getMemberRange(RolapLevel level,
-                               RolapMember startMember,
-                               RolapMember endMember,
-                               List list) {
+    public void getMemberRange(
+        RolapLevel level,
+        RolapMember startMember,
+        RolapMember endMember,
+        List<RolapMember> list)
+    {
         Util.assertPrecondition(startMember != null, "startMember != null");
         Util.assertPrecondition(endMember != null, "endMember != null");
         Util.assertPrecondition(startMember.getLevel() == endMember.getLevel(),

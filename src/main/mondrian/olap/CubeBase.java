@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -84,11 +84,9 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     }
 
     public Hierarchy lookupHierarchy(String s, boolean unique) {
-        for (int i = 0; i < dimensions.length; i++) {
-            Dimension dimension = dimensions[i];
+        for (Dimension dimension : dimensions) {
             Hierarchy[] hierarchies = dimension.getHierarchies();
-            for (int j = 0; j < hierarchies.length; j++) {
-                Hierarchy hierarchy = hierarchies[j];
+            for (Hierarchy hierarchy : hierarchies) {
                 String name = unique
                     ? hierarchy.getUniqueName() : hierarchy.getName();
                 if (name.equals(s)) {
@@ -113,20 +111,21 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         }
 
         //maybe this is not a dimension - maybe it's hierarchy, level or name
-        for (int i = 0; i < dimensions.length; i++) {
-            OlapElement mdxElement = dimensions[i].lookupChild(
+        for (Dimension dimension : dimensions) {
+            OlapElement mdxElement = dimension.lookupChild(
                 schemaReader, s, matchType);
-            if (mdxElement != null)
+            if (mdxElement != null) {
                 return mdxElement;
+            }
         }
         return null;
     }
 
     public Dimension getTimeDimension() {
-        for (int i = 0; i < dimensions.length; i++) {
-            if (dimensions[i].getDimensionType() ==
-                    DimensionType.TimeDimension) {
-                return dimensions[i];
+        for (Dimension dimension : dimensions) {
+            if (dimension.getDimensionType() ==
+                DimensionType.TimeDimension) {
+                return dimension;
             }
         }
 
@@ -134,9 +133,9 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     }
 
     public OlapElement lookupDimension(String s) {
-        for (int i = 0; i < dimensions.length; i++) {
-            if (dimensions[i].getName().equalsIgnoreCase(s)) {
-                return dimensions[i];
+        for (Dimension dimension : dimensions) {
+            if (dimension.getName().equalsIgnoreCase(s)) {
+                return dimension;
             }
         }
         return null;
@@ -145,15 +144,12 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     // ------------------------------------------------------------------------
 
     private Level getTimeLevel(LevelType levelType) {
-        for (int i = 0; i < dimensions.length; i++) {
-            Dimension dimension = dimensions[i];
+        for (Dimension dimension : dimensions) {
             if (dimension.getDimensionType() == DimensionType.TimeDimension) {
                 Hierarchy[] hierarchies = dimension.getHierarchies();
-                for (int j = 0; j < hierarchies.length; j++) {
-                    Hierarchy hierarchy = hierarchies[j];
+                for (Hierarchy hierarchy : hierarchies) {
                     Level[] levels = hierarchy.getLevels();
-                    for (int k = 0; k < levels.length; k++) {
-                        Level level = levels[k];
+                    for (Level level : levels) {
                         if (level.getLevelType() == levelType) {
                             return level;
                         }

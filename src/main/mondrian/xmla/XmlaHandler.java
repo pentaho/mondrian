@@ -37,7 +37,7 @@ import java.io.PrintWriter;
 public class XmlaHandler implements XmlaConstants {
     private static final Logger LOGGER = Logger.getLogger(XmlaHandler.class);
 
-    private final Map dataSourcesMap;
+    private final Map<String, DataSourcesConfig.DataSource> dataSourcesMap;
     private CatalogLocator catalogLocator = null;
 
     private static final int ROW_SET     = 1;
@@ -77,19 +77,19 @@ public class XmlaHandler implements XmlaConstants {
             DataSourcesConfig.DataSources dataSources,
             CatalogLocator catalogLocator) {
         this.catalogLocator = catalogLocator;
-        Map map = new HashMap();
+        Map<String, DataSourcesConfig.DataSource> map =
+            new HashMap<String, DataSourcesConfig.DataSource>();
         if (dataSources != null) {
-            for (int i = 0; i < dataSources.dataSources.length; i++) {
-                DataSourcesConfig.DataSource ds = dataSources.dataSources[i];
+            for (DataSourcesConfig.DataSource ds : dataSources.dataSources) {
                 if (map.containsKey(ds.getDataSourceName())) {
                     // This is not an XmlaException
                     throw Util.newError(
-                            "duplicated data source name '" +
+                        "duplicated data source name '" +
                             ds.getDataSourceName() + "'");
                 }
                 // Set parent pointers.
-                for (int j = 0; j < ds.catalogs.catalogs.length; j++) {
-                     ds.catalogs.catalogs[j].setDataSource(ds);
+                for (DataSourcesConfig.Catalog catalog : ds.catalogs.catalogs) {
+                    catalog.setDataSource(ds);
                 }
                 map.put(ds.getDataSourceName(), ds);
             }
@@ -97,7 +97,7 @@ public class XmlaHandler implements XmlaConstants {
         dataSourcesMap = Collections.unmodifiableMap(map);
     }
 
-    public Map getDataSourceEntries() {
+    public Map<String, DataSourcesConfig.DataSource> getDataSourceEntries() {
         return dataSourcesMap;
     }
 
@@ -139,10 +139,10 @@ public class XmlaHandler implements XmlaConstants {
         // Check response's rowset format in request
         String propertyName = null;
         try {
-            final Map properties = request.getProperties();
+            final Map<String, String> properties = request.getProperties();
             if (request.isDrillThrough()) {
                 propertyName = PropertyDefinition.Format.name;
-                final String formatName = (String) properties.get(propertyName);
+                final String formatName = properties.get(propertyName);
                 Enumeration.Format format = Enumeration.Format.getValue(formatName);
                 if (format != Enumeration.Format.Tabular) {
                     throw new XmlaException(
@@ -153,7 +153,7 @@ public class XmlaHandler implements XmlaConstants {
                 }
             } else {
                 propertyName = PropertyDefinition.Format.name;
-                final String formatName = (String) properties.get(propertyName);
+                final String formatName = properties.get(propertyName);
                 if (formatName != null) {
                     Enumeration.Format format = Enumeration.Format.getValue(formatName);
                     if (format != Enumeration.Format.Multidimensional &&
@@ -162,7 +162,7 @@ public class XmlaHandler implements XmlaConstants {
                     }
                 }
                 propertyName = PropertyDefinition.AxisFormat.name;
-                final String axisFormatName = (String) properties.get(propertyName);
+                final String axisFormatName = properties.get(propertyName);
                 if (axisFormatName != null) {
                     Enumeration.AxisFormat axisFormat = Enumeration.AxisFormat.getValue(axisFormatName);
 
@@ -186,16 +186,16 @@ public class XmlaHandler implements XmlaConstants {
     private void execute(XmlaRequest request, XmlaResponse response)
             throws XmlaException {
 
-        final Map properties = request.getProperties();
+        final Map<String, String> properties = request.getProperties();
         final String contentName =
-                (String) properties.get(PropertyDefinition.Content.name);
+            properties.get(PropertyDefinition.Content.name);
         // default value is SchemaData
         Enumeration.Content content = (contentName == null)
             ? CONTENT_DEFAULT
             : Enumeration.Content.getValue(contentName);
 
         // Handle execute
-        QueryResult result = null;
+        QueryResult result;
         if (request.isDrillThrough()) {
             result = executeDrillThroughQuery(request);
         } else {
@@ -865,7 +865,7 @@ public class XmlaHandler implements XmlaConstants {
 
     static class TabularRowSet implements QueryResult {
         private String[] header;
-        private List rows;
+        private List<Object[]> rows;
         private int totalCount;
 
         public TabularRowSet(
@@ -887,7 +887,7 @@ public class XmlaHandler implements XmlaConstants {
             rs.absolute(firstRowset <= 0 ? 1 : firstRowset);
 
             // populate data
-            rows = new ArrayList();
+            rows = new ArrayList<Object[]>();
             maxRows = (maxRows <= 0 ? Integer.MAX_VALUE : maxRows);
             do {
                 Object[] row = new Object[columnCount];
@@ -911,16 +911,15 @@ public class XmlaHandler implements XmlaConstants {
             if (totalCount >= 0) {
                 String countStr = Integer.toString(totalCount);
                 writer.startElement("row");
-                for (int i = 0; i < encodedHeader.length; i++) {
-                    writer.startElement(encodedHeader[i]);
+                for (String anEncodedHeader : encodedHeader) {
+                    writer.startElement(anEncodedHeader);
                     writer.characters(countStr);
                     writer.endElement();
                 }
                 writer.endElement(); // row
             }
 
-            for (Iterator it = rows.iterator(); it.hasNext();) {
-                Object[] row = (Object[]) it.next();
+            for (Object[] row : rows) {
                 writer.startElement("row");
                 for (int i = 0; i < row.length; i++) {
                     writer.startElement(encodedHeader[i]);
@@ -931,7 +930,7 @@ public class XmlaHandler implements XmlaConstants {
                         String valueString = value.toString();
                         if (value instanceof Number) {
                             valueString =
-                                    XmlaUtil.normalizeNumericString(valueString);
+                                XmlaUtil.normalizeNumericString(valueString);
                         }
                         writer.characters(valueString);
                     }
@@ -986,7 +985,7 @@ public class XmlaHandler implements XmlaConstants {
                     ex);
             }
 
-            final String formatName = (String) request.getProperties().get(
+            final String formatName = request.getProperties().get(
                     PropertyDefinition.Format.name);
             Enumeration.Format format = Enumeration.Format.getValue(formatName);
 
@@ -1054,7 +1053,7 @@ public class XmlaHandler implements XmlaConstants {
             // Not in spec nor generated by SQL Server
 //            "Depth"
             };
-        protected static final Map longPropNames = new HashMap();
+        protected static final Map<String, String> longPropNames = new HashMap<String, String>();
 
         static {
             longPropNames.put("UName", Property.MEMBER_UNIQUE_NAME.name);
@@ -1085,13 +1084,11 @@ public class XmlaHandler implements XmlaConstants {
         private void olapInfo(SaxWriter writer) {
             // What are all of the cube's hierachies
             Cube cube = result.getQuery().getCube();
-            List hierarchyList = new ArrayList();
+            List<Hierarchy> hierarchyList = new ArrayList<Hierarchy>();
             Dimension[] dimensions = cube.getDimensions();
-            for (int i = 0; i < dimensions.length; i++) {
-                Dimension dimension = dimensions[i];
+            for (Dimension dimension : dimensions) {
                 Hierarchy[] hierarchies = dimension.getHierarchies();
-                for (int j = 0; j < hierarchies.length; j++) {
-                    Hierarchy hierarchy = hierarchies[j];
+                for (Hierarchy hierarchy : hierarchies) {
                     hierarchyList.add(hierarchy);
                 }
             }
@@ -1111,12 +1108,12 @@ public class XmlaHandler implements XmlaConstants {
             final Axis[] axes = result.getAxes();
             final QueryAxis[] queryAxes = result.getQuery().getAxes();
             //axisInfo(writer, result.getSlicerAxis(), "SlicerAxis");
-            List axisHierarchyList = new ArrayList();
+            List<Hierarchy> axisHierarchyList = new ArrayList<Hierarchy>();
             for (int i = 0; i < axes.length; i++) {
                 Hierarchy[] hiers =
                         axisInfo(writer, axes[i], queryAxes[i], "Axis" + i);
-                for (int j = 0; j < hiers.length; j++) {
-                    axisHierarchyList.add(hiers[j]);
+                for (Hierarchy hier : hiers) {
+                    axisHierarchyList.add(hier);
                 }
 
             }
@@ -1127,15 +1124,14 @@ public class XmlaHandler implements XmlaConstants {
             // Hierarchy) and then for each Hierarchy remove it from the
             // list of all Hierarchies.
             // NOTE: Don't know if this is correct!!
-            for (Iterator it1 = axisHierarchyList.iterator(); it1.hasNext();) {
-                Hierarchy hier1 = (Hierarchy) it1.next();
+            for (Hierarchy hier1 : axisHierarchyList) {
                 Dimension dim = hier1.getDimension();
                 Hierarchy[] hiers = dim.getHierarchies();
-                for (int i = 0; i < hiers.length; i++) {
-                    Hierarchy h = hiers[i];
+                for (Hierarchy h : hiers) {
                     String uniqueName = h.getUniqueName();
-                    for (Iterator it2 = hierarchyList.iterator(); it2.hasNext();) {
-                        Hierarchy hier2 = (Hierarchy) it2.next();
+                    for (Iterator<Hierarchy> it2 = hierarchyList.iterator(); it2
+                        .hasNext();) {
+                        Hierarchy hier2 = it2.next();
                         if (uniqueName.equals(hier2.getUniqueName())) {
                             it2.remove();
                             break;
@@ -1148,7 +1144,7 @@ public class XmlaHandler implements XmlaConstants {
             // create AxesInfo for slicer axes
             //
             Hierarchy[] hierarchies =
-                (Hierarchy[]) hierarchyList.toArray(new Hierarchy[0]);
+                hierarchyList.toArray(new Hierarchy[hierarchyList.size()]);
             writer.startElement("AxisInfo",
                     new String[] { "name", "SlicerAxis"});
             final QueryAxis slicerAxis = result.getQuery().getSlicerAxis();
@@ -1209,18 +1205,21 @@ public class XmlaHandler implements XmlaConstants {
                 Hierarchy[] hierarchies,
                 String[] props) {
 
-            for (int j = 0; j < hierarchies.length; j++) {
-                writer.startElement("HierarchyInfo", new String[] {
-                    "name", hierarchies[j].getName()});
+            for (Hierarchy hierarchy : hierarchies) {
+                writer.startElement(
+                    "HierarchyInfo", new String[]{
+                    "name", hierarchy.getName()
+                });
                 for (int k = 0; k < props.length; k++) {
                     final String prop = props[k];
-                    String longPropName = (String) longPropNames.get(prop);
+                    String longPropName = longPropNames.get(prop);
                     if (longPropName == null) {
                         longPropName = prop;
                     }
-                    writer.element(prop, new String[] {
+                    writer.element(
+                        prop, new String[]{
                         "name",
-                        hierarchies[j].getUniqueName() + "." +
+                        hierarchy.getUniqueName() + "." +
                             Util.quoteMdxIdentifier(longPropName),
                     });
                 }
@@ -1249,14 +1248,11 @@ public class XmlaHandler implements XmlaConstants {
             final QueryAxis slicerAxis = result.getQuery().getSlicerAxis();
             final Member[] slicerMembers =
                 result.getSlicerAxis().positions[0].getMembers();
-            for (int i = 0; i < hierarchies.length; i++) {
-                Hierarchy hierarchy = hierarchies[i];
-
+            for (Hierarchy hierarchy : hierarchies) {
                 // Find which member is on the slicer. If it's not explicitly
                 // there, use the default member.
                 Member member = hierarchy.getDefaultMember();
-                for (int j = 0; j < slicerMembers.length; j++) {
-                    Member slicerMember = slicerMembers[j];
+                for (Member slicerMember : slicerMembers) {
                     if (slicerMember.getHierarchy().equals(hierarchy)) {
                         member = slicerMember;
                         break;
@@ -1266,9 +1262,10 @@ public class XmlaHandler implements XmlaConstants {
                 if (member != null) {
                     slicerAxis(writer, member, getProps(slicerAxis));
                 } else {
-                    LOGGER.warn("Can not create SlicerAxis: " +
-                        "null default member for Hierarchy " +
-                        hierarchy.getUniqueName());
+                    LOGGER.warn(
+                        "Can not create SlicerAxis: " +
+                            "null default member for Hierarchy " +
+                            hierarchy.getUniqueName());
                 }
             }
             //
@@ -1312,24 +1309,24 @@ public class XmlaHandler implements XmlaConstants {
                     Member member = position.members[k];
                     writer.startElement("Member", new String[] {
                         "Hierarchy", member.getHierarchy().getName()});
-                    for (int m = 0; m < props.length; m++) {
-                        Object value = null;
-                        final String prop = props[m];
-                        String propLong = (String) longPropNames.get(prop);
+                    for (String prop1 : props) {
+                        Object value;
+                        final String prop = prop1;
+                        String propLong = longPropNames.get(prop);
                         if (propLong == null) {
                             propLong = prop;
                         }
                         if (propLong.equals(Property.DISPLAY_INFO.name)) {
                             Integer childrenCard =
-                                (Integer) member.getPropertyValue(Property.CHILDREN_CARDINALITY.name);
-                            int displayInfo = calculateDisplayInfo(
-                                    (j == 0 ? null : positions[j - 1]),
-                                    (j + 1 == positions.length 
-                                        ? null : positions[j + 1]),
-                                    member, k, childrenCard.intValue());
-                            value = new Integer(displayInfo);
+                                (Integer) member
+                                    .getPropertyValue(Property.CHILDREN_CARDINALITY.name);
+                            value = calculateDisplayInfo(
+                                (j == 0 ? null : positions[j - 1]),
+                                (j + 1 == positions.length
+                                    ? null : positions[j + 1]),
+                                member, k, childrenCard);
                         } else if (propLong.equals(Property.DEPTH.name)) {
-                            value = new Integer(member.getDepth());
+                            value = member.getDepth();
                         } else {
                             value = member.getPropertyValue(propLong);
                         }
@@ -1351,33 +1348,33 @@ public class XmlaHandler implements XmlaConstants {
                 SaxWriter writer, Member member, String[] props) {
             writer.startElement("Member", new String[] {
                 "Hierarchy", member.getHierarchy().getName()});
-            for (int m = 0; m < props.length; m++) {
-                Object value = null;
-                final String prop = props[m];
-                String propLong = (String) longPropNames.get(prop);
+            for (String prop : props) {
+                Object value;
+                String propLong = longPropNames.get(prop);
                 if (propLong == null) {
                     propLong = prop;
                 }
                 if (propLong.equals(Property.DISPLAY_INFO.name)) {
                     Integer childrenCard =
-                        (Integer) member.getPropertyValue(Property.CHILDREN_CARDINALITY.name);
+                        (Integer) member
+                            .getPropertyValue(Property.CHILDREN_CARDINALITY.name);
                     // NOTE: don't know if this is correct for
                     // SlicerAxis
-                    int displayInfo = 0xffff & childrenCard.intValue();
+                    int displayInfo = 0xffff & childrenCard;
 /*
                     int displayInfo =
                         calculateDisplayInfo((j == 0 ? null : positions[j - 1]),
                           (j + 1 == positions.length ? null : positions[j + 1]),
                           member, k, childrenCard.intValue());
 */
-                    value = new Integer(displayInfo);
+                    value = displayInfo;
                 } else if (propLong.equals(Property.DEPTH.name)) {
-                    value = new Integer(member.getDepth());
+                    value = member.getDepth();
                 } else {
                     value = member.getPropertyValue(propLong);
                 }
                 if (value != null) {
-                    writer.startElement(props[m]); // Properties
+                    writer.startElement(prop); // Properties
                     writer.characters(value.toString());
                     writer.endElement(); // Properties
                 }
@@ -1604,7 +1601,7 @@ public class XmlaHandler implements XmlaConstants {
 
             // Build a list of the lowest level used on each non-COLUMNS axis.
             Level[] levels = new Level[dimensionCount];
-            List columnHandlerList = new ArrayList();
+            List<ColumnHandler> columnHandlerList = new ArrayList<ColumnHandler>();
             int memberOrdinal = 0;
             if (!empty) {
                 for (int i = axes.length - 1; i > 0; i--) {
@@ -1616,10 +1613,9 @@ public class XmlaHandler implements XmlaConstants {
                         memberOrdinal = z0; // rewind to start
                         Position position = positions[j];
                         final Member[] members = position.members;
-                        for (int k = 0; k < members.length; k++) {
-                            Member member = members[k];
+                        for (Member member : members) {
                             if (j == 0 ||
-                                    member.getLevel().getDepth() >
+                                member.getLevel().getDepth() >
                                     levels[memberOrdinal].getDepth()) {
                                 levels[memberOrdinal] = member.getLevel();
                             }
@@ -1641,13 +1637,12 @@ public class XmlaHandler implements XmlaConstants {
                             if (level2.isAll()) {
                                 continue;
                             }
-                            for (int m = 0; m < dimProps.length; m++) {
-                                Id dimProp = dimProps[m];
+                            for (Id dimProp : dimProps) {
                                 columnHandlerList.add(
-                                        new MemberColumnHandler(
-                                                dimProp.toStringArray()[0],
-                                                level2,
-                                                j));
+                                    new MemberColumnHandler(
+                                        dimProp.toStringArray()[0],
+                                        level2,
+                                        j));
                             }
                         }
                     }
@@ -1657,8 +1652,7 @@ public class XmlaHandler implements XmlaConstants {
 
             // Deduce the list of column headings.
             Axis columnsAxis = axes[0];
-            for (int i = 0; i < columnsAxis.positions.length; i++) {
-                Position position = columnsAxis.positions[i];
+            for (Position position : columnsAxis.positions) {
                 String name = null;
                 for (int j = 0; j < position.members.length; j++) {
                     Member member = position.members[j];
@@ -1669,13 +1663,12 @@ public class XmlaHandler implements XmlaConstants {
                     }
                 }
                 columnHandlerList.add(
-                        new CellColumnHandler(name));
+                    new CellColumnHandler(name));
             }
 
             this.columnHandlers =
-                    (ColumnHandler[]) columnHandlerList.toArray(
-                            new ColumnHandler[columnHandlerList.size()]);
-
+                columnHandlerList.toArray(
+                    new ColumnHandler[columnHandlerList.size()]);
         }
 
         public void metadata(SaxWriter writer) {
@@ -1727,8 +1720,8 @@ public class XmlaHandler implements XmlaConstants {
                     "name", "row",
                 });
                 writer.startElement("xsd:sequence");
-                for (int i = 0; i < columnHandlers.length; i++) {
-                    columnHandlers[i].metadata(writer);
+                for (ColumnHandler columnHandler : columnHandlers) {
+                    columnHandler.metadata(writer);
                 }
                 writer.endElement(); // xsd:sequence
                 writer.endElement(); // xsd:complexType
@@ -1768,8 +1761,8 @@ public class XmlaHandler implements XmlaConstants {
                 } else {
                     // Populate headers and values with levels.
                     int ho = headerOrdinal;
-                    for (int j = 0; j < position.members.length; j++) {
-                        members[ho++] = position.members[j];
+                    for (Member member : position.members) {
+                        members[ho++] = member;
                     }
 
                     recurse(writer, axis - 1, ho);
@@ -1788,8 +1781,8 @@ public class XmlaHandler implements XmlaConstants {
             }
 
             writer.startElement("row");
-            for (int j = 0; j < columnHandlers.length; j++) {
-                columnHandlers[j].write(writer, cell, members);
+            for (ColumnHandler columnHandler : columnHandlers) {
+                columnHandler.write(writer, cell, members);
             }
             writer.endElement();
         }
@@ -1804,7 +1797,7 @@ public class XmlaHandler implements XmlaConstants {
 
         try {
             final String formatName =
-                (String) request.getProperties().get(PropertyDefinition.Format.name);
+                request.getProperties().get(PropertyDefinition.Format.name);
             Enumeration.Format format = Enumeration.Format.getValue(formatName);
             if (format != Enumeration.Format.Tabular) {
                 throw new XmlaException(
@@ -1818,7 +1811,7 @@ public class XmlaHandler implements XmlaConstants {
             // java.lang.Error
         }
         final String contentName =
-            (String) request.getProperties().get(PropertyDefinition.Content.name);
+            request.getProperties().get(PropertyDefinition.Content.name);
         // default value is SchemaData
         Enumeration.Content content = (contentName == null)
             ? CONTENT_DEFAULT
@@ -1930,9 +1923,9 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
      */
     public DataSourcesConfig.DataSource getDataSource(XmlaRequest request)
                 throws XmlaException {
-        Map properties = request.getProperties();
+        Map<String, String> properties = request.getProperties();
         final String dataSourceInfo =
-            (String) properties.get(PropertyDefinition.DataSourceInfo.name);
+            properties.get(PropertyDefinition.DataSourceInfo.name);
         if (!dataSourcesMap.containsKey(dataSourceInfo)) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
@@ -1946,7 +1939,7 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
         }
 
         final DataSourcesConfig.DataSource ds =
-            (DataSourcesConfig.DataSource) dataSourcesMap.get(dataSourceInfo);
+            dataSourcesMap.get(dataSourceInfo);
         if (LOGGER.isDebugEnabled()) {
             if (ds == null) {
                 // TODO: this if a failure situation
@@ -1978,9 +1971,7 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
                 return catalogs[0];
             }
         } else {
-            for (int i = 0; i < catalogs.length; i++) {
-                DataSourcesConfig.Catalog dsCatalog = catalogs[i];
-
+            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (catalogName.equals(dsCatalog.name)) {
                     return dsCatalog;
                 }
@@ -2002,9 +1993,9 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
             XmlaRequest request,
             DataSourcesConfig.DataSource ds) {
 
-        Map properties = request.getProperties();
+        Map<String, String> properties = request.getProperties();
         final String catalogName =
-            (String) properties.get(PropertyDefinition.Catalog.name);
+            properties.get(PropertyDefinition.Catalog.name);
         if (catalogName != null) {
             DataSourcesConfig.Catalog dsCatalog = getCatalog(ds, catalogName);
             return new DataSourcesConfig.Catalog[] { dsCatalog };
@@ -2029,9 +2020,9 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
             DataSourcesConfig.DataSource ds)
                 throws XmlaException {
 
-        Map properties = request.getProperties();
+        Map<String, String> properties = request.getProperties();
         final String catalogName =
-            (String) properties.get(PropertyDefinition.Catalog.name);
+            properties.get(PropertyDefinition.Catalog.name);
         DataSourcesConfig.Catalog dsCatalog = getCatalog(ds, catalogName);
         if ((dsCatalog == null) && (catalogName == null)) {
             throw new XmlaException(

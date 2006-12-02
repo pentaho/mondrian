@@ -17,14 +17,14 @@ import java.util.Map;
  *
  * @version $Id$
  */
-public class HardSmartCache implements SmartCache {
-    Map cache = new HashMap();
+public class HardSmartCache <K, V> implements SmartCache <K, V> {
+    Map<K, V> cache = new HashMap<K, V>();
     
-    public Object put(Object key, Object value) {
+    public V put(K key, V value) {
         return cache.put(key, value);
     }
 
-    public Object get(Object key) {
+    public V get(K key) {
         return cache.get(key);
     }
 

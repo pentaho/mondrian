@@ -9,7 +9,6 @@
 package mondrian.rolap;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import mondrian.olap.*;
@@ -57,13 +56,18 @@ public class RolapNativeSql {
     }
     
     /**
-     * translates an Expr into SQL
+     * Translates an expression into SQL
+     *
      * @author av
      * @since Nov 23, 2005
      */
     interface SqlCompiler {
         /**
-         * return sql or null if <code>exp</code> can not be compiled into SQL
+         * Returns SQL. If <code>exp</code> can not be compiled into SQL,
+         * returns null.
+         *
+         * @param exp Expression
+         * @return SQL, or null if cannot be converted into SQL
          */
         String compile(Exp exp);
     }
@@ -74,15 +78,14 @@ public class RolapNativeSql {
      * @since Nov 23, 2005
      */
     class CompositeSqlCompiler implements SqlCompiler {
-        List compilers = new ArrayList();
+        List<SqlCompiler> compilers = new ArrayList<SqlCompiler>();
 
         public void add(SqlCompiler compiler) {
             compilers.add(compiler);
         }
 
         public String compile(Exp exp) {
-            for (Iterator it = compilers.iterator(); it.hasNext();) {
-                SqlCompiler compiler = (SqlCompiler) it.next();
+            for (SqlCompiler compiler : compilers) {
                 String s = compiler.compile(exp);
                 if (s != null) {
                     return s;
@@ -285,17 +288,17 @@ public class RolapNativeSql {
             if (args == null) {
                 return null;
             }
-            StringBuffer sb = new StringBuffer();
-            sb.append(sql);
-            sb.append("(");
+            StringBuilder buf = new StringBuilder();
+            buf.append(sql);
+            buf.append("(");
             for (int i = 0; i < args.length; i++) {
                 if (i > 0) {
-                    sb.append(", ");
+                    buf.append(", ");
                 }
-                sb.append(args[i]);
+                buf.append(args[i]);
             }
-            sb.append(") ");
-            return sb.toString();
+            buf.append(") ");
+            return buf.toString();
         }
 
         public String toString() {

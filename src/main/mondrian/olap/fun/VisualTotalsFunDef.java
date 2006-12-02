@@ -79,18 +79,18 @@ public class VisualTotalsFunDef extends FunDefBase {
         }
 
         public List evaluateList(Evaluator evaluator) {
-            final List list = listCalc.evaluateList(evaluator);
-            final List resultList = new ArrayList(list);
+            final List<Member> list = listCalc.evaluateList(evaluator);
+            final List<Member> resultList = new ArrayList<Member>(list);
             final int memberCount = list.size();
             for (int i = memberCount - 1; i >= 0; --i) {
-                Member member = (Member) list.get(i);
+                Member member = list.get(i);
                 if (i + 1 < memberCount) {
-                    Member nextMember = (Member) resultList.get(i + 1);
+                    Member nextMember = resultList.get(i + 1);
                     if (nextMember != member &&
                             nextMember.isChildOrEqualTo(member)) {
                         resultList.set(
-                                i,
-                                createMember(member, i, resultList, evaluator));
+                            i,
+                            createMember(member, i, resultList, evaluator));
                     }
                 }
             }
@@ -98,7 +98,11 @@ public class VisualTotalsFunDef extends FunDefBase {
         }
 
         private VisualTotalMember createMember(
-                Member member, int i, final List list, Evaluator evaluator) {
+                Member member,
+                int i,
+                final List<Member> list,
+                Evaluator evaluator)
+        {
             final String name;
             if (stringCalc != null) {
                 final String namePattern = stringCalc.evaluateString(evaluator);
@@ -106,17 +110,20 @@ public class VisualTotalsFunDef extends FunDefBase {
             } else {
                 name = member.getName();
             }
-            final List childMemberList = followingDescendants(member, i + 1, list);
-            final Exp exp =  makeExpr(childMemberList);
+            final List<Member> childMemberList =
+                followingDescendants(member, i + 1, list);
+            final Exp exp = makeExpr(childMemberList);
             final Validator validator = evaluator.getQuery().createValidator();
             final Exp validatedExp = exp.accept(validator);
             return new VisualTotalMember(member, name, validatedExp);
         }
 
-        private List followingDescendants(Member member, int i, final List list) {
-            List childMemberList = new ArrayList();
+        private List<Member> followingDescendants(
+            Member member, int i, final List<Member> list)
+        {
+            List<Member> childMemberList = new ArrayList<Member>();
             while (i < list.size()) {
-                Member descendant = (Member) list.get(i);
+                Member descendant = list.get(i);
                 if (descendant == member) {
                     // strict descendants only
                     break;
@@ -250,7 +257,7 @@ public class VisualTotalsFunDef extends FunDefBase {
      * @return Substituted pattern
      */
     static String substitute(String namePattern, String name) {
-        final StringBuffer buf = new StringBuffer(256);
+        final StringBuilder buf = new StringBuilder(256);
         final int namePatternLen = namePattern.length();
         int startIndex = 0;
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2003-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -322,7 +322,7 @@ public class Syntax extends EnumeratedValues.BasicValue {
 
     private static String getTypeDescriptionCommaList(int[] types, int start) {
         int initialSize = (types.length - start) * 16;
-        StringBuffer sb = new StringBuffer(initialSize > 0 ? initialSize : 16);
+        StringBuilder sb = new StringBuilder(initialSize > 0 ? initialSize : 16);
         for (int i = start; i < types.length; i++) {
             if (i > start) {
                 sb.append(", ");

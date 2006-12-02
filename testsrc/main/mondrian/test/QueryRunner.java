@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2005 Julian Hyde and others
+// Copyright (C) 2004-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,6 +13,7 @@ import mondrian.olap.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.io.PrintStream;
 import java.text.MessageFormat;
 
@@ -24,7 +25,7 @@ public class QueryRunner extends Thread {
     private long mRunTime;
     private long mStartTime;
     private long mStopTime;
-    private ArrayList mExceptions = new ArrayList();
+    private List<Exception> mExceptions = new ArrayList<Exception>();
     private int mMyId;
     private int mRunCount;
     private int mSuccessCount;
@@ -238,8 +239,7 @@ public class QueryRunner extends Thread {
                     Query query = cxn.parseQuery(Queries[queryIndex]);
                     cxn.execute(query);
                     mSuccessCount++;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     mExceptions.add(new Exception("Exception occurred on iteration " + queryIndex, e));
                 }
             }
@@ -251,17 +251,13 @@ public class QueryRunner extends Thread {
     }
 
     public void report(PrintStream out) {
-        String message = MessageFormat.format("Thread {0} ran {1} queries, {2} successfully in {3} milliseconds",
-            new Object[] {new Integer(mMyId), new Integer(mRunCount), new Integer(mSuccessCount),
-                          new Long(mStopTime - mStartTime)
-            });
+        String message = MessageFormat.format(
+            "Thread {0} ran {1} queries, {2} successfully in {3} milliseconds",
+            mMyId, mRunCount, mSuccessCount, mStopTime - mStartTime);
 
         out.println(message);
 
-        Iterator exceptions = mExceptions.iterator();
-
-        while (exceptions.hasNext()) {
-            Throwable throwable = (Throwable) exceptions.next();
+        for (Exception throwable : mExceptions) {
             throwable.printStackTrace(out);
         }
     }
@@ -298,7 +294,10 @@ public class QueryRunner extends Thread {
             return;
         }
         else {
-            runTest(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Boolean.valueOf(args[2]).booleanValue());
+            runTest(
+                Integer.parseInt(args[0]),
+                Integer.parseInt(args[1]),
+                Boolean.valueOf(args[2]));
         }
     }
 }

@@ -14,8 +14,6 @@ import mondrian.olap.type.Type;
 import mondrian.olap.type.ScalarType;
 import mondrian.calc.*;
 
-import java.util.ArrayList;
-
 /**
  * Expression which evaluates a few member expressions,
  * sets the dimensional context to the result of those expressions,
@@ -71,8 +69,7 @@ public class MemberValueCalc extends GenericCalc {
         if (super.dependsOn(dimension)) {
             return true;
         }
-        for (int i = 0; i < memberCalcs.length; i++) {
-            MemberCalc memberCalc = memberCalcs[i];
+        for (MemberCalc memberCalc : memberCalcs) {
             // If the expression
             if (memberCalc.getType().usesDimension(dimension, true)) {
                 return false;

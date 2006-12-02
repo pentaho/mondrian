@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -78,7 +78,7 @@ public class Util extends XOMUtil {
      * Encodes string for MDX (escapes ] as ]] inside a name).
      */
     public static String mdxEncodeString(String st) {
-        StringBuffer retString = new StringBuffer(st.length() + 20);
+        StringBuilder retString = new StringBuilder(st.length() + 20);
         for (int i = 0; i < st.length(); i++) {
             char c = st.charAt(i);
             if ((c == ']') &&
@@ -96,7 +96,7 @@ public class Util extends XOMUtil {
      * Converts a string into a double-quoted string.
      */
     public static String quoteForMdx(String val) {
-        StringBuffer buf = new StringBuffer(val.length()+20);
+        StringBuilder buf = new StringBuilder(val.length()+20);
         buf.append("\"");
 
         String s0 = replace(val, "\"", "\"\"");
@@ -112,12 +112,12 @@ public class Util extends XOMUtil {
      * "[a [bracketed]] string]".
      */
     public static String quoteMdxIdentifier(String id) {
-        StringBuffer buf = new StringBuffer(id.length() + 20);
+        StringBuilder buf = new StringBuilder(id.length() + 20);
         quoteMdxIdentifier(id, buf);
         return buf.toString();
     }
 
-    public static void quoteMdxIdentifier(String id, StringBuffer buf) {
+    public static void quoteMdxIdentifier(String id, StringBuilder buf) {
         buf.append('[');
         int start = buf.length();
         buf.append(id);
@@ -130,12 +130,12 @@ public class Util extends XOMUtil {
      * "California"} becomes "[Store].[USA].[California]".
      */
     public static String quoteMdxIdentifier(String[] ids) {
-        StringBuffer sb = new StringBuffer(64);
+        StringBuilder sb = new StringBuilder(64);
         quoteMdxIdentifier(ids, sb);
         return sb.toString();
     }
 
-    public static void quoteMdxIdentifier(String[] ids, StringBuffer sb) {
+    public static void quoteMdxIdentifier(String[] ids, StringBuilder sb) {
         for (int i = 0; i < ids.length; i++) {
             if (i > 0) {
                 sb.append('.');
@@ -221,7 +221,7 @@ public class Util extends XOMUtil {
         if (found == -1) {
             return s;
         }
-        StringBuffer sb = new StringBuffer(s.length() + 20);
+        StringBuilder sb = new StringBuilder(s.length() + 20);
         int start = 0;
         char[] chars = s.toCharArray();
         final int step = find.length();
@@ -255,8 +255,8 @@ public class Util extends XOMUtil {
      * @param replace String to replace it with
      * @return The string buffer
      */
-    public static StringBuffer replace(
-            StringBuffer buf,
+    public static StringBuilder replace(
+            StringBuilder buf,
             int start,
             String find, String replace) {
 
@@ -288,7 +288,7 @@ public class Util extends XOMUtil {
         if (!s.startsWith("[")) {
             return new String[]{s};
         }
-        List list = new ArrayList();
+        List<String> list = new ArrayList<String>();
         int i = 0;
         while (i < s.length()) {
             if (s.charAt(i) != '[') {
@@ -321,7 +321,7 @@ public class Util extends XOMUtil {
      * "[part1].[part2]". If the names contain "]" they are escaped as "]]".
      */
     public static String implode(String[] names) {
-        StringBuffer sb = new StringBuffer(64);
+        StringBuilder sb = new StringBuilder(64);
         for (int i = 0; i < names.length; i++) {
             if (i > 0) {
                 sb.append(".");
@@ -339,7 +339,7 @@ public class Util extends XOMUtil {
         if (parent == null) {
             return Util.quoteMdxIdentifier(name);
         } else {
-            StringBuffer buf = new StringBuffer(64);
+            StringBuilder buf = new StringBuilder(64);
             buf.append(parent.getUniqueName());
             buf.append('.');
             Util.quoteMdxIdentifier(name, buf);
@@ -351,7 +351,7 @@ public class Util extends XOMUtil {
         if (parentUniqueName == null) {
             return quoteMdxIdentifier(name);
         } else {
-            StringBuffer buf = new StringBuffer(64);
+            StringBuilder buf = new StringBuilder(64);
             buf.append(parentUniqueName);
             buf.append('.');
             Util.quoteMdxIdentifier(name, buf);
@@ -400,7 +400,7 @@ public class Util extends XOMUtil {
         Util.assertPrecondition(parent != null, "parent != null");
 
         if (LOGGER.isDebugEnabled()) {
-            StringBuffer buf = new StringBuffer(64);
+            StringBuilder buf = new StringBuilder(64);
             buf.append("Util.lookupCompound: ");
             buf.append("parent.name=");
             buf.append(parent.getName());
@@ -448,13 +448,13 @@ public class Util extends XOMUtil {
                 for (int j = i + 1; j < names.length; j++) {
                     Member[] children =
                         schemaReader.getMemberChildren(bestChild);
-                    List childrenList = Arrays.asList(children);
+                    List<Member> childrenList = Arrays.asList(children);
                     FunUtil.hierarchize(childrenList, false);
                     if (matchType == MatchType.AFTER) {
-                        bestChild = (Member) childrenList.get(0);
+                        bestChild = childrenList.get(0);
                     } else {
                         bestChild =
-                            (Member) childrenList.get(children.length - 1);
+                            childrenList.get(children.length - 1);
                     }
                     if (bestChild == null) {
                         child = null;
@@ -466,7 +466,7 @@ public class Util extends XOMUtil {
             }
             if (child == null) {
                 if (LOGGER.isDebugEnabled()) {
-                    StringBuffer buf = new StringBuffer(64);
+                    StringBuilder buf = new StringBuilder(64);
                     buf.append("Util.lookupCompound: ");
                     buf.append("parent.name=");
                     buf.append(parent.getName());
@@ -485,7 +485,7 @@ public class Util extends XOMUtil {
             parent = child;
         }
         if (LOGGER.isDebugEnabled()) {
-            StringBuffer buf = new StringBuffer(64);
+            StringBuilder buf = new StringBuilder(64);
             buf.append("Util.lookupCompound: ");
             buf.append("found child.name=");
             buf.append(parent.getName());
@@ -763,9 +763,9 @@ public class Util extends XOMUtil {
      */
     public static Level lookupHierarchyLevel(Hierarchy hierarchy, String s) {
         final Level[] levels = hierarchy.getLevels();
-        for (int i = 0; i < levels.length; i++) {
-            if (levels[i].getName().equalsIgnoreCase(s)) {
-                return levels[i];
+        for (Level level : levels) {
+            if (level.getName().equalsIgnoreCase(s)) {
+                return level;
             }
         }
         return null;
@@ -797,9 +797,11 @@ public class Util extends XOMUtil {
      * If parent = [Time].[1997] and level = [Time].[Month], then
      * the member [Time].[1997].[Q1].[1] will be returned
      */
-    public static Member getFirstDescendantOnLevel(SchemaReader reader,
-                                                   Member parent,
-                                                   Level level) {
+    public static Member getFirstDescendantOnLevel(
+        SchemaReader reader,
+        Member parent,
+        Level level)
+    {
         Member m = parent;
         while (m.getLevel() != level) {
             Member[] children = reader.getMemberChildren(m);
@@ -821,7 +823,7 @@ public class Util extends XOMUtil {
      * <code>singleQuoteForSql("don't")</code> yields <code>'don''t'</code>.
      */
     public static String singleQuoteString(String val) {
-        StringBuffer buf = new StringBuffer(64);
+        StringBuilder buf = new StringBuilder(64);
         singleQuoteString(val, buf);
         return buf.toString();
     }
@@ -831,7 +833,7 @@ public class Util extends XOMUtil {
      * <code>singleQuoteForSql(null)</code> yields <code>NULL</code>;
      * <code>singleQuoteForSql("don't")</code> yields <code>'don''t'</code>.
      */
-    public static void singleQuoteString(String val, StringBuffer buf) {
+    public static void singleQuoteString(String val, StringBuilder buf) {
         buf.append('\'');
 
         String s0 = replace(val, "'", "''");
@@ -884,8 +886,7 @@ public class Util extends XOMUtil {
     protected static Property lookupProperty(Level level, String propertyName) {
         do {
             Property[] properties = level.getProperties();
-            for (int i = 0; i < properties.length; i++) {
-                Property property = properties[i];
+            for (Property property : properties) {
                 if (property.getName().equals(propertyName)) {
                     return property;
                 }
@@ -918,19 +919,19 @@ public class Util extends XOMUtil {
             SchemaReader reader,
             Level level,
             Member[] members) {
-        List calcMembers = reader.getCalculatedMembers(level.getHierarchy());
-        List calcMembersInThisLevel = new ArrayList();
-        for (int i = 0; i < calcMembers.size(); i++) {
-            Member member = (Member) calcMembers.get(i);
-            if (member.getLevel().equals(level)) {
-                calcMembersInThisLevel.add(member);
+        List<Member> calcMembers =
+            reader.getCalculatedMembers(level.getHierarchy());
+        List<Member> calcMembersInThisLevel = new ArrayList<Member>();
+        for (Member calcMember : calcMembers) {
+            if (calcMember.getLevel().equals(level)) {
+                calcMembersInThisLevel.add(calcMember);
             }
         }
         if (!calcMembersInThisLevel.isEmpty()) {
-            List newMemberList = new ArrayList(Arrays.asList(members));
+            List<Member> newMemberList =
+                new ArrayList<Member>(Arrays.asList(members));
             newMemberList.addAll(calcMembersInThisLevel);
-            members = (Member[])
-                    newMemberList.toArray(new Member[newMemberList.size()]);
+            members = newMemberList.toArray(new Member[newMemberList.size()]);
         }
         return members;
     }
@@ -1053,13 +1054,13 @@ public class Util extends XOMUtil {
      *    {@link Throwable#getCause cause}.
      */
     public static String[] convertStackToString(Throwable e) {
-        List list = new ArrayList();
+        List<String> list = new ArrayList<String>();
         while (e != null) {
             String sMsg = getErrorMessage(e);
             list.add(sMsg);
             e = e.getCause();
         }
-        return (String[]) list.toArray(new String[list.size()]);
+        return list.toArray(new String[list.size()]);
     }
 
     /**
@@ -1086,8 +1087,10 @@ public class Util extends XOMUtil {
      *   is derived from {@link java.sql.SQLException} or is exactly a {@link
      *   java.lang.Exception}
      */
-    public static String getErrorMessage(Throwable err,
-                                         boolean prependClassName) {
+    public static String getErrorMessage(
+        Throwable err,
+        boolean prependClassName)
+    {
         String errMsg = err.getMessage();
         if ((errMsg == null) || (err instanceof RuntimeException)) {
             StringWriter sw = new StringWriter();
@@ -1149,7 +1152,7 @@ public class Util extends XOMUtil {
      * pairs. Lookup is case-insensitive, but the case of keys is preserved.
      */
     public static class PropertyList {
-        List list = new ArrayList();
+        List<String[]> list = new ArrayList<String[]>();
 
         public String get(String key) {
             return get(key, null);
@@ -1157,7 +1160,7 @@ public class Util extends XOMUtil {
 
         public String get(String key, String defaultValue) {
             for (int i = 0, n = list.size(); i < n; i++) {
-                String[] pair = (String[]) list.get(i);
+                String[] pair = list.get(i);
                 if (pair[0].equalsIgnoreCase(key)) {
                     return pair[1];
                 }
@@ -1167,7 +1170,7 @@ public class Util extends XOMUtil {
 
         public String put(String key, String value) {
             for (int i = 0, n = list.size(); i < n; i++) {
-                String[] pair = (String[]) list.get(i);
+                String[] pair = list.get(i);
                 if (pair[0].equalsIgnoreCase(key)) {
                     String old = pair[1];
                     if (key.equalsIgnoreCase("Provider")) {
@@ -1184,9 +1187,9 @@ public class Util extends XOMUtil {
         }
 
         public String toString() {
-            StringBuffer sb = new StringBuffer(64);
+            StringBuilder sb = new StringBuilder(64);
             for (int i = 0, n = list.size(); i < n; i++) {
-                String[] pair = (String[]) list.get(i);
+                String[] pair = list.get(i);
                 if (i > 0) {
                     sb.append("; ");
                 }
@@ -1215,7 +1218,7 @@ public class Util extends XOMUtil {
             return sb.toString();
         }
 
-        public Iterator iterator() {
+        public Iterator<String[]> iterator() {
             return list.iterator();
         }
     }
@@ -1243,15 +1246,15 @@ public class Util extends XOMUtil {
         private final String s;
         private final int n;
         private int i;
-        private final StringBuffer nameBuf;
-        private final StringBuffer valueBuf;
+        private final StringBuilder nameBuf;
+        private final StringBuilder valueBuf;
 
         private ConnectStringParser(String s) {
             this.s = s;
             this.i = 0;
             this.n = s.length();
-            this.nameBuf = new StringBuffer(64);
-            this.valueBuf = new StringBuffer(64);
+            this.nameBuf = new StringBuilder(64);
+            this.valueBuf = new StringBuilder(64);
         }
 
         PropertyList parse() {
@@ -1391,18 +1394,6 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Converts a list, which may or may not be mutable, into a mutable list.
-     * Non-mutable lists are returned by, for example,
-     * {@link List#subList}, {@link Arrays#asList},
-     * {@link Collections#unmodifiableList}.
-     */
-    public static List makeMutable(List list) {
-        return (list instanceof ArrayList)
-            ? list
-            : new ArrayList(list);
-    }
-
-    /**
      * Combines two integers into a hash code.
      */
     public static int hash(int i, int j) {
@@ -1431,8 +1422,8 @@ public class Util extends XOMUtil {
         if (a.length == 0) {
             return hash(h, 19690721);
         }
-        for (int i = 0; i < a.length; i++) {
-            h = hash(h, a[i]);
+        for (Object anA : a) {
+            h = hash(h, anA);
         }
         return h;
     }
@@ -1529,7 +1520,7 @@ public class Util extends XOMUtil {
         }
 
         final char[] buffer = new char[bufferSize];
-        final StringBuffer buf = new StringBuffer(bufferSize);
+        final StringBuilder buf = new StringBuilder(bufferSize);
 
         int len = rdr.read(buffer);
         while (len != -1) {
@@ -1593,7 +1584,7 @@ public class Util extends XOMUtil {
      * @return Contents of URL with tokens substituted
      * @throws IOException
      */
-    public static String readURL(final URL url, Map map) throws IOException {
+    public static String readURL(final URL url, Map<String, String> map) throws IOException {
         final Reader r =
             new BufferedReader(new InputStreamReader(url.openStream()));
         final int BUF_SIZE = 8096;
@@ -1608,6 +1599,13 @@ public class Util extends XOMUtil {
         }
     }
 
+    public static Map<String, String> toMap(final Properties properties) {
+        return new AbstractMap<String, String>() {
+            public Set<Entry<String, String>> entrySet() {
+                return (Set) properties.entrySet();
+            }
+        };
+    }
     /**
      * Replaces tokens in a string.
      *
@@ -1618,16 +1616,21 @@ public class Util extends XOMUtil {
      * @param env Map of key-value pairs
      * @return String with tokens substituted
      */
-    public static String replaceProperties(String text, Map env) {
+    public static String replaceProperties(
+        String text,
+        Map<String, String> env)
+    {
+        // As of JDK 1.5, cannot use StringBuilder - appendReplacement requires
+        // the antediluvian StringBuffer.
         StringBuffer buf = new StringBuffer(text.length() + 200);
 
         Pattern pattern = Pattern.compile("\\$\\{([^${}]+)\\}");
         Matcher matcher = pattern.matcher(text);
         while (matcher.find()) {
             String varName = matcher.group(1);
-            Object varValue = env.get(varName);
+            String varValue = env.get(varName);
             if (varValue != null) {
-                matcher.appendReplacement(buf, varValue.toString());
+                matcher.appendReplacement(buf, varValue);
             } else {
                 matcher.appendReplacement(buf, "\\${$1}");
             }
@@ -1636,6 +1639,7 @@ public class Util extends XOMUtil {
 
         return buf.toString();
     }
+
     public static String printMemory() {
         return printMemory(null);
     }
@@ -1643,7 +1647,7 @@ public class Util extends XOMUtil {
         final Runtime rt = Runtime.getRuntime();
         final long freeMemory = rt.freeMemory();
         final long totalMemory = rt.totalMemory();
-        final StringBuffer buf = new StringBuffer(64);
+        final StringBuilder buf = new StringBuilder(64);
 
         buf.append("FREE_MEMORY:");
         if (msg != null) {

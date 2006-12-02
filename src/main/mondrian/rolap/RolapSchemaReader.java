@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2003-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -43,7 +43,7 @@ import org.eigenbase.util.property.Property;
  */
 public abstract class RolapSchemaReader implements SchemaReader {
     private final Role role;
-    private final Map hierarchyReaders = new HashMap();
+    private final Map<Hierarchy, MemberReader> hierarchyReaders = new HashMap<Hierarchy, MemberReader>();
     private final RolapSchema schema;
     private final SqlConstraintFactory sqlConstraintFactory =
             SqlConstraintFactory.instance();
@@ -74,7 +74,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
     }
 
     synchronized MemberReader getMemberReader(Hierarchy hierarchy) {
-        MemberReader memberReader = (MemberReader) hierarchyReaders.get(hierarchy);
+        MemberReader memberReader = hierarchyReaders.get(hierarchy);
         if (memberReader == null) {
             memberReader = ((RolapHierarchy) hierarchy).getMemberReader(role);
             hierarchyReaders.put(hierarchy, memberReader);
@@ -147,7 +147,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
 
     private Member[] internalGetMemberChildren(
             Member member, MemberChildrenConstraint constraint) {
-        List children = new ArrayList();
+        List<RolapMember> children = new ArrayList<RolapMember>();
         final Hierarchy hierarchy = member.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
         memberReader.getMemberChildren(
@@ -167,8 +167,9 @@ public abstract class RolapSchemaReader implements SchemaReader {
             return -1;
         }
         List list = ((MemberCache)memberReader).getChildrenFromCache((RolapMember)member, null);
-        if (list == null)
+        if (list == null) {
           return -1;
+        }
         return list.size();
     }
 
@@ -230,9 +231,11 @@ public abstract class RolapSchemaReader implements SchemaReader {
                     sqlConstraintFactory.getMemberChildrenConstraint(context);
             final Hierarchy hierarchy = members[0].getHierarchy();
             final MemberReader memberReader = getMemberReader(hierarchy);
-            List children = new ArrayList();
+            List<RolapMember> children = new ArrayList<RolapMember>();
             memberReader.getMemberChildren(
-                    Arrays.asList(members), children, constraint);
+                (List<RolapMember>) (List) Arrays.asList(members),
+                children,
+                constraint);
             return RolapUtil.toArray(children);
         }
     }
@@ -352,7 +355,8 @@ public abstract class RolapSchemaReader implements SchemaReader {
                     context,
                     new Level [] { level });
         final MemberReader memberReader = getMemberReader(level.getHierarchy());
-        final List membersInLevel = memberReader.getMembersInLevel(
+        final List<RolapMember> membersInLevel =
+            memberReader.getMembersInLevel(
                 (RolapLevel) level, 0, Integer.MAX_VALUE, constraint);
         return RolapUtil.toArray(membersInLevel);
     }
@@ -420,32 +424,28 @@ public abstract class RolapSchemaReader implements SchemaReader {
     }
 
     public Cube[] getCubes() {
-        Cube[] cubes = schema.getCubes();
-        List visibleCubes = new ArrayList(cubes.length);
+        List<RolapCube> cubes = schema.getCubeList();
+        List<Cube> visibleCubes = new ArrayList<Cube>(cubes.size());
 
-        for (int idx = 0; idx < cubes.length; idx++) {
-            if (role.canAccess(cubes[idx])) {
-                visibleCubes.add(cubes[idx]);
+        for (Cube cube : cubes) {
+            if (role.canAccess(cube)) {
+                visibleCubes.add(cube);
             }
         }
 
-        Cube[] result = new Cube[visibleCubes.size()];
-
-        visibleCubes.toArray(result);
-
-        return result;
+        return visibleCubes.toArray(new Cube[visibleCubes.size()]);
     }
 
-    public List getCalculatedMembers(Hierarchy hierarchy) {
-        return Collections.EMPTY_LIST;
+    public List<Member> getCalculatedMembers(Hierarchy hierarchy) {
+        return Collections.emptyList();
     }
 
-    public List getCalculatedMembers(Level level) {
-        return Collections.EMPTY_LIST;
+    public List<Member> getCalculatedMembers(Level level) {
+        return Collections.emptyList();
     }
 
-    public List getCalculatedMembers() {
-        return Collections.EMPTY_LIST;
+    public List<Member> getCalculatedMembers() {
+        return Collections.emptyList();
     }
 
     public NativeEvaluator getNativeSetEvaluator(
@@ -457,19 +457,15 @@ public abstract class RolapSchemaReader implements SchemaReader {
 
     public Parameter getParameter(String name) {
         // Scan through schema parameters.
-        for (int i = 0; i < schema.parameterList.size(); i++) {
-            RolapSchemaParameter parameter =
-                (RolapSchemaParameter) schema.parameterList.get(i);
+        for (RolapSchemaParameter parameter : schema.parameterList) {
             if (Util.equalName(parameter.getName(), name)) {
                 return parameter;
             }
         }
 
         // Scan through mondrian and system properties.
-        List propertyList = MondrianProperties.instance().getPropertyList();
-        for (int i = 0; i < propertyList.size(); i++) {
-            org.eigenbase.util.property.Property property =
-                (org.eigenbase.util.property.Property) propertyList.get(i);
+        List<Property> propertyList = MondrianProperties.instance().getPropertyList();
+        for (Property property : propertyList) {
             if (property.getPath().equals(name)) {
                 return new SystemPropertyParameter(name, false);
             }

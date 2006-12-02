@@ -111,6 +111,7 @@ public class Main extends TestSuite {
 
         System.out.println("testName: " + testName);
         System.out.println("testClass: " + testClass);
+        System.out.println("java.version: " + System.getProperty("java.version"));
 
         TestSuite suite = new TestSuite();
         if (testClass != null && !testClass.equals("")) {

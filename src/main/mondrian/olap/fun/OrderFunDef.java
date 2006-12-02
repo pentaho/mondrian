@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2002 Kana Software, Inc.
-// Copyright (C) 2004-2005 Julian Hyde and others
+// Copyright (C) 2004-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,7 +13,6 @@ package mondrian.olap.fun;
 import mondrian.calc.*;
 import mondrian.calc.impl.*;
 import mondrian.olap.*;
-import mondrian.olap.type.MemberType;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.*;
@@ -48,13 +47,13 @@ class OrderFunDef extends FunDefBase {
 
         if (expCalc instanceof MemberValueCalc) {
             MemberValueCalc memberValueCalc = (MemberValueCalc) expCalc;
-            ArrayList constantList = new ArrayList();
-            ArrayList variableList = new ArrayList();
+            List<Calc> constantList = new ArrayList<Calc>();
+            List<Calc> variableList = new ArrayList<Calc>();
             final MemberCalc[] calcs = (MemberCalc[]) memberValueCalc.getCalcs();
-            for (int i = 0; i < calcs.length; i++) {
-                MemberCalc memberCalc = calcs[i];
+            for (MemberCalc memberCalc : calcs) {
                 if (memberCalc instanceof ConstantCalc &&
-                        !listCalc.dependsOn(((MemberType) memberCalc.getType()).getHierarchy().getDimension())) {
+                    !listCalc.dependsOn(
+                        memberCalc.getType().getHierarchy().getDimension())) {
                     constantList.add(memberCalc);
                 } else {
                     variableList.add(memberCalc);
@@ -78,15 +77,15 @@ class OrderFunDef extends FunDefBase {
                 // Some members are constant. Evaluate these before evaluating
                 // the list expression.
                 return new ContextCalc(
-                        (MemberCalc[]) constantList.toArray(
-                                new MemberCalc[constantList.size()]),
+                    constantList.toArray(
+                        new MemberCalc[constantList.size()]),
                         new CalcImpl(
                                 call,
                                 listCalc,
                                 new MemberValueCalc(
-                                        new DummyExp(expCalc.getType()),
-                                        (MemberCalc[]) variableList.toArray(
-                                                new MemberCalc[variableList.size()])),
+                                    new DummyExp(expCalc.getType()),
+                                    variableList.toArray(
+                                        new MemberCalc[variableList.size()])),
                                 desc,
                                 brk));
             }
@@ -106,10 +105,10 @@ class OrderFunDef extends FunDefBase {
         public static final int DESC = 1;
         public static final int BASC = 2;
         public static final int BDESC = 3;
-        public static final boolean isDescending(int value) {
+        public static boolean isDescending(int value) {
             return (value & DESC) == DESC;
         }
-        public static final boolean isBreak(int value) {
+        public static boolean isBreak(int value) {
             return (value & BASC) == BASC;
         }
     }
@@ -137,7 +136,7 @@ class OrderFunDef extends FunDefBase {
 
         public List evaluateList(Evaluator evaluator) {
             List list = listCalc.evaluateList(evaluator);
-            sort(evaluator.push(), list, expCalc, desc, brk);
+            sortMembers(evaluator.push(), list, expCalc, desc, brk);
             return list;
         }
 
@@ -145,11 +144,11 @@ class OrderFunDef extends FunDefBase {
             return new Calc[] {listCalc, expCalc};
         }
 
-        public List getArguments() {
+        public List<Object> getArguments() {
             return Collections.singletonList(
                     desc ?
-                    (brk ? "BDESC" : "DESC") :
-                    (brk ? "BASC" : "ASC"));
+                    (Object) (brk ? "BDESC" : "DESC") :
+                    (Object) (brk ? "BASC" : "ASC"));
         }
 
         public boolean dependsOn(Dimension dimension) {
@@ -194,8 +193,7 @@ class OrderFunDef extends FunDefBase {
             }
             // Member calculations generate members, which mask the actual
             // expression from the inherited context.
-            for (int i = 0; i < memberCalcs.length; i++) {
-                MemberCalc memberCalc = memberCalcs[i];
+            for (MemberCalc memberCalc : memberCalcs) {
                 if (memberCalc.getType().usesDimension(dimension, true)) {
                     return false;
                 }

@@ -53,7 +53,7 @@ public class MemberExpr extends ExpBase implements Exp {
         return MemberType.forMember(member);
     }
 
-    public Object clone() {
+    public MemberExpr clone() {
         return new MemberExpr(member);
     }
 

@@ -49,7 +49,7 @@ class CaseTestFunDef extends FunDefBase {
                 new BooleanCalc[args.length / 2];
         final Calc[] exprCalcs =
                 new Calc[args.length / 2];
-        final List calcList = new ArrayList();
+        final List<Calc> calcList = new ArrayList<Calc>();
         for (int i = 0, j = 0; i < exprCalcs.length; i++) {
             conditionCalcs[i] =
                     compiler.compileBoolean(args[j++]);
@@ -63,8 +63,7 @@ class CaseTestFunDef extends FunDefBase {
                 compiler.compileScalar(args[args.length - 1], true) :
                 ConstantCalc.constantNull(call.getType());
         calcList.add(defaultCalc);
-        final Calc[] calcs = (Calc[])
-                calcList.toArray(new Calc[calcList.size()]);
+        final Calc[] calcs = calcList.toArray(new Calc[calcList.size()]);
 
         return new AbstractCalc(call) {
             public Object evaluate(Evaluator evaluator) {

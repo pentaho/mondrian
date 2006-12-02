@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -63,6 +63,18 @@ public class SetType implements Type {
     public Level getLevel() {
         return elementType == null ? null :
                 elementType.getLevel();
+    }
+
+    /**
+     * Returns the dimensionality of this SetType. If set contains members,
+     * returns 1, otherwise returns the width of the tuples.
+     *
+     * @return Dimensionality of this SetType
+     */
+    public int getArity() {
+        return elementType instanceof TupleType ?
+            ((TupleType) elementType).elementTypes.length :
+            1;
     }
 }
 

@@ -274,10 +274,8 @@ public class XmlUtil {
 
         public void printErrorInfos(PrintStream out) {
             if (errors != null) {
-                Iterator it = errors.iterator();
-
-                while (it.hasNext()) {
-                    out.println(formatErrorInfo((ErrorInfo) it.next()));
+                for (ErrorInfo error : errors) {
+                    out.println(formatErrorInfo(error));
                 }
             }
         }
@@ -286,18 +284,17 @@ public class XmlUtil {
             if (! saxEH.hasErrors()) {
                 return "";
             }
-            StringBuffer buf = new StringBuffer(512);
-            List errors = saxEH.getErrors();
-            Iterator it = errors.iterator();
-            while (it.hasNext()) {
-                ErrorInfo error = (ErrorInfo) it.next();
+            StringBuilder buf = new StringBuilder(512);
+            List<ErrorInfo> errors = saxEH.getErrors();
+            Iterator<ErrorInfo> it = errors.iterator();
+            for (ErrorInfo error : errors) {
                 buf.append(formatErrorInfo(error));
                 buf.append(LINE_SEP);
             }
             return buf.toString();
         }
         public static String formatErrorInfo(ErrorInfo ei) {
-            StringBuffer buf = new StringBuffer(128);
+            StringBuilder buf = new StringBuilder(128);
             buf.append("[");
             switch (ei.severity) {
             case SEVERITY_WARNING:
@@ -335,10 +332,10 @@ public class XmlUtil {
                 this.exception = exception;
             }
         }
-        private List errors;
+        private List<ErrorInfo> errors;
         public SAXErrorHandler() {
         }
-        public List getErrors() {
+        public List<ErrorInfo> getErrors() {
             return this.errors;
         }
         public boolean hasErrors() {
@@ -356,14 +353,14 @@ public class XmlUtil {
         }
         protected void addError(ErrorInfo ei) {
             if (this.errors == null) {
-                this.errors = new ArrayList();
+                this.errors = new ArrayList<ErrorInfo>();
             }
             this.errors.add(ei);
         }
 
         public String getFirstError() {
             return (hasErrors())
-                ? formatErrorInfo((ErrorInfo) errors.get(0))
+                ? formatErrorInfo(errors.get(0))
                 : "";
         }
     }
@@ -420,7 +417,7 @@ public class XmlUtil {
 
         if (errorHandler instanceof SAXErrorHandler) {
             final SAXErrorHandler saxEH = (SAXErrorHandler) errorHandler;
-            final List errors = saxEH.getErrors();
+            final List<SAXErrorHandler.ErrorInfo> errors = saxEH.getErrors();
 
             if (errors != null && errors.size() > 0) {
                 String errorStr = SAXErrorHandler.formatErrorInfos(saxEH);
@@ -445,7 +442,7 @@ public class XmlUtil {
         final int length = s.length();
 
         if (length > 16777216 && length % 4 == 1) {
-            final StringBuffer buf = new StringBuffer(length + 1);
+            final StringBuilder buf = new StringBuilder(length + 1);
 
             buf.append(s);
             buf.append('\n');
@@ -511,7 +508,7 @@ public class XmlUtil {
      */
     public static Document createContextDocument(String[][] nsArray)
             throws SAXException, IOException {
-        StringBuffer buf = new StringBuffer(256);
+        StringBuilder buf = new StringBuilder(256);
         buf.append("<?xml version='1.0' encoding='utf-8'?>");
         buf.append("<DOES_NOT_MATTER");
         for (int i = 0; i < nsArray.length; i++) {
@@ -534,7 +531,7 @@ public class XmlUtil {
     }
     // '/soapX:Envelope/soapX:Body/*'
     public static String makeSoapPath(String prefix) {
-        StringBuffer buf = new StringBuffer(20);
+        StringBuilder buf = new StringBuilder(20);
         buf.append('/');
         if (prefix != null) {
             buf.append(prefix);
@@ -559,7 +556,7 @@ public class XmlUtil {
 
     // '/xmla:DiscoverResponse/xmla:return/ROW/root/*'
     public static String makeRootPathInSoapBody(String prefix) {
-        StringBuffer buf = new StringBuffer(20);
+        StringBuilder buf = new StringBuilder(20);
         buf.append("/xmla:DiscoverResponse");
         buf.append("/xmla:return");
         buf.append("/ROW:root");
@@ -633,7 +630,7 @@ public class XmlUtil {
         }
         case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
         case XPathResult.UNORDERED_NODE_ITERATOR_TYPE: {
-            StringBuffer buf = new StringBuffer(512);
+            StringBuilder buf = new StringBuilder(512);
             Node node = xpathResult.iterateNext();
             while (node != null) {
                 buf.append(XmlUtil.toString(node, prettyPrint));
@@ -643,7 +640,7 @@ public class XmlUtil {
         }
         case XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE:
         case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE: {
-            StringBuffer buf = new StringBuffer(512);
+            StringBuilder buf = new StringBuilder(512);
             int len = xpathResult.getSnapshotLength();
             for (int i = 0; i < len; i++) {
                 Node node = xpathResult.snapshotItem(i);
@@ -682,7 +679,7 @@ public class XmlUtil {
         }
         case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
         case XPathResult.UNORDERED_NODE_ITERATOR_TYPE: {
-            List list = new ArrayList();
+            List<Node> list = new ArrayList<Node>();
             Node node = xpathResult.iterateNext();
             while (node != null) {
                 list.add(node);
@@ -847,14 +844,14 @@ System.err.println("    systemId="+systemId);
             int[] verNums = new int[3];
             String verNumStr = getXercesVersionNumberString();
             int index = verNumStr.indexOf('.');
-            verNums[0] = new Integer(verNumStr.substring(0, index)).intValue();
+            verNums[0] = Integer.parseInt(verNumStr.substring(0, index));
 
             verNumStr = verNumStr.substring(index+1);
             index = verNumStr.indexOf('.');
-            verNums[1] = new Integer(verNumStr.substring(0, index)).intValue();
+            verNums[1] = Integer.parseInt(verNumStr.substring(0, index));
 
             verNumStr = verNumStr.substring(index+1);
-            verNums[2] = new Integer(verNumStr).intValue();
+            verNums[2] = Integer.parseInt(verNumStr);
 
             versionNumbers = verNums;
         }

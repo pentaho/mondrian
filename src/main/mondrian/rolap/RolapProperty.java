@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -61,7 +61,7 @@ class RolapProperty extends Property {
                 Constructor ctor = clazz.getConstructor(new Class[0]);
                 return (PropertyFormatter) ctor.newInstance(new Object[0]);
             } catch (Exception e) {
-                StringBuffer buf = new StringBuffer(64);
+                StringBuilder buf = new StringBuilder(64);
                 buf.append("RolapProperty.makePropertyFormatter: ");
                 buf.append("Could not create PropertyFormatter from");
                 buf.append("formatterDef \"");

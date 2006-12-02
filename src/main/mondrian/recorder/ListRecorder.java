@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde and others.
+// Copyright (C) 2005-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -20,30 +20,35 @@ import java.util.*;
  */
 public class ListRecorder extends AbstractRecorder {
 
-    private final List errorList;
-    private final List warnList;
-    private final List infoList;
+    private final List<Entry> errorList;
+    private final List<Entry> warnList;
+    private final List<Entry> infoList;
 
     public ListRecorder() {
-        errorList = new ArrayList();
-        warnList = new ArrayList();
-        infoList = new ArrayList();
+        errorList = new ArrayList<Entry>();
+        warnList = new ArrayList<Entry>();
+        infoList = new ArrayList<Entry>();
     }
+
     public void clear() {
         super.clear();
         errorList.clear();
         warnList.clear();
         infoList.clear();
     }
-    public Iterator getErrorEntries() {
+
+    public Iterator<Entry> getErrorEntries() {
         return errorList.iterator();
     }
-    public Iterator getWarnEntries() {
+
+    public Iterator<Entry> getWarnEntries() {
         return warnList.iterator();
     }
-    public Iterator getInfoEntries() {
+
+    public Iterator<Entry> getInfoEntries() {
         return infoList.iterator();
     }
+
     protected void recordMessage(final String msg,
                                  final Object info,
                                  final int msgType) {
@@ -51,13 +56,13 @@ public class ListRecorder extends AbstractRecorder {
 
         Entry e = new Entry(context, msg, msgType, info);
         switch (msgType) {
-        case INFO_MSG_TYPE :
+        case INFO_MSG_TYPE:
             infoList.add(e);
             break;
-        case WARN_MSG_TYPE :
+        case WARN_MSG_TYPE:
             warnList.add(e);
             break;
-        case ERROR_MSG_TYPE :
+        case ERROR_MSG_TYPE:
             errorList.add(e);
             break;
         default :
@@ -90,9 +95,9 @@ public class ListRecorder extends AbstractRecorder {
         }
     }
 
-    static void logMessage(Iterator it, Logger logger) {
+    static void logMessage(Iterator<Entry> it, Logger logger) {
         while (it.hasNext()) {
-            Entry e = (Entry) it.next();
+            Entry e = it.next();
             logMessage(e, logger);
         }
     }

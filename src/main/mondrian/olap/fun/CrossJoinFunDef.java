@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2002 Kana Software, Inc.
-// Copyright (C) 2004-2005 Julian Hyde and others
+// Copyright (C) 2004-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -50,9 +50,8 @@ class CrossJoinFunDef extends FunDefBase {
 
     public Type getResultType(Validator validator, Exp[] args) {
         // CROSSJOIN(<Set1>,<Set2>) has type [Hie1] x [Hie2].
-        List list = new ArrayList();
-        for (int i = 0; i < args.length; i++) {
-            Exp arg = args[i];
+        List<Type> list = new ArrayList<Type>();
+        for (Exp arg : args) {
             final Type type = arg.getType();
             if (type instanceof SetType) {
                 addTypes(type, list);
@@ -64,7 +63,7 @@ class CrossJoinFunDef extends FunDefBase {
                 throw Util.newInternal("arg to crossjoin must be a set");
             }
         }
-        final Type[] types = (Type[]) list.toArray(new Type[list.size()]);
+        final Type[] types = list.toArray(new Type[list.size()]);
         final TupleType tupleType = new TupleType(types);
         return new SetType(tupleType);
     }
@@ -73,14 +72,14 @@ class CrossJoinFunDef extends FunDefBase {
      * Adds a type to a list of types. If type is a {@link TupleType}, does so
      * recursively.
      */
-    private static void addTypes(final Type type, List list) {
+    private static void addTypes(final Type type, List<Type> list) {
         if (type instanceof SetType) {
             SetType setType = (SetType) type;
             addTypes(setType.getElementType(), list);
         } else if (type instanceof TupleType) {
             TupleType tupleType = (TupleType) type;
-            for (int i = 0; i < tupleType.elementTypes.length; i++) {
-                addTypes(tupleType.elementTypes[i], list);
+            for (Type elementType : tupleType.elementTypes) {
+                addTypes(elementType, list);
             }
         } else {
             list.add(type);
@@ -177,21 +176,21 @@ class CrossJoinFunDef extends FunDefBase {
         // possible that the ultimate result will be much smaller.
         if (resultLimit > 0 && resultLimit < size) {
             throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
-                            new Long(size), new Long(resultLimit));
+                size, resultLimit);
         }
 
         // Throw an exception if the crossjoin exceeds a reasonable limit.
         // (Yes, 4 billion is a reasonable limit.)
         if (size > Integer.MAX_VALUE) {
             throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
-                            new Long(size), new Long(Integer.MAX_VALUE));
+                size, Integer.MAX_VALUE);
         }
 
         // Now we can safely cast size to an integer. It still might be very
         // large - which means we're allocating a huge array which we might
         // pare down later by applying NON EMPTY constraints - which is a
         // concern.
-        List result = new ArrayList((int) size);
+        List<Member[]> result = new ArrayList<Member[]>((int) size);
 
         boolean neitherSideIsTuple = true;
         int arity0 = 1;
@@ -207,10 +206,8 @@ class CrossJoinFunDef extends FunDefBase {
 
         if (neitherSideIsTuple) {
             // Simpler routine if we know neither side contains tuples.
-            for (int i = 0, m = list1.size(); i < m; i++) {
-                Member o0 = (Member) list1.get(i);
-                for (int j = 0, n = list2.size(); j < n; j++) {
-                    Member o1 = (Member) list2.get(j);
+            for (Member o0 : (List<Member>) list1) {
+                for (Member o1 : (List<Member>) list2) {
                     result.add(new Member[]{o0, o1});
                 }
             }
@@ -226,8 +223,8 @@ class CrossJoinFunDef extends FunDefBase {
                 } else {
                     assertTrue(o0 instanceof Member[]);
                     final Member[] members = (Member[]) o0;
-                    for (int k = 0; k < members.length; k++) {
-                        row[x++] = members[k];
+                    for (Member member : members) {
+                        row[x++] = member;
                     }
                 }
                 for (int j = 0, n = list2.size(); j < n; j++) {
@@ -237,8 +234,8 @@ class CrossJoinFunDef extends FunDefBase {
                     } else {
                         assertTrue(o1 instanceof Member[]);
                         final Member[] members = (Member[]) o1;
-                        for (int k = 0; k < members.length; k++) {
-                            row[x++] = members[k];
+                        for (Member member : members) {
+                            row[x++] = member;
                         }
                     }
                     result.add(row.clone());
@@ -254,20 +251,20 @@ class CrossJoinFunDef extends FunDefBase {
         if (list.isEmpty()) {
             return list;
         }
-        List result = new ArrayList();
         evaluator = evaluator.push();
         if (list.get(0) instanceof Member[]) {
-            for (Iterator it = list.iterator(); it.hasNext();) {
-                Member[] m = (Member[]) it.next();
+            List<Member[]> result = new ArrayList<Member[]>();
+            for (Member[] m : (List<Member[]>) list) {
                 evaluator.setContext(m);
                 Object value = evaluator.evaluateCurrent();
                 if (value != Util.nullValue && !(value instanceof Throwable)) {
                     result.add(m);
                 }
             }
+            return result;
         } else {
-            for (Iterator it = list.iterator(); it.hasNext();) {
-                Member m = (Member) it.next();
+            List<Member> result = new ArrayList<Member>();
+            for (Member m : (Iterable<Member>) list) {
 //System.out.println("CrossJoinFunDef.nonEmptyListOld: m=" +m.getUniqueName());
                 evaluator.setContext(m);
                 Object value = evaluator.evaluateCurrent();
@@ -276,8 +273,8 @@ class CrossJoinFunDef extends FunDefBase {
                     result.add(m);
                 }
             }
+            return result;
         }
-        return result;
     }
 
 
@@ -286,9 +283,9 @@ class CrossJoinFunDef extends FunDefBase {
      */
     static class MeasureVisitor implements mondrian.mdx.MdxVisitor {
         // This set is null unless a measure is found.
-        Set measureSet;
-        Set queryMeasureSet;
-        MeasureVisitor(Set queryMeasureSet) {
+        Set<Member> measureSet;
+        Set<Member> queryMeasureSet;
+        MeasureVisitor(Set<Member> queryMeasureSet) {
             this.queryMeasureSet = queryMeasureSet;
         }
         public Object visit(mondrian.olap.Query query) {
@@ -323,12 +320,10 @@ class CrossJoinFunDef extends FunDefBase {
         }
         public Object visit(mondrian.mdx.MemberExpr memberExpr) {
             Member member = memberExpr.getMember();
-            Iterator mit = queryMeasureSet.iterator();
-            while (mit.hasNext()) {
-                Member measure = (Member) mit.next();
+            for (Member measure : queryMeasureSet) {
                 if (measure.equals(member)) {
                     if (measureSet == null) {
-                        measureSet = new HashSet();
+                        measureSet = new HashSet<Member>();
                     }
 //System.out.println("CrossJoinFunDef.MeasureVisitor.visit: measure=" +measure.getUniqueName());
                     measureSet.add(measure);
@@ -388,8 +383,8 @@ class CrossJoinFunDef extends FunDefBase {
         // So, here it is assumed that all Measures are known statically by 
         // this stage of the processing.
         Query query = evaluator.getQuery();
-        Set measureSet = null;
-        Set queryMeasureSet = query.getMeasuresMembers();
+        Set<Member> measureSet = null;
+        Set<Member> queryMeasureSet = query.getMeasuresMembers();
         // if the slicer contains a Measure, then the other axes can not
         // contain a Measure, so look at slicer axis first
         if (queryMeasureSet.size() > 0) {
@@ -419,8 +414,7 @@ class CrossJoinFunDef extends FunDefBase {
         // Determine if there is any data.
         evaluator = evaluator.push();
         if (list.get(0) instanceof Member[]) {
-            for (Iterator listItr = list.iterator(); listItr.hasNext();) {
-                Member[] ms = (Member[]) listItr.next();
+            for (Member[] ms : ((List<Member[]>) list)) {
                 evaluator.setContext(ms);
                 // no measures found, use standard algorithm
                 if (measureSet == null) {
@@ -429,10 +423,10 @@ class CrossJoinFunDef extends FunDefBase {
                         result.add(ms);
                     }
                 } else {
-                    Iterator measureIter = measureSet.iterator();
+                    Iterator<Member> measureIter = measureSet.iterator();
                     MEASURES_LOOP:
                     while (measureIter.hasNext()) {
-                        Member measure = (Member) measureIter.next();
+                        Member measure = measureIter.next();
                         evaluator.setContext(measure);
                         Object value = evaluator.evaluateCurrent();
                         if (value != null && !(value instanceof Throwable)) {
@@ -453,10 +447,10 @@ class CrossJoinFunDef extends FunDefBase {
                         result.add(m);
                     }
                 } else {
-                    Iterator measureIter = measureSet.iterator();
+                    Iterator<Member> measureIter = measureSet.iterator();
                     measuresLoop:
                     while (measureIter.hasNext()) {
-                        Member measure = (Member) measureIter.next();
+                        Member measure = measureIter.next();
                         evaluator.setContext(measure);
                         Object value = evaluator.evaluateCurrent();
                         if (value != null && !(value instanceof Throwable)) {

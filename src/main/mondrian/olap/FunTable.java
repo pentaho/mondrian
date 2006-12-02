@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,6 +12,8 @@
  */
 package mondrian.olap;
 import mondrian.mdx.UnresolvedFunCall;
+import mondrian.olap.fun.Resolver;
+import mondrian.olap.fun.FunInfo;
 
 import java.util.*;
 
@@ -56,17 +58,17 @@ public interface FunTable {
      * Returns a list of words ({@link String}) which may not be used as
      * identifiers.
      */
-    List getReservedWords();
+    List<String> getReservedWords();
 
     /**
      * Returns a list of {@link mondrian.olap.fun.Resolver} objects.
      */
-    List getResolvers();
+    List<Resolver> getResolvers();
 
     /**
      * Returns a list of {@link mondrian.olap.fun.FunInfo} objects.
      */
-    List getFunInfoList();
+    List<FunInfo> getFunInfoList();
 
 }
 

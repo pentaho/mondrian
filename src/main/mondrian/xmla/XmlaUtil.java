@@ -67,7 +67,7 @@ public class XmlaUtil implements XmlaConstants {
     }
 
     private static String encodeChar(char c) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("_x");
         String str = Integer.toHexString(c);
         for (int i = 4 - str.length(); i > 0; i--) {
@@ -97,7 +97,7 @@ public class XmlaUtil implements XmlaConstants {
      * </blockquote>
      */
     public static String encodeElementName(String name) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         char[] nameChars = name.toCharArray();
         for (int i = 0; i < nameChars.length; i++) {
             char ch = nameChars[i];
@@ -167,7 +167,7 @@ public class XmlaUtil implements XmlaConstants {
                                             String ns,
                                             String lname) {
         if (LOGGER.isDebugEnabled()) {
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append("XmlaUtil.firstChildElement: ");
             buf.append(" ns=\"");
             buf.append(ns);
@@ -183,7 +183,7 @@ public class XmlaUtil implements XmlaConstants {
                 Element e = (Element) n;
 
                 if (LOGGER.isDebugEnabled()) {
-                    StringBuffer buf = new StringBuffer(100);
+                    StringBuilder buf = new StringBuilder(100);
                     buf.append("XmlaUtil.firstChildElement: ");
                     buf.append(" e.getNamespaceURI()=\"");
                     buf.append(e.getNamespaceURI());
@@ -209,7 +209,7 @@ public class XmlaUtil implements XmlaConstants {
 /*
 way too noisy
         if (LOGGER.isDebugEnabled()) {
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append("XmlaUtil.filterChildElements: ");
             buf.append(" ns=\"");
             buf.append(ns);
@@ -229,7 +229,7 @@ way too noisy
 
 /*
                 if (LOGGER.isDebugEnabled()) {
-                    StringBuffer buf = new StringBuffer(100);
+                    StringBuilder buf = new StringBuilder(100);
                     buf.append("XmlaUtil.filterChildElements: ");
                     buf.append(" e.getNamespaceURI()=\"");
                     buf.append(e.getNamespaceURI());
@@ -250,7 +250,7 @@ way too noisy
     }
 
     public static String textInElement(Element elem) {
-        StringBuffer buf = new StringBuffer(100);
+        StringBuilder buf = new StringBuilder(100);
         elem.normalize();
         NodeList nlst = elem.getChildNodes();
         for (int i = 0, nlen = nlst.getLength(); i < nlen ; i++) {

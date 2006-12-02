@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde and others
+// Copyright (C) 2005-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.LinkedHashMap;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import javax.servlet.ServletOutputStream;
@@ -92,26 +91,25 @@ public class MockHttpServletResponse implements HttpServletResponse {
     private PrintWriter writer;
     private Locale locale;
     private String charEncoding;
-    private List cookies;
+    private List<Cookie> cookies;
     private MockServletOutputStream outputStream;
     private int statusCode;
     private boolean isCommited;
-    private String location;
     private String errorMsg;
     private int errorCode;
     private boolean wasErrorSent;
     private boolean wasRedirectSent;
     private int bufferSize;
-    private final Map headers;
+    private final Map<String, List<String>> headers;
 
     public MockHttpServletResponse() {
         this.isCommited = false;
-        this.cookies = Collections.EMPTY_LIST;
+        this.cookies = Collections.emptyList();
         this.bufferSize = 8192;
         this.charEncoding = "ISO-8859-1";
         this.errorCode = SC_OK;
         this.statusCode = SC_OK;
-        this.headers = new HashMap();
+        this.headers = new HashMap<String, List<String>>();
         this.outputStream = new MockServletOutputStream(bufferSize);
     }
     
@@ -241,10 +239,10 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * 
      */
     public void addCookie(Cookie cookie) {
-        if (cookies == Collections.EMPTY_LIST) {
-            cookies = new ArrayList();
+        if (cookies.isEmpty()) {
+            cookies = new ArrayList<Cookie>();
         }
-        cookies.add(cookies);
+        cookies.add(cookie);
     }
 
     /** 
@@ -345,9 +343,9 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * 
      */
     public void setHeader(String name, String value) {
-        List valueList = (List) headers.get(name);
+        List<String> valueList = headers.get(name);
         if (valueList == null) {
-            valueList = new ArrayList();
+            valueList = new ArrayList<String>();
             headers.put(name, valueList);
         }
         valueList.add(value);
@@ -359,9 +357,9 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * 
      */
     public void addHeader(String name, String value) {
-        List valueList = (List) headers.get(name);
+        List<String> valueList = headers.get(name);
         if (null == valueList) {
-            valueList = new ArrayList();
+            valueList = new ArrayList<String>();
             headers.put(name, valueList);
         }
         valueList.add(value);
@@ -372,7 +370,7 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * 
      */
     public void setIntHeader(String name, int value) {
-        String stringValue = new Integer(value).toString();
+        String stringValue = Integer.toString(value);
         addHeader(name, stringValue);
     }
 
@@ -381,7 +379,7 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * 
      */
     public void addIntHeader(String name, int value) {
-        String stringValue = new Integer(value).toString();
+        String stringValue = Integer.toString(value);
         addHeader(name, stringValue);
     }
 
@@ -414,11 +412,11 @@ public class MockHttpServletResponse implements HttpServletResponse {
     }
 
     public String getHeader(String name) {
-        List list = getHeaderList(name);
+        List<String> list = getHeaderList(name);
 
         return ((list == null) || (list.size() == 0))
             ? null
-            : (String) list.get(0);
+            : list.get(0);
 
     }
 
@@ -432,8 +430,8 @@ public class MockHttpServletResponse implements HttpServletResponse {
     // helpers
     //
     /////////////////////////////////////////////////////////////////////////
-    public List getHeaderList(String name) {
-        return (List) headers.get(name);
+    public List<String> getHeaderList(String name) {
+        return headers.get(name);
     }
 
     public int getStatusCode() {

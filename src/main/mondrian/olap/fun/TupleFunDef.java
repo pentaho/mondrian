@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -19,7 +19,6 @@ import mondrian.calc.impl.AbstractTupleCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.io.PrintWriter;
-import java.util.Arrays;
 
 /**
  * <code>TupleFunDef</code> implements the '( ... )' operator which builds
@@ -100,19 +99,6 @@ public class TupleFunDef extends FunDefBase {
         }
     }
 
-    private void checkDimensions(Member[] members) {
-        for (int i = 0; i < members.length; i++) {
-            Member member = members[i];
-            for (int j = 0; j < i; j++) {
-                Member member1 = members[j];
-                if (member.getDimension() == member1.getDimension()) {
-                    throw MondrianResource.instance().DupDimensionsInTuple.ex(
-                            member.getDimension().getUniqueName());
-                }
-            }
-        }
-    }
-
     public static class CalcImpl extends AbstractTupleCalc {
         private final MemberCalc[] memberCalcs;
 
@@ -167,7 +153,7 @@ public class TupleFunDef extends FunDefBase {
                     }
                     argTypes[i] = Category.Member;
                 }
-                return (FunDef) new TupleFunDef(argTypes);
+                return new TupleFunDef(argTypes);
             }
         }
     }

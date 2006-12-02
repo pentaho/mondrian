@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -47,20 +47,21 @@ abstract class ArrayMemberSource implements MemberSource {
     public int getMemberCount() {
         return members.length;
     }
-    public List getRootMembers() {
-        return Collections.EMPTY_LIST;
+
+    public List<RolapMember> getRootMembers() {
+        return Collections.emptyList();
     }
-    public void getMemberChildren(RolapMember parentMember, List children) {
+    
+    public void getMemberChildren(RolapMember parentMember, List<RolapMember> children) {
         // there are no children
     }
-    public void getMemberChildren(List parentMembers, List children) {
+    public void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children) {
         // there are no children
     }
     public RolapMember lookupMember(String[] uniqueNameParts,
                                     boolean failIfNotFound) {
         String uniqueName = Util.implode(uniqueNameParts);
-        for (int i = 0; i < members.length; i++) {
-            RolapMember member = members[i];
+        for (RolapMember member : members) {
             if (member.getUniqueName().equals(uniqueName)) {
                 return member;
             }

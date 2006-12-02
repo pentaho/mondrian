@@ -73,7 +73,7 @@ public class ParameterExpr extends ExpBase {
         return visitor.visit(this);
     }
 
-    public Object clone() {
+    public ParameterExpr clone() {
         return new ParameterExpr(parameter);
     }
 

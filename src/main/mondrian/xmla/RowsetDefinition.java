@@ -144,16 +144,12 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
      * The sort order is defined by the {@link #sortColumnDefinitions} field.
      * If the rowset is not sorted, returns null.
      */
-    Comparator getComparator() {
+    Comparator<Rowset.Row> getComparator() {
         if (sortColumnDefinitions == null) {
             return null;
         }
-        return new Comparator() {
-            public int compare(Object o1, Object o2) {
-                return compare((Rowset.Row) o1, (Rowset.Row) o2);
-            }
-
-            int compare(Rowset.Row row1, Rowset.Row row2) {
+        return new Comparator<Rowset.Row>() {
+            public int compare(Rowset.Row row1, Rowset.Row row2) {
                 // A faster implementation is welcome.
                 for (int i = 0; i < sortColumnDefinitions.length; i++) {
                     RowsetDefinition.Column sortColumn = sortColumnDefinitions[i];
@@ -728,9 +724,9 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, request, handler);
         }
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
-            for (Iterator it = handler.getDataSourceEntries().values().iterator(); it.hasNext();) {
-                DataSourcesConfig.DataSource ds = (DataSourcesConfig.DataSource) it.next();
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
+            for (Iterator<DataSourcesConfig.DataSource> it = handler.getDataSourceEntries().values().iterator(); it.hasNext();) {
+                DataSourcesConfig.DataSource ds = it.next();
                 Row row = new Row();
                 row.set(DataSourceName.name, ds.getDataSourceName());
                 row.set(DataSourceDescription.name, ds.getDataSourceDescription());
@@ -888,7 +884,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, request, handler);
         }
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             final RowsetDefinition[] rowsetDefinitions = (RowsetDefinition[])
                     enumeration.getValuesSortedByName().
                     toArray(new RowsetDefinition[0]);
@@ -909,7 +905,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
 
         private XmlElement[] getRestrictions(RowsetDefinition rowsetDefinition) {
-            ArrayList restrictionList = new ArrayList();
+            ArrayList<XmlElement> restrictionList = new ArrayList<XmlElement>();
             final Column[] columns = rowsetDefinition.columnDefinitions;
             for (int j = 0; j < columns.length; j++) {
                 Column column = columns[j];
@@ -937,10 +933,10 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     }
 
     static class DiscoverPropertiesRowset extends Rowset {
-        private final RistrictionTest propertyNameRT;
+        private final RestrictionTest propertyNameRT;
         DiscoverPropertiesRowset(XmlaRequest request, XmlaHandler handler) {
             super(definition, request, handler);
-            propertyNameRT = getRistrictionTest(PropertyName);
+            propertyNameRT = getRestrictionTest(PropertyName);
         }
 
         private static final Column PropertyName =
@@ -1016,7 +1012,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             final String[] propertyNames = PropertyDefinition.enumeration.getNames();
             for (int i = 0; i < propertyNames.length; i++) {
                 String pname = propertyNames[i];
@@ -1123,7 +1119,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             Enumeration[] enumerators = getEnumerators();
             for (int i = 0; i < enumerators.length; i++) {
                 Enumeration enumerator = enumerators[i];
@@ -1157,7 +1153,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
 
         private static Enumeration[] getEnumerators() {
-            HashSet enumeratorSet = new HashSet();
+            HashSet<Enumeration> enumeratorSet = new HashSet<Enumeration>();
             final String[] rowsetNames = RowsetDefinition.enumeration.getNames();
             for (int i = 0; i < rowsetNames.length; i++) {
                 String rowsetName = rowsetNames[i];
@@ -1172,10 +1168,9 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
             final Enumeration[] enumerators = (Enumeration[])
                     enumeratorSet.toArray(new Enumeration[enumeratorSet.size()]);
-            Arrays.sort(enumerators, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    return ((Enumeration) o1).name.compareTo(
-                            ((Enumeration) o2).name);
+            Arrays.sort(enumerators, new Comparator<Enumeration>() {
+                public int compare(Enumeration o1, Enumeration o2) {
+                    return o1.name.compareTo(o2.name);
                 }
             });
             return enumerators;
@@ -1285,7 +1280,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             "When", "Where", "With", "WTD", "Xor",
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             for (int i = 0; i < keywords.length; i++) {
                 String keyword = keywords[i];
                 Row row = new Row();
@@ -1372,7 +1367,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             emit(Enumeration.Literal.enumeration, response);
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
@@ -1387,10 +1382,10 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     }
 
     static class DbschemaCatalogsRowset extends Rowset {
-        private final RistrictionTest catalogNameRT;
+        private final RestrictionTest catalogNameRT;
         DbschemaCatalogsRowset(XmlaRequest request, XmlaHandler handler) {
             super(definition, request, handler);
-            catalogNameRT = getRistrictionTest(CatalogName);
+            catalogNameRT = getRestrictionTest(CatalogName);
         }
 
         private static final Column CatalogName =
@@ -1451,7 +1446,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
             String role = request.getRole();
@@ -1477,10 +1472,10 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
                 // get Role names
                 // TODO: this returns ALL roles, no the current user's roles
-                StringBuffer buf = new StringBuffer(100);
-                Iterator roleNamesIt = schema.roleNames().iterator();
+                StringBuilder buf = new StringBuilder(100);
+                Iterator<String> roleNamesIt = schema.roleNames().iterator();
                 while (roleNamesIt.hasNext()) {
-                    String roleName = (String) roleNamesIt.next();
+                    String roleName = roleNamesIt.next();
                     buf.append(roleName);
                     if (roleNamesIt.hasNext()) {
                         buf.append(',');
@@ -1505,14 +1500,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     }
 
     static class DbschemaColumnsRowset extends Rowset {
-        private final RistrictionTest tableCatalogRT;
-        private final RistrictionTest tableNameRT;
-        private final RistrictionTest columnNameRT;
+        private final RestrictionTest tableCatalogRT;
+        private final RestrictionTest tableNameRT;
+        private final RestrictionTest columnNameRT;
         DbschemaColumnsRowset(XmlaRequest request, XmlaHandler handler) {
             super(definition, request, handler);
-            tableCatalogRT = getRistrictionTest(TableCatalog);
-            tableNameRT = getRistrictionTest(TableName);
-            columnNameRT = getRistrictionTest(ColumnName);
+            tableCatalogRT = getRestrictionTest(TableCatalog);
+            tableNameRT = getRestrictionTest(TableName);
+            columnNameRT = getRestrictionTest(ColumnName);
         }
 
         private static final Column TableCatalog =
@@ -1666,7 +1661,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
             String roleStr = request.getRole();
@@ -1721,7 +1716,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         // on its measures so it might be null.
                         Boolean isVisible = (Boolean)
                                 member.getPropertyValue(Property.VISIBLE.name);
-                        if ((isVisible != null) && (! isVisible.booleanValue())) {
+                        if (isVisible != null && !isVisible) {
                             continue;
                         }
 
@@ -1758,7 +1753,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             RolapCube cube,
             HierarchyBase hierarchy,
             int ordinalPosition,
-            List rows) {
+            List<Row> rows) {
 
             // Access control
             if (!canAccess(schemaReader, hierarchy)) {
@@ -1829,7 +1824,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             Cube cube,
             HierarchyBase hierarchy,
             Level level,
-            int ordinalPosition, List rows) {
+            int ordinalPosition, List<Row> rows) {
 
             String schemaName = cube.getSchema().getName();
             String cubeName = cube.getName();
@@ -1938,10 +1933,10 @@ TODO: see above
     }
 
     static class DbschemaProviderTypesRowset extends Rowset {
-        private final RistrictionTest dataTypeRT;
+        private final RestrictionTest dataTypeRT;
         DbschemaProviderTypesRowset(XmlaRequest request, XmlaHandler handler) {
             super(definition, request, handler);
-            dataTypeRT = getRistrictionTest(DataType);
+            dataTypeRT = getRestrictionTest(DataType);
         }
 
 /*
@@ -2090,12 +2085,12 @@ boolean restriction, boolean nullable, String description)
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             // Identifies the (base) data types supported by the data provider.
             Row row = null;
 
             // i4
-            Integer dt = new Integer(DBType.I4_ORDINAL);
+            Integer dt = DBType.I4_ORDINAL;
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
                 row.set(TypeName.name, DBType.I4.name);
@@ -2112,7 +2107,7 @@ boolean restriction, boolean nullable, String description)
             }
 
             // R8
-            dt = new Integer(DBType.R8_ORDINAL);
+            dt = DBType.R8_ORDINAL;
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
                 row.set(TypeName.name, DBType.R8.name);
@@ -2129,7 +2124,7 @@ boolean restriction, boolean nullable, String description)
             }
 
             // CY
-            dt = new Integer(DBType.CY_ORDINAL);
+            dt = DBType.CY_ORDINAL;
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
                 row.set(TypeName.name, DBType.CY.name);
@@ -2146,7 +2141,7 @@ boolean restriction, boolean nullable, String description)
             }
 
             // BOOL
-            dt = new Integer(DBType.BOOL_ORDINAL);
+            dt = DBType.BOOL_ORDINAL;
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
                 row.set(TypeName.name, DBType.BOOL.name);
@@ -2163,7 +2158,7 @@ boolean restriction, boolean nullable, String description)
             }
 
             // I8
-            dt = new Integer(DBType.I8_ORDINAL);
+            dt = DBType.I8_ORDINAL;
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
                 row.set(TypeName.name, DBType.I8.name);
@@ -2180,7 +2175,7 @@ boolean restriction, boolean nullable, String description)
             }
 
             // WSTR
-            dt = new Integer(DBType.WSTR_ORDINAL);
+            dt = DBType.WSTR_ORDINAL;
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
                 row.set(TypeName.name, DBType.WSTR.name);
@@ -2210,14 +2205,14 @@ boolean restriction, boolean nullable, String description)
     }
 
     static class DbschemaTablesRowset extends Rowset {
-        private final RistrictionTest tableCatalogRT;
-        private final RistrictionTest tableNameRT;
-        private final RistrictionTest tableTypeRT;
+        private final RestrictionTest tableCatalogRT;
+        private final RestrictionTest tableNameRT;
+        private final RestrictionTest tableTypeRT;
         DbschemaTablesRowset(XmlaRequest request, XmlaHandler handler) {
             super(definition, request, handler);
-            tableCatalogRT = getRistrictionTest(TableCatalog);
-            tableNameRT = getRistrictionTest(TableName);
-            tableTypeRT = getRistrictionTest(TableType);
+            tableCatalogRT = getRestrictionTest(TableCatalog);
+            tableNameRT = getRestrictionTest(TableName);
+            tableTypeRT = getRestrictionTest(TableType);
         }
 
         private static final Column TableCatalog =
@@ -2341,7 +2336,7 @@ boolean restriction, boolean nullable, String description)
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
@@ -2418,7 +2413,7 @@ boolean restriction, boolean nullable, String description)
             SchemaReader schemaReader,
             RolapCube cube,
             HierarchyBase hierarchy,
-            List rows) {
+            List<Row> rows) {
 
             // Access control
             if (!canAccess(schemaReader, hierarchy)) {
@@ -2465,7 +2460,7 @@ boolean restriction, boolean nullable, String description)
             RolapCube cube,
             HierarchyBase hierarchy,
             Level level,
-            List rows) {
+            List<Row> rows) {
 
             String schemaName = cube.getSchema().getName();
             String cubeName = cube.getName();
@@ -2659,7 +2654,7 @@ boolean restriction, boolean nullable, String description)
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
@@ -2795,7 +2790,7 @@ boolean restriction, boolean nullable, String description)
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
                 HSB_UNSUPPORTED_OPERATION_CODE,
@@ -2806,12 +2801,12 @@ boolean restriction, boolean nullable, String description)
 
     // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olapcubes_rowset.asp
     static class MdschemaCubesRowset extends Rowset {
-        private final RistrictionTest catalogNameRT;
-        private final RistrictionTest cubeNameRT;
+        private final RestrictionTest catalogNameRT;
+        private final RestrictionTest cubeNameRT;
         MdschemaCubesRowset(XmlaRequest request, XmlaHandler handler) {
             super(definition, request, handler);
-            catalogNameRT = getRistrictionTest(CatalogName);
-            cubeNameRT = getRistrictionTest(CubeName);
+            catalogNameRT = getRestrictionTest(CatalogName);
+            cubeNameRT = getRestrictionTest(CubeName);
         }
 
         private static final String MD_CUBTYPE_CUBE = "CUBE";
@@ -2990,7 +2985,7 @@ boolean restriction, boolean nullable, String description)
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
@@ -3077,16 +3072,16 @@ boolean restriction, boolean nullable, String description)
 
     // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olapdimensions_rowset.asp
     static class MdschemaDimensionsRowset extends Rowset {
-        private final RistrictionTest schemaNameRT;
-        private final RistrictionTest cubeNameRT;
-        private final RistrictionTest dimensionUniqueNameRT;
-        private final RistrictionTest dimensionNameRT;
+        private final RestrictionTest schemaNameRT;
+        private final RestrictionTest cubeNameRT;
+        private final RestrictionTest dimensionUniqueNameRT;
+        private final RestrictionTest dimensionNameRT;
         MdschemaDimensionsRowset(XmlaRequest request, XmlaHandler handler) {
             super(definition, request, handler);
-            schemaNameRT = getRistrictionTest(SchemaName);
-            cubeNameRT = getRistrictionTest(CubeName);
-            dimensionUniqueNameRT = getRistrictionTest(DimensionUniqueName);
-            dimensionNameRT = getRistrictionTest(DimensionName);
+            schemaNameRT = getRestrictionTest(SchemaName);
+            cubeNameRT = getRestrictionTest(CubeName);
+            dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
+            dimensionNameRT = getRestrictionTest(DimensionName);
         }
 
         public static final int MD_DIMTYPE_OTHER = 3;
@@ -3289,7 +3284,7 @@ boolean restriction, boolean nullable, String description)
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = 
                 handler.getDataSource(request);
             String roleStr = request.getRole();
@@ -3318,7 +3313,7 @@ boolean restriction, boolean nullable, String description)
         protected void populateCatalog(Connection connection, 
                 Role role, 
                 String catalogName, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
             
             final Cube[] cubes = connection.getSchema().getCubes();
@@ -3334,7 +3329,7 @@ boolean restriction, boolean nullable, String description)
         protected void populateCube(SchemaReader schemaReader,
                 String catalogName,
                 Cube cube,
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
 
             final Dimension[] dimensions = cube.getDimensions();
@@ -3353,7 +3348,7 @@ boolean restriction, boolean nullable, String description)
                 String catalogName, 
                 Cube cube, 
                 Dimension dimension, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
 
             // Access control
@@ -3552,10 +3547,10 @@ boolean restriction, boolean nullable, String description)
             }
         }
 
-        private final RistrictionTest functionNameRT;
+        private final RestrictionTest functionNameRT;
         MdschemaFunctionsRowset(XmlaRequest request, XmlaHandler handler) {
             super(definition, request, handler);
-            functionNameRT = getRistrictionTest(FunctionName);
+            functionNameRT = getRestrictionTest(FunctionName);
         }
 
         private static final Column FunctionName =
@@ -3667,7 +3662,7 @@ boolean restriction, boolean nullable, String description)
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
                             handler.getCatalogs(request, ds);
@@ -3685,10 +3680,10 @@ boolean restriction, boolean nullable, String description)
                 final RolapSchema schema = (RolapSchema) connection.getSchema();
                 FunTable funTable = schema.getFunTable();
 
-                StringBuffer buf = new StringBuffer(50);
-                List functions = funTable.getFunInfoList();
-                for (Iterator it  = functions.iterator(); it.hasNext(); ) {
-                    FunInfo fi = (FunInfo) it.next();
+                StringBuilder buf = new StringBuilder(50);
+                List<FunInfo> functions = funTable.getFunInfoList();
+                for (Iterator<FunInfo> it  = functions.iterator(); it.hasNext(); ) {
+                    FunInfo fi = it.next();
                     if (! functionNameRT.passes(fi.getName())) {
                         continue;
                     }
@@ -3768,18 +3763,18 @@ boolean restriction, boolean nullable, String description)
 
 
     static class MdschemaHierarchiesRowset extends Rowset {
-        private final RistrictionTest schemaNameRT;
-        private final RistrictionTest cubeNameRT;
-        private final RistrictionTest dimensionUniqueNameRT;
-        private final RistrictionTest hierarchyUniqueNameRT;
-        private final RistrictionTest hierarchyNameRT;
+        private final RestrictionTest schemaNameRT;
+        private final RestrictionTest cubeNameRT;
+        private final RestrictionTest dimensionUniqueNameRT;
+        private final RestrictionTest hierarchyUniqueNameRT;
+        private final RestrictionTest hierarchyNameRT;
         MdschemaHierarchiesRowset(XmlaRequest request, XmlaHandler handler) {
             super(definition, request, handler);
-            schemaNameRT = getRistrictionTest(SchemaName);
-            cubeNameRT = getRistrictionTest(CubeName);
-            dimensionUniqueNameRT = getRistrictionTest(DimensionUniqueName);
-            hierarchyUniqueNameRT = getRistrictionTest(HierarchyUniqueName);
-            hierarchyNameRT = getRistrictionTest(HierarchyName);
+            schemaNameRT = getRestrictionTest(SchemaName);
+            cubeNameRT = getRestrictionTest(CubeName);
+            dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
+            hierarchyUniqueNameRT = getRestrictionTest(HierarchyUniqueName);
+            hierarchyNameRT = getRestrictionTest(HierarchyName);
         }
 
         private static final Column CatalogName =
@@ -4026,7 +4021,7 @@ boolean restriction, boolean nullable, String description)
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = 
                 handler.getDataSource(request);
             String roleStr = request.getRole();
@@ -4055,7 +4050,7 @@ boolean restriction, boolean nullable, String description)
         protected void populateCatalog(Connection connection, 
                 Role role, 
                 String catalogName, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
             try {
                 final Cube[] cubes = connection.getSchema().getCubes();
@@ -4073,7 +4068,7 @@ boolean restriction, boolean nullable, String description)
         protected void populateCube(SchemaReader schemaReader,
                 String catalogName, 
                 Cube cube, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
             try {
                 int ordinal = 0;
@@ -4099,7 +4094,7 @@ boolean restriction, boolean nullable, String description)
                 Cube cube, 
                 Dimension dimension, 
                 int ordinal,
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
             try {
                 Hierarchy[] hierarchies = dimension.getHierarchies();
@@ -4130,7 +4125,7 @@ boolean restriction, boolean nullable, String description)
                 Dimension dimension, 
                 HierarchyBase hierarchy, 
                 int ordinal,
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
 
             // Access control
@@ -4216,20 +4211,20 @@ boolean restriction, boolean nullable, String description)
     }
 
     static class MdschemaLevelsRowset extends Rowset {
-        private final RistrictionTest schemaNameRT;
-        private final RistrictionTest cubeNameRT;
-        private final RistrictionTest dimensionUniqueNameRT;
-        private final RistrictionTest hierarchyUniqueNameRT;
-        private final RistrictionTest levelUniqueNameRT;
-        private final RistrictionTest levelNameRT;
+        private final RestrictionTest schemaNameRT;
+        private final RestrictionTest cubeNameRT;
+        private final RestrictionTest dimensionUniqueNameRT;
+        private final RestrictionTest hierarchyUniqueNameRT;
+        private final RestrictionTest levelUniqueNameRT;
+        private final RestrictionTest levelNameRT;
         MdschemaLevelsRowset(XmlaRequest request, XmlaHandler handler) {
             super(definition, request, handler);
-            schemaNameRT = getRistrictionTest(SchemaName);
-            cubeNameRT = getRistrictionTest(CubeName);
-            dimensionUniqueNameRT = getRistrictionTest(DimensionUniqueName);
-            hierarchyUniqueNameRT = getRistrictionTest(HierarchyUniqueName);
-            levelUniqueNameRT = getRistrictionTest(LevelUniqueName);
-            levelNameRT = getRistrictionTest(LevelName);
+            schemaNameRT = getRestrictionTest(SchemaName);
+            cubeNameRT = getRestrictionTest(CubeName);
+            dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
+            hierarchyUniqueNameRT = getRestrictionTest(HierarchyUniqueName);
+            levelUniqueNameRT = getRestrictionTest(LevelUniqueName);
+            levelNameRT = getRestrictionTest(LevelName);
         }
 
         public static final int MDLEVEL_TYPE_UNKNOWN = 0x0000;
@@ -4450,7 +4445,7 @@ boolean restriction, boolean nullable, String description)
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             String roleStr = request.getRole();
             DataSourcesConfig.Catalog[] catalogs = 
@@ -4478,7 +4473,7 @@ boolean restriction, boolean nullable, String description)
         protected void populateCatalog(Connection connection, 
                 Role role, 
                 String catalogName, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
 
             final Cube[] cubes = connection.getSchema().getCubes();
@@ -4495,7 +4490,7 @@ boolean restriction, boolean nullable, String description)
         protected void populateCube(SchemaReader schemaReader,
                 String catalogName, 
                 Cube cube, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
             try {
                 final Dimension[] dimensions = cube.getDimensions();
@@ -4514,7 +4509,7 @@ boolean restriction, boolean nullable, String description)
                 String catalogName, 
                 Cube cube, 
                 Dimension dimension, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
             try {
                 Hierarchy[] hierarchies = dimension.getHierarchies();
@@ -4533,7 +4528,7 @@ boolean restriction, boolean nullable, String description)
                 String catalogName, 
                 Cube cube, 
                 Hierarchy hierarchy, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
 
                 final Level[] levels = hierarchy.getLevels();
@@ -4553,7 +4548,7 @@ boolean restriction, boolean nullable, String description)
                 Cube cube, 
                 Hierarchy hierarchy, 
                 Level level,
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
 
             // Access control
@@ -4582,7 +4577,7 @@ boolean restriction, boolean nullable, String description)
             //row.set(LevelGuid.name, "");
             row.set(LevelCaption.name, level.getCaption());
             // see notes on this #getDepth()
-            row.set(LevelNumber.name, new Integer(level.getDepth()));
+            row.set(LevelNumber.name, level.getDepth());
 
             // Get level cardinality
             // According to microsoft this is:
@@ -4670,16 +4665,16 @@ boolean restriction, boolean nullable, String description)
         public static final int MDMEASURE_AGGR_STD = 7;
         public static final int MDMEASURE_AGGR_CALCULATED = 127;
 
-        private final RistrictionTest schemaNameRT;
-        private final RistrictionTest cubeNameRT;
-        private final RistrictionTest measureUniqueNameRT;
-        private final RistrictionTest measureNameRT;
+        private final RestrictionTest schemaNameRT;
+        private final RestrictionTest cubeNameRT;
+        private final RestrictionTest measureUniqueNameRT;
+        private final RestrictionTest measureNameRT;
         MdschemaMeasuresRowset(XmlaRequest request, XmlaHandler handler) {
             super(definition, request, handler);
-            schemaNameRT = getRistrictionTest(SchemaName);
-            cubeNameRT = getRistrictionTest(CubeName);
-            measureNameRT = getRistrictionTest(MeasureName);
-            measureUniqueNameRT = getRistrictionTest(MeasureUniqueName);
+            schemaNameRT = getRestrictionTest(SchemaName);
+            cubeNameRT = getRestrictionTest(CubeName);
+            measureNameRT = getRestrictionTest(MeasureName);
+            measureUniqueNameRT = getRestrictionTest(MeasureUniqueName);
         }
 
         private static final Column CatalogName =
@@ -4838,7 +4833,7 @@ boolean restriction, boolean nullable, String description)
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             String roleStr = request.getRole();
             DataSourcesConfig.Catalog[] catalogs = 
@@ -4865,11 +4860,11 @@ boolean restriction, boolean nullable, String description)
         protected void populateCatalog(Connection connection, 
                 Role role, 
                 String catalogName, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
 
             // SQL Server actually includes the LEVELS_LIST row
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
 
             final Cube[] cubes = connection.getSchema().getCubes();
             for (int i = 0; i < cubes.length; i++) {
@@ -4914,10 +4909,9 @@ boolean restriction, boolean nullable, String description)
                         }
                     }
 
-                    List calcMembers =
-                        schemaReader.getCalculatedMembers(measuresHierarchy);
-                    for (Iterator it = calcMembers.iterator(); it.hasNext();) {
-                        Member member = (Member) it.next();
+                    for (Member member :
+                        schemaReader.getCalculatedMembers(measuresHierarchy)) 
+                    {
                         String name = member.getName();
                         String unique = member.getUniqueName();
                         if (measureNameRT.passes(name) &&
@@ -4936,7 +4930,7 @@ boolean restriction, boolean nullable, String description)
             Member member,
             Cube cube,
             String levelListStr,
-            List rows) {
+            List<Row> rows) {
 
             // Access control
             if (!canAccess(schemaReader, member)) {
@@ -4947,7 +4941,7 @@ boolean restriction, boolean nullable, String description)
                 MemberBase mb = (MemberBase) member;
                 Boolean isVisible = (Boolean)
                        mb.getPropertyValue(Property.VISIBLE.name);
-                if ((isVisible != null) && (! isVisible.booleanValue())) {
+                if (isVisible != null && !isVisible) {
                     return;
                 }
             }
@@ -5029,23 +5023,23 @@ boolean restriction, boolean nullable, String description)
     }
 
     static class MdschemaMembersRowset extends Rowset {
-        private final RistrictionTest schemaNameRT;
-        private final RistrictionTest cubeNameRT;
-        private final RistrictionTest dimensionUniqueNameRT;
-        private final RistrictionTest hierarchyUniqueNameRT;
-        private final RistrictionTest memberNameRT;
-        private final RistrictionTest memberUniqueNameRT;
-        private final RistrictionTest memberTypeRT;
+        private final RestrictionTest schemaNameRT;
+        private final RestrictionTest cubeNameRT;
+        private final RestrictionTest dimensionUniqueNameRT;
+        private final RestrictionTest hierarchyUniqueNameRT;
+        private final RestrictionTest memberNameRT;
+        private final RestrictionTest memberUniqueNameRT;
+        private final RestrictionTest memberTypeRT;
 
         MdschemaMembersRowset(XmlaRequest request, XmlaHandler handler) {
             super(definition, request, handler);
-            schemaNameRT = getRistrictionTest(SchemaName);
-            cubeNameRT = getRistrictionTest(CubeName);
-            dimensionUniqueNameRT = getRistrictionTest(DimensionUniqueName);
-            hierarchyUniqueNameRT = getRistrictionTest(HierarchyUniqueName);
-            memberNameRT = getRistrictionTest(MemberName);
-            memberUniqueNameRT = getRistrictionTest(MemberUniqueName);
-            memberTypeRT = getRistrictionTest(MemberType);
+            schemaNameRT = getRestrictionTest(SchemaName);
+            cubeNameRT = getRestrictionTest(CubeName);
+            dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
+            hierarchyUniqueNameRT = getRestrictionTest(HierarchyUniqueName);
+            memberNameRT = getRestrictionTest(MemberName);
+            memberUniqueNameRT = getRestrictionTest(MemberUniqueName);
+            memberTypeRT = getRestrictionTest(MemberType);
         }
 
         private static final Column CatalogName =
@@ -5272,7 +5266,7 @@ boolean restriction, boolean nullable, String description)
                 return new MdschemaMembersRowset(request, handler);
             }
         };
-        public void populate(XmlaResponse response, List rows) 
+        public void populate(XmlaResponse response, List<Row> rows)
                 throws XmlaException {
 
             DataSourcesConfig.DataSource ds = 
@@ -5302,7 +5296,7 @@ boolean restriction, boolean nullable, String description)
         protected void populateCatalog(Connection connection, 
                 Role role, 
                 String catalogName, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
             
             final Cube[] cubes = connection.getSchema().getCubes();
@@ -5317,7 +5311,7 @@ boolean restriction, boolean nullable, String description)
         protected void populateCube(SchemaReader schemaReader,
                 String catalogName, 
                 Cube cube, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
 
             if (isRestricted(MemberUniqueName)) {
@@ -5372,7 +5366,7 @@ boolean restriction, boolean nullable, String description)
                 String catalogName, 
                 Cube cube, 
                 Dimension dimension, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
             
             Hierarchy[] hierarchies = dimension.getHierarchies();
@@ -5389,7 +5383,7 @@ boolean restriction, boolean nullable, String description)
                 String catalogName, 
                 Cube cube, 
                 Hierarchy hierarchy, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
 
              
@@ -5453,7 +5447,7 @@ boolean restriction, boolean nullable, String description)
             Cube cube,
             Member member,
             int treeOp,
-            List rows) {
+            List<Row> rows) {
 
             // Visit node itself.
             if (mask(treeOp, Enumeration.TreeOp.Self.ordinal)) {
@@ -5516,7 +5510,7 @@ boolean restriction, boolean nullable, String description)
             }
         }
 
-        protected ArrayList pruneRestrictions(ArrayList list) {
+        protected ArrayList<Column> pruneRestrictions(ArrayList<Column> list) {
             // If they've restricted TreeOp, we don't want to literally filter
             // the result on TreeOp (because it's not an output column) or
             // on MemberUniqueName (because TreeOp will have caused us to
@@ -5532,7 +5526,7 @@ boolean restriction, boolean nullable, String description)
             final SchemaReader schemaReader,
             Member[] members,
             final String catalogName,
-            Cube cube, List rows) {
+            Cube cube, List<Row> rows) {
 
             for (int i = 0; i < members.length; i++) {
                 Member member = members[i];
@@ -5542,7 +5536,7 @@ boolean restriction, boolean nullable, String description)
         private void outputUniqueMemberName(
             final SchemaReader schemaReader,
             final String catalogName,
-            Cube cube, List rows) {
+            Cube cube, List<Row> rows) {
 
             String memberUniqueName = 
                             getRestrictionValueAsString(MemberUniqueName);
@@ -5575,7 +5569,7 @@ boolean restriction, boolean nullable, String description)
             final SchemaReader schemaReader,
             Member member,
             final String catalogName,
-            Cube cube, List rows) {
+            Cube cube, List<Row> rows) {
 
             // Access control
             if (!canAccess(schemaReader, member)) {
@@ -5810,7 +5804,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
                 HSB_UNSUPPORTED_OPERATION_CODE,
@@ -5820,18 +5814,18 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
     }
 
     static class MdschemaPropertiesRowset extends Rowset {
-        private final RistrictionTest schemaNameRT;
-        private final RistrictionTest cubeNameRT;
-        private final RistrictionTest dimensionUniqueNameRT;
-        private final RistrictionTest hierarchyUniqueNameRT;
-        private final RistrictionTest propertyNameRT;
+        private final RestrictionTest schemaNameRT;
+        private final RestrictionTest cubeNameRT;
+        private final RestrictionTest dimensionUniqueNameRT;
+        private final RestrictionTest hierarchyUniqueNameRT;
+        private final RestrictionTest propertyNameRT;
         MdschemaPropertiesRowset(XmlaRequest request, XmlaHandler handler) {
             super(definition, request, handler);
-            schemaNameRT = getRistrictionTest(SchemaName);
-            cubeNameRT = getRistrictionTest(CubeName);
-            dimensionUniqueNameRT = getRistrictionTest(DimensionUniqueName);
-            hierarchyUniqueNameRT = getRistrictionTest(HierarchyUniqueName);
-            propertyNameRT = getRistrictionTest(PropertyName);
+            schemaNameRT = getRestrictionTest(SchemaName);
+            cubeNameRT = getRestrictionTest(CubeName);
+            dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
+            hierarchyUniqueNameRT = getRestrictionTest(HierarchyUniqueName);
+            propertyNameRT = getRestrictionTest(PropertyName);
         }
 
         private static final int MDPROP_MEMBER = 0x01;
@@ -6017,7 +6011,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
             }
         };
 
-        public void populate(XmlaResponse response, List rows) throws XmlaException {
+        public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = 
                 handler.getDataSource(request);
             String roleStr = request.getRole();
@@ -6045,7 +6039,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         protected void populateCatalog(Connection connection, 
                 Role role, 
                 String catalogName, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
 
             final Cube[] cubes = connection.getSchema().getCubes();
@@ -6060,7 +6054,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         protected void populateCube(SchemaReader schemaReader,
                 String catalogName, 
                 Cube cube, 
-                List rows) 
+                List<Row> rows)
                 throws XmlaException {
             if (isRestricted(LevelUniqueName)) {
                 // Note: If the LEVEL_UNIQUE_NAME has been specified, then
@@ -6104,7 +6098,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private void populateDimension(
             final SchemaReader schemaReader,
             final String catalogName,
-            Cube cube, Dimension dimension, List rows) {
+            Cube cube, Dimension dimension, List<Row> rows) {
 
             Hierarchy[] hierarchies = dimension.getHierarchies();
             for (int i = 0; i < hierarchies.length; i++) {
@@ -6119,7 +6113,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private void populateHierarchy(
             final SchemaReader schemaReader,
             final String catalogName,
-            Cube cube, Hierarchy hierarchy, List rows) {
+            Cube cube, Hierarchy hierarchy, List<Row> rows) {
 
             Level[] levels = hierarchy.getLevels();
             for (int i = 0; i < levels.length; i++) {
@@ -6131,7 +6125,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private void populateLevel(
             final SchemaReader schemaReader,
             final String catalogName,
-            Cube cube, Level level, List rows) {
+            Cube cube, Level level, List<Row> rows) {
 
             Property[] properties = level.getProperties();
             for (int i = 0; i < properties.length; i++) {
@@ -6147,7 +6141,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
             final SchemaReader schemaReader,
             Property property,
             final String catalogName,
-            Cube cube, Level level, List rows) {
+            Cube cube, Level level, List<Row> rows) {
 
             Hierarchy hierarchy = level.getHierarchy();
             Dimension dimension = hierarchy.getDimension();

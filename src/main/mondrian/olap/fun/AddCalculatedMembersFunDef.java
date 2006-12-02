@@ -15,6 +15,9 @@ import mondrian.calc.ListCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.olap.type.SetType;
+import mondrian.olap.type.MemberType;
+import mondrian.olap.type.Type;
 
 import java.util.*;
 
@@ -29,43 +32,46 @@ import java.util.*;
  * @since Mar 23, 2006
  */
 class AddCalculatedMembersFunDef extends FunDefBase {
-    static final AddCalculatedMembersFunDef instance = new AddCalculatedMembersFunDef();
+    private static final AddCalculatedMembersFunDef instance =
+        new AddCalculatedMembersFunDef();
+
+    public static final Resolver resolver = new ResolverImpl();
+    private static final String FLAG = "fxx";
 
     private AddCalculatedMembersFunDef() {
         super(
-                "AddCalculatedMembers",
-                "AddCalculatedMembers(<Set>)",
-                "Adds calculated members to a set.",
-                "fxx");
+            "AddCalculatedMembers",
+            "AddCalculatedMembers(<Set>)",
+            "Adds calculated members to a set.",
+            FLAG);
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc = compiler.compileList(call.getArg(0));
         return new AbstractListCalc(call, new Calc[] {listCalc}) {
             public List evaluateList(Evaluator evaluator) {
-                final List list = listCalc.evaluateList(evaluator);
+                final List<Member> list = listCalc.evaluateList(evaluator);
                 return addCalculatedMembers(list, evaluator);
             }
         };
     }
 
-    private List addCalculatedMembers(List memberList, Evaluator evaluator) {
+    private List<Member> addCalculatedMembers(
+        List<Member> memberList,
+        Evaluator evaluator)
+    {
         // Determine unique levels in the set
-        Map levelMap = new HashMap();
+        Map<Level, Object> levelMap = new HashMap<Level, Object>();
         Dimension dim = null;
 
-        Iterator it = memberList.iterator();
-        while (it.hasNext()) {
-            Object obj = it.next();
-            if (!(obj instanceof Member)) {
-                throw newEvalException(this, "Only single dimension members allowed in set for AddCalculatedMembers");
-            }
-            Member member = (Member) obj;
+        for (Member member : memberList) {
             if (dim == null) {
                 dim = member.getDimension();
             } else if (dim != member.getDimension()) {
-                throw newEvalException(this, "Only members from the same dimension are allowed in the AddCalculatedMembers set: "
-                        + dim.toString() + " vs " + member.getDimension().toString());
+                throw newEvalException(this,
+                    "Only members from the same dimension are allowed in the AddCalculatedMembers set: "
+                        + dim.toString() + " vs " +
+                        member.getDimension().toString());
             }
             if (!levelMap.containsKey(member.getLevel())) {
                 levelMap.put(member.getLevel(), null);
@@ -74,18 +80,44 @@ class AddCalculatedMembersFunDef extends FunDefBase {
 
         // For each level, add the calculated members from both
         // the schema and the query
-        List workingList = new ArrayList(memberList);
+        List<Member> workingList = new ArrayList<Member>(memberList);
         final SchemaReader schemaReader =
                 evaluator.getQuery().getSchemaReader(true);
-        it = levelMap.keySet().iterator();
-        while (it.hasNext()) {
-            Level level = (Level) it.next();
-            List calcMemberList =
-                    schemaReader.getCalculatedMembers(level);
+        for (Level level : levelMap.keySet()) {
+            List<Member> calcMemberList =
+                schemaReader.getCalculatedMembers(level);
             workingList.addAll(calcMemberList);
         }
         memberList = workingList;
         return memberList;
+    }
+
+    private static class ResolverImpl extends MultiResolver {
+        public ResolverImpl() {
+            super(
+                instance.getName(),
+                instance.getSignature(),
+                instance.getDescription(),
+                new String[] {FLAG});
+        }
+
+        protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+            if (args.length == 1) {
+                Exp arg = args[0];
+                final Type type1 = arg.getType();
+                if (type1 instanceof SetType) {
+                    SetType type = (SetType) type1;
+                    if (type.getElementType() instanceof MemberType) {
+                        return instance;
+                    } else {
+                        throw newEvalException(
+                            instance,
+                            "Only single dimension members allowed in set for AddCalculatedMembers");
+                    }
+                }
+            }
+            return null;
+        }
     }
 }
 

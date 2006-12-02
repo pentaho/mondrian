@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde and others
+// Copyright (C) 2005-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,7 +13,6 @@ package mondrian.tui;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
@@ -108,9 +107,9 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
     private HttpSession session;
     //private ByteArrayInputStream bin;
-    private Map parameters;
-    private Map requestDispatchers;
-    private List locales;
+    private Map<String, String[]> parameters;
+    private Map<String, RequestDispatcher> requestDispatchers;
+    private List<Locale> locales;
     private String serverName;
     private String charEncoding;
     private String method;
@@ -128,20 +127,20 @@ public class MockHttpServletRequest implements HttpServletRequest {
     private String protocol;
     private String schema;
     private Principal principal;
-    private List cookies;
+    private List<Cookie> cookies;
     private boolean requestedSessionIdIsFromCookie;
     private int remotePort;
     private int localPort;
     private int serverPort;
     private String remoteAddr;
     private String remoteHost;
-    private Map attributes;
-    private final LinkedHashMap headers;
+    private Map<String, Object> attributes;
+    private final LinkedHashMap<String, List<String>> headers;
     private boolean sessionCreated;
     private String requestedURI;
     private StringBuffer requestUrl;
     private String bodyContent;
-    private Map roles;                                                          
+    private Map<String, Boolean> roles;
 
     public MockHttpServletRequest() {
         this(new byte[0]);
@@ -151,14 +150,14 @@ public class MockHttpServletRequest implements HttpServletRequest {
     }
     public MockHttpServletRequest(String bodyContent) {
         this.bodyContent = bodyContent;
-        this.attributes = Collections.EMPTY_MAP;
+        this.attributes = Collections.emptyMap();
         //this.bin = new ByteArrayInputStream(bytes);
-        this.headers = new LinkedHashMap();
-        this.requestDispatchers = new HashMap();
-        this.parameters = new HashMap();
-        this.cookies = new ArrayList();
-        this.locales = new ArrayList();
-        this.roles = new HashMap();
+        this.headers = new LinkedHashMap<String, List<String>>();
+        this.requestDispatchers = new HashMap<String, RequestDispatcher>();
+        this.parameters = new HashMap<String, String[]>();
+        this.cookies = new ArrayList<Cookie>();
+        this.locales = new ArrayList<Locale>();
+        this.roles = new HashMap<String, Boolean>();
         this.requestedSessionIdIsFromCookie = true;
         this.method = "GET";
         this.protocol = "HTTP/1.1";
@@ -266,7 +265,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * 
      */
     public String[] getParameterValues(String name) {
-        return (String[]) parameters.get(name);
+        return parameters.get(name);
     }
 
 
@@ -339,8 +338,8 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * 
      */
     public void setAttribute(String name, Object obj) {
-        if (attributes  == Collections.EMPTY_MAP) {
-            attributes = new HashMap();
+        if (attributes == Collections.EMPTY_MAP) {
+            attributes = new HashMap<String, Object>();
         }
         this.attributes.put(name, obj);
     }
@@ -361,7 +360,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
     public Locale getLocale() {
         return (locales.size() < 1) 
             ? Locale.getDefault()
-            : (Locale) locales.get(0);
+            : locales.get(0);
     }
 
     /** 
@@ -392,8 +391,8 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * 
      */
     public RequestDispatcher getRequestDispatcher(String path) {
-        RequestDispatcher dispatcher = 
-            (RequestDispatcher) requestDispatchers.get(path);
+        RequestDispatcher dispatcher =
+            requestDispatchers.get(path);
         if (dispatcher == null) {
             dispatcher = new MockRequestDispatcher();
             setRequestDispatcher(path, dispatcher);
@@ -463,7 +462,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * 
      */
     public Cookie[] getCookies() {
-        return (Cookie[]) cookies.toArray(new Cookie[cookies.size()]);
+        return cookies.toArray(new Cookie[cookies.size()]);
     }
 
     /** 
@@ -490,11 +489,11 @@ public class MockHttpServletRequest implements HttpServletRequest {
      */
     public String getHeader(String name) {
 
-        List headerList = (List) headers.get(name);
+        List<String> headerList = headers.get(name);
 
         return ((headerList == null) || (headerList.size() ==0))
             ? null
-            : (String) headerList.get(0);
+            : headerList.get(0);
     }
 
     /** 
@@ -503,7 +502,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * 
      */
     public Enumeration getHeaders(String name) {
-        List headerList = (List) headers.get(name);
+        List<String> headerList = headers.get(name);
         return (headerList == null) 
             ? null
             : Collections.enumeration(headerList);
@@ -525,7 +524,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
         String header = getHeader(name);
         return (header == null) 
             ? -1
-            : new Integer(header).intValue();
+            : Integer.parseInt(header);
     }
 
     /** 
@@ -588,7 +587,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * 
      */
     public boolean isUserInRole(String role) {
-        return ((Boolean) roles.get(role)).booleanValue();
+        return roles.get(role);
     }
 
     /** 
@@ -779,9 +778,9 @@ public class MockHttpServletRequest implements HttpServletRequest {
         setHeader("Content-Type", contentType);
     }
     public void setHeader(String name, String value) {
-        List valueList = (List) headers.get(name);
+        List<String> valueList = headers.get(name);
         if (valueList == null) {
-            valueList = new ArrayList();
+            valueList = new ArrayList<String>();
             headers.put(name, valueList);
         }
         valueList.add(value);
@@ -811,7 +810,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
         this.session = session;
     }
 
-    public Map getRequestDispatcherMap() {
+    public Map<String, RequestDispatcher> getRequestDispatcherMap() {
         return Collections.unmodifiableMap(requestDispatchers);
     }   
 
@@ -826,14 +825,14 @@ public class MockHttpServletRequest implements HttpServletRequest {
         locales.add(locale);
     }
     
-    public void addLocales(List localeList) {
+    public void addLocales(List<Locale> localeList) {
         locales.addAll(localeList);
     }
 
     public void addHeader(String key, String value) {
-        List valueList = (List) headers.get(key);
+        List<String> valueList = headers.get(key);
         if (valueList == null) {
-            valueList = new ArrayList();
+            valueList = new ArrayList<String>();
             headers.put(key, valueList);
         }
         valueList.add(value);
@@ -856,7 +855,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
         this.requestedSessionIdIsFromCookie = requestedSessionIdIsFromCookie;
     }
     public void setUserInRole(String role, boolean isInRole) {
-        roles.put(role, new Boolean(isInRole));
+        roles.put(role, isInRole);
     }
 
     public void setBodyContent(byte[] data) {

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -87,10 +87,7 @@ class ExplicitRecognizer extends Recognizer {
             // Look at each aggregate table column. For each measure defined,
             // see if the measure's column name equals the column's name.
             // If so, make the aggregate measure usage for that column.
-            for (Iterator it = aggTable.getColumns(); it.hasNext(); ) {
-                JdbcSchema.Table.Column aggColumn =
-                    (JdbcSchema.Table.Column) it.next();
-
+            for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
                 // if marked as ignore, then do not consider
                 if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
                     continue;
@@ -98,23 +95,22 @@ class ExplicitRecognizer extends Recognizer {
 
                 String aggColumnName = aggColumn.getName();
 
-                for (Iterator mit = getTableDef().getMeasures(); mit.hasNext();) {
-                    ExplicitRules.TableDef.Measure measure =
-                        (ExplicitRules.TableDef.Measure) mit.next();
-
+                for (ExplicitRules.TableDef.Measure measure :
+                    getTableDef().getMeasures())
+                {
                     // Column name match is case insensitive
                     if (measure.getColumnName().equalsIgnoreCase(aggColumnName)) {
 
                         String name = measure.getName();
                         String[] parts = Util.explode(name);
-                        String nameLast = parts[parts.length-1];
+                        String nameLast = parts[parts.length - 1];
 
-                        RolapStar.Measure m = 
+                        RolapStar.Measure m =
                             star.getFactTable().lookupMeasureByName(nameLast);
                         RolapAggregator agg = null;
                         if (m != null) {
                             agg = m.getAggregator();
-                        } 
+                        }
                         // Ok, got a match, so now make a measure
                         makeMeasure(measure, agg, aggColumn);
                         measureColumnCounts++;
@@ -207,11 +203,8 @@ class ExplicitRecognizer extends Recognizer {
             return 0;
         }
 
-        int nosMatched = 0;
-        for (Iterator aggit = aggTable.getColumns(); aggit.hasNext();) {
-            JdbcSchema.Table.Column aggColumn =
-                (JdbcSchema.Table.Column) aggit.next();
-
+        int matchCount = 0;
+        for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
             // if marked as ignore, then do not consider
             if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
                 continue;
@@ -219,10 +212,10 @@ class ExplicitRecognizer extends Recognizer {
 
             if (aggFK.equals(aggColumn.getName())) {
                 makeForeignKey(factUsage, aggColumn, aggFK);
-                nosMatched++;
+                matchCount++;
             }
         }
-        return nosMatched;
+        return matchCount;
 
     }
 
@@ -246,27 +239,22 @@ class ExplicitRecognizer extends Recognizer {
 
             // Try to match a Level's name against the RolapLevel unique name.
             String levelUniqueName = rlevel.getUniqueName();
-            for (Iterator mit = getTableDef().getLevels(); mit.hasNext();) {
-                ExplicitRules.TableDef.Level level =
-                    (ExplicitRules.TableDef.Level) mit.next();
-
+            for (ExplicitRules.TableDef.Level level : getTableDef().getLevels()) {
                 if (level.getName().equals(levelUniqueName)) {
                     // Ok, got a match, so now make a measue
                     //makeLevel(level, xxxxolumn);
                     // Now can we find a column in the aggTable that matches the
                     // Level's column
                     String columnName = level.getColumnName();
-                    for (Iterator aggit = aggTable.getColumns();
-                            aggit.hasNext();) {
-                        JdbcSchema.Table.Column aggColumn =
-                            (JdbcSchema.Table.Column) aggit.next();
+                    for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
                         if (aggColumn.getName().equals(columnName)) {
-                            makeLevel(aggColumn,
-                                      hierarchy,
-                                      hierarchyUsage,
-                                      getColumnName(rlevel.getKeyExp()),
-                                      columnName,
-                                      rlevel.getName());
+                            makeLevel(
+                                aggColumn,
+                                hierarchy,
+                                hierarchyUsage,
+                                getColumnName(rlevel.getKeyExp()),
+                                columnName,
+                                rlevel.getName());
                             return true;
                         }
                     }

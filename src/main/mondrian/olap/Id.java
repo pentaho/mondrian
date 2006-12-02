@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -27,7 +27,7 @@ public class Id
     extends ExpBase
     implements Cloneable {
 
-    private final List segments;
+    private final List<Segment> segments;
 
     /**
      * Creates an identifier containing a single part.
@@ -38,11 +38,11 @@ public class Id
         segments = Collections.singletonList(segment);
     }
 
-    private Id(List segments) {
+    private Id(List<Segment> segments) {
         this.segments = segments;
     }
 
-    public Object clone() {
+    public Id clone() {
         // This is immutable, so no need to clone.
         return this;
     }
@@ -62,14 +62,15 @@ public class Id
 
     public String[] toStringArray() {
         String[] names = new String[segments.size()];
-        for (int i = 0; i < segments.size(); i++) {
-            names[i] = ((Segment) segments.get(i)).name;
+        int k = 0;
+        for (Segment segment : segments) {
+            names[k++] = segment.name;
         }
         return names;
     }
 
     public String getElement(int i) {
-        return ((Segment) segments.get(i)).name;
+        return segments.get(i).name;
     }
 
     /**
@@ -80,14 +81,14 @@ public class Id
      * @return New identifier
      */
     public Id append(Segment segment) {
-        List newSegments = new ArrayList(segments);
+        List<Segment> newSegments = new ArrayList<Segment>(segments);
         newSegments.add(segment);
         return new Id(newSegments);
     }
 
     public Exp accept(Validator validator) {
         if (segments.size() == 1) {
-            final Segment s = (Segment) segments.get(0);
+            final Segment s = segments.get(0);
             if (s.quoting == Quoting.UNQUOTED &&
                 validator.getFunTable().isReserved(s.name)) {
                 return Literal.createSymbol(s.name.toUpperCase());
@@ -106,9 +107,9 @@ public class Id
     }
 
     public void unparse(PrintWriter pw) {
-        for (int i = 0; i < segments.size(); i++) {
-            Segment s = (Segment) segments.get(i);
-            if (i > 0) {
+        int k = 0;
+        for (Segment s : segments) {
+            if (k++ > 0) {
                 pw.print(".");
             }
             switch (s.quoting.ordinal) {

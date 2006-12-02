@@ -27,7 +27,7 @@ import java.util.Arrays;
  */
 class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeasure {
 
-    private static final List datatypeList = Arrays.asList(
+    private static final List<String> datatypeList = Arrays.asList(
             new String[] {"Integer", "Numeric", "String"});
 
     /**
@@ -84,8 +84,9 @@ class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeasure {
             }
         }
         // todo: End-user error.
-        Util.assertTrue(RolapBaseCubeMeasure.datatypeList.contains(datatype),
-                "invalid datatype " + datatype);
+        Util.assertTrue(
+            RolapBaseCubeMeasure.datatypeList.contains(datatype),
+            "invalid datatype " + datatype);
         setProperty(Property.DATATYPE.name, datatype);
     }
 

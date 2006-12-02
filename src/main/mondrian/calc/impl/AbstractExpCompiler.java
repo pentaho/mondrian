@@ -29,7 +29,8 @@ import java.util.Map;
 public class AbstractExpCompiler implements ExpCompiler {
     private final Evaluator evaluator;
     private final Validator validator;
-    private final Map parameterSlots = new HashMap();
+    private final Map<Parameter, ParameterSlotImpl> parameterSlots =
+        new HashMap<Parameter, ParameterSlotImpl>();
     private ResultStyle[] resultStyles = {ResultStyle.ANY};
     private static final ResultStyle[] MUTABLE_LIST_ONLY = {ResultStyle.MUTABLE_LIST};
 
@@ -223,7 +224,7 @@ public class AbstractExpCompiler implements ExpCompiler {
     }
 
     public ParameterSlot registerParameter(Parameter parameter) {
-        ParameterSlot slot = (ParameterSlot) parameterSlots.get(parameter);
+        ParameterSlot slot = parameterSlots.get(parameter);
         if (slot != null) {
             return slot;
         }

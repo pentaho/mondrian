@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -23,13 +23,13 @@ import mondrian.olap.Util;
  */
 class StringList
 {
-    StringBuffer sb;
-    String first, mid, last;
-    int count;
+    private final StringBuilder buf;
+    private final String first, mid, last;
+    private int count;
 
     StringList(String first, String mid)
     {
-        this.sb = new StringBuffer(first);
+        this.buf = new StringBuilder(first);
         this.count = 0;
         this.first = first;
         this.mid = mid;
@@ -51,21 +51,21 @@ class StringList
     void newItem(String s)
     {
         if (count++ > 0) {
-            sb.append(mid);
+            buf.append(mid);
         }
-        sb.append(s);
+        buf.append(s);
     }
     /** Appends to an existing item. */
     void append(String s)
     {
         Util.assertTrue(count > 0);
-        sb.append(s);
+        buf.append(s);
     }
     // override Object
     public String toString()
     {
-        sb.append(last);
-        return sb.toString();
+        buf.append(last);
+        return buf.toString();
     }
 };
 

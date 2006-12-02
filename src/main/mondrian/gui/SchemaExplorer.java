@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -324,7 +324,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         dimension.name = "New Dimension " + cube.dimensions.length;
         dimension.hierarchies = new MondrianDef.Hierarchy[1];
         dimension.hierarchies[0] = new MondrianDef.Hierarchy();
-        dimension.hierarchies[0].hasAll = new Boolean(false);
+        dimension.hierarchies[0].hasAll = false;
         dimension.hierarchies[0].levels = new MondrianDef.Level[0];
         dimension.hierarchies[0].memberReaderParameters = new MondrianDef.MemberReaderParameter[0];
         dimension.hierarchies[0].relation = new MondrianDef.Join();
@@ -352,7 +352,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         MondrianDef.Hierarchy hierarchy = (MondrianDef.Hierarchy) path;
 
         MondrianDef.Level level = new MondrianDef.Level();
-        level.uniqueMembers = new Boolean(false);
+        level.uniqueMembers = false;
         level.name = "New Level " + hierarchy.levels.length;
         level.properties = new MondrianDef.Property[0];
         level.nameExp = new MondrianDef.NameExpression();

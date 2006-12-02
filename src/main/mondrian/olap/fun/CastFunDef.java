@@ -68,7 +68,7 @@ public class CastFunDef extends FunDefBase {
             public int evaluateInteger(Evaluator evaluator) {
                 final Object o = evaluate(evaluator);
                 if (o instanceof String) {
-                    return Integer.valueOf((String) o).intValue();
+                    return Integer.parseInt((String) o);
                 }
                 if (o instanceof Number) {
                     return ((Number) o).intValue();
@@ -79,7 +79,7 @@ public class CastFunDef extends FunDefBase {
             public double evaluateDouble(Evaluator evaluator) {
                 final Object o = evaluate(evaluator);
                 if (o instanceof String) {
-                    return Double.valueOf((String) o).doubleValue();
+                    return Double.valueOf((String) o);
                 }
                 if (o instanceof Number) {
                     return ((Number) o).doubleValue();
@@ -90,10 +90,10 @@ public class CastFunDef extends FunDefBase {
             public boolean evaluateBoolean(Evaluator evaluator) {
                 final Object o = evaluate(evaluator);
                 if (o instanceof Boolean) {
-                    return ((Boolean) o).booleanValue();
+                    return (Boolean) o;
                 }
                 if (o instanceof String) {
-                    return Boolean.valueOf((String) o).booleanValue();
+                    return Boolean.valueOf((String) o);
                 }
                 throw cannotConvert(o);
             }

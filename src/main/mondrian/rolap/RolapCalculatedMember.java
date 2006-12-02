@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -47,7 +47,7 @@ class RolapCalculatedMember extends RolapMember {
         } else if (Util.equal(propertyName, Property.CHILDREN_CARDINALITY.name, matchCase)) {
             // Looking up children is unnecessary for calculated member.
             // If do that, SQLException will be thrown.
-            return new Integer(0);
+            return 0;
         } else {
             return super.getPropertyValue(propertyName, matchCase);
         }

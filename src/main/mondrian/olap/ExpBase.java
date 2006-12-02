@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -28,7 +28,7 @@ public abstract class ExpBase
     protected static Exp[] cloneArray(Exp[] a) {
         Exp[] a2 = new Exp[a.length];
         for (int i = 0; i < a.length; i++) {
-            a2[i] = (Exp) a[i].clone();
+            a2[i] = a[i].clone();
         }
         return a2;
     }
@@ -36,10 +36,15 @@ public abstract class ExpBase
     protected ExpBase() {
     }
 
-    public abstract Object clone();
+    public abstract Exp clone();
 
-    public static void unparseList(PrintWriter pw, Exp[] exps, String start,
-            String mid, String end) {
+    public static void unparseList(
+        PrintWriter pw,
+        Exp[] exps,
+        String start,
+        String mid,
+        String end)
+    {
         pw.print(start);
         for (int i = 0; i < exps.length; i++) {
             if (i > 0) {

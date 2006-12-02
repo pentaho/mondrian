@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2005 Julian Hyde and others.
+// Copyright (C) 2004-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -238,8 +238,8 @@ public class UtilTestCase extends TestCase {
         assertEquals(expected, original.replaceAll(seek, replace));
 
         // Check the StringBuffer version of replace.
-        StringBuffer buf = new StringBuffer(original);
-        StringBuffer buf2 = Util.replace(buf, 0, seek, replace);
+        StringBuilder buf = new StringBuilder(original);
+        StringBuilder buf2 = Util.replace(buf, 0, seek, replace);
         assertTrue(buf == buf2);
         assertEquals(expected, buf.toString());
 
@@ -267,16 +267,11 @@ public class UtilTestCase extends TestCase {
     }
 
     public void testReplaceProperties() {
-        Map map = new HashMap();
+        Map<String, String> map = new HashMap<String, String>();
         map.put("foo", "bar");
         map.put("empty", "");
         map.put("null", null);
         map.put("foobarbaz", "bang!");
-        map.put("nonString", new Object() {
-            public String toString() {
-                return "non string value";
-            }
-        });
         map.put("malformed${foo", "groovy");
 
         assertEquals("abarb", Util.replaceProperties("a${foo}b", map));
@@ -298,9 +293,6 @@ public class UtilTestCase extends TestCase {
 
         // if a property's value is null, it's as if it doesn't exist
         assertEquals("${null}", Util.replaceProperties("${null}", map));
-
-        // values don't have to be strings
-        assertEquals("non string value", Util.replaceProperties("${nonString}", map));
 
         // nested properties are expanded, but not recursively
         assertEquals("${foobarbaz}", Util.replaceProperties("${foo${foo}baz}", map));

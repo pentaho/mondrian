@@ -84,26 +84,19 @@ public class ValidMeasureFunDef extends FunDefBase
             baseCube =
                 getBaseCubeofMeasure(
                     evaluator, members[measurePosition], baseCube);
-            List vMinusBDimensions = getDimensionsToForceToAllLevel(
-                virtualCube, baseCube, members);
+            List<Dimension> vMinusBDimensions =
+                getDimensionsToForceToAllLevel(virtualCube, baseCube, members);
             // declare members array and fill in with all needed members
             final Member[] validMeasureMembers =
                 new Member[vMinusBDimensions.size() + members.length];
-            for (int i = 0; i < members.length; i++) {
-                validMeasureMembers[i] = members[i];
-            }
+            System.arraycopy(members, 0, validMeasureMembers, 0, members.length);
             // start adding to validMeasureMembers at right place
             for (int i = 0; i < vMinusBDimensions.size(); i++) {
                 validMeasureMembers[members.length + i] =
-                    ((Dimension) vMinusBDimensions.get(i)).
-                        getHierarchy().getDefaultMember();
-            }
-            if (validMeasureMembers == null) {
-                return "";
+                    vMinusBDimensions.get(i).getHierarchy().getDefaultMember();
             }
             evaluator.setContext(validMeasureMembers);
-            Object value = evaluator.evaluateCurrent();
-            return value;
+            return evaluator.evaluateCurrent();
         }
 
         public Calc[] getCalcs() {
@@ -113,11 +106,10 @@ public class ValidMeasureFunDef extends FunDefBase
         private RolapCube getBaseCubeofMeasure(
             Evaluator evaluator, Member member, RolapCube baseCube) {
             final Cube[] cubes = evaluator.getSchemaReader().getCubes();
-            for (int i = 0; i < cubes.length; i++)
-            {
-                RolapCube cube = (RolapCube) cubes[i];
+            for (Cube cube1 : cubes) {
+                RolapCube cube = (RolapCube) cube1;
                 if (!cube.isVirtual()) {
-                    for (int j = 0; j<cube.getMeasuresMembers().length; j++) {
+                    for (int j = 0; j < cube.getMeasuresMembers().length; j++) {
                         if (cube.getMeasuresMembers()[j].getName().equals(
                             member.getName())) {
                             baseCube = cube;
@@ -131,12 +123,12 @@ public class ValidMeasureFunDef extends FunDefBase
             return baseCube;
         }
 
-        private List getDimensionsToForceToAllLevel(
+        private List<Dimension> getDimensionsToForceToAllLevel(
             RolapCube virtualCube,
             RolapCube baseCube,
             Member[] memberArray)
         {
-            List vMinusBDimensions = new ArrayList();
+            List<Dimension> vMinusBDimensions = new ArrayList<Dimension>();
             boolean foundDim;
             for (int i = 0; i < virtualCube.getDimensions().length; i++) {
                 foundDim = false;
@@ -159,10 +151,11 @@ public class ValidMeasureFunDef extends FunDefBase
         }
 
         private boolean isDimInMembersArray(
-            Member[] memberArray, Dimension theDimensionToLookFor){
-            for (int i = 0; i < memberArray.length; i++) {
-                if (memberArray[i].getName().equalsIgnoreCase(
-                    theDimensionToLookFor.getName())) {
+            Member[] members,
+            Dimension dimension)
+        {
+            for (Member member : members) {
+                if (member.getName().equalsIgnoreCase(dimension.getName())) {
                     return true;
                 }
             }

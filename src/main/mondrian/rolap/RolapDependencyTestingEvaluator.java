@@ -109,7 +109,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         }
         if (!equals(otherResult, result)) {
             final Member[] members = getCurrentMembers();
-            final StringBuffer buf = new StringBuffer();
+            final StringBuilder buf = new StringBuilder();
             for (int j = 0; j < members.length; j++) {
                 if (j > 0) {
                     buf.append(", ");
@@ -131,8 +131,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
     }
 
     public RolapEvaluator _push() {
-        Member[] cloneCurrentMembers =
-                (Member[]) this.getCurrentMembers().clone();
+        Member[] cloneCurrentMembers = getCurrentMembers().clone();
         return new RolapDependencyTestingEvaluator(
                 root,
                 this,
@@ -297,7 +296,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         public List evaluateList(Evaluator evaluator) {
             List list = super.evaluateList(evaluator);
             if (!mutableList) {
-                list = Collections.unmodifiableList((List) list);
+                list = Collections.unmodifiableList(list);
             }
             return list;
         }
@@ -332,17 +331,15 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
          * Returns the dimensions an expression depends on.
          */
         private Dimension[] getIndependentDimensions(Calc calc) {
-                List indDimList = new ArrayList();
-                final Dimension[] dims = getValidator().getQuery().
-                        getCube().getDimensions();
-                for (int i = 0; i < dims.length; i++) {
-                    Dimension dim = dims[i];
-                    if (!calc.dependsOn(dim)) {
-                        indDimList.add(dim);
-                    }
+            List<Dimension> indDimList = new ArrayList<Dimension>();
+            final Dimension[] dims =
+                getValidator().getQuery().getCube().getDimensions();
+            for (Dimension dim : dims) {
+                if (!calc.dependsOn(dim)) {
+                    indDimList.add(dim);
                 }
-                return (Dimension[]) indDimList.toArray(
-                        new Dimension[indDimList.size()]);
+            }
+            return indDimList.toArray(new Dimension[indDimList.size()]);
         }
     }
 }

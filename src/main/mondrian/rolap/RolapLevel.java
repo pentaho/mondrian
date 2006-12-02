@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,8 +14,7 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.agg.CellRequest;
-import mondrian.rolap.agg.MemberColumnConstraint;
+import mondrian.rolap.agg.*;
 import mondrian.rolap.sql.SqlQuery;
 
 import org.apache.log4j.Logger;
@@ -34,8 +33,7 @@ public class RolapLevel extends LevelBase {
     private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
 
     public static RolapLevel lookupLevel(RolapLevel[] levels, String levelName) {
-        for (int i = 0; i < levels.length; i++) {
-            RolapLevel level = levels[i];
+        for (RolapLevel level : levels) {
             if (level.getName().equals(levelName)) {
                 return level;
             }
@@ -149,34 +147,31 @@ public class RolapLevel extends LevelBase {
         Util.assertPrecondition(parentExp != null || nullParentValue == null,
                 "parentExp != null || nullParentValue == null");
         this.xmlClosure = xmlClosure;
-        for (int i = 0; i < properties.length; i++) {
-            RolapProperty property = properties[i];
+        for (RolapProperty property : properties) {
             if (property.getExp() instanceof MondrianDef.Column) {
                 checkColumn((MondrianDef.Column) property.getExp());
             }
         }
         this.properties = properties;
-        List list = new ArrayList();
+        List<Property> list = new ArrayList<Property>();
         for (Level level = this; level != null;
                 level = level.getParentLevel()) {
             final Property[] levelProperties = level.getProperties();
-            for (int i = 0; i < levelProperties.length; i++) {
-                final Property levelProperty = levelProperties[i];
+            for (final Property levelProperty : levelProperties) {
                 Property existingProperty = lookupProperty(
-                        list, levelProperty.getName());
+                    list, levelProperty.getName());
                 if (existingProperty == null) {
                     list.add(levelProperty);
                 } else if (existingProperty.getType() !=
-                        levelProperty.getType()) {
+                    levelProperty.getType()) {
                     throw Util.newError(
-                            "Property " + this.getName() + "." +
+                        "Property " + this.getName() + "." +
                             levelProperty.getName() + " overrides a " +
                             "property with the same name but different type");
                 }
             }
         }
-        this.inheritedProperties = (RolapProperty[]) list.toArray(
-                RolapProperty.emptyArray);
+        this.inheritedProperties = list.toArray(new RolapProperty[list.size()]);
 
         Dimension dim = hierarchy.getDimension();
         if (dim.getDimensionType() == DimensionType.TimeDimension) {
@@ -205,8 +200,6 @@ public class RolapLevel extends LevelBase {
             // if approxRowCount is not set, return MIN_VALUE to indicate
             return Integer.MIN_VALUE;
         }
-
-
     }
 
     protected Logger getLogger() {
@@ -263,6 +256,7 @@ public class RolapLevel extends LevelBase {
     RolapProperty[] getRolapProperties() {
         return properties;
     }
+
     String getNullParentValue() {
         return nullParentValue;
     }
@@ -282,16 +276,13 @@ public class RolapLevel extends LevelBase {
         return nameExp;
     }
 
-    private Property lookupProperty(List list, String propertyName) {
-        Property existingProperty = null;
-        for (Iterator iterator = list.iterator(); iterator.hasNext();) {
-            Property property = (Property) iterator.next();
+    private Property lookupProperty(List<Property> list, String propertyName) {
+        for (Property property : list) {
             if (property.getName().equals(propertyName)) {
-                existingProperty = property;
-                break;
+                return property;
             }
         }
-        return existingProperty;
+        return null;
     }
 
     RolapLevel(RolapHierarchy hierarchy, int depth, MondrianDef.Level xmlLevel) {
@@ -300,7 +291,7 @@ public class RolapLevel extends LevelBase {
             xmlLevel.getNameExp(), xmlLevel.getCaptionExp(), xmlLevel.getOrdinalExp(),
             xmlLevel.getParentExp(), xmlLevel.nullParentValue,
             xmlLevel.closure, createProperties(xmlLevel),
-            (xmlLevel.uniqueMembers.booleanValue() ? UNIQUE : 0),
+            (xmlLevel.uniqueMembers ? UNIQUE : 0),
             xmlLevel.getDatatype(),
             HideMemberCondition.lookup(xmlLevel.hideMemberIf),
             LevelType.lookup(xmlLevel.levelType), xmlLevel.approxRowCount);
@@ -311,9 +302,10 @@ public class RolapLevel extends LevelBase {
         if (!Util.isEmpty(xmlLevel.formatter)) {
             // there is a special member formatter class
             try {
-                Class clazz = Class.forName(xmlLevel.formatter);
-                Constructor ctor = clazz.getConstructor(new Class[0]);
-                memberFormatter = (MemberFormatter) ctor.newInstance(new Object[0]);
+                Class<MemberFormatter> clazz =
+                    (Class<MemberFormatter>) Class.forName(xmlLevel.formatter);
+                Constructor<MemberFormatter> ctor = clazz.getConstructor();
+                memberFormatter = ctor.newInstance();
             } catch (Exception e) {
                 throw MondrianResource.instance().MemberFormatterLoadFailed.ex(
                     xmlLevel.formatter, getUniqueName(), e);
@@ -324,7 +316,7 @@ public class RolapLevel extends LevelBase {
     // helper for constructor
     private static RolapProperty[] createProperties(
             MondrianDef.Level xmlLevel) {
-        List list = new ArrayList();
+        List<RolapProperty> list = new ArrayList<RolapProperty>();
         final MondrianDef.Expression nameExp = xmlLevel.getNameExp();
 
         if (nameExp != null) {
@@ -340,7 +332,7 @@ public class RolapLevel extends LevelBase {
                     xmlLevel.getPropertyExp(i),
                     property.formatter, property.caption));
         }
-        return (RolapProperty[]) list.toArray(RolapProperty.emptyArray);
+        return list.toArray(new RolapProperty[list.size()]);
     }
 
     private static int convertPropertyTypeNameToCode(String type) {
@@ -487,9 +479,9 @@ public class RolapLevel extends LevelBase {
          *   null member)
          */
         boolean constrainRequest(
-                RolapMember member,
-                Map mapLevelToColumn,
-                CellRequest request);
+            RolapMember member,
+            Map<RolapLevel, RolapStar.Column> mapLevelToColumn,
+            CellRequest request);
     }
 
     /**
@@ -498,7 +490,7 @@ public class RolapLevel extends LevelBase {
     class RegularLevelReader implements LevelReader {
         public boolean constrainRequest(
                 RolapMember member,
-                Map mapLevelToColumn,
+                Map<RolapLevel, RolapStar.Column> mapLevelToColumn,
                 CellRequest request) {
             assert member.getLevel() == RolapLevel.this;
             if (member.getKey() == null) {
@@ -510,8 +502,7 @@ public class RolapLevel extends LevelBase {
                 }
             }
 
-            RolapStar.Column column =
-                    (RolapStar.Column) mapLevelToColumn.get(RolapLevel.this);
+            RolapStar.Column column = mapLevelToColumn.get(RolapLevel.this);
 
             if (column == null) {
                 // This hierarchy is not one which qualifies the starMeasure
@@ -573,6 +564,7 @@ public class RolapLevel extends LevelBase {
                         parent, mapLevelToColumn, request);
             }
         }
+
     }
 
     /**
@@ -591,7 +583,7 @@ public class RolapLevel extends LevelBase {
 
         public boolean constrainRequest(
                 RolapMember member,
-                Map mapLevelToColumn,
+                Map<RolapLevel, RolapStar.Column> mapLevelToColumn,
                 CellRequest request) {
 
             // Replace a parent/child level by its closed equivalent, when
@@ -613,11 +605,12 @@ public class RolapLevel extends LevelBase {
                         level.getHierarchy().getDefaultMember();
                 assert allMember.isAll();
                 member = new RolapMember(allMember, level,
-                        ((RolapMember) member).getKey());
+                        member.getKey());
                 return level.getLevelReader().constrainRequest(
                         member, mapLevelToColumn, request);
             }
         }
+
     }
 
     /**
@@ -626,11 +619,12 @@ public class RolapLevel extends LevelBase {
     class AllLevelReaderImpl implements LevelReader {
         public boolean constrainRequest(
                 RolapMember member,
-                Map mapLevelToColumn,
+                Map<RolapLevel, RolapStar.Column> mapLevelToColumn,
                 CellRequest request) {
             // We don't need to apply any constraints.
             return false;
         }
+
     }
 
     /**
@@ -639,10 +633,11 @@ public class RolapLevel extends LevelBase {
     class NullLevelReader implements LevelReader {
         public boolean constrainRequest(
                 RolapMember member,
-                Map mapLevelToColumn,
+                Map<RolapLevel, RolapStar.Column> mapLevelToColumn,
                 CellRequest request) {
             return true;
         }
+
     }
 }
 

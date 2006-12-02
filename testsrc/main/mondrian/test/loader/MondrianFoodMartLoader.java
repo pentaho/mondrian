@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2005 Julian Hyde
+// Copyright (C) 2004-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -23,7 +23,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -122,21 +121,23 @@ public class MondrianFoodMartLoader {
 
     private FileWriter fileOutput = null;
 
-    private final Map tableMetadataToLoad = new HashMap();
-    private final Map aggregateTableMetadataToLoad = new HashMap();
+    private final Map<String, Column[]> tableMetadataToLoad =
+        new HashMap<String, Column[]>();
+    private final Map<String, Column[]> aggregateTableMetadataToLoad =
+        new HashMap<String, Column[]>();
     private final Map<String, List<UniqueConstraint>> tableConstraints =
         new HashMap<String, List<UniqueConstraint>>();
     private SqlQuery.Dialect dialect;
 
 
     public MondrianFoodMartLoader(String[] args) {
-	if (args.length == 0) {
-	    usage();
-	    return;
-	}
+        if (args.length == 0) {
+            usage();
+            return;
+        }
 
-        StringBuffer errorMessage = new StringBuffer();
-        StringBuffer parametersMessage = new StringBuffer();
+        StringBuilder errorMessage = new StringBuilder();
+        StringBuilder parametersMessage = new StringBuilder();
 
         // Add a console appender for error messages.
         final ConsoleAppender consoleAppender =
@@ -411,7 +412,7 @@ public class MondrianFoodMartLoader {
                 final Matcher matcher = regex.matcher(line);
                 if (!matcher.matches()) {
                     throw MondrianResource.instance().InvalidInsertLine.ex(
-                        new Integer(lineNumber), line);
+                        lineNumber, line);
                 }
                 String tableName = matcher.group(1); // e.g. "foo"
                 String columnNames = matcher.group(2);
@@ -432,7 +433,7 @@ public class MondrianFoodMartLoader {
                             dialect.getQuoteIdentifierString());
                     String[] splitColumnNames = columnNames.replaceAll(quoteChar, "")
                                             .replaceAll(" ", "").split(",");
-                    Column[] columns = (Column[]) tableMetadataToLoad.get(tableName);
+                    Column[] columns = tableMetadataToLoad.get(tableName);
 
                     orderedColumns = new Column[columns.length];
 
@@ -453,7 +454,7 @@ public class MondrianFoodMartLoader {
 
                 }
 
-                StringBuffer massagedLine = new StringBuffer();
+                StringBuilder massagedLine = new StringBuilder();
 
                 massagedLine
                     .append("INSERT INTO ")
@@ -499,7 +500,7 @@ public class MondrianFoodMartLoader {
      * @throws Exception
      */
     private String getMassagedValues(Column[] columns, String values) throws Exception {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         // Get the values out as individual elements
         // Split the string at commas, and cope with embedded commas
@@ -537,15 +538,15 @@ public class MondrianFoodMartLoader {
 
         for (int i = 0; i < columns.length; i++) {
             if (i > 0) {
-                sb.append(",");
+                buf.append(",");
             }
             String value = individualValues[i];
             if (value != null && value.trim().equals("NULL")) {
                 value = null;
             }
-            sb.append(columnValue(value, columns[i]));
+            buf.append(columnValue(value, columns[i]));
         }
-        return sb.toString();
+        return buf.toString();
 
     }
 
@@ -575,11 +576,12 @@ public class MondrianFoodMartLoader {
          * For each row, insert a row
          */
 
-        for (Iterator it = tableMetadataToLoad.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry tableEntry = (Map.Entry) it.next();
-            int rowsAdded = loadTable((String) tableEntry.getKey(), (Column[]) tableEntry.getValue());
-            LOGGER.info("Table " + (String) tableEntry.getKey() +
-                    ": loaded " + rowsAdded + " rows.");
+        for (Map.Entry<String, Column[]> tableEntry : tableMetadataToLoad.entrySet()) {
+            int rowsAdded = loadTable(
+                tableEntry.getKey(),
+                tableEntry.getValue());
+            LOGGER.info("Table " + tableEntry.getKey() +
+                ": loaded " + rowsAdded + " rows.");
         }
 
         if (outputDirectory != null) {
@@ -601,7 +603,7 @@ public class MondrianFoodMartLoader {
             int lineNumber = 0;
             Util.discard(lineNumber);
 
-            StringBuffer statement = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
 
             String fromQuoteChar = null;
             String toQuoteChar = null;
@@ -633,21 +635,21 @@ public class MondrianFoodMartLoader {
                     line = line.replaceAll(fromQuoteChar, toQuoteChar);
                 }
 
-                // End of statement
+                // End of buf
                 if (line.charAt(line.length() - 1) == ';') {
-                    statement.append(" ")
+                    buf.append(" ")
                         .append(line.substring(0, line.length() - 1));
-                    executeDDL(statement.toString());
-                    statement = new StringBuffer();
+                    executeDDL(buf.toString());
+                    buf.setLength(0);
 
                 } else {
-                    statement.append(" ")
+                    buf.append(" ")
                     .append(line.substring(0, line.length()));
                 }
             }
 
-            if (statement.length() > 0) {
-                executeDDL(statement.toString());
+            if (buf.length() > 0) {
+                executeDDL(buf.toString());
             }
 
         } finally {
@@ -669,7 +671,7 @@ public class MondrianFoodMartLoader {
      */
     private int loadTable(String name, Column[] columns) throws Exception {
         int rowsAdded = 0;
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         buf.append("select ");
         for (int i = 0; i < columns.length; i++) {
@@ -725,7 +727,7 @@ public class MondrianFoodMartLoader {
      * @throws Exception
      */
     private String createInsertStatement(ResultSet rs, String name, Column[] columns) throws Exception {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         buf.append("INSERT INTO ")
             .append(quoteId(name))
@@ -994,10 +996,10 @@ public class MondrianFoodMartLoader {
      *      output the statement to a file.
      *
      * @param isUnique
-     @param tableName
-     @param indexName
-     @param columnNames
-     @param baseTables
+     * @param tableName
+     * @param indexName
+     * @param columnNames
+     * @param baseTables
      * @param aggregateTables
      */
     private void createIndex(
@@ -1055,7 +1057,7 @@ public class MondrianFoodMartLoader {
                 return;
             }
 
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
 
             // If we're [re]creating tables, no need to drop indexes.
             if (jdbcOutput && !tables) {
@@ -1073,7 +1075,7 @@ public class MondrianFoodMartLoader {
                 }
             }
 
-            buf = new StringBuffer();
+            buf.setLength(0);
             buf.append(isUnique ? "CREATE UNIQUE INDEX " : "CREATE INDEX ")
                 .append(quoteId(indexName)).append(" ON ")
                 .append(quoteId(tableName)).append(" (");
@@ -1598,7 +1600,7 @@ public class MondrianFoodMartLoader {
             }
 
             // Define the table.
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append("CREATE TABLE ").append(quoteId(name)).append("(");
 
             for (int i = 0; i < columns.length; i++) {
@@ -1731,13 +1733,8 @@ public class MondrianFoodMartLoader {
          * in the result set
          */
         } else if (columnType.startsWith(Type.Smallint.name)) {
-            if (obj.getClass() == Boolean.class) {
-                Boolean result = (Boolean) obj;
-                if (result.booleanValue()) {
-                    return "1";
-                } else {
-                    return "0";
-                }
+            if (obj instanceof Boolean) {
+                return (Boolean) obj ? "1" : "0";
             } else {
                 try {
                     Integer result = (Integer) obj;
@@ -1848,12 +1845,7 @@ public class MondrianFoodMartLoader {
          * Output for a BOOLEAN - TINYINT(1) (MySQL)
          */
         } else if (columnType.startsWith("TINYINT(1)")) {
-            Boolean result = (Boolean) obj;
-            if (result.booleanValue()) {
-                return "1";
-            } else {
-                return "0";
-            }
+            return (Boolean) obj ? "1" : "0";
         }
         throw new Exception("Unknown column type: " + columnType + " for column: " + column.name);
     }
@@ -1923,18 +1915,18 @@ public class MondrianFoodMartLoader {
         if (original == null) {
             return "NULL";
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
-        sb.append("'");
+        buf.append("'");
         for (int i = 0; i < original.length(); i++) {
             char ch = original.charAt(i);
-            sb.append(ch);
+            buf.append(ch);
             if (ch == '\'') {
-                sb.append('\'');
+                buf.append('\'');
             }
         }
-        sb.append("'");
-        return sb.toString();
+        buf.append("'");
+        return buf.toString();
     }
 
     /**
@@ -1963,18 +1955,18 @@ public class MondrianFoodMartLoader {
      * @return number format, ie. length = 6, places = 2 => "###0.00"
      */
     private static String decimalFormat(int length, int places) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < length; i++) {
             if ((length - i) == places) {
-                sb.append('.');
+                buf.append('.');
             }
             if ((length - i) <= (places + 1)) {
-                sb.append("0");
+                buf.append("0");
             } else {
-                sb.append("#");
+                buf.append("#");
             }
         }
-        return sb.toString();
+        return buf.toString();
     }
 
     private static class Column {

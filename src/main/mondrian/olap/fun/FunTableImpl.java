@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2005 Julian Hyde
+// Copyright (C) 2002-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -28,13 +28,13 @@ public abstract class FunTableImpl implements FunTable {
      * {@link mondrian.olap.Syntax} to an array of
      * {@link mondrian.olap.Validator} objects for that name.
      */
-    protected final Map mapNameToResolvers = new HashMap();
-    private final HashSet reservedWords = new HashSet();
-    private final HashSet propertyWords = new HashSet();
-    protected static final Resolver[] emptyResolverArray = new Resolver[0];
+    protected final Map<String, List<Resolver>> mapNameToResolvers =
+        new HashMap<String, List<Resolver>>();
+    private final Set<String> reservedWords = new HashSet<String>();
+    private final Set<String> propertyWords = new HashSet<String>();
     /** used during initialization */
-    protected final List resolverList = new ArrayList();
-    protected final List funInfoList = new ArrayList();
+    protected final List<Resolver> resolverList = new ArrayList<Resolver>();
+    protected final List<FunInfo> funInfoList = new ArrayList<FunInfo>();
 
     protected FunTableImpl() {
     }
@@ -62,8 +62,7 @@ public abstract class FunTableImpl implements FunTable {
         }
         resolverList.add(resolver);
         final String[] reservedWords = resolver.getReservedWords();
-        for (int i = 0; i < reservedWords.length; i++) {
-            String reservedWord = reservedWords[i];
+        for (String reservedWord : reservedWords) {
             defineReserved(reservedWord);
         }
     }
@@ -82,18 +81,18 @@ public abstract class FunTableImpl implements FunTable {
         // at the type of one of its arguments.
         String signature = syntax.getSignature(funName,
                 Category.Unknown, ExpBase.getTypes(args));
-        Resolver[] resolvers = (Resolver[]) mapNameToResolvers.get(key);
+        List<Resolver> resolvers = mapNameToResolvers.get(key);
         if (resolvers == null) {
-            resolvers = emptyResolverArray;
+            resolvers = Collections.emptyList();
         }
 
         int[] conversionCount = new int[] {0};
         int minConversions = Integer.MAX_VALUE;
         int matchCount = 0;
         FunDef matchDef = null;
-        for (int i = 0; i < resolvers.length; i++) {
+        for (Resolver resolver : resolvers) {
             conversionCount[0] = 0;
-            FunDef def = resolvers[i].resolve(args, validator, conversionCount);
+            FunDef def = resolver.resolve(args, validator, conversionCount);
             if (def != null) {
                 int conversions = conversionCount[0];
                 if (conversions < minConversions) {
@@ -134,12 +133,11 @@ public abstract class FunTableImpl implements FunTable {
         // operator (which returns a scalar) or the crossjoin operator (which
         // returns a set) we have to know what kind of expression is expected.
         String key = makeResolverKey(call.getFunName(), call.getSyntax());
-        Resolver[] resolvers = (Resolver[]) mapNameToResolvers.get(key);
+        List<Resolver> resolvers = mapNameToResolvers.get(key);
         if (resolvers == null) {
-            resolvers = emptyResolverArray;
+            resolvers = Collections.emptyList();
         }
-        for (int i = 0; i < resolvers.length; i++) {
-            Resolver resolver2 = resolvers[i];
+        for (Resolver resolver2 : resolvers) {
             if (!resolver2.requiresExpression(k)) {
                 // This resolver accepts a set in this argument position,
                 // therefore we don't REQUIRE a scalar expression.
@@ -149,8 +147,8 @@ public abstract class FunTableImpl implements FunTable {
         return true;
     }
 
-    public List getReservedWords() {
-        return new ArrayList(reservedWords);
+    public List<String> getReservedWords() {
+        return new ArrayList<String>(reservedWords);
     }
 
     public boolean isReserved(String s) {
@@ -165,15 +163,10 @@ public abstract class FunTableImpl implements FunTable {
         reservedWords.add(s.toUpperCase());
     }
 
-    public List getResolvers() {
-        final List list = new ArrayList();
-        final Collection c = mapNameToResolvers.values();
-        for (Iterator iterator = c.iterator(); iterator.hasNext();) {
-            Resolver[] resolvers = (Resolver[]) iterator.next();
-            for (int i = 0; i < resolvers.length; i++) {
-                Resolver resolver = resolvers[i];
-                list.add(resolver);
-            }
+    public List<Resolver> getResolvers() {
+        final List<Resolver> list = new ArrayList<Resolver>();
+        for (List<Resolver> resolvers : mapNameToResolvers.values()) {
+            list.addAll(resolvers);
         }
         return list;
     }
@@ -190,7 +183,7 @@ public abstract class FunTableImpl implements FunTable {
         propertyWords.add(s.toUpperCase());
     }
 
-    public List getFunInfoList() {
+    public List<FunInfo> getFunInfoList() {
         return Collections.unmodifiableList(this.funInfoList);
     }
 
@@ -200,29 +193,15 @@ public abstract class FunTableImpl implements FunTable {
     protected void organizeFunctions() {
         Collections.sort(funInfoList);
         // Map upper-case function names to resolvers.
-        for (int i = 0, n = resolverList.size(); i < n; i++) {
-            Resolver resolver = (Resolver) resolverList.get(i);
-            String key = makeResolverKey(resolver.getName(), resolver.getSyntax());
-            final Object value = mapNameToResolvers.get(key);
-            if (value instanceof Resolver[]) {
-                continue; // has already been converted
+        for (Resolver resolver : resolverList) {
+            String key = makeResolverKey(resolver.getName(),
+                resolver.getSyntax());
+            List<Resolver> list = mapNameToResolvers.get(key);
+            if (list == null) {
+                list = new ArrayList<Resolver>();
+                mapNameToResolvers.put(key, list);
             }
-            List v2 = (List) value;
-            if (v2 == null) {
-                v2 = new ArrayList();
-                mapNameToResolvers.put(key, v2);
-            }
-            v2.add(resolver);
-        }
-        // Convert the Lists into arrays.
-        for (Iterator keys = mapNameToResolvers.keySet().iterator(); keys.hasNext();) {
-            String key = (String) keys.next();
-            final Object value = mapNameToResolvers.get(key);
-            if (value instanceof Resolver[]) {
-                continue; // has already been converted
-            }
-            List v2 = (List) value;
-            mapNameToResolvers.put(key, v2.toArray(new Resolver[v2.size()]));
+            list.add(resolver);
         }
     }
 

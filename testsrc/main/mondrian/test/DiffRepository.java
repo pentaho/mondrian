@@ -132,7 +132,8 @@ public class DiffRepository
      * in the same class to share the same diff-repository: if the
      * repos gets loaded once per testcase, then only one diff is recorded.
      */
-    private static final Map mapClassToRepos = new HashMap();
+    private static final Map<Class, DiffRepository> mapClassToRepos =
+        new HashMap<Class, DiffRepository>();
 
     /**
      * Directories to look for log file in.
@@ -168,8 +169,7 @@ public class DiffRepository
         File file = new File(System.getProperty("user.dir"));
         while (true) {
             File file2 = file;
-            for (int i = 0; i < prefixes.length; i++) {
-                String prefix = prefixes[i];
+            for (String prefix : prefixes) {
                 file2 = new File(file2, prefix);
             }
             if (file2.isDirectory() &&
@@ -340,7 +340,7 @@ public class DiffRepository
         }
         // Otherwise return all the text under this element (including
         // whitespace).
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node node = childNodes.item(i);
             if (node instanceof Text) {
@@ -392,8 +392,7 @@ public class DiffRepository
         Throwable runtimeException = new Throwable();
         runtimeException.fillInStackTrace();
         stackTrace = runtimeException.getStackTrace();
-        for (int i = 0; i < stackTrace.length; i++) {
-            StackTraceElement stackTraceElement = stackTrace[i];
+        for (StackTraceElement stackTraceElement : stackTrace) {
             final String methodName = stackTraceElement.getMethodName();
             if (methodName.startsWith("test")) {
                 return methodName;
@@ -658,7 +657,7 @@ public class DiffRepository
     public static DiffRepository lookup(
         Class clazz, DiffRepository baseRepos, String[] prefixes)
     {
-        DiffRepository diffRepos = (DiffRepository) mapClassToRepos.get(clazz);
+        DiffRepository diffRepos = mapClassToRepos.get(clazz);
         if (diffRepos == null) {
             if (prefixes == null) {
                 prefixes = DefaultPrefixes;

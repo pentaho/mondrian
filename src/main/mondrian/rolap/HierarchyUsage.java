@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -161,7 +161,7 @@ public class HierarchyUsage {
                       (MondrianDef.DimensionUsage) cubeDim;
             // Bug 657 - disable hierarchy aliasing
             if (! du.name.equals(du.source)) {
-                StringBuffer buf = new StringBuffer();
+                StringBuilder buf = new StringBuilder();
                 buf.append("Cube \"");
                 buf.append(cube.getName());
                 buf.append("\": DimensionUsage name (\"");
@@ -182,7 +182,7 @@ public class HierarchyUsage {
                 String hname= this.hierarchyName.substring(
                         index+1, this.hierarchyName.length());
 
-                StringBuffer buf = new StringBuffer(32);
+                StringBuilder buf = new StringBuilder(32);
                 buf.append(this.name);
                 buf.append('.');
                 buf.append(hname);
@@ -326,7 +326,7 @@ public class HierarchyUsage {
     }
 
     public String toString() {
-        StringBuffer buf = new StringBuffer(100);
+        StringBuilder buf = new StringBuilder(100);
         buf.append("HierarchyUsage: ");
         buf.append("kind=");
         buf.append(HierarchyUsage.lookupKindName(this.kind));

@@ -530,9 +530,8 @@ public class BasicQueryTest extends FoodMartTestCase {
         };
 
 
-        List allCommentList = new ArrayList();
-        for (int i = 0; i < comments.length; i++) {
-            String comment = comments[i];
+        List<String> allCommentList = new ArrayList<String>();
+        for (String comment : comments) {
             allCommentList.add(comment);
             if (comment.indexOf("\n") >= 0) {
                 allCommentList.add(comment.replaceAll("\n", "\r\n"));
@@ -546,7 +545,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
         // The last element of the array is the concatenation of all other
         // comments.
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < allComments.length; i++) {
             buf.append(allComments[i]);
         }

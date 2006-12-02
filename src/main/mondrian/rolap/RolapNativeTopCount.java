@@ -67,10 +67,10 @@ public class RolapNativeTopCount extends RolapNativeSet {
         }
 
         public Object getCacheKey() {
-            List key = new ArrayList();
+            List<Object> key = new ArrayList<Object>();
             key.add(super.getCacheKey());
             key.add(orderByExpr);
-            key.add(Boolean.valueOf(ascending));
+            key.add(ascending);
             return key;
         }
     }

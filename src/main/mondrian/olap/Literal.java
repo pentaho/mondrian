@@ -43,17 +43,17 @@ public class Literal extends ExpBase {
 
     public static final Literal emptyString = new Literal("", false);
 
-    public static final Literal zero = new Literal(new Integer(0));
+    public static final Literal zero = new Literal(0);
 
-    public static final Literal one = new Literal(new Integer(1));
+    public static final Literal one = new Literal(1);
 
-    public static final Literal negativeOne = new Literal(new Integer(-1));
+    public static final Literal negativeOne = new Literal(-1);
 
-    public static final Literal doubleZero = new Literal(new Double(0.0));
+    public static final Literal doubleZero = new Literal(0.0);
 
-    public static final Literal doubleOne = new Literal(new Double(1.0));
+    public static final Literal doubleOne = new Literal(1.0);
 
-    public static final Literal doubleNegativeOne = new Literal(new Double(-1.0));
+    public static final Literal doubleNegativeOne = new Literal(-1.0);
 
     /**
      * Private constructor.
@@ -103,7 +103,7 @@ public class Literal extends ExpBase {
      * Creates an integer literal.
      */
     public static Literal create(Integer i) {
-        switch (i.intValue()) {
+        switch (i) {
         case -1:
             return negativeOne;
         case 0:
@@ -129,7 +129,7 @@ public class Literal extends ExpBase {
         this.category = Category.Numeric;
     }
 
-    public Object clone() {
+    public Literal clone() {
         return this;
     }
 

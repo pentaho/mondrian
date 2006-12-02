@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -36,14 +36,6 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         return star;
     }
 
-    public abstract int getMeasureCount();
-    public abstract RolapStar.Measure getMeasure(final int i);
-    public abstract String getMeasureAlias(final int i);
-    public abstract RolapStar.Column[] getColumns();
-    public abstract String getColumnAlias(final int i);
-    public abstract ColumnConstraint[] getConstraints(final int i);
-    public abstract String generateSqlQuery();
-
     protected abstract void addMeasure(final int i, final SqlQuery sqlQuery);
     protected abstract boolean isAggregate();
 
@@ -73,7 +65,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
                     RolapStar.Column.createInExpr(
                         expr,
                         constraints,
-                        column.getDatatype(), 
+                        column.getDatatype(),
                         sqlQuery.getDialect()));
             }
 

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -107,7 +107,7 @@ public abstract class DimensionBase
         }
 
         if (getLogger().isDebugEnabled()) {
-            StringBuffer buf = new StringBuffer(64);
+            StringBuilder buf = new StringBuilder(64);
             buf.append("DimensionBase.lookupChild: ");
             buf.append("name=");
             buf.append(getName());
@@ -125,9 +125,10 @@ public abstract class DimensionBase
     }
 
     private Hierarchy lookupHierarchy(String s) {
-        for (int i = 0; i < hierarchies.length; i++) {
-            if (hierarchies[i].getName().equalsIgnoreCase(s))
-                return hierarchies[i];
+        for (Hierarchy hierarchy : hierarchies) {
+            if (hierarchy.getName().equalsIgnoreCase(s)) {
+                return hierarchy;
+            }
         }
         return null;
     }

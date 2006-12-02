@@ -14,6 +14,7 @@
 package mondrian.olap;
 
 import java.util.Locale;
+import java.io.PrintWriter;
 
 /**
  * Connection to a multi-dimensional database.

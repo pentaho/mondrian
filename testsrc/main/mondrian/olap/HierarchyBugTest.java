@@ -56,11 +56,10 @@ public class HierarchyBugTest extends FoodMartTestCase {
             Hierarchy[] hs = query.getMdxHierarchiesOnAxis(i);
             if (hs == null) {
             } else {
-                for (int j = 0; j < hs.length; j++) {
-                    Hierarchy h = hs[j];
+                for (Hierarchy h : hs) {
                     // This should NEVER be null, but it is.
                     if (h == null) {
-                        failStr = "Got a null Hierarchy, " + 
+                        failStr = "Got a null Hierarchy, " +
                             "Should be Time Hierarchy";
                     }
                 }
@@ -71,3 +70,5 @@ public class HierarchyBugTest extends FoodMartTestCase {
         }
     }
 }
+
+// End HierarchyBugTest.java

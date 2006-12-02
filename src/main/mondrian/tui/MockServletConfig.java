@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde and others
+// Copyright (C) 2005-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -30,14 +30,14 @@ import javax.servlet.ServletContext;
  */
 public class MockServletConfig implements ServletConfig {
     private String servletName;
-    private Map initParams;
+    private Map<String, String> initParams;
     private ServletContext servletContext;
 
     public MockServletConfig() {
         this(null);
     }
     public MockServletConfig(ServletContext servletContext) {
-        this.initParams = new HashMap();
+        this.initParams = new HashMap<String, String>();
         this.servletContext = servletContext;
     }
 
@@ -64,7 +64,7 @@ public class MockServletConfig implements ServletConfig {
      * 
      */
     public String getInitParameter(String key) {
-        return (String) initParams.get(key);
+        return initParams.get(key);
     }
 
     /** 

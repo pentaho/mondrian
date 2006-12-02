@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -41,16 +41,18 @@ public interface XmlaRequestCallback {
                 XmlaConstants.CHH_AUTHORIZATION_FAULT_FS,
                 ex);
         }
- 
-/*
-HTTP/1.1 100 Continue
-Server: Microsoft-IIS/5.0
-Date: Tue, 21 Feb 2006 21:07:57 GMT
-X-Powered-By: ASP.NET
-*/
-        public static void generatedExpectResponse(HttpServletRequest request, 
-                HttpServletResponse response,
-                Map context) throws Exception {
+
+        /*
+    HTTP/1.1 100 Continue
+    Server: Microsoft-IIS/5.0
+    Date: Tue, 21 Feb 2006 21:07:57 GMT
+    X-Powered-By: ASP.NET
+        */
+        public static void generatedExpectResponse(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Map<String, String> context) throws Exception
+        {
             response.reset();
             response.setStatus(HttpServletResponse.SC_CONTINUE);
         }
@@ -79,18 +81,20 @@ X-Powered-By: ASP.NET
      * @return true if XmlaServlet handling is to continue and false if
      *         there was an Expect header "100-continue".
      */
-    boolean processHttpHeader(HttpServletRequest request, 
-                HttpServletResponse response,
-                Map context) throws Exception;
+    boolean processHttpHeader(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        Map<String, String> context) throws Exception;
 
     /** 
      * This is called after the headers have been process but before the
      * body (DISCOVER/EXECUTE) has been processed.
      * 
      */
-    void preAction(HttpServletRequest request,
-                Element[] requestSoapParts,
-                Map context) throws Exception;
+    void preAction(
+        HttpServletRequest request,
+        Element[] requestSoapParts,
+        Map<String, String> context) throws Exception;
 
     /** 
      * The Callback is requested to generate a sequence id string. This
@@ -98,7 +102,7 @@ X-Powered-By: ASP.NET
      * for all subsequent communications in the Soap Header block.
      * 
      */
-    String generateSessionId(Map context); 
+    String generateSessionId(Map<String, String> context);
 
     /** 
      * This is called after all Mondrian processing (DISCOVER/EXECUTE) has
@@ -108,7 +112,7 @@ X-Powered-By: ASP.NET
     void postAction(HttpServletRequest request,
                 HttpServletResponse response,
                 byte[][] responseSoapParts,
-                Map context) throws Exception;
+                Map<String, String> context) throws Exception;
 }
 
 // End XmlaRequestCallback.java

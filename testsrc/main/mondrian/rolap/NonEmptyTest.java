@@ -270,11 +270,9 @@ public class NonEmptyTest extends FoodMartTestCase {
               "Row #7: 79.58" + nl +
               "Row #7: 1.81" + nl
           );
-          return;
-
+        } else {
+            checkNative(32, 8, mdx);
         }
-        else
-          checkNative(32, 8, mdx);
     }
 
     /**
@@ -578,8 +576,14 @@ public class NonEmptyTest extends FoodMartTestCase {
             return;
         }
         SmartMemberReader smr = getSmartMemberReader("Store");
-        smr.mapLevelToMembers.setCache(new HardSmartCache());
-        smr.mapMemberToChildren.setCache(new HardSmartCache());
+        smr.mapLevelToMembers.setCache(
+            new HardSmartCache<
+                SmartMemberListCache.Key2<RolapLevel, Object>,
+                List<RolapMember>>());
+        smr.mapMemberToChildren.setCache(
+            new HardSmartCache<
+                SmartMemberListCache.Key2<RolapMember, Object>,
+                List<RolapMember>>());
         // smr.mapKeyToMember = new HardSmartCache();
         smr.mapKeyToMember.clear();
         RolapResult result = (RolapResult) executeQuery(
@@ -684,7 +688,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             int oldLimit = monLimit.get();
             try {
                 monLimit.set(this.resultLimit);
-                Result result = (Result) executeQuery(query, con);
+                Result result = executeQuery(query, con);
                 Axis a = result.getAxes()[1];
                 assertEquals(rowCount, a.positions.length);
                 return result;
@@ -701,8 +705,14 @@ public class NonEmptyTest extends FoodMartTestCase {
             return;
         }
         SmartMemberReader smr = getSmartMemberReader("Customers");
-        smr.mapLevelToMembers.setCache(new HardSmartCache());
-        smr.mapMemberToChildren.setCache(new HardSmartCache());
+        smr.mapLevelToMembers.setCache(
+            new HardSmartCache<
+                SmartMemberListCache.Key2<RolapLevel, Object>,
+                List<RolapMember>>());
+        smr.mapMemberToChildren.setCache(
+            new HardSmartCache<
+                SmartMemberListCache.Key2<RolapMember, Object>,
+                List<RolapMember>>());
         TestCase c = new TestCase(
                 50,
                 21,
@@ -720,10 +730,10 @@ public class NonEmptyTest extends FoodMartTestCase {
 
         // make sure that [Customers].[Name].Members is NOT in cache
         TupleConstraint lmc = scf.getLevelMembersConstraint(null);
-        assertNull(smr.mapLevelToMembers.get(nameLevel, lmc));
+        assertNull(smr.mapLevelToMembers.get((RolapLevel) nameLevel, lmc));
         // make sure that NON EMPTY [Customers].[Name].Members IS in cache
         lmc = scf.getLevelMembersConstraint(context);
-        List list = smr.mapLevelToMembers.get(nameLevel, lmc);
+        List list = smr.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
         assertNotNull(list);
         assertEquals(20, list.size());
 
@@ -735,19 +745,25 @@ public class NonEmptyTest extends FoodMartTestCase {
 
         // lookup all children of [Burlingame] -> not in cache
         MemberChildrenConstraint mcc = scf.getMemberChildrenConstraint(null);
-        assertNull(smr.mapMemberToChildren.get(parent, mcc));
+        assertNull(smr.mapMemberToChildren.get((RolapMember) parent, mcc));
 
         // lookup NON EMPTY children of [Burlingame] -> yes these are in cache
         mcc = scf.getMemberChildrenConstraint(context);
-        list = smr.mapMemberToChildren.get(parent, mcc);
+        list = smr.mapMemberToChildren.get((RolapMember) parent, mcc);
         assertNotNull(list);
         assertTrue(list.contains(member));
     }
 
     public void testLevelMembersWithoutNonEmpty() {
         SmartMemberReader smr = getSmartMemberReader("Customers");
-        smr.mapLevelToMembers.setCache(new HardSmartCache());
-        smr.mapMemberToChildren.setCache(new HardSmartCache());
+        smr.mapLevelToMembers.setCache(
+            new HardSmartCache<
+                SmartMemberListCache.Key2<RolapLevel, Object>,
+                List<RolapMember>>());
+        smr.mapMemberToChildren.setCache(
+            new HardSmartCache<
+                SmartMemberListCache.Key2<RolapMember, Object>,
+                List<RolapMember>>());
         Result r = executeQuery("select \n"
                 + "{[Measures].[Unit Sales]} ON columns,\n"
                 + "{[Customers].[All Customers], [Customers].[Name].Members} ON rows\n"
@@ -761,12 +777,12 @@ public class NonEmptyTest extends FoodMartTestCase {
 
         // make sure that [Customers].[Name].Members IS in cache
         TupleConstraint lmc = scf.getLevelMembersConstraint(null);
-        List list = smr.mapLevelToMembers.get(nameLevel, lmc);
+        List list = smr.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
         assertNotNull(list);
         assertEquals(10281, list.size());
         // make sure that NON EMPTY [Customers].[Name].Members is NOT in cache
         lmc = scf.getLevelMembersConstraint(context);
-        assertNull(smr.mapLevelToMembers.get(nameLevel, lmc));
+        assertNull(smr.mapLevelToMembers.get((RolapLevel) nameLevel, lmc));
 
         // make sure that the parent/child for the context are cached
 
@@ -776,13 +792,13 @@ public class NonEmptyTest extends FoodMartTestCase {
 
         // lookup all children of [Burlingame] -> yes, found in cache
         MemberChildrenConstraint mcc = scf.getMemberChildrenConstraint(null);
-        list = smr.mapMemberToChildren.get(parent, mcc);
+        list = smr.mapMemberToChildren.get((RolapMember) parent, mcc);
         assertNotNull(list);
         assertTrue(list.contains(member));
 
         // lookup NON EMPTY children of [Burlingame] -> not in cache
         mcc = scf.getMemberChildrenConstraint(context);
-        list = smr.mapMemberToChildren.get(parent, mcc);
+        list = smr.mapMemberToChildren.get((RolapMember) parent, mcc);
         assertNull(list);
     }
 
@@ -883,8 +899,14 @@ public class NonEmptyTest extends FoodMartTestCase {
 
         Connection con = getConnection(true);
         SmartMemberReader smr = getSmartMemberReader(con, "Customers");
-        smr.mapLevelToMembers.setCache(new HardSmartCache());
-        smr.mapMemberToChildren.setCache(new HardSmartCache());
+        smr.mapLevelToMembers.setCache(
+            new HardSmartCache<
+                SmartMemberListCache.Key2<RolapLevel, Object>,
+                List<RolapMember>>());
+        smr.mapMemberToChildren.setCache(
+            new HardSmartCache<
+                SmartMemberListCache.Key2<RolapMember, Object>,
+                List<RolapMember>>());
         TestCase c = new TestCase(
                 con,
                 45,
@@ -1347,14 +1369,14 @@ public class NonEmptyTest extends FoodMartTestCase {
             }
 
             if (!s1.equals(s2)) {
-                StringBuffer sb = new StringBuffer();
-                sb.append("Result differs");
-                sb.append("\n\nMDX:\n").append(mdx);
-                sb.append("\n\nNative Implementation returned:\n");
-                sb.append(s1);
-                sb.append("\n\nInterpreter returned:\n");
-                sb.append(s2);
-                fail(sb.toString());
+                StringBuilder buf = new StringBuilder();
+                buf.append("Result differs");
+                buf.append("\n\nMDX:\n").append(mdx);
+                buf.append("\n\nNative Implementation returned:\n");
+                buf.append(s1);
+                buf.append("\n\nInterpreter returned:\n");
+                buf.append(s2);
+                fail(buf.toString());
             }
 
         } finally {

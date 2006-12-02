@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -33,7 +33,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     private final String[] columnNames;
 
     public DrillThroughQuerySpec(
-        final CellRequest request,
+        CellRequest request,
         boolean countOnly)
     {
         super(request.getMeasure().getStar());
@@ -43,24 +43,23 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     }
 
     private String[] computeDistinctColumnNames() {
-        final List columnNames = new ArrayList();
-        final Set columnNameSet = new HashSet();
+        final List<String> columnNames = new ArrayList<String>();
+        final Set<String> columnNameSet = new HashSet<String>();
 
         final RolapStar.Column[] columns = getColumns();
-        for (int i = 0; i < columns.length; i++) {
-            RolapStar.Column column = columns[i];
+        for (RolapStar.Column column : columns) {
             addColumnName(column, columnNames, columnNameSet);
         }
 
         addColumnName(request.getMeasure(), columnNames, columnNameSet);
 
-        return (String[]) columnNames.toArray(new String[columnNames.size()]);
+        return columnNames.toArray(new String[columnNames.size()]);
     }
 
     private void addColumnName(
-        final RolapStar.Column column,
-        final List columnNames,
-        final Set columnNameSet)
+        final RolapStar.Column column, 
+        final List<String> columnNames,
+        final Set<String> columnNameSet)
     {
         String columnName = column.getName();
         if (columnName != null) {
@@ -112,9 +111,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
 
     public String generateSqlQuery() {
         SqlQuery sqlQuery = newSqlQuery();
-
         nonDistinctGenerateSql(sqlQuery, true, countOnly);
-
         return sqlQuery.toString();
     }
 

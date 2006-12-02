@@ -51,7 +51,7 @@ class DrilldownLevelFunDef extends FunDefBase {
                 null;
         return new AbstractListCalc(call, new Calc[] {listCalc, levelCalc}) {
             public List evaluateList(Evaluator evaluator) {
-                List list = listCalc.evaluateList(evaluator);
+                List<Member> list = listCalc.evaluateList(evaluator);
                 if (list.size() == 0) {
                     return list;
                 }
@@ -65,12 +65,12 @@ class DrilldownLevelFunDef extends FunDefBase {
         };
     }
 
-    List drill(int searchDepth, List list, Evaluator evaluator) {
+    List<Member> drill(int searchDepth, List<Member> list, Evaluator evaluator) {
         if (searchDepth == -1) {
-            searchDepth = ((Member)list.get(0)).getLevel().getDepth();
+            searchDepth = list.get(0).getLevel().getDepth();
 
             for (int i = 1, m = list.size(); i < m; i++) {
-                Member member = (Member) list.get(i);
+                Member member = list.get(i);
                 int memberDepth = member.getLevel().getDepth();
 
                 if (memberDepth > searchDepth) {
@@ -79,15 +79,15 @@ class DrilldownLevelFunDef extends FunDefBase {
             }
         }
 
-        List drilledSet = new ArrayList();
+        List<Member> drilledSet = new ArrayList<Member>();
 
         for (int i = 0, m = list.size(); i < m; i++) {
-            Member member = (Member) list.get(i);
+            Member member = list.get(i);
             drilledSet.add(member);
 
             Member nextMember = i == (m - 1) ?
-                    null :
-                    (Member) list.get(i + 1);
+                null :
+                list.get(i + 1);
 
             //
             // This member is drilled if it's at the correct depth
@@ -98,8 +98,8 @@ class DrilldownLevelFunDef extends FunDefBase {
             if (member.getLevel().getDepth() == searchDepth
                     && !FunUtil.isAncestorOf(member, nextMember, true)) {
                 Member[] childMembers = evaluator.getSchemaReader().getMemberChildren(member);
-                for (int j = 0; j < childMembers.length; j++) {
-                    drilledSet.add(childMembers[j]);
+                for (Member childMember : childMembers) {
+                    drilledSet.add(childMember);
                 }
             }
         }

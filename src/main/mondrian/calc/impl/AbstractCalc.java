@@ -46,19 +46,17 @@ public abstract class AbstractCalc implements Calc {
         String name = getName();
         pw.print(name);
         final Calc[] calcs = getCalcs();
-        final List argumentList = getArguments();
+        final List<Object> argumentList = getArguments();
         if (calcs.length > 0 || !argumentList.isEmpty()) {
            pw.print("(");
             int k = 0;
-            for (int i = 0; i < calcs.length; i++) {
-                Calc calc = calcs[i];
+            for (Calc calc : calcs) {
                 if (k++ > 0) {
                     pw.print(", ");
                 }
                 calc.accept(calcWriter);
             }
-            for (int i = 0; i < argumentList.size(); i++) {
-                Object o = (Object) argumentList.get(i);
+            for (Object o : argumentList) {
                 if (k++ > 0) {
                     pw.print(", ");
                 }
@@ -105,8 +103,7 @@ public abstract class AbstractCalc implements Calc {
      * Returns true if one of the calcs depends on the given dimension.
      */
     public static boolean anyDepends(Calc[] calcs, Dimension dimension) {
-        for (int i = 0; i < calcs.length; i++) {
-            Calc calc = calcs[i];
+        for (Calc calc : calcs) {
             if (calc != null && calc.dependsOn(dimension)) {
                 return true;
             }
@@ -151,8 +148,7 @@ public abstract class AbstractCalc implements Calc {
     public static boolean butDepends(
             Calc[] calcs, Dimension dimension) {
         boolean result = true;
-        for (int i = 0; i < calcs.length; i++) {
-            Calc calc = calcs[i];
+        for (Calc calc : calcs) {
             if (calc != null) {
                 if (calc.dependsOn(dimension)) {
                     return true;
@@ -169,8 +165,8 @@ public abstract class AbstractCalc implements Calc {
      * Returns any other arguments to this calc.
      * The default implementation returns the empty list.
      */
-    public List getArguments() {
-        return Collections.EMPTY_LIST;
+    public List<Object> getArguments() {
+        return Collections.emptyList();
     }
 
     /**
@@ -195,8 +191,7 @@ public abstract class AbstractCalc implements Calc {
         int changeCount = 0;
         Evaluator ev = evaluator;
         final Dimension[] dimensions = evaluator.getCube().getDimensions();
-        for (int i = 0; i < dimensions.length; i++) {
-            Dimension dimension = dimensions[i];
+        for (Dimension dimension : dimensions) {
             final Member member = ev.getContext(dimension);
             if (member.isAll()) {
                 continue;
@@ -205,7 +200,7 @@ public abstract class AbstractCalc implements Calc {
                 continue;
             }
             final Member unconstrainedMember =
-                    member.getHierarchy().getDefaultMember();
+                member.getHierarchy().getDefaultMember();
             if (member == unconstrainedMember) {
                 // This is a hierarchy without an 'all' member, and the context
                 // is already the default member.

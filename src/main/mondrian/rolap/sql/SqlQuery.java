@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -118,13 +118,13 @@ public class SqlQuery
      * aliases", then iterating over a list is faster than doing a hash lookup
      * (as is used in java.util.HashSet).
      */
-    private final List fromAliases;
+    private final List<String> fromAliases;
 
     /** The SQL dialect this query is to be generated in. */
     private final Dialect dialect;
 
     /** Scratch buffer. Clear it before use. */
-    private final StringBuffer buf;
+    private final StringBuilder buf;
 
     /**
      * Base constructor used by all other constructors to create an empty
@@ -140,8 +140,8 @@ public class SqlQuery
         this.groupBy = new ClauseList(false);
         this.having = new ClauseList(false);
         this.orderBy = new ClauseList(false);
-        this.fromAliases = new ArrayList();
-        this.buf = new StringBuffer(128);
+        this.fromAliases = new ArrayList<String>();
+        this.buf = new StringBuilder(128);
 
         this.dialect = dialect;
     }
@@ -377,7 +377,7 @@ public class SqlQuery
             final String exprRight)
     {
         int len = exprLeft.length() + exprMid.length() + exprRight.length();
-        StringBuffer buf = new StringBuffer(len);
+        StringBuilder buf = new StringBuilder(len);
 
         buf.append(exprLeft);
         buf.append(exprMid);
@@ -473,7 +473,7 @@ public class SqlQuery
         return dialect;
     }
 
-    private class ClauseList extends ArrayList {
+    private class ClauseList extends ArrayList<String> {
         private final boolean allowDups;
 
         ClauseList(final boolean allowDups) {
@@ -487,13 +487,14 @@ public class SqlQuery
          *
          * @param element
          */
-        void add(final String element) {
+        public boolean add(final String element) {
             if (allowDups || !contains(element)) {
-                super.add(element);
+                return super.add(element);
             }
+            return false;
         }
 
-        void toBuffer(final StringBuffer buf,
+        void toBuffer(final StringBuilder buf,
                       final String first,
                       final String sep) {
             Iterator it = iterator();
@@ -703,7 +704,7 @@ public class SqlQuery
          */
         public String quoteIdentifier(final String val) {
             int size = val.length() + SINGLE_QUOTE_SIZE;
-            StringBuffer buf = new StringBuffer(size);
+            StringBuilder buf = new StringBuilder(size);
 
             quoteIdentifier(val, buf);
 
@@ -717,7 +718,7 @@ public class SqlQuery
          * @param val identifier to quote (must not be null).
          * @param buf Buffer
          */
-        public void quoteIdentifier(final String val, final StringBuffer buf) {
+        public void quoteIdentifier(final String val, final StringBuilder buf) {
             String q = getQuoteIdentifierString();
             if (q == null) {
                 // quoting is not supported
@@ -774,7 +775,7 @@ public class SqlQuery
                 + ((qual == null)
                     ? SINGLE_QUOTE_SIZE
                     : (qual.length() + DOUBLE_QUOTE_SIZE));
-            StringBuffer buf = new StringBuffer(size);
+            StringBuilder buf = new StringBuilder(size);
 
             quoteIdentifier(qual, name, buf);
 
@@ -792,7 +793,7 @@ public class SqlQuery
         public void quoteIdentifier(
             final String qual,
             final String name,
-            final StringBuffer buf)
+            final StringBuilder buf)
         {
             if (qual == null) {
                 quoteIdentifier(name, buf);
@@ -827,7 +828,7 @@ public class SqlQuery
          * <code>quoteStringLiteral(buf, "Can't")</code> appends
          * "<code>'Can''t'</code>" to <code>buf</code>.
          */
-        public void quoteStringLiteral(StringBuffer buf, String s) {
+        public void quoteStringLiteral(StringBuilder buf, String s) {
             Util.singleQuoteString(s, buf);
         }
 
@@ -836,7 +837,7 @@ public class SqlQuery
          *
          * <p>In the default dialect, numeric literals are printed as is.
          */
-        public void quoteNumericLiteral(StringBuffer buf, String value) {
+        public void quoteNumericLiteral(StringBuilder buf, String value) {
             buf.append(value);
         }
 
@@ -845,7 +846,7 @@ public class SqlQuery
          *
          * <p>In the default dialect, boolean literals are printed as is.
          */
-        public void quoteBooleanLiteral(StringBuffer buf, String value) {
+        public void quoteBooleanLiteral(StringBuilder buf, String value) {
             buf.append(value);
         }
 
@@ -856,7 +857,7 @@ public class SqlQuery
          * <code>quoteStringLiteral(buf, "1969-03-17")</code>
          * appends <code>DATE '1969-03-17'</code>.
          */
-        public void quoteDateLiteral(StringBuffer buf, String value) {
+        public void quoteDateLiteral(StringBuilder buf, String value) {
             buf.append("DATE ");
             Util.singleQuoteString(value, buf);
         }
@@ -868,7 +869,7 @@ public class SqlQuery
          * <code>quoteStringLiteral(buf, "12:34:56")</code>
          * appends <code>TIME '12:34:56'</code>.
          */
-        public void quoteTimeLiteral(StringBuffer buf, String value) {
+        public void quoteTimeLiteral(StringBuilder buf, String value) {
             buf.append("TIME ");
             Util.singleQuoteString(value, buf);
         }
@@ -880,7 +881,7 @@ public class SqlQuery
          * <code>quoteStringLiteral(buf, "1969-03-17 12:34:56")</code>
          * appends <code>TIMESTAMP '1969-03-17 12:34:56'</code>.
          */
-        public void quoteTimestampLiteral(StringBuffer buf, String value) {
+        public void quoteTimestampLiteral(StringBuilder buf, String value) {
             buf.append("TIMESTAMP ");
             Util.singleQuoteString(value, buf);
         }
@@ -1008,8 +1009,7 @@ public class SqlQuery
             String best = getBestName();
 
             String generic = null;
-            for (int i = 0; i < sqls.length; i++) {
-                MondrianDef.SQL sql = sqls[i];
+            for (MondrianDef.SQL sql : sqls) {
                 if (sql.dialect.equals(best)) {
                     return sql.cdata;
                 }
@@ -1046,9 +1046,9 @@ public class SqlQuery
          * @return SQL string
          */
         public String generateInline(
-                List/*<String>*/ columnNames,
-                List/*<String>*/ columnTypes,
-                List/*<String[]>*/ valueList) {
+                List<String> columnNames,
+                List<String> columnTypes,
+                List<String[]> valueList) {
             if (isOracle()) {
                 return generateInlineGeneric(
                         columnNames, columnTypes, valueList, "from dual");
@@ -1078,24 +1078,24 @@ public class SqlQuery
           * method, appropriate to the dialect of SQL.
           */
         private String generateInlineGeneric(
-                List columnNames,
-                List columnTypes,
-                List valueList,
+                List<String> columnNames,
+                List<String> columnTypes,
+                List<String[]> valueList,
                 String fromClause) {
-            final StringBuffer buf = new StringBuffer();
+            final StringBuilder buf = new StringBuilder();
             for (int i = 0; i < valueList.size(); i++) {
                 if (i > 0) {
                     buf.append(" union all ");
                 }
-                String[] values = (String[])  valueList.get(i);
+                String[] values = valueList.get(i);
                 buf.append("select ");
                 for (int j = 0; j < values.length; j++) {
                     String value = values[j];
                     if (j > 0) {
                         buf.append(", ");
                     }
-                    final String columnType = (String) columnTypes.get(j);
-                    final String columnName = (String) columnNames.get(j);
+                    final String columnType = columnTypes.get(j);
+                    final String columnName = columnNames.get(j);
                     Datatype datatype = Datatype.valueOf(columnType);
                     quote(buf, value, datatype);
                     if (allowsAs()) {
@@ -1130,9 +1130,11 @@ public class SqlQuery
          * Access.
          */
         private String generateInlineForAnsi(
-                String alias, List columnNames,
-                List columnTypes, List valueList) {
-            final StringBuffer buf = new StringBuffer();
+                String alias,
+                List<String> columnNames,
+                List<String> columnTypes,
+                List<String[]> valueList) {
+            final StringBuilder buf = new StringBuilder();
             buf.append("SELECT * FROM (VALUES ");
             // Derby pads out strings to a common length, so we cast the
             // string values to avoid this.  Determine the cast type for each
@@ -1141,7 +1143,7 @@ public class SqlQuery
             if (isDerby()) {
                 castTypes = new String[columnNames.size()];
                 for (int i = 0; i < columnNames.size(); i++) {
-                    String columnType = (String) columnTypes.get(i);
+                    String columnType = columnTypes.get(i);
                     if (columnType.equals("String")) {
                         castTypes[i] =
                             guessSqlType(columnType, valueList, i);
@@ -1152,14 +1154,14 @@ public class SqlQuery
                 if (i > 0) {
                     buf.append(", ");
                 }
-                String[] values = (String[])  valueList.get(i);
+                String[] values = valueList.get(i);
                 buf.append("(");
                 for (int j = 0; j < values.length; j++) {
                     String value = values[j];
                     if (j > 0) {
                         buf.append(", ");
                     }
-                    final String columnType = (String) columnTypes.get(j);
+                    final String columnType = columnTypes.get(j);
                     Datatype datatype = Datatype.valueOf(columnType);
                     if (value == null) {
                         String sqlType =
@@ -1183,7 +1185,7 @@ public class SqlQuery
             quoteIdentifier(alias, buf);
             buf.append(" (");
             for (int j = 0; j < columnNames.size(); j++) {
-                final String columnName = (String) columnNames.get(j);
+                final String columnName = columnNames.get(j);
                 if (j > 0) {
                     buf.append(", ");
                 }
@@ -1196,7 +1198,7 @@ public class SqlQuery
         /**
          * Appends to a buffer a value quoted for its type.
          */
-        public void quote(StringBuffer buf, Object value, Datatype datatype) {
+        public void quote(StringBuilder buf, Object value, Datatype datatype) {
             if (value == null) {
                 buf.append("null");
             } else {
@@ -1209,11 +1211,10 @@ public class SqlQuery
          * (b) a list of values.
          */
         private static String guessSqlType(
-                String basicType, List valueList, int column) {
+                String basicType, List<String[]> valueList, int column) {
             if (basicType.equals("String")) {
                 int maxLen = 1;
-                for (int i = 0; i < valueList.size(); i++) {
-                    String[] values = (String[]) valueList.get(i);
+                for (String[] values : valueList) {
                     final String value = values[column];
                     if (value == null) {
                         continue;
@@ -1278,13 +1279,13 @@ public class SqlQuery
      */
     public enum Datatype {
         String {
-            public void quoteValue(StringBuffer buf, Dialect dialect, String value) {
+            public void quoteValue(StringBuilder buf, Dialect dialect, String value) {
                 dialect.quoteStringLiteral(buf, value);
             }
         },
 
         Numeric {
-            public void quoteValue(StringBuffer buf, Dialect dialect, String value) {
+            public void quoteValue(StringBuilder buf, Dialect dialect, String value) {
                 dialect.quoteNumericLiteral(buf, value);
             }
 
@@ -1294,7 +1295,7 @@ public class SqlQuery
         },
 
         Integer {
-            public void quoteValue(StringBuffer buf, Dialect dialect, String value) {
+            public void quoteValue(StringBuilder buf, Dialect dialect, String value) {
                 dialect.quoteNumericLiteral(buf, value);
             }
 
@@ -1304,25 +1305,25 @@ public class SqlQuery
         },
 
         Boolean {
-            public void quoteValue(StringBuffer buf, Dialect dialect, String value) {
+            public void quoteValue(StringBuilder buf, Dialect dialect, String value) {
                 dialect.quoteBooleanLiteral(buf, value);
             }
         },
 
         Date {
-            public void quoteValue(StringBuffer buf, Dialect dialect, String value) {
+            public void quoteValue(StringBuilder buf, Dialect dialect, String value) {
                 dialect.quoteDateLiteral(buf, value);
             }
         },
 
         Time {
-            public void quoteValue(StringBuffer buf, Dialect dialect, String value) {
+            public void quoteValue(StringBuilder buf, Dialect dialect, String value) {
                 dialect.quoteTimeLiteral(buf, value);
             }
         },
 
         Timestamp {
-            public void quoteValue(StringBuffer buf, Dialect dialect, String value) {
+            public void quoteValue(StringBuilder buf, Dialect dialect, String value) {
                 dialect.quoteTimestampLiteral(buf, value);
             }
         };
@@ -1336,7 +1337,7 @@ public class SqlQuery
          * @param value Value
          */
         public abstract void quoteValue(
-            StringBuffer buf,
+            StringBuilder buf,
             Dialect dialect,
             String value);
 

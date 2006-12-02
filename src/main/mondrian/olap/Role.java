@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -33,34 +33,31 @@ import java.util.*;
  */
 public class Role {
     private boolean mutable = true;
-    /** Maps {@link Schema} to {@link Integer},
-     * {@link Cube} to {@link Integer},
-     * {@link Dimension} to {@link Integer},
-     * {@link Hierarchy} to {@link HierarchyAccess}. */
-    private Map grants = new HashMap();
-    private static Integer integers[] = {
-        new Integer(0),
-        new Integer(1),
-        new Integer(2),
-        new Integer(3),
-        new Integer(4),
-    };
+    private final Map<Schema, Integer> schemaGrants =
+        new HashMap<Schema, Integer>();
+    private final Map<Cube, Integer> cubeGrants =
+        new HashMap<Cube, Integer>();
+    private final Map<Dimension, Integer> dimensionGrants =
+        new HashMap<Dimension, Integer>();
+    private final Map<Hierarchy, HierarchyAccess> hierarchyGrants =
+        new HashMap<Hierarchy, HierarchyAccess>();
 
     /**
      * Creates a role with no permissions.
      */
     public Role() {}
 
-    protected Object clone() {
+    protected Role clone() {
         Role role = new Role();
         role.mutable = mutable;
-        role.grants.putAll(grants);
-        for (Iterator iter = grants.values().iterator(); iter.hasNext();) {
-            Object value = iter.next();
-            if (value instanceof HierarchyAccess) {
-                final HierarchyAccess hierarchyAccess = (HierarchyAccess) value;
-                role.grants.put(hierarchyAccess.hierarchy, hierarchyAccess.clone());
-            }
+        role.schemaGrants.putAll(schemaGrants);
+        role.cubeGrants.putAll(cubeGrants);
+        role.dimensionGrants.putAll(dimensionGrants);
+        for (Map.Entry<Hierarchy, HierarchyAccess> entry :
+            hierarchyGrants.entrySet()) {
+            role.hierarchyGrants.put(
+                entry.getKey(),
+                entry.getValue().clone());
         }
         return role;
     }
@@ -69,7 +66,7 @@ public class Role {
      * Returns a copy of this <code>Role</code> which can be modified.
      */
     public Role makeMutableClone() {
-        Role role = (Role) clone();
+        Role role = clone();
         role.mutable = true;
         return role;
     }
@@ -101,11 +98,7 @@ public class Role {
         Util.assertPrecondition(schema != null, "schema != null");
         Util.assertPrecondition(access == Access.ALL || access == Access.NONE || access == Access.ALL_DIMENSIONS, "access == Access.ALL || access == Access.NONE");
         Util.assertPrecondition(isMutable(), "isMutable()");
-        grants.put(schema, toInteger(access));
-    }
-
-    private static Integer toInteger(int access) {
-        return integers[access];
+        schemaGrants.put(schema, access);
     }
 
     /**
@@ -116,11 +109,11 @@ public class Role {
      */
     public int getAccess(Schema schema) {
         Util.assertPrecondition(schema != null, "schema != null");
-        return toAccess((Integer) grants.get(schema));
+        return toAccess(schemaGrants.get(schema));
     }
 
     private static int toAccess(Integer i) {
-        return i == null ? Access.NONE : i.intValue();
+        return i == null ? Access.NONE : i;
     }
 
     /**
@@ -137,7 +130,7 @@ public class Role {
         Util.assertPrecondition(cube != null, "cube != null");
         Util.assertPrecondition(access == Access.ALL || access == Access.NONE, "access == Access.ALL || access == Access.NONE");
         Util.assertPrecondition(isMutable(), "isMutable()");
-        grants.put(cube, toInteger(access));
+        cubeGrants.put(cube, access);
     }
 
     /**
@@ -147,10 +140,10 @@ public class Role {
      * @post return == Access.ALL || return == Access.NONE
      */
     public int getAccess(Cube cube) {
-        Util.assertPrecondition(cube != null, "cube != null");
-        Integer access = (Integer) grants.get(cube);
+        assert cube != null;
+        Integer access = cubeGrants.get(cube);
         if (access == null) {
-            access = (Integer) grants.get(cube.getSchema());
+            access = schemaGrants.get(cube.getSchema());
         }
         return toAccess(access);
     }
@@ -163,7 +156,7 @@ public class Role {
         private final Level topLevel;
         private final int access;
         private final Level bottomLevel;
-        private final Map memberGrants = new HashMap();
+        private final Map<Member, Integer> memberGrants = new HashMap<Member, Integer>();
 
         /**
          * Creates a <code>HierarchyAccess</code>
@@ -182,7 +175,7 @@ public class Role {
             Util.assertPrecondition(Access.instance().isValid(access));
         }
 
-        public Object clone() {
+        public HierarchyAccess clone() {
             HierarchyAccess hierarchyAccess = new HierarchyAccess(
                     hierarchy, access, topLevel, bottomLevel);
             hierarchyAccess.memberGrants.putAll(memberGrants);
@@ -192,15 +185,15 @@ public class Role {
         void grant(Member member, int access) {
             Util.assertTrue(member.getHierarchy() == hierarchy);
             // Remove any existing grants to descendants of "member"
-            for (Iterator memberIter =
+            for (Iterator<Member> memberIter =
                     memberGrants.keySet().iterator(); memberIter.hasNext();) {
-                Member m = (Member) memberIter.next();
+                Member m = memberIter.next();
                 if (m.isChildOrEqualTo(member)) {
                     memberIter.remove();
                 }
             }
 
-            memberGrants.put(member, toInteger(access));
+            memberGrants.put(member, access);
 
             if (access == Access.NONE) {
                 // If an ancestor of this member has any children with 'All'
@@ -209,27 +202,27 @@ public class Role {
                 for (Member m = member.getParentMember();
                      m != null;
                      m = m.getParentMember()) {
-                    final Integer memberAccess = (Integer) memberGrants.get(m);
+                    final Integer memberAccess = memberGrants.get(m);
                     if (memberAccess == null) {
                         if (childGrantsExist(m)) {
-                            memberGrants.put(m, toInteger(Access.CUSTOM));
+                            memberGrants.put(m, Access.CUSTOM);
                         } else {
                             break;
                         }
-                    } else if (memberAccess.intValue() == Access.CUSTOM) {
+                    } else if (memberAccess == Access.CUSTOM) {
                         // Ancestor does not inherit access, but used to have
                         // at least one child with access. See if it still
                         // does...
                         if (childGrantsExist(m)) {
-                            memberGrants.put(m, toInteger(Access.CUSTOM));
+                            memberGrants.put(m, Access.CUSTOM);
                         } else {
                             break;
                         }
-                    } else if (memberAccess.intValue() == Access.NONE) {
+                    } else if (memberAccess == Access.NONE) {
                         // Ancestor is explicitly marked having no access.
                         // Leave it that way.
                         break;
-                    } else if (memberAccess.intValue() == Access.ALL) {
+                    } else if (memberAccess == Access.ALL) {
                         // Ancestor is explicitly marked having all access.
                         // Leave it that way.
                         break;
@@ -244,9 +237,9 @@ public class Role {
                 for (Member m = member.getParentMember();
                      m != null;
                      m = m.getParentMember()) {
-                    switch (toAccess((Integer) memberGrants.get(m))) {
+                    switch (toAccess(memberGrants.get(m))) {
                     case Access.NONE:
-                        memberGrants.put(m, toInteger(Access.CUSTOM));
+                        memberGrants.put(m, Access.CUSTOM);
                         break;
                     default:
                         // Existing access (All or Custom) is OK.
@@ -257,11 +250,9 @@ public class Role {
         }
 
         private boolean childGrantsExist(Member parent) {
-            for (Iterator memberIter =
-                    memberGrants.keySet().iterator(); memberIter.hasNext();) {
-                final Member member = (Member) memberIter.next();
+            for (final Member member : memberGrants.keySet()) {
                 if (member.getParentMember() == parent) {
-                    final int access = toAccess((Integer) memberGrants.get(member));
+                    final int access = toAccess(memberGrants.get(member));
                     if (access != Access.NONE) {
                         return true;
                     }
@@ -271,11 +262,9 @@ public class Role {
         }
 
         public int getAccess(Member member) {
-            int access = this.access;
-            if (access != Access.CUSTOM) {
-                return access;
+            if (this.access != Access.CUSTOM) {
+                return this.access;
             }
-            access = Access.NONE;
             if (topLevel != null &&
                     member.getLevel().getDepth() < topLevel.getDepth()) {
                 // no access
@@ -286,18 +275,17 @@ public class Role {
                 return Access.NONE;
             } else {
                 for (Member m = member; m != null; m = m.getParentMember()) {
-                    final Integer memberAccess = (Integer) memberGrants.get(m);
+                    final Integer memberAccess = memberGrants.get(m);
                     if (memberAccess == null) {
                         continue;
                     }
-                    access = memberAccess.intValue();
-                    if (access == Access.CUSTOM &&
+                    if (memberAccess == Access.CUSTOM &&
                             m != member) {
                         // If member's ancestor has custom access, that
                         // means that member has no access.
                         return Access.NONE;
                     }
-                    return access;
+                    return memberAccess;
                 }
                 return Access.NONE;
             }
@@ -315,7 +303,7 @@ public class Role {
             return bottomLevel;
         }
 
-        public Map getMemberGrants() {
+        public Map<Member, Integer> getMemberGrants() {
             return Collections.unmodifiableMap(memberGrants);
         }
     }
@@ -335,7 +323,7 @@ public class Role {
         Util.assertPrecondition(access == Access.ALL || access == Access.NONE,
                 "access == Access.ALL || access == Access.NONE");
         Util.assertPrecondition(isMutable(), "isMutable()");
-        grants.put(dimension, toInteger(access));
+        dimensionGrants.put(dimension, access);
     }
 
     /**
@@ -345,25 +333,21 @@ public class Role {
      * @post Access.instance().isValid(return)
      */
     public int getAccess(Dimension dimension) {
-        Util.assertPrecondition(dimension != null, "dimension != null");
-        Integer i = (Integer) grants.get(dimension);
+        assert dimension != null;
+        Integer i = dimensionGrants.get(dimension);
         if (i != null) {
             return toAccess(i);
         }
         // If the role has access to a cube this dimension is part of, that's
         // good enough.
-        for (Iterator grantsIter = grants.keySet().iterator(); grantsIter.hasNext();) {
-            Object object = grantsIter.next();
-            if (!(object instanceof Cube)) {
-                continue;
-            }
-            final int access = toAccess((Integer) grants.get(object));
+        for (Map.Entry<Cube,Integer> cubeGrant : cubeGrants.entrySet()) {
+            final int access = toAccess(cubeGrant.getValue());
             if (access == Access.NONE) {
                 continue;
             }
-            final Dimension[] dimensions = ((Cube) object).getDimensions();
-            for (int j = 0; j < dimensions.length; j++) {
-                if (dimensions[j] == dimension) {
+            final Dimension[] dimensions = cubeGrant.getKey().getDimensions();
+            for (Dimension dimension1 : dimensions) {
+                if (dimension1 == dimension) {
                     return access;
                 }
             }
@@ -408,7 +392,9 @@ public class Role {
         Util.assertPrecondition(topLevel == null || topLevel.getHierarchy() == hierarchy, "topLevel == null || topLevel.getHierarchy() == hierarchy");
         Util.assertPrecondition(bottomLevel == null || bottomLevel.getHierarchy() == hierarchy, "bottomLevel == null || bottomLevel.getHierarchy() == hierarchy");
         Util.assertPrecondition(isMutable(), "isMutable()");
-        grants.put(hierarchy, new HierarchyAccess(hierarchy, access, topLevel, bottomLevel));
+        hierarchyGrants.put(
+            hierarchy,
+            new HierarchyAccess(hierarchy, access, topLevel, bottomLevel));
     }
 
     /**
@@ -418,8 +404,8 @@ public class Role {
      * @post return == Access.NONE || return == Access.ALL || return == Access.CUSTOM
      */
     public int getAccess(Hierarchy hierarchy) {
-        Util.assertPrecondition(hierarchy != null, "hierarchy != null");
-        HierarchyAccess access = (HierarchyAccess) grants.get(hierarchy);
+        assert hierarchy != null;
+        HierarchyAccess access = hierarchyGrants.get(hierarchy);
         if (access != null) {
             return access.access;
         }
@@ -434,7 +420,7 @@ public class Role {
      */
     public HierarchyAccess getAccessDetails(Hierarchy hierarchy) {
         Util.assertPrecondition(hierarchy != null, "hierarchy != null");
-        return (HierarchyAccess) grants.get(hierarchy);
+        return hierarchyGrants.get(hierarchy);
     }
 
     /**
@@ -444,8 +430,8 @@ public class Role {
      * @post Access.instance().isValid(return)
      */
     public int getAccess(Level level) {
-        Util.assertPrecondition(level != null, "level != null");
-        HierarchyAccess access = (HierarchyAccess) grants.get(level.getHierarchy());
+        assert level != null;
+        HierarchyAccess access = hierarchyGrants.get(level.getHierarchy());
         if (access != null) {
             if (access.topLevel != null &&
                     level.getDepth() < access.topLevel.getDepth()) {
@@ -482,8 +468,9 @@ public class Role {
         Util.assertPrecondition(Access.instance().isValid(access), "Access.instance().isValid(access)");
         Util.assertPrecondition(isMutable(), "isMutable()");
         Util.assertPrecondition(getAccess(member.getHierarchy()) == Access.CUSTOM, "getAccess(member.getHierarchy()) == Access.CUSTOM");
-        HierarchyAccess hierarchyAccess = (HierarchyAccess) grants.get(member.getHierarchy());
-        Util.assertTrue(hierarchyAccess != null && hierarchyAccess.access == Access.CUSTOM);
+        HierarchyAccess hierarchyAccess = hierarchyGrants.get(member.getHierarchy());
+        assert hierarchyAccess != null;
+        assert hierarchyAccess.access == Access.CUSTOM;
         hierarchyAccess.grant(member, access);
     }
 
@@ -495,9 +482,9 @@ public class Role {
      * @post return == Access.NONE || return == Access.ALL || return == Access.CUSTOM
      */
     public int getAccess(Member member) {
-        Util.assertPrecondition(member != null, "member != null");
-        HierarchyAccess hierarchyAccess = (HierarchyAccess)
-                grants.get(member.getHierarchy());
+        assert member != null;
+        HierarchyAccess hierarchyAccess =
+            hierarchyGrants.get(member.getHierarchy());
         if (hierarchyAccess != null) {
             return hierarchyAccess.getAccess(member);
         }

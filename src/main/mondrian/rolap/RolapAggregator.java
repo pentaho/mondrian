@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2003-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -41,7 +41,7 @@ public abstract class RolapAggregator
                     return Sum;
                 }
                 public Object aggregate(Evaluator evaluator, List members, Calc exp) {
-                    return new Integer(FunUtil.count(evaluator, members, false));
+                    return FunUtil.count(evaluator, members, false);
                 }
             };
 
@@ -136,7 +136,7 @@ public abstract class RolapAggregator
             super("AvgFromSum", factCountExpr);
         }
         public String getExpression(String operand) {
-            StringBuffer buf = new StringBuffer(64);
+            StringBuilder buf = new StringBuilder(64);
             buf.append("sum(");
             buf.append(operand);
             buf.append(") / sum(");
@@ -167,7 +167,7 @@ public abstract class RolapAggregator
             super("AvgFromAvg", factCountExpr);
         }
         public String getExpression(String operand) {
-            StringBuffer buf = new StringBuffer(64);
+            StringBuilder buf = new StringBuilder(64);
             buf.append("sum(");
             buf.append(operand);
             buf.append(" * ");
@@ -194,7 +194,7 @@ public abstract class RolapAggregator
             super("SumFromAvg", factCountExpr);
         }
         public String getExpression(String operand) {
-            StringBuffer buf = new StringBuffer(64);
+            StringBuilder buf = new StringBuilder(64);
             buf.append("sum(");
             buf.append(operand);
             buf.append(" * ");
@@ -224,7 +224,7 @@ public abstract class RolapAggregator
      * <code>"sum(emp.sal)"</code>.
      */
     public String getExpression(String operand) {
-        StringBuffer buf = new StringBuffer(64);
+        StringBuilder buf = new StringBuilder(64);
         buf.append(name);
         buf.append('(');
         if (distinct) {

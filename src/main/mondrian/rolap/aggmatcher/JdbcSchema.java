@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde and others.
+// Copyright (C) 2005-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -29,27 +29,23 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * This class is used to scrape a database and store information about its
- * tables and columns.
+ * tables and columnIter.
  *
  * <p>The structure of this information is as follows:
- * A database has tables. A table has columns. A column has one or more usages.
+ * A database has tables. A table has columnIter. A column has one or more usageIter.
  * A usage might be a column being used as a foreign key or as part of a
  * measure.
  *
  * <p> Tables are created when calling code requests the set of available
  * tables. This call <code>getTables()</code> causes all tables to be loaded.
- * But a table's columns are not loaded until, on a table-by-table basis,
- * a request is made to get the set of columns associated with the table.
+ * But a table's columnIter are not loaded until, on a table-by-table basis,
+ * a request is made to get the set of columnIter associated with the table.
  * Since, the AggTableManager first attempts table name matches (recognition)
- * most tables do not match, so why load their columns.
+ * most tables do not match, so why load their columnIter.
  * Of course, as a result, there are a host of methods that can throw an
  * {@link SQLException}, rats.
  *
@@ -75,7 +71,8 @@ public class JdbcSchema {
         void removeDB(JdbcSchema db);
     }
 
-    private static final Map dbMap = new HashMap();
+    private static final Map<DataSource, SoftReference<JdbcSchema>> dbMap =
+        new HashMap<DataSource, SoftReference<JdbcSchema>>();
 
     /** 
      * How often between sweeping through the dbMap looking for nulls. 
@@ -108,7 +105,7 @@ public class JdbcSchema {
                 factory = new StdFactory();
             } else {
                 try {
-                    Class clz = Class.forName(classname);
+                    Class<?> clz = Class.forName(classname);
                     factory = (Factory) clz.newInstance();
                 } catch (ClassNotFoundException ex) {
                     throw mres.BadJdbcFactoryClassName.ex(classname);
@@ -132,13 +129,13 @@ public class JdbcSchema {
         makeFactory();
 
         JdbcSchema db = null;
-        SoftReference ref = (SoftReference) dbMap.get(dataSource);
+        SoftReference<JdbcSchema> ref = dbMap.get(dataSource);
         if (ref != null) {
-            db = (JdbcSchema) ref.get();
+            db = ref.get();
         }
         if (db == null) {
             db = factory.makeDB(dataSource);
-            dbMap.put(dataSource, new SoftReference(db));
+            dbMap.put(dataSource, new SoftReference<JdbcSchema>(db));
         }
 
         sweepDB();
@@ -153,9 +150,9 @@ public class JdbcSchema {
     public static synchronized void clearDB(DataSource dataSource) {
         makeFactory();
 
-        SoftReference ref = (SoftReference) dbMap.get(dataSource);
+        SoftReference<JdbcSchema> ref = dbMap.get(dataSource);
         if (ref != null) {
-            JdbcSchema db = (JdbcSchema) ref.get();
+            JdbcSchema db = ref.get();
             if (db != null) {
                 factory.clearDB(db);
                 db.clear();
@@ -174,9 +171,9 @@ public class JdbcSchema {
     public static synchronized void removeDB(DataSource dataSource) {
         makeFactory();
 
-        SoftReference ref = (SoftReference) dbMap.remove(dataSource);
+        SoftReference<JdbcSchema> ref = dbMap.remove(dataSource);
         if (ref != null) {
-            JdbcSchema db = (JdbcSchema) ref.get();
+            JdbcSchema db = ref.get();
             if (db != null) {
                 factory.removeDB(db);
                 db.remove();
@@ -192,9 +189,9 @@ public class JdbcSchema {
      */
     private static void sweepDB() {
         if (sweepDBCount > SWEEP_COUNT) {
-            Iterator it = dbMap.values().iterator();
+            Iterator<SoftReference<JdbcSchema>> it = dbMap.values().iterator();
             while (it.hasNext()) {
-                SoftReference ref = (SoftReference) it.next();
+                SoftReference<JdbcSchema> ref = it.next();
                 if ((ref == null) || (ref.get() == null)) {
                     try {
                         it.remove();
@@ -213,7 +210,7 @@ public class JdbcSchema {
 
 
     //
-    // Types of column usages.
+    // Types of column usageIter.
     //
     public static final int UNKNOWN_COLUMN_USAGE         = 0x0001;
     public static final int FOREIGN_KEY_COLUMN_USAGE     = 0x0002;
@@ -261,21 +258,21 @@ public class JdbcSchema {
      */
     public static String convertColumnTypeToName(int columnType) {
         switch (columnType) {
-        case UNKNOWN_COLUMN_USAGE :
+        case UNKNOWN_COLUMN_USAGE:
             return UNKNOWN_COLUMN_NAME;
-        case FOREIGN_KEY_COLUMN_USAGE :
+        case FOREIGN_KEY_COLUMN_USAGE:
             return FOREIGN_KEY_COLUMN_NAME;
-        case MEASURE_COLUMN_USAGE :
+        case MEASURE_COLUMN_USAGE:
             return MEASURE_COLUMN_NAME;
-        case LEVEL_COLUMN_USAGE :
+        case LEVEL_COLUMN_USAGE:
             return LEVEL_COLUMN_NAME;
-        case FACT_COUNT_COLUMN_USAGE :
+        case FACT_COUNT_COLUMN_USAGE:
             return FACT_COUNT_COLUMN_NAME;
-        case IGNORE_COLUMN_USAGE :
+        case IGNORE_COLUMN_USAGE:
             return IGNORE_COLUMN_NAME;
-        default :
-            // its a multi-purpose column
-            StringBuffer buf = new StringBuffer();
+        default:
+            // it's a multi-purpose column
+            StringBuilder buf = new StringBuilder();
             if ((columnType & UNKNOWN_COLUMN_USAGE) != 0) {
                 buf.append(UNKNOWN_COLUMN_NAME);
             }
@@ -560,20 +557,22 @@ public class JdbcSchema {
 
             public final MondrianDef.Column column;
 
-            private final List usages;
+            private final List<JdbcSchema.Table.Column.Usage> usages;
 
             /**
-             * This contains the enums of all of the column's usages.
+             * This contains the enums of all of the column's usageIter.
              */
             private int columnType;
 
             private Column(final String name) {
                 this.name = name;
-                this.column = new MondrianDef.Column(
-                                        JdbcSchema.Table.this.getName(),
-                                        name);
-                this.usages = new ArrayList();
+                this.column =
+                    new MondrianDef.Column(
+                        JdbcSchema.Table.this.getName(),
+                        name);
+                this.usages = new ArrayList<JdbcSchema.Table.Column.Usage>();
             }
+
             /**
              * For testing ONLY
             JdbcSchema.Table.Column copy() {
@@ -605,7 +604,7 @@ public class JdbcSchema {
             }
 
             /**
-             * Set the columns java.sql.Type enun of the column.
+             * Set the columnIter java.sql.Type enun of the column.
              *
              * @param type
              */
@@ -614,14 +613,14 @@ public class JdbcSchema {
             }
 
             /**
-             * Get the columns java.sql.Type enun of the column.
+             * Get the columnIter java.sql.Type enun of the column.
              */
             public int getType() {
                 return type;
             }
 
             /**
-             * Set the columns java.sql.Type name.
+             * Set the columnIter java.sql.Type name.
              *
              * @param typeName
              */
@@ -630,7 +629,7 @@ public class JdbcSchema {
             }
 
             /**
-             * Get the columns java.sql.Type name.
+             * Get the columnIter java.sql.Type name.
              */
             public String getTypeName() {
                 return typeName;
@@ -732,13 +731,13 @@ public class JdbcSchema {
             }
 
             /**
-             * How many usages does this column have. A column has
-             * between 0 and N usages. It has no usages if it is some
+             * How many usageIter does this column have. A column has
+             * between 0 and N usageIter. It has no usageIter if usageIter is some
              * administrative column. It has one usage if, for example, its
              * the fact_count column or a level column (for a collapsed
-             * dimension aggregate). It might have 2 usages if its a foreign key
+             * dimension aggregate). It might have 2 usageIter if its a foreign key
              * that is also used as a measure. If its a column used in N
-             * measures, then it will have N usages.
+             * measures, then usageIter will have N usageIter.
              */
             public int numberOfUsages() {
                 return usages.size();
@@ -760,49 +759,50 @@ public class JdbcSchema {
             }
 
             /**
-             * Get an iterator over all usages.
+             * Get an iterator over all usageIter.
              */
-            public Iterator getUsages() {
-                return usages.iterator();
+            public List<Usage> getUsages() {
+                return usages;
             }
 
             /**
-             * Get an iterator over all usages of the given column type.
+             * Get an iterator over all usageIter of the given column type.
              */
-            public Iterator getUsages(final int columnType) {
+            public Iterator<Usage> getUsages(final int columnType) {
 
                 // Yes, this is legal.
-                class ColumnTypeIterator implements Iterator {
-                    private final Iterator it;
+                class ColumnTypeIterator implements Iterator<Usage> {
+                    private final Iterator<Usage> usageIter;
                     private final int columnType;
-                    private Object nextObject;
+                    private Usage nextUsage;
 
-                    ColumnTypeIterator(final Iterator it,
-                                       final int columnType) {
-                        this.it = it;
+                    ColumnTypeIterator(
+                        final List<Usage> usages,
+                        final int columnType)
+                    {
+                        this.usageIter = usages.iterator();
                         this.columnType = columnType;
                     }
+
                     public boolean hasNext() {
-                        while (it.hasNext()) {
-                            Object o = it.next();
-                            if (isColumnType(o, columnType)) {
-                                nextObject = o;
+                        while (usageIter.hasNext()) {
+                            Usage usage = usageIter.next();
+                            if (usage.isColumnType(columnType)) {
+                                nextUsage = usage;
                                 return true;
                             }
 
                         }
-                        nextObject = null;
+                        nextUsage = null;
                         return false;
                     }
-                    protected boolean isColumnType(Object o, int columnType) {
-                        return ((Usage)o).isColumnType(columnType);
+
+                    public Usage next() {
+                        return nextUsage;
                     }
 
-                    public Object next() {
-                        return nextObject;
-                    }
                     public void remove() {
-                        it.remove();
+                        usageIter.remove();
                     }
                 }
 
@@ -873,10 +873,9 @@ public class JdbcSchema {
 
                 if (hasUsage()) {
                     pw.print(" Usages [");
-                    for (Iterator it = getUsages(); it.hasNext(); ) {
-                        Usage u = (Usage) it.next();
+                    for (Usage usage : getUsages()) {
                         pw.print('(');
-                        u.print(pw, prefix);
+                        usage.print(pw, prefix);
                         pw.print(')');
                     }
                     pw.println("]");
@@ -887,7 +886,7 @@ public class JdbcSchema {
         /** Name of table. */
         private final String name;
         /** Map from column name to column. */
-        private Map columnMap;
+        private Map<String, Column> columnMap;
         /** Sum of all of the table's column's column sizes. */
         private int totalColumnSize;
         /**
@@ -926,8 +925,8 @@ public class JdbcSchema {
             table.tableType = tableType;
 
             Map m = table.getColumnMap();
-            for (Iterator it = getColumns(); it.hasNext(); ) {
-                Column column = (Column) it.next();
+            for (Iterator usageIter = getColumns(); usageIter.hasNext(); ) {
+                Column column = (Column) usageIter.next();
                 m.put(column.getName(), column.copy());
             }
 
@@ -938,8 +937,8 @@ public class JdbcSchema {
          * For testing ONLY
         void clearUsages() {
             this.tableUsage = UNKNOWN_TABLE_USAGE;
-            for (Iterator it = getColumns(); it.hasNext(); ) {
-                Column column = (Column) it.next();
+            for (Iterator usageIter = getColumns(); usageIter.hasNext(); ) {
+                Column column = (Column) usageIter.next();
                 column.clearUsages();
             }
         }
@@ -967,50 +966,50 @@ public class JdbcSchema {
         }
 
         /**
-         * Iterate of the table's columns.
+         * Iterate of the table's columnIter.
          */
-        public Iterator getColumns() {
-            return getColumnMap().values().iterator();
+        public Collection<Column> getColumns() {
+            return getColumnMap().values();
         }
 
         /**
-         * Iterate over all all column usages of a give column type.
+         * Iterate over all all column usageIter of a give column type.
          */
-        public Iterator getColumnUsages(final int columnType) {
+        public Iterator<JdbcSchema.Table.Column.Usage> getColumnUsages(final int columnType) {
 
-            class CTIterator implements Iterator {
-                private final Iterator columns;
+            class CTIterator implements Iterator<JdbcSchema.Table.Column.Usage> {
+                private final Iterator<Column> columnIter;
                 private final int columnType;
-                private Iterator it;
-                private Object nextObject;
+                private Iterator<JdbcSchema.Table.Column.Usage> usageIter;
+                private JdbcSchema.Table.Column.Usage nextObject;
 
-                CTIterator(final Iterator columns, final int columnType) {
-                    this.columns = columns;
+                CTIterator(Collection<Column> columns, int columnType) {
+                    this.columnIter = columns.iterator();
                     this.columnType = columnType;
                 }
+
                 public boolean hasNext() {
                     while (true) {
-                        while ((it == null) || ! it.hasNext()) {
-                            if (! columns.hasNext()) {
+                        while ((usageIter == null) || ! usageIter.hasNext()) {
+                            if (! columnIter.hasNext()) {
                                 nextObject = null;
                                 return false;
                             }
-                            Column c = (Column) columns.next();
-                            it = c.getUsages();
+                            Column c = columnIter.next();
+                            usageIter = c.getUsages().iterator();
                         }
-                        JdbcSchema.Table.Column.Usage usage =
-                            (JdbcSchema.Table.Column.Usage) it.next();
+                        JdbcSchema.Table.Column.Usage usage = usageIter.next();
                         if (usage.isColumnType(columnType)) {
                             nextObject = usage;
                             return true;
                         }
                     }
                 }
-                public Object next() {
+                public JdbcSchema.Table.Column.Usage next() {
                     return nextObject;
                 }
                 public void remove() {
-                    it.remove();
+                    usageIter.remove();
                 }
             }
             return new CTIterator(getColumns(), columnType);
@@ -1020,7 +1019,7 @@ public class JdbcSchema {
          * Get a column by its name.
          */
         public Column getColumn(final String columnName) {
-            return (Column) getColumnMap().get(columnName);
+            return getColumnMap().get(columnName);
         }
 
         /**
@@ -1036,7 +1035,7 @@ public class JdbcSchema {
          * @param tableUsage
          */
         public void setTableUsage(final int tableUsage) {
-            // if it has already been set, then it can NOT be reset
+            // if usageIter has already been set, then usageIter can NOT be reset
             if ((this.tableUsage != UNKNOWN_TABLE_USAGE) &&
                     (this.tableUsage != tableUsage)) {
 
@@ -1059,10 +1058,9 @@ public class JdbcSchema {
          * Set the table type
          */
         public void setTableType(final String tableType) {
-            // if it has already been set, then it can NOT be reset
-            if ((this.tableType != UNKNOWN_TABLE_TYPE) &&
-                    (! this.tableType.equals(tableType))) {
-
+            // if usageIter has already been set, then usageIter can NOT be reset
+            if (!this.tableType.equals(UNKNOWN_TABLE_TYPE) &&
+                !this.tableType.equals(tableType)) {
                 throw mres.AttemptToChangeTableType.ex(
                     getName(),
                     this.tableType,
@@ -1105,9 +1103,7 @@ public class JdbcSchema {
 
             pw.print(subprefix);
             pw.println("Columns: [");
-            Iterator it = getColumnMap().values().iterator();
-            while (it.hasNext()) {
-                Column column = (Column) it.next();
+            for (Column column : getColumnMap().values()) {
                 column.print(pw, subsubprefix);
                 pw.println();
             }
@@ -1116,7 +1112,7 @@ public class JdbcSchema {
         }
 
         /**
-         * Get all of the columns associated with a table and create Column
+         * Get all of the columnIter associated with a table and create Column
          * objects with the column's name, type, type name and column size.
          *
          * @throws SQLException
@@ -1134,7 +1130,7 @@ public class JdbcSchema {
 
                     ResultSet rs = null;
                     try {
-                        Map map = getColumnMap();
+                        Map<String, Column> map = getColumnMap();
                         rs = dmd.getColumns(catalog,
                                             schema,
                                             tableName,
@@ -1177,9 +1173,10 @@ public class JdbcSchema {
                 allColumnsLoaded = true;
             }
         }
-        private Map getColumnMap() {
+
+        private Map<String, Column> getColumnMap() {
             if (columnMap == null) {
-                columnMap = new HashMap();
+                columnMap = new HashMap<String, Column>();
             }
             return columnMap;
         }
@@ -1189,11 +1186,11 @@ public class JdbcSchema {
     private String schema;
     private String catalog;
     private boolean allTablesLoaded;
-    private Map tables;
+    private Map<String, Table> tables;
 
     JdbcSchema(final DataSource dataSource) {
         this.dataSource = dataSource;
-        this.tables = new HashMap();
+        this.tables = new HashMap<String, Table>();
     }
 
     /**
@@ -1213,8 +1210,8 @@ public class JdbcSchema {
         jdbcSchema.setCatalogName(getCatalogName());
 
         Map m = jdbcSchema.getTablesMap();
-        for (Iterator it = getTables(); it.hasNext(); ) {
-            Table table = (Table) it.next();
+        for (Iterator usageIter = getTables(); usageIter.hasNext(); ) {
+            Table table = (Table) usageIter.next();
             m.put(table.getName(), table.copy());
         }
 
@@ -1225,8 +1222,8 @@ public class JdbcSchema {
     /**
      * For testing ONLY
     void clearUsages() {
-        for (Iterator it = getTables(); it.hasNext(); ) {
-            Table table = (Table) it.next();
+        for (Iterator usageIter = getTables(); usageIter.hasNext(); ) {
+            Table table = (Table) usageIter.next();
             table.clearUsages();
         }
     }
@@ -1246,7 +1243,7 @@ public class JdbcSchema {
     }
 
     /**
-     * This is used for testing allowing one to load tables and their columns
+     * This is used for testing allowing one to load tables and their columnIter
      * from more than one datasource
      */
     void resetAllTablesLoaded() {
@@ -1300,21 +1297,18 @@ public class JdbcSchema {
 
     /**
      * Get iterator over the database's tables.
-     *
-     * @throws SQLException
      */
-    public synchronized Iterator getTables() {
-        return getTablesMap().values().iterator();
+    public synchronized Collection<Table> getTables() {
+        return getTablesMap().values();
     }
 
     /**
      * Get a table by name.
      */
     public synchronized Table getTable(final String tableName) {
-        Map tables = getTablesMap();
-        Table table = (Table) tables.get(tableName);
-        return table;
+        return getTablesMap().get(tableName);
     }
+
     public String toString() {
         StringWriter sw = new StringWriter(256);
         PrintWriter pw = new PrintWriter(sw);
@@ -1347,7 +1341,6 @@ public class JdbcSchema {
      */
     private void loadTables() throws SQLException {
         if (! allTablesLoaded) {
-            Map tables = getTablesMap();
             Connection conn = getConnection();
             DatabaseMetaData dmd = conn.getMetaData();
 
@@ -1399,7 +1392,8 @@ public class JdbcSchema {
 
         tables.put(table.getName(), table);
     }
-    private Map getTablesMap() {
+
+    private Map<String, Table> getTablesMap() {
         return tables;
     }
     

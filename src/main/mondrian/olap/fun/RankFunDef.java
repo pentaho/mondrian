@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -343,8 +343,8 @@ public class RankFunDef extends FunDefBase {
             RuntimeException exception = null;
             Object[] values = new Object[members.size()];
             int j = 0;
-            for (int i = 0; i < members.size(); i++) {
-                final Object o = members.get(i);
+            for (Object member1 : members) {
+                final Object o = member1;
                 if (o instanceof Member) {
                     Member member = (Member) o;
                     evaluator2.setContext(member);
@@ -459,7 +459,7 @@ public class RankFunDef extends FunDefBase {
      * element in the list in O(log N).
      */
     static class RankedList {
-        Map map = new HashMap();
+        Map<Object, Integer> map = new HashMap<Object, Integer>();
 
         RankedList(List members) {
             for (int i = 0; i < members.size(); i++) {
@@ -472,7 +472,7 @@ public class RankFunDef extends FunDefBase {
                 } else {
                     throw Util.newInternal("bad member/tuple " + o);
                 }
-                final Object value = map.put(key, new Integer(i));
+                final Integer value = map.put(key, i);
                 if (value != null) {
                     // The list already contained a value for this key -- put
                     // it back.
@@ -490,11 +490,11 @@ public class RankFunDef extends FunDefBase {
         }
 
         private int indexOf(Object o) {
-            Integer integer = (Integer) map.get(o);
+            Integer integer = map.get(o);
             if (integer == null) {
                 return -1;
             } else {
-                return integer.intValue();
+                return integer;
             }
         }
     }

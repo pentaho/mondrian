@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2005 Julian Hyde
+// Copyright (C) 2002-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -46,15 +46,15 @@ class MondrianRankingMemberFilter extends MondrianDataBasedMemberFilter
     Exp _convert(Exp exp) throws OLAPException {
         if (type == RankingTypeEnum.BOTTOM) {
             if (bottomPercent) {
-                return new UnresolvedFunCall("BottomPercent", new Exp[] {exp, Literal.create(new Integer(bottom))});
+                return new UnresolvedFunCall("BottomPercent", new Exp[] {exp, Literal.create(bottom)});
             } else {
-                return new UnresolvedFunCall("Bottom", new Exp[] {exp, Literal.create(new Integer(bottom))});
+                return new UnresolvedFunCall("Bottom", new Exp[] {exp, Literal.create(bottom)});
             }
         } else if (type == RankingTypeEnum.TOP) {
             if (topPercent) {
-                return new UnresolvedFunCall("TopPercent", new Exp[] {exp, Literal.create(new Integer(top))});
+                return new UnresolvedFunCall("TopPercent", new Exp[] {exp, Literal.create(top)});
             } else {
-                return new UnresolvedFunCall("Top", new Exp[] {exp, Literal.create(new Integer(top))});
+                return new UnresolvedFunCall("Top", new Exp[] {exp, Literal.create(top)});
             }
         } else if (type == RankingTypeEnum.TOP_BOTTOM) {
             throw new UnsupportedOperationException();

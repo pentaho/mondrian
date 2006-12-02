@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -81,8 +81,7 @@ public class RolapEvaluator implements Evaluator {
         }
         calcMembers = new Member[this.currentMembers.length];
         calcMemberCount = 0;
-        for (int i = 0; i < this.currentMembers.length; i++) {
-            Member member = this.currentMembers[i];
+        for (Member member : this.currentMembers) {
             if (member != null && member.isCalculated()) {
                 addCalcMember(member);
             }
@@ -101,8 +100,7 @@ public class RolapEvaluator implements Evaluator {
 
         SchemaReader scr = this.root.connection.getSchemaReader();
         Dimension[] dimensions = this.root.cube.getDimensions();
-        for (int i = 0; i < dimensions.length; i++) {
-            final Dimension dimension = dimensions[i];
+        for (final Dimension dimension : dimensions) {
             final int ordinal = dimension.getOrdinal(this.root.cube);
             final Hierarchy hier = dimension.getHierarchy();
 
@@ -110,7 +108,8 @@ public class RolapEvaluator implements Evaluator {
 
             // If there is no member, we cannot continue.
             if (member == null) {
-                throw MondrianResource.instance().InvalidHierarchyCondition.ex(hier.getUniqueName());
+                throw MondrianResource.instance().InvalidHierarchyCondition
+                    .ex(hier.getUniqueName());
             }
 
             HierarchyUsage[] hierarchyUsages = this.root.cube.getUsages(hier);
@@ -136,11 +135,12 @@ public class RolapEvaluator implements Evaluator {
     }
 
     protected static class RolapEvaluatorRoot {
-        final Map expResultCache = new HashMap();
+        final Map<Object, Object> expResultCache =
+            new HashMap<Object, Object>();
         final RolapCube cube;
         final RolapConnection connection;
         final SchemaReader schemaReader;
-        final Map compiledExps = new HashMap();
+        final Map<Exp, Calc> compiledExps = new HashMap<Exp, Calc>();
         final private Query query;
 
         public RolapEvaluatorRoot(Query query) {
@@ -157,7 +157,7 @@ public class RolapEvaluator implements Evaluator {
          * <p>TODO: Save compiled expressions somewhere better.
          */
         Calc getCompiled(Exp exp, boolean scalar) {
-            Calc calc = (Calc) compiledExps.get(exp);
+            Calc calc = compiledExps.get(exp);
             if (calc == null) {
                 calc = query.compileExpression(exp, scalar);
                 compiledExps.put(exp, calc);
@@ -246,7 +246,7 @@ public class RolapEvaluator implements Evaluator {
      */
     protected RolapEvaluator _push() {
         getQuery().checkCancelOrTimeout();
-        Member[] cloneCurrentMembers = (Member[]) this.currentMembers.clone();
+        Member[] cloneCurrentMembers = currentMembers.clone();
         return new RolapEvaluator(
                 root,
                 this,
@@ -298,7 +298,7 @@ void printCurrentMemberNames() {
      * all may not be needed).
      * 
      * @param member 
-     * @return 
+     * @return Previous member
      */
     Member setContextConditional(Member member) {
         RolapMember m = (RolapMember) member;
@@ -347,13 +347,13 @@ void printCurrentMemberNames() {
             Member member = members[i];
 
             // more than one usage
-            assert member != null;
             if (member == null) {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug(
                         "RolapEvaluator.setContext: member == null "
                          + " , count=" + i);
                 }
+                assert false;
                 continue;
             }
 
@@ -457,7 +457,7 @@ void printCurrentMemberNames() {
 
     private String getContextString() {
         boolean skipDefaultMembers = true;
-        StringBuffer sb = new StringBuffer("{");
+        StringBuilder buf = new StringBuilder("{");
         int frameCount = 0;
         for (RolapEvaluator eval = this; eval != null;
                  eval = (RolapEvaluator) eval.getParent()) {
@@ -465,25 +465,24 @@ void printCurrentMemberNames() {
                 continue;
             }
             if (frameCount++ > 0) {
-                sb.append(", ");
+                buf.append(", ");
             }
-            sb.append("(");
+            buf.append("(");
             int memberCount = 0;
-            for (int j = 0; j < eval.currentMembers.length; j++) {
-                Member m = eval.currentMembers[j];
+            for (Member m : eval.currentMembers) {
                 if (skipDefaultMembers &&
-                        m == m.getHierarchy().getDefaultMember()) {
+                    m == m.getHierarchy().getDefaultMember()) {
                     continue;
                 }
                 if (memberCount++ > 0) {
-                    sb.append(", ");
+                    buf.append(", ");
                 }
-                sb.append(m.getUniqueName());
+                buf.append(m.getUniqueName());
             }
-            sb.append(")");
+            buf.append(")");
         }
-        sb.append("}");
-        return sb.toString();
+        buf.append("}");
+        return buf.toString();
     }
 
     public Object getProperty(String name, Object defaultValue) {
@@ -585,7 +584,7 @@ void printCurrentMemberNames() {
      * expression is dependent upon.
      */
     private Object getExpResultCacheKey(ExpCacheDescriptor descriptor) {
-        List key = new ArrayList();
+        List<Object> key = new ArrayList<Object>();
         key.add(descriptor.getExp());
         int[] dimensionOrdinals = descriptor.getDependentDimensionOrdinals();
         for (int i = 0; i < dimensionOrdinals.length; i++) {

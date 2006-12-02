@@ -9,15 +9,13 @@
 */
 package mondrian.rolap;
 
-import java.util.List;
-
 import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.rolap.sql.SqlConstraint;
 
 /**
- * uses a {@link mondrian.rolap.cache.SmartCache} to store lists of members, where the key
- * depends on a {@link mondrian.rolap.sql.SqlConstraint}.
+ * Uses a {@link mondrian.rolap.cache.SmartCache} to store lists of members,
+ * where the key depends on a {@link mondrian.rolap.sql.SqlConstraint}.
  * <p>
  * Example 1
  * <pre>
@@ -45,23 +43,25 @@ import mondrian.rolap.sql.SqlConstraint;
  * @since Nov 21, 2005
  * @version $Id$
  */
-public class SmartMemberListCache {
-    SmartCache cache;
+public class SmartMemberListCache <K, V> {
+    SmartCache<Key2<K, Object>, V> cache;
 
     /**
      * a HashMap key that consists of two components.
      */
-    static class Key2 {
-        Object o1, o2;
+    static class Key2 <T1, T2> {
+        T1 o1;
+        T2 o2;
 
-        public Key2(Object o1, Object o2) {
+        public Key2(T1 o1, T2 o2) {
             this.o1 = o1;
             this.o2 = o2;
         }
 
         public boolean equals(Object obj) {
-            if (!(obj instanceof Key2))
+            if (!(obj instanceof Key2)) {
                 return false;
+            }
             Key2 that = (Key2) obj;
             return equals(this.o1, that.o1) && equals(this.o2, that.o2);
         }
@@ -72,34 +72,36 @@ public class SmartMemberListCache {
 
         public int hashCode() {
             int c = 1;
-            if (o1 != null)
+            if (o1 != null) {
                 c = o1.hashCode();
-            if (o2 != null)
+            }
+            if (o2 != null) {
                 c = 31 * c + o2.hashCode();
+            }
             return c;
         }
 
         public String toString() {
             return "key(" + o1 + "," + o2 + ")";
         }
-
     }
 
     public SmartMemberListCache() {
-        cache = new SoftSmartCache();
+        cache = new SoftSmartCache<Key2<K, Object>, V>();
     }
 
-    public Object put(Object key, SqlConstraint constraint, List value) {
+    public Object put(K key, SqlConstraint constraint, V value) {
         Object cacheKey = constraint.getCacheKey();
-        if (cacheKey == null)
+        if (cacheKey == null) {
             return null;
-        key = new Key2(key, cacheKey);
-        return cache.put(key, value);
+        }
+        Key2<K, Object> key2 = new Key2<K, Object>(key, cacheKey);
+        return cache.put(key2, value);
     }
 
-    public List get(Object key, SqlConstraint constraint) {
-        key = new Key2(key, constraint.getCacheKey());
-        return (List) cache.get(key);
+    public V get(K key, SqlConstraint constraint) {
+        Key2<K, Object> key2 = new Key2<K, Object>(key, constraint.getCacheKey());
+        return cache.get(key2);
     }
 
     public void clear() {
@@ -110,8 +112,9 @@ public class SmartMemberListCache {
         return cache;
     }
 
-    void setCache(SmartCache cache) {
+    void setCache(SmartCache<Key2<K, Object>, V> cache) {
         this.cache = cache;
     }
-
 }
+
+// End SmartMemberListCache.java

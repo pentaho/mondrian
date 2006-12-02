@@ -89,7 +89,7 @@ class SetItemFunDef extends FunDefBase {
                         call.getArg(1).getType() instanceof StringType;
         final IntegerCalc indexCalc;
         final StringCalc[] stringCalcs;
-        List calcList = new ArrayList();
+        List<Calc> calcList = new ArrayList<Calc>();
         calcList.add(listCalc);
         if (isString) {
             indexCalc = null;
@@ -103,14 +103,14 @@ class SetItemFunDef extends FunDefBase {
             indexCalc = compiler.compileInteger(call.getArg(1));
             calcList.add(indexCalc);
         }
-        Calc[] calcs = (Calc[]) calcList.toArray(new Calc[calcList.size()]);
+        Calc[] calcs = calcList.toArray(new Calc[calcList.size()]);
         if (elementType instanceof TupleType) {
             final TupleType tupleType = (TupleType) elementType;
             final Member[] nullTuple = makeNullTuple(tupleType);
             if (isString) {
                 return new AbstractTupleCalc(call, calcs) {
                     public Member[] evaluateTuple(Evaluator evaluator) {
-                        final List list = listCalc.evaluateList(evaluator);
+                        final List<Member[]> list = listCalc.evaluateList(evaluator);
                         assert list != null;
                         String[] results = new String[stringCalcs.length];
                         for (int i = 0; i < stringCalcs.length; i++) {
@@ -118,8 +118,7 @@ class SetItemFunDef extends FunDefBase {
                                     stringCalcs[i].evaluateString(evaluator);
                         }
                         listLoop:
-                        for (int i = 0; i < list.size(); i++) {
-                            Member[] members = (Member[]) list.get(i);
+                        for (Member[] members : list) {
                             for (int j = 0; j < results.length; j++) {
                                 String result = results[j];
                                 final Member member = members[j];
@@ -156,12 +155,11 @@ class SetItemFunDef extends FunDefBase {
             if (isString) {
                 return new AbstractMemberCalc(call, calcs) {
                     public Member evaluateMember(Evaluator evaluator) {
-                        final List list = listCalc.evaluateList(evaluator);
+                        final List<Member> list = listCalc.evaluateList(evaluator);
                         assert list != null;
                         final String result =
                                 stringCalcs[0].evaluateString(evaluator);
-                        for (int i = 0; i < list.size(); i++) {
-                            Member member = (Member) list.get(i);
+                        for (Member member : list) {
                             if (matchMember(member, result)) {
                                 return member;
                             }

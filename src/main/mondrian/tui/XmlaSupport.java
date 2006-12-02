@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde and others
+// Copyright (C) 2005-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -72,12 +72,12 @@ public class XmlaSupport {
     public static final String DATASOURCE_INFO =
             "Provider=Mondrian;DataSource=MondrianFoodMart;";
 
-    public static final Map ENV;
+    public static final Map<String, String> ENV;
 
     // Setup the Map used to instantiate XMLA template documents.
     // Have to see if we need to be able to dynamically change these values.
     static {
-        ENV = new HashMap();
+        ENV = new HashMap<String, String>();
         ENV.put("catalog", CATALOG_NAME);
         ENV.put("datasource", DATASOURCE_INFO);
     }
@@ -285,7 +285,7 @@ public class XmlaSupport {
     public static String getDataSourcesText(
             String connectString,
             String[][] catalogNameUrls) {
-        StringBuffer buf = new StringBuffer(500);
+        StringBuilder buf = new StringBuilder(500);
         buf.append("<?xml version=\"1.0\"?>");
         buf.append(nl);
         buf.append("<DataSources>");
@@ -315,8 +315,7 @@ public class XmlaSupport {
         buf.append(nl);
         buf.append("       <Catalogs>");
         buf.append(nl);
-        for (int i = 0; i < catalogNameUrls.length; i++) {
-            String[] catalogNameUrl = catalogNameUrls[i];
+        for (String[] catalogNameUrl : catalogNameUrls) {
             String name = catalogNameUrl[0];
             String url = catalogNameUrl[1];
             buf.append("           <Catalog name='");
@@ -340,7 +339,7 @@ public class XmlaSupport {
     }
     public static String getSoapFaultXPath() {
         if (XmlaSupport.soapFaultXPath == null) {
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append('/');
             buf.append(SOAP_PREFIX);
             buf.append(":Envelope");
@@ -364,7 +363,7 @@ public class XmlaSupport {
 
     public static String getSoapHeaderAndBodyXPath() {
         if (XmlaSupport.soapHeaderAndBodyXPath == null) {
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append('/');
             buf.append(SOAP_PREFIX);
             buf.append(":Envelope");
@@ -381,7 +380,7 @@ public class XmlaSupport {
     }
     public static String getSoapBodyXPath() {
         if (XmlaSupport.soapBodyXPath == null) {
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append('/');
             buf.append(SOAP_PREFIX);
             buf.append(":Envelope");
@@ -401,7 +400,7 @@ public class XmlaSupport {
 
     public static String getSoapXmlaRootXPath() {
         if (XmlaSupport.soapXmlaRootXPath == null) {
-            StringBuffer buf = new StringBuffer(20);
+            StringBuilder buf = new StringBuilder(20);
             buf.append('/');
             buf.append(SOAP_PREFIX);
             buf.append(":Envelope");
@@ -425,7 +424,7 @@ public class XmlaSupport {
     }
     public static String getXmlaRootXPath() {
         if (XmlaSupport.xmlaRootXPath == null) {
-            StringBuffer buf = new StringBuffer(20);
+            StringBuilder buf = new StringBuilder(20);
             buf.append("/xmla:DiscoverResponse");
             buf.append("/xmla:return");
             buf.append('/');
@@ -544,13 +543,12 @@ public class XmlaSupport {
         Node[] nodes = XmlUtil.selectAsNodes(node, xpath, contextDoc);
 
         if (LOGGER.isDebugEnabled()) {
-            StringBuffer buf = new StringBuffer(1024);
+            StringBuilder buf = new StringBuilder(1024);
             buf.append("XmlaSupport.extractNodes: ");
             buf.append("nodes.length=");
             buf.append(nodes.length);
             buf.append(nl);
-            for (int i = 0; i < nodes.length; i++) {
-                Node n = nodes[i];
+            for (Node n : nodes) {
                 String str = XmlUtil.toString(n, false);
                 buf.append(str);
                 buf.append(nl);
@@ -878,7 +876,7 @@ public class XmlaSupport {
 
 
     /**
-     * See next method for JavaDoc {@link #validateEmbeddedSchema()}.
+     * See next method for JavaDoc {@link #validateEmbeddedSchema(org.w3c.dom.Document, String, String)}.
      *
      */
     public static boolean validateEmbeddedSchema(
@@ -995,7 +993,7 @@ public class XmlaSupport {
      *
      */
     public static String readFile(File file) throws IOException {
-        StringBuffer buf = new StringBuffer(1024);
+        StringBuilder buf = new StringBuilder(1024);
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(file));

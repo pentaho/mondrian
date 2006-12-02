@@ -9,9 +9,12 @@
 */
 package mondrian.mdx;
 
+import mondrian.olap.Parameter;
+
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * PrintWriter used for unparsing queries. Remembers which parameters have
@@ -19,7 +22,7 @@ import java.util.HashSet;
  * subsequent times as "ParamRef".
  */
 public class QueryPrintWriter extends PrintWriter {
-    final HashSet parameters = new HashSet();
+    final Set<Parameter> parameters = new HashSet<Parameter>();
 
     public QueryPrintWriter(Writer writer) {
         super(writer);

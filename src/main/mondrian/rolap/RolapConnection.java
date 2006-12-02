@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -308,9 +308,9 @@ public class RolapConnection extends ConnectionBase {
      */
     private static Properties getJDBCProperties(Util.PropertyList connectInfo) {
         Properties jdbcProperties = new Properties();
-        Iterator iterator = connectInfo.iterator();
+        Iterator<String[]> iterator = connectInfo.iterator();
         while (iterator.hasNext()) {
-            String[] entry = (String[]) iterator.next();
+            String[] entry = iterator.next();
             if (entry[0].startsWith(RolapConnectionProperties.JdbcPropertyPrefix)) {
                 jdbcProperties.put(entry[0].substring(RolapConnectionProperties.JdbcPropertyPrefix.length()), entry[1]);
             }
@@ -477,33 +477,35 @@ public class RolapConnection extends ConnectionBase {
 
         final Result underlying;
         private final int axis;
-        private final Map map;
+        private final Map<Integer, Integer> map;
         /** workspace. Synchronized access only. */
         private final int[] pos;
 
         NonEmptyResult(Result result, Query query, int axis) {
-            super(query, (Axis[]) result.getAxes().clone());
+            super(query, result.getAxes().clone());
 
             this.underlying = result;
             this.axis = axis;
-            this.map = new HashMap();
+            this.map = new HashMap<Integer, Integer>();
             int axisCount = underlying.getAxes().length;
             this.pos = new int[axisCount];
             this.slicerAxis = underlying.getSlicerAxis();
             Position[] positions = underlying.getAxes()[axis].positions;
-            ArrayList positionsList = new ArrayList();
+            List<Position> positionsList = new ArrayList<Position>();
             for (int i = 0, count = positions.length; i < count; i++) {
                 Position position = positions[i];
                 if (isEmpty(i, axis)) {
                     continue;
                 } else {
-                    map.put(new Integer(positionsList.size()), new Integer(i));
+                    map.put(positionsList.size(), i);
                     positionsList.add(position);
                 }
             }
-            this.axes[axis] = new RolapAxis(
-                    (Position[]) positionsList.toArray(new Position[0]));
+            this.axes[axis] =
+                new RolapAxis(
+                    positionsList.toArray(new Position[positionsList.size()]));
         }
+
         protected Logger getLogger() {
             return LOGGER;
         }
@@ -550,7 +552,7 @@ public class RolapConnection extends ConnectionBase {
         }
 
         private int mapOffsetToUnderlying(int offset) {
-            return ((Integer) map.get(new Integer(offset))).intValue();
+            return map.get(offset);
         }
 
         public void close() {

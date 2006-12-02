@@ -3,18 +3,13 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.xmla.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
@@ -45,7 +40,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
 
     /* common content */
     private int method;
-    private Map properties;
+    private Map<String, String> properties;
     private String role;
 
     /* EXECUTE content */
@@ -56,7 +51,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
 
     /* DISCOVER contnet */
     private String requestType;
-    private Map restrictions;
+    private Map<String, List<String>> restrictions;
 
 
     public DefaultXmlaRequest(Element xmlaRoot) {
@@ -75,19 +70,21 @@ public class DefaultXmlaRequest implements XmlaRequest,
         return method;
     }
 
-    public Map getProperties() {
+    public Map<String, String> getProperties() {
         return properties;
     }
 
-    public Map getRestrictions() {
-        if (method != METHOD_DISCOVER)
+    public Map<String, List<String>> getRestrictions() {
+        if (method != METHOD_DISCOVER) {
             throw new IllegalStateException("Only METHOD_DISCOVER has restrictions");
+        }
         return restrictions;
     }
 
     public String getStatement() {
-        if (method != METHOD_EXECUTE)
+        if (method != METHOD_EXECUTE) {
             throw new IllegalStateException("Only METHOD_EXECUTE has statement");
+        }
         return statement;
     }
 
@@ -137,7 +134,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 // Note that is code will never be reached because
                 // the error will be caught in 
                 // DefaultXmlaServlet.handleSoapBody first
-                StringBuffer buf = new StringBuffer(100);
+                StringBuilder buf = new StringBuilder(100);
                 buf.append(MSG_INVALID_XMLA);
                 buf.append(": Bad method name \"");
                 buf.append(lname);
@@ -152,7 +149,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
             // Note that is code will never be reached because
             // the error will be caught in 
             // DefaultXmlaServlet.handleSoapBody first
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
             buf.append(": Bad namespace url \"");
             buf.append(xmlaRoot.getNamespaceURI());
@@ -170,7 +167,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                                                             NS_XMLA,
                                                             "RequestType");
         if (childElems.length != 1) {
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
             buf.append(": Wrong number of RequestType elements: ");
             buf.append(childElems.length);
@@ -186,7 +183,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                                                   NS_XMLA,
                                                   "Restrictions");
         if (childElems.length != 1) {
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
             buf.append(": Wrong number of Restrictions elements: ");
             buf.append(childElems.length);
@@ -202,7 +199,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                                                   NS_XMLA,
                                                   "Properties");
         if (childElems.length != 1) {
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
             buf.append(": Wrong number of Properties elements: ");
             buf.append(childElems.length);
@@ -220,7 +217,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                                                             NS_XMLA,
                                                             "Command");
         if (childElems.length != 1) {
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
             buf.append(": Wrong number of Command elements: ");
             buf.append(childElems.length);
@@ -236,7 +233,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                                                   NS_XMLA,
                                                   "Properties");
         if (childElems.length != 1) {
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
             buf.append(": Wrong number of Properties elements: ");
             buf.append(childElems.length);
@@ -250,10 +247,12 @@ public class DefaultXmlaRequest implements XmlaRequest,
     }
 
     private void initRestrictions(Element restrictionsRoot) throws XmlaException {
-        Map restricions = new HashMap();
-        Element[] childElems = XmlaUtil.filterChildElements(restrictionsRoot,
-                                                            NS_XMLA,
-                                                            "RestrictionList");
+        Map<String, List<String>> restrictions = new HashMap<String, List<String>>();
+        Element[] childElems =
+            XmlaUtil.filterChildElements(
+                restrictionsRoot,
+                NS_XMLA,
+                "RestrictionList");
         if (childElems.length == 1) {
             NodeList nlst = childElems[0].getChildNodes();
             for (int i = 0, nlen = nlst.getLength(); i < nlen; i++) {
@@ -264,16 +263,16 @@ public class DefaultXmlaRequest implements XmlaRequest,
                         String key = e.getLocalName();
                         String value = XmlaUtil.textInElement(e);
 
-                        List values;
-                        if (restricions.containsKey(key)) {
-                            values = (List) restricions.get(key);
+                        List<String> values;
+                        if (restrictions.containsKey(key)) {
+                            values = restrictions.get(key);
                         } else {
-                            values = new ArrayList();
-                            restricions.put(key, values);
+                            values = new ArrayList<String>();
+                            restrictions.put(key, values);
                         }
 
                         if (LOGGER.isDebugEnabled()) {
-                            StringBuffer buf = new StringBuffer(100);
+                            StringBuilder buf = new StringBuilder(100);
                             buf.append("DefaultXmlaRequest.initRestrictions: ");
                             buf.append(" key=\"");
                             buf.append(key);
@@ -287,18 +286,8 @@ public class DefaultXmlaRequest implements XmlaRequest,
                     }
                 }
             }
-            String[] dummy = new String[0];
-            for (Iterator it = restricions.entrySet().iterator(); it.hasNext();) {
-                Map.Entry entry = (Map.Entry) it.next();
-                List values = (List) entry.getValue();
-                if (values.size() > 1) {
-                    entry.setValue(values.toArray(dummy));
-                } else {
-                    entry.setValue(values.get(0));
-                }
-            }
         } else if (childElems.length > 1) {
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
             buf.append(": Wrong number of RestrictionList elements: ");
             buf.append(childElems.length);
@@ -309,11 +298,11 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 Util.newError(buf.toString()));
         } else {
         }
-        restrictions = Collections.unmodifiableMap(restricions);
+        this.restrictions = Collections.unmodifiableMap(restrictions);
     }
 
     private void initProperties(Element propertiesRoot) throws XmlaException {
-        Map properties = new HashMap();
+        Map<String, String> properties = new HashMap<String, String>();
         Element[] childElems = XmlaUtil.filterChildElements(propertiesRoot,
                                                             NS_XMLA,
                                                             "PropertyList");
@@ -329,7 +318,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                         String value = XmlaUtil.textInElement(e);
 
                         if (LOGGER.isDebugEnabled()) {
-                            StringBuffer buf = new StringBuffer(100);
+                            StringBuilder buf = new StringBuilder(100);
                             buf.append("DefaultXmlaRequest.initProperties: ");
                             buf.append(" key=\"");
                             buf.append(key);
@@ -344,7 +333,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 }
             }
         } else if (childElems.length > 1) {
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
             buf.append(": Wrong number of PropertyList elements: ");
             buf.append(childElems.length);
@@ -364,7 +353,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                                                             NS_XMLA,
                                                             "Statement");
         if (childElems.length != 1) {
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
             buf.append(": Wrong number of Statement elements: ");
             buf.append(childElems.length);
@@ -399,7 +388,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                     if (mrOffset > dtOffset && mrOffset < slOffset) {
                         maxRows = parseIntValue(statement.substring(mrOffset, slOffset));
                         if (maxRows <= 0) {
-                            StringBuffer buf = new StringBuffer(100);
+                            StringBuilder buf = new StringBuilder(100);
                             buf.append(MSG_INVALID_MAXROWS);
                             buf.append(": ");
                             buf.append(maxRows);
@@ -413,7 +402,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                     if (frOffset > dtOffset && frOffset > mrOffset && frOffset < slOffset) {
                         firstRowset = parseIntValue(statement.substring(frOffset, slOffset));
                         if (firstRowset <= 0) {
-                            StringBuffer buf = new StringBuffer(100);
+                            StringBuilder buf = new StringBuilder(100);
                             buf.append(MSG_INVALID_FIRSTROWSET);
                             buf.append(": ");
                             buf.append(firstRowset);
@@ -439,7 +428,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                     maxRows = configMaxRows;
                 }
                 
-                StringBuffer dtStmtBuf = new StringBuffer();
+                StringBuilder dtStmtBuf = new StringBuilder();
                 dtStmtBuf.append(statement.substring(0, dtOffset)); // formulas
                 dtStmtBuf.append(statement.substring(slOffset)); // select to end
                 statement = dtStmtBuf.toString();

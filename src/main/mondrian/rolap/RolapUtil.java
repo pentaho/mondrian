@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -78,18 +78,12 @@ public class RolapUtil {
      * Names of classes of drivers we've loaded (or have tried to load).
      * @synchronization Lock the {@link RolapConnection} class.
      */
-    private static final HashSet loadedDrivers = new HashSet();
+    private static final HashSet<String> loadedDrivers = new HashSet<String>();
 
-    static final void add(List list, Object[] array) {
-        for (int i = 0; i < array.length; i++) {
-            list.add(array[i]);
-        }
-    }
-
-    static final RolapMember[] toArray(List v) {
+    static RolapMember[] toArray(List<RolapMember> v) {
         return v.isEmpty()
             ? emptyMemberArray
-            : (RolapMember[]) v.toArray(new RolapMember[v.size()]);
+            : v.toArray(new RolapMember[v.size()]);
     }
 
     static RolapMember lookupMember(
@@ -104,9 +98,9 @@ public class RolapUtil {
         // If this hierarchy has an 'all' member, we can omit it.
         // For example, '[Gender].[(All Gender)].[F]' can be abbreviated
         // '[Gender].[F]'.
-        final List rootMembers = reader.getRootMembers();
+        final List<RolapMember> rootMembers = reader.getRootMembers();
         if (rootMembers.size() == 1) {
-            final RolapMember rootMember = (RolapMember) rootMembers.get(0);
+            final RolapMember rootMember = rootMembers.get(0);
             if (rootMember.isAll()) {
                 member = xxx(
                     uniqueNameParts, rootMember, reader, failIfNotFound);
@@ -118,18 +112,17 @@ public class RolapUtil {
     private static RolapMember xxx(
         String[] uniqueNameParts, RolapMember member,
         MemberReader reader, boolean failIfNotFound) {
-        for (int i = 0; i < uniqueNameParts.length; i++) {
-            String name = uniqueNameParts[i];
-            List children;
+        for (String name : uniqueNameParts) {
+            List<RolapMember> children;
             if (member == null) {
                 children = reader.getRootMembers();
             } else {
-                children = new ArrayList();
+                children = new ArrayList<RolapMember>();
                 reader.getMemberChildren(member, children);
                 member = null;
             }
             for (int j = 0, n = children.size(); j < n; j++) {
-                RolapMember child = (RolapMember) children.get(j);
+                RolapMember child = children.get(j);
                 if (child.getName().equals(name)) {
                     member = child;
                     break;
@@ -202,7 +195,7 @@ public class RolapUtil {
      * redirect debug output to another PrintWriter
      * @param pw
      */
-    static public void setDebugOut( PrintWriter pw) {
+    static public void setDebugOut(PrintWriter pw) {
         debugOut = pw;
     }
 
@@ -245,7 +238,7 @@ public class RolapUtil {
         checkTracing();
         getQuerySemaphore().enter();
         Statement statement = null;
-        ResultSet resultSet = null;
+        ResultSet resultSet;
         String status = "failed";
         if (produceDebugOut == Boolean.TRUE) {
             RolapUtil.debugOut.print(

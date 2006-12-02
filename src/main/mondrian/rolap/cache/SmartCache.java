@@ -15,14 +15,17 @@ package mondrian.rolap.cache;
  * @since Nov 21, 2005
  * @version $Id$
  */
-public interface SmartCache {
+public interface SmartCache <K, V> {
     /**
      * Places a key/value pair into the queue.
+     *
+     * @param key Key
+     * @param value Value
      * @return the previous value of <code>key</code> or null
      */
-    Object put(Object key, Object value);
+    V put(K key, V value);
 
-    Object get(Object key);
+    V get(K key);
 
     void clear();
 

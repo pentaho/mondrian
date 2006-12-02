@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -105,16 +105,14 @@ public class AggStar {
 
         // 5. for each distinct-count measure, populate a list of the levels
         //    which it is OK to roll up
-        for (int i = 0; i < aggStarFactTable.measures.size(); i++) {
-            FactTable.Measure measure =
-                    (FactTable.Measure) aggStarFactTable.measures.get(i);
+        for (FactTable.Measure measure : aggStarFactTable.measures) {
             if (measure.aggregator.isDistinct() &&
-                    measure.argument instanceof MondrianDef.Column) {
+                measure.argument instanceof MondrianDef.Column) {
                 setLevelBits(
-                        measure.rollableLevelBitKey,
-                        aggStarFactTable,
-                        (MondrianDef.Column) measure.argument,
-                        star.getFactTable());
+                    measure.rollableLevelBitKey,
+                    aggStarFactTable,
+                    (MondrianDef.Column) measure.argument,
+                    star.getFactTable());
             }
         }
 
@@ -142,14 +140,13 @@ public class AggStar {
             Table aggTable,
             MondrianDef.Column column,
             RolapStar.Table table) {
-        final Set columns = new HashSet();
+        final Set<RolapStar.Column> columns = new HashSet<RolapStar.Column>();
         RolapStar.collectColumns(columns, table, column);
 
-        final List levelList = new ArrayList();
+        final List<Table.Level> levelList = new ArrayList<Table.Level>();
         collectLevels(levelList, aggTable, null);
 
-        for (int i = 0; i < levelList.size(); i++) {
-            Table.Level level = (Table.Level) levelList.get(i);
+        for (Table.Level level : levelList) {
             if (columns.contains(level.starColumn)) {
                 bitKey.set(level.getBitPosition());
             }
@@ -157,16 +154,15 @@ public class AggStar {
     }
 
     private static void collectLevels(
-            List levelList,
+            List<Table.Level> levelList,
             Table table,
             MondrianDef.Column joinColumn) {
         if (joinColumn == null) {
             levelList.addAll(table.levels);
         }
-        for (int i = 0; i < table.children.size(); i++) {
-            Table dimTable = (Table) table.children.get(i);
+        for (Table dimTable : table.children) {
             if (joinColumn != null &&
-                    !dimTable.getJoinCondition().left.equals(joinColumn)) {
+                !dimTable.getJoinCondition().left.equals(joinColumn)) {
                 continue;
             }
             collectLevels(levelList, dimTable, null);
@@ -435,7 +431,7 @@ public class AggStar {
              * This is used to create part of a SQL where clause.
              */
             String toString(final SqlQuery query) {
-                StringBuffer buf = new StringBuffer(64);
+                StringBuilder buf = new StringBuilder(64);
                 buf.append(left.getExpression(query));
                 buf.append(" = ");
                 buf.append(right.getExpression(query));
@@ -615,13 +611,13 @@ public class AggStar {
         /** The name of the table in the database. */
         private final String name;
         private final MondrianDef.Relation relation;
-        protected final List levels = new ArrayList();
-        protected List children;
+        protected final List<Level> levels = new ArrayList<Level>();
+        protected List<DimTable> children;
 
         Table(final String name, final MondrianDef.Relation relation) {
             this.name = name;
             this.relation = relation;
-            this.children = Collections.EMPTY_LIST;
+            this.children = Collections.emptyList();
         }
 
         /**
@@ -686,7 +682,7 @@ public class AggStar {
         /**
          * Returns all level columns.
          */
-        public List getLevels() {
+        public List<Level> getLevels() {
             return levels;
         }
 
@@ -704,7 +700,7 @@ public class AggStar {
          */
         protected void addTable(final DimTable child) {
             if (children == Collections.EMPTY_LIST) {
-                children = new ArrayList();
+                children = new ArrayList<DimTable>();
             }
             children.add(child);
         }
@@ -712,7 +708,7 @@ public class AggStar {
         /**
          * Returns a list of child {@link Table} objects.
          */
-        public List getChildTables() {
+        public List<DimTable> getChildTables() {
             return children;
         }
 
@@ -784,18 +780,16 @@ public class AggStar {
          */
         protected void convertColumns(final RolapStar.Table rTable) {
             // add level columns
-            for (Iterator it = rTable.getColumns().iterator(); it.hasNext(); ) {
-                RolapStar.Column column = (RolapStar.Column) it.next();
-
+            for (RolapStar.Column column : rTable.getColumns()) {
                 String name = column.getName();
                 MondrianDef.Expression expression = column.getExpression();
                 int bitPosition = column.getBitPosition();
 
                 Level level = new Level(
-                        name,
-                        expression,
-                        bitPosition,
-                        column);
+                    name,
+                    expression,
+                    bitPosition,
+                    column);
                 addLevel(level);
             }
         }
@@ -808,10 +802,8 @@ public class AggStar {
          */
         protected void convertChildren(final RolapStar.Table rTable) {
             // add children tables
-            for (Iterator it = rTable.getChildren().iterator(); it.hasNext(); ) {
-                RolapStar.Table rTableChild = (RolapStar.Table) it.next();
-
-                AggStar.DimTable dimChild = convertTable(rTableChild, null);
+            for (RolapStar.Table rTableChild : rTable.getChildren()) {
+                DimTable dimChild = convertTable(rTableChild, null);
 
                 addTable(dimChild);
             }
@@ -961,7 +953,7 @@ public class AggStar {
         }
 
         private Column factCountColumn;
-        private final List measures;
+        private final List<Measure> measures;
         private final int totalColumnSize;
         private int numberOfRows;
 
@@ -977,7 +969,7 @@ public class AggStar {
                   final int numberOfRows) {
             super(name, relation);
             this.totalColumnSize = totalColumnSize;
-            this.measures = new ArrayList();
+            this.measures = new ArrayList<Measure>();
             this.numberOfRows = numberOfRows;
         }
         public Table getParent() {
@@ -1029,7 +1021,7 @@ public class AggStar {
         /**
          * Returns a list of all measures.
          */
-        public List getMeasures() {
+        public List<Measure> getMeasures() {
             return measures;
         }
 
@@ -1043,12 +1035,11 @@ public class AggStar {
         /**
          * Returns a list of the columns in this table.
          */
-        public List getColumns() {
-            List list = new ArrayList();
+        public List<Column> getColumns() {
+            List<Column> list = new ArrayList<Column>();
             list.addAll(measures);
             list.addAll(levels);
-            for (Iterator it = getChildTables().iterator(); it.hasNext(); ) {
-                DimTable dimTable = (DimTable) it.next();
+            for (DimTable dimTable : getChildTables()) {
                 dimTable.addColumnsToList(list);
             }
             return list;
@@ -1213,22 +1204,19 @@ public class AggStar {
 
             pw.print(subprefix);
             pw.println("Measures:");
-            for (Iterator it = getMeasures().iterator(); it.hasNext(); ) {
-                Column column = (Column) it.next();
+            for (Measure column : getMeasures()) {
                 column.print(pw, subsubprefix);
                 pw.println();
             }
 
             pw.print(subprefix);
             pw.println("Levels:");
-            for (Iterator it = getLevels().iterator(); it.hasNext(); ) {
-                Level level = (Level) it.next();
+            for (Level level : getLevels()) {
                 level.print(pw, subsubprefix);
                 pw.println();
             }
 
-            for (Iterator it = getChildTables().iterator(); it.hasNext(); ) {
-                DimTable child = (DimTable) it.next();
+            for (DimTable child : getChildTables()) {
                 child.print(pw, subprefix);
             }
         }
@@ -1307,10 +1295,9 @@ public class AggStar {
          *
          * @param list
          */
-        public void addColumnsToList(final List list) {
+        public void addColumnsToList(final List<Column> list) {
             list.addAll(levels);
-            for (Iterator it = getChildTables().iterator(); it.hasNext(); ) {
-                DimTable dimTable = (DimTable) it.next();
+            for (DimTable dimTable : getChildTables()) {
                 dimTable.addColumnsToList(list);
             }
         }
@@ -1334,16 +1321,14 @@ public class AggStar {
             pw.print(subprefix);
             pw.println("Levels:");
 
-            for (Iterator it = getLevels().iterator(); it.hasNext(); ) {
-                Level level = (Level) it.next();
+            for (Level level : getLevels()) {
                 level.print(pw, subsubprefix);
                 pw.println();
             }
 
             joinCondition.print(pw, subprefix);
 
-            for (Iterator it = getChildTables().iterator(); it.hasNext(); ) {
-                DimTable child = (DimTable) it.next();
+            for (DimTable child : getChildTables()) {
                 child.print(pw, subprefix);
             }
         }

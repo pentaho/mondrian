@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2003-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -67,22 +67,22 @@ public abstract class XmlaServlet extends HttpServlet
             ServletConfig servletConfig,
             String paramName) {
         String paramValue = servletConfig.getInitParameter(paramName);
-        return ((paramValue != null) && 
-            Boolean.valueOf(paramValue).booleanValue());
+        return paramValue != null && Boolean.valueOf(paramValue);
     }
+
     public static boolean getParameter(
             HttpServletRequest req, 
             String paramName) {
         String paramValue = req.getParameter(paramName);
-        return ((paramValue != null) && 
-            Boolean.valueOf(paramValue).booleanValue());
+        return paramValue != null && Boolean.valueOf(paramValue);
     }
 
     protected CatalogLocator catalogLocator = null;
     protected DataSourcesConfig.DataSources dataSources = null;
     protected XmlaHandler xmlaHandler = null;
     protected String charEncoding = null;
-    private final List callbackList = new ArrayList();
+    private final List<XmlaRequestCallback> callbackList =
+        new ArrayList<XmlaRequestCallback>();
 
     public XmlaServlet() {
     }
@@ -136,7 +136,7 @@ public abstract class XmlaServlet extends HttpServlet
      * 
      * @return 
      */
-    protected final List getCallbacks() {
+    protected final List<XmlaRequestCallback> getCallbacks() {
         return Collections.unmodifiableList(callbackList);
     }
 
@@ -180,16 +180,17 @@ public abstract class XmlaServlet extends HttpServlet
 
             response.setContentType("text/xml");
 
-            Map context = new HashMap(); 
+            Map<String, String> context = new HashMap<String, String>();
 
             try {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Invoking validate http header callbacks");
                 }
-                for (Iterator it = getCallbacks().iterator(); it.hasNext(); ) {
-                    XmlaRequestCallback callback = 
-                            (XmlaRequestCallback) it.next();
-                    if (!callback.processHttpHeader(request, response, context)) {
+                for (XmlaRequestCallback callback : getCallbacks()) {
+                    if (!callback.processHttpHeader(
+                        request,
+                        response,
+                        context)) {
                         return;
                     }
                 }
@@ -267,9 +268,7 @@ public abstract class XmlaServlet extends HttpServlet
                     LOGGER.debug("Invoking callbacks preAction");
                 }
 
-                for (Iterator it = getCallbacks().iterator(); it.hasNext(); ) {
-                    XmlaRequestCallback callback = 
-                            (XmlaRequestCallback) it.next();
+                for (XmlaRequestCallback callback : getCallbacks()) {
                     callback.preAction(request, requestSoapParts, context);
                 }
             } catch (XmlaException xex) {
@@ -320,11 +319,10 @@ public abstract class XmlaServlet extends HttpServlet
                     LOGGER.debug("Invoking callbacks postAction");
                 }
 
-                for (Iterator it = getCallbacks().iterator(); it.hasNext(); ) {
-                    XmlaRequestCallback callback = 
-                            (XmlaRequestCallback) it.next();
-                    callback.postAction(request, response, 
-                                        responseSoapParts, context);
+                for (XmlaRequestCallback callback : getCallbacks()) {
+                    callback.postAction(
+                        request, response,
+                        responseSoapParts, context);
                 }
             } catch (XmlaException xex) {
                 LOGGER.error("Errors when invoking callbacks postaction", xex);
@@ -387,7 +385,7 @@ public abstract class XmlaServlet extends HttpServlet
             HttpServletResponse response,
             Element[] requestSoapParts,
             byte[][] responseSoapParts,
-            Map context) throws XmlaException;
+            Map<String, String> context) throws XmlaException;
 
     /**
      * Implement to hanle XML/A request.
@@ -398,7 +396,7 @@ public abstract class XmlaServlet extends HttpServlet
             HttpServletResponse response,
             Element[] requestSoapParts,
             byte[][] responseSoapParts,
-            Map context) throws XmlaException;
+            Map<String, String> context) throws XmlaException;
 
     /**
      * Implement to privode application specified SOAP marshalling algorithm.
@@ -462,8 +460,9 @@ public abstract class XmlaServlet extends HttpServlet
                     dataSourcesConfigUrl = realPath.toURL();
                 }
             } else {
-                paramValue = Util.replaceProperties(paramValue, 
-                                      System.getProperties());
+                paramValue = Util.replaceProperties(
+                    paramValue,
+                    Util.toMap(System.getProperties()));
                 if (LOGGER.isDebugEnabled()) {
                     String msg = "XmlaServlet.makeDataSources: " +
                             "paramValue="+paramValue;
@@ -532,7 +531,9 @@ public abstract class XmlaServlet extends HttpServlet
 
         try {
             String dataSourcesConfigString = 
-                Util.readURL(dataSourcesConfigUrl, System.getProperties());
+                Util.readURL(
+                    dataSourcesConfigUrl,
+                    Util.toMap(System.getProperties()));
             return parseDataSources(dataSourcesConfigString);
 
         } catch (Exception e) {
@@ -549,8 +550,9 @@ public abstract class XmlaServlet extends HttpServlet
                 return null;
             }
             dataSourcesConfigString = 
-                Util.replaceProperties(dataSourcesConfigString, 
-                                      System.getProperties());
+                Util.replaceProperties(
+                    dataSourcesConfigString,
+                    Util.toMap(System.getProperties()));
 
         if (LOGGER.isDebugEnabled()) {
             String msg = "XmlaServlet.parseDataSources: " +
@@ -591,11 +593,11 @@ public abstract class XmlaServlet extends HttpServlet
 
             int count = 0;
             nextCallback:
-            for (int i = 0; i < classNames.length; i++) {
-                String className = classNames[i].trim();
+            for (String className1 : classNames) {
+                String className = className1.trim();
 
                 try {
-                    Class cls = Class.forName(className);
+                    Class<?> cls = Class.forName(className);
                     if (XmlaRequestCallback.class.isAssignableFrom(cls)) {
                         XmlaRequestCallback callback =
                             (XmlaRequestCallback) cls.newInstance();
@@ -604,7 +606,7 @@ public abstract class XmlaServlet extends HttpServlet
                             callback.init(servletConfig);
                         } catch (Exception e) {
                             LOGGER.warn("Failed to initialize callback '" +
-                                        className + "'", e);
+                                className + "'", e);
                             continue nextCallback;
                         }
 
@@ -613,19 +615,22 @@ public abstract class XmlaServlet extends HttpServlet
 
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.info("Register callback '" +
-                                        className + "'");
+                                className + "'");
                         }
                     } else {
                         LOGGER.warn("'" + className +
-                                    "' is not an implementation of '" +
-                                    XmlaRequestCallback.class + "'");
+                            "' is not an implementation of '" +
+                            XmlaRequestCallback.class + "'");
                     }
                 } catch (ClassNotFoundException cnfe) {
-                    LOGGER.warn("Callback class '" + className + "' not found", cnfe);
+                    LOGGER.warn("Callback class '" + className + "' not found",
+                        cnfe);
                 } catch (InstantiationException ie) {
-                    LOGGER.warn("Can't instantiate class '" + className + "'", ie);
+                    LOGGER.warn("Can't instantiate class '" + className + "'",
+                        ie);
                 } catch (IllegalAccessException iae) {
-                    LOGGER.warn("Can't instantiate class '" + className + "'", iae);
+                    LOGGER.warn("Can't instantiate class '" + className + "'",
+                        iae);
                 }
             }
             LOGGER.debug("Registered " + count + " callback" + (count > 1 ? "s" : ""));

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -79,7 +79,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
             throws XmlaException {
 
         try {
-            InputStream inputStream = null;
+            InputStream inputStream;
             try {
                 inputStream = request.getInputStream();
             } catch (IllegalStateException ex) {
@@ -97,7 +97,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
                     ex);
             }
 
-            DocumentBuilder domBuilder = null;
+            DocumentBuilder domBuilder;
             try {
                 domBuilder = domFactory.newDocumentBuilder();
             } catch (ParserConfigurationException ex) {
@@ -108,7 +108,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
                     ex);
             }
 
-            Document soapDoc = null;
+            Document soapDoc;
             try {
                 soapDoc = domBuilder.parse(new InputSource(inputStream));
             } catch (IOException ex) {
@@ -131,7 +131,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
             Element envElem = soapDoc.getDocumentElement();
 
             if (LOGGER.isDebugEnabled()) {
-                StringBuffer buf = new StringBuffer(100);
+                StringBuilder buf = new StringBuilder(100);
                 buf.append("XML/A request content").append(nl);
                 buf.append(XmlaUtil.element2Text(envElem));
                 LOGGER.debug(buf.toString());
@@ -210,7 +210,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
             HttpServletResponse response,
             Element[] requestSoapParts, 
             byte[][] responseSoapParts,
-            Map context) throws XmlaException {
+            Map<String, String> context) throws XmlaException {
 
         try {
             Element hdrElem = requestSoapParts[0];
@@ -253,7 +253,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
                     //    Session
                     //    EndSession
 
-                    String sessionIdStr = null;
+                    String sessionIdStr;
                     String localName = e.getLocalName();
                     if (localName.equals(XMLA_BEGIN_SESSION)) {
                         // generate SessionId
@@ -294,7 +294,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
                             );
                     }
 
-                    StringBuffer buf = new StringBuffer(100);
+                    StringBuilder buf = new StringBuilder(100);
                     buf.append("<Session ");
                     buf.append(XMLA_SESSION_ID);
                     buf.append("=\"");
@@ -319,12 +319,12 @@ public class DefaultXmlaServlet extends XmlaServlet {
                 ex);
         }
     }
-    protected String generateSessionId(Map context) {
-        List callbacks = getCallbacks();
+
+    protected String generateSessionId(Map<String, String> context) {
+        List<XmlaRequestCallback> callbacks = getCallbacks();
         if (callbacks.size() > 0) {
             // get only the first callback if it exists
-            XmlaRequestCallback callback = 
-                (XmlaRequestCallback) callbacks.get(0);
+            XmlaRequestCallback callback = callbacks.get(0);
             return callback.generateSessionId(context); 
         } else {
             // what to do here, should Mondrian generate a Session Id?
@@ -333,7 +333,8 @@ public class DefaultXmlaServlet extends XmlaServlet {
             return "";
         }
     }
-    protected String getSessionId(Element e, Map context) 
+
+    protected String getSessionId(Element e, Map<String, String> context)
             throws Exception {
         // extract the SessionId attrs value and put into context
         Attr attr = e.getAttributeNode(XMLA_SESSION_ID);
@@ -357,11 +358,13 @@ public class DefaultXmlaServlet extends XmlaServlet {
         return value;
     }
 
-    protected void handleSoapBody(HttpServletResponse response,
-                                  Element[] requestSoapParts,
-                                  byte[][] responseSoapParts,
-                                  Map context) 
-            throws XmlaException {
+    protected void handleSoapBody(
+        HttpServletResponse response,
+        Element[] requestSoapParts,
+        byte[][] responseSoapParts,
+        Map<String, String> context)
+        throws XmlaException
+    {
         try {
             String encoding = response.getCharacterEncoding();
             Element hdrElem = requestSoapParts[0];
@@ -375,7 +378,6 @@ public class DefaultXmlaServlet extends XmlaServlet {
                     " Discover Requests and " +
                     ereqs.length +
                     " Execute Requests";
-                    ;
                 throw new XmlaException(
                     CLIENT_FAULT_FC,
                     HSB_BAD_SOAP_BODY_CODE,
@@ -389,8 +391,9 @@ public class DefaultXmlaServlet extends XmlaServlet {
             ByteArrayOutputStream osBuf = new ByteArrayOutputStream();
 
             // use context variable `role' as this request's XML/A role
-            XmlaRequest xmlaReq = new DefaultXmlaRequest(xmlaReqElem,
-                                       (String) context.get(CONTEXT_ROLE));
+            XmlaRequest xmlaReq = new DefaultXmlaRequest(
+                xmlaReqElem,
+                context.get(CONTEXT_ROLE));
             XmlaResponse xmlaRes = new DefaultXmlaResponse(osBuf, encoding);
 
             try {
@@ -452,7 +455,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
             Object[] byteChunks = new Object[5];
 
             try {
-                StringBuffer buf = new StringBuffer(500);
+                StringBuilder buf = new StringBuilder(500);
                 buf.append("<?xml version=\"1.0\" encoding=\"");
                 buf.append(encoding);
                 buf.append("\"?>");
@@ -510,11 +513,11 @@ public class DefaultXmlaServlet extends XmlaServlet {
             }
 
             if (LOGGER.isDebugEnabled()) {
-                StringBuffer buf = new StringBuffer(100);
+                StringBuilder buf = new StringBuilder(100);
                 buf.append("XML/A response content").append(nl);
                 try {
-                    for (int i = 0; i < byteChunks.length; i++) {
-                        byte[] chunk = (byte[]) byteChunks[i];
+                    for (Object byteChunk : byteChunks) {
+                        byte[] chunk = (byte[]) byteChunk;
                         if (chunk != null && chunk.length > 0) {
                             buf.append(new String(chunk, encoding));
                         }
@@ -526,28 +529,31 @@ public class DefaultXmlaServlet extends XmlaServlet {
             }
 
             if (LOGGER.isDebugEnabled()) {
-                StringBuffer buf = new StringBuffer();
+                StringBuilder buf = new StringBuilder();
                 buf.append("XML/A response content").append(nl);
             }
             try {
                 int bufferSize = 4096;
                 ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
                 WritableByteChannel wch = Channels.newChannel(outputStream);
-                ReadableByteChannel rch = null;
-                for (int i = 0; i < byteChunks.length; i++) {
-                    if (byteChunks[i] == null || ((byte[]) byteChunks[i]).length == 0)
+                ReadableByteChannel rch;
+                for (Object byteChunk : byteChunks) {
+                    if (byteChunk == null || ((byte[]) byteChunk).length == 0) {
                         continue;
-                    rch = Channels.newChannel(new ByteArrayInputStream((byte[]) byteChunks[i]));
+                    }
+                    rch = Channels
+                        .newChannel(new ByteArrayInputStream((byte[]) byteChunk));
 
-                    int readSize = 0;
-
+                    int readSize;
                     do {
                         buffer.clear();
                         readSize = rch.read(buffer);
                         buffer.flip();
 
                         int writeSize = 0;
-                        while((writeSize += wch.write(buffer)) < readSize);
+                        while ((writeSize += wch.write(buffer)) < readSize) {
+                            ;
+                        }
                     } while (readSize == bufferSize);
                     rch.close();
                 }
@@ -597,10 +603,10 @@ public class DefaultXmlaServlet extends XmlaServlet {
             break;
         }
 
-        String code = null;
-        String faultCode = null;
-        String faultString = null;
-        String detail = null;
+        String code;
+        String faultCode;
+        String faultString;
+        String detail;
         if (t instanceof XmlaException) {
             XmlaException xex = (XmlaException) t;
             code = xex.getCode();

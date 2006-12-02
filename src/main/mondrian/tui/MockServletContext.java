@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde and others
+// Copyright (C) 2005-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -41,8 +41,8 @@ public class MockServletContext implements ServletContext {
     public static final String PARAM_CHAR_ENCODING = "CharacterEncoding";
     public static final String PARAM_CALLBACKS = "Callbacks";
 
-    private Map resources;
-    private Map attributes;
+    private Map<String, URL> resources;
+    private Map<String, Object> attributes;
     private int majorVersion;
     private int minorVersion;
     private Properties parameters;
@@ -50,8 +50,8 @@ public class MockServletContext implements ServletContext {
     public MockServletContext() {
         this.majorVersion = 1;
         this.minorVersion = 1;
-        this.resources = Collections.EMPTY_MAP;
-        this.attributes = Collections.EMPTY_MAP;
+        this.resources = Collections.emptyMap();
+        this.attributes = Collections.emptyMap();
         this.parameters = new Properties();
     }
 
@@ -108,7 +108,7 @@ public class MockServletContext implements ServletContext {
      * 
      */
     public URL getResource(String name) throws MalformedURLException {
-        return (URL) resources.get(name);
+        return resources.get(name);
     }
 
     /** 
@@ -285,7 +285,7 @@ public class MockServletContext implements ServletContext {
      */
     public void setAttribute(String s, Object obj) {
         if (this.attributes == Collections.EMPTY_MAP) {
-            this.attributes = new HashMap();
+            this.attributes = new HashMap<String, Object>();
         }
         this.attributes.put(s, obj);
     }
@@ -323,7 +323,7 @@ public class MockServletContext implements ServletContext {
     }
     public void addResource(String name, URL url) {
         if (this.resources == Collections.EMPTY_MAP) {
-            this.resources = new HashMap();
+            this.resources = new HashMap<String, URL>();
         }
         this.resources.put(name, url);
     }

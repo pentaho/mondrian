@@ -113,11 +113,17 @@ class TopBottomPercentSumFunDef extends FunDefBase {
             Map mapMemberToValue;
             Object first = list.get(0);
             if (first instanceof Member) {
-                mapMemberToValue = evaluateMembers(evaluator, calc, list, false);
+                List<Member> memberList = (List<Member>) list;
+                mapMemberToValue =
+                    evaluateMembers(evaluator, calc, memberList, false);
+                sortMembers(evaluator, memberList, calc, top, true);
             } else {
-                mapMemberToValue = evaluateTuples(evaluator, calc, list);
+                List<Member[]> tupleList = (List<Member[]>) list;
+                mapMemberToValue =
+                    evaluateTuples(evaluator, calc, tupleList);
+                int arity = ((Member[]) first).length;
+                sortTuples(evaluator, tupleList, calc, top, true, arity);
             }
-            sort(evaluator, list, calc, top, true);
             if (percent) {
                 toPercent(list, mapMemberToValue);
             }

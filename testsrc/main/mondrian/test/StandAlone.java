@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2005 Julian Hyde and others
+// Copyright (C) 2004-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -66,8 +66,8 @@ public class StandAlone {
                     processSlashCommand(line);
                 }
                 else {
-                    StringBuffer qb = new StringBuffer();
-                    qb.append(line);
+                    StringBuilder buf = new StringBuilder();
+                    buf.append(line);
 
                     for (;;) {
                         System.out.print("> ");
@@ -76,16 +76,16 @@ public class StandAlone {
                             break;
                         }
 
-                        qb.append(' ');
-                        qb.append(line);
+                        buf.append(' ');
+                        buf.append(line);
                     }
 
                     long queryStart = System.currentTimeMillis();
 
-                    String queryString = qb.toString();
+                    String queryString = buf.toString();
                     boolean printResults = false;
-                    if (qb.substring(0, 1).equals("-")) {
-                        queryString = qb.substring(1);
+                    if (buf.substring(0, 1).equals("-")) {
+                        queryString = buf.substring(1);
                         printResults = true;
                     }
 
@@ -115,8 +115,10 @@ public class StandAlone {
         msecs = (int) (elapsed % 1000);
         seconds = (int) (elapsed / 1000);
 
-        System.out.println(MessageFormat.format("{2}: {0,number,0}.{1,number,000} ({3})",
-            new Object[] {new Integer(seconds), new Integer(msecs), message, new Long(elapsed)}));
+        System.out.println(
+            MessageFormat.format(
+                "{2}: {0,number,0}.{1,number,000} ({3})",
+                seconds, msecs, message, elapsed));
     }
 
     private static void printResult(Result result, boolean outputResults) {
@@ -323,7 +325,10 @@ public class StandAlone {
             }
 
             try {
-                runTest(Integer.parseInt(threads), Integer.parseInt(seconds), Boolean.valueOf(useRandom).booleanValue());
+                runTest(
+                    Integer.parseInt(threads),
+                    Integer.parseInt(seconds),
+                    Boolean.valueOf(useRandom));
             }
             catch (NumberFormatException nfe) {
                 System.out.println("Please enter a valid integer for the number of threads and the execution time");

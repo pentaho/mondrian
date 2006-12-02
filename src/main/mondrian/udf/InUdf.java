@@ -30,9 +30,9 @@ public class InUdf implements UserDefinedFunction {
         Object arg0 = arguments[0].evaluate(evaluator);
         List arg1 = (List) arguments[1].evaluate(evaluator);
 
-        for (int i = 0; i < arg1.size(); i++) {
-            if (((Member)arg0).getUniqueName().equals(
-                    ((Member)arg1.get(i)).getUniqueName())) {
+        for (Object anArg1 : arg1) {
+            if (((Member) arg0).getUniqueName().equals(
+                ((Member) anArg1).getUniqueName())) {
                 return Boolean.TRUE;
             }
         }

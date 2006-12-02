@@ -53,7 +53,7 @@ public abstract class GenericCalc
     }
 
     public boolean evaluateBoolean(Evaluator evaluator) {
-        return ((Boolean) evaluate(evaluator)).booleanValue();
+        return (Boolean) evaluate(evaluator);
     }
 
     public void evaluateVoid(Evaluator evaluator) {

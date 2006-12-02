@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -52,7 +52,7 @@ interface MemberReader extends MemberSource {
      *
      * @return {@link List} of {@link RolapMember}
      */
-    List getMembersInLevel(RolapLevel level, int startOrdinal, int endOrdinal);
+    List<RolapMember> getMembersInLevel(RolapLevel level, int startOrdinal, int endOrdinal);
 
     /**
      * Writes all members between <code>startMember</code> and
@@ -62,7 +62,7 @@ interface MemberReader extends MemberSource {
             RolapLevel level,
             RolapMember startMember,
             RolapMember endMember,
-            List list);
+            List<RolapMember> list);
 
     /**
      * Compares two members according to their order in a prefix ordered
@@ -78,15 +78,15 @@ interface MemberReader extends MemberSource {
 
     void getMemberChildren(
             RolapMember member,
-            List children,
+            List<RolapMember> children,
             MemberChildrenConstraint constraint);
 
     void getMemberChildren(
-            List parentMembers,
-            List children,
+            List<RolapMember> parentMembers,
+            List<RolapMember> children,
             MemberChildrenConstraint constraint);
 
-    List getMembersInLevel(
+    List<RolapMember> getMembersInLevel(
             RolapLevel level,
             int startOrdinal,
             int endOrdinal,

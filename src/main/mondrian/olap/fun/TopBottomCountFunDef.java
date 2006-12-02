@@ -17,6 +17,7 @@ import mondrian.calc.ListCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.olap.type.TupleType;
 
 import java.util.List;
 
@@ -58,7 +59,7 @@ class TopBottomCountFunDef extends FunDefBase {
 
     public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
         // Compile the member list expression. Ask for a mutable list, because
-        // we're going to sort it later.
+        // we're going to sortMembers it later.
         final ListCalc listCalc =
                 compiler.compileList(call.getArg(0), true);
         final IntegerCalc integerCalc =
@@ -67,6 +68,9 @@ class TopBottomCountFunDef extends FunDefBase {
                 call.getArgCount() > 2 ?
                 compiler.compileScalar(call.getArg(2), true) :
                 null;
+        final int arity = call.getType() instanceof TupleType ?
+            ((TupleType) call.getType()).elementTypes.length :
+            1;
         return new AbstractListCalc(call, new Calc[] {listCalc, integerCalc, orderCalc}) {
             public List evaluateList(Evaluator evaluator) {
                 // Use a native evaluator, if more efficient.
@@ -82,7 +86,17 @@ class TopBottomCountFunDef extends FunDefBase {
                 List list = listCalc.evaluateList(evaluator);
                 int n = integerCalc.evaluateInteger(evaluator);
                 if (orderCalc != null) {
-                    sort(evaluator.push(), list, orderCalc, top, true);
+                    if (arity == 1) {
+                        sortMembers(
+                            evaluator.push(),
+                            (List<Member>) list,
+                            orderCalc, top, true);
+                    } else {
+                        sortTuples(
+                            evaluator.push(),
+                            (List<mondrian.olap.Member[]>) list,
+                            orderCalc, top, true, arity);
+                    }
                 }
                 if (n < list.size()) {
                     list = list.subList(0, n);

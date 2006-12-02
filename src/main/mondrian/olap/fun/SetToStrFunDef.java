@@ -45,7 +45,7 @@ class SetToStrFunDef extends FunDefBase {
     }
 
     static String strToSet(List list) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("{");
         for (int i = 0; i < list.size(); i++) {
             if (i > 0) {
@@ -59,7 +59,7 @@ class SetToStrFunDef extends FunDefBase {
     }
 
     static void appendMemberOrTuple(
-            StringBuffer buf,
+            StringBuilder buf,
             Object memberOrTuple) {
         if (memberOrTuple instanceof Member) {
             Member member = (Member) memberOrTuple;

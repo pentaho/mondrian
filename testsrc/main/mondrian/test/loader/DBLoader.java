@@ -3,26 +3,20 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2005 Julian Hyde
+// Copyright (C) 2004-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 
 package mondrian.test.loader;
 
-import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.ArrayList;
+import java.util.*;
 import java.math.BigDecimal;
 import java.io.IOException;
 import java.io.Writer;
@@ -265,13 +259,16 @@ public abstract class DBLoader {
      * of the row data in memory.
      */
     public interface RowStream {
-        Iterator iterator();
+        Iterator<Row> iterator();
     }
+
     static final RowStream EMPTY_ROW_STREAM = new RowStream() {
-                public Iterator iterator() {
-                    return Collections.EMPTY_LIST.iterator();
-                }
-            };
+        public Iterator<Row> iterator() {
+            List<Row> list = Collections.emptyList();
+            return list.iterator();
+        }
+    };
+
     public class Table {
         public class Controller {
             private boolean dropTable;
@@ -316,7 +313,7 @@ public abstract class DBLoader {
                     ? EMPTY_ROW_STREAM
                     : rowStream;
             }
-            public Iterator rows() {
+            public Iterator<Row> rows() {
                 return this.rowStream.iterator();
             }
         }
@@ -431,7 +428,8 @@ public abstract class DBLoader {
         public static final Type Date = new Type("DATE");
         // yyyy-mm-dd hh:mm:ss.fffffffff
         public static final Type Timestamp = new Type("TIMESTAMP");
-        public static final Map extraTypes = new HashMap();
+        public static final Map<String, Type> extraTypes =
+            new HashMap<String, Type>();
 
         public static Type getType(String typeName) {
             String upperCaseTypeName = typeName.toUpperCase();
@@ -462,7 +460,7 @@ public abstract class DBLoader {
             } else if (upperCaseTypeName.equals("TIMESTAMP")) {
                 return Type.Timestamp;
             } else {
-                return (Type) extraTypes.get(upperCaseTypeName);
+                return extraTypes.get(upperCaseTypeName);
             }
         }
         public static Type makeType(String typeName) {
@@ -576,8 +574,7 @@ public abstract class DBLoader {
 
     public void dropTables(Table[] tables) throws Exception {
         Exception firstEx = null;
-        for (int i=0; i < tables.length; i++) {
-            Table table = tables[i];
+        for (Table table : tables) {
             try {
                 dropTable(table);
             } catch (Exception ex) {
@@ -678,8 +675,7 @@ public abstract class DBLoader {
 
     public void generateStatements(Table[] tables) throws Exception {
         initialize();
-        for (int i = 0; i < tables.length; i++) {
-            Table table = tables[i];
+        for (Table table : tables) {
             generateStatements(table);
         }
     }
@@ -734,8 +730,7 @@ public abstract class DBLoader {
     }
 
     public void executeStatements(Table[] tables) throws Exception {
-        for (int i = 0; i < tables.length; i++) {
-            Table table = tables[i];
+        for (Table table : tables) {
             table.executeStatements();
         }
     }
@@ -815,8 +810,8 @@ public abstract class DBLoader {
 
     protected void initializeColumns(Column[] columns) {
         // Initialize columns
-        for (int i = 0; i < columns.length; i++) {
-            columns[i].init(this.dialect);
+        for (Column column : columns) {
+            column.init(this.dialect);
         }
     }
 
@@ -897,7 +892,6 @@ public abstract class DBLoader {
                 String[] batch = new String[this.batchSize];
                 int nosInBatch = 0;
 
-                String tableName = table.getName();
                 Iterator it = controller.rows();
                 boolean displayedInsert = false;
                 while (it.hasNext()) {
@@ -1022,9 +1016,7 @@ public abstract class DBLoader {
             if (value instanceof String) {
                 return (String) value;
             } else if (value instanceof Boolean) {
-                Boolean result = (Boolean) value;
-                return (result.booleanValue())
-                    ? "1" : "0";
+                return (Boolean) value ? "1" : "0";
             } else if (value instanceof Integer) {
                 Integer result = (Integer) value;
                 return result.toString();
@@ -1238,7 +1230,7 @@ public abstract class DBLoader {
                 for (int i = 0; i < batchSize; i++) {
                     stmt.addBatch(batch[i]);
                 }
-                int [] updateCounts = null;
+                int [] updateCounts;
 
                 try {
                     updateCounts = stmt.executeBatch();

@@ -53,7 +53,7 @@ public class DimensionExpr extends ExpBase implements Exp {
         return DimensionType.forDimension(dimension);
     }
 
-    public Object clone() {
+    public DimensionExpr clone() {
         return new DimensionExpr(dimension);
     }
 

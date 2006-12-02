@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -37,8 +37,8 @@ class RolapResult extends ResultBase {
 
     private final RolapEvaluator evaluator;
     private final CellKey point;
-    private final Map cellValues;
-    private final Map formatStrings;
+    private final Map<CellKey, Object> cellValues;
+    private final Map<CellKey, String> formatStrings;
     private final FastBatchingCellReader batchingReader;
     AggregatingCellReader aggregatingReader = new AggregatingCellReader();
     private final int[] modulos;
@@ -59,8 +59,8 @@ class RolapResult extends ResultBase {
         }
         RolapCube rcube = (RolapCube) query.getCube();
         this.batchingReader = new FastBatchingCellReader(rcube);
-        this.cellValues = new HashMap();
-        this.formatStrings = new HashMap();
+        this.cellValues = new HashMap<CellKey, Object>();
+        this.formatStrings = new HashMap<CellKey, String>();
         this.modulos = new int[axes.length + 1];
         if (!execute) {
             return;
@@ -77,12 +77,12 @@ class RolapResult extends ResultBase {
             // finally only re-evaluate those axes for which the other axes have
             // implicit members, but some junit test fail when this approach is
             // taken.
-            List axisMembers = new ArrayList();
+            List<Member> axisMembers = new ArrayList<Member>();
 
             // This holds all members explicitly in the slicer.
             // Slicer members can not be over-ridden by implict members found
             // during execution of the other axes.
-            List slicerMembers = new ArrayList();
+            List<Member> slicerMembers = new ArrayList<Member>();
 
             for (int i = -1; i < axes.length; i++) {
                 QueryAxis axis;
@@ -133,8 +133,7 @@ class RolapResult extends ResultBase {
                         throw MondrianResource.instance().CompoundSlicer.ex();
                     }
                     Position position = this.slicerAxis.positions[0];
-                    for (int j = 0; j < position.members.length; j++) {
-                        Member member = position.members[j];
+                    for (Member member : position.members) {
                         if (member == null) {
                             throw MondrianResource.instance().EmptySlicer.ex();
                         }
@@ -150,10 +149,8 @@ class RolapResult extends ResultBase {
                 purge(axisMembers, slicerMembers);
 
                 boolean didEvaluatorReplacementMember = false;
-                RolapEvaluator rolapEval = (RolapEvaluator) evaluator;
-                Iterator it = axisMembers.iterator();
-                while (it.hasNext()) {
-                    Member m = (Member) it.next();
+                RolapEvaluator rolapEval = evaluator;
+                for (Member m : axisMembers) {
                     if (rolapEval.setContextConditional(m) != null) {
                         // Do not break out of loops but set change flag.
                         // There may be more than one Member that has to be
@@ -190,13 +187,12 @@ class RolapResult extends ResultBase {
             if (limit > 0) {
                 // result limit exceeded, throw an exception
                 long n = 1;
-                for (int i = 0; i < axes.length; i++) {
-                    n = n * axes[i].positions.length;
+                for (Axis axis : axes) {
+                    n = n * axis.positions.length;
                 }
                 if (n > limit) {
                     throw MondrianResource.instance().
-                        LimitExceededDuringCrossjoin.ex(
-                                new Long(n), new Long(limit));
+                        LimitExceededDuringCrossjoin.ex(n, limit);
                 }
             }
 
@@ -242,7 +238,7 @@ class RolapResult extends ResultBase {
         if (value == null) {
             value = Util.nullValue;
         }
-        String formatString = (String) formatStrings.get(new CellKey(pos));
+        String formatString = formatStrings.get(new CellKey(pos));
         if (formatString == null) {
             formatString = "Standard";
         }        
@@ -258,15 +254,17 @@ class RolapResult extends ResultBase {
         if (value == null) {
             value = Util.nullValue;
         }
-        String formatString = (String) formatStrings.get(new CellKey(pos));
+        String formatString = formatStrings.get(new CellKey(pos));
         return new RolapCell(this, getCellOrdinal(pos), value, formatString);
     }    
 
-    private RolapAxis executeAxis(Evaluator evaluator, 
-                                  QueryAxis axis, 
-                                  Calc axisCalc, 
-                                  boolean construct,
-                                  List axisMembers) {
+    private RolapAxis executeAxis(
+        Evaluator evaluator,
+        QueryAxis axis,
+        Calc axisCalc,
+        boolean construct,
+        List<Member> axisMembers)
+    {
         Position[] positions;
         if (axis == null) {
             // Create an axis containing one position with no members (not
@@ -286,8 +284,7 @@ class RolapResult extends ResultBase {
             if (value == null) {
                 value = Collections.EMPTY_LIST;
             }
-            Util.assertTrue(value instanceof List);
-            List list = (List) value;
+            List<Object> list = (List) value; // List of Member or Member[]
             if (construct) {
                 positions = new Position[list.size()];
                 for (int i = 0; i < list.size(); i++) {
@@ -300,8 +297,7 @@ class RolapResult extends ResultBase {
                     positions[i] = position;
                 }
             } else {
-                for (int i = 0; i < list.size(); i++) {
-                    Object o = list.get(i);
+                for (Object o : list) {
                     if (o instanceof Member[]) {
                         merge(axisMembers, (Member[]) o);
                     } else {
@@ -311,7 +307,7 @@ class RolapResult extends ResultBase {
                 positions = null;
             }
         }
-        return (construct) ? new RolapAxis(positions) : null;
+        return construct ? new RolapAxis(positions) : null;
     }
 
     private void executeBody(Query query) {
@@ -421,8 +417,8 @@ class RolapResult extends ResultBase {
             for (int i = 0; i < count; i++) {
                 evaluator.getQuery().checkCancelOrTimeout();
                 RolapPosition position = (RolapPosition) axis.positions[i];
-                for (int j = 0; j < position.members.length; j++) {
-                    evaluator.setContext(position.members[j]);
+                for (Member member : position.members) {
+                    evaluator.setContext(member);
                 }
                 Object o;
                 try {
@@ -459,8 +455,8 @@ class RolapResult extends ResultBase {
             for (int i = 0; i < count; i++) {
                 point.ordinals[axisOrdinal] = i;
                 RolapPosition position = (RolapPosition) axis.positions[i];
-                for (int j = 0; j < position.members.length; j++) {
-                    evaluator.setContext(position.members[j]);
+                for (Member member : position.members) {
+                    evaluator.setContext(member);
                 }
                 evaluator.getQuery().checkCancelOrTimeout();
                 executeStripe(axisOrdinal - 1, evaluator);
@@ -497,8 +493,8 @@ class RolapResult extends ResultBase {
         final RolapEvaluator cellEvaluator = (RolapEvaluator) evaluator.push();
         for (int i = 0; i < pos.length; i++) {
             Position position = axes[i].positions[pos[i]];
-            for (int j = 0; j < position.members.length; j++) {
-                cellEvaluator.setContext(position.members[j]);
+            for (Member member : position.members) {
+                cellEvaluator.setContext(member);
             }
         }
         return cellEvaluator;
@@ -524,8 +520,7 @@ class RolapResult extends ResultBase {
                 index = pos[i];
             }
             Position position = axis.positions[index];
-            for (int j = 0; j < position.members.length; j++) {
-                Member member = position.members[j];
+            for (Member member : position.members) {
                 cellEvaluator.setContext(member);
             }
         }
@@ -536,27 +531,28 @@ class RolapResult extends ResultBase {
         Member parent = m.getParentMember();
         return (parent == null) ? m : getTopParent(parent);
     }
-    /** 
+
+    /**
      * Add each top-level member of the axis' members to the membersList if
      * the top-level member is not the 'all' member (or null or a measure).
      * 
      * @param axisMembers 
      * @param axis 
      */
-    private void merge(List axisMembers, Axis axis) {
-        for (int i = 0; i < axis.positions.length; i++) {
-            Position position = axis.positions[i];
+    private void merge(List<Member> axisMembers, Axis axis) {
+        for (Position position : axis.positions) {
             Member[] members = position.getMembers();
             merge(axisMembers, members);
         }
     }
-    private void merge(List axisMembers, Member[] members) {
-        for (int j = 0; j < members.length; j++) {
-            Member member = members[j];
+
+    private void merge(List<Member> axisMembers, Member[] members) {
+        for (Member member : members) {
             merge(axisMembers, member);
         }
     }
-    private void merge(List axisMembers, Member member) {
+
+    private void merge(List<Member> axisMembers, Member member) {
         Member topParent = getTopParent(member);
         if (topParent.isNull()) {
             return;
@@ -578,20 +574,18 @@ class RolapResult extends ResultBase {
      * @param axisMembers 
      * @param slicerMembers 
      */
-    private void purge(List axisMembers, List slicerMembers) {
+    private void purge(List<Member> axisMembers, List<Member> slicerMembers) {
         // if a member is in slicerMembers, then remove the "corresponding"
         // member for the axisMembers list
-        Iterator it = slicerMembers.iterator();
-        while (it.hasNext()) {
-            Member slicerMember = (Member) it.next();
+        for (Member slicerMember : slicerMembers) {
             purge(axisMembers, slicerMember);
         }
     }
-    private void purge(List axisMembers, Member slicerMember) {
+    private void purge(List<Member> axisMembers, Member slicerMember) {
         Hierarchy hier = slicerMember.getHierarchy();
-        Iterator it = axisMembers.iterator();
+        Iterator<Member> it = axisMembers.iterator();
         while (it.hasNext()) {
-            Member member = (Member) it.next();
+            Member member = it.next();
             if (member.getHierarchy().equals(hier)) {
                 it.remove();
                 break;
@@ -614,7 +608,7 @@ class RolapResult extends ResultBase {
         /**
          * Maps the names of sets to their values. Populated on demand.
          */
-        private final Map namedSetValues = new HashMap();
+        private final Map<String, Object> namedSetValues = new HashMap<String, Object>();
 
         /**
          * Evaluator containing context resulting from evaluating the slicer.
@@ -636,7 +630,7 @@ class RolapResult extends ResultBase {
             Object value = namedSetValues.get(name);
             if (value == null) {
                 final RolapEvaluator.RolapEvaluatorRoot root =
-                        ((RolapEvaluator) slicerEvaluator).root;
+                    slicerEvaluator.root;
                 final Calc calc = root.getCompiled(exp, false);
                 List list = (List) result.evaluateExp(calc, slicerEvaluator.push());
                 // Make immutable, just in case expressions are modifying the

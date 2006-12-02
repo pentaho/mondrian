@@ -22,6 +22,7 @@ import mondrian.mdx.HierarchyExpr;
 import mondrian.resource.MondrianResource;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Definition of the <code>StrToSet</code> MDX builtin function.
@@ -60,7 +61,7 @@ class StrToSetFunDef extends FunDefBase {
                 // nothing
             } else {
                 throw MondrianResource.instance().MdxFuncNotHier.ex(
-                        new Integer(i + 1), getName());
+                    i + 1, getName());
             }
         }
         return super.createCall(validator, args);
@@ -78,14 +79,13 @@ class StrToSetFunDef extends FunDefBase {
             //
             // The result is a set of tuples
             //  (<Hier1>, ... ,  <HierN>)
-            final ArrayList list = new ArrayList();
+            final List<Type> list = new ArrayList<Type>();
             for (int i = 1; i < args.length; i++) {
                 Exp arg = args[i];
                 final Type type = arg.getType();
                 list.add(type);
             }
-            final Type[] types =
-                    (Type[]) list.toArray(new Type[list.size()]);
+            final Type[] types = list.toArray(new Type[list.size()]);
             return new SetType(new TupleType(types));
         }
     }

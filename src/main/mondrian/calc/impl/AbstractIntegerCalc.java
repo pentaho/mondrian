@@ -39,7 +39,7 @@ public abstract class AbstractIntegerCalc
     }
 
     public Object evaluate(Evaluator evaluator) {
-        return new Integer(evaluateInteger(evaluator));
+        return evaluateInteger(evaluator);
     }
 
     public Calc[] getCalcs() {

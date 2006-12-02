@@ -30,7 +30,7 @@ public class DummyExp implements Exp {
         this.type = type;
     }
 
-    public Object clone() {
+    public DummyExp clone() {
         throw new UnsupportedOperationException();
     }
 

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -41,9 +41,8 @@ public class ExplicitRules {
      */
     public static boolean excludeTable(
             final String tableName,
-            final List aggGroups) {
-        for (Iterator it = aggGroups.iterator(); it.hasNext(); ) {
-            ExplicitRules.Group group = (ExplicitRules.Group) it.next();
+            final List<Group> aggGroups) {
+        for (Group group : aggGroups) {
             if (group.excludeTable(tableName)) {
                 return true;
             }
@@ -58,10 +57,9 @@ public class ExplicitRules {
      */
     public static ExplicitRules.TableDef getIncludeByTableDef(
             final String tableName,
-            final List aggGroups) {
-        for (Iterator it = aggGroups.iterator(); it.hasNext(); ) {
-            ExplicitRules.Group group = (ExplicitRules.Group) it.next();
-            ExplicitRules.TableDef tableDef = group.getIncludeByTableDef(tableName);
+            final List<Group> aggGroups) {
+        for (Group group : aggGroups) {
+            TableDef tableDef = group.getIncludeByTableDef(tableName);
             if (tableDef != null) {
                 return tableDef;
             }
@@ -91,18 +89,17 @@ public class ExplicitRules {
                 MondrianDef.AggExclude[] aggExcludes =
                     ((MondrianDef.Table) relation).getAggExcludes();
                 if (aggExcludes != null) {
-                    for (int i = 0; i < aggExcludes.length; i++) {
-                        ExplicitRules.Exclude exclude =
-                            ExplicitRules.make(aggExcludes[i]);
+                    for (MondrianDef.AggExclude aggExclude : aggExcludes) {
+                        Exclude exclude =
+                            ExplicitRules.make(aggExclude);
                         group.addExclude(exclude);
                     }
                 }
                 MondrianDef.AggTable[] aggTables =
                     ((MondrianDef.Table) relation).getAggTables();
                 if (aggTables != null) {
-                    for (int i = 0; i < aggTables.length; i++) {
-                        ExplicitRules.TableDef tableDef =
-                            ExplicitRules.TableDef.make(aggTables[i], group);
+                    for (MondrianDef.AggTable aggTable : aggTables) {
+                        TableDef tableDef = TableDef.make(aggTable, group);
                         group.addTableDef(tableDef);
                     }
                 }
@@ -120,13 +117,13 @@ public class ExplicitRules {
         }
 
         private final RolapCube cube;
-        private List tableDefs;
-        private List excludes;
+        private List<TableDef> tableDefs;
+        private List<Exclude> excludes;
 
         public Group(final RolapCube cube) {
             this.cube = cube;
-            this.excludes = Collections.EMPTY_LIST;
-            this.tableDefs = Collections.EMPTY_LIST;
+            this.excludes = Collections.emptyList();
+            this.tableDefs = Collections.emptyList();
         }
 
         /**
@@ -165,7 +162,7 @@ public class ExplicitRules {
          */
         public void addExclude(final ExplicitRules.Exclude exclude) {
             if (excludes == Collections.EMPTY_LIST) {
-                excludes = new ArrayList();
+                excludes = new ArrayList<Exclude>();
             }
             excludes.add(exclude);
         }
@@ -177,7 +174,7 @@ public class ExplicitRules {
          */
         public void addTableDef(final ExplicitRules.TableDef tableDef) {
             if (tableDefs == Collections.EMPTY_LIST) {
-                tableDefs = new ArrayList();
+                tableDefs = new ArrayList<TableDef>();
             }
             tableDefs.add(tableDef);
         }
@@ -187,8 +184,7 @@ public class ExplicitRules {
          */
         public boolean excludeTable(final String tableName) {
             // See if the table is explicitly, by name, excluded
-            for (Iterator it = excludes.iterator(); it.hasNext(); ) {
-                ExplicitRules.Exclude exclude = (ExplicitRules.Exclude) it.next();
+            for (Exclude exclude : excludes) {
                 if (exclude.isExcluded(tableName)) {
                     return true;
                 }
@@ -204,16 +200,14 @@ public class ExplicitRules {
             // An exact match on a NameTableDef takes precedences over a
             // fuzzy match on a PatternTableDef, so
             // first look throught NameTableDef then PatternTableDef
-            for (Iterator it = tableDefs.iterator(); it.hasNext(); ) {
-                ExplicitRules.TableDef tableDef = (ExplicitRules.TableDef) it.next();
+            for (ExplicitRules.TableDef tableDef : tableDefs) {
                 if (tableDef instanceof NameTableDef) {
                     if (tableDef.matches(tableName)) {
                         return tableDef;
                     }
                 }
             }
-            for (Iterator it = tableDefs.iterator(); it.hasNext(); ) {
-                ExplicitRules.TableDef tableDef = (ExplicitRules.TableDef) it.next();
+            for (ExplicitRules.TableDef tableDef : tableDefs) {
                 if (tableDef instanceof PatternTableDef) {
                     if (tableDef.matches(tableName)) {
                         return tableDef;
@@ -264,9 +258,7 @@ public class ExplicitRules {
         public void validate(final MessageRecorder msgRecorder) {
             msgRecorder.pushContextName(getName());
             try {
-                for (Iterator it = this.tableDefs.iterator(); it.hasNext(); ) {
-                    ExplicitRules.TableDef tableDef =
-                        (ExplicitRules.TableDef) it.next();
+                for (ExplicitRules.TableDef tableDef : tableDefs) {
                     tableDef.validate(msgRecorder);
                 }
             } finally {
@@ -294,10 +286,7 @@ public class ExplicitRules {
 
             pw.print(subprefix);
             pw.println("TableDefs: [");
-            Iterator it = this.tableDefs.iterator();
-            while (it.hasNext()) {
-                ExplicitRules.TableDef tableDef =
-                    (ExplicitRules.TableDef) it.next();
+            for (ExplicitRules.TableDef tableDef : tableDefs) {
                 tableDef.print(pw, subsubprefix);
             }
             pw.print(subprefix);
@@ -537,28 +526,28 @@ RME TODO
                     aggTable.getAggIgnoreColumns();
 
             if (ignores != null) {
-                for (int i = 0; i < ignores.length; i++) {
-                    tableDef.addIgnoreColumnName(ignores[i].getColumnName());
+                for (MondrianDef.AggIgnoreColumn ignore : ignores) {
+                    tableDef.addIgnoreColumnName(ignore.getColumnName());
                 }
             }
 
             MondrianDef.AggForeignKey[] fks = aggTable.getAggForeignKeys();
             if (fks != null) {
-                for (int i = 0; i < fks.length; i++) {
-                    tableDef.addFK(fks[i]);
+                for (MondrianDef.AggForeignKey fk : fks) {
+                    tableDef.addFK(fk);
                 }
             }
             MondrianDef.AggMeasure[] measures = aggTable.getAggMeasures();
             if (measures != null) {
-                for (int i = 0; i < measures.length; i++) {
-                    addTo(tableDef, measures[i]);
+                for (MondrianDef.AggMeasure measure : measures) {
+                    addTo(tableDef, measure);
                 }
             }
 
             MondrianDef.AggLevel[] levels = aggTable.getAggLevels();
             if (levels != null) {
-                for (int i = 0; i < levels.length; i++) {
-                    addTo(tableDef, levels[i]);
+                for (MondrianDef.AggLevel level : levels) {
+                    addTo(tableDef, level);
                 }
             }
         }
@@ -851,10 +840,10 @@ RME TODO
         protected final boolean ignoreCase;
         protected final ExplicitRules.Group aggGroup;
         protected String factCountName;
-        protected List ignoreColumnNames;
-        private Map foreignKeyMap;
-        private List levels;
-        private List measures;
+        protected List<String> ignoreColumnNames;
+        private Map<String, String> foreignKeyMap;
+        private List<Level> levels;
+        private List<Measure> measures;
 
         protected TableDef(
                 final boolean ignoreCase,
@@ -862,10 +851,10 @@ RME TODO
             this.id = nextId();
             this.ignoreCase = ignoreCase;
             this.aggGroup = aggGroup;
-            this.foreignKeyMap = Collections.EMPTY_MAP;
-            this.levels = Collections.EMPTY_LIST;
-            this.measures = Collections.EMPTY_LIST;
-            this.ignoreColumnNames = Collections.EMPTY_LIST;
+            this.foreignKeyMap = Collections.emptyMap();
+            this.levels = Collections.emptyList();
+            this.measures = Collections.emptyList();
+            this.ignoreColumnNames = Collections.emptyList();
         }
 
         /**
@@ -915,22 +904,22 @@ RME TODO
         /**
          * Get an Iterator over all ignore column name entries.
          */
-        protected Iterator getIgnoreColumnNames() {
+        protected Iterator<String> getIgnoreColumnNames() {
             return ignoreColumnNames.iterator();
         }
 
         /**
-         * Get an Iterator over all level mappings.
+         * Gets all level mappings.
          */
-        public Iterator getLevels() {
-            return this.levels.iterator();
+        public List<Level> getLevels() {
+            return levels;
         }
 
         /**
-         * Get an Iterator over all level mappings.
+         * Gets all level mappings.
          */
-        public Iterator getMeasures() {
-            return this.measures.iterator();
+        public List<Measure> getMeasures() {
+            return measures;
         }
 
         /**
@@ -939,10 +928,10 @@ RME TODO
         protected Recognizer.Matcher getIgnoreMatcher() {
             return new Recognizer.Matcher() {
                 public boolean matches(final String name) {
-                    for (Iterator it =
+                    for (Iterator<String> it =
                             ExplicitRules.TableDef.this.getIgnoreColumnNames();
                             it.hasNext();) {
-                        String ignoreName = (String) it.next();
+                        String ignoreName = it.next();
                         if (ignoreName.equals(name)) {
                             return true;
                         }
@@ -992,7 +981,7 @@ RME TODO
          */
         protected void addIgnoreColumnName(final String ignoreName) {
             if (this.ignoreColumnNames == Collections.EMPTY_LIST) {
-                this.ignoreColumnNames = new ArrayList();
+                this.ignoreColumnNames = new ArrayList<String>();
             }
             this.ignoreColumnNames.add(ignoreName);
         }
@@ -1003,7 +992,7 @@ RME TODO
          */
         protected void addFK(final MondrianDef.AggForeignKey fk) {
             if (this.foreignKeyMap == Collections.EMPTY_MAP) {
-                this.foreignKeyMap = new HashMap();
+                this.foreignKeyMap = new HashMap<String, String>();
             }
             this.foreignKeyMap.put(fk.getFactFKColumnName(),
                                    fk.getAggregateFKColumnName());
@@ -1014,14 +1003,7 @@ RME TODO
          * the base fact table's foreign key column or return null.
          */
         protected String getAggregateFK(final String baseFK) {
-            return (String) this.foreignKeyMap.get(baseFK);
-        }
-
-        /**
-         * Get an Iterator over the foreign key matchers.
-         */
-        protected Iterator getFKEntries() {
-            return this.foreignKeyMap.entrySet().iterator();
+            return this.foreignKeyMap.get(baseFK);
         }
 
         /**
@@ -1029,7 +1011,7 @@ RME TODO
          */
         protected void add(final Level level) {
             if (this.levels == Collections.EMPTY_LIST) {
-                this.levels = new ArrayList();
+                this.levels = new ArrayList<Level>();
             }
             this.levels.add(level);
         }
@@ -1039,7 +1021,7 @@ RME TODO
          */
         protected void add(final Measure measure) {
             if (this.measures == Collections.EMPTY_LIST) {
-                this.measures = new ArrayList();
+                this.measures = new ArrayList<Measure>();
             }
             this.measures.add(measure);
         }
@@ -1057,21 +1039,21 @@ RME TODO
             msgRecorder.pushContextName("TableDef");
             try {
                 // used to detect duplicates
-                Map namesToObjects = new HashMap();
+                Map<String, Object> namesToObjects =
+                    new HashMap<String, Object>();
                 // used to detect duplicates
-                Map columnsToObjects = new HashMap();
+                Map<String, Object> columnsToObjects =
+                    new HashMap<String, Object>();
 
-                for (Iterator it = levels.iterator(); it.hasNext(); ) {
-                    Level level = (Level) it.next();
-
+                for (Level level : levels) {
                     level.validate(msgRecorder);
 
                     // Is the level name a duplicate
                     if (namesToObjects.containsKey(level.getName())) {
                         msgRecorder.reportError(
                             mres.DuplicateLevelNames.str(
-                                    msgRecorder.getContext(),
-                                    level.getName()));
+                                msgRecorder.getContext(),
+                                level.getName()));
                     } else {
                         namesToObjects.put(level.getName(), level);
                     }
@@ -1082,10 +1064,10 @@ RME TODO
                             columnsToObjects.get(level.getColumnName());
                         msgRecorder.reportError(
                             mres.DuplicateLevelColumnNames.str(
-                                    msgRecorder.getContext(),
-                                    level.getName(),
-                                    l.getName(),
-                                    level.getColumnName()));
+                                msgRecorder.getContext(),
+                                level.getName(),
+                                l.getName(),
+                                level.getColumnName()));
                     } else {
                         columnsToObjects.put(level.getColumnName(), level);
                     }
@@ -1093,39 +1075,38 @@ RME TODO
 
                 // reset names map, but keep the columns from levels
                 namesToObjects.clear();
-                for (Iterator it = measures.iterator(); it.hasNext(); ) {
-                    Measure measure = (Measure) it.next();
-
+                for (Measure measure : measures) {
                     measure.validate(msgRecorder);
 
                     if (namesToObjects.containsKey(measure.getName())) {
                         msgRecorder.reportError(
                             mres.DuplicateMeasureNames.str(
-                                    msgRecorder.getContext(),
-                                    measure.getName()));
+                                msgRecorder.getContext(),
+                                measure.getName()));
                         continue;
                     } else {
                         namesToObjects.put(measure.getName(), measure);
                     }
 
                     if (columnsToObjects.containsKey(measure.getColumnName())) {
-                        Object o = columnsToObjects.get(measure.getColumnName());
+                        Object o =
+                            columnsToObjects.get(measure.getColumnName());
                         if (o instanceof Measure) {
                             Measure m = (Measure) o;
                             msgRecorder.reportError(
                                 mres.DuplicateMeasureColumnNames.str(
-                                        msgRecorder.getContext(),
-                                        measure.getName(),
-                                        m.getName(),
-                                        measure.getColumnName()));
+                                    msgRecorder.getContext(),
+                                    measure.getName(),
+                                    m.getName(),
+                                    measure.getColumnName()));
                         } else {
                             Level l = (Level) o;
                             msgRecorder.reportError(
                                 mres.DuplicateLevelMeasureColumnNames.str(
-                                        msgRecorder.getContext(),
-                                        l.getName(),
-                                        measure.getName(),
-                                        measure.getColumnName()));
+                                    msgRecorder.getContext(),
+                                    l.getName(),
+                                    measure.getName(),
+                                    measure.getColumnName()));
                         }
 
                     } else {
@@ -1142,38 +1123,37 @@ RME TODO
                 RolapStar star = getStar();
                 RolapStar.Table factTable = star.getFactTable();
                 String tableName = factTable.getAlias();
-                for (Iterator it = getFKEntries(); it.hasNext(); ) {
-                    Map.Entry e = (Map.Entry) it.next();
-                    String baseFKName = (String) e.getKey();
-                    String aggFKName = (String) e.getValue();
+                for (Map.Entry<String, String> e : foreignKeyMap.entrySet()) {
+                    String baseFKName = e.getKey();
+                    String aggFKName = e.getValue();
 
                     if (namesToObjects.containsKey(baseFKName)) {
                         msgRecorder.reportError(
-                                    mres.DuplicateFactForeignKey.str(
-                                       msgRecorder.getContext(),
-                                       baseFKName,
-                                       aggFKName));
+                            mres.DuplicateFactForeignKey.str(
+                                msgRecorder.getContext(),
+                                baseFKName,
+                                aggFKName));
                     } else {
                         namesToObjects.put(baseFKName, aggFKName);
                     }
                     if (columnsToObjects.containsKey(aggFKName)) {
                         msgRecorder.reportError(
-                                    mres.DuplicateFactForeignKey.str(
-                                       msgRecorder.getContext(),
-                                       baseFKName,
-                                       aggFKName));
+                            mres.DuplicateFactForeignKey.str(
+                                msgRecorder.getContext(),
+                                baseFKName,
+                                aggFKName));
                     } else {
                         columnsToObjects.put(aggFKName, baseFKName);
                     }
 
                     MondrianDef.Column c =
-                            new MondrianDef.Column(tableName, baseFKName);
+                        new MondrianDef.Column(tableName, baseFKName);
                     if (factTable.findTableWithLeftCondition(c) == null) {
                         msgRecorder.reportError(
-                                    mres.UnknownLeftJoinCondition.str(
-                                       msgRecorder.getContext(),
-                                       tableName,
-                                       baseFKName));
+                            mres.UnknownLeftJoinCondition.str(
+                                msgRecorder.getContext(),
+                                tableName,
+                                baseFKName));
                     }
                 }
             } finally {
@@ -1203,9 +1183,7 @@ RME TODO
 
             pw.print(subprefix);
             pw.println("Levels: [");
-            Iterator it = this.levels.iterator();
-            while (it.hasNext()) {
-                Level level = (Level) it.next();
+            for (Level level : this.levels) {
                 level.print(pw, subsubprefix);
             }
             pw.print(subprefix);
@@ -1213,9 +1191,7 @@ RME TODO
 
             pw.print(subprefix);
             pw.println("Measures: [");
-            it = this.measures.iterator();
-            while (it.hasNext()) {
-                Measure measure = (Measure) it.next();
+            for (Measure measure : this.measures) {
                 measure.print(pw, subsubprefix);
             }
             pw.print(subprefix);
@@ -1309,8 +1285,8 @@ RME TODO
 
             MondrianDef.AggExclude[] excludes = aggPattern.getAggExcludes();
             if (excludes != null) {
-                for (int i = 0; i < excludes.length; i++) {
-                    Exclude exclude = ExplicitRules.make(excludes[i]);
+                for (MondrianDef.AggExclude exclude1 : excludes) {
+                    Exclude exclude = ExplicitRules.make(exclude1);
                     pattern.add(exclude);
                 }
             }
@@ -1321,7 +1297,7 @@ RME TODO
         }
 
         private final Pattern pattern;
-        private List excludes;
+        private List<Exclude> excludes;
 
         public PatternTableDef(
                 final String pattern,
@@ -1331,7 +1307,7 @@ RME TODO
             this.pattern = (this.ignoreCase)
                 ? Pattern.compile(pattern, Pattern.CASE_INSENSITIVE)
                 : Pattern.compile(pattern);
-            this.excludes = Collections.EMPTY_LIST;
+            this.excludes = Collections.emptyList();
         }
 
         /**
@@ -1344,8 +1320,8 @@ RME TODO
         /**
          * Get an Iterator over the list of Excludes.
          */
-        public Iterator getExcludes() {
-            return excludes.iterator();
+        public List<Exclude> getExcludes() {
+            return excludes;
         }
 
         /**
@@ -1355,7 +1331,7 @@ RME TODO
          */
         private void add(final Exclude exclude) {
             if (this.excludes == Collections.EMPTY_LIST) {
-                this.excludes = new ArrayList();
+                this.excludes = new ArrayList<Exclude>();
             }
             this.excludes.add(exclude);
         }
@@ -1368,8 +1344,7 @@ RME TODO
             if (! pattern.matcher(tableName).matches()) {
                 return false;
             } else {
-                for (Iterator it = getExcludes(); it.hasNext(); ) {
-                    Exclude exclude = (Exclude) it.next();
+                for (Exclude exclude : getExcludes()) {
                     if (exclude.isExcluded(tableName)) {
                         return false;
                     }
@@ -1386,8 +1361,7 @@ RME TODO
             try {
                 checkAttributeString(msgRecorder, pattern.pattern(), "pattern");
 
-                for (Iterator it = getExcludes(); it.hasNext(); ) {
-                    Exclude exclude = (Exclude) it.next();
+                for (Exclude exclude : getExcludes()) {
                     exclude.validate(msgRecorder);
                 }
                 super.validate(msgRecorder);
@@ -1412,9 +1386,9 @@ RME TODO
 
             pw.print(subprefix);
             pw.println("Excludes: [");
-            Iterator it = this.excludes.iterator();
+            Iterator<Exclude> it = this.excludes.iterator();
             while (it.hasNext()) {
-                Exclude exclude = (Exclude) it.next();
+                Exclude exclude = it.next();
                 exclude.print(pw, subsubprefix);
             }
             pw.print(subprefix);

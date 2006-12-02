@@ -60,23 +60,6 @@ public class FormatTest extends TestCase {
     final Date date2 = makeCalendar(2010, 9, 7, 6, 5, 4); // 06:05:04 am, 7th sep 2010
 
     /**
-     * Runs a unit test.
-     */
-    public void testFormat() {
-//      testFormat(pw, null, date2, "mm/##/yy", "09/##/10");
-//      testFormat(pw, null, new Double(123.45), "E+", "1E2");
-//      testFormat(pw, null, new Long(0), "0.00E+00", "0.00E+00");
-//      testFormat(pw, null, new Double(0), "0.00E+00", "0.00E+00");
-//      testFormat(pw, null, new Double(0), "0.00", "0.00");
-//      testFormat(pw, new Double(-5.0), "#,##0.00;;;Nil", "1");
-//      testFormat(pw, date, "m", null);
-//      testFormat(pw, date, "", null);
-//      testFormat(pw, null, new Double(0), "0%", "0%");
-//      testFormat(pw, null, new Double(1.2), "" + intlCurrencySymbol + "#", "$1");
-//      testFormat(pw, localeFra, d, "Currency", null);
-    }
-
-    /**
      * Exhaustive tests on various numbers.
      */
     public void testNumbers() {
@@ -339,11 +322,11 @@ public class FormatTest extends TestCase {
     }
 
     public void testCache() {
-        StringBuffer buf = new StringBuffer(Format.CacheLimit * 2 + 10);
+        StringBuilder buf = new StringBuilder(Format.CacheLimit * 2 + 10);
         buf.append("0.");
         for (int i = 0; i < Format.CacheLimit * 2; ++i) {
             final Format format = Format.get(buf.toString(), null);
-            final String s = format.format(new Integer(i));
+            final String s = format.format(i);
             assertEquals(i + "", s);
             buf.append("#");
         }

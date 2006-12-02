@@ -65,7 +65,7 @@ public class ConstantCalc extends GenericCalc {
      * Creates an expression which evaluates to an integer.
      */
     public static ConstantCalc constantInteger(int i) {
-        return new ConstantCalc(new NumericType(), new Integer(i));
+        return new ConstantCalc(new NumericType(), i);
     }
 
     /**

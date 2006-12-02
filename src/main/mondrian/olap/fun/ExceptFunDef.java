@@ -52,36 +52,36 @@ class ExceptFunDef extends FunDefBase {
         if (elementType instanceof TupleType) {
             return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
                 public List evaluateList(Evaluator evaluator) {
-                    List list0 = listCalc0.evaluateList(evaluator);
+                    List<Member[]> list0 = listCalc0.evaluateList(evaluator);
                     if (list0.isEmpty()) {
                         return list0;
                     }
-                    List list1 = listCalc1.evaluateList(evaluator);
+                    List<Member[]> list1 = listCalc1.evaluateList(evaluator);
                     return exceptTuples(list0, list1);
                 }
             };
         } else {
             return new AbstractListCalc(call, new Calc[] {listCalc0, listCalc1}) {
                 public List evaluateList(Evaluator evaluator) {
-                    List list0 = listCalc0.evaluateList(evaluator);
+                    List<Member> list0 = listCalc0.evaluateList(evaluator);
                     if (list0.isEmpty()) {
                         return list0;
                     }
-                    List list1 = listCalc1.evaluateList(evaluator);
+                    List<Member> list1 = listCalc1.evaluateList(evaluator);
                     return except(list0, list1);
                 }
             };
         }
     }
 
-    List except(final List list0, final List list1) {
+    <T> List<T> except(final List<T> list0, final List<T> list1) {
         if (list0.size() == 0) {
             return list0;
         }
-        Set set = new HashSet(list1);
-        List result = new ArrayList();
+        Set<T> set = new HashSet<T>(list1);
+        List<T> result = new ArrayList<T>();
         for (int i = 0, count = list0.size(); i < count; i++) {
-            Object o = list0.get(i);
+            T o = list0.get(i);
             if (!set.contains(o)) {
                 result.add(o);
             }
@@ -89,20 +89,20 @@ class ExceptFunDef extends FunDefBase {
         return result;
     }
 
-    List exceptTuples(final List list0, final List list1) {
+    List exceptTuples(final List<Member[]> list0, final List list1) {
         if (list0.size() == 0) {
             return list0;
         }
         // Because the .equals and .hashCode methods of
         // Member[] use identity, wrap each tuple in a list.
-        Set set = new HashSet();
+        Set<List<Member>> set = new HashSet<List<Member>>();
         for (int i = 0, count1 = list1.size(); i < count1; i++) {
             Member[] members = (Member[]) list1.get(i);
             set.add(Arrays.asList(members));
         }
-        List result = new ArrayList();
+        List<Member[]> result = new ArrayList<Member[]>();
         for (int i = 0, count0 = list0.size(); i < count0; i++) {
-            Member[] members = (Member[]) list0.get(i);
+            Member[] members = list0.get(i);
             if (!set.contains(Arrays.asList(members))) {
                 result.add(members);
             }

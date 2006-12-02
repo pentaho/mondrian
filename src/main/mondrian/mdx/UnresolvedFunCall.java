@@ -61,7 +61,7 @@ public class UnresolvedFunCall extends ExpBase implements FunCall {
         }
     }
 
-    public Object clone() {
+    public UnresolvedFunCall clone() {
         return new UnresolvedFunCall(name, syntax, ExpBase.cloneArray(args));
     }
 
@@ -80,8 +80,7 @@ public class UnresolvedFunCall extends ExpBase implements FunCall {
     public Object accept(MdxVisitor visitor) {
         final Object o = visitor.visit(this);
         // visit the call's arguments
-        for (int i = 0; i < args.length; i++) {
-            Exp arg = args[i];
+        for (Exp arg : args) {
             arg.accept(visitor);
         }
         return o;

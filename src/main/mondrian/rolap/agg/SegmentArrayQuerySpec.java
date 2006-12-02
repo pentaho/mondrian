@@ -28,14 +28,21 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     SegmentArrayQuerySpec(final Segment[] segments) {
         super(segments[0].aggregation.getStar());
         this.segments = segments;
+        assert isValid(true);
+    }
 
-        // the following code is all assertion checking
-        Util.assertPrecondition(segments.length > 0, "segments.length > 0");
-        for (int i = 0; i < segments.length; i++) {
-            Segment segment = segments[i];
-            Util.assertPrecondition(segment.aggregation == segments[0].aggregation);
+    private boolean isValid(boolean fail) {
+        assert segments.length > 0;
+        for (Segment segment : segments) {
+            if (segment.aggregation != segments[0].aggregation) {
+                assert!fail;
+                return false;
+            }
             int n = segment.axes.length;
-            Util.assertTrue(n == segments[0].axes.length);
+            if (n != segments[0].axes.length) {
+                assert!fail;
+                return false;
+            }
             for (int j = 0; j < segment.axes.length; j++) {
                 // We only require that the two arrays have the same
                 // contents, we but happen to know they are the same array,
@@ -44,6 +51,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
                     segments[0].axes[j].getConstraints());
             }
         }
+        return true;
     }
 
     public int getMeasureCount() {
@@ -89,6 +97,8 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
 
     /**
      * Returns whether one or more of the measures is a distinct measure.
+     *
+     * @return whether one or more of the measures is a distinct measure
      */
     protected boolean hasDistinct() {
         for (int i = 0, count = getMeasureCount(); i < count; i++) {

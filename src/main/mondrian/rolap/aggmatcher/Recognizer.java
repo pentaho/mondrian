@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -16,6 +16,7 @@ package mondrian.rolap.aggmatcher;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Dimension;
 import mondrian.olap.MondrianDef;
+import mondrian.olap.Cube;
 import mondrian.resource.MondrianResource;
 import mondrian.recorder.MessageRecorder;
 import mondrian.rolap.RolapStar;
@@ -111,7 +112,7 @@ abstract class Recognizer {
         generateImpliedMeasures();
 
         // Check levels
-        List notSeenForeignKeys = checkForeignKeys();
+        List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys = checkForeignKeys();
 //printNotSeenForeignKeys(notSeenForeignKeys);
         checkLevels(notSeenForeignKeys);
 
@@ -134,9 +135,7 @@ abstract class Recognizer {
     protected void checkIgnores() {
         Matcher ignoreMatcher = getIgnoreMatcher();
 
-        for (Iterator it = aggTable.getColumns(); it.hasNext(); ) {
-            JdbcSchema.Table.Column aggColumn =
-                (JdbcSchema.Table.Column) it.next();
+        for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
             if (ignoreMatcher.matches(aggColumn.getName())) {
                 makeIgnore(aggColumn);
             }
@@ -173,10 +172,7 @@ abstract class Recognizer {
             Matcher factCountMatcher = getFactCountMatcher();
 
             int nosOfFactCounts = 0;
-            for (Iterator it = aggTable.getColumns(); it.hasNext(); ) {
-                JdbcSchema.Table.Column aggColumn =
-                    (JdbcSchema.Table.Column) it.next();
-
+            for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
                 // if marked as ignore, then do not consider
                 if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
                     continue;
@@ -210,7 +206,7 @@ abstract class Recognizer {
                 String msg = mres.TooManyFactCountColumns.str(
                         aggTable.getName(),
                         dbFactTable.getName(),
-                        new Integer(nosOfFactCounts));
+                        nosOfFactCounts);
                 msgRecorder.reportError(msg);
 
                 returnValue = false;
@@ -278,19 +274,14 @@ abstract class Recognizer {
      * implied and the measure is created for the aggregate table.
      */
     protected void generateImpliedMeasures() {
-        for (Iterator it = dbFactTable.getColumns(); it.hasNext(); ) {
-            JdbcSchema.Table.Column factColumn =
-                (JdbcSchema.Table.Column) it.next();
-
+        for (JdbcSchema.Table.Column factColumn : aggTable.getColumns()) {
             JdbcSchema.Table.Column.Usage sumFactUsage = null;
             JdbcSchema.Table.Column.Usage avgFactUsage = null;
 
-            for (Iterator mit =
+            for (Iterator<JdbcSchema.Table.Column.Usage> mit =
                     factColumn.getUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
                     mit.hasNext(); ) {
-                JdbcSchema.Table.Column.Usage factUsage =
-                    (JdbcSchema.Table.Column.Usage) mit.next();
-
+                JdbcSchema.Table.Column.Usage factUsage = mit.next();
                 if (factUsage.getAggregator() == RolapAggregator.Avg) {
                     avgFactUsage = factUsage;
                 } else if (factUsage.getAggregator() == RolapAggregator.Sum) {
@@ -298,26 +289,24 @@ abstract class Recognizer {
                 }
             }
 
-            if ((avgFactUsage != null) && (sumFactUsage != null)) {
+            if (avgFactUsage != null && sumFactUsage != null) {
                 JdbcSchema.Table.Column.Usage sumAggUsage = null;
                 JdbcSchema.Table.Column.Usage avgAggUsage = null;
-                int nosSeen = 0;
-                for (Iterator mit =
+                int seenCount = 0;
+                for (Iterator<JdbcSchema.Table.Column.Usage> mit =
                     aggTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
                         mit.hasNext(); ) {
 
-                    JdbcSchema.Table.Column.Usage aggUsage =
-                        (JdbcSchema.Table.Column.Usage) mit.next();
-
+                    JdbcSchema.Table.Column.Usage aggUsage = mit.next();
                     if (aggUsage.rMeasure == avgFactUsage.rMeasure) {
                         avgAggUsage = aggUsage;
-                        nosSeen++;
+                        seenCount++;
                     } else if (aggUsage.rMeasure == sumFactUsage.rMeasure) {
                         sumAggUsage = aggUsage;
-                        nosSeen++;
+                        seenCount++;
                     }
                 }
-                if (nosSeen == 1) {
+                if (seenCount == 1) {
                     if (avgAggUsage != null) {
                         makeMeasure(sumFactUsage, avgAggUsage);
                     }
@@ -392,36 +381,36 @@ abstract class Recognizer {
      *
      * @return  list on not seen foreign key column usages
      */
-    protected List checkForeignKeys() {
+    protected List<JdbcSchema.Table.Column.Usage> checkForeignKeys() {
         msgRecorder.pushContextName("Recognizer.checkForeignKeys");
 
         try {
 
-            List notSeenForeignKeys = Collections.EMPTY_LIST;
+            List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys =
+                Collections.emptyList();
 
-            for (Iterator it =
+            for (Iterator<JdbcSchema.Table.Column.Usage> it =
                 dbFactTable.getColumnUsages(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
                     it.hasNext(); ) {
 
-                JdbcSchema.Table.Column.Usage factUsage =
-                    (JdbcSchema.Table.Column.Usage) it.next();
+                JdbcSchema.Table.Column.Usage factUsage = it.next();
 
-                int nosMatched = matchForeignKey(factUsage);
+                int matchCount = matchForeignKey(factUsage);
 
-                if (nosMatched > 1) {
+                if (matchCount > 1) {
                     String msg = mres.TooManyMatchingForeignKeyColumns.str(
                             aggTable.getName(),
                             dbFactTable.getName(),
-                            new Integer(nosMatched),
+                            matchCount,
                             factUsage.getColumn().getName()
                         );
                     msgRecorder.reportError(msg);
 
                     returnValue = false;
 
-                } else if (nosMatched == 0) {
-                    if (notSeenForeignKeys == Collections.EMPTY_LIST) {
-                        notSeenForeignKeys = new ArrayList();
+                } else if (matchCount == 0) {
+                    if (notSeenForeignKeys.isEmpty()) {
+                        notSeenForeignKeys = new ArrayList<JdbcSchema.Table.Column.Usage>();
                     }
                     notSeenForeignKeys.add(factUsage);
                 }
@@ -465,7 +454,7 @@ abstract class Recognizer {
      *
      * @param notSeenForeignKeys
      */
-    protected void checkLevels(List notSeenForeignKeys) {
+    protected void checkLevels(List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys) {
 
         // These are the factTable that do not appear in the aggTable.
         // 1) find all cubes with this given factTable
@@ -474,9 +463,7 @@ abstract class Recognizer {
         // 3) determine if level columns are represented
 
         // In generaly, there is only one cube.
-        for (Iterator it = findCubes(); it.hasNext(); ) {
-            RolapCube cube = (RolapCube) it.next();
-
+        for (RolapCube cube : findCubes()) {
             Dimension[] dims = cube.getDimensions();
             // start dimensions at 1 (0 is measures)
             for (int j = 1; j < dims.length; j++) {
@@ -493,28 +480,25 @@ abstract class Recognizer {
                 String dimName = dim.getName();
 
                 Hierarchy[] hierarchies = dim.getHierarchies();
-                for (int k = 0; k < hierarchies.length; k++) {
-                    Hierarchy hierarchy = hierarchies[k];
-
+                for (Hierarchy hierarchy : hierarchies) {
                     HierarchyUsage[] hierarchyUsages =
-                            cube.getUsages(hierarchy);
-                    for (int m = 0; m < hierarchyUsages.length; m++) {
-                        HierarchyUsage hierarchyUsage = hierarchyUsages[m];
-
+                        cube.getUsages(hierarchy);
+                    for (HierarchyUsage hierarchyUsage : hierarchyUsages) {
                         // Search through the notSeenForeignKeys list
                         // making sure that this HierarchyUsage's
                         // foreign key is not in the list.
                         String foreignKey = hierarchyUsage.getForeignKey();
-                        boolean b = inNotSeenForeignKeys(foreignKey,
-                                                         notSeenForeignKeys);
-                        if (! b) {
+                        boolean b = inNotSeenForeignKeys(
+                            foreignKey,
+                            notSeenForeignKeys);
+                        if (!b) {
                             // It was not in the not seen list, so ignore
                             continue;
                         }
 
 
                         RolapLevel[] levels =
-                                (RolapLevel[]) hierarchy.getLevels();
+                            (RolapLevel[]) hierarchy.getLevels();
                         // If the top level is seen, then one or more
                         // lower levels may appear but there can be no
                         // missing levels between the top level and
@@ -522,8 +506,7 @@ abstract class Recognizer {
                         // On the other hand, if the top level is not
                         // seen, then no other levels should be present.
                         mid_level:
-                        for (int n = 0; n < levels.length; n++) {
-                            RolapLevel level = levels[n];
+                        for (RolapLevel level : levels) {
                             if (level.isAll()) {
                                 continue mid_level;
                             }
@@ -547,10 +530,11 @@ abstract class Recognizer {
      * Return true if the foreignKey column name is in the list of not seen
      * foreign keys.
      */
-    boolean inNotSeenForeignKeys(String foreignKey, List notSeenForeignKeys) {
-        for (Iterator it = notSeenForeignKeys.iterator(); it.hasNext(); ) {
-            JdbcSchema.Table.Column.Usage usage =
-                (JdbcSchema.Table.Column.Usage) it.next();
+    boolean inNotSeenForeignKeys(
+        String foreignKey,
+        List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys)
+    {
+        for (JdbcSchema.Table.Column.Usage usage : notSeenForeignKeys) {
             if (usage.getColumn().getName().equals(foreignKey)) {
                 return true;
             }
@@ -685,7 +669,7 @@ abstract class Recognizer {
 
             if (descTable == null) {
                 // TODO: what to do here???
-                StringBuffer buf = new StringBuffer(256);
+                StringBuilder buf = new StringBuilder(256);
                 buf.append("descendant table is null for factTable=");
                 buf.append(factTable.getAlias());
                 buf.append(", tableAlias=");
@@ -704,7 +688,7 @@ abstract class Recognizer {
 
             }
             if (rc == null) {
-                StringBuffer buf = new StringBuffer(256);
+                StringBuilder buf = new StringBuilder(256);
                 buf.append("Rolap.Column not found (null) for tableAlias=");
                 buf.append(tableAlias);
                 buf.append(", factColumnName=");
@@ -727,26 +711,26 @@ abstract class Recognizer {
         }
     }
 
-    protected RolapStar.Column lookupInChildren(final RolapStar.Table table,
-                                                final String factColumnName) {
-        RolapStar.Column rc = null;
+    protected RolapStar.Column lookupInChildren(
+        final RolapStar.Table table,
+        final String factColumnName)
+    {
         // This can happen if we are looking at a collapsed dimension
         // table, and the collapsed dimension in question in the
         // fact table is a snowflake (not just a star), so we
         // must look deeper...
-        for (Iterator it = table.getChildren().iterator(); it.hasNext(); ) {
-            RolapStar.Table child = (RolapStar.Table) it.next();
-            rc = child.lookupColumn(factColumnName);
+        for (RolapStar.Table child : table.getChildren()) {
+            RolapStar.Column rc = child.lookupColumn(factColumnName);
             if (rc != null) {
-                break;
+                return rc;
             } else {
                 rc = lookupInChildren(child, factColumnName);
                 if (rc != null) {
-                    break;
+                    return rc;
                 }
             }
         }
-        return rc;
+        return null;
     }
 
 
@@ -761,9 +745,7 @@ abstract class Recognizer {
      */
     protected void checkUnusedColumns() {
         msgRecorder.pushContextName("Recognizer.checkUnusedColumns");
-        for (Iterator it = aggTable.getColumns(); it.hasNext(); ) {
-            JdbcSchema.Table.Column aggColumn =
-                (JdbcSchema.Table.Column) it.next();
+        for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
             if (! aggColumn.hasUsage()) {
 
                 String msg = mres.AggUnknownColumn.str(
@@ -914,23 +896,22 @@ abstract class Recognizer {
     /**
      * Finds all cubes that use this fact table.
      */
-    protected Iterator findCubes() {
+    protected List<RolapCube> findCubes() {
         String name = dbFactTable.getName();
 
-        List l = new ArrayList();
+        List<RolapCube> list = new ArrayList<RolapCube>();
         RolapSchema schema = star.getSchema();
-        for (Iterator it = schema.getCubeIterator(); it.hasNext(); ) {
-            RolapCube cube = (RolapCube) it.next();
+        for (RolapCube cube : schema.getCubeList()) {
             if (cube.isVirtual()) {
                 continue;
             }
             RolapStar cubeStar = cube.getStar();
             String factTableName = cubeStar.getFactTable().getAlias();
             if (name.equals(factTableName)) {
-                l.add(cube);
+                list.add(cube);
             }
         }
-        return l.iterator();
+        return list;
     }
 
     /**

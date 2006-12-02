@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2005 Julian Hyde and others.
+// Copyright (C) 2004-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -46,9 +46,10 @@ public class RolapSchemaReaderTest extends TestCase {
 
             List cubesAsList = Arrays.asList(expectedCubes);
 
-            for (int idx = 0; idx < cubes.length; idx++) {
-                String cubeName = cubes[idx].getName();
-                assertTrue("Cube name not found: " + cubeName, cubesAsList.contains(cubeName));
+            for (Cube cube : cubes) {
+                String cubeName = cube.getName();
+                assertTrue("Cube name not found: " + cubeName,
+                    cubesAsList.contains(cubeName));
             }
         }
         finally {
@@ -56,3 +57,5 @@ public class RolapSchemaReaderTest extends TestCase {
         }
     }
 }
+
+// End RolapSchemaReaderTest.java

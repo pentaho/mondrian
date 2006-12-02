@@ -11,10 +11,10 @@ package mondrian.rolap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.sql.*;
 
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
-import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.cache.HardSmartCache;
 import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
@@ -39,7 +39,9 @@ import org.apache.log4j.Logger;
  */
 public abstract class RolapNativeSet extends RolapNative {
     protected static final Logger LOGGER = Logger.getLogger(RolapNativeSet.class);
-    private SmartCache cache = new SoftSmartCache();
+
+    private SmartCache<Object, List<List<RolapMember>>> cache =
+        new SoftSmartCache<Object, List<List<RolapMember>>>();
 
     /**
      * Returns whether calculated members should be accepted (and ignored).
@@ -73,15 +75,13 @@ public abstract class RolapNativeSet extends RolapNative {
 
         public void addConstraint(SqlQuery sqlQuery) {
             super.addConstraint(sqlQuery);
-            for (int i = 0; i < args.length; i++) {
-                CrossJoinArg arg = args[i];
+            for (CrossJoinArg arg : args) {
                 // if the cross join argument has calculated members in its
                 // enumerated set, ignore the constraint since we won't
                 // produce that set through the native sql and instead
                 // will simply enumerate through the members in the set
                 if (!(arg instanceof MemberListCrossJoinArg) ||
-                    !((MemberListCrossJoinArg) arg).hasCalcMembers())
-                {
+                    !((MemberListCrossJoinArg) arg).hasCalcMembers()) {
                     arg.addConstraint(sqlQuery);
                 }
             }
@@ -100,16 +100,15 @@ public abstract class RolapNativeSet extends RolapNative {
          * returns a key to cache the result
          */
         public Object getCacheKey() {
-            List key = new ArrayList();
+            List<Object> key = new ArrayList<Object>();
             key.add(super.getCacheKey());
             // only add args that will be retrieved through native sql;
             // args that are sets with calculated members aren't executed
             // natively
-            for (int i = 0; i < args.length; i++) {
-                if (!(args[i] instanceof MemberListCrossJoinArg) ||
-                    !((MemberListCrossJoinArg) args[i]).hasCalcMembers())
-                {
-                    key.add(args[i]);
+            for (CrossJoinArg arg : args) {
+                if (!(arg instanceof MemberListCrossJoinArg) ||
+                    !((MemberListCrossJoinArg) arg).hasCalcMembers()) {
+                    key.add(arg);
                 }
             }
             return key;
@@ -134,8 +133,8 @@ public abstract class RolapNativeSet extends RolapNative {
         public Object execute() {
             SqlTupleReader tr = new SqlTupleReader(constraint);
             tr.setMaxRows(maxRows);
-            for (int i = 0; i < args.length; i++) {
-                addLevel(tr, args[i]);
+            for (CrossJoinArg arg : args) {
+                addLevel(tr, arg);
             }
 
             // lookup the result in cache; we can't return the cached
@@ -144,7 +143,7 @@ public abstract class RolapNativeSet extends RolapNative {
             // members; so we still need to cross join the cached result
             // with those enumerated members
             Object key = tr.getCacheKey();
-            List result = (List) cache.get(key);
+            List<List<RolapMember>> result = cache.get(key);
             boolean hasEnumTargets = (tr.getEnumTargetCount() > 0);
             if (result != null && !hasEnumTargets) {
                 if (listener != null) {
@@ -162,15 +161,32 @@ public abstract class RolapNativeSet extends RolapNative {
             
             // if we don't have a cached result in the case where we have
             // enumerated targets, then retrieve and cache that partial result
-            List partialResult = result;
+            List<List<RolapMember>> partialResult = result;
             result = null;
-            List newPartialResult = null;
+            List<List<RolapMember>> newPartialResult = null;
             if (hasEnumTargets && partialResult == null) {
-                newPartialResult = new ArrayList();
+                newPartialResult = new ArrayList<List<RolapMember>>();
             }
-            result = tr.readTuples(
-                schemaReader.getDataSource(), partialResult,
-                newPartialResult);
+            java.sql.Connection con;
+            try {
+                con = schemaReader.getDataSource().getConnection();
+            } catch (SQLException e) {
+                throw Util.newInternal(e, "could not connect to DB");
+            }
+            try {
+                if (args.length == 1) {
+                    result = (List) tr.readMembers(con, partialResult, newPartialResult);
+                } else {
+                    result = (List) tr.readTuples(con, partialResult, newPartialResult);
+                }
+            } finally {
+                try {
+                    con.close();
+                } catch (SQLException e) {
+                    throw Util.newInternal(e, "could not close connection");
+                }
+            }
+
             if (hasEnumTargets) {
                 if (newPartialResult != null) {
                     cache.put(key, newPartialResult);
@@ -180,7 +196,6 @@ public abstract class RolapNativeSet extends RolapNative {
             }
             return copy(result);
         }
-
 
         /**
          * returns a copy of the result because its modified

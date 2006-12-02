@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2003-2006 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -31,8 +31,8 @@ abstract class Rowset implements XmlaConstants {
     protected static final Logger LOGGER = Logger.getLogger(Rowset.class);
 
     protected final RowsetDefinition rowsetDefinition;
-    protected final Map restrictions;
-    protected final Map properties;
+    protected final Map<String, List<String>> restrictions;
+    protected final Map<String, String> properties;
     protected final XmlaRequest request;
     protected final XmlaHandler handler;
     private final RowsetDefinition.Column[] restrictedColumns;
@@ -50,27 +50,28 @@ abstract class Rowset implements XmlaConstants {
         this.properties = request.getProperties();
         this.request = request;
         this.handler = handler;
-        ArrayList list = new ArrayList();
-        for (Iterator restrictionsIter = restrictions.keySet().iterator();
-             restrictionsIter.hasNext();) {
-            String restrictedColumn = (String) restrictionsIter.next();
-LOGGER.debug("Rowset<init>: restrictedColumn=\""+restrictedColumn+"\"");
+        ArrayList<RowsetDefinition.Column> list =
+            new ArrayList<RowsetDefinition.Column>();
+        for (Map.Entry<String, List<String>> restrictionEntry :
+            restrictions.entrySet())
+        {
+            String restrictedColumn = restrictionEntry.getKey();
+            LOGGER.debug(
+                "Rowset<init>: restrictedColumn=\"" + restrictedColumn + "\"");
             final RowsetDefinition.Column column = definition.lookupColumn(
-                    restrictedColumn);
+                restrictedColumn);
             if (column == null) {
                 throw Util.newError("Rowset '" + definition.name +
-                        "' does not contain column '" + restrictedColumn + "'");
+                    "' does not contain column '" + restrictedColumn + "'");
             }
             if (!column.restriction) {
                 throw Util.newError("Rowset '" + definition.name +
-                        "' column '" + restrictedColumn +
-                        "' does not allow restrictions");
+                    "' column '" + restrictedColumn +
+                    "' does not allow restrictions");
             }
             // Check that the value is of the right type.
-            final Object requiredValue = restrictions.get(column.name);
-            if (requiredValue instanceof String) {
-                // OK
-            } else if (requiredValue instanceof String[]) {
+            final List<String> requiredValue = restrictionEntry.getValue();
+            if (requiredValue.size() > 1) {
                 final RowsetDefinition.Type type = column.type;
                 switch (type.ordinal) {
                 case RowsetDefinition.Type.StringArray_ORDINAL:
@@ -79,32 +80,32 @@ LOGGER.debug("Rowset<init>: restrictedColumn=\""+restrictedColumn+"\"");
                     break; // OK
                 default:
                     throw Util.newError("Rowset '" + definition.name +
-                            "' column '" + restrictedColumn +
-                            "' can only be restricted on one value at a time");
+                        "' column '" + restrictedColumn +
+                        "' can only be restricted on one value at a time");
                 }
-            } else {
-                throw Util.newInternal("Bad type of restricted value" +
-                        requiredValue);
             }
             list.add(column);
         }
         list = pruneRestrictions(list);
-        this.restrictedColumns = (RowsetDefinition.Column[]) list.toArray(
-                new RowsetDefinition.Column[0]);
-        for (Iterator propertiesIter = properties.keySet().iterator();
-             propertiesIter.hasNext();) {
-            String propertyName = (String) propertiesIter.next();
-            final PropertyDefinition propertyDef = PropertyDefinition.getValue(propertyName);
+        this.restrictedColumns = 
+            list.toArray(
+                new RowsetDefinition.Column[list.size()]);
+        for (Map.Entry<String, String> propertyEntry : properties.entrySet()) {
+            String propertyName = propertyEntry.getKey();
+            final PropertyDefinition propertyDef =
+                PropertyDefinition.getValue(propertyName);
             if (propertyDef == null) {
                 throw Util.newError("Rowset '" + definition.name +
-                        "' does not support property '" + propertyName + "'");
+                    "' does not support property '" + propertyName + "'");
             }
-            final String propertyValue = (String) properties.get(propertyName);
+            final String propertyValue = propertyEntry.getValue();
             setProperty(propertyDef, propertyValue);
         }
     }
 
-    protected ArrayList pruneRestrictions(ArrayList list) {
+    protected ArrayList<RowsetDefinition.Column> pruneRestrictions(
+        ArrayList<RowsetDefinition.Column> list)
+    {
         return list;
     }
 
@@ -144,14 +145,13 @@ LOGGER.debug("Rowset<init>: restrictedColumn=\""+restrictedColumn+"\"");
      */
     public final void unparse(XmlaResponse response) throws XmlaException
     {
-        ArrayList rows = new ArrayList();
+        List<Row> rows = new ArrayList<Row>();
         populate(response, rows);
-        Comparator comparator = rowsetDefinition.getComparator();
+        Comparator<Row> comparator = rowsetDefinition.getComparator();
         if (comparator != null) {
             Collections.sort(rows, comparator);
         }
-        for (int i = 0; i < rows.size(); i++) {
-            Row row = (Row) rows.get(i);
+        for (Row row : rows) {
             emit(row, response);
         }
     }
@@ -159,18 +159,7 @@ LOGGER.debug("Rowset<init>: restrictedColumn=\""+restrictedColumn+"\"");
     /**
      * Gathers the set of rows which match a given set of the criteria.
      */
-    public abstract void populate(XmlaResponse response, List rows) throws XmlaException;
-
-    private static boolean haveCommonMember(String[] a, String[] b) {
-        for (int i = 0; i < a.length; i++) {
-            for (int j = 0; j < b.length; j++) {
-                if (a[i].equals(b[j])) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+    public abstract void populate(XmlaResponse response, List<Row> rows) throws XmlaException;
 
     /**
      * Adds a {@link Row} to a result, provided that it meets the necessary
@@ -179,7 +168,7 @@ LOGGER.debug("Rowset<init>: restrictedColumn=\""+restrictedColumn+"\"");
      * @param row Row
      * @param rows List of result rows
      */
-    protected final boolean addRow(Row row, List rows) throws XmlaException {
+    protected final boolean addRow(Row row, List<Row> rows) throws XmlaException {
         return rows.add(row);
     }
 
@@ -195,8 +184,7 @@ LOGGER.debug("Rowset<init>: restrictedColumn=\""+restrictedColumn+"\"");
         SaxWriter writer = response.getWriter();
 
         writer.startElement("row");
-        for (int i = 0; i < rowsetDefinition.columnDefinitions.length; i++) {
-            RowsetDefinition.Column column = rowsetDefinition.columnDefinitions[i];
+        for (RowsetDefinition.Column column : rowsetDefinition.columnDefinitions) {
             Object value = row.get(column.name);
             if (value == null) {
                 if (!column.nullable) {
@@ -211,14 +199,14 @@ LOGGER.debug("Rowset<init>: restrictedColumn=\""+restrictedColumn+"\"");
                 }
             } else if (value instanceof XmlElement[]) {
                 XmlElement[] elements = (XmlElement[]) value;
-                for (int j = 0; j < elements.length; j++) {
-                    emitXmlElement(writer, elements[j]);
+                for (XmlElement element : elements) {
+                    emitXmlElement(writer, element);
                 }
             } else if (value instanceof Object[]) {
                 Object[] values = (Object[]) value;
-                for (int j = 0; j < values.length; j++) {
+                for (Object value1 : values) {
                     writer.startElement(column.name);
-                    writer.characters(values[j].toString());
+                    writer.characters(value1.toString());
                     writer.endElement();
                 }
             } else {
@@ -238,23 +226,14 @@ LOGGER.debug("Rowset<init>: restrictedColumn=\""+restrictedColumn+"\"");
         }
 
         if (element.text == null) {
-            for (int i = 0; i < element.children.length; i++) {
-                emitXmlElement(writer, element.children[i]);
+            for (XmlElement aChildren : element.children) {
+                emitXmlElement(writer, aChildren);
             }
         } else {
             writer.characters(element.text);
         }
 
         writer.endElement();
-    }
-
-    private static boolean contains(String[] strings, String value) {
-        for (int i = 0; i < strings.length; i++) {
-            if (strings[i].equals(value)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -267,8 +246,7 @@ LOGGER.debug("Rowset<init>: restrictedColumn=\""+restrictedColumn+"\"");
         SaxWriter writer = response.getWriter();
 
         writer.startElement("row");
-        for (int i = 0; i < rowsetDefinition.columnDefinitions.length; i++) {
-            RowsetDefinition.Column column = rowsetDefinition.columnDefinitions[i];
+        for (RowsetDefinition.Column column : rowsetDefinition.columnDefinitions) {
             Object value = column.get(row);
             if (value != null) {
                 writer.startElement(column.name);
@@ -287,10 +265,8 @@ LOGGER.debug("Rowset<init>: restrictedColumn=\""+restrictedColumn+"\"");
      */
     protected void emit(EnumeratedValues enumeration, XmlaResponse response)
             throws XmlaException {
-        final List valuesSortedByName = enumeration.getValuesSortedByName();
-        for (int i = 0; i < valuesSortedByName.size(); i++) {
-            EnumeratedValues.Value value = (EnumeratedValues.Value)
-                    valuesSortedByName.get(i);
+        final List<EnumeratedValues.Value> valuesSortedByName = enumeration.getValuesSortedByName();
+        for (EnumeratedValues.Value value : valuesSortedByName) {
             emit(value, response);
         }
     }
@@ -322,22 +298,19 @@ LOGGER.debug("Rowset<init>: restrictedColumn=\""+restrictedColumn+"\"");
      * just once at the beginning is faster than having to determine
      * the restriction status each time it is needed.
      */
-    static abstract class RistrictionTest {
-        public boolean passes(int ival) {
-            return passes(new Integer(ival));
-        }
+    static abstract class RestrictionTest {
         public abstract boolean passes(Object value);
     }
 
-    RistrictionTest getRistrictionTest(RowsetDefinition.Column column) {
-        final Object requiredValue = restrictions.get(column.name);
+    RestrictionTest getRestrictionTest(RowsetDefinition.Column column) {
+        final List<String> requiredValue = restrictions.get(column.name);
 /*
-System.out.println("Rowset.getRistrictionTest: column=" +column.name);
-System.out.println("Rowset.getRistrictionTest: requiredValue=" +requiredValue);
+System.out.println("Rowset.getRestrictionTest: column=" +column.name);
+System.out.println("Rowset.getRestrictionTest: requiredValue=" +requiredValue);
 */
 
         if (requiredValue == null) {
-            return new RistrictionTest() {
+            return new RestrictionTest() {
                 public boolean passes(int ival) {
                     return true;
                 }
@@ -345,28 +318,20 @@ System.out.println("Rowset.getRistrictionTest: requiredValue=" +requiredValue);
                     return true;
                 }
             };
-        } else if (requiredValue instanceof String[]) {
-            final String[] requiredValueArray = (String[]) requiredValue;
-            return new RistrictionTest() {
-                public boolean passes(Object value) {
-                    return contains(requiredValueArray, value.toString());
-                }
-            };
         } else {
-            return new RistrictionTest() {
+            return new RestrictionTest() {
                 public boolean passes(Object value) {
-                    return requiredValue.equals(value);
+                    return requiredValue.contains(value);
                 }
             };
         }
     }
-    
+
     /** 
-     * This returns either null, a String or String[] depending upon
-     * what was in the XMLA request.
+     * Returns the list of restriction values in the XMLA request.
      * 
      */
-    Object getRestrictionValue(RowsetDefinition.Column column) {
+    private List<String> getRestrictionValue(RowsetDefinition.Column column) {
         return restrictions.get(column.name);
     }
     
@@ -378,8 +343,8 @@ System.out.println("Rowset.getRistrictionTest: requiredValue=" +requiredValue);
      * 
      */
     String getRestrictionValueAsString(RowsetDefinition.Column column) {
-        Object rval = getRestrictionValue(column);
-        return (rval instanceof String) ? (String) rval : null;
+        List<String> rval = getRestrictionValue(column);
+        return rval != null && rval.size() == 1 ? rval.get(0) : null;
     }
     
     /** 
@@ -388,10 +353,10 @@ System.out.println("Rowset.getRistrictionTest: requiredValue=" +requiredValue);
      * 
      */
     int getRestrictionValueAsInt(RowsetDefinition.Column column) {
-        Object rval = getRestrictionValue(column);
-        if (rval instanceof String) {
+        List<String> rval = getRestrictionValue(column);
+        if (rval != null && rval.size() == 1) {
             try {
-                return Integer.parseInt((String)rval);
+                return Integer.parseInt(rval.get(0));
             } catch (NumberFormatException ex) {
                 LOGGER.info("Rowset.getRestrictionValue: "+
                     "bad integer restriction \""+
@@ -399,8 +364,6 @@ System.out.println("Rowset.getRistrictionTest: requiredValue=" +requiredValue);
                     "\"");
                 return -1;
             }
-        } else if (rval instanceof Integer) {
-            return ((Integer) rval).intValue();
         } else {
             return -1;
         }
@@ -424,19 +387,16 @@ System.out.println("Rowset.getRistrictionTest: requiredValue=" +requiredValue);
      * a concern.
      */
     protected class Row {
-        private final ArrayList names;
-        private final ArrayList values;
+        private final ArrayList<String> names;
+        private final ArrayList<Object> values;
         Row() {
-            this.names = new ArrayList();
-            this.values = new ArrayList();
+            this.names = new ArrayList<String>();
+            this.values = new ArrayList<Object>();
         }
+
         void set(String name, Object value) {
             this.names.add(name);
             this.values.add(value);
-        }
-
-        void set(String name, int value) {
-            set(name, new Integer(value));
         }
 
         void set(String name, boolean value) {

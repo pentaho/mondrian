@@ -526,7 +526,8 @@ public class XmlaBasicTest extends FoodMartTestCase {
         if (content != null) {
             props.setProperty(CONTENT_PROP, content);
         }
-        soapRequestText = Util.replaceProperties(soapRequestText, props);
+        soapRequestText = Util.replaceProperties(
+            soapRequestText, Util.toMap(props));
 
 if (DEBUG) {
 System.out.println("soapRequestText="+soapRequestText);

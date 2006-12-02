@@ -227,7 +227,7 @@ public class CsvLoader {
 
 
   protected String[] nextColumns() throws IOException {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         // the separator char seen in single or double quotes is not treated
         // as a separator
         boolean inDoubleQuote = false;

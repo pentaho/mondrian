@@ -52,7 +52,7 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
             stringEditor.setText((String)value);
         } else if (value instanceof Boolean) {
             activeEditor = booleanEditor;
-            booleanEditor.setSelected(((Boolean)value).booleanValue());
+            booleanEditor.setSelected((Boolean) value);
         } else if (value instanceof Integer) {
             activeEditor = integerEditor;
             integerEditor.setText((String)value);
@@ -142,7 +142,7 @@ public class SchemaPropertyCellEditor implements javax.swing.table.TableCellEdit
         if (activeEditor == stringEditor) {
             return stringEditor.getText();
         } else if (activeEditor == booleanEditor) {
-            return new Boolean(booleanEditor.isSelected());
+            return booleanEditor.isSelected();
         } else if (activeEditor == tableEditor) {
             return ((PropertyTableModel) tableEditor.getModel()).getValue();
         }

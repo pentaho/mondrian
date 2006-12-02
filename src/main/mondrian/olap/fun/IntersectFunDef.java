@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2002 Kana Software, Inc.
-// Copyright (C) 2004-2005 Julian Hyde and others
+// Copyright (C) 2004-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -61,12 +61,11 @@ class IntersectFunDef extends FunDefBase
                 right = buildSearchableCollection(right);
                 List result = new ArrayList();
 
-                for (Iterator i = left.iterator(); i.hasNext();) {
-                    Object leftObject = i.next();
+                for (Object leftObject : left) {
                     Object resultObject = leftObject;
 
                     if (leftObject instanceof Object[]) {
-                        leftObject = new FunUtil.ArrayHolder((Object[])leftObject);
+                        leftObject = new ArrayHolder((Object[]) leftObject);
                     }
 
                     if (right.contains(leftObject)) {

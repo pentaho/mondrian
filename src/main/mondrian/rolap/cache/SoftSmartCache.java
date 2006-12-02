@@ -25,10 +25,10 @@ import java.util.Map;
  * @since Nov 3, 2005
  * @version $Id$
  */
-public class SoftSmartCache implements SmartCache {
+public class SoftSmartCache <K, V> implements SmartCache <K, V> {
 
-    Map cache = new HashMap();
-    ReferenceQueue queue = new ReferenceQueue();
+    Map<K, CacheReference> cache = new HashMap<K, CacheReference>();
+    ReferenceQueue<V> queue = new ReferenceQueue<V>();
 
     /**
      * an entry in the cache that contains the key for
@@ -38,10 +38,10 @@ public class SoftSmartCache implements SmartCache {
      * @author rk
      * @since Nov 7, 2005
      */
-    class CacheReference extends SoftReference {
-        Object key;
+    class CacheReference extends SoftReference<V> {
+        K key;
 
-        public CacheReference(Object key, Object value) {
+        public CacheReference(K key, V value) {
             super(value, queue);
             this.key = key;
         }
@@ -54,7 +54,7 @@ public class SoftSmartCache implements SmartCache {
     /* (non-Javadoc)
      * @see mondrian.rolap.cache.SmartCache#put(java.lang.Object, java.lang.Object)
      */
-    public synchronized Object put(Object key, Object value) {
+    public synchronized V put(K key, V value) {
         // remove garbage collected entries from cache
         CacheReference ref;
         while ((ref = (CacheReference) queue.poll()) != null) {
@@ -63,22 +63,25 @@ public class SoftSmartCache implements SmartCache {
 
         // put new entry into cache
         ref = new CacheReference(key, value);
-        ref = (CacheReference) cache.put(key, ref);
-        if (ref != null)
+        ref = cache.put(key, ref);
+        if (ref != null) {
             return ref.get();
+        }
         return null;
     }
 
     /* (non-Javadoc)
      * @see mondrian.rolap.cache.SmartCache#get(java.lang.Object)
      */
-    public synchronized Object get(Object key) {
-        SoftReference ref = (SoftReference) cache.get(key);
-        if (ref == null)
+    public synchronized V get(K key) {
+        CacheReference ref = cache.get(key);
+        if (ref == null) {
             return null;
-        Object value = ref.get();
-        if (value == null)
+        }
+        V value = ref.get();
+        if (value == null) {
             cache.remove(key);
+        }
         return value;
     }
 

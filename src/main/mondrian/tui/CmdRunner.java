@@ -49,7 +49,8 @@ public class CmdRunner {
     private static boolean RELOAD_CONNECTION = true;
     private static String CATALOG_NAME = "FoodMart";
 
-    private static final Map paraNameValues = new HashMap();
+    private static final Map<Object, String> paraNameValues =
+        new HashMap<Object, String>();
 
     private static String[][] commentDelim;
     private static char[] commentStartChars;
@@ -110,8 +111,7 @@ public class CmdRunner {
 
     public void noCubeCaching() {
         Cube[] cubes = getCubes();
-        for (int i = 0; i < cubes.length; i++) {
-            Cube cube = cubes[i];
+        for (Cube cube : cubes) {
             RolapCube rcube = (RolapCube) cube;
             rcube.setCacheAggregations(false);
         }
@@ -146,7 +146,7 @@ public class CmdRunner {
             return message;
     }
 
-    public static void listPropertyNames(StringBuffer buf) {
+    public static void listPropertyNames(StringBuilder buf) {
         PropertyInfo propertyInfo =
                 new PropertyInfo(MondrianProperties.instance());
         for (int i = 0; i < propertyInfo.size(); i++) {
@@ -155,7 +155,7 @@ public class CmdRunner {
         }
     }
 
-    public static void listPropertiesAll(StringBuffer buf) {
+    public static void listPropertiesAll(StringBuilder buf) {
         PropertyInfo propertyInfo =
                 new PropertyInfo(MondrianProperties.instance());
         for (int i = 0; i < propertyInfo.size(); i++) {
@@ -180,7 +180,7 @@ public class CmdRunner {
                 null;
     }
 
-    public static void listProperty(String propertyName, StringBuffer buf) {
+    public static void listProperty(String propertyName, StringBuilder buf) {
         buf.append(getPropertyValue(propertyName));
     }
 
@@ -206,8 +206,7 @@ public class CmdRunner {
 
     public void loadParameters(Query query) {
         Parameter[] params = query.getParameters();
-        for (int i = 0; i < params.length; i++) {
-            Parameter param = params[i];
+        for (Parameter param : params) {
             loadParameter(query, param);
         }
     }
@@ -216,18 +215,17 @@ public class CmdRunner {
      * Looks up the definition of a property with a given name.
      */
     private static class PropertyInfo {
-        private final List propertyList = new ArrayList();
-        private final List propertyNameList = new ArrayList();
+        private final List<Property> propertyList = new ArrayList<Property>();
+        private final List<String> propertyNameList = new ArrayList<String>();
 
         PropertyInfo(MondrianProperties properties) {
-            final Class clazz = properties.getClass();
+            final Class<? extends Object> clazz = properties.getClass();
             final Field[] fields = clazz.getFields();
-            for (int i = 0; i < fields.length; i++) {
-                Field field = fields[i];
+            for (Field field : fields) {
                 if (!Modifier.isPublic(field.getModifiers()) ||
-                        Modifier.isStatic(field.getModifiers()) ||
-                        !Property.class.isAssignableFrom(
-                                field.getType())) {
+                    Modifier.isStatic(field.getModifiers()) ||
+                    !Property.class.isAssignableFrom(
+                        field.getType())) {
                     continue;
                 }
                 final Property property;
@@ -246,11 +244,11 @@ public class CmdRunner {
         }
 
         public Property getProperty(int i) {
-            return (Property) propertyList.get(i);
+            return propertyList.get(i);
         }
 
         public String getPropertyName(int i) {
-            return (String) propertyNameList.get(i);
+            return propertyNameList.get(i);
         }
 
         /**
@@ -260,7 +258,7 @@ public class CmdRunner {
                 MondrianProperties properties,
                 String propertyName)
         {
-            final Class clazz = properties.getClass();
+            final Class<? extends Object> clazz = properties.getClass();
             final Field field;
             try {
                 field = clazz.getField(propertyName);
@@ -307,7 +305,7 @@ public class CmdRunner {
     public void loadParameter(Query query, Parameter param) {
         int category = TypeUtil.typeToCategory(param.getType());
         String name = param.getName();
-        String value = (String) CmdRunner.paraNameValues.get(name);
+        String value = CmdRunner.paraNameValues.get(name);
         debug("loadParameter: name=" +name+ ", value=" + value);
         if (value == null) {
             return;
@@ -417,10 +415,8 @@ public class CmdRunner {
         return null;
     }
 
-    public static void listParameterNameValues(StringBuffer buf) {
-        Iterator it = CmdRunner.paraNameValues.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry e = (Map.Entry) it.next();
+    public static void listParameterNameValues(StringBuilder buf) {
+        for (Map.Entry<Object, String> e : CmdRunner.paraNameValues.entrySet()) {
             buf.append(e.getKey());
             buf.append('=');
             buf.append(e.getValue());
@@ -428,13 +424,13 @@ public class CmdRunner {
         }
     }
 
-    public static void listParam(String name, StringBuffer buf) {
-        String v = (String) CmdRunner.paraNameValues.get(name);
+    public static void listParam(String name, StringBuilder buf) {
+        String v = CmdRunner.paraNameValues.get(name);
         buf.append(v);
     }
 
     public static boolean isParam(String name) {
-        String v = (String) CmdRunner.paraNameValues.get(name);
+        String v = CmdRunner.paraNameValues.get(name);
         return (v != null);
     }
 
@@ -456,14 +452,12 @@ public class CmdRunner {
     //
     public Cube[] getCubes() {
         Connection conn = getConnection();
-        Cube[] cubes = conn.getSchemaReader().getCubes();
-        return cubes;
+        return conn.getSchemaReader().getCubes();
     }
 
     public Cube getCube(String name) {
         Cube[] cubes = getCubes();
-        for (int i = 0; i < cubes.length; i++) {
-            Cube cube = cubes[i];
+        for (Cube cube : cubes) {
             if (cube.getName().equals(name)) {
                 return cube;
             }
@@ -471,16 +465,15 @@ public class CmdRunner {
         return null;
     }
 
-    public void listCubeName(StringBuffer buf) {
+    public void listCubeName(StringBuilder buf) {
         Cube[] cubes = getCubes();
-        for (int i = 0; i < cubes.length; i++) {
-            Cube cube = cubes[i];
+        for (Cube cube : cubes) {
             buf.append(cube.getName());
             buf.append(nl);
         }
     }
 
-    public void listCubeAttribues(String name, StringBuffer buf) {
+    public void listCubeAttribues(String name, StringBuilder buf) {
         Cube cube = getCube(name);
         if (cube == null) {
             buf.append("No cube found with name \"");
@@ -500,7 +493,7 @@ public class CmdRunner {
     public void executeCubeCommand(
             String cubename,
             String command,
-            StringBuffer buf) {
+            StringBuilder buf) {
         Cube cube = getCube(cubename);
         if (cube == null) {
             buf.append("No cube found with name \"");
@@ -524,7 +517,7 @@ public class CmdRunner {
             String cubename,
             String name,
             String value,
-            StringBuffer buf) {
+            StringBuilder buf) {
         Cube cube = getCube(cubename);
         if (cube == null) {
             buf.append("No cube found with name \"");
@@ -533,7 +526,7 @@ public class CmdRunner {
         } else {
             if (name.equals("caching")) {
                 RolapCube rcube = (RolapCube) cube;
-                boolean isCache = Boolean.valueOf(value).booleanValue();
+                boolean isCache = Boolean.valueOf(value);
                 rcube.setCacheAggregations(isCache);
             } else {
                 buf.append("For cube \"");
@@ -555,8 +548,7 @@ public class CmdRunner {
      */
     public String execute(String queryString) {
         Result result = runQuery(queryString, true);
-        String resultString = toString(result);
-        return resultString;
+        return toString(result);
     }
 
     /**
@@ -606,7 +598,7 @@ public class CmdRunner {
         String connectString = CmdRunner.getConnectStringProperty();
         debug("CmdRunner.makeConnectString: connectString="+connectString);
 
-        Util.PropertyList connectProperties = null;
+        Util.PropertyList connectProperties;
         if (connectString == null || connectString.equals("")) {
             // create new and add provider
             connectProperties = new Util.PropertyList();
@@ -761,12 +753,10 @@ public class CmdRunner {
         try {
             commandLoop(new BufferedReader(in), false);
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (Exception ex) {
-                    // ignore
-                }
+            try {
+                in.close();
+            } catch (Exception ex) {
+                // ignore
             }
         }
     }
@@ -790,7 +780,7 @@ public class CmdRunner {
      */
     protected void commandLoop(Reader in, boolean interactive) {
 
-        StringBuffer buf = new StringBuffer(2048);
+        StringBuilder buf = new StringBuilder(2048);
         boolean inMdxCmd = false;
         String resultString = null;
 
@@ -940,8 +930,8 @@ public class CmdRunner {
     protected static String readLine(Reader reader, boolean inMdxCmd)
         throws IOException {
 
-        StringBuffer buf = new StringBuffer(128);
-        StringBuffer line = new StringBuffer(128);
+        StringBuilder buf = new StringBuilder(128);
+        StringBuilder line = new StringBuilder(128);
         int offset;
         int i=getLine(reader, line);
         boolean inName = false;
@@ -1026,7 +1016,7 @@ public class CmdRunner {
      * -1 for end of file, or \n or \r.  Add \n and \r to the end of the
      * buffer to be included in strings and comment blocks.
      */
-    protected static int getLine(Reader reader, StringBuffer line)
+    protected static int getLine(Reader reader, StringBuilder line)
         throws IOException {
 
         line.setLength(0);
@@ -1052,9 +1042,9 @@ public class CmdRunner {
      */
     protected static int readString(
             Reader reader,
-            StringBuffer line,
+            StringBuilder line,
             int offset,
-            StringBuffer buf,
+            StringBuilder buf,
             int i)
             throws IOException {
 
@@ -1071,13 +1061,13 @@ public class CmdRunner {
      */
     protected static int readBlock(
             Reader reader,
-            StringBuffer line,
+            StringBuilder line,
             int offset,
             final String startDelim,
             final String endDelim,
             final boolean allowEscape,
             final boolean addToBuf,
-            StringBuffer buf,
+            StringBuilder buf,
             int i)
             throws IOException {
 
@@ -1289,7 +1279,7 @@ public class CmdRunner {
     // help
     //////////////////////////////////////////////////////////////////////////
     protected static String executeHelp(String mdxCmd) {
-        StringBuffer buf = new StringBuffer(200);
+        StringBuilder buf = new StringBuilder(200);
 
         String[] tokens = mdxCmd.split("\\s+");
 
@@ -1474,7 +1464,7 @@ public class CmdRunner {
         return buf.toString();
     }
 
-    protected static void appendIndent(StringBuffer buf, int i) {
+    protected static void appendIndent(StringBuilder buf, int i) {
         while (i-- > 0) {
             buf.append(CmdRunner.INDENT);
         }
@@ -1483,7 +1473,7 @@ public class CmdRunner {
     //////////////////////////////////////////////////////////////////////////
     // set
     //////////////////////////////////////////////////////////////////////////
-    protected static void appendSet(StringBuffer buf) {
+    protected static void appendSet(StringBuilder buf) {
         appendIndent(buf, 1);
         buf.append("set [ property[=value ] ] <cr>");
         buf.append(nl);
@@ -1498,7 +1488,7 @@ public class CmdRunner {
     }
 
     protected String executeSet(String mdxCmd) {
-        StringBuffer buf = new StringBuffer(400);
+        StringBuilder buf = new StringBuilder(400);
 
         String[] tokens = mdxCmd.split("\\s+");
 
@@ -1544,7 +1534,7 @@ public class CmdRunner {
     //////////////////////////////////////////////////////////////////////////
     // log
     //////////////////////////////////////////////////////////////////////////
-    protected static void appendLog(StringBuffer buf) {
+    protected static void appendLog(StringBuilder buf) {
         appendIndent(buf, 1);
         buf.append("log [ classname[=level ] ] <cr>");
         buf.append(nl);
@@ -1559,7 +1549,7 @@ public class CmdRunner {
     }
 
     protected String executeLog(String mdxCmd) {
-        StringBuffer buf = new StringBuffer(200);
+        StringBuilder buf = new StringBuilder(200);
 
         String[] tokens = mdxCmd.split("\\s+");
 
@@ -1625,7 +1615,7 @@ public class CmdRunner {
     //////////////////////////////////////////////////////////////////////////
     // file
     //////////////////////////////////////////////////////////////////////////
-    protected static void appendFile(StringBuffer buf) {
+    protected static void appendFile(StringBuilder buf) {
         appendIndent(buf, 1);
         buf.append("file [ filename | '=' ] <cr>");
         buf.append(nl);
@@ -1640,7 +1630,7 @@ public class CmdRunner {
     }
 
     protected String executeFile(String mdxCmd) {
-        StringBuffer buf = new StringBuffer(512);
+        StringBuilder buf = new StringBuilder(512);
         String[] tokens = mdxCmd.split("\\s+");
 
         if (tokens.length == 1) {
@@ -1691,7 +1681,7 @@ public class CmdRunner {
     //////////////////////////////////////////////////////////////////////////
     // list
     //////////////////////////////////////////////////////////////////////////
-    protected static void appendList(StringBuffer buf) {
+    protected static void appendList(StringBuilder buf) {
         appendIndent(buf, 1);
         buf.append("list [ cmd | result ] <cr>");
         buf.append(nl);
@@ -1706,7 +1696,7 @@ public class CmdRunner {
     }
 
     protected String executeList(String mdxCmd) {
-        StringBuffer buf = new StringBuffer(200);
+        StringBuilder buf = new StringBuilder(200);
 
         String[] tokens = mdxCmd.split("\\s+");
 
@@ -1751,7 +1741,7 @@ public class CmdRunner {
     //////////////////////////////////////////////////////////////////////////
     // func
     //////////////////////////////////////////////////////////////////////////
-    protected static void appendFunc(StringBuffer buf) {
+    protected static void appendFunc(StringBuilder buf) {
         appendIndent(buf, 1);
         buf.append("func [ name ] <cr>");
         buf.append(nl);
@@ -1765,18 +1755,18 @@ public class CmdRunner {
         buf.append("name, description, and syntax");
     }
     protected String executeFunc(String mdxCmd) {
-        StringBuffer buf = new StringBuffer(200);
+        StringBuilder buf = new StringBuilder(200);
 
         String[] tokens = mdxCmd.split("\\s+");
 
         final FunTable funTable = getConnection().getSchema().getFunTable();
         if (tokens.length == 1) {
             // prints names only once
-            List funInfoList = funTable.getFunInfoList();
-            Iterator it = funInfoList.iterator();
+            List<FunInfo> funInfoList = funTable.getFunInfoList();
+            Iterator<FunInfo> it = funInfoList.iterator();
             String prevName = null;
             while (it.hasNext()) {
-                FunInfo fi = (FunInfo) it.next();
+                FunInfo fi = it.next();
                 String name = fi.getName();
                 if (prevName == null || ! prevName.equals(name)) {
                     buf.append(name);
@@ -1787,12 +1777,12 @@ public class CmdRunner {
 
         } else if (tokens.length == 2) {
             String funcname = tokens[1];
-            List funInfoList = funTable.getFunInfoList();
-            List matches = new ArrayList();
+            List<FunInfo> funInfoList = funTable.getFunInfoList();
+            List<FunInfo> matches = new ArrayList<FunInfo>();
 
-            Iterator it = funInfoList.iterator();
+            Iterator<FunInfo> it = funInfoList.iterator();
             while (it.hasNext()) {
-                FunInfo fi = (FunInfo) it.next();
+                FunInfo fi = it.next();
                 if (fi.getName().equalsIgnoreCase(funcname)) {
                     matches.add(fi);
                 }
@@ -1808,7 +1798,7 @@ public class CmdRunner {
                 it = matches.iterator();
                 boolean doname = true;
                 while (it.hasNext()) {
-                    FunInfo fi = (FunInfo) it.next();
+                    FunInfo fi = it.next();
                     if (doname) {
                         buf.append(fi.getName());
                         buf.append(nl);
@@ -1879,7 +1869,7 @@ public class CmdRunner {
     //////////////////////////////////////////////////////////////////////////
     // param
     //////////////////////////////////////////////////////////////////////////
-    protected static void appendParam(StringBuffer buf) {
+    protected static void appendParam(StringBuilder buf) {
         appendIndent(buf, 1);
         buf.append("param [ name[=value ] ] <cr>");
         buf.append(nl);
@@ -1899,7 +1889,7 @@ public class CmdRunner {
         buf.append(" If value is null, then unsets the parameter associated with value");
     }
     protected String executeParam(String mdxCmd) {
-        StringBuffer buf = new StringBuffer(200);
+        StringBuilder buf = new StringBuilder(200);
 
         String[] tokens = mdxCmd.split("\\s+");
 
@@ -1939,7 +1929,7 @@ public class CmdRunner {
     //////////////////////////////////////////////////////////////////////////
     // cube
     //////////////////////////////////////////////////////////////////////////
-    protected static void appendCube(StringBuffer buf) {
+    protected static void appendCube(StringBuilder buf) {
         appendIndent(buf, 1);
         buf.append("cube [ cubename [ name [=value | command] ] ] <cr>");
         buf.append(nl);
@@ -1969,7 +1959,7 @@ public class CmdRunner {
     }
 
     protected String executeCube(String mdxCmd) {
-        StringBuffer buf = new StringBuffer(200);
+        StringBuilder buf = new StringBuilder(200);
 
         String[] tokens = mdxCmd.split("\\s+");
 
@@ -2008,7 +1998,7 @@ public class CmdRunner {
     //////////////////////////////////////////////////////////////////////////
     // error
     //////////////////////////////////////////////////////////////////////////
-    protected static void appendError(StringBuffer buf) {
+    protected static void appendError(StringBuilder buf) {
         appendIndent(buf, 1);
         buf.append("error [ msg | stack ] <cr>");
         buf.append(nl);
@@ -2023,7 +2013,7 @@ public class CmdRunner {
     }
 
     protected String executeError(String mdxCmd) {
-        StringBuffer buf = new StringBuffer(200);
+        StringBuilder buf = new StringBuilder(200);
 
         String[] tokens = mdxCmd.split("\\s+");
 
@@ -2067,7 +2057,7 @@ public class CmdRunner {
     //////////////////////////////////////////////////////////////////////////
     // echo
     //////////////////////////////////////////////////////////////////////////
-    protected static void appendEcho(StringBuffer buf) {
+    protected static void appendEcho(StringBuilder buf) {
         appendIndent(buf, 1);
         buf.append("echo text <cr>");
         buf.append(nl);
@@ -2090,7 +2080,7 @@ public class CmdRunner {
     //////////////////////////////////////////////////////////////////////////
     // expr
     //////////////////////////////////////////////////////////////////////////
-    protected static void appendExpr(StringBuffer buf) {
+    protected static void appendExpr(StringBuilder buf) {
         appendIndent(buf, 1);
         buf.append("expr cubename expression<cr>");
         buf.append(nl);
@@ -2107,7 +2097,7 @@ public class CmdRunner {
         buf.append("expression is string using \"\"");
     }
     protected String executeExpr(String mdxCmd) {
-        StringBuffer buf = new StringBuffer(256);
+        StringBuilder buf = new StringBuilder(256);
 
         mdxCmd = (mdxCmd.length() == 5)
                 ? "" : mdxCmd.substring(5);
@@ -2207,7 +2197,7 @@ public class CmdRunner {
                     }
 
                     // taken from FoodMartTest code
-                    StringBuffer queryStringBuf = new StringBuffer(64);
+                    StringBuilder queryStringBuf = new StringBuilder(64);
                     queryStringBuf.append("with member [Measures].[Foo] as ");
                     queryStringBuf.append(c);
                     queryStringBuf.append(expression);
@@ -2236,7 +2226,7 @@ public class CmdRunner {
     //////////////////////////////////////////////////////////////////////////
     // exit
     //////////////////////////////////////////////////////////////////////////
-    protected static void appendExit(StringBuffer buf) {
+    protected static void appendExit(StringBuilder buf) {
         appendIndent(buf, 1);
         buf.append("exit <cr>");
         buf.append(nl);
@@ -2290,7 +2280,7 @@ public class CmdRunner {
      * @param out Output stream
      */
     protected static void usage(String msg, PrintStream out) {
-        StringBuffer buf = new StringBuffer(256);
+        StringBuilder buf = new StringBuilder(256);
         if (msg != null) {
             buf.append(msg);
             buf.append(nl);
@@ -2377,7 +2367,7 @@ public class CmdRunner {
         private boolean timeQueries;
         private boolean noCache = false;
         private int validateXmlaResponse = VALIDATE_NONE;
-        private final List filenames = new ArrayList();
+        private final List<String> filenames = new ArrayList<String>();
         private int doingWhat = DO_MDX;
         private String singleMdxCmd;
     }
@@ -2399,8 +2389,7 @@ public class CmdRunner {
         }
 
         if (!options.filenames.isEmpty()) {
-            for (int i = 0; i < options.filenames.size(); i++) {
-                String filename = (String) options.filenames.get(i);
+            for (String filename : options.filenames) {
                 cmdRunner.filename = filename;
                 switch (options.doingWhat) {
                 case DO_MDX:
@@ -2409,13 +2398,15 @@ public class CmdRunner {
                     break;
                 case DO_XMLA:
                     // its a file containing XMLA
-                    cmdRunner.processXmla(new File(filename),
-                            options.validateXmlaResponse);
+                    cmdRunner.processXmla(
+                        new File(filename),
+                        options.validateXmlaResponse);
                     break;
                 default:
                     // its a file containing SOAP XMLA
-                    cmdRunner.processSoapXmla(new File(filename),
-                            options.validateXmlaResponse);
+                    cmdRunner.processSoapXmla(
+                        new File(filename),
+                        options.validateXmlaResponse);
                     break;
                 }
                 if (cmdRunner.error != null) {

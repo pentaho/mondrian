@@ -105,7 +105,7 @@ public class FunUtil extends Util {
                     "Expected a symbol, found '" + arg + "'");
         }
         String s = (String) ((Literal) arg).getValue();
-        StringBuffer sb = new StringBuffer(64);
+        StringBuilder sb = new StringBuilder(64);
         for (int j = 0; j < allowedValues.length; j++) {
             String allowedValue = allowedValues[j];
             if (allowedValue.equalsIgnoreCase(s)) {
@@ -191,9 +191,9 @@ public class FunUtil extends Util {
         }
     }
 
-    static List addMembers(
+    static List<Member> addMembers(
             SchemaReader schemaReader,
-            List members,
+            List<Member> members,
             Hierarchy hierarchy) {
         // only add accessible levels
         Level[] levels = schemaReader.getHierarchyLevels(hierarchy);
@@ -203,9 +203,9 @@ public class FunUtil extends Util {
         return members;
     }
 
-    static List addMembers(
+    static List<Member> addMembers(
             SchemaReader schemaReader,
-            List members,
+            List<Member> members,
             Level level) {
         Member[] levelMembers = schemaReader.getLevelMembers(level, true);
         addAll(members, levelMembers);
@@ -216,7 +216,7 @@ public class FunUtil extends Util {
      * Removes every member from a list which is calculated.
      * The list must not be null, and must consist only of members.
      */
-    static void removeCalculatedMembers(List memberList)
+    static void removeCalculatedMembers(List<Member> memberList)
     {
         for (int i = 0; i < memberList.size(); i++) {
             Member member = (Member) memberList.get(i);
@@ -264,15 +264,15 @@ public class FunUtil extends Util {
      * @pre exp != null
      * @pre exp.getType() instanceof ScalarType
      */
-    static Map evaluateMembers(
+    static Map<Member, Object> evaluateMembers(
             Evaluator evaluator,
             Calc exp,
-            List members,
+            List<Member> members,
             boolean parentsToo) {
         assert exp.getType() instanceof ScalarType;
-        Map mapMemberToValue = new HashMap();
+        Map<Member, Object> mapMemberToValue = new HashMap<Member, Object>();
         for (int i = 0, count = members.size(); i < count; i++) {
-            Member member = (Member) members.get(i);
+            Member member = members.get(i);
             while (true) {
                 evaluator.setContext(member);
                 Object result = exp.evaluate(evaluator);
@@ -306,14 +306,14 @@ public class FunUtil extends Util {
      * @pre exp != null
      * @pre exp.getType() instanceof ScalarType
      */
-    static Map evaluateTuples(
+    static Map<Member[], Object> evaluateTuples(
             Evaluator evaluator,
             Calc exp,
-            List members) {
+            List<Member[]> members) {
         assert exp.getType() instanceof ScalarType;
-        Map mapMemberToValue = new HashMap();
+        Map<Member[], Object> mapMemberToValue = new HashMap<Member[], Object>();
         for (int i = 0, count = members.size(); i < count; i++) {
-            Member[] tuples = (Member[]) members.get(i);
+            Member[] tuples = members.get(i);
             evaluator.setContext(tuples);
             Object result = exp.evaluate(evaluator);
             if (result == null) {
@@ -324,13 +324,13 @@ public class FunUtil extends Util {
         return mapMemberToValue;
     }
 
-    static Map evaluateMembers(
+    static Map<Member, Object> evaluateMembers(
             Evaluator evaluator,
-            List members,
+            List<Member> members,
             boolean parentsToo) {
-        Map mapMemberToValue = new HashMap();
+        Map<Member, Object> mapMemberToValue = new HashMap<Member, Object>();
         for (int i = 0, count = members.size(); i < count; i++) {
-            Member member = (Member)members.get(i);
+            Member member = members.get(i);
             while (true) {
                 evaluator.setContext(member);
                 Object result = evaluator.evaluateCurrent();
@@ -351,13 +351,13 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Helper function to sort a list of members according to an expression.
+     * Helper function to sortMembers a list of members according to an expression.
      *
      * <p>NOTE: This function does not preserve the contents of the validator.
      */
-    static void sort(
+    static void sortMembers(
             Evaluator evaluator,
-            List members,
+            List<Member> members,
             Calc exp,
             boolean desc,
             boolean brk) {
@@ -366,7 +366,7 @@ public class FunUtil extends Util {
         }
         Object first = members.get(0);
         Comparator comparator;
-        Map mapMemberToValue = null;
+        Map<Member, Object> mapMemberToValue;
         if (first instanceof Member) {
             final boolean parentsToo = !brk;
             mapMemberToValue = evaluateMembers(evaluator, exp, members, parentsToo);
@@ -398,6 +398,44 @@ public class FunUtil extends Util {
                     pw.print(mapMemberToValue.get(o));
                     pw.print(": ");
                 }
+                pw.println(o);
+            }
+            pw.flush();
+        }
+    }
+
+    /**
+     * Helper function to sortMembers a list of members according to an expression.
+     *
+     * <p>NOTE: This function does not preserve the contents of the validator.
+     */
+    static void sortTuples(
+        Evaluator evaluator,
+        List<Member[]> tuples,
+        Calc exp,
+        boolean desc,
+        boolean brk,
+        int arity)
+    {
+        if (tuples.isEmpty()) {
+            return;
+        }
+        Comparator comparator;
+        if (brk) {
+            comparator = new BreakArrayComparator(evaluator, exp, arity);
+            if (desc) {
+                comparator = new ReverseComparator(comparator);
+            }
+        } else {
+            comparator = new HierarchicalArrayComparator(evaluator, exp, arity, desc);
+        }
+        Collections.sort(tuples, comparator);
+        if (debug) {
+            final PrintWriter pw = new PrintWriter(System.out);
+            for (int i = 0; i < tuples.size(); i++) {
+                Object o = tuples.get(i);
+                pw.print(i);
+                pw.print(": ");
                 pw.println(o);
             }
             pw.flush();
@@ -545,7 +583,7 @@ public class FunUtil extends Util {
                 double d = ((Number) o).doubleValue();
                 mapMemberToValue.put(
                     member,
-                    new Double(d / total * (double) 100));
+                    d / total * (double) 100);
             }
         }
     }
@@ -1028,7 +1066,7 @@ public class FunUtil extends Util {
             } else if (o instanceof Double) {
                 retval.v.add(o);
             } else if (o instanceof Number) {
-                retval.v.add(new Double(((Number) o).doubleValue()));
+                retval.v.add(((Number) o).doubleValue());
             } else {
                 retval.v.add(o);
             }
@@ -1074,7 +1112,7 @@ public class FunUtil extends Util {
                     retval.nullCount++;
                     retval.v.add(null);
                 } else {
-                    retval.v.add(new Double(o));
+                    retval.v.add(o);
                 }
                 // TODO: If the expression yielded an error, carry on
                 // summing, so that if we are running in a
@@ -1283,8 +1321,8 @@ public class FunUtil extends Util {
      *
      * @param m1 First member
      * @param m2 Second member
-     * @param post Whether to sort in postfix order. If true, a parent will
-     *   sort immediately after its last child. If false, a parent will sort
+     * @param post Whether to sortMembers in postfix order. If true, a parent will
+     *   sortMembers immediately after its last child. If false, a parent will sortMembers
      *   immediately before its first child.
      * @return -1 if m1 collates before m2,
      *   0 if m1 equals m2,
@@ -1568,7 +1606,7 @@ public class FunUtil extends Util {
         return funDef;
     }
 
-    static void appendTuple(StringBuffer buf, Member[] members) {
+    static void appendTuple(StringBuilder buf, Member[] members) {
         buf.append("(");
         for (int j = 0; j < members.length; j++) {
             if (j > 0) {
@@ -1632,10 +1670,10 @@ public class FunUtil extends Util {
     private static abstract class MemberComparator implements Comparator {
         private static final Logger LOGGER =
                 Logger.getLogger(MemberComparator.class);
-        Map mapMemberToValue;
+        Map<Member, Object> mapMemberToValue;
         private boolean desc;
 
-        MemberComparator(Map mapMemberToValue, boolean desc) {
+        MemberComparator(Map<Member, Object> mapMemberToValue, boolean desc) {
             this.mapMemberToValue = mapMemberToValue;
             this.desc = desc;
         }
@@ -1695,7 +1733,7 @@ public class FunUtil extends Util {
                         }
                         // prev1 and prev2 are siblings.
                         // Order according to hierarchy, if the values do not differ.
-                        // Needed to have a consistent sort if members with equal (null!)
+                        // Needed to have a consistent sortMembers if members with equal (null!)
                         //  values are compared.
                         c = FunUtil.compareSiblingMembers(prev1, prev2);
                         return c;
@@ -1707,7 +1745,7 @@ public class FunUtil extends Util {
 
     private static class HierarchicalMemberComparator
             extends MemberComparator {
-        HierarchicalMemberComparator(Map mapMemberToValue, boolean desc) {
+        HierarchicalMemberComparator(Map<Member, Object> mapMemberToValue, boolean desc) {
             super(mapMemberToValue, desc);
         }
 
@@ -1717,7 +1755,7 @@ public class FunUtil extends Util {
     }
 
     private static class BreakMemberComparator extends MemberComparator {
-        BreakMemberComparator(Map mapMemberToValue, boolean desc) {
+        BreakMemberComparator(Map<Member, Object> mapMemberToValue, boolean desc) {
             super(mapMemberToValue, desc);
         }
 
@@ -1739,7 +1777,7 @@ public class FunUtil extends Util {
         }
 
         private static String toString(Member[] a) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < a.length; i++) {
                 Member member = a[i];
                 if (i > 0) {

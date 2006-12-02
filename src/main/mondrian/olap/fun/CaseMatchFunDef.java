@@ -43,7 +43,7 @@ class CaseMatchFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final Exp[] args = call.getArgs();
-        final List calcList = new ArrayList();
+        final List<Calc> calcList = new ArrayList<Calc>();
         final Calc valueCalc =
                 compiler.compileScalar(args[0], true);
         calcList.add(valueCalc);
@@ -63,8 +63,7 @@ class CaseMatchFunDef extends FunDefBase {
                 compiler.compileScalar(args[args.length - 1], true) :
                 ConstantCalc.constantNull(call.getType());
         calcList.add(defaultCalc);
-        final Calc[] calcs = (Calc[])
-                calcList.toArray(new Calc[calcList.size()]);
+        final Calc[] calcs = calcList.toArray(new Calc[calcList.size()]);
 
         return new AbstractCalc(call) {
             public Object evaluate(Evaluator evaluator) {

@@ -14,6 +14,7 @@ import java.util.Map;
 
 import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapMember;
+import mondrian.rolap.RolapStar;
 import mondrian.rolap.aggmatcher.AggStar;
 
 /**
@@ -49,7 +50,7 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      * @param parents list of parent members that restrict the returned children.
      */
     public void addMemberConstraint(
-        SqlQuery sqlQuery, AggStar aggStar, List parents);
+        SqlQuery sqlQuery, AggStar aggStar, List<RolapMember> parents);
 
     /**
      * Will be called once for the level that contains the
@@ -62,7 +63,10 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      * @param levelToColumnMap set in the case of a virtual cube; use this
      */
     public void addLevelConstraint(
-        SqlQuery query, AggStar aggStar, RolapLevel level, Map levelToColumnMap);
+        SqlQuery query,
+        AggStar aggStar,
+        RolapLevel level,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap);
 
 }
 

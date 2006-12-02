@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -119,7 +119,7 @@ class RolapHierarchy extends HierarchyBase {
     RolapHierarchy(RolapCube cube, RolapDimension dimension,
             MondrianDef.Hierarchy xmlHierarchy,
             MondrianDef.CubeDimension xmlCubeDimension) {
-        this(dimension, xmlHierarchy.name, xmlHierarchy.hasAll.booleanValue());
+        this(dimension, xmlHierarchy.name, xmlHierarchy.hasAll);
 
         if (xmlHierarchy.relation == null &&
                 xmlHierarchy.memberReaderClass == null &&
@@ -210,21 +210,20 @@ class RolapHierarchy extends HierarchyBase {
         dialect = getRolapSchema().getDialect();
 
         final int columnCount = inlineTable.columnDefs.array.length;
-        List columnNames = new ArrayList();
-        List columnTypes = new ArrayList();
+        List<String> columnNames = new ArrayList<String>();
+        List<String> columnTypes = new ArrayList<String>();
         for (int i = 0; i < columnCount; i++) {
             columnNames.add(inlineTable.columnDefs.array[i].name);
             columnTypes.add(inlineTable.columnDefs.array[i].type);
         }
-        List valueList = new ArrayList();
-        for (int i = 0; i < inlineTable.rows.array.length; i++) {
-            MondrianDef.Row row = inlineTable.rows.array[i];
+        List<String[]> valueList = new ArrayList<String[]>();
+        for (MondrianDef.Row row : inlineTable.rows.array) {
             String[] values = new String[columnCount];
-            for (int j = 0; j < row.values.length; j++) {
-                MondrianDef.Value value = row.values[j];
+            for (MondrianDef.Value value : row.values) {
                 final int columnOrdinal = columnNames.indexOf(value.column);
                 if (columnOrdinal < 0) {
-                    throw Util.newError("Unknown column '" + value.column + "'");
+                    throw Util.newError(
+                        "Unknown column '" + value.column + "'");
                 }
                 values[columnOrdinal] = value.cdata;
             }

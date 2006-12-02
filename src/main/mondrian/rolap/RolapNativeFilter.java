@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2006 Julian Hyde
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -56,7 +56,7 @@ public class RolapNativeFilter extends RolapNativeSet {
         }
 
         public Object getCacheKey() {
-            List key = new ArrayList();
+            List<Object> key = new ArrayList<Object>();
             key.add(super.getCacheKey());
             key.add(filterExpr);
             return key;

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -96,11 +96,12 @@ public class Format {
      *
      * <p>If the number of entries in the cache exceeds 1000,
      */
-    private static Map cache = new LinkedHashMap() {
-        public boolean removeEldestEntry(Map.Entry entry) {
-            return size() > CacheLimit;
-        }
-    };
+    private static Map<String, Format> cache =
+        new LinkedHashMap<String, Format>() {
+            public boolean removeEldestEntry(Map.Entry<String, Format> entry) {
+                return size() > CacheLimit;
+            }
+        };
 
     static final char[] digits = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
@@ -213,7 +214,7 @@ public class Format {
      * The base implementation of most of these methods throws an error, there
      * is no requirement that a derived class implements all of these methods.
      * It is up to {@link Format#parseFormatString} to ensure that, for example,
-     * the {@link #format(double,StringBuffer)} method is never called for
+     * the {@link #format(double,StringBuilder)} method is never called for
      * {@link DateFormat}.
      */
     static class BasicFormat {
@@ -239,28 +240,28 @@ public class Format {
             return false;
         }
 
-        void formatNull(StringBuffer buf) {
+        void formatNull(StringBuilder buf) {
         }
 
-        void format(double d, StringBuffer buf) {
+        void format(double d, StringBuilder buf) {
             throw new Error();
         }
 
-        void format(long n, StringBuffer buf) {
+        void format(long n, StringBuilder buf) {
             throw new Error();
         }
 
-        void format(String s, StringBuffer buf) {
+        void format(String s, StringBuilder buf) {
             throw new Error();
         }
 
-        void format(Date date, StringBuffer buf) {
+        void format(Date date, StringBuilder buf) {
             Calendar calendar = Calendar.getInstance(); // todo: use locale
             calendar.setTime(date);
             format(calendar, buf);
         }
 
-        void format(Calendar calendar, StringBuffer buf) {
+        void format(Calendar calendar, StringBuilder buf) {
             throw new Error();
         }
 
@@ -318,7 +319,7 @@ public class Format {
             assert formats.length >= 2;
         }
 
-        void formatNull(StringBuffer buf) {
+        void formatNull(StringBuilder buf) {
             if (formats.length >= 4) {
                 formats[3].format(0, buf);
             } else {
@@ -326,7 +327,7 @@ public class Format {
             }
         }
 
-        void format(double n, StringBuffer buf) {
+        void format(double n, StringBuilder buf) {
             if (formats.length == 0) {
                 buf.append(n);
             } else {
@@ -354,7 +355,7 @@ public class Format {
             }
         }
 
-        void format(long n, StringBuffer buf) {
+        void format(long n, StringBuilder buf) {
             if (formats.length == 0) {
                 buf.append(n);
             } else {
@@ -376,15 +377,15 @@ public class Format {
             }
         }
 
-        void format(String s, StringBuffer buf) {
+        void format(String s, StringBuilder buf) {
             formats[0].format(s, buf);
         }
 
-        void format(Date date, StringBuffer buf) {
+        void format(Date date, StringBuilder buf) {
             formats[0].format(date, buf);
         }
 
-        void format(Calendar calendar, StringBuffer buf) {
+        void format(Calendar calendar, StringBuilder buf) {
             formats[0].format(calendar, buf);
         }
     }
@@ -410,23 +411,23 @@ public class Format {
             this.s = s;
         }
 
-        void format(double d, StringBuffer buf) {
+        void format(double d, StringBuilder buf) {
             buf.append(s);
         }
 
-        void format(long n, StringBuffer buf) {
+        void format(long n, StringBuilder buf) {
             buf.append(s);
         }
 
-        void format(String s, StringBuffer buf) {
+        void format(String s, StringBuilder buf) {
             buf.append(s);
         }
 
-        void format(Date date, StringBuffer buf) {
+        void format(Date date, StringBuilder buf) {
             buf.append(s);
         }
 
-        void format(Calendar calendar, StringBuffer buf) {
+        void format(Calendar calendar, StringBuilder buf) {
             buf.append(s);
         }
     }
@@ -447,37 +448,37 @@ public class Format {
             assert formats.length >= 2;
         }
 
-        void formatNull(StringBuffer buf) {
+        void formatNull(StringBuilder buf) {
             for (int i = 0; i < formats.length; i++) {
                 formats[i].formatNull(buf);
             }
         }
 
-        void format(double v, StringBuffer buf) {
+        void format(double v, StringBuilder buf) {
             for (int i = 0; i < formats.length; i++) {
                 formats[i].format(v, buf);
             }
         }
 
-        void format(long v, StringBuffer buf) {
+        void format(long v, StringBuilder buf) {
             for (int i = 0; i < formats.length; i++) {
                 formats[i].format(v, buf);
             }
         }
 
-        void format(String v, StringBuffer buf) {
+        void format(String v, StringBuilder buf) {
             for (int i = 0; i < formats.length; i++) {
                 formats[i].format(v, buf);
             }
         }
 
-        void format(Date v, StringBuffer buf) {
+        void format(Date v, StringBuilder buf) {
             for (int i = 0; i < formats.length; i++) {
                 formats[i].format(v, buf);
             }
         }
 
-        void format(Calendar v, StringBuffer buf) {
+        void format(Calendar v, StringBuilder buf) {
             for (int i = 0; i < formats.length; i++) {
                 formats[i].format(v, buf);
             }
@@ -514,20 +515,26 @@ public class Format {
         // No need to override format(Object,PrintWriter) or
         // format(Date,PrintWriter).
 
-        void format(double d, StringBuffer buf) {
-            numberFormat.format(d, buf, dummyFieldPos);
+        void format(double d, StringBuilder buf) {
+            // NOTE (jhyde, 2006/12/1): We'd use
+            // NumberFormat(double,StringBuilder,FieldPosition) if it existed.
+            buf.append(numberFormat.format(d));
         }
 
-        void format(long n, StringBuffer buf) {
-            numberFormat.format(n, buf, dummyFieldPos);
+        void format(long n, StringBuilder buf) {
+            // NOTE (jhyde, 2006/12/1): We'd use
+            // NumberFormat(long,StringBuilder,FieldPosition) if it existed.
+            buf.append(numberFormat.format(n));
         }
 
-        void format(String s, StringBuffer buf) {
+        void format(String s, StringBuilder buf) {
             buf.append(s);
         }
 
-        void format(Calendar calendar, StringBuffer buf) {
-            dateFormat.format(calendar.getTime(), buf, dummyFieldPos);
+        void format(Calendar calendar, StringBuilder buf) {
+            // NOTE (jhyde, 2006/12/1): We'd use
+            // NumberFormat(Date,StringBuilder,FieldPosition) if it existed.
+            buf.append(dateFormat.format(calendar.getTime()));
         }
     }
 
@@ -546,19 +553,19 @@ public class Format {
             this.token = token;
         }
 
-        void format(double d, StringBuffer buf) {
+        void format(double d, StringBuilder buf) {
             buf.append(token);
         }
 
-        void format(long n, StringBuffer buf) {
+        void format(long n, StringBuilder buf) {
             buf.append(token);
         }
 
-        void format(String s, StringBuffer buf) {
+        void format(String s, StringBuilder buf) {
             buf.append(token);
         }
 
-        void format(Calendar calendar, StringBuffer buf) {
+        void format(Calendar calendar, StringBuilder buf) {
             buf.append(token);
         }
     }
@@ -634,7 +641,7 @@ public class Format {
             this.decimalShift = 0; // set later
         }
 
-        void format(double n, StringBuffer buf)
+        void format(double n, StringBuilder buf)
         {
             FloatingDecimal fd = new FloatingDecimal(n);
             fd.shift(decimalShift);
@@ -696,7 +703,7 @@ public class Format {
             return false;
         }
 
-        void format(long n, StringBuffer buf)
+        void format(long n, StringBuilder buf)
         {
             mondrian.util.Format.FloatingDecimal fd
                 = new mondrian.util.Format.FloatingDecimal(n);
@@ -718,7 +725,7 @@ public class Format {
      * DateFormat is an element of a {@link Format.CompoundFormat} which has a
      * value when applied to a {@link Calendar} object.  (Values of type {@link
      * Date} are automatically converted into {@link Calendar}s when you call
-     * {@link Format.BasicFormat#format(Date, StringBuffer)} calls to format
+     * {@link Format.BasicFormat#format(java.util.Date,StringBuilder)} calls to format
      * other kinds of values give a runtime error.)
      *
      * <p>In a typical use of this class, a format string such as "m/d/yy" is
@@ -743,12 +750,12 @@ public class Format {
             this.twelveHourClock = twelveHourClock;
         }
 
-        void format(Calendar calendar, StringBuffer buf)
+        void format(Calendar calendar, StringBuilder buf)
         {
             format(code, calendar, buf);
         }
 
-        private void format(int code, Calendar calendar, StringBuffer buf)
+        private void format(int code, Calendar calendar, StringBuilder buf)
         {
             switch (code) {
             case FORMAT_C:
@@ -1233,7 +1240,7 @@ public class Format {
         return new Token(code,flags,token);
     }
 
-    public static final List getTokenList()
+    public static final List<Token> getTokenList()
     {
         return Collections.unmodifiableList(Arrays.asList(tokens));
     }
@@ -1378,7 +1385,7 @@ public class Format {
         }
         this.locale = locale;
 
-        ArrayList alternateFormatList = new ArrayList();
+        List<BasicFormat> alternateFormatList = new ArrayList<BasicFormat>();
         while (formatString.length() > 0) {
             formatString = parseFormatString(
                 formatString, alternateFormatList);
@@ -1514,7 +1521,7 @@ public class Format {
                 currencyValue.substring(0, currencyValue.indexOf("1"));
         String currencyRight =
                 currencyValue.substring(currencyValue.indexOf("8") + 1);
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(currencyLeft);
         int minimumIntegerDigits = currencyFormat.getMinimumIntegerDigits();
         for (int i = Math.max(minimumIntegerDigits, 4) - 1; i >= 0; --i) {
@@ -1547,7 +1554,7 @@ public class Format {
                 locale);
     }
 
-    private static void appendTimes(StringBuffer buf, char c, int i) {
+    private static void appendTimes(StringBuilder buf, char c, int i) {
         while (i-- > 0) {
             buf.append(c);
         }
@@ -1642,11 +1649,11 @@ public class Format {
      * the remains of formatString.
      */
     private String parseFormatString(
-        String formatString, ArrayList alternateFormatList)
+        String formatString, List<BasicFormat> alternateFormatList)
     {
         // Where we are in a numeric format.
         int numberState = NOT_IN_A_NUMBER;
-        StringBuffer ignored = new StringBuffer();
+        StringBuilder ignored = new StringBuilder();
         String prevIgnored = null;
         boolean haveSeenNumber = false;
         int digitsLeftOfPoint = 0,
@@ -1695,7 +1702,7 @@ public class Format {
         }
 
         // Scan through the format string for format elements.
-        ArrayList formatList = new ArrayList();
+        List<BasicFormat> formatList = new ArrayList<BasicFormat>();
 loop:
         while (formatString.length() > 0) {
             BasicFormat format = null;
@@ -1762,8 +1769,7 @@ loop:
                             boolean theyMeantMinute = false;
                             int j = formatList.size() - 1;
                             while (j >= 0) {
-                                BasicFormat prevFormat = (BasicFormat)
-                                    formatList.get(j);
+                                BasicFormat prevFormat = formatList.get(j);
                                 if (prevFormat instanceof LiteralFormat) {
                                     // ignore boilerplate
                                     j--;
@@ -1972,7 +1978,7 @@ loop:
 
         // The is the end of an alternate - or of the whole format string.
         // Push the current list of formats onto the list of alternates.
-        BasicFormat[] formats = (BasicFormat[])
+        BasicFormat[] formats =
             formatList.toArray(new BasicFormat[formatList.size()]);
 
         // If they used some symbol like 'AM/PM' in the format string, tell all
@@ -2044,18 +2050,18 @@ loop:
 
     public String format(Object o)
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         format(o, buf);
         return buf.toString();
     }
 
-    private StringBuffer format(Object o, StringBuffer buf) {
+    private StringBuilder format(Object o, StringBuilder buf) {
         if (o == null) {
             format.formatNull(buf);
         } else {
             // For final classes, it is more efficient to switch using
             // class equality than using 'instanceof'.
-            Class clazz = o.getClass();
+            Class<? extends Object> clazz = o.getClass();
             if (clazz == Double.class) {
                 format.format(((Double) o).doubleValue(), buf);
             } else if (clazz == Float.class) {
@@ -2849,7 +2855,7 @@ static class FloatingDecimal {
     public String
     toString(){
         // most brain-dead version
-        StringBuffer result = new StringBuffer( nDigits+8 );
+        StringBuilder result = new StringBuilder( nDigits+8 );
         if ( isNegative ){ result.append( '-' ); }
         if ( isExceptional ){
             result.append( digits, 0, nDigits );
@@ -3671,7 +3677,7 @@ static class FDBigInt {
 
     public String
     toString() {
-        StringBuffer r = new StringBuffer(30);
+        StringBuilder r = new StringBuilder(30);
         r.append('[');
         int i = Math.min( nWords-1, data.length-1) ;
         if ( nWords > data.length ){
