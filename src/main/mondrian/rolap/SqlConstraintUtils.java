@@ -220,10 +220,12 @@ public class SqlConstraintUtils {
      * of all parents.  All parents must belong to the same level.
      * 
      * <p>If this constraint is part of a native cross join, there are
-     * multiple constraining members, and the parent member values are
-     * different, then generate
-     * "WHERE ((level1 = val1a AND level2 = val2a AND ...)
-     * OR (level1 = val1b AND level2 = val2b AND ...) OR ..." instead.
+     * multiple constraining members, and the members comprise the cross
+     * product of all unique member keys referenced at each level, then
+     * generating IN expressions would result in incorrect results.  In that
+     * case, "WHERE ((level1 = val1a AND level2 = val2a AND ...)
+     * OR (level1 = val1b AND level2 = val2b AND ...) OR ..." is generated
+     * instead.
      *
      * @param sqlQuery the query to modify
      * @param aggStar
@@ -250,7 +252,7 @@ public class SqlConstraintUtils {
         // use IN clauses
         if (crossJoin) {
             RolapLevel level = ((RolapMember) parents.get(0)).getRolapLevel();
-            if (!level.isUnique() && !allSameParentMembers(parents)) {               
+            if (!level.isUnique() && !membersAreCrossProduct(parents)) {               
                 constrainMultiLevelMembers(sqlQuery, parents, strict);
                 return;
             }
@@ -380,18 +382,33 @@ public class SqlConstraintUtils {
     /**
      * @param members list of members
      * 
-     * @return true if the parents in the list of members are all the same
+     * @return true if the members comprise the cross product of all unique
+     * member keys referenced at each level
      */
-    public static boolean allSameParentMembers(List members)
+    public static boolean membersAreCrossProduct(List members)
     {
+        int crossProdSize = getNumUniqueMemberKeys(members);
         for (Collection parents = getUniqueParentMembers(members);
             !parents.isEmpty(); parents = getUniqueParentMembers(parents))
         {
-            if (parents.size() > 1) {
-                return false;
-            }
+            crossProdSize *= parents.size();
         }
-        return true;
+        return (crossProdSize == members.size());
+    }
+    
+    /**
+     * @param members list of members
+     * 
+     * @return number of unique member keys in a list of members
+     */
+    private static int getNumUniqueMemberKeys(List members)
+    {
+        Set set = new HashSet();
+        for (Iterator it = members.iterator(); it.hasNext();) {
+            RolapMember m = (RolapMember) it.next();
+            set.add(m.getKey());
+        }
+        return set.size();
     }
     
     /**

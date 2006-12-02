@@ -1222,6 +1222,20 @@ public class NonEmptyTest extends FoodMartTestCase {
             "{[Time].[1997].[Q1], [Time].[1998].[Q2]}) on rows from Sales");
     }
     
+    public void testCrossJoinSetWithCrossProdMembers()
+    {
+        // members in set are a cross product of (1997, 1998) and (Q1, Q2, Q3)
+        checkNative(
+            15,
+            15,
+            "select " +
+            "{[Measures].[Unit Sales]} on columns, " +
+            "NonEmptyCrossJoin([Education Level].[Education Level].Members, " +
+            "{[Time].[1997].[Q1], [Time].[1997].[Q2], [Time].[1997].[Q3], " +
+            "[Time].[1998].[Q1], [Time].[1998].[Q2], [Time].[1998].[Q3]})" +
+            "on rows from Sales");
+    }
+    
     public void testCrossJoinSetWithSameParent()
     {
         // members in set have the same parent
