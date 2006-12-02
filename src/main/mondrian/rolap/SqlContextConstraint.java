@@ -254,7 +254,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         SqlConstraintUtils.addContextConstraint(
             sqlQuery, aggStar, evaluator, strict);
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, aggStar, parents, true);
+            sqlQuery, aggStar, parents, true, false);
     }
 
     /**

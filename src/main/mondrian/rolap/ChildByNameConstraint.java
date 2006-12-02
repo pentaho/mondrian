@@ -14,8 +14,6 @@ import java.util.Map;
 
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.aggmatcher.AggStar;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.MondrianDef;
 
 /**
  * Constraint which optimizes the search for a child by name. This is used
@@ -47,42 +45,12 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
         SqlQuery query, AggStar aggStar, RolapLevel level, Map levelToColumnMap)
     {
         super.addLevelConstraint(query, aggStar, level, levelToColumnMap);
-        MondrianDef.Expression exp = level.getNameExp();
-        SqlQuery.Datatype datatype;
-        if (exp == null) {
-            exp = level.getKeyExp();
-            datatype = level.getDatatype();
-        } else {
-            // The schema doesn't specify the datatype of the name column, but
-            // we presume that it is a string.
-            datatype = SqlQuery.Datatype.String;
-        }
-        String column = exp.getExpression(query);
-        String value = childName;
-        if (datatype == SqlQuery.Datatype.String) {
-            // some dbs (like DB2) compare case sensitive
-            if (!MondrianProperties.instance().CaseSensitive.get()) {
-                column = query.getDialect().toUpper(column);
-                value = value.toUpperCase();
-            }
-        }
-        if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(value)) {
-            query.addWhere(
-                column,
-                " is ",
-                RolapUtil.sqlNullLiteral);
-        } else {
-            if (datatype.isNumeric()) {
-                // make sure it can be parsed
-                Double.valueOf(value);
-            }
-            final StringBuffer buf = new StringBuffer();
-            query.getDialect().quote(buf, value, datatype);
-            query.addWhere(
-                column,
-                " = ",
-                buf.toString());
-        }
+        query.addWhere(
+            SqlConstraintUtils.constrainLevel(
+                level,
+                query,
+                childName,
+                true));
     }
 
     public String toString() {

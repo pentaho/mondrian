@@ -411,7 +411,7 @@ public abstract class RolapNativeSet extends RolapNative {
 
         public void addConstraint(SqlQuery sqlQuery) {
             SqlConstraintUtils.addMemberConstraint(
-                sqlQuery, null, Arrays.asList(members), strict);
+                sqlQuery, null, Arrays.asList(members), strict, true);
         }
     }
 

@@ -43,7 +43,12 @@ public class DefaultMemberChildrenConstraint
 
     public void addMemberConstraint(
         SqlQuery sqlQuery, AggStar aggStar, List parents) {
-        SqlConstraintUtils.addMemberConstraint(sqlQuery, aggStar, parents, true);
+        SqlConstraintUtils.addMemberConstraint(
+            sqlQuery,
+            aggStar,
+            parents,
+            true,
+            false);
     }
 
     public void addLevelConstraint(

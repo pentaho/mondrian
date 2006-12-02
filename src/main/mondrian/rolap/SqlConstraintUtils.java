@@ -13,6 +13,7 @@ import java.util.*;
 
 import mondrian.olap.Evaluator;
 import mondrian.olap.Member;
+import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.agg.*;
@@ -211,26 +212,50 @@ public class SqlConstraintUtils {
         SqlQuery sqlQuery, AggStar aggStar, RolapMember parent, boolean strict)
     {
         List list = Collections.singletonList(parent);
-        addMemberConstraint(sqlQuery, aggStar, list, strict);
+        addMemberConstraint(sqlQuery, aggStar, list, strict, false);
     }
 
     /**
      * Creates a "WHERE exp IN (...)" condition containing the values
-     * of all parents. All parents must belong to the same level.
+     * of all parents.  All parents must belong to the same level.
+     * 
+     * <p>If this constraint is part of a native cross join, there are
+     * multiple constraining members, and the parent member values are
+     * different, then generate
+     * "WHERE ((level1 = val1a AND level2 = val2a AND ...)
+     * OR (level1 = val1b AND level2 = val2b AND ...) OR ..." instead.
      *
      * @param sqlQuery the query to modify
      * @param aggStar
      * @param parents the list of parent members
      * @param strict defines the behavior if <code>parents</code>
      *   contains calculated members.
-     *   If true, an exception is thrown,
+     *   If true, an exception is thrown.
+     * @param crossJoin true if constraint is being generated as part of
+     * a native crossjoin
      */
     public static void addMemberConstraint(
-        SqlQuery sqlQuery, AggStar aggStar, List parents, boolean strict)
+        SqlQuery sqlQuery,
+        AggStar aggStar,
+        List parents,
+        boolean strict,
+        boolean crossJoin)
     {
         if (parents.size() == 0) {
             return;
         }
+        
+        // If this constraint is part of a native cross join and there
+        // are multiple values for the parent members, then we can't
+        // use IN clauses
+        if (crossJoin) {
+            RolapLevel level = ((RolapMember) parents.get(0)).getRolapLevel();
+            if (!level.isUnique() && !allSameParentMembers(parents)) {               
+                constrainMultiLevelMembers(sqlQuery, parents, strict);
+                return;
+            }
+        }
+
         for (Collection c = parents; !c.isEmpty(); c = getUniqueParentMembers(c)) {
             RolapMember m = (RolapMember) c.iterator().next();
             if (m.isAll()) {
@@ -243,12 +268,12 @@ public class SqlConstraintUtils {
                 }
                 continue;
             }
-            RolapLevel level = m.getRolapLevel();
+            RolapLevel level = m.getRolapLevel();          
             RolapHierarchy hierarchy = (RolapHierarchy) level.getHierarchy();
             hierarchy.addToFrom(sqlQuery, level.getKeyExp());
             String q = level.getKeyExp().getExpression(sqlQuery);
             ColumnConstraint[] cc = getColumnConstraints(c);
-
+            
             if (!strict && cc.length >= MondrianProperties.instance().MaxConstraints.get()){
                 // Simply get them all, do not create where-clause.
                 // Below are two alternative approaches (and code). They
@@ -285,6 +310,160 @@ public class SqlConstraintUtils {
             }
         }
         return set;
+    }
+    
+    /**
+     * Adds to the where clause of a query expression matching a specified
+     * list of members
+     * 
+     * @param sqlQuery query containing the where clause
+     * @param members list of constraining members
+     * @param strict defines the behavior when calculated members are present
+     */
+    private static void constrainMultiLevelMembers(
+        SqlQuery sqlQuery,
+        List members,
+        boolean strict)
+    {
+        // iterate through each level in each member generating
+        // AND's across the levels and OR's across the members
+        Iterator memberIter = members.iterator();
+        String condition = "(";
+        boolean firstMember = true;
+        for (int i = 0; i < members.size(); i++) {
+            RolapMember m = (RolapMember) memberIter.next();            
+            if (m.isCalculated()) {
+                if (strict) {
+                    throw Util.newInternal("addMemberConstraint: cannot " +
+                        "restrict SQL to calculated member :" + m);
+                }
+                continue;
+            }
+            if (!firstMember) {
+                condition += " or ";
+            }
+            condition += "(";
+            boolean firstLevel = true;
+            do {
+                if (!m.isAll()) {
+                    RolapLevel level = m.getRolapLevel();
+                    // add the level to the FROM clause if this is the
+                    // first member we're generating sql for
+                    if (firstMember) {
+                        RolapHierarchy hierarchy =
+                            (RolapHierarchy) level.getHierarchy();
+                        hierarchy.addToFrom(sqlQuery, level.getKeyExp());
+                    }
+                    if (!firstLevel) {
+                        condition += " and ";
+                    } else {
+                        firstLevel = false;
+                    }               
+                    condition += constrainLevel(
+                        level,
+                        sqlQuery,
+                        getColumnValue(
+                            m.getSqlKey(),                       
+                            sqlQuery.getDialect(),
+                            level.getDatatype()),
+                            false);
+                }
+                m = (RolapMember) m.getParentMember();              
+            } while (m != null);
+            condition += ")";
+            firstMember = false;
+        }
+        condition += ")";
+        sqlQuery.addWhere(condition);
+    }
+    
+    /**
+     * @param members list of members
+     * 
+     * @return true if the parents in the list of members are all the same
+     */
+    public static boolean allSameParentMembers(List members)
+    {
+        for (Collection parents = getUniqueParentMembers(members);
+            !parents.isEmpty(); parents = getUniqueParentMembers(parents))
+        {
+            if (parents.size() > 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * @param key key corresponding to a member
+     * @param dialect sql dialect being used
+     * @param datatype data type of the member
+     * 
+     * @return string value corresponding to the member
+     */
+    public static String getColumnValue(
+        Object key,
+        SqlQuery.Dialect dialect,
+        SqlQuery.Datatype datatype)
+    {
+        if (key != RolapUtil.sqlNullValue) {
+            return key.toString();
+        } else {
+            return RolapUtil.mdxNullLiteral;
+        }
+    }
+    
+    /**
+     * Generates a sql expression constraining a level by some value
+     * 
+     * @param level the level
+     * @param query the query that the sql expression will be added to
+     * @param columnValue value constraining the level
+     * @param caseSensitive if true, need to handle case sensitivity of the
+     * member value
+     * 
+     * @return generated string corresponding to the expression
+     */
+    public static String constrainLevel(
+        RolapLevel level,
+        SqlQuery query,
+        String columnValue,
+        boolean caseSensitive)
+    {
+        MondrianDef.Expression exp = level.getNameExp();
+        SqlQuery.Datatype datatype;
+        if (exp == null) {
+            exp = level.getKeyExp();
+            datatype = level.getDatatype();
+        } else {
+            // The schema doesn't specify the datatype of the name column, but
+            // we presume that it is a string.
+            datatype = SqlQuery.Datatype.String;
+        }
+        String column = exp.getExpression(query);        
+        String constraint;
+        if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(columnValue)) {
+            constraint = column + " is " + RolapUtil.sqlNullLiteral;
+        } else {
+            String value = columnValue;
+            if (caseSensitive && datatype == SqlQuery.Datatype.String) {
+                // some dbs (like DB2) compare case sensitive
+                if (!MondrianProperties.instance().CaseSensitive.get()) {
+                    column = query.getDialect().toUpper(column);
+                    value = value.toUpperCase();
+                }
+            }
+            
+            if (datatype.isNumeric()) {
+                // make sure it can be parsed
+                Double.valueOf(value);
+            }
+            final StringBuffer buf = new StringBuffer();
+            query.getDialect().quote(buf, value, datatype);
+            constraint = column + " = " + buf.toString();
+        }
+        
+        return constraint;
     }
 }
 

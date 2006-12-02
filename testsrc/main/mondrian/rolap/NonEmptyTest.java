@@ -1207,6 +1207,49 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Sales]");
 
     }
+    
+    public void testCrossJoinSetWithDifferentParents()
+    {
+        // Verify that only the members explicitly referenced in the set
+        // are returned.  Note that different members are referenced in
+        // each level in the time dimension.
+        checkNative(
+            5,
+            5,
+            "select " +
+            "{[Measures].[Unit Sales]} on columns, " +
+            "NonEmptyCrossJoin([Education Level].[Education Level].Members, " +
+            "{[Time].[1997].[Q1], [Time].[1998].[Q2]}) on rows from Sales");
+    }
+    
+    public void testCrossJoinSetWithSameParent()
+    {
+        // members in set have the same parent
+        checkNative(
+            10,
+            10,
+            "select " +
+            "{[Measures].[Unit Sales]} on columns, " +
+            "NonEmptyCrossJoin([Education Level].[Education Level].Members, " +
+            "{[Store].[All Stores].[USA].[CA].[Beverly Hills], " +
+            "[Store].[All Stores].[USA].[CA].[San Francisco]}) " +
+            "on rows from Sales");
+    }
+    
+    public void testCrossJoinSetWithUniqueLevel()
+    {
+        // members in set have different parents but there is a unique level
+        checkNative(
+            10,
+            10,
+            "select " +
+            "{[Measures].[Unit Sales]} on columns, " +
+            "NonEmptyCrossJoin([Education Level].[Education Level].Members, " +
+            "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6], "+
+            "[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}) " +
+            "on rows from Sales");
+    }
+
 
     /**
      * make sure the following is not run natively
