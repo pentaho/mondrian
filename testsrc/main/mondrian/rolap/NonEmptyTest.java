@@ -1286,6 +1286,65 @@ public class NonEmptyTest extends FoodMartTestCase {
             "on rows from Sales");
     }
 
+    public void testCrossJoinEvaluatorContext()
+    {
+        // This test ensures that the proper measure members context is
+        // set when evaluating a non-empty cross join.  The context should
+        // not include the calculated measure [*TOP_BOTTOM_SET].  If it
+        // does, the query will result in an infinite loop because the cross
+        // join will try evaluating the calculated member (when it shouldn't)
+        // and the calculated member references the cross join, resulting
+        // in the loop
+        assertQueryReturns(
+            "With " +
+            "Set [*NATIVE_CJ_SET] as " +
+            "'NonEmptyCrossJoin([*BASE_MEMBERS_Store], [*BASE_MEMBERS_Products])' " +
+            "Set [*TOP_BOTTOM_SET] as " +
+            "'Order([*GENERATED_MEMBERS_Store], ([Measures].[Unit Sales], " +
+            "[Product].[All Products].[*TOP_BOTTOM_MEMBER]), BDESC)' " +
+            "Set [*BASE_MEMBERS_Store] as '[Store].members' " +
+            "Set [*GENERATED_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' " +
+            "Set [*BASE_MEMBERS_Products] as " +
+            "'{[Product].[All Products].[Food], [Product].[All Products].[Drink], " +
+            "[Product].[All Products].[Non-Consumable]}' " +
+            "Set [*GENERATED_MEMBERS_Products] as " +
+            "'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' " +
+            "Member [Product].[All Products].[*TOP_BOTTOM_MEMBER] as " +
+            "'Aggregate([*GENERATED_MEMBERS_Products])'" +
+            "Member [Measures].[*TOP_BOTTOM_MEMBER] as 'Rank([Store].CurrentMember,[*TOP_BOTTOM_SET])' " +
+            "Member [Store].[All Stores].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
+            "'sum(Filter([*GENERATED_MEMBERS_Store], [Measures].[*TOP_BOTTOM_MEMBER] <= 10))'" +
+            "Select {[Measures].[Store Cost]} on columns, " +
+            "Non Empty Filter(Generate([*NATIVE_CJ_SET], {([Store].CurrentMember)}), " +
+            "[Measures].[*TOP_BOTTOM_MEMBER] <= 10) on rows From [Sales]",
+            
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Store Cost]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores]}\n" +
+                "{[Store].[All Stores].[USA]}\n" +
+                "{[Store].[All Stores].[USA].[CA]}\n" +
+                "{[Store].[All Stores].[USA].[OR]}\n" +
+                "{[Store].[All Stores].[USA].[OR].[Portland]}\n" +
+                "{[Store].[All Stores].[USA].[OR].[Salem]}\n" +
+                "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}\n" +
+                "{[Store].[All Stores].[USA].[WA]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n" +
+                "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n" +
+                "Row #0: 225,627.23\n" +               
+                "Row #1: 225,627.23\n" +
+                "Row #2: 63,530.43\n" +
+                "Row #3: 56,772.50\n" +
+                "Row #4: 21,948.94\n" +
+                "Row #5: 34,823.56\n" +
+                "Row #6: 34,823.56\n" +
+                "Row #7: 105,324.31\n" +
+                "Row #8: 29,959.28\n" +
+                "Row #9: 29,959.28\n"));
+    }
 
     /**
      * make sure the following is not run natively

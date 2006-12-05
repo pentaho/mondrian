@@ -61,10 +61,10 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
                 // evaluate the arguments in non empty mode
                 evaluator = evaluator.push();
                 evaluator.setNonEmpty(true);
-                List result = crossJoin(list1, list2, evaluator);
+                List result = crossJoin(list1, list2, evaluator, call);
 
                 // remove any remaining empty crossings from the result
-                result = nonEmptyList(evaluator, result);
+                result = nonEmptyList(evaluator, result, call);
                 return result;
             }
 

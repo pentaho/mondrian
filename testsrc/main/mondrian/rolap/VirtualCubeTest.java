@@ -451,8 +451,6 @@ public class VirtualCubeTest extends FoodMartTestCase {
     {
         // result should exclude measures that are not explicitly defined
         // in the virtual cube (e.g., [Profit last Period])
-        executeQuery(
-            "select {[Measures].allMembers} on columns from [Warehouse and Sales");
         assertQueryReturns(
             "select\n" +
             "{[Measures].allMembers} on columns\n" +

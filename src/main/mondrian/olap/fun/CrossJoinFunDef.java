@@ -17,7 +17,7 @@ import mondrian.olap.type.SetType;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
-import mondrian.mdx.ResolvedFunCall;
+import mondrian.mdx.*;
 import mondrian.util.Bug;
 
 import java.util.ArrayList;
@@ -108,7 +108,7 @@ class CrossJoinFunDef extends FunDefBase {
                 }
                 final List list2 = listCalc2.evaluateList(evaluator.push());
                 assert oldEval.equals(evaluator) : "listCalc2 changed context";
-                return crossJoin(list1, list2, evaluator);
+                return crossJoin(list1, list2, evaluator, call);
             }
         };
     }
@@ -125,7 +125,12 @@ class CrossJoinFunDef extends FunDefBase {
         }
     }
 
-    List crossJoin(List list1, List list2, Evaluator evaluator) {
+    List crossJoin(
+        List list1,
+        List list2,
+        Evaluator evaluator,
+        ResolvedFunCall call)
+    {
         if (list1.isEmpty() || list2.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
@@ -150,8 +155,8 @@ class CrossJoinFunDef extends FunDefBase {
                 list1 = nonEmptyListOld(evaluator, list1);
                 list2 = nonEmptyListOld(evaluator, list2);
             } else {
-                list1 = nonEmptyList(evaluator, list1);
-                list2 = nonEmptyList(evaluator, list2);
+                list1 = nonEmptyList(evaluator, list1, call);
+                list2 = nonEmptyList(evaluator, list2, call);
             }
             size = (long)list1.size() * (long)list2.size();
             // both list1 and list2 may be empty after nonEmpty optimization
@@ -279,15 +284,27 @@ class CrossJoinFunDef extends FunDefBase {
 
 
     /**
-     * Visitor which builds a list of all measures referenced in a query.
+     * Visitor which builds a list of all measures referenced in a query,
+     * provided the measures don't reference the function call we're trying
+     * to evaluate for non-emptiness.
      */
     static class MeasureVisitor implements mondrian.mdx.MdxVisitor {
+        
         // This set is null unless a measure is found.
         Set<Member> measureSet;
         Set<Member> queryMeasureSet;
-        MeasureVisitor(Set<Member> queryMeasureSet) {
+        // measures referencing this call should be excluded from the list
+        // of measures found
+        ResolvedFunCall crossJoinCall;
+        
+        MeasureVisitor(
+            Set<Member> queryMeasureSet,
+            ResolvedFunCall crossJoinCall)
+        {
             this.queryMeasureSet = queryMeasureSet;
+            this.crossJoinCall = crossJoinCall;
         }
+        
         public Object visit(mondrian.olap.Query query) {
             return null;
         }
@@ -322,12 +339,14 @@ class CrossJoinFunDef extends FunDefBase {
             Member member = memberExpr.getMember();
             for (Member measure : queryMeasureSet) {
                 if (measure.equals(member)) {
-                    if (measureSet == null) {
-                        measureSet = new HashSet<Member>();
-                    }
+                    if (validMeasure(measure)) {                   
+                        if (measureSet == null) {
+                            measureSet = new HashSet<Member>();
+                        }
 //System.out.println("CrossJoinFunDef.MeasureVisitor.visit: measure=" +measure.getUniqueName());
-                    measureSet.add(measure);
-                    break;
+                        measureSet.add(measure);
+                        break;
+                    }
                 }
             }
             return null;
@@ -338,8 +357,77 @@ class CrossJoinFunDef extends FunDefBase {
         public Object visit(mondrian.olap.Literal literal) {
             return null;
         }
+        
+        /**
+         * Determines if a measure should be added to the set of measures
+         * that make up the evaluation context for the nonempty cross join.
+         * It should not be if it is a calculated measure that references
+         * the cross join, unless the cross join itself also references
+         * that calculated measure, in which case, we have a recursive call,
+         * an an exception is thrown.
+         * 
+         * @param measure measure being examined
+         * 
+         * @return true if the measure should be added
+         */
+        private boolean validMeasure(Member measure)
+        {
+            if (measure.isCalculated()) {
+                // check if the measure references the crossjoin
+                Exp measureExp = measure.getExpression();
+                ResolvedFunCallFinder finder =
+                    new ResolvedFunCallFinder(crossJoinCall);
+                measureExp.accept(finder);
+                if (finder.found) {
+                    // check if the arguments to the cross join reference
+                    // the measure
+                    Exp [] args = crossJoinCall.getArgs();
+                    for (int i = 0; i < args.length; i++) {
+                        Set<Member> measureSet = new HashSet<Member>();
+                        measureSet.add(measure);
+                        MeasureVisitor measureFinder =
+                            new MeasureVisitor(measureSet, null);
+                        args[i].accept(measureFinder);
+                        measureSet = measureFinder.measureSet;
+                        if (measureSet != null && measureSet.size() > 0) {
+                            // recursive condition 
+                            throw FunUtil.newEvalException(null,
+                                "Infinite loop detected in " +
+                                crossJoinCall.toString());
+                        }
+                    }
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
+    /**
+     * Visitor class used to locate a resolved function call within an
+     * expression
+     */
+    private static class ResolvedFunCallFinder
+        extends MdxVisitorImpl
+    {       
+        private ResolvedFunCall call;
+        public boolean found;
+        
+        public ResolvedFunCallFinder(ResolvedFunCall call)
+        {
+            this.call = call;
+            found = false;
+        }
+        
+        public Object visit(ResolvedFunCall funCall)
+        {
+            if (funCall == call) {
+                found = true;
+            }
+            return null;
+        }
+    }
+    
     /**
      * What one wants to determine is for each individual Members of the input
      * parameter list whether across a slice there is any data. But what data.
@@ -353,10 +441,15 @@ class CrossJoinFunDef extends FunDefBase {
      * data iterating across all Measures until non-null data is found or the
      * end of the Measures is reached.
      *
-     * @param evaluator
-     * @param list
+     * @param evaluator evaluator
+     * @param list list of members being checked for non-emptiness
+     * @param call the cross join function call
      */
-    protected static List nonEmptyList(Evaluator evaluator, List list) {
+    protected static List nonEmptyList(
+        Evaluator evaluator,
+        List list,
+        ResolvedFunCall call)
+    {
         if (list.isEmpty()) {
             return list;
         }
@@ -388,7 +481,8 @@ class CrossJoinFunDef extends FunDefBase {
         // if the slicer contains a Measure, then the other axes can not
         // contain a Measure, so look at slicer axis first
         if (queryMeasureSet.size() > 0) {
-            MeasureVisitor visitor = new MeasureVisitor(queryMeasureSet);
+            MeasureVisitor visitor =
+                new MeasureVisitor(queryMeasureSet, call);
             QueryAxis[] axes = query.getAxes();
             QueryAxis slicerAxis = query.getSlicerAxis();
             if (slicerAxis != null) {
