@@ -56,6 +56,10 @@ public class UdfResolver implements Resolver {
         return udf.getSyntax();
     }
 
+    public FunDef getFunDef() {
+        return null;
+    }
+
     public FunDef resolve(
             Exp[] args, Validator validator, int[] conversionCount) {
         final Type[] parameterTypes = udf.getParameterTypes();

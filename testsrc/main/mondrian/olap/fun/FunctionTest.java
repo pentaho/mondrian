@@ -5568,21 +5568,54 @@ public class FunctionTest extends FoodMartTestCase {
             "4");
     }
 
-    // TODO: finish implementing StrToTuple
-    public void _testStrToTuple() {
-        assertExprReturns("StrToTuple(\"([Gender].[F], [Time].[1997].[Q2])\", [Gender], [Time])",
-                "([Gender].[F], [Time].[1997].[Q2])");
+    public void testStrToTuple() {
+        // single dimension yields member
+        assertAxisReturns("{StrToTuple(\"[Time].[1997].[Q2]\", [Time])}",
+                "[Time].[1997].[Q2]");
+
+        // multiple dimensions yield tuple
+        assertAxisReturns("{StrToTuple(\"([Gender].[F], [Time].[1997].[Q2])\", [Gender], [Time])}",
+                "{[Gender].[All Gender].[F], [Time].[1997].[Q2]}");
+
+        // todo: test for garbage at end of string
     }
 
-    // TODO: finish implementing StrToSet
-    public void _testStrToSet() {
-        assertAxisReturns("StrToSet(\"(" +
-                "{([Gender].[F], [Time].[1997].[Q2]), " +
-                " ([Gender].[M], [Time].[1997])}\"," +
-                " [Gender]," +
-                " [Time])",
-                "{([Gender].[F], [Time].[1997].[Q2])," +
-                " ([Gender].[M], [Time].[1997])}");
+    public void testStrToSet() {
+        // TODO: handle text after '}'
+        // TODO: handle string which ends too soon
+        // TODO: handle spaces before first '{'
+        // TODO: test spaces before unbracketed names, e.g. "{Gender. M, Gender. F   }".
+
+        assertAxisReturns("StrToSet(" +
+            " \"{[Gender].[F], [Gender].[M]}\"," +
+            " [Gender])",
+            fold("[Gender].[All Gender].[F]\n" +
+                "[Gender].[All Gender].[M]"));
+
+        assertAxisThrows("StrToSet(" +
+            " \"{[Gender].[F], [Time].[1997]}\"," +
+            " [Gender])",
+            "member is of wrong hierarchy");
+
+        // whitespace ok
+        assertAxisReturns("StrToSet(" +
+            " \"  {   [Gender] .  [F]  ,[Gender].[M] }  \"," +
+            " [Gender])",
+            fold("[Gender].[All Gender].[F]\n" +
+                "[Gender].[All Gender].[M]"));
+
+        // tuples
+        assertAxisReturns("StrToSet(" +
+            "\"" +
+            "{" +
+            " ([Gender].[F], [Time].[1997].[Q2]), " +
+            " ([Gender].[M], [Time].[1997])" +
+            "}" +
+            "\"," +
+            " [Gender]," +
+            " [Time])",
+            fold("{[Gender].[All Gender].[F], [Time].[1997].[Q2]}\n" +
+                "{[Gender].[All Gender].[M], [Time].[1997]}"));
     }
 
     public void testYtd() {
@@ -6852,7 +6885,7 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
      * specification</a>.
      */
     public void testDumpFunctions() throws IOException {
-        final List funInfoList = new ArrayList();
+        final List<FunInfo> funInfoList = new ArrayList<FunInfo>();
         funInfoList.addAll(BuiltinFunTable.instance().getFunInfoList());
 
         // Add some UDFs.
@@ -6869,8 +6902,7 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         pw.println("<td><b>Name</b></td>");
         pw.println("<td><b>Description</b></td>");
         pw.println("</tr>");
-        for (int i = 0; i < funInfoList.size(); i++) {
-            FunInfo funInfo = (FunInfo) funInfoList.get(i);
+        for (FunInfo funInfo : funInfoList) {
             pw.println("<tr>");
             pw.print("  <td valign=top><code>");
             printHtml(pw, funInfo.getName());

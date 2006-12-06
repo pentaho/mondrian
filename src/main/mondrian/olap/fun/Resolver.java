@@ -48,8 +48,7 @@ public interface Resolver {
      * the one which used the fewest implicit conversions.
      *
      * @param args Expressions which this function call is applied to.
-     *
-     * @param validator
+     * @param validator Validator
      * @param conversionCount This argument must be an  <code>int</code> array
      *   with a single element; in effect, it is an in/out parameter. It
      *   The method increments the count every time it performs a conversion.
@@ -83,6 +82,14 @@ public interface Resolver {
      * <pre><code>StrToSet(<String Expression>)</code></pre>
      */
     String getSignature();
+
+    /**
+     * Returns a representative example of the function which this Resolver
+     * can produce, for purposes of describing the function set. May return
+     * null if there is no representative function, or if the Resolver has
+     * a way to describe itself in more detail.
+     */
+    FunDef getFunDef();
 }
 
 // End Resolver.java

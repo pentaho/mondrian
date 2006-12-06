@@ -1425,7 +1425,7 @@ public class BuiltinFunTable extends FunTableImpl {
         define(SetItemFunDef.intResolver);
         define(SetItemFunDef.stringResolver);
         define(TupleItemFunDef.instance);
-        define(StrToTupleFunDef.instance);
+        define(StrToTupleFunDef.Resolver);
 
         // special resolver for "()"
         define(TupleFunDef.Resolver);

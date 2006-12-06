@@ -16,6 +16,8 @@ import mondrian.calc.impl.AbstractStringCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Member;
+import mondrian.olap.Exp;
+import mondrian.olap.type.SetType;
 
 import java.util.List;
 
@@ -34,40 +36,53 @@ class SetToStrFunDef extends FunDefBase {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        final ListCalc listCalc =
-                compiler.compileList(call.getArg(0));
-        return new AbstractStringCalc(call, new Calc[] {listCalc}) {
-            public String evaluateString(Evaluator evaluator) {
-                final List list = listCalc.evaluateList(evaluator);
-                return strToSet(list);
-            }
-        };
+        Exp arg = call.getArg(0);
+        final ListCalc listCalc = compiler.compileList(arg);
+        if (((SetType) arg.getType()).getArity() == 1) {
+            return new AbstractStringCalc(call, new Calc[] {listCalc}) {
+                public String evaluateString(Evaluator evaluator) {
+                    final List<Member> list =
+                        (List<Member>) listCalc.evaluateList(evaluator);
+                    return memberSetToStr(list);
+                }
+            };
+        } else {
+            return new AbstractStringCalc(call, new Calc[] {listCalc}) {
+                public String evaluateString(Evaluator evaluator) {
+                    final List<Member[]> list =
+                        (List<Member[]>) listCalc.evaluateList(evaluator);
+                    return tupleSetToStr(list);
+                }
+            };
+        }
     }
 
-    static String strToSet(List list) {
+    static String memberSetToStr(List<Member> list) {
         StringBuilder buf = new StringBuilder();
         buf.append("{");
-        for (int i = 0; i < list.size(); i++) {
-            if (i > 0) {
+        int k = 0;
+        for (Member member : list) {
+            if (k++ > 0) {
                 buf.append(", ");
             }
-            final Object o = list.get(i);
-            appendMemberOrTuple(buf, o);
+            buf.append(member.getUniqueName());
         }
         buf.append("}");
         return buf.toString();
     }
 
-    static void appendMemberOrTuple(
-            StringBuilder buf,
-            Object memberOrTuple) {
-        if (memberOrTuple instanceof Member) {
-            Member member = (Member) memberOrTuple;
-            buf.append(member.getUniqueName());
-        } else {
-            Member[] members = (Member[]) memberOrTuple;
+    static String tupleSetToStr(List<Member[]> list) {
+        StringBuilder buf = new StringBuilder();
+        buf.append("{");
+        int k = 0;
+        for (Member[] members : list) {
+            if (k++ > 0) {
+                buf.append(", ");
+            }
             appendTuple(buf, members);
         }
+        buf.append("}");
+        return buf.toString();
     }
 }
 

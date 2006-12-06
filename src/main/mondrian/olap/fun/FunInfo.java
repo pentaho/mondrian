@@ -14,7 +14,6 @@ import mondrian.olap.FunDef;
 import mondrian.olap.Syntax;
 
 import java.util.*;
-import java.lang.reflect.Array;
 
 /**
  * Support class for the {@link mondrian.tui.CmdRunner} allowing one to view
@@ -23,7 +22,7 @@ import java.lang.reflect.Array;
  * @author Richard M. Emberson
  * @version $Id$
  */
-public class FunInfo implements Comparable {
+public class FunInfo implements Comparable<FunInfo> {
     private final Syntax syntax;
     private final String name;
     private final String description;
@@ -32,8 +31,8 @@ public class FunInfo implements Comparable {
     private String[] sigs;
 
     static FunInfo make(Resolver resolver) {
-        if (resolver instanceof SimpleResolver) {
-            FunDef funDef = ((SimpleResolver) resolver).getFunDef();
+        FunDef funDef = resolver.getFunDef();
+        if (funDef != null) {
             return new FunInfo(funDef);
         } else if (resolver instanceof MultiResolver) {
             return new FunInfo((MultiResolver) resolver);
@@ -136,32 +135,16 @@ public class FunInfo implements Comparable {
         return this.parameterTypes;
     }
 
-    public int compareTo(Object o) {
-        FunInfo fi = (FunInfo) o;
+    public int compareTo(FunInfo fi) {
         int c = this.name.compareTo(fi.name);
         if (c == 0) {
-            final String pc = toList(this.getParameterCategories()).toString();
-            final String otherPc = toList(fi.getParameterCategories()).toString();
+            final String pc = this.parameterTypes == null ? "" :
+                Arrays.asList(this.parameterTypes).toString();
+            final String otherPc = fi.parameterTypes == null ? "" :
+                Arrays.asList(fi.parameterTypes).toString();
             c = pc.compareTo(otherPc);
         }
         return c;
-    }
-
-    private static List toList(Object a) {
-        final ArrayList list = new ArrayList();
-        if (a == null) {
-            return list;
-        }
-        final int length = Array.getLength(a);
-        for (int i = 0; i < length; i++) {
-            final Object o = Array.get(a, i);
-            if (o.getClass().isArray()) {
-                list.add(toList(o));
-            } else {
-                list.add(o);
-            }
-        }
-        return list;
     }
 }
 

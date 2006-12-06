@@ -26,7 +26,7 @@ public class TupleType implements Type {
      */
     public TupleType(Type[] elementTypes) {
         assert elementTypes != null;
-        this.elementTypes = (Type[]) elementTypes.clone();
+        this.elementTypes = elementTypes.clone();
     }
 
     public boolean usesDimension(Dimension dimension, boolean maybe) {

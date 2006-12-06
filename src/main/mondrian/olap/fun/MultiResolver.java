@@ -85,22 +85,26 @@ public abstract class MultiResolver extends FunUtil implements Resolver {
         return signatures;
     }
 
+    public FunDef getFunDef() {
+        return null;
+    }
+
     public FunDef resolve(
-            Exp[] args, Validator validator, int[] conversionCount) {
+        Exp[] args, Validator validator, int[] conversionCount)
+    {
 outer:
-        for (int j = 0; j < signatures.length; j++) {
-            int[] parameterTypes = decodeParameterCategories(signatures[j]);
+        for (String signature : signatures) {
+            int[] parameterTypes = decodeParameterCategories(signature);
             if (parameterTypes.length != args.length) {
                 continue;
             }
             for (int i = 0; i < args.length; i++) {
                 if (!validator.canConvert(
-                        args[i], parameterTypes[i], conversionCount)) {
+                    args[i], parameterTypes[i], conversionCount)) {
                     continue outer;
                 }
             }
-            final String signature = signatures[j];
-            int returnType = decodeReturnCategory(signature);
+            int returnType = decodeReturnCategory(this.signature);
             FunDef dummy = createDummyFunDef(this, returnType, args);
             return createFunDef(args, dummy);
         }
@@ -108,10 +112,10 @@ outer:
     }
 
     public boolean requiresExpression(int k) {
-        for (int j = 0; j < signatures.length; j++) {
-            int[] parameterTypes = decodeParameterCategories(signatures[j]);
+        for (String signature : signatures) {
+            int[] parameterTypes = decodeParameterCategories(signature);
             if ((k < parameterTypes.length) &&
-                    parameterTypes[k] == Category.Set) {
+                parameterTypes[k] == Category.Set) {
                 return false;
             }
         }

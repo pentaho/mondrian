@@ -2799,6 +2799,18 @@
                     </xsd:schema>
                     <row>
                         <FUNCTION_NAME>Item</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a tuple from the set
+                            specified in &lt;Set>. The tuple to be
+                            returned is specified by the member name (or
+                            names) in &lt;String>.</DESCRIPTION>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Item</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Item</FUNCTION_NAME>
                         <DESCRIPTION>Returns a member from the tuple
                             specified in &lt;Tuple>. The member to be
                             returned is specified by the zero-based
@@ -2817,18 +2829,6 @@
                             position of the tuple in the set in &lt;Index>.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>Item</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>Item</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a tuple from the set
-                            specified in &lt;Set>. The tuple to be
-                            returned is specified by the member name (or
-                            names) in &lt;String>.</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Item</CAPTION>
@@ -2927,15 +2927,6 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>*</FUNCTION_NAME>
-                        <DESCRIPTION>Multiplies two numbers.</DESCRIPTION>
-                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
-                        <RETURN_TYPE>5</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>*</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>*</FUNCTION_NAME>
                         <DESCRIPTION>Returns the cross product of two sets.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
@@ -2966,6 +2957,15 @@
                         <DESCRIPTION>Returns the cross product of two sets.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>*</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>*</FUNCTION_NAME>
+                        <DESCRIPTION>Multiplies two numbers.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>*</CAPTION>
@@ -3020,7 +3020,7 @@
                         <FUNCTION_NAME>&lt;</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether an expression is
                             less than another.</DESCRIPTION>
-                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3030,7 +3030,7 @@
                         <FUNCTION_NAME>&lt;</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether an expression is
                             less than another.</DESCRIPTION>
-                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3040,7 +3040,7 @@
                         <FUNCTION_NAME>&lt;=</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether an expression is
                             less than or equal to another.</DESCRIPTION>
-                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3050,7 +3050,7 @@
                         <FUNCTION_NAME>&lt;=</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether an expression is
                             less than or equal to another.</DESCRIPTION>
-                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3060,7 +3060,7 @@
                         <FUNCTION_NAME>&lt;></FUNCTION_NAME>
                         <DESCRIPTION>Returns whether two expressions are
                             not equal.</DESCRIPTION>
-                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3070,7 +3070,7 @@
                         <FUNCTION_NAME>&lt;></FUNCTION_NAME>
                         <DESCRIPTION>Returns whether two expressions are
                             not equal.</DESCRIPTION>
-                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3079,7 +3079,7 @@
                     <row>
                         <FUNCTION_NAME>=</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether two expressions are equal.</DESCRIPTION>
-                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3088,7 +3088,7 @@
                     <row>
                         <FUNCTION_NAME>=</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether two expressions are equal.</DESCRIPTION>
-                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3118,7 +3118,7 @@
                         <FUNCTION_NAME>>=</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether an expression is
                             greater than or equal to another.</DESCRIPTION>
-                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3128,7 +3128,7 @@
                         <FUNCTION_NAME>>=</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether an expression is
                             greater than or equal to another.</DESCRIPTION>
-                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3202,8 +3202,8 @@
                         <FUNCTION_NAME>AllMembers</FUNCTION_NAME>
                         <DESCRIPTION>Returns a set that contains all
                             members, including calculated members, of
-                            the specified hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
+                            the specified level.</DESCRIPTION>
+                        <PARAMETER_LIST>Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3213,8 +3213,8 @@
                         <FUNCTION_NAME>AllMembers</FUNCTION_NAME>
                         <DESCRIPTION>Returns a set that contains all
                             members, including calculated members, of
-                            the specified level.</DESCRIPTION>
-                        <PARAMETER_LIST>Level</PARAMETER_LIST>
+                            the specified hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3336,8 +3336,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Caption</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the caption of a dimension.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the caption of a member.</DESCRIPTION>
+                        <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3354,8 +3354,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Caption</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the caption of a level.</DESCRIPTION>
-                        <PARAMETER_LIST>Level</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the caption of a dimension.</DESCRIPTION>
+                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3363,8 +3363,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Caption</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the caption of a member.</DESCRIPTION>
-                        <PARAMETER_LIST>Member</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the caption of a level.</DESCRIPTION>
+                        <PARAMETER_LIST>Level</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3618,8 +3618,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>DefaultMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the default member of a dimension.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the default member of a hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3627,8 +3627,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>DefaultMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the default member of a hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the default member of a dimension.</DESCRIPTION>
+                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3692,18 +3692,8 @@
                     <row>
                         <FUNCTION_NAME>Dimension</FUNCTION_NAME>
                         <DESCRIPTION>Returns the dimension that contains
-                            a specified hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>Dimension</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>Dimension</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the dimension that contains
-                            a specified hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
+                            a specified member.</DESCRIPTION>
+                        <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3722,8 +3712,18 @@
                     <row>
                         <FUNCTION_NAME>Dimension</FUNCTION_NAME>
                         <DESCRIPTION>Returns the dimension that contains
-                            a specified member.</DESCRIPTION>
-                        <PARAMETER_LIST>Member</PARAMETER_LIST>
+                            a specified hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Dimension</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Dimension</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the dimension that contains
+                            a specified hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3950,8 +3950,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Hierarchy</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a level's hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Level</PARAMETER_LIST>
+                        <DESCRIPTION>Returns a member's hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3959,8 +3959,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Hierarchy</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a member's hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Member</PARAMETER_LIST>
+                        <DESCRIPTION>Returns a level's hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -4150,6 +4150,18 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Item</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a tuple from the set
+                            specified in &lt;Set>. The tuple to be
+                            returned is specified by the member name (or
+                            names) in &lt;String>.</DESCRIPTION>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Item</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Item</FUNCTION_NAME>
                         <DESCRIPTION>Returns a member from the tuple
                             specified in &lt;Tuple>. The member to be
                             returned is specified by the zero-based
@@ -4168,18 +4180,6 @@
                             position of the tuple in the set in &lt;Index>.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>Item</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>Item</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a tuple from the set
-                            specified in &lt;Set>. The tuple to be
-                            returned is specified by the member name (or
-                            names) in &lt;String>.</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Item</CAPTION>
@@ -4443,17 +4443,9 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Members</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of members in a dimension.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>Members</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>Members</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of members in a hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the member whose name is
+                            specified by a string expression.</DESCRIPTION>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -4470,9 +4462,17 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Members</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the member whose name is
-                            specified by a string expression.</DESCRIPTION>
-                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the set of members in a dimension.</DESCRIPTION>
+                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Members</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Members</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of members in a hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -4531,8 +4531,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Name</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the name of a hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the name of a member.</DESCRIPTION>
+                        <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -4549,8 +4549,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Name</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the name of a member.</DESCRIPTION>
-                        <PARAMETER_LIST>Member</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the name of a hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -5014,8 +5014,8 @@
                     <row>
                         <FUNCTION_NAME>StrToTuple</FUNCTION_NAME>
                         <DESCRIPTION>Constructs a tuple from a string.</DESCRIPTION>
-                        <PARAMETER_LIST>String</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>StrToTuple</CAPTION>
@@ -5193,17 +5193,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>UniqueName</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the unique name of a dimension.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
-                        <RETURN_TYPE>8</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>UniqueName</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>UniqueName</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the unique name of a hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the unique name of a member.</DESCRIPTION>
+                        <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -5220,8 +5211,17 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>UniqueName</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the unique name of a member.</DESCRIPTION>
-                        <PARAMETER_LIST>Member</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the unique name of a hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>UniqueName</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>UniqueName</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the unique name of a dimension.</DESCRIPTION>
+                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>

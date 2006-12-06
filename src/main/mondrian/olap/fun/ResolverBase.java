@@ -13,6 +13,7 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.Syntax;
+import mondrian.olap.FunDef;
 
 /**
  * <code>ResolverBase</code> provides a skeleton implementation of
@@ -44,6 +45,10 @@ abstract class ResolverBase extends FunUtil implements Resolver {
 
     public String getSignature() {
         return signature;
+    }
+
+    public FunDef getFunDef() {
+        return null;
     }
 
     public String getDescription() {

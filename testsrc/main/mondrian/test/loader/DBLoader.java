@@ -238,7 +238,7 @@ public abstract class DBLoader {
      * @return number format, ie. length = 6, places = 2 => "###0.00"
      */
     public static String decimalFormat(int length, int places) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < length; i++) {
             if ((length - i) == places) {
                 buf.append('.');
@@ -702,7 +702,7 @@ public abstract class DBLoader {
         String tableName = table.getName();
         Column[] columns = table.getColumns();
         // Define the table.
-        StringBuffer buf = new StringBuffer(50);
+        StringBuilder buf = new StringBuilder(50);
         buf.append("CREATE TABLE ");
         buf.append(quoteId(tableName));
         buf.append(" (");
@@ -927,7 +927,7 @@ public abstract class DBLoader {
 
         Column[] columns = table.getColumns();
         if (columns.length != values.length) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append("For table ");
             buf.append(table.getName());
             buf.append(" the columns length ");
