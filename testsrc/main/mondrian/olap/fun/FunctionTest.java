@@ -6047,6 +6047,27 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
+     * Tests the 3-arg version of the RANK function with a value
+     * which returns null within a set of nulls.
+     */
+    public void testRankWithNulls() {
+        assertQueryReturns(
+            "with member [Measures].[X] as " +
+            "'iif([Measures].[Store Sales]=777," +
+            "[Measures].[Store Sales],Null)'\n" +
+            "member [Measures].[Y] as 'Rank([Gender].[M]," +
+            "{[Measures].[X],[Measures].[X],[Measures].[X]}," +
+            " [Marital Status].[All Marital Status].Parent)'" +
+            "select {[Measures].[Y]} on rows from Sales",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Y]}\n" +
+                "Row #0: 1\n"));
+    }
+    
+    /**
      * Tests a RANK function which is so large that we need to use caching
      * in order to execute it efficiently.
      */

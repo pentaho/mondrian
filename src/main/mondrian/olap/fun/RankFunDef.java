@@ -356,7 +356,7 @@ public class RankFunDef extends FunDefBase {
                     if (exception == null) {
                         exception = (RuntimeException) value;
                     }
-                } else if (value == Util.nullValue) {
+                } else if (Util.isNull(value)) {
                     ;
                 } else {
                     values[j++] = value;
