@@ -104,7 +104,7 @@ outer:
                     continue outer;
                 }
             }
-            int returnType = decodeReturnCategory(this.signature);
+            int returnType = decodeReturnCategory(signature);
             FunDef dummy = createDummyFunDef(this, returnType, args);
             return createFunDef(args, dummy);
         }
