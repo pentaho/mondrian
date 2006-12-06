@@ -80,7 +80,13 @@ public class NamedSetExpr extends ExpBase implements Exp {
             }
 
             public boolean dependsOn(Dimension dimension) {
-                return true;
+				/*
+				BCHOW, JVS: Given that named sets are never re-evaluated within the scope of a query, 
+				dependency inference seems meaningless for them, so returning false is 
+				probably the right thing to do always (unless the dependencies are supposed to 
+				have some use outside of caching).  
+				*/
+                return false;
                 // TODO: namedSet.getExp().dependsOn(dimension);
             }
         };
