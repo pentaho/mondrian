@@ -828,13 +828,23 @@ public class XmlaHandler implements XmlaConstants {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("drill through sql: " + dtSql);
             }
+            int resultSetType = ResultSet.TYPE_SCROLL_INSENSITIVE;
+            int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY;
+            if (!sqlConn.getMetaData().supportsResultSetConcurrency(
+                    ResultSet.TYPE_SCROLL_INSENSITIVE,
+                    ResultSet.CONCUR_READ_ONLY)) {
+                // downgrade to non-scroll cursor, since we can
+                // fake absolute() via forward fetch
+                resultSetType = ResultSet.TYPE_FORWARD_ONLY;
+            }
             rs = RolapUtil.executeQuery(
                 sqlConn, dtSql, -1, "XmlaHandler.executeDrillThroughQuery",
-                ResultSet.TYPE_SCROLL_INSENSITIVE,
-                ResultSet.CONCUR_READ_ONLY);
+                resultSetType,
+                resultSetConcurrency);
             rowset = new TabularRowSet(
                     rs, request.drillThroughMaxRows(),
-                    request.drillThroughFirstRowset(), count);
+                    request.drillThroughFirstRowset(), count,
+                    resultSetType);
         } catch (XmlaException xex) {
             throw xex;
         } catch (SQLException sqle) {
@@ -872,7 +882,8 @@ public class XmlaHandler implements XmlaConstants {
                 ResultSet rs,
                 int maxRows,
                 int firstRowset,
-                int totalCount) throws SQLException {
+                int totalCount,
+                int resultSetType) throws SQLException {
             this.totalCount = totalCount;
             ResultSetMetaData md = rs.getMetaData();
             int columnCount = md.getColumnCount();
@@ -884,7 +895,16 @@ public class XmlaHandler implements XmlaConstants {
             }
 
             // skip to first rowset specified in request
-            rs.absolute(firstRowset <= 0 ? 1 : firstRowset);
+            int firstRow = (firstRowset <= 0 ? 1 : firstRowset);
+            if (resultSetType == ResultSet.TYPE_FORWARD_ONLY) {
+                for (int i = 0; i < firstRow; ++i) {
+                    if (!rs.next()) {
+                        break;
+                    }
+                }
+            } else {
+                rs.absolute(firstRow);
+            }
 
             // populate data
             rows = new ArrayList<Object[]>();
