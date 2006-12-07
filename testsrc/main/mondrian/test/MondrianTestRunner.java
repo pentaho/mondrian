@@ -40,7 +40,7 @@ public class MondrianTestRunner extends BaseTestRunner {
         this(System.out);
    }
 
-   /**
+    /**
      * Constructs a TestRunner using the given stream for all the output
      */
     public MondrianTestRunner(PrintStream writer) {
@@ -65,7 +65,7 @@ public class MondrianTestRunner extends BaseTestRunner {
     public void testFailed(int status, Test test, Throwable t) {
     }
     public void testStarted(String testName) {
-  }
+    }
     public void testEnded(String testName) {
     }
     /**
