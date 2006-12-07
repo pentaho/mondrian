@@ -497,6 +497,8 @@ in {mondrian.foodmart.jdbcURL}.">
 -->
               <include name="mondrian/test/**/*Test*.class" />
               <exclude name="mondrian/test/**/*Testable*.class" />
+              <exclude name="mondrian/test/*TestRunner.class" />
+              <exclude name="mondrian/test/**/CsvDBTestCase.class" />
               <exclude name="mondrian/test/**/*TestContext*.class" />
               <exclude name="mondrian/test/**/TestCaseForker.class" />
               <exclude name="mondrian/test/**/FoodMartTestCase.class" />
