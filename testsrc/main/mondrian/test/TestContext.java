@@ -799,7 +799,8 @@ public class TestContext {
             expectedSql = expectedSql.replaceAll(
                     search,
                     "CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)");
-        } else if (dialect.isPostgres()  || dialect.isOracle()) {
+        } else if (dialect.isPostgres()
+            || dialect.isOracle() || dialect.isLucidDB()) {
             expectedSql = expectedSql.replaceAll(
                     search,
                     "`fname` || ' ' || `lname`");

@@ -203,6 +203,13 @@ public class CompatibilityTest extends FoodMartTestCase {
      * still be looked up when case sensitive is off.
      */
     public void testCaseInsensitiveNullMember() {
+        if (getTestContext().getDialect().isLucidDB()) {
+            // TODO jvs 29-Nov-2006:  LucidDB is strict about
+            // null literals (type can't be inferred in this context);
+            // maybe enhance the inline table to use the columndef
+            // types to apply a CAST.
+            return;
+        }
         final String cubeName = "Sales_inline";
         TestContext testContext = TestContext.create(
             null,
@@ -253,10 +260,15 @@ public class CompatibilityTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests that data in Hiearchy.Level attribute "nameColumn" can be null.
+     * Tests that data in Hierarchy.Level attribute "nameColumn" can be null.
      * This will map to the #null memeber.
      */
     public void testNullNameColumn() {
+        if (getTestContext().getDialect().isLucidDB()) {
+            // TODO jvs 29-Nov-2006:  See corresponding comment in
+            // testCaseInsensitiveNullMember
+            return;
+        }
         final String cubeName = "Sales_inline";
         TestContext testContext = TestContext.create(
             null,
@@ -329,6 +341,9 @@ public class CompatibilityTest extends FoodMartTestCase {
                 "           Iif(store_name = 'HQ', null, store_name)\n" +
                 "       </SQL>\n" +
                 "        <SQL dialect=\"oracle\">\n" +
+                "           case \"store_name\" when 'HQ' then null else \"store_name\" end\n" +
+                "       </SQL>\n" +
+                "        <SQL dialect=\"luciddb\">\n" +
                 "           case \"store_name\" when 'HQ' then null else \"store_name\" end\n" +
                 "       </SQL>\n" +
                 "        <SQL dialect=\"generic\">\n" +
