@@ -1917,8 +1917,21 @@ JdbcPassword=stardust; DynamicSchemaProcessor=com.acme.MySchemaProcessor</code>
 the schema processor rather than Java's default URL handler. This gives the schema reader 
 the opportunity to run a schema through a filter, or even generate an entire schema on the fly.</p>
 
-<p>Dynamic schemas are a very powerful construct. As we shall see, an important application 
+<p>When <code>DynamicSchemaProcessor</code> is specified, schema would
+be processed and reloaded on every ROLAP connection request. Property
+<code>UseContentChecksum</code> should be used along with a schema processor
+to enable caching of the schema:</p>
+
+<blockquote><code>DataSource=java:/jdbc/MyWarehouse;
+DynamicSchemaProcessor=com.acme.MySchemaProcessor;
+UseContentChecksum=true</code></blockquote>
+
+<p>In this case once loaded schema would be cached until it's change. If
+schema content has changed, it would be reloaded (and processed).</p>
+
+<p>Dynamic schemas are a very powerful construct. As we shall see, an important application
 for them is <a href="#I18n">internationalization</a>.</p>
+
 <!-- 
 #################################
 ##  7. Internationalization #####

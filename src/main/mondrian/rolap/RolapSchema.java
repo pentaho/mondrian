@@ -634,15 +634,6 @@ public class RolapSchema implements Schema {
             return (bytes != null) ? new String(bytes) : null;
         }
 
-        /**
-         * Note: this is a place holder variable. The value of USE_MD5 should be
-         * determined by a new mondrian property in the connectInfo string.
-         * Currently a "normal" property is used simply so that I can test it.
-         */
-        private static final String MD5_PROP
-                        = "mondrian.catalog.content.cache.enabled";
-        private static final boolean USE_MD5    = Boolean.getBoolean(MD5_PROP);
-
         synchronized RolapSchema get(
             final String catalogName,
             final String connectionKey,
@@ -734,7 +725,9 @@ public class RolapSchema implements Schema {
                 }
             }
 
-            if (USE_MD5) {
+            boolean useContentChecksum = Boolean.parseBoolean(
+                connectInfo.get(RolapConnectionProperties.UseContentChecksum));
+            if (useContentChecksum) {
                 // Different catalogNames can actually yield the same
                 // catalogStr! So, we use the MD5 as the key as well as
                 // the key made above - its has two entries in the

@@ -850,6 +850,17 @@ OLE DB connect string syntax specification</a>.</p>
         {Timeout=&quot;50&quot;, CacheSize=&quot;1m&quot;}.</td>
     </tr>
     <tr>
+        <td>UseContentChecksum</td>
+        <td>No</td>
+        <td><p>Allows to work with dynamically changing schema. If this property
+            is set to <code>true</code> and schema content has changed (previous
+            checksum doesn't equal with current), schema would be reloaded.
+            Default is <code>false</code>.</p>
+            
+            <p>Could be
+            used in combination with <code>DynamicSchemaProcessor</code> property.</p></td>
+    </tr>
+    <tr>
         <td>DynamicSchemaProcessor</td>
         <td>No</td>
         <td><p>The name of a class which is called at runtime in order to modify 

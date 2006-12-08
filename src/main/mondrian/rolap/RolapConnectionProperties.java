@@ -25,7 +25,7 @@ public class RolapConnectionProperties extends EnumeratedValues {
         super(new String[] {
             Provider, Jdbc, JdbcDrivers, JdbcUser, JdbcPassword, Catalog,
             Locale, CatalogContent, CatalogName, DataSource, PoolNeeded, Role,
-            DynamicSchemaProcessor});
+            UseContentChecksum, DynamicSchemaProcessor});
     }
 
     /**
@@ -119,8 +119,17 @@ public class RolapConnectionProperties extends EnumeratedValues {
     public static final String JdbcPropertyPrefix = "jdbc.";
 
     /**
-     * The name of a class implementing mondrian.rolap.DynamicSchemaProcessor.
-     * A dynamic schema prozessor is called at runtime in order to modify the
+     * Allows to work with dynamically changing schema. If this property is set
+     * to <code>true</code> and schema content has changed (previous checksum
+     * doesn't equal with current), schema would be reloaded. Could be used in
+     * combination with <code>DynamicSchemaProcessor</code> property
+     */
+    public static final String UseContentChecksum = "UseContentChecksum";
+
+    /**
+     * The name of a class implementing the
+     * {@link mondrian.rolap.DynamicSchemaProcessor} interface.
+     * A dynamic schema processor is called at runtime in order to modify the
      * schema content.
      */
     public static final String DynamicSchemaProcessor = "DynamicSchemaProcessor";
