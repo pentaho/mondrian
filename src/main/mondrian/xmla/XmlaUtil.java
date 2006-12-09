@@ -12,6 +12,7 @@
 package mondrian.xmla;
 
 import mondrian.olap.MondrianException;
+import mondrian.util.Base64;
 import org.apache.log4j.Logger;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -305,22 +306,6 @@ way too noisy
             }
         }
         return numericStr;
-    }
-
-    public static String encodeBase64(byte[] bytes) {
-        // This uses Sun's private encodes, we need to find public
-        // implementation that can be added to Mondrian.
-        sun.misc.BASE64Encoder encoder = new sun.misc.BASE64Encoder();
-        String encodedStr = encoder.encodeBuffer(bytes);
-        return encodedStr;
-    }
-
-    public static byte[] decodeBase64(String arg) throws IOException {
-        // This uses Sun's private encodes, we need to find public
-        // implementation that can be added to Mondrian.
-        sun.misc.BASE64Decoder decoder = new sun.misc.BASE64Decoder();
-        byte[] bytes = decoder.decodeBuffer(arg);
-        return bytes;
     }
 }
 

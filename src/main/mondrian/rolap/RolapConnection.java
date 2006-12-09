@@ -462,8 +462,15 @@ public class RolapConnection extends ConnectionBase {
         public int getLoginTimeout() throws SQLException {
             return loginTimeout;
         }
-    }
 
+        public <T> T unwrap(Class<T> iface) throws SQLException {
+            throw new SQLException("not a wrapper");
+        }
+
+        public boolean isWrapperFor(Class<?> iface) throws SQLException {
+            return false;
+        }
+    }
 
     public DataSource getDataSource() {
         return dataSource;

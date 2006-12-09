@@ -18,6 +18,7 @@ import mondrian.test.TestContext;
 import mondrian.tui.MockHttpServletRequest;
 import mondrian.tui.MockHttpServletResponse;
 import mondrian.tui.XmlaSupport;
+import mondrian.util.Base64;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -110,7 +111,7 @@ System.out.println("authScheme=" +authScheme);
 if (DEBUG) {
 System.out.println("encoded=" +encoded);
 }
-                byte[] bytes = XmlaUtil.decodeBase64(encoded);
+                byte[] bytes = Base64.decode(encoded);
                 String userPass = new String(bytes);
 if (DEBUG) {
 System.out.println("userPass=" +userPass);
@@ -611,7 +612,7 @@ System.out.println("password=" +password);
         XmlaErrorTest.user = user;
         XmlaErrorTest.password = password;
         String credential = user + ':' + password;
-        String encoded = XmlaUtil.encodeBase64(credential.getBytes());
+        String encoded = Base64.encodeBytes(credential.getBytes());
 
         req.setHeader(AUTHORIZATION, encoded);
 
@@ -657,7 +658,8 @@ System.out.println("DO IT AGAIN");
         XmlaErrorTest.user = user + "FOO";
         XmlaErrorTest.password = password;
         String credential = user + ':' + password;
-        String encoded = XmlaUtil.encodeBase64(credential.getBytes());
+        String encodedStr = Base64.encodeBytes(credential.getBytes());
+        String encoded = encodedStr;
 
         req.setHeader(AUTHORIZATION, encoded);
 
@@ -698,7 +700,7 @@ System.out.println("DO IT AGAIN");
         XmlaErrorTest.user = user;
         XmlaErrorTest.password = password + "FOO";
         String credential = user + ':' + password;
-        String encoded = XmlaUtil.encodeBase64(credential.getBytes());
+        String encoded = Base64.encodeBytes(credential.getBytes());
 
         req.setHeader(AUTHORIZATION, encoded);
 

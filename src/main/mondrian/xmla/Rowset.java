@@ -209,6 +209,18 @@ abstract class Rowset implements XmlaConstants {
                     writer.characters(value1.toString());
                     writer.endElement();
                 }
+            } else if (value instanceof List) {
+                List values = (List) value;
+                for (Object value1 : values) {
+                    if (value1 instanceof XmlElement) {
+                        XmlElement xmlElement = (XmlElement) value1;
+                        emitXmlElement(writer, xmlElement);
+                    } else {
+                        writer.startElement(column.name);
+                        writer.characters(value1.toString());
+                        writer.endElement();
+                    }
+                }
             } else {
                 writer.startElement(column.name);
                 writer.characters(value.toString());

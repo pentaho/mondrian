@@ -34,10 +34,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Tests Mondrian's compliance with the JOLAP API.
@@ -58,13 +55,14 @@ public class JolapTest extends TestCase {
         PrintWriter pw = new PrintWriter(sw);
         doConnect(pw);
         pw.flush();
-        assertEquals("Dimension name is Store Size in SQFT" + nl +
-                "Dimension name is Store" + nl +
-                "Dimension name is Time" + nl +
+        assertEquals(
                 "Dimension name is Product" + nl +
+                "Dimension name is Store" + nl +
+                "Dimension name is Store Size in SQFT" + nl +
                 "Dimension name is Store Type" + nl +
-                "Dimension name is Warehouse" + nl +
-                "Dimension name is Time" + nl,
+                "Dimension name is Time" + nl +
+                "Dimension name is Time" + nl +
+                "Dimension name is Warehouse" + nl,
                 sw.toString());
     }
 
@@ -77,11 +75,16 @@ public class JolapTest extends TestCase {
         // and print out their names...
         Collection dimList = cx.getDimensions();
         Iterator dimIter = dimList.iterator();
+        List<String> dimNames = new ArrayList<String>();
         while ( dimIter.hasNext() )
         {
             javax.olap.metadata.Dimension myDim
                     = (javax.olap.metadata.Dimension)dimIter.next();
-            out.println( "Dimension name is " + myDim.getName() );
+            dimNames.add(myDim.getName());
+        }
+        Collections.sort(dimNames);
+        for (String dimName : dimNames) {
+            out.println( "Dimension name is " + dimName );
         }
         // Now close the connection to the OLAP resource
         cx.close();

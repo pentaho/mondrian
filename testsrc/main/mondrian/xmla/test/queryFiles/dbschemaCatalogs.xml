@@ -41,7 +41,7 @@
       <row>
         <CATALOG_NAME>${catalog}</CATALOG_NAME>
         <DESCRIPTION>No description available</DESCRIPTION>
-        <ROLES>No HR Cube,California manager</ROLES>
+        <ROLES>California manager,No HR Cube</ROLES>
       </row>
     </root>
   </xmla:return>
