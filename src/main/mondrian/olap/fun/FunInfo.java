@@ -14,6 +14,7 @@ import mondrian.olap.FunDef;
 import mondrian.olap.Syntax;
 
 import java.util.*;
+import java.lang.reflect.Array;
 
 /**
  * Support class for the {@link mondrian.tui.CmdRunner} allowing one to view
@@ -137,14 +138,31 @@ public class FunInfo implements Comparable<FunInfo> {
 
     public int compareTo(FunInfo fi) {
         int c = this.name.compareTo(fi.name);
-        if (c == 0) {
-            final String pc = this.parameterTypes == null ? "" :
-                Arrays.asList(this.parameterTypes).toString();
-            final String otherPc = fi.parameterTypes == null ? "" :
-                Arrays.asList(fi.parameterTypes).toString();
-            c = pc.compareTo(otherPc);
+        if (c != 0) {
+            return c;
         }
-        return c;
+        final List pcList = toList(this.getParameterCategories());
+        final String pc = pcList.toString();
+        final List otherPcList = toList(fi.getParameterCategories());
+        final String otherPc = otherPcList.toString();
+        return pc.compareTo(otherPc);
+    }
+
+    private static List toList(Object a) {
+        final List<Object> list = new ArrayList<Object>();
+        if (a == null) {
+            return list;
+        }
+        final int length = Array.getLength(a);
+        for (int i = 0; i < length; i++) {
+            final Object o = Array.get(a, i);
+            if (o.getClass().isArray()) {
+                list.add(toList(o));
+            } else {
+                list.add(o);
+            }
+        }
+        return list;
     }
 }
 

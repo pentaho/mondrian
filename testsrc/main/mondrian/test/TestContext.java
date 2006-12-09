@@ -72,6 +72,21 @@ public class TestContext {
     private static final Pattern LineBreakPattern =
         Pattern.compile("\r\n|\r|\n");
     private static final Pattern TabPattern = Pattern.compile("\t");
+    public static final String[] AllDims = {
+        "[Measures]",
+        "[Store]",
+        "[Store Size in SQFT]",
+        "[Store Type]",
+        "[Time]",
+        "[Product]",
+        "[Promotion Media]",
+        "[Promotions]",
+        "[Customers]",
+        "[Education Level]",
+        "[Gender]",
+        "[Marital Status]",
+        "[Yearly Income]"
+    };
 
     /**
      * Retrieves the singleton (instantiating if necessary).
@@ -834,6 +849,79 @@ public class TestContext {
     }
 
     /**
+     * Asserts that an MDX set-valued expression depends upon a given list of
+     * dimensions.
+     */
+    public void assertSetExprDependsOn(String expr, String dimList) {
+        // Construct a query, and mine it for a parsed expression.
+        // Use a fresh connection, because some tests define their own dims.
+        final boolean fresh = true;
+        final Connection connection = getFoodMartConnection(fresh);
+        final String queryString =
+                "SELECT {" + expr + "} ON COLUMNS FROM [Sales]";
+        final Query query = connection.parseQuery(queryString);
+        query.resolve();
+        final Exp expression = query.getAxes()[0].getSet();
+
+        // Build a list of the dimensions which the expression depends upon,
+        // and check that it is as expected.
+        checkDependsOn(query, expression, dimList, false);
+    }
+
+    /**
+     * Asserts that an MDX member-valued depends upon a given list of
+     * dimensions.
+     */
+    public void assertMemberExprDependsOn(String expr, String dimList) {
+        assertSetExprDependsOn("{" + expr + "}", dimList);
+    }
+
+    /**
+     * Asserts that an MDX expression depends upon a given list of dimensions.
+     */
+    public void assertExprDependsOn(String expr, String dimList) {
+        // Construct a query, and mine it for a parsed expression.
+        // Use a fresh connection, because some tests define their own dims.
+        final boolean fresh = true;
+        final Connection connection = getFoodMartConnection(fresh);
+        final String queryString =
+                "WITH MEMBER [Measures].[Foo] AS " +
+                Util.singleQuoteString(expr) +
+                " SELECT FROM [Sales]";
+        final Query query = connection.parseQuery(queryString);
+        query.resolve();
+        final Formula formula = query.getFormulas()[0];
+        final Exp expression = formula.getExpression();
+
+        // Build a list of the dimensions which the expression depends upon,
+        // and check that it is as expected.
+        checkDependsOn(query, expression, dimList, true);
+    }
+
+    private void checkDependsOn(
+            final Query query,
+            final Exp expression,
+            String expectedDimList,
+            final boolean scalar) {
+        final Calc calc = query.compileExpression(expression, scalar);
+        final Dimension[] dimensions = query.getCube().getDimensions();
+        StringBuilder buf = new StringBuilder("{");
+        int dependCount = 0;
+        for (int i = 0; i < dimensions.length; i++) {
+            Dimension dimension = dimensions[i];
+            if (calc.dependsOn(dimension)) {
+                if (dependCount++ > 0) {
+                    buf.append(", ");
+                }
+                buf.append(dimension.getUniqueName());
+            }
+        }
+        buf.append("}");
+        String actualDimList = buf.toString();
+        Assert.assertEquals(expectedDimList, actualDimList);
+    }
+
+    /**
      * Creates a TestContext which is based on a variant of the FoodMart
      * schema, which parameter, cube, named set, and user-defined function
      * definitions added.
@@ -906,6 +994,41 @@ public class TestContext {
                 return getFoodMartConnection(schema);
             }
         };
+    }
+
+    /**
+     * Generates a string containing all dimensions except those given.
+     * Useful as an argument to {@link #assertExprDependsOn(String, String)}.
+     */
+    public static String allDimsExcept(String[] dims) {
+        for (int i = 0; i < dims.length; i++) {
+            assert contains(AllDims, dims[i]) : "unknown dimension " + dims[i];
+        }
+        StringBuilder buf = new StringBuilder("{");
+        int j = 0;
+        for (int i = 0; i < AllDims.length; i++) {
+            if (!contains(dims, AllDims[i])) {
+                if (j++ > 0) {
+                    buf.append(", ");
+                }
+                buf.append(AllDims[i]);
+            }
+        }
+        buf.append("}");
+        return buf.toString();
+    }
+
+    public static boolean contains(String[] a, String s) {
+        for (int i = 0; i < a.length; i++) {
+            if (a[i].equals(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String allDims() {
+        return allDimsExcept(new String[0]);
     }
 
     public static class SnoopingSchemaProcessor

@@ -549,25 +549,38 @@ public class NamedSetTest extends FoodMartTestCase {
 
     }
 
-    // TODO: Implement Generate function.
-    public void _testGenerate() {
-        assertQueryReturns(
-                "with \n" +
-                "  member [Measures].[DateName] as \n" +
-                "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].CurrentMember.Name) '\n" +
-                "select {[Measures].[DateName]} on columns,\n" +
-                " {[Time].[1997].[Q1], [Time].[1997].[Q2]} on rows\n" +
-                "from [Sales]",
-                "two rows q1, q2; q1q2 for each cell");
+    public void testGenerate() {
+        assertQueryReturns("with \n" +
+            "  member [Measures].[DateName] as \n" +
+            "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].CurrentMember.Name) '\n" +
+            "select {[Measures].[DateName]} on columns,\n" +
+            " {[Time].[1997].[Q1], [Time].[1997].[Q2]} on rows\n" +
+            "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[DateName]}\n" +
+                "Axis #2:\n" +
+                "{[Time].[1997].[Q1]}\n" +
+                "{[Time].[1997].[Q2]}\n" +
+                "Row #0: Q1Q2\n" +
+                "Row #1: Q1Q2\n"));
 
-        assertQueryReturns(
-                "with \n" +
-                "  member [Measures].[DateName] as \n" +
-                "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].CurrentMember.Name, \" and \") '\n" +
-                "select {[Measures].[DateName]} on columns,\n" +
-                " {[Time].[1997].[Q1], [Time].[1997].[Q2]} on rows\n" +
-                "from [Sales]",
-                "two rows q1, q2; q1q2 for each cell");
+        assertQueryReturns("with \n" +
+            "  member [Measures].[DateName] as \n" +
+            "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].CurrentMember.Name, \" and \") '\n" +
+            "select {[Measures].[DateName]} on columns,\n" +
+            " {[Time].[1997].[Q1], [Time].[1997].[Q2]} on rows\n" +
+            "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[DateName]}\n" +
+                "Axis #2:\n" +
+                "{[Time].[1997].[Q1]}\n" +
+                "{[Time].[1997].[Q2]}\n" +
+                "Row #0: Q1 and Q2\n" +
+                "Row #1: Q1 and Q2\n"));
     }
 
     public void testNamedSetAgainstCube() {
@@ -842,6 +855,18 @@ public class NamedSetTest extends FoodMartTestCase {
                     "Row #1: 3,637\n" +
                     "Row #1: 3,030.82\n" +
                     "Row #1: 7,583.71\n"));
+    }
+
+    /**
+     * Tests that named sets never depend on anything.
+     */
+    public void testNamedSetDependencies() {
+        final TestContext tc = new TestContext() {
+            public synchronized Connection getFoodMartConnection(boolean fresh) {
+                return getFoodMartConnection(NamedSetsInCubeProcessor.class);
+            }
+        };
+        tc.assertSetExprDependsOn("[Top CA Cities]", "{}");
     }
 
     /**

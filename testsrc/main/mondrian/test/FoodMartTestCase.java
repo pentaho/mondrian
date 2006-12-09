@@ -17,6 +17,7 @@ import junit.framework.TestCase;
 import mondrian.olap.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <code>FoodMartTestCase</code> is a unit test which runs against the FoodMart
@@ -221,7 +222,7 @@ class TestCaseForker {
     BasicQueryTest testCase;
     long timeoutMs;
     Thread[] threads;
-    ArrayList failures = new ArrayList();
+    List<Throwable> failures = new ArrayList<Throwable>();
     ChooseRunnable chooseRunnable;
 
     public TestCaseForker(
@@ -263,7 +264,7 @@ class TestCaseForker {
         }
         if (failures.size() > 0) {
             for (int i = 0; i < failures.size(); i++) {
-                Throwable throwable = (Throwable) failures.get(i);
+                Throwable throwable = failures.get(i);
                 throwable.printStackTrace();
             }
             TestCase.fail(failures.size() + " threads failed");

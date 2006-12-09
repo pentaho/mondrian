@@ -69,6 +69,13 @@ public class ConstantCalc extends GenericCalc {
     }
 
     /**
+     * Creates an expression which evaluates to a string.
+     */
+    public static StringCalc constantString(String s) {
+        return new ConstantCalc(new StringType(), s);
+    }
+
+    /**
      * Creates an expression which evaluates to null.
      */
     public static ConstantCalc constantNull(Type type) {

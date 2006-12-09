@@ -57,7 +57,14 @@ public class UdfResolver implements Resolver {
     }
 
     public FunDef getFunDef() {
-        return null;
+        Type[] parameterTypes = udf.getParameterTypes();
+        int[] parameterCategories = new int[parameterTypes.length];
+        for (int i = 0; i < parameterCategories.length; i++) {
+            parameterCategories[i] = TypeUtil.typeToCategory(parameterTypes[i]);
+        }
+        Type returnType = udf.getReturnType(parameterTypes);
+        int returnCategory = TypeUtil.typeToCategory(returnType);
+        return new UdfFunDef(returnCategory, parameterCategories);
     }
 
     public FunDef resolve(

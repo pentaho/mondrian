@@ -993,7 +993,8 @@ public class BuiltinFunTable extends FunTableImpl {
 
         define(FilterFunDef.instance);
 
-        define(GenerateFunDef.Resolver);
+        define(GenerateFunDef.ListResolver);
+        define(GenerateFunDef.StringResolver);
         define(HeadTailFunDef.HeadResolver);
 
         define(HierarchizeFunDef.Resolver);

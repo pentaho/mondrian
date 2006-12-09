@@ -178,10 +178,11 @@ class StrToSetFunDef extends FunDefBase {
         }
     }
 
-    public static final int BEFORE_SEG = 0;
-    public static final int IN_BRACKET_SEG = 1;
-    public static final int AFTER_SEG = 2;
-    public static final int IN_SEG = 3;
+    // State values
+    private static final int BEFORE_SEG = 0;
+    private static final int IN_BRACKET_SEG = 1;
+    private static final int AFTER_SEG = 2;
+    private static final int IN_SEG = 3;
 
     static int parseMember(
         Evaluator evaluator,
@@ -262,7 +263,7 @@ class StrToSetFunDef extends FunDefBase {
                 switch (c) {
                 case ' ':
                     // Skip over any spaces
-                    // TODO: testcase '[foo]  .  [bar]'
+                    // TODO: test this case: '[foo]  .  [bar]'
                     ++i;
                     break;
                 case '.':
@@ -397,6 +398,10 @@ class StrToSetFunDef extends FunDefBase {
                 argTypes[i] = Category.Hierarchy;
             }
             return new StrToSetFunDef(argTypes);
+        }
+
+        public FunDef getFunDef() {
+            return new StrToSetFunDef(new int[] {Category.String});
         }
     }
 }
