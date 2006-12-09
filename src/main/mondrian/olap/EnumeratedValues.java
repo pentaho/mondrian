@@ -24,9 +24,11 @@ import java.util.*;
  * <i>ClassName</i> instance</code> member to hold the singleton instance.
  * {@link Access} is a simple example of this.</p>
  */
-public class EnumeratedValues implements Cloneable {
-    /** map symbol names to values */
-    private Map<String, Value> valuesByName = new HashMap<String, Value>();
+public class EnumeratedValues<V extends EnumeratedValues.Value>
+    implements Cloneable
+{
+    /** Map symbol names to values */
+    private Map<String, V> valuesByName = new LinkedHashMap<String, V>();
 
     /** the smallest ordinal value */
     private int min = Integer.MAX_VALUE;
@@ -50,8 +52,8 @@ public class EnumeratedValues implements Cloneable {
     /**
      * Creates an enumeration, with an array of values, and freezes it.
      */
-    public EnumeratedValues(Value[] values) {
-        for (Value value : values) {
+    public EnumeratedValues(V[] values) {
+        for (V value : values) {
             register(value);
         }
         makeImmutable();
@@ -63,7 +65,7 @@ public class EnumeratedValues implements Cloneable {
      */
     public EnumeratedValues(String[] names) {
         for (int i = 0; i < names.length; i++) {
-            register(new BasicValue(names[i], i, names[i]));
+            register((V) new BasicValue(names[i], i, names[i]));
         }
         makeImmutable();
     }
@@ -74,7 +76,7 @@ public class EnumeratedValues implements Cloneable {
      */
     public EnumeratedValues(String[] names, int[] codes) {
         for (int i = 0; i < names.length; i++) {
-            register(new BasicValue(names[i], codes[i], names[i]));
+            register((V) new BasicValue(names[i], codes[i], names[i]));
         }
         makeImmutable();
     }
@@ -85,12 +87,12 @@ public class EnumeratedValues implements Cloneable {
      */
     public EnumeratedValues(String[] names, int[] codes, String[] descriptions) {
         for (int i = 0; i < names.length; i++) {
-            register(new BasicValue(names[i], codes[i], descriptions[i]));
+            register((V) new BasicValue(names[i], codes[i], descriptions[i]));
         }
         makeImmutable();
     }
 
-    public Object clone() {
+    public EnumeratedValues<V> clone() {
         EnumeratedValues clone;
         try {
             clone = (EnumeratedValues) super.clone();
@@ -107,7 +109,7 @@ public class EnumeratedValues implements Cloneable {
      * already be immutable.
      */
     public EnumeratedValues getMutableClone() {
-        return (EnumeratedValues) clone();
+        return clone();
     }
 
     /**
@@ -117,7 +119,7 @@ public class EnumeratedValues implements Cloneable {
      * @pre !isImmutable()
      * @pre value.getName() != null
      */
-    public void register(Value value) {
+    public void register(V value) {
         assert value != null : "pre: value != null";
         Util.assertPrecondition(!isImmutable(), "isImmutable()");
         final String name = value.getName();
@@ -193,10 +195,10 @@ public class EnumeratedValues implements Cloneable {
      *
      * @pre isImmutable()
      */
-    public final Value getValue(int ordinal) {
+    public final V getValue(int ordinal) {
         Util.assertPrecondition(isImmutable());
 
-        return ordinalToValueMap[ordinal - min];
+        return (V) ordinalToValueMap[ordinal - min];
     }
 
     /**
@@ -243,8 +245,8 @@ public class EnumeratedValues implements Cloneable {
      * @throws Error if the name is not a member of the enumeration and
      *       <code>fail</code> is true
      */
-    public Value getValue(String name, final boolean fail) {
-        final Value value = valuesByName.get(name);
+    public V getValue(String name, final boolean fail) {
+        final V value = valuesByName.get(name);
         if (value == null && fail) {
             throw new Error("Unknown enum name:  " + name);
         }
@@ -259,10 +261,10 @@ public class EnumeratedValues implements Cloneable {
      * @throws Error if the name is not a member of the enumeration and
      *       <code>fail</code> is true
      */
-    public Value getValueIgnoreCase(String name, boolean fail) {
+    public V getValueIgnoreCase(String name, boolean fail) {
         for (Value value : ordinalToValueMap) {
             if (value != null && value.getName().equalsIgnoreCase(name)) {
-                return value;
+                return (V) value;
             }
         }
         if (fail) {
@@ -272,7 +274,7 @@ public class EnumeratedValues implements Cloneable {
     }
 
     /**
-     * Returns the names in this enumeration, in no particular order.
+     * Returns the names in this enumeration, in declaration order.
      */
     public String[] getNames() {
         return valuesByName.keySet().toArray(emptyStringArray);
@@ -281,8 +283,8 @@ public class EnumeratedValues implements Cloneable {
     /**
      * Returns the members of this enumeration, sorted by name.
      */
-    public List<Value> getValuesSortedByName() {
-        List<Value> list = new ArrayList<Value>();
+    public List<V> getValuesSortedByName() {
+        List<V> list = new ArrayList<V>();
         final String[] names = getNames();
         Arrays.sort(names);
         for (String name : names) {
@@ -305,7 +307,7 @@ public class EnumeratedValues implements Cloneable {
      * Returns an exception indicating that we didn't expect to find this value
      * here.
      */
-    public RuntimeException unexpected(Value value) {
+    public RuntimeException unexpected(V value) {
         return Util.newInternal("Was not expecting value '" + value +
                 "' for enumeration '" + getClass().getName() +
                 "' in this context");

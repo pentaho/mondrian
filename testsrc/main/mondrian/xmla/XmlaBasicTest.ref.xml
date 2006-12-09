@@ -2799,18 +2799,6 @@
                     </xsd:schema>
                     <row>
                         <FUNCTION_NAME>Item</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a tuple from the set
-                            specified in &lt;Set>. The tuple to be
-                            returned is specified by the member name (or
-                            names) in &lt;String>.</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>Item</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>Item</FUNCTION_NAME>
                         <DESCRIPTION>Returns a member from the tuple
                             specified in &lt;Tuple>. The member to be
                             returned is specified by the zero-based
@@ -2829,6 +2817,18 @@
                             position of the tuple in the set in &lt;Index>.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Item</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Item</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a tuple from the set
+                            specified in &lt;Set>. The tuple to be
+                            returned is specified by the member name (or
+                            names) in &lt;String>.</DESCRIPTION>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Item</CAPTION>
@@ -2927,6 +2927,15 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>*</FUNCTION_NAME>
+                        <DESCRIPTION>Multiplies two numbers.</DESCRIPTION>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>*</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>*</FUNCTION_NAME>
                         <DESCRIPTION>Returns the cross product of two sets.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Set</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
@@ -2957,15 +2966,6 @@
                         <DESCRIPTION>Returns the cross product of two sets.</DESCRIPTION>
                         <PARAMETER_LIST>Member, Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>*</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>*</FUNCTION_NAME>
-                        <DESCRIPTION>Multiplies two numbers.</DESCRIPTION>
-                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
-                        <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>*</CAPTION>
@@ -3020,7 +3020,7 @@
                         <FUNCTION_NAME>&lt;</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether an expression is
                             less than another.</DESCRIPTION>
-                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3030,7 +3030,7 @@
                         <FUNCTION_NAME>&lt;</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether an expression is
                             less than another.</DESCRIPTION>
-                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3040,7 +3040,7 @@
                         <FUNCTION_NAME>&lt;=</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether an expression is
                             less than or equal to another.</DESCRIPTION>
-                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3050,7 +3050,7 @@
                         <FUNCTION_NAME>&lt;=</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether an expression is
                             less than or equal to another.</DESCRIPTION>
-                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3060,7 +3060,7 @@
                         <FUNCTION_NAME>&lt;></FUNCTION_NAME>
                         <DESCRIPTION>Returns whether two expressions are
                             not equal.</DESCRIPTION>
-                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3070,7 +3070,7 @@
                         <FUNCTION_NAME>&lt;></FUNCTION_NAME>
                         <DESCRIPTION>Returns whether two expressions are
                             not equal.</DESCRIPTION>
-                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3079,7 +3079,7 @@
                     <row>
                         <FUNCTION_NAME>=</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether two expressions are equal.</DESCRIPTION>
-                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3088,7 +3088,7 @@
                     <row>
                         <FUNCTION_NAME>=</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether two expressions are equal.</DESCRIPTION>
-                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3118,7 +3118,7 @@
                         <FUNCTION_NAME>>=</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether an expression is
                             greater than or equal to another.</DESCRIPTION>
-                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3128,7 +3128,7 @@
                         <FUNCTION_NAME>>=</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether an expression is
                             greater than or equal to another.</DESCRIPTION>
-                        <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3202,8 +3202,8 @@
                         <FUNCTION_NAME>AllMembers</FUNCTION_NAME>
                         <DESCRIPTION>Returns a set that contains all
                             members, including calculated members, of
-                            the specified level.</DESCRIPTION>
-                        <PARAMETER_LIST>Level</PARAMETER_LIST>
+                            the specified hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3213,8 +3213,8 @@
                         <FUNCTION_NAME>AllMembers</FUNCTION_NAME>
                         <DESCRIPTION>Returns a set that contains all
                             members, including calculated members, of
-                            the specified hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
+                            the specified level.</DESCRIPTION>
+                        <PARAMETER_LIST>Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3336,8 +3336,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Caption</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the caption of a member.</DESCRIPTION>
-                        <PARAMETER_LIST>Member</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the caption of a dimension.</DESCRIPTION>
+                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3354,8 +3354,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Caption</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the caption of a dimension.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the caption of a level.</DESCRIPTION>
+                        <PARAMETER_LIST>Level</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3363,8 +3363,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Caption</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the caption of a level.</DESCRIPTION>
-                        <PARAMETER_LIST>Level</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the caption of a member.</DESCRIPTION>
+                        <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3553,34 +3553,24 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>CurrentDateMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the closest or exact member
-                            within the specified dimension corresponding
-                            to the current date, in the format specified
-                            by the format parameter.</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <PARAMETER_LIST>Hierarchy, String, Symbol</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>CurrentDateMember</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>CurrentDateMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the member within the
-                            specified dimension corresponding to the
-                            current date, in the format specified by the
-                            format parameter.</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <PARAMETER_LIST>Hierarchy, String</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>CurrentDateMember</CAPTION>
                     </row>
                     <row>
                         <FUNCTION_NAME>CurrentDateString</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the current date formatted
-                            as specified by the format parameter.</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>CurrentDateString</CAPTION>
@@ -3618,8 +3608,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>DefaultMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the default member of a hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the default member of a dimension.</DESCRIPTION>
+                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3627,8 +3617,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>DefaultMember</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the default member of a dimension.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the default member of a hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3692,18 +3682,8 @@
                     <row>
                         <FUNCTION_NAME>Dimension</FUNCTION_NAME>
                         <DESCRIPTION>Returns the dimension that contains
-                            a specified member.</DESCRIPTION>
-                        <PARAMETER_LIST>Member</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>Dimension</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>Dimension</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the dimension that contains
-                            a specified level.</DESCRIPTION>
-                        <PARAMETER_LIST>Level</PARAMETER_LIST>
+                            a specified hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3722,8 +3702,18 @@
                     <row>
                         <FUNCTION_NAME>Dimension</FUNCTION_NAME>
                         <DESCRIPTION>Returns the dimension that contains
-                            a specified hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
+                            a specified level.</DESCRIPTION>
+                        <PARAMETER_LIST>Level</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Dimension</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Dimension</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the dimension that contains
+                            a specified member.</DESCRIPTION>
+                        <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3911,6 +3901,28 @@
                         <CAPTION>Generate</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Generate</FUNCTION_NAME>
+                        <DESCRIPTION>Applies a set to a string
+                            expression and joins resulting sets by
+                            string concatenation.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, String</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Generate</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Generate</FUNCTION_NAME>
+                        <DESCRIPTION>Applies a set to a string
+                            expression and joins resulting sets by
+                            string concatenation.</DESCRIPTION>
+                        <PARAMETER_LIST>Set, String, String</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Generate</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Head</FUNCTION_NAME>
                         <DESCRIPTION>Returns the first specified number
                             of elements in a set.</DESCRIPTION>
@@ -3950,8 +3962,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Hierarchy</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a member's hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Member</PARAMETER_LIST>
+                        <DESCRIPTION>Returns a level's hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Level</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3959,8 +3971,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Hierarchy</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a level's hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Level</PARAMETER_LIST>
+                        <DESCRIPTION>Returns a member's hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -3989,10 +4001,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>IN</FUNCTION_NAME>
-                        <DESCRIPTION>Returns true if the member argument
-                            is contained in the set argument.</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <PARAMETER_LIST>Member, Set</PARAMETER_LIST>
+                        <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>IN</CAPTION>
@@ -4019,10 +4029,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>InverseNormal</FUNCTION_NAME>
-                        <DESCRIPTION>Returns inverse normal distribution
-                            of its argument</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>InverseNormal</CAPTION>
@@ -4150,18 +4158,6 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Item</FUNCTION_NAME>
-                        <DESCRIPTION>Returns a tuple from the set
-                            specified in &lt;Set>. The tuple to be
-                            returned is specified by the member name (or
-                            names) in &lt;String>.</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>Item</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>Item</FUNCTION_NAME>
                         <DESCRIPTION>Returns a member from the tuple
                             specified in &lt;Tuple>. The member to be
                             returned is specified by the zero-based
@@ -4180,6 +4176,18 @@
                             position of the tuple in the set in &lt;Index>.</DESCRIPTION>
                         <PARAMETER_LIST>Set, Numeric Expression</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Item</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Item</FUNCTION_NAME>
+                        <DESCRIPTION>Returns a tuple from the set
+                            specified in &lt;Set>. The tuple to be
+                            returned is specified by the member name (or
+                            names) in &lt;String>.</DESCRIPTION>
+                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
+                        <RETURN_TYPE>1</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Item</CAPTION>
@@ -4205,10 +4213,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>LastNonEmpty</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the last member of a set
-                            whose value is not empty</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <PARAMETER_LIST>Set, Member</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>LastNonEmpty</CAPTION>
@@ -4393,10 +4399,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>MATCHES</FUNCTION_NAME>
-                        <DESCRIPTION>Returns true if the string matches
-                            the regular expression.</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>MATCHES</CAPTION>
@@ -4443,9 +4447,17 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Members</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the member whose name is
-                            specified by a string expression.</DESCRIPTION>
-                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the set of members in a dimension.</DESCRIPTION>
+                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Members</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Members</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of members in a hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -4462,17 +4474,9 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Members</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of members in a dimension.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
-                        <RETURN_TYPE>12</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>Members</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>Members</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the set of members in a hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the member whose name is
+                            specified by a string expression.</DESCRIPTION>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
                         <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -4531,8 +4535,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Name</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the name of a member.</DESCRIPTION>
-                        <PARAMETER_LIST>Member</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the name of a hierarchy.</DESCRIPTION>
+                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -4549,8 +4553,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Name</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the name of a hierarchy.</DESCRIPTION>
-                        <PARAMETER_LIST>Hierarchy</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the name of a member.</DESCRIPTION>
+                        <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -5005,8 +5009,8 @@
                     <row>
                         <FUNCTION_NAME>StrToSet</FUNCTION_NAME>
                         <DESCRIPTION>Constructs a set from a string expression.</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>StrToSet</CAPTION>
@@ -5014,8 +5018,8 @@
                     <row>
                         <FUNCTION_NAME>StrToTuple</FUNCTION_NAME>
                         <DESCRIPTION>Constructs a tuple from a string.</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>StrToTuple</CAPTION>
@@ -5193,17 +5197,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>UniqueName</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the unique name of a member.</DESCRIPTION>
-                        <PARAMETER_LIST>Member</PARAMETER_LIST>
-                        <RETURN_TYPE>8</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>UniqueName</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>UniqueName</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the unique name of a level.</DESCRIPTION>
-                        <PARAMETER_LIST>Level</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the unique name of a dimension.</DESCRIPTION>
+                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -5220,8 +5215,17 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>UniqueName</FUNCTION_NAME>
-                        <DESCRIPTION>Returns the unique name of a dimension.</DESCRIPTION>
-                        <PARAMETER_LIST>Dimension</PARAMETER_LIST>
+                        <DESCRIPTION>Returns the unique name of a level.</DESCRIPTION>
+                        <PARAMETER_LIST>Level</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>UniqueName</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>UniqueName</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the unique name of a member.</DESCRIPTION>
+                        <PARAMETER_LIST>Member</PARAMETER_LIST>
                         <RETURN_TYPE>8</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -5229,9 +5233,8 @@
                     </row>
                     <row>
                         <FUNCTION_NAME>Val</FUNCTION_NAME>
-                        <DESCRIPTION>VB function Val</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <PARAMETER_LIST>Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>5</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Val</CAPTION>
@@ -6377,700 +6380,6 @@
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Type</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy -
-                            Store Name Level - Store Type Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy -
-                            Store Name Level - Store Manager Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy -
-                            Store Name Level - Store Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy -
-                            Store Name Level - Grocery Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy -
-                            Store Name Level - Frozen Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy -
-                            Store Name Level - Meat Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>11</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy -
-                            Store Name Level - Has coffee bar Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy -
-                            Store Name Level - Street address Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>$name</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>$name</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
-                            Name Level - $name Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Gender</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Gender</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
-                            Name Level - Gender Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Marital Status</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Marital Status</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
-                            Name Level - Marital Status Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Education</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Education</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
-                            Name Level - Education Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Yearly Income</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Yearly Income</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
-                            Name Level - Yearly Income Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>$name</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>$name</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube -
-                            Customers Hierarchy - Name Level - $name Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Gender</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Gender</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube -
-                            Customers Hierarchy - Name Level - Gender Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Marital Status</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Marital Status</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube -
-                            Customers Hierarchy - Name Level - Marital
-                            Status Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Education</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Education</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube -
-                            Customers Hierarchy - Name Level - Education Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Yearly Income</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Yearly Income</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube -
-                            Customers Hierarchy - Name Level - Yearly
-                            Income Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Type</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store
-                            Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store
-                            Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store
-                            Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store
-                            Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store
-                            Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store
-                            Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>11</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store
-                            Hierarchy - Store Name Level - Has coffee
-                            bar Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store
-                            Hierarchy - Store Name Level - Street
-                            address Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Type</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
-                            Store Name Level - Store Type Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
-                            Store Name Level - Store Manager Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
-                            Store Name Level - Store Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
-                            Store Name Level - Grocery Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
-                            Store Name Level - Frozen Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
-                            Store Name Level - Meat Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>11</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
-                            Store Name Level - Has coffee bar Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
-                            Store Name Level - Street address Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Type</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
-                            - Store Name Level - Store Type Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
-                            - Store Name Level - Store Manager Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
-                            - Store Name Level - Store Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
-                            - Store Name Level - Grocery Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
-                            - Store Name Level - Frozen Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
-                            - Store Name Level - Meat Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>11</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
-                            - Store Name Level - Has coffee bar Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
-                            - Store Name Level - Street address Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Gender</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Gender</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Customers
-                            Hierarchy - Name Level - Gender Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Marital Status</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Marital Status</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Customers
-                            Hierarchy - Name Level - Marital Status Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Education</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Education</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Customers
-                            Hierarchy - Name Level - Education Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Yearly Income</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Yearly Income</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Customers
-                            Hierarchy - Name Level - Yearly Income Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
@@ -7311,6 +6620,381 @@
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Type</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Store Type Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Store Manager Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Store Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Meat Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>11</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Has coffee bar Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Cube - Store Hierarchy -
+                            Store Name Level - Street address Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>$name</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>$name</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
+                            Name Level - $name Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Gender</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Gender</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
+                            Name Level - Gender Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Marital Status</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Marital Status</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
+                            Name Level - Marital Status Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Education</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Education</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
+                            Name Level - Education Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Yearly Income</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Yearly Income</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Cube - Customers Hierarchy -
+                            Name Level - Yearly Income Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Type</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Store Type Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Store Manager Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Store Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Meat Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>11</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Has coffee bar Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy
+                            - Store Name Level - Street address Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Gender</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Gender</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Ragged Cube - Customers
+                            Hierarchy - Name Level - Gender Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Marital Status</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Marital Status</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Ragged Cube - Customers
+                            Hierarchy - Name Level - Marital Status Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Education</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Education</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Ragged Cube - Customers
+                            Hierarchy - Name Level - Education Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Yearly Income</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Yearly Income</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Sales Ragged Cube - Customers
+                            Hierarchy - Name Level - Yearly Income Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Store</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
                         <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
@@ -7427,6 +7111,325 @@
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
                         <DESCRIPTION>Store Cube - Store Hierarchy -
                             Store Name Level - Street address Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Type</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Store Type Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Store Manager Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Store Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Meat Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>11</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Has coffee bar Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store Hierarchy -
+                            Store Name Level - Street address Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>$name</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>$name</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse and Sales Cube -
+                            Customers Hierarchy - Name Level - $name Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Gender</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Gender</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse and Sales Cube -
+                            Customers Hierarchy - Name Level - Gender Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Marital Status</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Marital Status</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse and Sales Cube -
+                            Customers Hierarchy - Name Level - Marital
+                            Status Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Education</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Education</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse and Sales Cube -
+                            Customers Hierarchy - Name Level - Education Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Yearly Income</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Yearly Income</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse and Sales Cube -
+                            Customers Hierarchy - Name Level - Yearly
+                            Income Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Type</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>11</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Has coffee
+                            bar Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store
+                            Hierarchy - Store Name Level - Street
+                            address Property</DESCRIPTION>
                     </row>
                 </root>
             </xmla:return>
@@ -7562,8 +7565,8 @@
                         <EnumName>Access</EnumName>
                         <EnumDescription>The read/write behavior of a property</EnumDescription>
                         <EnumType>string</EnumType>
-                        <ElementName>ReadWrite</ElementName>
-                        <ElementValue>3</ElementValue>
+                        <ElementName>Read</ElementName>
+                        <ElementValue>1</ElementValue>
                     </row>
                     <row>
                         <EnumName>Access</EnumName>
@@ -7576,21 +7579,8 @@
                         <EnumName>Access</EnumName>
                         <EnumDescription>The read/write behavior of a property</EnumDescription>
                         <EnumType>string</EnumType>
-                        <ElementName>Read</ElementName>
-                        <ElementValue>1</ElementValue>
-                    </row>
-                    <row>
-                        <EnumName>AuthenticationMode</EnumName>
-                        <EnumDescription>Specification of what type of
-                            security mode the data source uses.</EnumDescription>
-                        <EnumType>string</EnumType>
-                        <ElementName>Integrated</ElementName>
-                        <ElementDescription>the data source uses the
-                            underlying security to determine
-                            authorization, such as Integrated Security
-                            provided by Microsoft Internet Information
-                            Services (IIS).</ElementDescription>
-                        <ElementValue>2</ElementValue>
+                        <ElementName>ReadWrite</ElementName>
+                        <ElementValue>3</ElementValue>
                     </row>
                     <row>
                         <EnumName>AuthenticationMode</EnumName>
@@ -7611,6 +7601,19 @@
                         <ElementDescription>User ID and Password must be
                             included in the information required for the connection.</ElementDescription>
                         <ElementValue>1</ElementValue>
+                    </row>
+                    <row>
+                        <EnumName>AuthenticationMode</EnumName>
+                        <EnumDescription>Specification of what type of
+                            security mode the data source uses.</EnumDescription>
+                        <EnumType>string</EnumType>
+                        <ElementName>Integrated</ElementName>
+                        <ElementDescription>the data source uses the
+                            underlying security to determine
+                            authorization, such as Integrated Security
+                            provided by Microsoft Internet Information
+                            Services (IIS).</ElementDescription>
+                        <ElementValue>2</ElementValue>
                     </row>
                     <row>
                         <EnumName>ProviderType</EnumName>
@@ -7646,24 +7649,6 @@
                         <EnumDescription>Bitmap which controls which
                             relatives of a member are returned</EnumDescription>
                         <EnumType>string</EnumType>
-                        <ElementName>MDTREEOP_DESCENDANTS</ElementName>
-                        <ElementDescription>Returns all descendants</ElementDescription>
-                        <ElementValue>16</ElementValue>
-                    </row>
-                    <row>
-                        <EnumName>TREE_OP</EnumName>
-                        <EnumDescription>Bitmap which controls which
-                            relatives of a member are returned</EnumDescription>
-                        <EnumType>string</EnumType>
-                        <ElementName>MDTREEOP_PARENT</ElementName>
-                        <ElementDescription>Returns only the immediate parent</ElementDescription>
-                        <ElementValue>4</ElementValue>
-                    </row>
-                    <row>
-                        <EnumName>TREE_OP</EnumName>
-                        <EnumDescription>Bitmap which controls which
-                            relatives of a member are returned</EnumDescription>
-                        <EnumType>string</EnumType>
                         <ElementName>MDTREEOP_CHILDREN</ElementName>
                         <ElementDescription>Returns only the immediate children</ElementDescription>
                         <ElementValue>1</ElementValue>
@@ -7682,9 +7667,9 @@
                         <EnumDescription>Bitmap which controls which
                             relatives of a member are returned</EnumDescription>
                         <EnumType>string</EnumType>
-                        <ElementName>MDTREEOP_ANCESTORS</ElementName>
-                        <ElementDescription>Returns all ancestors</ElementDescription>
-                        <ElementValue>32</ElementValue>
+                        <ElementName>MDTREEOP_PARENT</ElementName>
+                        <ElementDescription>Returns only the immediate parent</ElementDescription>
+                        <ElementValue>4</ElementValue>
                     </row>
                     <row>
                         <EnumName>TREE_OP</EnumName>
@@ -7695,6 +7680,24 @@
                         <ElementDescription>Returns the immediate member
                             in the list of returned rows</ElementDescription>
                         <ElementValue>8</ElementValue>
+                    </row>
+                    <row>
+                        <EnumName>TREE_OP</EnumName>
+                        <EnumDescription>Bitmap which controls which
+                            relatives of a member are returned</EnumDescription>
+                        <EnumType>string</EnumType>
+                        <ElementName>MDTREEOP_DESCENDANTS</ElementName>
+                        <ElementDescription>Returns all descendants</ElementDescription>
+                        <ElementValue>16</ElementValue>
+                    </row>
+                    <row>
+                        <EnumName>TREE_OP</EnumName>
+                        <EnumDescription>Bitmap which controls which
+                            relatives of a member are returned</EnumDescription>
+                        <EnumType>string</EnumType>
+                        <ElementName>MDTREEOP_ANCESTORS</ElementName>
+                        <ElementDescription>Returns all ancestors</ElementDescription>
+                        <ElementValue>32</ElementValue>
                     </row>
                 </root>
             </xmla:return>
@@ -8741,14 +8744,172 @@
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <PropertyName>Timeout</PropertyName>
-                        <PropertyDescription>A numeric time-out
-                            specifying in seconds the amount of time to
-                            wait for a request to be successful.</PropertyDescription>
+                        <PropertyName>AxisFormat</PropertyName>
+                        <PropertyDescription>Determines the format used
+                            within an MDDataSet result set to describe
+                            the axes of the multidimensional dataset.
+                            This property can have the values listed in
+                            the following table: TupleFormat (default),
+                            ClusterFormat, CustomFormat.</PropertyDescription>
+                        <PropertyType>Enumeration</PropertyType>
+                        <PropertyAccessType>Write</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value/>
+                    </row>
+                    <row>
+                        <PropertyName>BeginRange</PropertyName>
+                        <PropertyDescription>Contains a zero-based
+                            integer value corresponding to a CellOrdinal
+                            attribute value. (The CellOrdinal attribute
+                            is part of the Cell element in the CellData
+                            section of MDDataSet.) Used together with
+                            the EndRange property, the client
+                            application can use this property to
+                            restrict an OLAP dataset returned by a
+                            command to a specific range of cells. If -1
+                            is specified, all cells up to the cell
+                            specified in the EndRange property are
+                            returned. The default value for this
+                            property is -1.</PropertyDescription>
+                        <PropertyType>Integer</PropertyType>
+                        <PropertyAccessType>Write</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value>-1</Value>
+                    </row>
+                    <row>
+                        <PropertyName>Catalog</PropertyName>
+                        <PropertyDescription>When establishing a session
+                            with an Analysis Services instance to send
+                            an XMLA command, this property is equivalent
+                            to the OLE DB property, DBPROP_INIT_CATALOG.
+                            When you set this property during a session
+                            to change the current database for the
+                            session, this property is equivalent to the
+                            OLE DB property, DBPROP_CURRENTCATALOG. The
+                            default value for this property is an empty string.</PropertyDescription>
+                        <PropertyType>string</PropertyType>
+                        <PropertyAccessType>ReadWrite</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value/>
+                    </row>
+                    <row>
+                        <PropertyName>Content</PropertyName>
+                        <PropertyDescription>An enumerator that
+                            specifies what type of data is returned in
+                            the result set. None: Allows the structure
+                            of the command to be verified, but not
+                            executed. Analogous to using Prepare to
+                            check syntax, and so on. Schema: Contains
+                            the XML schema (which indicates column
+                            information, and so on) that relates to the
+                            requested query. Data: Contains only the
+                            data that was requested. SchemaData: Returns
+                            both the schema information as well as the data.</PropertyDescription>
+                        <PropertyType>EnumString</PropertyType>
+                        <PropertyAccessType>Write</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value>SchemaData</Value>
+                    </row>
+                    <row>
+                        <PropertyName>Cube</PropertyName>
+                        <PropertyDescription>The cube context for the
+                            Command parameter. If the command contains a
+                            cube name (such as an MDX FROM clause) the
+                            setting of this property is ignored.</PropertyDescription>
+                        <PropertyType>string</PropertyType>
+                        <PropertyAccessType>ReadWrite</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value/>
+                    </row>
+                    <row>
+                        <PropertyName>DataSourceInfo</PropertyName>
+                        <PropertyDescription>A string containing
+                            provider specific information, required to
+                            access the data source.</PropertyDescription>
+                        <PropertyType>string</PropertyType>
+                        <PropertyAccessType>ReadWrite</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value/>
+                    </row>
+                    <row>
+                        <PropertyName>EndRange</PropertyName>
+                        <PropertyDescription>An integer value
+                            corresponding to a CellOrdinal used to
+                            restrict an MDDataSet returned by a command
+                            to a specific range of cells. Used in
+                            conjunction with the BeginRange property. If
+                            unspecified, all cells are returned in the
+                            rowset. The value -1 means unspecified.</PropertyDescription>
+                        <PropertyType>Integer</PropertyType>
+                        <PropertyAccessType>Write</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value>-1</Value>
+                    </row>
+                    <row>
+                        <PropertyName>Format</PropertyName>
+                        <PropertyDescription>Enumerator that determines
+                            the format of the returned result set.
+                            Values include: Tabular: a flat or
+                            hierarchical rowset. Similar to the XML RAW
+                            format in SQL. The Format property should be
+                            set to Tabular for OLE DB for Data Mining
+                            commands. Multidimensional: Indicates that
+                            the result set will use the MDDataSet format
+                            (Execute method only). Native: The client
+                            does not request a specific format, so the
+                            provider may return the format  appropriate
+                            to the query. (The actual result type is
+                            identified by namespace of the result.)</PropertyDescription>
+                        <PropertyType>EnumString</PropertyType>
+                        <PropertyAccessType>Write</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value>Native</Value>
+                    </row>
+                    <row>
+                        <PropertyName>LocaleIdentifier</PropertyName>
+                        <PropertyDescription>Use this to read or set the
+                            numeric locale identifier for this request.
+                            The default is provider-specific. For the
+                            complete hexadecimal list of language
+                            identifiers, search on &quot;Language
+                            Identifiers&quot; in the MSDN Library at http://www.msdn.microsoft.com.</PropertyDescription>
                         <PropertyType>UnsignedInteger</PropertyType>
                         <PropertyAccessType>ReadWrite</PropertyAccessType>
                         <IsRequired>false</IsRequired>
-                        <Value>Undefined</Value>
+                        <Value>None</Value>
+                    </row>
+                    <row>
+                        <PropertyName>MDXSupport</PropertyName>
+                        <PropertyDescription>Enumeration that describes
+                            the degree of MDX support. At initial
+                            release Core is the only value in the
+                            enumeration. In future releases, other
+                            values will be defined for this enumeration.</PropertyDescription>
+                        <PropertyType>EnumString</PropertyType>
+                        <PropertyAccessType>Read</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value>Core</Value>
+                    </row>
+                    <row>
+                        <PropertyName>Password</PropertyName>
+                        <PropertyDescription>This property is deprecated
+                            in XMLA 1.1. To support legacy applications,
+                            the provider accepts but ignores the
+                            Password property setting when it is used
+                            with the Discover and Execute method</PropertyDescription>
+                        <PropertyType>string</PropertyType>
+                        <PropertyAccessType>Read</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value/>
+                    </row>
+                    <row>
+                        <PropertyName>ProviderName</PropertyName>
+                        <PropertyDescription>The XML for Analysis
+                            Provider name.</PropertyDescription>
+                        <PropertyType>string</PropertyType>
+                        <PropertyAccessType>Read</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value>Mondrian XML for Analysis Provider</Value>
                     </row>
                     <row>
                         <PropertyName>ProviderVersion</PropertyName>
@@ -8775,145 +8936,14 @@
                         <Value>None</Value>
                     </row>
                     <row>
-                        <PropertyName>Catalog</PropertyName>
-                        <PropertyDescription>When establishing a session
-                            with an Analysis Services instance to send
-                            an XMLA command, this property is equivalent
-                            to the OLE DB property, DBPROP_INIT_CATALOG.
-                            When you set this property during a session
-                            to change the current database for the
-                            session, this property is equivalent to the
-                            OLE DB property, DBPROP_CURRENTCATALOG. The
-                            default value for this property is an empty string.</PropertyDescription>
-                        <PropertyType>string</PropertyType>
-                        <PropertyAccessType>ReadWrite</PropertyAccessType>
-                        <IsRequired>false</IsRequired>
-                        <Value/>
-                    </row>
-                    <row>
-                        <PropertyName>MDXSupport</PropertyName>
-                        <PropertyDescription>Enumeration that describes
-                            the degree of MDX support. At initial
-                            release Core is the only value in the
-                            enumeration. In future releases, other
-                            values will be defined for this enumeration.</PropertyDescription>
-                        <PropertyType>EnumString</PropertyType>
-                        <PropertyAccessType>Read</PropertyAccessType>
-                        <IsRequired>false</IsRequired>
-                        <Value>Core</Value>
-                    </row>
-                    <row>
-                        <PropertyName>DataSourceInfo</PropertyName>
-                        <PropertyDescription>A string containing
-                            provider specific information, required to
-                            access the data source.</PropertyDescription>
-                        <PropertyType>string</PropertyType>
-                        <PropertyAccessType>ReadWrite</PropertyAccessType>
-                        <IsRequired>false</IsRequired>
-                        <Value/>
-                    </row>
-                    <row>
-                        <PropertyName>ProviderName</PropertyName>
-                        <PropertyDescription>The XML for Analysis
-                            Provider name.</PropertyDescription>
-                        <PropertyType>string</PropertyType>
-                        <PropertyAccessType>Read</PropertyAccessType>
-                        <IsRequired>false</IsRequired>
-                        <Value>Mondrian XML for Analysis Provider</Value>
-                    </row>
-                    <row>
-                        <PropertyName>Cube</PropertyName>
-                        <PropertyDescription>The cube context for the
-                            Command parameter. If the command contains a
-                            cube name (such as an MDX FROM clause) the
-                            setting of this property is ignored.</PropertyDescription>
-                        <PropertyType>string</PropertyType>
-                        <PropertyAccessType>ReadWrite</PropertyAccessType>
-                        <IsRequired>false</IsRequired>
-                        <Value/>
-                    </row>
-                    <row>
-                        <PropertyName>EndRange</PropertyName>
-                        <PropertyDescription>An integer value
-                            corresponding to a CellOrdinal used to
-                            restrict an MDDataSet returned by a command
-                            to a specific range of cells. Used in
-                            conjunction with the BeginRange property. If
-                            unspecified, all cells are returned in the
-                            rowset. The value -1 means unspecified.</PropertyDescription>
-                        <PropertyType>Integer</PropertyType>
-                        <PropertyAccessType>Write</PropertyAccessType>
-                        <IsRequired>false</IsRequired>
-                        <Value>-1</Value>
-                    </row>
-                    <row>
-                        <PropertyName>Password</PropertyName>
-                        <PropertyDescription>This property is deprecated
-                            in XMLA 1.1. To support legacy applications,
-                            the provider accepts but ignores the
-                            Password property setting when it is used
-                            with the Discover and Execute method</PropertyDescription>
-                        <PropertyType>string</PropertyType>
-                        <PropertyAccessType>Read</PropertyAccessType>
-                        <IsRequired>false</IsRequired>
-                        <Value/>
-                    </row>
-                    <row>
-                        <PropertyName>LocaleIdentifier</PropertyName>
-                        <PropertyDescription>Use this to read or set the
-                            numeric locale identifier for this request.
-                            The default is provider-specific. For the
-                            complete hexadecimal list of language
-                            identifiers, search on &quot;Language
-                            Identifiers&quot; in the MSDN Library at http://www.msdn.microsoft.com.</PropertyDescription>
+                        <PropertyName>Timeout</PropertyName>
+                        <PropertyDescription>A numeric time-out
+                            specifying in seconds the amount of time to
+                            wait for a request to be successful.</PropertyDescription>
                         <PropertyType>UnsignedInteger</PropertyType>
                         <PropertyAccessType>ReadWrite</PropertyAccessType>
                         <IsRequired>false</IsRequired>
-                        <Value>None</Value>
-                    </row>
-                    <row>
-                        <PropertyName>AxisFormat</PropertyName>
-                        <PropertyDescription>Determines the format used
-                            within an MDDataSet result set to describe
-                            the axes of the multidimensional dataset.
-                            This property can have the values listed in
-                            the following table: TupleFormat (default),
-                            ClusterFormat, CustomFormat.</PropertyDescription>
-                        <PropertyType>Enumeration</PropertyType>
-                        <PropertyAccessType>Write</PropertyAccessType>
-                        <IsRequired>false</IsRequired>
-                        <Value/>
-                    </row>
-                    <row>
-                        <PropertyName>VisualMode</PropertyName>
-                        <PropertyDescription>This property is equivalent
-                            to the OLE DB property, MDPROP_VISUALMODE.
-                            The default value for this property is zero
-                            (0), equivalent to DBPROPVAL_VISUAL_MODE_DEFAULT.</PropertyDescription>
-                        <PropertyType>Enumeration</PropertyType>
-                        <PropertyAccessType>Write</PropertyAccessType>
-                        <IsRequired>false</IsRequired>
-                        <Value>1</Value>
-                    </row>
-                    <row>
-                        <PropertyName>BeginRange</PropertyName>
-                        <PropertyDescription>Contains a zero-based
-                            integer value corresponding to a CellOrdinal
-                            attribute value. (The CellOrdinal attribute
-                            is part of the Cell element in the CellData
-                            section of MDDataSet.) Used together with
-                            the EndRange property, the client
-                            application can use this property to
-                            restrict an OLAP dataset returned by a
-                            command to a specific range of cells. If -1
-                            is specified, all cells up to the cell
-                            specified in the EndRange property are
-                            returned. The default value for this
-                            property is -1.</PropertyDescription>
-                        <PropertyType>Integer</PropertyType>
-                        <PropertyAccessType>Write</PropertyAccessType>
-                        <IsRequired>false</IsRequired>
-                        <Value>-1</Value>
+                        <Value>Undefined</Value>
                     </row>
                     <row>
                         <PropertyName>UserName</PropertyName>
@@ -8929,42 +8959,15 @@
                         <Value/>
                     </row>
                     <row>
-                        <PropertyName>Content</PropertyName>
-                        <PropertyDescription>An enumerator that
-                            specifies what type of data is returned in
-                            the result set. None: Allows the structure
-                            of the command to be verified, but not
-                            executed. Analogous to using Prepare to
-                            check syntax, and so on. Schema: Contains
-                            the XML schema (which indicates column
-                            information, and so on) that relates to the
-                            requested query. Data: Contains only the
-                            data that was requested. SchemaData: Returns
-                            both the schema information as well as the data.</PropertyDescription>
-                        <PropertyType>EnumString</PropertyType>
+                        <PropertyName>VisualMode</PropertyName>
+                        <PropertyDescription>This property is equivalent
+                            to the OLE DB property, MDPROP_VISUALMODE.
+                            The default value for this property is zero
+                            (0), equivalent to DBPROPVAL_VISUAL_MODE_DEFAULT.</PropertyDescription>
+                        <PropertyType>Enumeration</PropertyType>
                         <PropertyAccessType>Write</PropertyAccessType>
                         <IsRequired>false</IsRequired>
-                        <Value>SchemaData</Value>
-                    </row>
-                    <row>
-                        <PropertyName>Format</PropertyName>
-                        <PropertyDescription>Enumerator that determines
-                            the format of the returned result set.
-                            Values include: Tabular: a flat or
-                            hierarchical rowset. Similar to the XML RAW
-                            format in SQL. The Format property should be
-                            set to Tabular for OLE DB for Data Mining
-                            commands. Multidimensional: Indicates that
-                            the result set will use the MDDataSet format
-                            (Execute method only). Native: The client
-                            does not request a specific format, so the
-                            provider may return the format  appropriate
-                            to the query. (The actual result type is
-                            identified by namespace of the result.)</PropertyDescription>
-                        <PropertyType>EnumString</PropertyType>
-                        <PropertyAccessType>Write</PropertyAccessType>
-                        <IsRequired>false</IsRequired>
-                        <Value>Native</Value>
+                        <Value>1</Value>
                     </row>
                 </root>
             </xmla:return>
@@ -9523,7 +9526,7 @@
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <DESCRIPTION>No description available</DESCRIPTION>
-                        <ROLES>No HR Cube,California manager</ROLES>
+                        <ROLES>California manager,No HR Cube</ROLES>
                     </row>
                 </root>
             </xmla:return>
