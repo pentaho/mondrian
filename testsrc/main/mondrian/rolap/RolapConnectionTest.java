@@ -13,8 +13,8 @@
 package mondrian.rolap;
 
 import junit.framework.TestCase;
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.test.TestContext;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -33,8 +33,7 @@ public class RolapConnectionTest extends TestCase {
     }
 
     public void testPooledConnectionWithProperties() throws SQLException {
-        final String connectString =
-                MondrianProperties.instance().TestConnectString.get();
+        final String connectString = TestContext.getConnectString();
         Util.PropertyList properties = Util.parseConnectString(connectString);
 
         // Only the JDBC-ODBC bridge gives the error necessary for this
@@ -50,7 +49,7 @@ public class RolapConnectionTest extends TestCase {
         // because creating the connection from the DataSource will fail.
         properties.put("jdbc.charSet", "UTF-16");
         DataSource dataSource = RolapConnection.createDataSource(properties);
-        Connection connection = null;
+        Connection connection;
         try {
             connection = dataSource.getConnection();
             connection.close();
@@ -68,14 +67,19 @@ public class RolapConnectionTest extends TestCase {
             } else {
                 fail("Expected exception, but got a different one: " + e);
             }
+        } catch (IllegalArgumentException e) {
+            // Workaround Java bug, logged on 2006/12/09 with synopsis
+            // "DriverManager.getConnection throws IllegalArgumentException".
+            if (!System.getProperties().getProperty("java.version").startsWith("1.6.")) {
+                fail("Expect IllegalArgumentException only in JDK 1.6");
+            }
         } finally {
             RolapConnectionPool.instance().clearPool();
         }
     }
 
     public void testNonPooledConnectionWithProperties() {
-        final String connectString =
-                MondrianProperties.instance().TestConnectString.get();
+        final String connectString = TestContext.getConnectString();
         Util.PropertyList properties = Util.parseConnectString(connectString);
 
         // Only the JDBC-ODBC bridge gives the error necessary for this
@@ -92,13 +96,19 @@ public class RolapConnectionTest extends TestCase {
         properties.put("jdbc.charSet", "UTF-16");
         properties.put(RolapConnectionProperties.PoolNeeded, "false");
         DataSource dataSource = RolapConnection.createDataSource(properties);
-        Connection connection = null;
+        Connection connection;
         try {
             connection = dataSource.getConnection();
             connection.close();
             fail("Expected exception");
         } catch (SQLException se) {
             // this is expected
+        } catch (IllegalArgumentException e) {
+            // Workaround Java bug, logged on 2006/12/09 with synopsis
+            // "DriverManager.getConnection throws IllegalArgumentException".
+            if (!System.getProperties().getProperty("java.version").startsWith("1.6.")) {
+                fail("Expect IllegalArgumentException only in JDK 1.6");
+            }
         }
     }
 }
