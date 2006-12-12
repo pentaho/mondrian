@@ -55,26 +55,22 @@ public interface Member extends OlapElement, Comparable {
     String getParentUniqueName();
 
     /**
-     * Returns the type of member. Values are {@link #UNKNOWN_MEMBER_TYPE},
-     * {@link #REGULAR_MEMBER_TYPE}, {@link #ALL_MEMBER_TYPE}, {@link
-     * #MEASURE_MEMBER_TYPE}, {@link #FORMULA_MEMBER_TYPE}.
+     * Returns the type of member.
      */
-    int getMemberType();
+    MemberType getMemberType();
 
-    static final int UNKNOWN_MEMBER_TYPE = 0;
-    static final int REGULAR_MEMBER_TYPE = 1; // adMemberRegular
-    static final int ALL_MEMBER_TYPE = 2;
-    static final int MEASURE_MEMBER_TYPE = 3;
-    static final int FORMULA_MEMBER_TYPE = 4;
-    /**
-     * This member is its hierarchy's NULL member (such as is returned by
-     * <code>[Gender]&#46;[All Gender]&#46;PrevMember</code>, for example).
-     */
-    static final int NULL_MEMBER_TYPE = 5;
-
-    static final String memberTypes[] = {
-        "unknown", "regular", "all", "measure", "formula", "null"
-    };
+    enum MemberType {
+        UNKNOWN,
+        REGULAR, // adMemberRegular
+        ALL,
+        MEASURE,
+        FORMULA,
+        /**
+         * This member is its hierarchy's NULL member (such as is returned by
+         * <code>[Gender]&#46;[All Gender]&#46;PrevMember</code>, for example).
+         */
+        NULL
+    }
 
     /**
      * Only allowable if the member is part of the <code>WITH</code> clause of

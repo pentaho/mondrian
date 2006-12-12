@@ -128,13 +128,14 @@ public class AggGen {
             }
         }
         JdbcSchema.Table.Column.Usage usage;
-        if (column.hasUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE)) {
-            Iterator it = column.getUsages(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
+        if (column.hasUsage(JdbcSchema.UsageType.FOREIGN_KEY)) {
+            Iterator<JdbcSchema.Table.Column.Usage> it =
+                column.getUsages(JdbcSchema.UsageType.FOREIGN_KEY);
             it.hasNext();
-            usage = (JdbcSchema.Table.Column.Usage) it.next();
+            usage = it.next();
         } else {
-            usage = column.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
-            usage.setSymbolicName(JdbcSchema.FOREIGN_KEY_COLUMN_NAME);
+            usage = column.newUsage(JdbcSchema.UsageType.FOREIGN_KEY);
+            usage.setSymbolicName(JdbcSchema.UsageType.FOREIGN_KEY.name());
         }
         notLostColumnUsages.add(usage);
     }
@@ -287,8 +288,7 @@ public class AggGen {
                 getLogger().warn(buf.toString());
                 return;
             }
-            RolapAggregator aggregator = null;
-            String symbolicName = null;
+            RolapAggregator aggregator;
             if (!(rColumn instanceof RolapStar.Measure)) {
                 // TODO: whats the solution to this?
                 // its a funky dimension column in the fact table!!!
@@ -325,13 +325,11 @@ public class AggGen {
 */
 
             JdbcSchema.Table.Column.Usage usage = null;
-            if (c.hasUsage(JdbcSchema.MEASURE_COLUMN_USAGE)) {
-                for (Iterator uit =
-                    c.getUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
+            if (c.hasUsage(JdbcSchema.UsageType.MEASURE)) {
+                for (Iterator<JdbcSchema.Table.Column.Usage> uit =
+                    c.getUsages(JdbcSchema.UsageType.MEASURE);
                     uit.hasNext();) {
-
-                    JdbcSchema.Table.Column.Usage tmpUsage =
-                        (JdbcSchema.Table.Column.Usage) uit.next();
+                    JdbcSchema.Table.Column.Usage tmpUsage = uit.next();
                     if ((tmpUsage.getAggregator() == aggregator) &&
                         tmpUsage.getSymbolicName().equals(rColumn.getName())) {
                         usage = tmpUsage;
@@ -340,7 +338,7 @@ public class AggGen {
                 }
             }
             if (usage == null) {
-                usage = c.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
+                usage = c.newUsage(JdbcSchema.UsageType.MEASURE);
                 usage.setAggregator(aggregator);
                 usage.setSymbolicName(rColumn.getName());
             }
@@ -410,7 +408,7 @@ public class AggGen {
         // NOTE: this creates a new usage for the fact table
         // I do not know if this is a problem is AggGen is run before
         // Mondrian uses aggregate tables.
-        list.add(c.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE));
+        list.add(c.newUsage(JdbcSchema.UsageType.FOREIGN_KEY));
 
         RolapStar.Column prColumn = rColumn;
         while (prColumn.getParentColumn() != null) {
@@ -438,7 +436,7 @@ public class AggGen {
             // NOTE: this creates a new usage for the fact table
             // I do not know if this is a problem is AggGen is run before
             // Mondrian uses aggregate tables.
-            list.add(c.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE));
+            list.add(c.newUsage(JdbcSchema.UsageType.FOREIGN_KEY));
         }
 
         return true;
@@ -520,7 +518,7 @@ public class AggGen {
             }
 
             JdbcSchema.Table.Column.Usage usage =
-                c.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
+                c.newUsage(JdbcSchema.UsageType.FOREIGN_KEY);
             usage.usagePrefix = rc.getUsagePrefix();
 
             list.add(usage);
@@ -568,7 +566,6 @@ public class AggGen {
         StringWriter sw = new StringWriter(512);
         PrintWriter pw = new PrintWriter(sw);
         String prefix = "    ";
-        String factTableName = getFactTableName();
 
         pw.print("CREATE TABLE ");
         pw.print(makeLostAggregateTableName(getFactTableName()));
@@ -669,8 +666,7 @@ public class AggGen {
             if (k++ > 0) {
                 pw.println(",");
             }
-            JdbcSchema.Table.Column.Usage usage =
-                notLostColumnUsage;
+            JdbcSchema.Table.Column.Usage usage = notLostColumnUsage;
             JdbcSchema.Table.Column c = usage.getColumn();
 
             pw.print(prefix);
@@ -759,7 +755,6 @@ public class AggGen {
         pw.println(")");
 
         pw.println("SELECT");
-        int dimCnt = 0;
         for (List<JdbcSchema.Table.Column.Usage> list : collapsedColumnUsages.values()) {
             for (JdbcSchema.Table.Column.Usage usage : list) {
                 JdbcSchema.Table.Column c = usage.getColumn();
@@ -802,7 +797,6 @@ public class AggGen {
         pw.println(',');
 
         // add dimension tables
-        dimCnt = 0;
         int k = 0;
         for (RolapStar.Table rt : collapsedColumnUsages.keySet()) {
             if (k++ > 0) {
@@ -860,7 +854,6 @@ public class AggGen {
 
         pw.println();
         pw.println("GROUP BY ");
-        dimCnt = 0;
         k = 0;
         for (List<JdbcSchema.Table.Column.Usage> list : collapsedColumnUsages.values()) {
             for (JdbcSchema.Table.Column.Usage usage : list) {
@@ -889,8 +882,8 @@ public class AggGen {
         // if its a measure which is based upon a foreign key, then
         // the foreign key column name is already used (for the foreign key
         // column) so we must choose a different name.
-        if (usage.getColumnType() == JdbcSchema.MEASURE_COLUMN_USAGE) {
-            if (c.hasUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE)) {
+        if (usage.getUsageType() == JdbcSchema.UsageType.MEASURE) {
+            if (c.hasUsage(JdbcSchema.UsageType.FOREIGN_KEY)) {
                 name = usage.getSymbolicName().replace(' ', '_').toUpperCase();
             }
         }
@@ -911,21 +904,21 @@ public class AggGen {
         pw.print(' ');
         pw.print(c.getTypeName().toUpperCase());
         switch (c.getType()) {
-        case Types.NUMERIC :
-        case Types.DECIMAL :
+        case Types.NUMERIC:
+        case Types.DECIMAL:
             pw.print('(');
             pw.print(c.getNumPrecRadix());
             pw.print(",");
             pw.print(c.getDecimalDigits());
             pw.print(')');
             break;
-        case Types.CHAR :
-        case Types.VARCHAR :
+        case Types.CHAR:
+        case Types.VARCHAR:
             pw.print('(');
             pw.print(c.getCharOctetLength());
             pw.print(')');
             break;
-        default :
+        default:
         }
         if (! c.isNullable()) {
             pw.print(" NOT NULL");

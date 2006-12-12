@@ -213,7 +213,7 @@ public class TestContext {
         Util.PropertyList properties =
                 Util.parseConnectString(foodMartConnectString);
         properties.put(
-                RolapConnectionProperties.DynamicSchemaProcessor,
+                RolapConnectionProperties.DynamicSchemaProcessor.name(),
                 dynProcClass.getName());
         return DriverManager.getConnection(
                 properties, null, null, false);
@@ -225,12 +225,12 @@ public class TestContext {
      */
     public synchronized Connection getFoodMartConnection(String catalogContent) {
         Util.PropertyList properties =
-                Util.parseConnectString(foodMartConnectString);
+            Util.parseConnectString(foodMartConnectString);
         properties.put(
-                RolapConnectionProperties.CatalogContent,
-                catalogContent);
+            RolapConnectionProperties.CatalogContent.name(),
+            catalogContent);
         return DriverManager.getConnection(
-                properties, null, null, false);
+            properties, null, null, false);
     }
 
     /**

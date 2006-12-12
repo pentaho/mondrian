@@ -81,13 +81,10 @@ class LastPeriodsFunDef extends FunDefBase {
 
         return new AbstractListCalc(call, new Calc[] {memberCalc, indexValueCalc}) {
             public List evaluateList(Evaluator evaluator) {
-                Member member = memberCalc.evaluateMember(
-                        evaluator);
-                int indexValue = indexValueCalc.evaluateInteger(
-                        evaluator);
+                Member member = memberCalc.evaluateMember(evaluator);
+                int indexValue = indexValueCalc.evaluateInteger(evaluator);
 
-                return lastPeriods(member,
-                        evaluator, indexValue);
+                return lastPeriods(member, evaluator, indexValue);
             }
         };
     }
@@ -103,15 +100,15 @@ class LastPeriodsFunDef extends FunDefBase {
 
         If Index is zero, the empty set is returned.
     */
-    List lastPeriods(
+    List<Member> lastPeriods(
             Member member,
             Evaluator evaluator,
             int indexValue) {
         // empty set
         if ((indexValue == 0) || member.isNull()) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
-        List list = new ArrayList();
+        List<Member> list = new ArrayList<Member>();
 
         // set with just member
         if ((indexValue == 1) || (indexValue == -1)) {

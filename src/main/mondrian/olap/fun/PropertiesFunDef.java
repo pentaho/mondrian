@@ -119,15 +119,14 @@ class PropertiesFunDef extends FunDefBase {
                 return Category.Value;
             } else {
                 switch (property.getType()) {
-                case Property.TYPE_BOOLEAN:
+                case TYPE_BOOLEAN:
                     return Category.Logical;
-                case Property.TYPE_NUMERIC:
+                case TYPE_NUMERIC:
                     return Category.Numeric;
-                case Property.TYPE_STRING:
+                case TYPE_STRING:
                     return Category.String;
                 default:
-                    throw Util.newInternal("Unknown property type "
-                        + property.getType());
+                    throw Util.badValue(property.getType());
                 }
             }
         }

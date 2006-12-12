@@ -279,24 +279,15 @@ public class CmdRunner {
     }
 
     private static class Expr {
-        static final int STRING_TYPE    = 1;
-        static final int NUMERIC_TYPE   = 2;
-        static final int MEMBER_TYPE    = 3;
-        static String typeName(int type) {
-            switch (type) {
-            case STRING_TYPE:
-                return "STRING_TYPE";
-            case NUMERIC_TYPE:
-                return "NUMERIC_TYPE";
-            case MEMBER_TYPE:
-                return "MEMBER_TYPE";
-            default:
-                return "UNKNOWN_TYPE";
-            }
+        enum Type {
+            STRING,
+            NUMERIC,
+            MEMBER
         }
-        Object value;
-        int type;
-        Expr(Object value, int type) {
+
+        final Object value;
+        final Type type;
+        Expr(Object value, Type type) {
             this.value = value;
             this.type = type;
         }
@@ -314,39 +305,39 @@ public class CmdRunner {
         if  (expr == null) {
             return;
         }
-        int type = expr.type;
+        Expr.Type type = expr.type;
         // found the parameter with the given name in the query
         switch (category) {
         case Category.Numeric:
-            if (type != Expr.NUMERIC_TYPE) {
+            if (type != Expr.Type.NUMERIC) {
                 String msg = "For parameter named \""
                         + name
                         + "\" of Catetory.Numeric, "
                         + "the value was type \""
-                        + Expr.typeName(type)
+                        + type
                         + "\"";
                 throw new IllegalArgumentException(msg);
             }
             break;
         case Category.String:
-            if (type != Expr.STRING_TYPE) {
+            if (type != Expr.Type.STRING) {
                 String msg = "For parameter named \""
                         + name
                         + "\" of Catetory.String, "
                         + "the value was type \""
-                        + Expr.typeName(type)
+                        + type
                         + "\"";
                 throw new IllegalArgumentException(msg);
             }
             break;
 
         case Category.Member:
-            if (type != Expr.MEMBER_TYPE) {
+            if (type != Expr.Type.MEMBER) {
                 String msg = "For parameter named \""
                         + name
                         + "\" of Catetory.Member, "
                         + "the value was type \""
-                        + Expr.typeName(type)
+                        + type
                         + "\"";
                 throw new IllegalArgumentException(msg);
             }
@@ -367,13 +358,15 @@ public class CmdRunner {
         int len = trimmed.length();
         if (trimmed.charAt(0) == '"' && trimmed.charAt(len - 1) == '"') {
             debug("parseParameter. STRING_TYPE: " +trimmed);
-            return new Expr(trimmed.substring(1, trimmed.length() - 1),
-                            Expr.STRING_TYPE);
+            return new Expr(
+                trimmed.substring(1, trimmed.length() - 1),
+                Expr.Type.STRING);
         }
         if (trimmed.charAt(0) == '\'' && trimmed.charAt(len - 1) == '\'') {
             debug("parseParameter. STRING_TYPE: " +trimmed);
-            return new Expr(trimmed.substring(1, trimmed.length() - 1),
-                            Expr.STRING_TYPE);
+            return new Expr(
+                trimmed.substring(1, trimmed.length() - 1),
+                Expr.Type.STRING);
         }
 
         // is it a Number ?
@@ -385,7 +378,7 @@ public class CmdRunner {
         }
         if (number != null) {
             debug("parseParameter. NUMERIC_TYPE: " +number);
-            return new Expr(number, Expr.NUMERIC_TYPE);
+            return new Expr(number, Expr.Type.NUMERIC);
         }
 
         debug("parseParameter. MEMBER_TYPE: " +trimmed);
@@ -401,16 +394,16 @@ public class CmdRunner {
 
         if (element instanceof Member) {
             Member member = (Member) element;
-            return new Expr(member, Expr.MEMBER_TYPE);
+            return new Expr(member, Expr.Type.MEMBER);
         } else if (element instanceof mondrian.olap.Level) {
             mondrian.olap.Level level = (mondrian.olap.Level) element;
-            return new Expr(level, Expr.MEMBER_TYPE);
+            return new Expr(level, Expr.Type.MEMBER);
         } else if (element instanceof Hierarchy) {
             Hierarchy hier = (Hierarchy) element;
-            return new Expr(hier, Expr.MEMBER_TYPE);
+            return new Expr(hier, Expr.Type.MEMBER);
         } else if (element instanceof Dimension) {
             Dimension dim = (Dimension) element;
-            return new Expr(dim, Expr.MEMBER_TYPE);
+            return new Expr(dim, Expr.Type.MEMBER);
         }
         return null;
     }
@@ -602,7 +595,7 @@ public class CmdRunner {
         if (connectString == null || connectString.equals("")) {
             // create new and add provider
             connectProperties = new Util.PropertyList();
-            connectProperties.put(RolapConnectionProperties.Provider,"mondrian");
+            connectProperties.put(RolapConnectionProperties.Provider.name(),"mondrian");
         } else {
             // load with existing connect string
             connectProperties = Util.parseConnectString(connectString);
@@ -615,7 +608,7 @@ public class CmdRunner {
 
         if (jdbcURL != null) {
             // add jdbc url to connect string
-            connectProperties.put(RolapConnectionProperties.Jdbc, jdbcURL);
+            connectProperties.put(RolapConnectionProperties.Jdbc.name(), jdbcURL);
         }
 
         // override jdbc drivers
@@ -624,7 +617,7 @@ public class CmdRunner {
         debug("CmdRunner.makeConnectString: jdbcDrivers="+jdbcDrivers);
         if (jdbcDrivers != null) {
             // add jdbc drivers to connect string
-            connectProperties.put(RolapConnectionProperties.JdbcDrivers, jdbcDrivers);
+            connectProperties.put(RolapConnectionProperties.JdbcDrivers.name(), jdbcDrivers);
         }
 
         // override catalog url
@@ -634,7 +627,7 @@ public class CmdRunner {
 
         if (catalogURL != null) {
             // add catalog url to connect string
-            connectProperties.put(RolapConnectionProperties.Catalog, catalogURL);
+            connectProperties.put(RolapConnectionProperties.Catalog.name(), catalogURL);
         }
 
         // override JDBC user
@@ -644,7 +637,7 @@ public class CmdRunner {
 
         if (jdbcUser != null) {
             // add user to connect string
-            connectProperties.put(RolapConnectionProperties.JdbcUser, jdbcUser);
+            connectProperties.put(RolapConnectionProperties.JdbcUser.name(), jdbcUser);
         }
 
         // override JDBC password
@@ -654,7 +647,7 @@ public class CmdRunner {
 
         if (jdbcPassword != null) {
             // add password to connect string
-            connectProperties.put(RolapConnectionProperties.JdbcPassword, jdbcPassword);
+            connectProperties.put(RolapConnectionProperties.JdbcPassword.name(), jdbcPassword);
         }
 
         debug("CmdRunner.makeConnectString: connectProperties="+connectProperties);

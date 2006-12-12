@@ -20,6 +20,8 @@ import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapMember;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.text.SimpleDateFormat;
 import java.text.Format;
@@ -34,7 +36,968 @@ import java.text.Format;
  * @author jhyde
  * @version $Id$
  */
-abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
+enum RowsetDefinition {
+    /**
+     * Returns a list of XML for Analysis data sources
+     * available on the server or Web Service. (For an
+     * example of how these may be published, see
+     * "XML for Analysis Implementation Walkthrough"
+     * in the XML for Analysis specification.)
+     *
+     *  http://msdn2.microsoft.com/en-us/library/ms126129(SQL.90).aspx
+     *
+     *
+     * restrictions
+     *
+     * Not supported
+     */
+    DISCOVER_DATASOURCES(
+        "DISCOVER_DATASOURCES", 0,
+        "Returns a list of XML for Analysis data sources available on the server or Web Service.",
+        new Column[] {
+            DiscoverDatasourcesRowset.DataSourceName,
+            DiscoverDatasourcesRowset.DataSourceDescription,
+            DiscoverDatasourcesRowset.URL,
+            DiscoverDatasourcesRowset.DataSourceInfo,
+            DiscoverDatasourcesRowset.ProviderName,
+            DiscoverDatasourcesRowset.ProviderType,
+            DiscoverDatasourcesRowset.AuthenticationMode,
+        },
+        null /* not sorted */) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new DiscoverDatasourcesRowset(request, handler);
+        }
+    },
+
+    /**
+     * Note that SQL Server also returns the data-mining columns.
+     *
+     *
+     * restrictions
+     *
+     * Not supported
+     */
+    DISCOVER_SCHEMA_ROWSETS(
+        "DISCOVER_SCHEMA_ROWSETS", 2,
+        "Returns the names, values, and other information of all supported RequestType enumeration values.",
+        new Column[] {
+            DiscoverSchemaRowsetsRowset.SchemaName,
+            DiscoverSchemaRowsetsRowset.SchemaGuid,
+            DiscoverSchemaRowsetsRowset.Restrictions,
+            DiscoverSchemaRowsetsRowset.Description,
+        },
+        null /* not sorted */) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new DiscoverSchemaRowsetsRowset(request, handler);
+        }
+        protected void writeRowsetXmlSchemaRowDef(SaxWriter writer) {
+            writer.startElement("xsd:complexType", new String[] {
+                "name", "row"
+            });
+            writer.startElement("xsd:sequence");
+            for (Column column : columnDefinitions) {
+                final String name = XmlaUtil.encodeElementName(column.name);
+
+                if (column == DiscoverSchemaRowsetsRowset.Restrictions) {
+                    writer.startElement("xsd:element", new String[]{
+                        "sql:field", column.name,
+                        "name", name,
+                        "minOccurs", "0",
+                        "maxOccurs", "unbounded"
+                    });
+                    writer.startElement("xsd:complexType");
+                    writer.startElement("xsd:sequence");
+                    writer.element("xsd:element", new String[]{
+                        "name", "Name",
+                        "type", "xsd:string",
+                        "sql:field", "Name"
+                    });
+                    writer.element("xsd:element", new String[]{
+                        "name", "Type",
+                        "type", "xsd:string",
+                        "sql:field", "Type"
+                    });
+
+                    writer.endElement(); // xsd:sequence
+                    writer.endElement(); // xsd:complexType
+                    writer.endElement(); // xsd:element
+
+                } else {
+                    final String xsdType = column.type.columnType;
+
+                    String[] attrs;
+                    if (column.nullable) {
+                        if (column.unbounded) {
+                            attrs = new String[]{
+                                "sql:field", column.name,
+                                "name", name,
+                                "type", xsdType,
+                                "minOccurs", "0",
+                                "maxOccurs", "unbounded"
+                            };
+                        } else {
+                            attrs = new String[]{
+                                "sql:field", column.name,
+                                "name", name,
+                                "type", xsdType,
+                                "minOccurs", "0"
+                            };
+                        }
+                    } else {
+                        if (column.unbounded) {
+                            attrs = new String[]{
+                                "sql:field", column.name,
+                                "name", name,
+                                "type", xsdType,
+                                "maxOccurs", "unbounded"
+                            };
+                        } else {
+                            attrs = new String[]{
+                                "sql:field", column.name,
+                                "name", name,
+                                "type", xsdType
+                            };
+                        }
+                    }
+                    writer.element("xsd:element", attrs);
+                }
+            }
+            writer.endElement(); // xsd:sequence
+            writer.endElement(); // xsd:complexType
+        }
+    },
+
+    /**
+     *
+     *
+     *
+     * restrictions
+     *
+     * Not supported
+     */
+    DISCOVER_ENUMERATORS(
+        "DISCOVER_ENUMERATORS", 3,
+        "Returns a list of names, data types, and enumeration values for enumerators supported by the provider of a specific data source.",
+        new Column[] {
+            DiscoverEnumeratorsRowset.EnumName,
+            DiscoverEnumeratorsRowset.EnumDescription,
+            DiscoverEnumeratorsRowset.EnumType,
+            DiscoverEnumeratorsRowset.ElementName,
+            DiscoverEnumeratorsRowset.ElementDescription,
+            DiscoverEnumeratorsRowset.ElementValue,
+        },
+        null /* not sorted */) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new DiscoverEnumeratorsRowset(request, handler);
+        }
+    },
+
+    /**
+     *
+     *
+     *
+     * restrictions
+     *
+     * Not supported
+     */
+    DISCOVER_PROPERTIES(
+        "DISCOVER_PROPERTIES", 1,
+        "Returns a list of information and values about the requested properties that are supported by the specified data source provider.",
+        new Column[] {
+            DiscoverPropertiesRowset.PropertyName,
+            DiscoverPropertiesRowset.PropertyDescription,
+            DiscoverPropertiesRowset.PropertyType,
+            DiscoverPropertiesRowset.PropertyAccessType,
+            DiscoverPropertiesRowset.IsRequired,
+            DiscoverPropertiesRowset.Value,
+        },
+        null /* not sorted */) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new DiscoverPropertiesRowset(request, handler);
+        }
+    },
+
+    /**
+     *
+     *
+     *
+     * restrictions
+     *
+     * Not supported
+     */
+    DISCOVER_KEYWORDS(
+        "DISCOVER_KEYWORDS", 4,
+        "Returns an XML list of keywords reserved by the provider.",
+        new Column[] {
+            DiscoverKeywordsRowset.Keyword,
+        },
+        null /* not sorted */) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new DiscoverKeywordsRowset(request, handler);
+        }
+    },
+
+    /**
+     *
+     *
+     *
+     * restrictions
+     *
+     * Not supported
+     */
+    DISCOVER_LITERALS(
+        "DISCOVER_LITERALS", 5,
+        "Returns information about literals supported by the provider.",
+        new Column[] {
+            DiscoverLiteralsRowset.LiteralName,
+            DiscoverLiteralsRowset.LiteralValue,
+            DiscoverLiteralsRowset.LiteralInvalidChars,
+            DiscoverLiteralsRowset.LiteralInvalidStartingChars,
+            DiscoverLiteralsRowset.LiteralMaxLength,
+        },
+        null /* not sorted */) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new DiscoverLiteralsRowset(request, handler);
+        }
+    },
+
+    /**
+     *
+     *
+     *
+     * restrictions
+     *
+     * Not supported
+     */
+    DBSCHEMA_CATALOGS(
+        "DBSCHEMA_CATALOGS", 6,
+        "Returns information about literals supported by the provider.",
+        new Column[] {
+            DbschemaCatalogsRowset.CatalogName,
+            DbschemaCatalogsRowset.Description,
+            DbschemaCatalogsRowset.Roles,
+            DbschemaCatalogsRowset.DateModified,
+        },
+        new Column[] {
+            DbschemaCatalogsRowset.CatalogName,
+        }) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new DbschemaCatalogsRowset(request, handler);
+        }
+    },
+
+    /**
+     *
+     *
+     *
+     * restrictions
+     *
+     * Not supported
+     *    COLUMN_OLAP_TYPE
+     */
+    DBSCHEMA_COLUMNS(
+        "DBSCHEMA_COLUMNS", 7, null,
+        new Column[] {
+            DbschemaColumnsRowset.TableCatalog,
+            DbschemaColumnsRowset.TableSchema,
+            DbschemaColumnsRowset.TableName,
+            DbschemaColumnsRowset.ColumnName,
+            DbschemaColumnsRowset.OrdinalPosition,
+            DbschemaColumnsRowset.ColumnHasDefault,
+            DbschemaColumnsRowset.ColumnFlags,
+            DbschemaColumnsRowset.IsNullable,
+            DbschemaColumnsRowset.DataType,
+            DbschemaColumnsRowset.CharacterMaximumLength,
+            DbschemaColumnsRowset.CharacterOctetLength,
+            DbschemaColumnsRowset.NumericPrecision,
+            DbschemaColumnsRowset.NumericScale,
+        },
+        new Column[] {
+            DbschemaColumnsRowset.TableCatalog,
+            DbschemaColumnsRowset.TableSchema,
+            DbschemaColumnsRowset.TableName,
+        }) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new DbschemaColumnsRowset(request, handler);
+        }
+    },
+
+    /**
+     *
+     *
+     *
+     * restrictions
+     *
+     * Not supported
+     */
+    DBSCHEMA_PROVIDER_TYPES(
+        "DBSCHEMA_PROVIDER_TYPES", 8, null,
+        new Column[] {
+            DbschemaProviderTypesRowset.TypeName,
+            DbschemaProviderTypesRowset.DataType,
+            DbschemaProviderTypesRowset.ColumnSize,
+            DbschemaProviderTypesRowset.LiteralPrefix,
+            DbschemaProviderTypesRowset.LiteralSuffix,
+            DbschemaProviderTypesRowset.IsNullable,
+            DbschemaProviderTypesRowset.CaseSensitive,
+            DbschemaProviderTypesRowset.Searchable,
+            DbschemaProviderTypesRowset.UnsignedAttribute,
+            DbschemaProviderTypesRowset.FixedPrecScale,
+            DbschemaProviderTypesRowset.AutoUniqueValue,
+            DbschemaProviderTypesRowset.IsLong,
+            DbschemaProviderTypesRowset.BestMatch,
+        },
+        new Column[] {
+            DbschemaProviderTypesRowset.DataType,
+        }) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new DbschemaProviderTypesRowset(request, handler);
+        }
+    },
+
+    /**
+     * http://msdn2.microsoft.com/en-us/library/ms126299(SQL.90).aspx
+     *
+     * restrictions:
+     *   TABLE_CATALOG Optional
+     *   TABLE_SCHEMA Optional
+     *   TABLE_NAME Optional
+     *   TABLE_TYPE Optional
+     *   TABLE_OLAP_TYPE Optional
+     *
+     * Not supported
+     */
+    DBSCHEMA_TABLES(
+        "DBSCHEMA_TABLES", 9, null,
+        new Column[] {
+            DbschemaTablesRowset.TableCatalog,
+            DbschemaTablesRowset.TableSchema,
+            DbschemaTablesRowset.TableName,
+            DbschemaTablesRowset.TableType,
+            DbschemaTablesRowset.TableGuid,
+            DbschemaTablesRowset.Description,
+            DbschemaTablesRowset.TablePropId,
+            DbschemaTablesRowset.DateCreated,
+            DbschemaTablesRowset.DateModified,
+            //TableOlapType,
+        },
+        new Column[] {
+            DbschemaTablesRowset.TableType,
+            DbschemaTablesRowset.TableCatalog,
+            DbschemaTablesRowset.TableSchema,
+            DbschemaTablesRowset.TableName,
+        }) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new DbschemaTablesRowset(request, handler);
+        }
+    },
+
+    /**
+     * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/oledbtables_info_rowset.asp
+     *
+     *
+     * restrictions
+     *
+     * Not supported
+     */
+    DBSCHEMA_TABLES_INFO(
+        "DBSCHEMA_TABLES_INFO", 10, null,
+        new Column[] {
+            DbschemaTablesInfoRowset.TableCatalog,
+            DbschemaTablesInfoRowset.TableSchema,
+            DbschemaTablesInfoRowset.TableName,
+            DbschemaTablesInfoRowset.TableType,
+            DbschemaTablesInfoRowset.TableGuid,
+            DbschemaTablesInfoRowset.Bookmarks,
+            DbschemaTablesInfoRowset.BookmarkType,
+            DbschemaTablesInfoRowset.BookmarkDataType,
+            DbschemaTablesInfoRowset.BookmarkMaximumLength,
+            DbschemaTablesInfoRowset.BookmarkInformation,
+            DbschemaTablesInfoRowset.TableVersion,
+            DbschemaTablesInfoRowset.Cardinality,
+            DbschemaTablesInfoRowset.Description,
+            DbschemaTablesInfoRowset.TablePropId,
+        },
+        null /* cannot find doc -- presume unsorted */) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new DbschemaTablesInfoRowset(request, handler);
+        }
+    },
+
+    /**
+     * http://msdn2.microsoft.com/en-us/library/ms126032(SQL.90).aspx
+     * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapactions_rowset.asp
+     *
+     * restrictions
+     *   CATALOG_NAME Optional
+     *   SCHEMA_NAME Optional
+     *   CUBE_NAME Mandatory
+     *   ACTION_NAME Optional
+     *   ACTION_TYPE Optional
+     *   COORDINATE Mandatory
+     *   COORDINATE_TYPE Mandatory
+     *   INVOCATION
+     *      (Optional) The INVOCATION restriction column defaults to the
+     *      value of MDACTION_INVOCATION_INTERACTIVE. To retrieve all
+     *      actions, use the MDACTION_INVOCATION_ALL value in the
+     *      INVOCATION restriction column.
+     *   CUBE_SOURCE
+     *      (Optional) A bitmap with one of the following valid values:
+     *
+     *      1 CUBE
+     *      2 DIMENSION
+     *
+     *      Default restriction is a value of 1.
+     *
+     * Not supported
+     */
+    MDSCHEMA_ACTIONS(
+        "MDSCHEMA_ACTIONS", 11, null, new Column[] {
+        MdschemaActionsRowset.CubeName,
+        MdschemaActionsRowset.Coordinate,
+        MdschemaActionsRowset.CoordinateType,
+    }, new Column[] {
+        // Spec says sort on CATALOG_NAME, SCHEMA_NAME, CUBE_NAME,
+        // ACTION_NAME.
+        MdschemaActionsRowset.CubeName,
+    }) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new MdschemaActionsRowset(request, handler);
+        }
+    },
+
+    /**
+     * http://msdn2.microsoft.com/en-us/library/ms126271(SQL.90).aspx
+     * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapproperties_rowset.asp
+     *
+     * restrictions
+     *   CATALOG_NAME Optional.
+     *   SCHEMA_NAME Optional.
+     *   CUBE_NAME Optional.
+     *   CUBE_TYPE
+     *      (Optional) A bitmap with one of these valid values:
+     *      1 CUBE
+     *      2 DIMENSION
+     *     Default restriction is a value of 1.
+     *   BASE_CUBE_NAME Optional.
+     *
+     * Not supported
+     *   CREATED_ON
+     *   LAST_SCHEMA_UPDATE
+     *   SCHEMA_UPDATED_BY
+     *   LAST_DATA_UPDATE
+     *   DATA_UPDATED_BY
+     *   ANNOTATIONS
+     */
+    MDSCHEMA_CUBES(
+        "MDSCHEMA_CUBES", 12, null,
+        new Column[] {
+            MdschemaCubesRowset.CatalogName,
+            MdschemaCubesRowset.SchemaName,
+            MdschemaCubesRowset.CubeName,
+            MdschemaCubesRowset.CubeType,
+            MdschemaCubesRowset.CubeGuid,
+            MdschemaCubesRowset.CreatedOn,
+            MdschemaCubesRowset.LastSchemaUpdate,
+            MdschemaCubesRowset.SchemaUpdatedBy,
+            MdschemaCubesRowset.LastDataUpdate,
+            MdschemaCubesRowset.DataUpdatedBy,
+            MdschemaCubesRowset.IsDrillthroughEnabled,
+            MdschemaCubesRowset.IsWriteEnabled,
+            MdschemaCubesRowset.IsLinkable,
+            MdschemaCubesRowset.IsSqlEnabled,
+            MdschemaCubesRowset.Description
+        },
+        new Column[] {
+            MdschemaCubesRowset.CatalogName,
+            MdschemaCubesRowset.SchemaName,
+            MdschemaCubesRowset.CubeName,
+        }) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new MdschemaCubesRowset(request, handler);
+        }
+    },
+
+    /**
+     * http://msdn2.microsoft.com/en-us/library/ms126180(SQL.90).aspx
+     * http://msdn2.microsoft.com/en-us/library/ms126180.aspx
+     *
+     * restrictions
+     *    CATALOG_NAME Optional.
+     *    SCHEMA_NAME Optional.
+     *    CUBE_NAME Optional.
+     *    DIMENSION_NAME Optional.
+     *    DIMENSION_UNIQUE_NAME Optional.
+     *    CUBE_SOURCE (Optional) A bitmap with one of the following valid values:
+     *      1 CUBE
+     *      2 DIMENSION
+     *    Default restriction is a value of 1.
+     *
+     *    DIMENSION_VISIBILITY (Optional) A bitmap with one of the following valid values:
+     *      1 Visible
+     *      2 Not visible
+     *    Default restriction is a value of 1.
+     */
+    MDSCHEMA_DIMENSIONS(
+        "MDSCHEMA_DIMENSIONS", 13, null,
+        new Column[] {
+            MdschemaDimensionsRowset.CatalogName,
+            MdschemaDimensionsRowset.SchemaName,
+            MdschemaDimensionsRowset.CubeName,
+            MdschemaDimensionsRowset.DimensionName,
+            MdschemaDimensionsRowset.DimensionUniqueName,
+            MdschemaDimensionsRowset.DimensionGuid,
+            MdschemaDimensionsRowset.DimensionCaption,
+            MdschemaDimensionsRowset.DimensionOrdinal,
+            MdschemaDimensionsRowset.DimensionType,
+            MdschemaDimensionsRowset.DimensionCardinality,
+            MdschemaDimensionsRowset.DefaultHierarchy,
+            MdschemaDimensionsRowset.Description,
+            MdschemaDimensionsRowset.IsVirtual,
+            MdschemaDimensionsRowset.IsReadWrite,
+            MdschemaDimensionsRowset.DimensionUniqueSettings,
+            MdschemaDimensionsRowset.DimensionMasterUniqueName,
+            MdschemaDimensionsRowset.DimensionIsVisible,
+        },
+        new Column[] {
+            MdschemaDimensionsRowset.CatalogName,
+            MdschemaDimensionsRowset.SchemaName,
+            MdschemaDimensionsRowset.CubeName,
+            MdschemaDimensionsRowset.DimensionName,
+        }) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new MdschemaDimensionsRowset(request, handler);
+        }
+    },
+
+    /**
+     * http://msdn2.microsoft.com/en-us/library/ms126257(SQL.90).aspx
+     * http://msdn.microsoft.com/library/en-us/oledb/htm/olapfunctions_rowset.asp
+     *
+     * restrictions
+     *   LIBRARY_NAME Optional.
+     *   INTERFACE_NAME Optional.
+     *   FUNCTION_NAME Optional.
+     *   ORIGIN Optional.
+     *
+     * Not supported
+     *  DLL_NAME
+     *    Optional
+     *  HELP_FILE
+     *    Optional
+     *  HELP_CONTEXT
+     *    Optional
+     *    - SQL Server xml schema says that this must be present
+     *  OBJECT
+     *    Optional
+     *  CAPTION The display caption for the function.
+     */
+    MDSCHEMA_FUNCTIONS(
+        "MDSCHEMA_FUNCTIONS", 14, null,
+        new Column[] {
+            MdschemaFunctionsRowset.FunctionName,
+            MdschemaFunctionsRowset.Description,
+            MdschemaFunctionsRowset.ParameterList,
+            MdschemaFunctionsRowset.ReturnType,
+            MdschemaFunctionsRowset.Origin,
+            MdschemaFunctionsRowset.InterfaceName,
+            MdschemaFunctionsRowset.LibraryName,
+            MdschemaFunctionsRowset.Caption,
+        },
+        new Column[] {
+            MdschemaFunctionsRowset.LibraryName,
+            MdschemaFunctionsRowset.InterfaceName,
+            MdschemaFunctionsRowset.FunctionName,
+            MdschemaFunctionsRowset.Origin,
+        }) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new MdschemaFunctionsRowset(request, handler);
+        }
+    },
+
+    /**
+     * http://msdn2.microsoft.com/en-us/library/ms126062(SQL.90).aspx
+     * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapproperties_rowset.asp
+     *
+     * restrictions
+     *    CATALOG_NAME Optional.
+     *    SCHEMA_NAME Optional.
+     *    CUBE_NAME Optional.
+     *    DIMENSION_UNIQUE_NAME Optional.
+     *    HIERARCHY_NAME Optional.
+     *    HIERARCHY_UNIQUE_NAME Optional.
+     *    HIERARCHY_ORIGIN
+     *       (Optional) A default restriction is in effect
+     *       on MD_USER_DEFINED and MD_SYSTEM_ENABLED.
+     *    CUBE_SOURCE
+     *      (Optional) A bitmap with one of the following valid values:
+     *      1 CUBE
+     *      2 DIMENSION
+     *      Default restriction is a value of 1.
+     *    HIERARCHY_VISIBILITY
+     *      (Optional) A bitmap with one of the following valid values:
+     *      1 Visible
+     *      2 Not visible
+     *      Default restriction is a value of 1.
+     *
+     * Not supported
+     *  HIERARCHY_IS_VISIBLE
+     *  HIERARCHY_ORIGIN
+     *  HIERARCHY_DISPLAY_FOLDER
+     *  INSTANCE_SELECTION
+     */
+    MDSCHEMA_HIERARCHIES(
+        "MDSCHEMA_HIERARCHIES", 15, null,
+        new Column[] {
+            MdschemaHierarchiesRowset.CatalogName,
+            MdschemaHierarchiesRowset.SchemaName,
+            MdschemaHierarchiesRowset.CubeName,
+            MdschemaHierarchiesRowset.DimensionUniqueName,
+            MdschemaHierarchiesRowset.HierarchyName,
+            MdschemaHierarchiesRowset.HierarchyUniqueName,
+            MdschemaHierarchiesRowset.HierarchyGuid,
+            MdschemaHierarchiesRowset.HierarchyCaption,
+            MdschemaHierarchiesRowset.DimensionType,
+            MdschemaHierarchiesRowset.HierarchyCardinality,
+            MdschemaHierarchiesRowset.DefaultMember,
+            MdschemaHierarchiesRowset.AllMember,
+            MdschemaHierarchiesRowset.Description,
+            MdschemaHierarchiesRowset.Structure,
+            MdschemaHierarchiesRowset.IsVirtual,
+            MdschemaHierarchiesRowset.IsReadWrite,
+            MdschemaHierarchiesRowset.DimensionUniqueSettings,
+            MdschemaHierarchiesRowset.DimensionIsVisible,
+            MdschemaHierarchiesRowset.HierarchyOrdinal,
+            MdschemaHierarchiesRowset.DimensionIsShared,
+            MdschemaHierarchiesRowset.ParentChild,
+        },
+        new Column[] {
+            MdschemaHierarchiesRowset.CatalogName,
+            MdschemaHierarchiesRowset.SchemaName,
+            MdschemaHierarchiesRowset.CubeName,
+            MdschemaHierarchiesRowset.DimensionUniqueName,
+            MdschemaHierarchiesRowset.HierarchyName,
+        }) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new MdschemaHierarchiesRowset(request, handler);
+        }
+    },
+
+    /**
+     * http://msdn2.microsoft.com/en-us/library/ms126038(SQL.90).aspx
+     * http://msdn.microsoft.com/library/en-us/oledb/htm/olaplevels_rowset.asp
+     *
+     * restriction
+     *   CATALOG_NAME Optional.
+     *   SCHEMA_NAME Optional.
+     *   CUBE_NAME Optional.
+     *   DIMENSION_UNIQUE_NAME Optional.
+     *   HIERARCHY_UNIQUE_NAME Optional.
+     *   LEVEL_NAME Optional.
+     *   LEVEL_UNIQUE_NAME Optional.
+     *   LEVEL_ORIGIN
+     *       (Optional) A default restriction is in effect
+     *       on MD_USER_DEFINED and MD_SYSTEM_ENABLED
+     *   CUBE_SOURCE
+     *       (Optional) A bitmap with one of the following valid values:
+     *       1 CUBE
+     *       2 DIMENSION
+     *       Default restriction is a value of 1.
+     *   LEVEL_VISIBILITY
+     *       (Optional) A bitmap with one of the following values:
+     *       1 Visible
+     *       2 Not visible
+     *       Default restriction is a value of 1.
+     *
+     * Not supported
+     *  CUSTOM_ROLLUP_SETTINGS
+     *  LEVEL_UNIQUE_SETTINGS
+     *  LEVEL_ORDERING_PROPERTY
+     *  LEVEL_DBTYPE
+     *  LEVEL_MASTER_UNIQUE_NAME
+     *  LEVEL_NAME_SQL_COLUMN_NAME Customers:(All)!NAME
+     *  LEVEL_KEY_SQL_COLUMN_NAME Customers:(All)!KEY
+     *  LEVEL_UNIQUE_NAME_SQL_COLUMN_NAME Customers:(All)!UNIQUE_NAME
+     *  LEVEL_ATTRIBUTE_HIERARCHY_NAME
+     *  LEVEL_KEY_CARDINALITY
+     *  LEVEL_ORIGIN
+     *
+     */
+    MDSCHEMA_LEVELS(
+        "MDSCHEMA_LEVELS", 16, null,
+        new Column[] {
+            MdschemaLevelsRowset.CatalogName,
+            MdschemaLevelsRowset.SchemaName,
+            MdschemaLevelsRowset.CubeName,
+            MdschemaLevelsRowset.DimensionUniqueName,
+            MdschemaLevelsRowset.HierarchyUniqueName,
+            MdschemaLevelsRowset.LevelName,
+            MdschemaLevelsRowset.LevelUniqueName,
+            MdschemaLevelsRowset.LevelGuid,
+            MdschemaLevelsRowset.LevelCaption,
+            MdschemaLevelsRowset.LevelNumber,
+            MdschemaLevelsRowset.LevelCardinality,
+            MdschemaLevelsRowset.LevelType,
+            MdschemaLevelsRowset.CustomRollupSettings,
+            MdschemaLevelsRowset.LevelUniqueSettings,
+            MdschemaLevelsRowset.LevelIsVisible,
+            MdschemaLevelsRowset.Description,
+        },
+        new Column[] {
+            MdschemaLevelsRowset.CatalogName,
+            MdschemaLevelsRowset.SchemaName,
+            MdschemaLevelsRowset.CubeName,
+            MdschemaLevelsRowset.DimensionUniqueName,
+            MdschemaLevelsRowset.HierarchyUniqueName,
+            MdschemaLevelsRowset.LevelNumber,
+        }) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new MdschemaLevelsRowset(request, handler);
+        }
+    },
+
+    /**
+     * http://msdn2.microsoft.com/en-us/library/ms126250(SQL.90).aspx
+     * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapmeasures_rowset.asp
+     *
+     * restrictions
+     *   CATALOG_NAME Optional.
+     *   SCHEMA_NAME Optional.
+     *   CUBE_NAME Optional.
+     *   MEASURE_NAME Optional.
+     *   MEASURE_UNIQUE_NAME Optional.
+     *   CUBE_SOURCE
+     *     (Optional) A bitmap with one of the following valid values:
+     *     1 CUBE
+     *     2 DIMENSION
+     *     Default restriction is a value of 1.
+     *   MEASURE_VISIBILITY
+     *     (Optional) A bitmap with one of the following valid values:
+     *     1 Visible
+     *     2 Not Visible
+     *     Default restriction is a value of 1.
+     *
+     * Not supported
+     *  MEASURE_GUID
+     *  NUMERIC_PRECISION
+     *  NUMERIC_SCALE
+     *  MEASURE_UNITS
+     *  EXPRESSION
+     *  MEASURE_NAME_SQL_COLUMN_NAME
+     *  MEASURE_UNQUALIFIED_CAPTION
+     *  MEASUREGROUP_NAME
+     *  MEASURE_DISPLAY_FOLDER
+     *  DEFAULT_FORMAT_STRING
+     */
+    MDSCHEMA_MEASURES(
+        "MDSCHEMA_MEASURES", 17, null,
+        new Column[] {
+            MdschemaMeasuresRowset.CatalogName,
+            MdschemaMeasuresRowset.SchemaName,
+            MdschemaMeasuresRowset.CubeName,
+            MdschemaMeasuresRowset.MeasureName,
+            MdschemaMeasuresRowset.MeasureUniqueName,
+            MdschemaMeasuresRowset.MeasureCaption,
+            MdschemaMeasuresRowset.MeasureGuid,
+            MdschemaMeasuresRowset.MeasureAggregator,
+            MdschemaMeasuresRowset.DataType,
+            MdschemaMeasuresRowset.MeasureIsVisible,
+            MdschemaMeasuresRowset.LevelsList,
+            MdschemaMeasuresRowset.Description,
+        },
+        new Column[] {
+            MdschemaMeasuresRowset.CatalogName,
+            MdschemaMeasuresRowset.SchemaName,
+            MdschemaMeasuresRowset.CubeName,
+            MdschemaMeasuresRowset.MeasureName,
+        }) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new MdschemaMeasuresRowset(request, handler);
+        }
+    },
+
+    /**
+     *
+     * http://msdn2.microsoft.com/es-es/library/ms126046.aspx
+     *
+     *
+     * restrictions
+     *   CATALOG_NAME Optional.
+     *   SCHEMA_NAME Optional.
+     *   CUBE_NAME Optional.
+     *   DIMENSION_UNIQUE_NAME Optional.
+     *   HIERARCHY_UNIQUE_NAME Optional.
+     *   LEVEL_UNIQUE_NAME Optional.
+     *   LEVEL_NUMBER Optional.
+     *   MEMBER_NAME Optional.
+     *   MEMBER_UNIQUE_NAME Optional.
+     *   MEMBER_CAPTION Optional.
+     *   MEMBER_TYPE Optional.
+     *   TREE_OP (Optional) Only applies to a single member:
+     *      MDTREEOP_ANCESTORS (0x20) returns all of the ancestors.
+     *      MDTREEOP_CHILDREN (0x01) returns only the immediate children.
+     *      MDTREEOP_SIBLINGS (0x02) returns members on the same level.
+     *      MDTREEOP_PARENT (0x04) returns only the immediate parent.
+     *      MDTREEOP_SELF (0x08) returns itself in the list of
+     *                 returned rows.
+     *      MDTREEOP_DESCENDANTS (0x10) returns all of the descendants.
+     *   CUBE_SOURCE (Optional) A bitmap with one of the
+     *      following valid values:
+     *        1 CUBE
+     *        2 DIMENSION
+     *      Default restriction is a value of 1.
+     *
+     * Not supported
+     */
+    MDSCHEMA_MEMBERS(
+        "MDSCHEMA_MEMBERS", 18, null,
+        new Column[] {
+            MdschemaMembersRowset.CatalogName,
+            MdschemaMembersRowset.SchemaName,
+            MdschemaMembersRowset.CubeName,
+            MdschemaMembersRowset.DimensionUniqueName,
+            MdschemaMembersRowset.HierarchyUniqueName,
+            MdschemaMembersRowset.LevelUniqueName,
+            MdschemaMembersRowset.LevelNumber,
+            MdschemaMembersRowset.MemberOrdinal,
+            MdschemaMembersRowset.MemberName,
+            MdschemaMembersRowset.MemberUniqueName,
+            MdschemaMembersRowset.MemberType,
+            MdschemaMembersRowset.MemberGuid,
+            MdschemaMembersRowset.MemberCaption,
+            MdschemaMembersRowset.ChildrenCardinality,
+            MdschemaMembersRowset.ParentLevel,
+            MdschemaMembersRowset.ParentUniqueName,
+            MdschemaMembersRowset.ParentCount,
+            MdschemaMembersRowset.TreeOp,
+            MdschemaMembersRowset.Depth,
+        },
+        new Column[] {
+            MdschemaMembersRowset.CatalogName,
+            MdschemaMembersRowset.SchemaName,
+            MdschemaMembersRowset.CubeName,
+            MdschemaMembersRowset.DimensionUniqueName,
+            MdschemaMembersRowset.HierarchyUniqueName,
+            MdschemaMembersRowset.LevelUniqueName,
+            MdschemaMembersRowset.LevelNumber,
+            MdschemaMembersRowset.MemberOrdinal,
+        }) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new MdschemaMembersRowset(request, handler);
+        }
+    },
+
+    /**
+     * http://msdn2.microsoft.com/en-us/library/ms126309(SQL.90).aspx
+     * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapproperties_rowset.asp
+     *
+     * restrictions
+     *    CATALOG_NAME Mandatory
+     *    SCHEMA_NAME Optional
+     *    CUBE_NAME Optional
+     *    DIMENSION_UNIQUE_NAME Optional
+     *    HIERARCHY_UNIQUE_NAME Optional
+     *    LEVEL_UNIQUE_NAME Optional
+     *
+     *    MEMBER_UNIQUE_NAME Optional
+     *    PROPERTY_NAME Optional
+     *    PROPERTY_TYPE Optional
+     *    PROPERTY_CONTENT_TYPE
+     *       (Optional) A default restriction is in place on MDPROP_MEMBER
+     *       OR MDPROP_CELL.
+     *    PROPERTY_ORIGIN
+     *       (Optional) A default restriction is in place on MD_USER_DEFINED
+     *       OR MD_SYSTEM_ENABLED
+     *    CUBE_SOURCE
+     *       (Optional) A bitmap with one of the following valid values:
+     *       1 CUBE
+     *       2 DIMENSION
+     *       Default restriction is a value of 1.
+     *    PROPERTY_VISIBILITY
+     *       (Optional) A bitmap with one of the following valid values:
+     *       1 Visible
+     *       2 Not visible
+     *       Default restriction is a value of 1.
+     *
+     * Not supported
+     *    PROPERTY_ORIGIN
+     *    CUBE_SOURCE
+     *    PROPERTY_VISIBILITY
+     *    CHARACTER_MAXIMUM_LENGTH
+     *    CHARACTER_OCTET_LENGTH
+     *    NUMERIC_PRECISION
+     *    NUMERIC_SCALE
+     *    DESCRIPTION
+     *    SQL_COLUMN_NAME
+     *    LANGUAGE
+     *    PROPERTY_ATTRIBUTE_HIERARCHY_NAME
+     *    PROPERTY_CARDINALITY
+     *    MIME_TYPE
+     *    PROPERTY_IS_VISIBLE
+     */
+    MDSCHEMA_PROPERTIES(
+        "MDSCHEMA_PROPERTIES", 19, null,
+        new Column[] {
+            MdschemaPropertiesRowset.CatalogName,
+            MdschemaPropertiesRowset.SchemaName,
+            MdschemaPropertiesRowset.CubeName,
+            MdschemaPropertiesRowset.DimensionUniqueName,
+            MdschemaPropertiesRowset.HierarchyUniqueName,
+            MdschemaPropertiesRowset.LevelUniqueName,
+            MdschemaPropertiesRowset.MemberUniqueName,
+            MdschemaPropertiesRowset.PropertyName,
+            MdschemaPropertiesRowset.PropertyCaption,
+            MdschemaPropertiesRowset.PropertyType,
+            MdschemaPropertiesRowset.DataType,
+            MdschemaPropertiesRowset.PropertyContentType,
+            MdschemaPropertiesRowset.Description
+        },
+        null /* not sorted */) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new MdschemaPropertiesRowset(request, handler);
+        }
+    },
+
+    /**
+     * http://msdn2.microsoft.com/en-us/library/ms126290(SQL.90).aspx
+     * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapproperties_rowset.asp
+     *
+     * restrictions
+     *    CATALOG_NAME Optional.
+     *    SCHEMA_NAME Optional.
+     *    CUBE_NAME Optional.
+     *    SET_NAME Optional.
+     *    SCOPE Optional.
+     *    HIERARCHY_UNIQUE_NAME Optional.
+     *    CUBE_SOURCE Optional.
+     *        Note: Only one hierarchy can be included, and only those named
+     *        sets whose hierarchies exactly match the restriction are
+     *        returned.
+     *
+     * Not supported
+     *    EXPRESSION
+     *    DIMENSIONS
+     *    SET_DISPLAY_FOLDER
+     */
+    MDSCHEMA_SETS(
+        "MDSCHEMA_SETS", 20, null,
+        new Column[] {
+            MdschemaSetsRowset.CatalogName,
+            MdschemaSetsRowset.SchemaName,
+            MdschemaSetsRowset.CubeName,
+            MdschemaSetsRowset.SetName,
+            MdschemaSetsRowset.Scope,
+        },
+        new Column[] {
+            MdschemaSetsRowset.CatalogName,
+            MdschemaSetsRowset.SchemaName,
+            MdschemaSetsRowset.CubeName,
+        }) {
+        public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
+            return new MdschemaSetsRowset(request, handler);
+        }
+    };
+
     final Column[] columnDefinitions;
     final Column[] sortColumnDefinitions;
 
@@ -45,62 +1008,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
      * so we return just some date for now.
      */
     private static final String dateModified = "2005-01-25T17:35:32";
-
-    /**
-     * Returns a list of XML for Analysis data sources
-     * available on the server or Web Service. (For an
-     * example of how these may be published, see
-     * "XML for Analysis Implementation Walkthrough"
-     * in the XML for Analysis specification.)
-     */
-    public static final int DISCOVER_DATASOURCES = 0;
-    public static final int DISCOVER_PROPERTIES = 1;
-    public static final int DISCOVER_SCHEMA_ROWSETS = 2;
-    public static final int DISCOVER_ENUMERATORS = 3;
-    public static final int DISCOVER_KEYWORDS = 4;
-    public static final int DISCOVER_LITERALS = 5;
-    public static final int DBSCHEMA_CATALOGS = 6;
-    public static final int DBSCHEMA_COLUMNS = 7;
-    public static final int DBSCHEMA_PROVIDER_TYPES = 8;
-    public static final int DBSCHEMA_TABLES = 9;
-    public static final int DBSCHEMA_TABLES_INFO = 10;
-    public static final int MDSCHEMA_ACTIONS = 11;
-    public static final int MDSCHEMA_CUBES = 12;
-    public static final int MDSCHEMA_DIMENSIONS = 13;
-    public static final int MDSCHEMA_FUNCTIONS = 14;
-    public static final int MDSCHEMA_HIERARCHIES = 15;
-    public static final int MDSCHEMA_LEVELS = 16;
-    public static final int MDSCHEMA_MEASURES = 17;
-    public static final int MDSCHEMA_MEMBERS = 18;
-    public static final int MDSCHEMA_PROPERTIES = 19;
-    public static final int MDSCHEMA_SETS = 20;
-    public static final int OTHER = 21;
-    public static final EnumeratedValues<RowsetDefinition> enumeration =
-        new EnumeratedValues<RowsetDefinition>(
-            new RowsetDefinition[] {
-                DiscoverDatasourcesRowset.definition,
-                DiscoverEnumeratorsRowset.definition,
-                DiscoverPropertiesRowset.definition,
-                DiscoverSchemaRowsetsRowset.definition,
-                DiscoverKeywordsRowset.definition,
-                DiscoverLiteralsRowset.definition,
-                DbschemaCatalogsRowset.definition,
-                DbschemaColumnsRowset.definition,
-                DbschemaProviderTypesRowset.definition,
-                DbschemaTablesRowset.definition,
-                DbschemaTablesInfoRowset.definition,
-                MdschemaActionsRowset.definition,
-                MdschemaCubesRowset.definition,
-                MdschemaDimensionsRowset.definition,
-                MdschemaFunctionsRowset.definition,
-                MdschemaHierarchiesRowset.definition,
-                MdschemaLevelsRowset.definition,
-                MdschemaMeasuresRowset.definition,
-                MdschemaMembersRowset.definition,
-                MdschemaPropertiesRowset.definition,
-                MdschemaSetsRowset.definition,
-            }
-    );
+    private final String description;
 
     /**
      * Creates a rowset definition.
@@ -119,20 +1027,15 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         Column[] columnDefinitions,
         Column[] sortColumnDefinitions)
     {
-        super(name, ordinal, description);
         this.columnDefinitions = columnDefinitions;
         this.sortColumnDefinitions = sortColumnDefinitions;
-    }
-
-    public static RowsetDefinition getValue(String name) {
-        return enumeration.getValue(name, true);
+        this.description = description;
     }
 
     public abstract Rowset getRowset(XmlaRequest request, XmlaHandler handler);
 
     public Column lookupColumn(String name) {
-        for (int i = 0; i < columnDefinitions.length; i++) {
-            Column columnDefinition = columnDefinitions[i];
+        for (Column columnDefinition : columnDefinitions) {
             if (columnDefinition.name.equals(name)) {
                 return columnDefinition;
             }
@@ -152,8 +1055,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         return new Comparator<Rowset.Row>() {
             public int compare(Rowset.Row row1, Rowset.Row row2) {
                 // A faster implementation is welcome.
-                for (int i = 0; i < sortColumnDefinitions.length; i++) {
-                    RowsetDefinition.Column sortColumn = sortColumnDefinitions[i];
+                for (Column sortColumn : sortColumnDefinitions) {
                     Comparable val1 = (Comparable) row1.get(sortColumn.name);
                     Comparable val2 = (Comparable) row2.get(sortColumn.name);
                     if ((val1 == null) && (val2 == null)) {
@@ -164,8 +1066,9 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     } else if (val2 == null) {
                         return 1;
                     } else if (val1 instanceof String &&
-                            val2 instanceof String) {
-                        int v = ((String) val1).compareToIgnoreCase((String) val2);
+                        val2 instanceof String) {
+                        int v =
+                            ((String) val1).compareToIgnoreCase((String) val2);
                         // if equal (= 0), compare next column
                         if (v != 0) {
                             return v;
@@ -291,118 +1194,50 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         writer.endElement(); // xsd:schema
     }
 
-    static class Type extends EnumeratedValues.BasicValue {
-        public static final int String_ORDINAL = 0;
-        public static final Type String =
-            new Type("string", String_ORDINAL, "xsd:string");
-
-        public static final int StringArray_ORDINAL = 1;
-        public static final Type StringArray =
-            new Type("StringArray", StringArray_ORDINAL, "xsd:string");
-
-        public static final int Array_ORDINAL = 2;
-        public static final Type Array =
-            new Type("Array", Array_ORDINAL, "xsd:string");
-
-        public static final int Enumeration_ORDINAL = 3;
-        public static final Type Enumeration =
-            new Type("Enumeration", Enumeration_ORDINAL, "xsd:string");
-
-        public static final int EnumerationArray_ORDINAL = 4;
-        public static final Type EnumerationArray =
-            new Type("EnumerationArray", EnumerationArray_ORDINAL, "xsd:string");
-
-        public static final int EnumString_ORDINAL = 5;
-        public static final Type EnumString =
-            new Type("EnumString", EnumString_ORDINAL, "xsd:string");
-
-        public static final int Boolean_ORDINAL = 6;
-        public static final Type Boolean =
-            new Type("Boolean", Boolean_ORDINAL, "xsd:boolean");
-
-        public static final int StringSometimesArray_ORDINAL = 7;
-        public static final Type StringSometimesArray =
-            new Type("StringSometimesArray", StringSometimesArray_ORDINAL, "xsd:string");
-
-        public static final int Integer_ORDINAL = 8;
-        public static final Type Integer =
-            new Type("Integer", Integer_ORDINAL, "xsd:int");
-
-        public static final int UnsignedInteger_ORDINAL = 9;
-        public static final Type UnsignedInteger =
-            new Type("UnsignedInteger", UnsignedInteger_ORDINAL, "xsd:unsignedInt");
-
-        public static final int DataTime_ORDINAL = 10;
-        public static final Type DateTime =
-            new Type("DateTime", DataTime_ORDINAL, "xsd:dateTime");
-
-        public static final int Short_ORDINAL = 11;
-        public static final Type Short =
-            new Type("Short", Short_ORDINAL, "xsd:short");
-
-        public static final int UUID_ORDINAL = 12;
-        public static final Type UUID =
-            new Type("UUID", UUID_ORDINAL, "uuid");
-
-        public static final int UnsignedShort_ORDINAL = 13;
-        public static final Type UnsignedShort =
-            new Type("UnsignedShort", UnsignedShort_ORDINAL, "xsd:unsignedShort");
-
-        public static final int Long_ORDINAL = 14;
-        public static final Type Long =
-            new Type("Long", Long_ORDINAL, "xsd:long");
-
-        public static final int UnsignedLong_ORDINAL = 15;
-        public static final Type UnsignedLong =
-            new Type("UnsignedLong", UnsignedLong_ORDINAL, "xsd:unsignedLong");
+    enum Type {
+        string("xsd:string"),
+        StringArray("xsd:string"),
+        Array("xsd:string"),
+        Enumeration("xsd:string"),
+        EnumerationArray("xsd:string"),
+        EnumString("xsd:string"),
+        Boolean("xsd:boolean"),
+        StringSometimesArray("xsd:string"),
+        Integer("xsd:int"),
+        UnsignedInteger("xsd:unsignedInt"),
+        DateTime("xsd:dateTime"),
+        Short("xsd:short"),
+        UUID("uuid"),
+        UnsignedShort("xsd:unsignedShort"),
+        Long("xsd:long"),
+        UnsignedLong("xsd:unsignedLong");
 
         public final String columnType;
 
-        public Type(String name, int ordinal, String columnType) {
-            super(name, ordinal, null);
+        Type(String columnType) {
             this.columnType = columnType;
         }
 
-        public static final EnumeratedValues<Type> enumeration =
-            new EnumeratedValues<Type>(
-                new Type[] {
-                    String,
-                    StringArray,
-                    Array,
-                    Enumeration,
-                    EnumerationArray,
-                    EnumString,
-                });
-
         boolean isEnum() {
-            switch (ordinal) {
-            case Enumeration_ORDINAL:
-            case EnumerationArray_ORDINAL:
-            case EnumString_ORDINAL:
-                return true;
-            }
-            return false;
+            return this == Enumeration ||
+                this == EnumerationArray ||
+                this == EnumString;
         }
     }
 
     private static DBType getDBTypeFromProperty(Property prop) {
-        DBType dbType = DBType.WSTR;
         switch (prop.getType()) {
-        case Property.TYPE_STRING :
-            dbType = DBType.WSTR;
-            break;
-        case Property.TYPE_NUMERIC :
-            dbType = DBType.R8;
-            break;
-        case Property.TYPE_BOOLEAN :
-            dbType = DBType.BOOL;
-            break;
-        case Property.TYPE_OTHER :
-            // TODO: what type is it really, its
-            // not a string
-            break;
+        case TYPE_STRING:
+            return DBType.WSTR;
+        case TYPE_NUMERIC:
+            return DBType.R8;
+        case TYPE_BOOLEAN:
+            return DBType.BOOL;
+        case TYPE_OTHER:
+        default:
+            // TODO: what type is it really, its not a string
+            return DBType.WSTR;
         }
-        return dbType;
     }
 
     /**
@@ -411,82 +1246,45 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
      * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/oledbtype_indicators.asp
      */
 
-    static class DBType extends EnumeratedValues.BasicValue {
+    enum DBType {
         /*
         * The following values exactly match VARENUM
         * in Automation and may be used in VARIANT.
         */
-        public static final int I4_ORDINAL        = 3;
-        public static final DBType I4 = new DBType("INTEGER", I4_ORDINAL,
-            "A four-byte, signed integer: INTEGER",
-            "DBTYPE_I4"
-            );
+        I4("INTEGER", 3, "DBTYPE_I4", "A four-byte, signed integer: INTEGER"),
 
-        public static final int R8_ORDINAL        = 5;
-        public static final DBType R8 = new DBType("DOUBLE", R8_ORDINAL,
-            "A double-precision floating-point value: Double",
-            "DBTYPE_R8"
-            );
+        R8("DOUBLE", 5,
+            "DBTYPE_R8", "A double-precision floating-point value: Double"),
 
-        public static final int CY_ORDINAL        = 6;
-        public static final DBType CY = new DBType("CURRENCY", CY_ORDINAL,
-            "A currency value: LARGE_INTEGER, Currency is a fixed-point number with four digits to the right of the decimal point. It is stored in an eight-byte signed integer, scaled by 10,000.",
-            "DBTYPE_CY"
-            );
+        CY("CURRENCY", 6, "DBTYPE_CY", "A currency value: LARGE_INTEGER, Currency is a fixed-point number with four digits to the right of the decimal point. It is stored in an eight-byte signed integer, scaled by 10,000."),
 
-        public static final int BOOL_ORDINAL        = 11;
-        public static final DBType BOOL = new DBType("BOOLEAN", BOOL_ORDINAL,
-            "A Boolean value stored in the same way as in Automation: VARIANT_BOOL; 0 means false and ~0 (bitwise, the value is not 0; that is, all bits are set to 1) means true.",
-            "DBTYPE_BOOL"
-            );
+        BOOL("BOOLEAN", 11, "DBTYPE_BOOL", "A Boolean value stored in the same way as in Automation: VARIANT_BOOL; 0 means false and ~0 (bitwise, the value is not 0; that is, all bits are set to 1) means true."),
 
         /**
          * Used by SQL Server for value.
          */
-        public static final int VARIANT_ORDINAL      = 12;
-        public static final DBType VARIANT = new DBType("VARIANT",
-            VARIANT_ORDINAL,
-            "An Automation VARIANT",
-            "DBTYPE_VARIANT"
-            );
+        VARIANT("VARIANT", 12, "DBTYPE_VARIANT", "An Automation VARIANT"),
 
         /**
          * Used by SQL Server for font size.
          */
-        public static final int UI2_ORDINAL      = 18;
-        public static final DBType UI2 = new DBType("UNSIGNED_SHORT",
-            UI2_ORDINAL,
-            "A two-byte, unsigned integer",
-            "DBTYPE_UI2"
-            );
+        UI2("UNSIGNED_SHORT", 18, "DBTYPE_UI2", "A two-byte, unsigned integer"),
 
         /**
          * Used by SQL Server for colors, font flags and cell ordinal.
          */
-        public static final int UI4_ORDINAL      = 19;
-        public static final DBType UI4 = new DBType("UNSIGNED_INTEGER",
-            UI4_ORDINAL,
-            "A four-byte, unsigned integer",
-            "DBTYPE_UI4"
-            );
+        UI4("UNSIGNED_INTEGER", 19, "DBTYPE_UI4", "A four-byte, unsigned integer"),
 
         /*
         * The following values exactly match VARENUM
         * in Automation but cannot be used in VARIANT.
         */
-        public static final int I8_ORDINAL        = 20;
-        public static final DBType I8 = new DBType("LARGE_INTEGER", I8_ORDINAL,
-            "An eight-byte, signed integer: LARGE_INTEGER",
-            "DBTYPE_I8"
-            );
+        I8("LARGE_INTEGER", 20, "DBTYPE_I8", "An eight-byte, signed integer: LARGE_INTEGER"),
+
         /*
         * The following values are not in VARENUM in OLE.
         */
-        public static final int WSTR_ORDINAL        = 130;
-        public static final DBType WSTR = new DBType("STRING", WSTR_ORDINAL,
-            "A null-terminated Unicode character string: wchar_t[length]; If DBTYPE_WSTR is used by itself, the number of bytes allocated for the string, including the null-termination character, is specified by cbMaxLen in the DBBINDING structure. If DBTYPE_WSTR is combined with DBTYPE_BYREF, the number of bytes allocated for the string, including the null-termination character, is at least the length of the string plus two. In either case, the actual length of the string is determined from the bound length value. The maximum length of the string is the number of allocated bytes divided by sizeof(wchar_t) and truncated to the nearest integer.",
-            "DBTYPE_WSTR"
-            );
+        WSTR("STRING", 130, "DBTYPE_WSTR", "A null-terminated Unicode character string: wchar_t[length]; If DBTYPE_WSTR is used by itself, the number of bytes allocated for the string, including the null-termination character, is specified by cbMaxLen in the DBBINDING structure. If DBTYPE_WSTR is combined with DBTYPE_BYREF, the number of bytes allocated for the string, including the null-termination character, is at least the length of the string plus two. In either case, the actual length of the string is determined from the bound length value. The maximum length of the string is the number of allocated bytes divided by sizeof(wchar_t) and truncated to the nearest integer.");
 
 
         /**
@@ -499,26 +1297,37 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
          *
          * If the data type is numeric, this is the upper bound on the maximum
          * precision of the data type.
-        int columnSize;
+         int columnSize;
          */
 
+        private final String userName;
+        private final int userOrdinal;
+        private final String description;
         /**
          *  A Boolean that indicates whether the data type is nullable.
          *  VARIANT_TRUE indicates that the data type is nullable.
          *  VARIANT_FALSE indicates that the data type is not nullable.
          *  NULL-- indicates that it is not known whether the data type is
          *  nullable.
-        boolean isNullable;
+         boolean isNullable;
          */
 
         String dbTypeIndicator;
 
-        public DBType(String name, int ordinal, String description,
-                String dbTypeIndicator) {
-            super(name, ordinal, description);
+        DBType(
+            String userName,
+            int userOrdinal,
+            String dbTypeIndicator,
+            String description)
+        {
+            this.userName = userName;
+            this.userOrdinal = userOrdinal;
+            this.description = description;
             this.dbTypeIndicator = dbTypeIndicator;
         }
+
     }
+
     static class Column {
 
         /**
@@ -593,16 +1402,15 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             boolean unbounded,
             String description)
         {
-            Util.assertPrecondition(type != null, "Type.instance.isValid(type)");
-            Util.assertPrecondition(
-                    (type == Type.Enumeration || type == Type.EnumerationArray || type == Type.EnumString) == (enumeratedType != null),
-                    "(type == Type.Enumeration || type == Type.EnumerationArray || type == Type.EnumString) == (enumeratedType != null)");
+            assert type != null;
+            assert (type == Type.Enumeration ||
+                type == Type.EnumerationArray ||
+                type == Type.EnumString) ==
+                (enumeratedType != null);
             // Line endings must be UNIX style (LF) not Windows style (LF+CR).
             // Thus the client will receive the same XML, regardless
             // of the server O/S.
-            Util.assertPrecondition(
-                    description == null || description.indexOf('\r') == -1,
-                    "description == null || description.indexOf('\r') == -1");
+            assert description == null || description.indexOf('\r') == -1;
             this.name = name;
             this.type = type;
             this.enumeration = enumeratedType;
@@ -614,10 +1422,21 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
         /**
          * Retrieves a value of this column from a row. The base implementation
-         * uses reflection; a derived class may provide a different
-         * implementation.
+         * uses reflection to call an accessor method; a derived class may
+         * provide a different implementation.
          */
-        Object get(Object row) {
+        protected Object get(Object row) {
+            return getFromAccessor(row);
+        }
+
+        /**
+         * Retrieves the value of this column "MyColumn" from a field called
+         * "myColumn".
+         *
+         * @param row Current row
+         * @return Value of given this property of the given row
+         */
+        protected final Object getFromField(Object row) {
             try {
                 String javaFieldName = name.substring(0, 1).toLowerCase() +
                     name.substring(1);
@@ -628,6 +1447,29 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             } catch (SecurityException e) {
                 throw Util.newInternal(e, "Error while accessing rowset column " + name);
             } catch (IllegalAccessException e) {
+                throw Util.newInternal(e, "Error while accessing rowset column " + name);
+            }
+        }
+
+        /**
+         * Retrieves the value of this column "MyColumn" by calling a method
+         * called "getMyColumn()".
+         *
+         * @param row Current row
+         * @return Value of given this property of the given row
+         */
+        protected final Object getFromAccessor(Object row) {
+            try {
+                String javaMethodName = "get" + name;
+                Method method = row.getClass().getMethod(javaMethodName);
+                return method.invoke(row);
+            } catch (SecurityException e) {
+                throw Util.newInternal(e, "Error while accessing rowset column " + name);
+            } catch (IllegalAccessException e) {
+                throw Util.newInternal(e, "Error while accessing rowset column " + name);
+            } catch (NoSuchMethodException e) {
+                throw Util.newInternal(e, "Error while accessing rowset column " + name);
+            } catch (InvocationTargetException e) {
                 throw Util.newInternal(e, "Error while accessing rowset column " + name);
             }
         }
@@ -647,7 +1489,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column DataSourceName =
             new Column(
                 "DataSourceName",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -655,7 +1497,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column DataSourceDescription =
             new Column(
                 "DataSourceDescription",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -663,7 +1505,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column URL =
             new Column(
                 "URL",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -671,21 +1513,21 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column DataSourceInfo =
             new Column(
                 "DataSourceInfo",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "A string containing any additional information required to connect to the data source. This can include the Initial Catalog property or other information for the provider.\n" +
-                "Example: \"Provider=MSOLAP;Data Source=Local;\"");
+                    "Example: \"Provider=MSOLAP;Data Source=Local;\"");
         private static final Column ProviderName =
             new Column(
                 "ProviderName",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
                 "The name of the provider behind the data source. \n" +
-                "Example: \"MSDASQL\"");
+                    "Example: \"MSDASQL\"");
         private static final Column ProviderType =
             new Column(
                 "ProviderType",
@@ -695,9 +1537,9 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 Column.REQUIRED,
                 Column.UNBOUNDED,
                 "The types of data supported by the provider. May include one or more of the following types. Example follows this table.\n" +
-                "TDP: tabular data provider.\n" +
-                "MDP: multidimensional data provider.\n" +
-                "DMP: data mining provider. A DMP provider implements the OLE DB for Data Mining specification.");
+                    "TDP: tabular data provider.\n" +
+                    "MDP: multidimensional data provider.\n" +
+                    "DMP: data mining provider. A DMP provider implements the OLE DB for Data Mining specification.");
         private static final Column AuthenticationMode =
             new Column(
                 "AuthenticationMode",
@@ -706,37 +1548,12 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 Column.RESTRICTION,
                 Column.REQUIRED,
                 "Specification of what type of security mode the data source uses. Values can be one of the following:\n" +
-                "Unauthenticated: no user ID or password needs to be sent.\n" +
-                "Authenticated: User ID and Password must be included in the information required for the connection.\n" +
-                "Integrated: the data source uses the underlying security to determine authorization, such as Integrated Security provided by Microsoft Internet Information Services (IIS).");
-        /*
-         *  http://msdn2.microsoft.com/en-us/library/ms126129(SQL.90).aspx
-         *
-         *
-         * restrictions
-         *
-         * Not supported
-         */
-        static final RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_DATASOURCES", DISCOVER_DATASOURCES,
-                "Returns a list of XML for Analysis data sources available on the server or Web Service.",
-                new Column[] {
-                    DataSourceName,
-                    DataSourceDescription,
-                    URL,
-                    DataSourceInfo,
-                    ProviderName,
-                    ProviderType,
-                    AuthenticationMode,
-                },
-            null /* not sorted */) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new DiscoverDatasourcesRowset(request, handler);
-            }
-        };
+                    "Unauthenticated: no user ID or password needs to be sent.\n" +
+                    "Authenticated: User ID and Password must be included in the information required for the connection.\n" +
+                    "Integrated: the data source uses the underlying security to determine authorization, such as Integrated Security provided by Microsoft Internet Information Services (IIS).");
 
         public DiscoverDatasourcesRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(DISCOVER_DATASOURCES, request, handler);
         }
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
@@ -755,8 +1572,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -792,126 +1609,36 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column Description =
             new Column(
                 "Description",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
                 "A localizable description of the schema");
-        /*
-         * Note that SQL Server also returns the data-mining columns.
-         *
-         *
-         * restrictions
-         *
-         * Not supported
-         */
-        private static RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_SCHEMA_ROWSETS", DISCOVER_SCHEMA_ROWSETS,
-                "Returns the names, values, and other information of all supported RequestType enumeration values.",
-                new Column[] {
-                    SchemaName,
-                    SchemaGuid,
-                    Restrictions,
-                    Description,
-                },
-                null /* not sorted */) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new DiscoverSchemaRowsetsRowset(request, handler);
-            }
-            protected void writeRowsetXmlSchemaRowDef(SaxWriter writer) {
-                writer.startElement("xsd:complexType", new String[] {
-                    "name", "row"
-                });
-                writer.startElement("xsd:sequence");
-                for (Column column : columnDefinitions) {
-                    final String name = XmlaUtil.encodeElementName(column.name);
-
-                    if (column == Restrictions) {
-                        writer.startElement("xsd:element", new String[]{
-                            "sql:field", column.name,
-                            "name", name,
-                            "minOccurs", "0",
-                            "maxOccurs", "unbounded"
-                        });
-                        writer.startElement("xsd:complexType");
-                        writer.startElement("xsd:sequence");
-                        writer.element("xsd:element", new String[]{
-                            "name", "Name",
-                            "type", "xsd:string",
-                            "sql:field", "Name"
-                        });
-                        writer.element("xsd:element", new String[]{
-                            "name", "Type",
-                            "type", "xsd:string",
-                            "sql:field", "Type"
-                        });
-
-                        writer.endElement(); // xsd:sequence
-                        writer.endElement(); // xsd:complexType
-                        writer.endElement(); // xsd:element
-
-                    } else {
-                        final String xsdType = column.type.columnType;
-
-                        String[] attrs;
-                        if (column.nullable) {
-                            if (column.unbounded) {
-                                attrs = new String[]{
-                                    "sql:field", column.name,
-                                    "name", name,
-                                    "type", xsdType,
-                                    "minOccurs", "0",
-                                    "maxOccurs", "unbounded"
-                                };
-                            } else {
-                                attrs = new String[]{
-                                    "sql:field", column.name,
-                                    "name", name,
-                                    "type", xsdType,
-                                    "minOccurs", "0"
-                                };
-                            }
-                        } else {
-                            if (column.unbounded) {
-                                attrs = new String[]{
-                                    "sql:field", column.name,
-                                    "name", name,
-                                    "type", xsdType,
-                                    "maxOccurs", "unbounded"
-                                };
-                            } else {
-                                attrs = new String[]{
-                                    "sql:field", column.name,
-                                    "name", name,
-                                    "type", xsdType
-                                };
-                            }
-                        }
-                        writer.element("xsd:element", attrs);
-                    }
-                }
-                writer.endElement(); // xsd:sequence
-                writer.endElement(); // xsd:complexType
-            }
-        };
 
         public DiscoverSchemaRowsetsRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(DISCOVER_SCHEMA_ROWSETS, request, handler);
         }
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
-            final List<RowsetDefinition> rowsetDefinitions =
-                enumeration.getValuesSortedByName();
+            RowsetDefinition[] rowsetDefinitions =
+                RowsetDefinition.class.getEnumConstants().clone();
+            Arrays.sort(
+                rowsetDefinitions,
+                new Comparator<Enum>() {
+                    public int compare(Enum o1, Enum o2) {
+                        return o1.name().compareTo(o2.name());
+                    }
+                });
             for (RowsetDefinition rowsetDefinition : rowsetDefinitions) {
                 Row row = new Row();
-                row.set(SchemaName.name, rowsetDefinition.name);
+                row.set(SchemaName.name, rowsetDefinition.name());
 
                 // TODO: If we have a SchemaGuid output here
                 //row.set(SchemaGuid.name, "");
 
                 row.set(Restrictions.name, getRestrictions(rowsetDefinition));
 
-                String desc = rowsetDefinition.description;
+                String desc = rowsetDefinition.getDescription();
                 row.set(Description.name, (desc == null) ? "" : desc);
                 addRow(row, rows);
             }
@@ -937,8 +1664,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
 
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -946,10 +1673,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     static class DiscoverPropertiesRowset extends Rowset {
         private final RestrictionTest propertyNameRT;
         DiscoverPropertiesRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(DISCOVER_PROPERTIES, request, handler);
             propertyNameRT = getRestrictionTest(PropertyName);
         }
 
@@ -964,7 +1695,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column PropertyDescription =
             new Column(
                 "PropertyDescription",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -972,7 +1703,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column PropertyType =
             new Column(
                 "PropertyType",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -996,48 +1727,21 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column Value =
             new Column(
                 "Value",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
                 "The current value of the property.");
-        /*
-         *
-         *
-         *
-         * restrictions
-         *
-         * Not supported
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_PROPERTIES", DISCOVER_PROPERTIES,
-                "Returns a list of information and values about the requested properties that are supported by the specified data source provider.",
-                new Column[] {
-                    PropertyName,
-                    PropertyDescription,
-                    PropertyType,
-                    PropertyAccessType,
-                    IsRequired,
-                    Value,
-                },
-                null /* not sorted */) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new DiscoverPropertiesRowset(request, handler);
-            }
-        };
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
-            final String[] propertyNames = PropertyDefinition.enumeration.getNames();
-            for (String pname : propertyNames) {
-                if (!propertyNameRT.passes(pname)) {
+            for (PropertyDefinition propertyDefinition : PropertyDefinition.class
+                .getEnumConstants()) {
+                if (!propertyNameRT.passes(propertyDefinition.name())) {
                     continue;
                 }
-                PropertyDefinition propertyDefinition =
-                    PropertyDefinition.getValue(pname);
                 Row row = new Row();
-                row.set(PropertyName.name, propertyDefinition.name);
-                row.set(PropertyDescription.name,
-                    propertyDefinition.description);
+                row.set(PropertyName.name, propertyDefinition.name());
+                row.set(PropertyDescription.name, propertyDefinition.description);
                 row.set(PropertyType.name, propertyDefinition.type);
                 row.set(PropertyAccessType.name, propertyDefinition.access);
                 row.set(IsRequired.name, false);
@@ -1046,8 +1750,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -1057,7 +1761,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
     static class DiscoverEnumeratorsRowset extends Rowset {
         DiscoverEnumeratorsRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(DISCOVER_ENUMERATORS, request, handler);
         }
 
         private static final Column EnumName =
@@ -1071,7 +1775,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column EnumDescription =
             new Column(
                 "EnumDescription",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -1079,7 +1783,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column EnumType =
             new Column(
                 "EnumType",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -1087,7 +1791,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column ElementName =
             new Column(
                 "ElementName",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -1095,7 +1799,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column ElementDescription =
             new Column(
                 "ElementDescription",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -1103,44 +1807,18 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column ElementValue =
             new Column(
                 "ElementValue",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "The value of the element.\n" + "Example: 01");
-        /*
-         *
-         *
-         *
-         * restrictions
-         *
-         * Not supported
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_ENUMERATORS", DISCOVER_ENUMERATORS,
-                "Returns a list of names, data types, and enumeration values for enumerators supported by the provider of a specific data source.",
-                new Column[] {
-                    EnumName,
-                    EnumDescription,
-                    EnumType,
-                    ElementName,
-                    ElementDescription,
-                    ElementValue,
-                },
-                null /* not sorted */) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new DiscoverEnumeratorsRowset(request, handler);
-            }
-        };
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             List<Enumeration> enumerators = getEnumerators();
             for (Enumeration enumerator : enumerators) {
                 final String[] valueNames = enumerator.getNames();
                 for (String valueName : valueNames) {
-                    final EnumeratedValues.Value value = enumerator.getValue(
-                        valueName,
-                        true);
+                    final Enum<?> value = enumerator.getValue(valueName, true);
                     Row row = new Row();
                     row.set(EnumName.name, enumerator.name);
                     row.set(EnumDescription.name, enumerator.description);
@@ -1150,15 +1828,29 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     // it self.
                     row.set(EnumType.name, "string");
 
-                    row.set(ElementName.name, value.getName());
-                    row.set(ElementDescription.name, value.getDescription());
-                    switch (enumerator.type.ordinal) {
-                    case Type.String_ORDINAL:
-                    case Type.StringArray_ORDINAL:
+                    String name =
+                        value instanceof Enumeration.EnumWithName ?
+                            ((Enumeration.EnumWithName) value).userName() :
+                            value.name();
+                    row.set(ElementName.name, name);
+
+                    if (value instanceof Enumeration.EnumWithDesc) {
+                        String description =
+                            ((Enumeration.EnumWithDesc) value).getDescription();
+                        row.set(ElementDescription.name, description);
+                    }
+
+                    switch (enumerator.type) {
+                    case string:
+                    case StringArray:
                         // these don't have ordinals
                         break;
                     default:
-                        row.set(ElementValue.name, value.getOrdinal());
+                        int ordinal =
+                            value instanceof Enumeration.EnumWithOrdinal ?
+                                ((Enumeration.EnumWithOrdinal) value).userOrdinal() :
+                                value.ordinal();
+                        row.set(ElementValue.name, ordinal);
                         break;
                     }
                     addRow(row, rows);
@@ -1174,10 +1866,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     }
                 }
             );
-            final String[] rowsetNames = RowsetDefinition.enumeration.getNames();
-            for (String rowsetName : rowsetNames) {
-                final RowsetDefinition rowsetDefinition = (RowsetDefinition)
-                    RowsetDefinition.enumeration.getValue(rowsetName, true);
+            for (RowsetDefinition rowsetDefinition : RowsetDefinition.class.getEnumConstants()) {
                 for (Column column : rowsetDefinition.columnDefinitions) {
                     if (column.enumeration != null) {
                         enumeratorSet.add(column.enumeration);
@@ -1186,10 +1875,10 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
             return new ArrayList<Enumeration>(enumeratorSet);
         }
-        
+
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -1199,7 +1888,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
     static class DiscoverKeywordsRowset extends Rowset {
         DiscoverKeywordsRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(DISCOVER_KEYWORDS, request, handler);
         }
 
         private static final Column Keyword =
@@ -1210,26 +1899,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 Column.RESTRICTION,
                 Column.REQUIRED,
                 "A list of all the keywords reserved by a provider.\n" +
-                "Example: AND");
-        /*
-         *
-         *
-         *
-         * restrictions
-         *
-         * Not supported
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_KEYWORDS", DISCOVER_KEYWORDS,
-                "Returns an XML list of keywords reserved by the provider.",
-                new Column[] {
-                    Keyword,
-                },
-                null /* not sorted */) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new DiscoverKeywordsRowset(request, handler);
-            }
-        };
+                    "Example: AND");
 
         private static final String[] keywords = new String[] {
             "$AdjustedProbability", "$Distance", "$Probability",
@@ -1300,8 +1970,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -1311,7 +1981,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
     static class DiscoverLiteralsRowset extends Rowset {
         DiscoverLiteralsRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(DISCOVER_LITERALS, request, handler);
         }
 
         private static final Column LiteralName = new Column(
@@ -1324,7 +1994,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
         private static final Column LiteralValue = new Column(
             "LiteralValue",
-            Type.String,
+            Type.string,
             null,
             Column.NOT_RESTRICTION,
             Column.REQUIRED,
@@ -1332,7 +2002,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
         private static final Column LiteralInvalidChars = new Column(
             "LiteralInvalidChars",
-            Type.String,
+            Type.string,
             null,
             Column.NOT_RESTRICTION,
             Column.REQUIRED,
@@ -1340,7 +2010,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
 
         private static final Column LiteralInvalidStartingChars = new Column(
             "LiteralInvalidStartingChars",
-            Type.String,
+            Type.string,
             null,
             Column.NOT_RESTRICTION,
             Column.REQUIRED,
@@ -1354,36 +2024,12 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             Column.REQUIRED,
             "The maximum number of characters in the literal. If there is no maximum or the maximum is unknown, the value is ?1.");
 
-        /*
-        *
-        *
-        *
-        * restrictions
-        *
-        * Not supported
-        */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_LITERALS", DISCOVER_LITERALS,
-                "Returns information about literals supported by the provider.",
-                new Column[] {
-                    LiteralName,
-                    LiteralValue,
-                    LiteralInvalidChars,
-                    LiteralInvalidStartingChars,
-                    LiteralMaxLength,
-                },
-                null /* not sorted */) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new DiscoverLiteralsRowset(request, handler);
-            }
-        };
-
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
-            emit(Enumeration.Literal.enumeration, response);
+            emit(Enumeration.Literal.class, response);
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -1395,14 +2041,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     static class DbschemaCatalogsRowset extends Rowset {
         private final RestrictionTest catalogNameRT;
         DbschemaCatalogsRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(DBSCHEMA_CATALOGS, request, handler);
             catalogNameRT = getRestrictionTest(CatalogName);
         }
 
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -1410,7 +2056,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -1418,7 +2064,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column Roles =
             new Column(
                 "ROLES",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -1431,31 +2077,6 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "The date that the catalog was last modified.");
-
-        /*
-         *
-         *
-         *
-         * restrictions
-         *
-         * Not supported
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DBSCHEMA_CATALOGS", DBSCHEMA_CATALOGS,
-                "Returns information about literals supported by the provider.",
-                new Column[] {
-                    CatalogName,
-                    Description,
-                    Roles,
-                    DateModified,
-                },
-                new Column[] {
-                    CatalogName,
-                }) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new DbschemaCatalogsRowset(request, handler);
-            }
-        };
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
@@ -1496,8 +2117,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
 
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -1510,7 +2131,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private final RestrictionTest tableNameRT;
         private final RestrictionTest columnNameRT;
         DbschemaColumnsRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(DBSCHEMA_COLUMNS, request, handler);
             tableCatalogRT = getRestrictionTest(TableCatalog);
             tableNameRT = getRestrictionTest(TableName);
             columnNameRT = getRestrictionTest(ColumnName);
@@ -1519,7 +2140,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column TableCatalog =
             new Column(
                 "TABLE_CATALOG",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -1527,7 +2148,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column TableSchema =
             new Column(
                 "TABLE_SCHEMA",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -1535,7 +2156,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column TableName =
             new Column(
                 "TABLE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -1543,7 +2164,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column ColumnName =
             new Column(
                 "COLUMN_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -1631,41 +2252,6 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "The number of digits to the right of the decimal point for DBTYPE_DECIMAL, DBTYPE_NUMERIC, DBTYPE_VARNUMERIC. Otherwise, this is NULL.");
-        /*
-         *
-         *
-         *
-         * restrictions
-         *
-         * Not supported
-         *    COLUMN_OLAP_TYPE
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DBSCHEMA_COLUMNS", DBSCHEMA_COLUMNS, null,
-                new Column[] {
-                    TableCatalog,
-                    TableSchema,
-                    TableName,
-                    ColumnName,
-                    OrdinalPosition,
-                    ColumnHasDefault,
-                    ColumnFlags,
-                    IsNullable,
-                    DataType,
-                    CharacterMaximumLength,
-                    CharacterOctetLength,
-                    NumericPrecision,
-                    NumericScale,
-                },
-                new Column[] {
-                    TableCatalog,
-                    TableSchema,
-                    TableName,
-                }) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new DbschemaColumnsRowset(request, handler);
-            }
-        };
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
@@ -1698,7 +2284,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     if (!tableNameRT.passes(cubeName)) {
                         continue;
                     }
-                    for (Dimension dimension : sortedDimensions(cube)) {
+                    for (Dimension dimension : cube.getDimensions()) {
                         Hierarchy[] hierarchies = dimension.getHierarchies();
                         for (Hierarchy hierarchy1 : hierarchies) {
                             HierarchyBase hierarchy =
@@ -1739,7 +2325,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         // type of the column - since these are all
                         // Measures, aggregate Measures??, maybe they
                         // are all numeric? (or currency)
-                        row.set(DataType.name, DBType.R8_ORDINAL);
+                        row.set(DataType.name, DBType.R8.userOrdinal);
                         // TODO: 16/255 seems to be what MS SQL Server
                         // always returns.
                         row.set(NumericPrecision.name, 16);
@@ -1775,7 +2361,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 row.set(ColumnFlags.name, 0);
                 row.set(IsNullable.name, false);
                 // names are always WSTR
-                row.set(DataType.name, DBType.WSTR_ORDINAL);
+                row.set(DataType.name, DBType.WSTR.userOrdinal);
                 row.set(CharacterMaximumLength.name, 0);
                 row.set(CharacterOctetLength.name, 0);
                 addRow(row, rows);
@@ -1789,7 +2375,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 row.set(ColumnFlags.name, 0);
                 row.set(IsNullable.name, false);
                 // names are always WSTR
-                row.set(DataType.name, DBType.WSTR_ORDINAL);
+                row.set(DataType.name, DBType.WSTR.userOrdinal);
                 row.set(CharacterMaximumLength.name, 0);
                 row.set(CharacterOctetLength.name, 0);
                 addRow(row, rows);
@@ -1806,7 +2392,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     row.set(ColumnFlags.name, 0);
                     row.set(IsNullable.name, false);
                     // names are always BOOL
-                    row.set(DataType.name, DBType.BOOL_ORDINAL);
+                    row.set(DataType.name, DBType.BOOL.userOrdinal);
                     row.set(NumericPrecision.name, 255);
                     row.set(NumericScale.name, 255);
                     addRow(row, rows);
@@ -1842,7 +2428,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             row.set(ColumnFlags.name, 0);
             row.set(IsNullable.name, false);
             // names are always WSTR
-            row.set(DataType.name, DBType.WSTR_ORDINAL);
+            row.set(DataType.name, DBType.WSTR.userOrdinal);
             row.set(CharacterMaximumLength.name, 0);
             row.set(CharacterOctetLength.name, 0);
             addRow(row, rows);
@@ -1857,7 +2443,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             row.set(ColumnFlags.name, 0);
             row.set(IsNullable.name, false);
             // names are always WSTR
-            row.set(DataType.name, DBType.WSTR_ORDINAL);
+            row.set(DataType.name, DBType.WSTR.userOrdinal);
             row.set(CharacterMaximumLength.name, 0);
             row.set(CharacterOctetLength.name, 0);
             addRow(row, rows);
@@ -1874,7 +2460,7 @@ TODO: see above
             row.set(ColumnFlags.name, 0);
             row.set(IsNullable.name, false);
             // names are always BOOL
-            row.set(DataType.name, DBType.BOOL_ORDINAL);
+            row.set(DataType.name, DBType.BOOL.ordinal());
             row.set(NumericPrecision.name, 255);
             row.set(NumericScale.name, 255);
             addRow(row, rows);
@@ -1894,24 +2480,24 @@ TODO: see above
                 row.set(IsNullable.name, false);
 
                 DBType dbType = getDBTypeFromProperty(prop);
-                row.set(DataType.name, dbType.getOrdinal());
+                row.set(DataType.name, dbType.userOrdinal);
 
                 switch (prop.getType()) {
-                case Property.TYPE_STRING:
+                case TYPE_STRING:
                     row.set(CharacterMaximumLength.name, 0);
                     row.set(CharacterOctetLength.name, 0);
                     break;
-                case Property.TYPE_NUMERIC:
+                case TYPE_NUMERIC:
                     // TODO: 16/255 seems to be what MS SQL Server
                     // always returns.
                     row.set(NumericPrecision.name, 16);
                     row.set(NumericScale.name, 255);
                     break;
-                case Property.TYPE_BOOLEAN:
+                case TYPE_BOOLEAN:
                     row.set(NumericPrecision.name, 255);
                     row.set(NumericScale.name, 255);
                     break;
-                case Property.TYPE_OTHER:
+                case TYPE_OTHER:
                     // TODO: what type is it really, its
                     // not a string
                     row.set(CharacterMaximumLength.name, 0);
@@ -1923,8 +2509,8 @@ TODO: see above
             return ordinalPosition;
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -1935,23 +2521,23 @@ TODO: see above
     static class DbschemaProviderTypesRowset extends Rowset {
         private final RestrictionTest dataTypeRT;
         DbschemaProviderTypesRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(DBSCHEMA_PROVIDER_TYPES, request, handler);
             dataTypeRT = getRestrictionTest(DataType);
         }
 
-/*
-DATA_TYPE DBTYPE_UI2
-BEST_MATCH DBTYPE_BOOL
-Column(String name, Type type, Enumeration enumeratedType,
-boolean restriction, boolean nullable, String description)
-*/
+        /*
+        DATA_TYPE DBTYPE_UI2
+        BEST_MATCH DBTYPE_BOOL
+        Column(String name, Type type, Enumeration enumeratedType,
+        boolean restriction, boolean nullable, String description)
+        */
         /*
          * These are the columns returned by SQL Server.
          */
         private static final Column TypeName =
             new Column(
                 "TYPE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -1975,7 +2561,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column LiteralPrefix =
             new Column(
                 "LITERAL_PREFIX",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -1983,7 +2569,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column LiteralSuffix =
             new Column(
                 "LITERAL_SUFFIX",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -2052,48 +2638,16 @@ boolean restriction, boolean nullable, String description)
                 Column.RESTRICTION,
                 Column.OPTIONAL,
                 "A Boolean that indicates whether the data type is a best match.");
-        /*
-         *
-         *
-         *
-         * restrictions
-         *
-         * Not supported
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DBSCHEMA_PROVIDER_TYPES", DBSCHEMA_PROVIDER_TYPES, null,
-                new Column[] {
-                    TypeName,
-                    DataType,
-                    ColumnSize,
-                    LiteralPrefix,
-                    LiteralSuffix,
-                    IsNullable,
-                    CaseSensitive,
-                    Searchable,
-                    UnsignedAttribute,
-                    FixedPrecScale,
-                    AutoUniqueValue,
-                    IsLong,
-                    BestMatch,
-                },
-                new Column[] {
-                    DataType,
-                }) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new DbschemaProviderTypesRowset(request, handler);
-            }
-        };
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             // Identifies the (base) data types supported by the data provider.
             Row row;
 
             // i4
-            Integer dt = DBType.I4_ORDINAL;
+            Integer dt = DBType.I4.userOrdinal;
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
-                row.set(TypeName.name, DBType.I4.name);
+                row.set(TypeName.name, DBType.I4.userName);
                 row.set(DataType.name, dt);
                 row.set(ColumnSize.name, 8);
                 row.set(IsNullable.name, true);
@@ -2107,10 +2661,10 @@ boolean restriction, boolean nullable, String description)
             }
 
             // R8
-            dt = DBType.R8_ORDINAL;
+            dt = DBType.R8.userOrdinal;
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
-                row.set(TypeName.name, DBType.R8.name);
+                row.set(TypeName.name, DBType.R8.userName);
                 row.set(DataType.name, dt);
                 row.set(ColumnSize.name, 16);
                 row.set(IsNullable.name, true);
@@ -2124,10 +2678,10 @@ boolean restriction, boolean nullable, String description)
             }
 
             // CY
-            dt = DBType.CY_ORDINAL;
+            dt = DBType.CY.userOrdinal;
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
-                row.set(TypeName.name, DBType.CY.name);
+                row.set(TypeName.name, DBType.CY.userName);
                 row.set(DataType.name, dt);
                 row.set(ColumnSize.name, 8);
                 row.set(IsNullable.name, true);
@@ -2141,10 +2695,10 @@ boolean restriction, boolean nullable, String description)
             }
 
             // BOOL
-            dt = DBType.BOOL_ORDINAL;
+            dt = DBType.BOOL.userOrdinal;
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
-                row.set(TypeName.name, DBType.BOOL.name);
+                row.set(TypeName.name, DBType.BOOL.userName);
                 row.set(DataType.name, dt);
                 row.set(ColumnSize.name, 1);
                 row.set(IsNullable.name, true);
@@ -2158,10 +2712,10 @@ boolean restriction, boolean nullable, String description)
             }
 
             // I8
-            dt = DBType.I8_ORDINAL;
+            dt = DBType.I8.userOrdinal;
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
-                row.set(TypeName.name, DBType.I8.name);
+                row.set(TypeName.name, DBType.I8.userName);
                 row.set(DataType.name, dt);
                 row.set(ColumnSize.name, 16);
                 row.set(IsNullable.name, true);
@@ -2175,10 +2729,10 @@ boolean restriction, boolean nullable, String description)
             }
 
             // WSTR
-            dt = DBType.WSTR_ORDINAL;
+            dt = DBType.WSTR.userOrdinal;
             if (dataTypeRT.passes(dt)) {
                 row = new Row();
-                row.set(TypeName.name, DBType.WSTR.name);
+                row.set(TypeName.name, DBType.WSTR.userName);
                 row.set(DataType.name, dt);
                 // how big are the string columns in the db
                 row.set(ColumnSize.name, 255);
@@ -2195,8 +2749,8 @@ boolean restriction, boolean nullable, String description)
             }
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -2209,7 +2763,7 @@ boolean restriction, boolean nullable, String description)
         private final RestrictionTest tableNameRT;
         private final RestrictionTest tableTypeRT;
         DbschemaTablesRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(DBSCHEMA_TABLES, request, handler);
             tableCatalogRT = getRestrictionTest(TableCatalog);
             tableNameRT = getRestrictionTest(TableName);
             tableTypeRT = getRestrictionTest(TableType);
@@ -2218,7 +2772,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column TableCatalog =
             new Column(
                 "TABLE_CATALOG",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2226,7 +2780,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column TableSchema =
             new Column(
                 "TABLE_SCHEMA",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -2234,7 +2788,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column TableName =
             new Column(
                 "TABLE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2242,7 +2796,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column TableType =
             new Column(
                 "TABLE_TYPE",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2259,7 +2813,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -2288,7 +2842,8 @@ boolean restriction, boolean nullable, String description)
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "The date the object was last modified.");
-/*
+
+        /*
         private static final Column TableOlapType =
             new Column(
                 "TABLE_OLAP_TYPE",
@@ -2297,49 +2852,12 @@ boolean restriction, boolean nullable, String description)
                 Column.RESTRICTION,
                 Column.OPTIONAL,
                 "The OLAP type of the object.  MEASURE_GROUP indicates the object is a measure group.  CUBE_DIMENSION indicated the object is a dimension.");
-
-*/
-        /*
-         * http://msdn2.microsoft.com/en-us/library/ms126299(SQL.90).aspx
-         *
-         * restrictions:
-         *   TABLE_CATALOG Optional
-         *   TABLE_SCHEMA Optional
-         *   TABLE_NAME Optional
-         *   TABLE_TYPE Optional
-         *   TABLE_OLAP_TYPE Optional
-         *
-         * Not supported
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DBSCHEMA_TABLES", DBSCHEMA_TABLES, null,
-                new Column[] {
-                    TableCatalog,
-                    TableSchema,
-                    TableName,
-                    TableType,
-                    TableGuid,
-                    Description,
-                    TablePropId,
-                    DateCreated,
-                    DateModified,
-                    //TableOlapType,
-                },
-                new Column[] {
-                    TableType,
-                    TableCatalog,
-                    TableSchema,
-                    TableName,
-                }) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new DbschemaTablesRowset(request, handler);
-            }
-        };
+        */
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
-                            handler.getCatalogs(request, ds);
+                handler.getCatalogs(request, ds);
             String roleStr = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
@@ -2392,7 +2910,7 @@ boolean restriction, boolean nullable, String description)
 
 
                     if (tableTypeRT.passes("SYSTEM TABLE")) {
-                        for (Dimension dimension : sortedDimensions(cube)) {
+                        for (Dimension dimension : cube.getDimensions()) {
                             if (dimension.isMeasures()) {
                                 continue;
                             }
@@ -2492,8 +3010,8 @@ boolean restriction, boolean nullable, String description)
         }
 
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -2504,13 +3022,13 @@ boolean restriction, boolean nullable, String description)
     // TODO: Is this needed????
     static class DbschemaTablesInfoRowset extends Rowset {
         DbschemaTablesInfoRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(DBSCHEMA_TABLES_INFO, request, handler);
         }
 
         private static final Column TableCatalog =
             new Column(
                 "TABLE_CATALOG",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -2518,7 +3036,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column TableSchema =
             new Column(
                 "TABLE_SCHEMA",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -2526,7 +3044,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column TableName =
             new Column(
                 "TABLE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2534,7 +3052,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column TableType =
             new Column(
                 "TABLE_TYPE",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2607,7 +3125,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -2621,42 +3139,10 @@ boolean restriction, boolean nullable, String description)
                 Column.OPTIONAL,
                 "Property ID of the table. Return null.");
 
-        /*
-         * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/oledbtables_info_rowset.asp
-         *
-         *
-         * restrictions
-         *
-         * Not supported
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DBSCHEMA_TABLES_INFO", DBSCHEMA_TABLES_INFO, null,
-                new Column[] {
-                    TableCatalog,
-                    TableSchema,
-                    TableName,
-                    TableType,
-                    TableGuid,
-                    Bookmarks,
-                    BookmarkType,
-                    BookmarkDataType,
-                    BookmarkMaximumLength,
-                    BookmarkInformation,
-                    TableVersion,
-                    Cardinality,
-                    Description,
-                    TablePropId,
-                },
-                null /* cannot find doc -- presume unsorted */) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new DbschemaTablesInfoRowset(request, handler);
-            }
-        };
-
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
-                            handler.getCatalogs(request, ds);
+                handler.getCatalogs(request, ds);
             String role = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
@@ -2699,8 +3185,8 @@ boolean restriction, boolean nullable, String description)
             }
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -2710,13 +3196,13 @@ boolean restriction, boolean nullable, String description)
 
     static class MdschemaActionsRowset extends Rowset {
         MdschemaActionsRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(MDSCHEMA_ACTIONS, request, handler);
         }
 
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2724,7 +3210,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column Coordinate =
             new Column(
                 "COORDINATE",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2739,53 +3225,12 @@ boolean restriction, boolean nullable, String description)
                 null);
         /*
             TODO: optional columns
-            SCHEMA_NAME
-            ACTION_NAME
-            ACTION_TYPE
-            INVOCATION
-            CUBE_SOURCE
-        */
-        /*
-         * http://msdn2.microsoft.com/en-us/library/ms126032(SQL.90).aspx
-         * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapactions_rowset.asp
-         *
-         * restrictions
-         *   CATALOG_NAME Optional
-         *   SCHEMA_NAME Optional
-         *   CUBE_NAME Mandatory
-         *   ACTION_NAME Optional
-         *   ACTION_TYPE Optional
-         *   COORDINATE Mandatory
-         *   COORDINATE_TYPE Mandatory
-         *   INVOCATION
-         *      (Optional) The INVOCATION restriction column defaults to the
-         *      value of MDACTION_INVOCATION_INTERACTIVE. To retrieve all
-         *      actions, use the MDACTION_INVOCATION_ALL value in the
-         *      INVOCATION restriction column.
-         *   CUBE_SOURCE
-         *      (Optional) A bitmap with one of the following valid values:
-         *
-         *      1 CUBE
-         *      2 DIMENSION
-         *
-         *      Default restriction is a value of 1.
-         *
-         * Not supported
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_ACTIONS", MDSCHEMA_ACTIONS, null, new Column[] {
-                    CubeName,
-                    Coordinate,
-                    CoordinateType,
-                }, new Column[] {
-                    // Spec says sort on CATALOG_NAME, SCHEMA_NAME, CUBE_NAME,
-                    // ACTION_NAME.
-                    CubeName,
-                }) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new MdschemaActionsRowset(request, handler);
-            }
-        };
+        SCHEMA_NAME
+        ACTION_NAME
+        ACTION_TYPE
+        INVOCATION
+        CUBE_SOURCE
+    */
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             throw new XmlaException(
@@ -2801,7 +3246,7 @@ boolean restriction, boolean nullable, String description)
         private final RestrictionTest catalogNameRT;
         private final RestrictionTest cubeNameRT;
         MdschemaCubesRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(MDSCHEMA_CUBES, request, handler);
             catalogNameRT = getRestrictionTest(CatalogName);
             cubeNameRT = getRestrictionTest(CubeName);
         }
@@ -2812,7 +3257,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -2820,7 +3265,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -2828,7 +3273,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2836,7 +3281,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column CubeType =
             new Column(
                 "CUBE_TYPE",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2868,7 +3313,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column SchemaUpdatedBy =
             new Column(
                 "SCHEMA_UPDATED_BY",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -2884,7 +3329,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column DataUpdatedBy =
             new Column(
                 "DATA_UPDATED_BY",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -2924,68 +3369,16 @@ boolean restriction, boolean nullable, String description)
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "A user-friendly description of the dimension.");
 
-        /*
-         * http://msdn2.microsoft.com/en-us/library/ms126271(SQL.90).aspx
-         * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapproperties_rowset.asp
-         *
-         * restrictions
-         *   CATALOG_NAME Optional.
-         *   SCHEMA_NAME Optional.
-         *   CUBE_NAME Optional.
-         *   CUBE_TYPE
-         *      (Optional) A bitmap with one of these valid values:
-         *      1 CUBE
-         *      2 DIMENSION
-         *     Default restriction is a value of 1.
-         *   BASE_CUBE_NAME Optional.
-         *
-         * Not supported
-         *   CREATED_ON
-         *   LAST_SCHEMA_UPDATE
-         *   SCHEMA_UPDATED_BY
-         *   LAST_DATA_UPDATE
-         *   DATA_UPDATED_BY
-         *   ANNOTATIONS
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_CUBES", MDSCHEMA_CUBES, null,
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                    CubeType,
-                    CubeGuid,
-                    CreatedOn,
-                    LastSchemaUpdate,
-                    SchemaUpdatedBy,
-                    LastDataUpdate,
-                    DataUpdatedBy,
-                    IsDrillthroughEnabled,
-                    IsWriteEnabled,
-                    IsLinkable,
-                    IsSqlEnabled,
-                    Description
-                },
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                }) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new MdschemaCubesRowset(request, handler);
-            }
-        };
-
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
-                            handler.getCatalogs(request, ds);
+                handler.getCatalogs(request, ds);
             String roleStr = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
@@ -3047,15 +3440,14 @@ boolean restriction, boolean nullable, String description)
             }
         }
 
-	    private String lastUpdateDate(RolapSchema schema) {
-		    Format formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-		    String formattedDate = formatter.format(schema.getSchemaLoadDate());
-		    return formattedDate;
-	    }
+        private String lastUpdateDate(RolapSchema schema) {
+            Format formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            return formatter.format(schema.getSchemaLoadDate());
+        }
 
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -3070,7 +3462,7 @@ boolean restriction, boolean nullable, String description)
         private final RestrictionTest dimensionUniqueNameRT;
         private final RestrictionTest dimensionNameRT;
         MdschemaDimensionsRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(MDSCHEMA_DIMENSIONS, request, handler);
             schemaNameRT = getRestrictionTest(SchemaName);
             cubeNameRT = getRestrictionTest(CubeName);
             dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
@@ -3084,7 +3476,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -3092,7 +3484,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -3100,7 +3492,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3108,7 +3500,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column DimensionName =
             new Column(
                 "DIMENSION_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3116,7 +3508,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column DimensionUniqueName =
             new Column(
                 "DIMENSION_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3132,7 +3524,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column DimensionCaption =
             new Column(
                 "DIMENSION_CAPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -3170,7 +3562,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column DefaultHierarchy =
             new Column(
                 "DEFAULT_HIERARCHY",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -3178,7 +3570,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3212,7 +3604,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column DimensionMasterUniqueName =
             new Column(
                 "DIMENSION_MASTER_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3225,64 +3617,13 @@ boolean restriction, boolean nullable, String description)
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "Always TRUE.");
-        /*
-         * http://msdn2.microsoft.com/en-us/library/ms126180(SQL.90).aspx
-         * http://msdn2.microsoft.com/en-us/library/ms126180.aspx
-         *
-         * restrictions
-         *    CATALOG_NAME Optional.
-         *    SCHEMA_NAME Optional.
-         *    CUBE_NAME Optional.
-         *    DIMENSION_NAME Optional.
-         *    DIMENSION_UNIQUE_NAME Optional.
-         *    CUBE_SOURCE (Optional) A bitmap with one of the following valid values:
-         *      1 CUBE
-         *      2 DIMENSION
-         *    Default restriction is a value of 1.
-         *
-         *    DIMENSION_VISIBILITY (Optional) A bitmap with one of the following valid values:
-         *      1 Visible
-         *      2 Not visible
-         *    Default restriction is a value of 1.
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_DIMENSIONS", MDSCHEMA_DIMENSIONS, null,
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                    DimensionName,
-                    DimensionUniqueName,
-                    DimensionGuid,
-                    DimensionCaption,
-                    DimensionOrdinal,
-                    DimensionType,
-                    DimensionCardinality,
-                    DefaultHierarchy,
-                    Description,
-                    IsVirtual,
-                    IsReadWrite,
-                    DimensionUniqueSettings,
-                    DimensionMasterUniqueName,
-                    DimensionIsVisible,
-                },
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                    DimensionName,
-                }) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new MdschemaDimensionsRowset(request, handler);
-            }
-        };
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
-            DataSourcesConfig.DataSource ds = 
+            DataSourcesConfig.DataSource ds =
                 handler.getDataSource(request);
             String roleStr = request.getRole();
-            DataSourcesConfig.Catalog[] catalogs = 
-                    handler.getCatalogs(request, ds);
+            DataSourcesConfig.Catalog[] catalogs =
+                handler.getCatalogs(request, ds);
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
@@ -3302,12 +3643,12 @@ boolean restriction, boolean nullable, String description)
                 populateCatalog(connection, role, catalogName, rows);
             }
         }
-        protected void populateCatalog(Connection connection, 
-                Role role, 
-                String catalogName, 
-                List<Row> rows)
-                throws XmlaException {
-            
+        protected void populateCatalog(Connection connection,
+            Role role,
+            String catalogName,
+            List<Row> rows)
+            throws XmlaException {
+
             for (Cube cube : sortedCubes(connection.getSchema())) {
                 if (!cubeNameRT.passes(cube.getName())) {
                     continue;
@@ -3317,12 +3658,12 @@ boolean restriction, boolean nullable, String description)
             }
         }
         protected void populateCube(SchemaReader schemaReader,
-                String catalogName,
-                Cube cube,
-                List<Row> rows)
-                throws XmlaException {
+            String catalogName,
+            Cube cube,
+            List<Row> rows)
+            throws XmlaException {
 
-            for (Dimension dimension : sortedDimensions(cube)) {
+            for (Dimension dimension : cube.getDimensions()) {
                 String name = dimension.getName();
                 String unique = dimension.getUniqueName();
                 if (dimensionNameRT.passes(name) &&
@@ -3332,12 +3673,12 @@ boolean restriction, boolean nullable, String description)
                 }
             }
         }
-        protected void populateDimension(SchemaReader schemaReader, 
-                String catalogName, 
-                Cube cube, 
-                Dimension dimension, 
-                List<Row> rows)
-                throws XmlaException {
+        protected void populateDimension(SchemaReader schemaReader,
+            String catalogName,
+            Cube cube,
+            Dimension dimension,
+            List<Row> rows)
+            throws XmlaException {
 
             // Access control
             if (!canAccess(schemaReader, dimension)) {
@@ -3406,8 +3747,8 @@ boolean restriction, boolean nullable, String description)
         }
 
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -3429,15 +3770,33 @@ boolean restriction, boolean nullable, String description)
         /**
          * http://www.csidata.com/custserv/onlinehelp/VBSdocs/vbs57.htm
          */
-        static class VarType extends EnumeratedValues.BasicValue {
-            static int convertCategory(int category) {
+        enum VarType {
+            Empty("Uninitialized (default)"),
+            Null("Contains no valid data"),
+            Integer("Integer subtype"),
+            Long("Long subtype"),
+            Single("Single subtype"),
+            Double("Double subtype"),
+            Currency("Currency subtype"),
+            Date("Date subtype"),
+            String("String subtype"),
+            Object("Object subtype"),
+            Error("Error subtype"),
+            Boolean("Boolean subtype"),
+            Variant("Variant subtype"),
+            DataObject("DataObject subtype"),
+            Decimal("Decimal subtype"),
+            Byte("Byte subtype"),
+            Array("Array subtype");
+
+            static VarType forCategory(int category) {
                 switch (category) {
                 case Category.Unknown:
-                // expression == unknown ???
-                // case Category.Expression:
-                    return EMPTY_ORDINAL;
+                    // expression == unknown ???
+                    // case Category.Expression:
+                    return Empty;
                 case Category.Array:
-                    return ARRAY_ORDINAL;
+                    return Array;
                 case Category.Dimension:
                 case Category.Hierarchy:
                 case Category.Level:
@@ -3446,105 +3805,38 @@ boolean restriction, boolean nullable, String description)
                 case Category.Tuple:
                 case Category.Cube:
                 case Category.Value:
-                    return VARIANT_ORDINAL;
+                    return Variant;
                 case Category.Logical:
-                    return BOOLEAN_ORDINAL;
+                    return Boolean;
                 case Category.Numeric:
-                    return DOUBLE_ORDINAL;
+                    return Double;
                 case Category.String:
                 case Category.Symbol:
                 case Category.Constant:
-                    return STRING_ORDINAL;
+                    return String;
                 case Category.Integer:
                 case Category.Mask:
-                    return INTEGERL_ORDINAL;
+                    return Integer;
                 }
                 // NOTE: this should never happen
-                return EMPTY_ORDINAL;
+                return Empty;
             }
 
-            public static final int EMPTY_ORDINAL        = 0;
-            public static final VarType Empty =
-                new VarType("Empty", EMPTY_ORDINAL, "Uninitialized (default)");
-
-            public static final int NULL_ORDINAL        = 1;
-            public static final VarType Null =
-                new VarType("Null", NULL_ORDINAL, "Contains no valid data");
-
-            public static final int INTEGERL_ORDINAL        = 2;
-            public static final VarType Integer =
-                new VarType("Integer", INTEGERL_ORDINAL, "Integer subtype");
-
-            public static final int LONG_ORDINAL        = 3;
-            public static final VarType Long =
-                new VarType("Long", LONG_ORDINAL, "Long subtype");
-
-            public static final int SINGLE_ORDINAL        = 4;
-            public static final VarType Single =
-                new VarType("Single", SINGLE_ORDINAL, "Single subtype");
-
-            public static final int DOUBLE_ORDINAL        = 5;
-            public static final VarType Double =
-                new VarType("Double", DOUBLE_ORDINAL, "Double subtype");
-
-            public static final int CURRENCY_ORDINAL        = 6;
-            public static final VarType Currency =
-                new VarType("Currency", CURRENCY_ORDINAL, "Currency subtype");
-
-            public static final int DATE_ORDINAL        = 7;
-            public static final VarType Date =
-                new VarType("Date", DATE_ORDINAL, "Date subtype");
-
-            public static final int STRING_ORDINAL        = 8;
-            public static final VarType String =
-                new VarType("String", STRING_ORDINAL, "String subtype");
-
-            public static final int OBJECT_ORDINAL        = 9;
-            public static final VarType Object =
-                new VarType("Object", OBJECT_ORDINAL, "Object subtype");
-
-            public static final int ERROR_ORDINAL        = 10;
-            public static final VarType Error =
-                new VarType("Error", ERROR_ORDINAL, "Error subtype");
-
-            public static final int BOOLEAN_ORDINAL        = 11;
-            public static final VarType Boolean =
-                new VarType("Boolean", BOOLEAN_ORDINAL, "Boolean subtype");
-
-            public static final int VARIANT_ORDINAL        = 12;
-            public static final VarType Variant =
-                new VarType("Variant", VARIANT_ORDINAL, "Variant subtype");
-
-            public static final int DATA_OBJECT_ORDINAL        = 13;
-            public static final VarType DataObject =
-                new VarType("DataObject", DATA_OBJECT_ORDINAL, "DataObject subtype");
-            public static final int DECIMAL_ORDINAL        = 14;
-            public static final VarType Decimal =
-                new VarType("Decimal", DECIMAL_ORDINAL, "Decimal subtype");
-
-            public static final int BYTE_ORDINAL        = 17;
-            public static final VarType Byte =
-                new VarType("Byte", BYTE_ORDINAL, "Byte subtype");
-
-            public static final int ARRAY_ORDINAL        = 17;
-            public static final VarType Array =
-                new VarType("Array", ARRAY_ORDINAL, "Array subtype");
-
-            public VarType(String name, int ordinal, String description) {
-                super(name, ordinal, description);
+            VarType(String description) {
+                Util.discard(description);
             }
         }
 
         private final RestrictionTest functionNameRT;
         MdschemaFunctionsRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(MDSCHEMA_FUNCTIONS, request, handler);
             functionNameRT = getRestrictionTest(FunctionName);
         }
 
         private static final Column FunctionName =
             new Column(
                 "FUNCTION_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3552,7 +3844,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3560,7 +3852,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column ParameterList =
             new Column(
                 "PARAMETER_LIST",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3584,7 +3876,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column InterfaceName =
             new Column(
                 "INTERFACE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3592,7 +3884,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column LibraryName =
             new Column(
                 "LIBRARY_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -3600,60 +3892,16 @@ boolean restriction, boolean nullable, String description)
         private static final Column Caption =
             new Column(
                 "CAPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "The display caption for the function.");
-        /*
-         * http://msdn2.microsoft.com/en-us/library/ms126257(SQL.90).aspx
-         * http://msdn.microsoft.com/library/en-us/oledb/htm/olapfunctions_rowset.asp
-         *
-         * restrictions
-         *   LIBRARY_NAME Optional.
-         *   INTERFACE_NAME Optional.
-         *   FUNCTION_NAME Optional.
-         *   ORIGIN Optional.
-         *
-         * Not supported
-         *  DLL_NAME
-         *    Optional
-         *  HELP_FILE
-         *    Optional
-         *  HELP_CONTEXT
-         *    Optional
-         *    - SQL Server xml schema says that this must be present
-         *  OBJECT
-         *    Optional
-         *  CAPTION The display caption for the function.
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_FUNCTIONS", MDSCHEMA_FUNCTIONS, null,
-                new Column[] {
-                    FunctionName,
-                    Description,
-                    ParameterList,
-                    ReturnType,
-                    Origin,
-                    InterfaceName,
-                    LibraryName,
-                    Caption,
-                },
-                new Column[] {
-                    LibraryName,
-                    InterfaceName,
-                    FunctionName,
-                    Origin,
-                }) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new MdschemaFunctionsRowset(request, handler);
-            }
-        };
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             DataSourcesConfig.Catalog[] catalogs =
-                            handler.getCatalogs(request, ds);
+                handler.getCatalogs(request, ds);
             String role = request.getRole();
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
@@ -3718,9 +3966,8 @@ boolean restriction, boolean nullable, String description)
                             }
                             row.set(ParameterList.name, buf.toString());
 
-                            int varType =
-                                VarType.convertCategory(returnCategory);
-                            row.set(ReturnType.name, varType);
+                            VarType varType = VarType.forCategory(returnCategory);
+                            row.set(ReturnType.name, varType.ordinal());
 
                             //TODO: currently FunInfo can not tell us which
                             // functions are MDX and which are UDFs.
@@ -3743,8 +3990,8 @@ boolean restriction, boolean nullable, String description)
             }
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -3760,7 +4007,7 @@ boolean restriction, boolean nullable, String description)
         private final RestrictionTest hierarchyUniqueNameRT;
         private final RestrictionTest hierarchyNameRT;
         MdschemaHierarchiesRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(MDSCHEMA_HIERARCHIES, request, handler);
             schemaNameRT = getRestrictionTest(SchemaName);
             cubeNameRT = getRestrictionTest(CubeName);
             dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
@@ -3771,7 +4018,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -3779,7 +4026,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -3787,7 +4034,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3795,7 +4042,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column DimensionUniqueName =
             new Column(
                 "DIMENSION_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3803,7 +4050,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column HierarchyName =
             new Column(
                 "HIERARCHY_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3811,7 +4058,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column HierarchyUniqueName =
             new Column(
                 "HIERARCHY_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3829,7 +4076,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column HierarchyCaption =
             new Column(
                 "HIERARCHY_CAPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -3853,7 +4100,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column DefaultMember =
             new Column(
                 "DEFAULT_MEMBER",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3861,7 +4108,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column AllMember =
             new Column(
                 "ALL_MEMBER",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3869,7 +4116,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3942,82 +4189,14 @@ boolean restriction, boolean nullable, String description)
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
-                "Is hierarcy a parent.");
-
-        /*
-         * http://msdn2.microsoft.com/en-us/library/ms126062(SQL.90).aspx
-         * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapproperties_rowset.asp
-         *
-         * restrictions
-         *    CATALOG_NAME Optional.
-         *    SCHEMA_NAME Optional.
-         *    CUBE_NAME Optional.
-         *    DIMENSION_UNIQUE_NAME Optional.
-         *    HIERARCHY_NAME Optional.
-         *    HIERARCHY_UNIQUE_NAME Optional.
-         *    HIERARCHY_ORIGIN
-         *       (Optional) A default restriction is in effect
-         *       on MD_USER_DEFINED and MD_SYSTEM_ENABLED.
-         *    CUBE_SOURCE
-         *      (Optional) A bitmap with one of the following valid values:
-         *      1 CUBE
-         *      2 DIMENSION
-         *      Default restriction is a value of 1.
-         *    HIERARCHY_VISIBILITY
-         *      (Optional) A bitmap with one of the following valid values:
-         *      1 Visible
-         *      2 Not visible
-         *      Default restriction is a value of 1.
-         *
-         * Not supported
-         *  HIERARCHY_IS_VISIBLE
-         *  HIERARCHY_ORIGIN
-         *  HIERARCHY_DISPLAY_FOLDER
-         *  INSTANCE_SELECTION
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_HIERARCHIES", MDSCHEMA_HIERARCHIES, null,
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                    DimensionUniqueName,
-                    HierarchyName,
-                    HierarchyUniqueName,
-                    HierarchyGuid,
-                    HierarchyCaption,
-                    DimensionType,
-                    HierarchyCardinality,
-                    DefaultMember,
-                    AllMember,
-                    Description,
-                    Structure,
-                    IsVirtual,
-                    IsReadWrite,
-                    DimensionUniqueSettings,
-                    DimensionIsVisible,
-                    HierarchyOrdinal,
-                    DimensionIsShared,
-                    ParentChild,
-                },
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                    DimensionUniqueName,
-                    HierarchyName,
-                }) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new MdschemaHierarchiesRowset(request, handler);
-            }
-        };
+                "Is hierarchy a parent.");
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
-            DataSourcesConfig.DataSource ds = 
+            DataSourcesConfig.DataSource ds =
                 handler.getDataSource(request);
             String roleStr = request.getRole();
-            DataSourcesConfig.Catalog[] catalogs = 
-                    handler.getCatalogs(request, ds);
+            DataSourcesConfig.Catalog[] catalogs =
+                handler.getCatalogs(request, ds);
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
@@ -4037,11 +4216,11 @@ boolean restriction, boolean nullable, String description)
                 populateCatalog(connection, role, catalogName, rows);
             }
         }
-        protected void populateCatalog(Connection connection, 
-                Role role, 
-                String catalogName, 
-                List<Row> rows)
-                throws XmlaException {
+        protected void populateCatalog(Connection connection,
+            Role role,
+            String catalogName,
+            List<Row> rows)
+            throws XmlaException {
             try {
                 for (Cube cube : sortedCubes(connection.getSchema())) {
                     if (!cubeNameRT.passes(cube.getName())) {
@@ -4054,13 +4233,13 @@ boolean restriction, boolean nullable, String description)
             }
         }
         protected void populateCube(SchemaReader schemaReader,
-                String catalogName, 
-                Cube cube, 
-                List<Row> rows)
-                throws XmlaException {
+            String catalogName,
+            Cube cube,
+            List<Row> rows)
+            throws XmlaException {
             try {
                 int ordinal = 0;
-                for (Dimension dimension : sortedDimensions(cube)) {
+                for (Dimension dimension : cube.getDimensions()) {
                     String unique = dimension.getUniqueName();
                     // Must increment ordinal for all dimensions but
                     // only output some of them.
@@ -4074,14 +4253,14 @@ boolean restriction, boolean nullable, String description)
             }
         }
         protected int populateDimension(
-                boolean genOutput, 
-                SchemaReader schemaReader, 
-                String catalogName, 
-                Cube cube, 
-                Dimension dimension, 
-                int ordinal,
-                List<Row> rows)
-                throws XmlaException {
+            boolean genOutput,
+            SchemaReader schemaReader,
+            String catalogName,
+            Cube cube,
+            Dimension dimension,
+            int ordinal,
+            List<Row> rows)
+            throws XmlaException {
             try {
                 Hierarchy[] hierarchies = dimension.getHierarchies();
                 for (Hierarchy hierarchy : hierarchies) {
@@ -4103,14 +4282,14 @@ boolean restriction, boolean nullable, String description)
             } finally {
             }
         }
-        protected void populateHierarchy(SchemaReader schemaReader, 
-                String catalogName, 
-                Cube cube, 
-                Dimension dimension, 
-                HierarchyBase hierarchy, 
-                int ordinal,
-                List<Row> rows)
-                throws XmlaException {
+        protected void populateHierarchy(SchemaReader schemaReader,
+            String catalogName,
+            Cube cube,
+            Dimension dimension,
+            HierarchyBase hierarchy,
+            int ordinal,
+            List<Row> rows)
+            throws XmlaException {
 
             // Access control
             if (!canAccess(schemaReader, hierarchy)) {
@@ -4145,7 +4324,7 @@ boolean restriction, boolean nullable, String description)
             // value can be an approximation of the real
             // cardinality. Consumers should not assume that this
             // value is accurate.
-            int cardinality = 
+            int cardinality =
                 RolapMember.getHierarchyCardinality(schemaReader, hierarchy);
             row.set(HierarchyCardinality.name, cardinality);
 
@@ -4176,7 +4355,7 @@ boolean restriction, boolean nullable, String description)
             row.set(DimensionIsShared.name, true);
 
             RolapLevel nonAllFirstLevel =
-                    (RolapLevel) hierarchy.getLevels()[
+                (RolapLevel) hierarchy.getLevels()[
                     (hierarchy.hasAll() ? 1 : 0)];
             row.set(ParentChild.name, nonAllFirstLevel.isParentChild());
             addRow(row, rows);
@@ -4185,8 +4364,8 @@ boolean restriction, boolean nullable, String description)
 
 
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -4202,7 +4381,7 @@ boolean restriction, boolean nullable, String description)
         private final RestrictionTest levelUniqueNameRT;
         private final RestrictionTest levelNameRT;
         MdschemaLevelsRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(MDSCHEMA_LEVELS, request, handler);
             schemaNameRT = getRestrictionTest(SchemaName);
             cubeNameRT = getRestrictionTest(CubeName);
             dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
@@ -4231,7 +4410,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -4239,7 +4418,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -4247,7 +4426,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4255,7 +4434,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column DimensionUniqueName =
             new Column(
                 "DIMENSION_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4263,7 +4442,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column HierarchyUniqueName =
             new Column(
                 "HIERARCHY_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4271,7 +4450,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column LevelName =
             new Column(
                 "LEVEL_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4279,7 +4458,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column LevelUniqueName =
             new Column(
                 "LEVEL_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4295,7 +4474,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column LevelCaption =
             new Column(
                 "LEVEL_CAPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -4351,89 +4530,17 @@ boolean restriction, boolean nullable, String description)
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "A human-readable description of the level. NULL if no description exists.");
-        /*
-         * http://msdn2.microsoft.com/en-us/library/ms126038(SQL.90).aspx
-         * http://msdn.microsoft.com/library/en-us/oledb/htm/olaplevels_rowset.asp
-         *
-         * restriction
-         *   CATALOG_NAME Optional.
-         *   SCHEMA_NAME Optional.
-         *   CUBE_NAME Optional.
-         *   DIMENSION_UNIQUE_NAME Optional.
-         *   HIERARCHY_UNIQUE_NAME Optional.
-         *   LEVEL_NAME Optional.
-         *   LEVEL_UNIQUE_NAME Optional.
-         *   LEVEL_ORIGIN
-         *       (Optional) A default restriction is in effect
-         *       on MD_USER_DEFINED and MD_SYSTEM_ENABLED
-         *   CUBE_SOURCE
-         *       (Optional) A bitmap with one of the following valid values:
-         *       1 CUBE
-         *       2 DIMENSION
-         *       Default restriction is a value of 1.
-         *   LEVEL_VISIBILITY
-         *       (Optional) A bitmap with one of the following values:
-         *       1 Visible
-         *       2 Not visible
-         *       Default restriction is a value of 1.
-         *
-         * Not supported
-         *  CUSTOM_ROLLUP_SETTINGS
-         *  LEVEL_UNIQUE_SETTINGS
-         *  LEVEL_ORDERING_PROPERTY
-         *  LEVEL_DBTYPE
-         *  LEVEL_MASTER_UNIQUE_NAME
-         *  LEVEL_NAME_SQL_COLUMN_NAME Customers:(All)!NAME
-         *  LEVEL_KEY_SQL_COLUMN_NAME Customers:(All)!KEY
-         *  LEVEL_UNIQUE_NAME_SQL_COLUMN_NAME Customers:(All)!UNIQUE_NAME
-         *  LEVEL_ATTRIBUTE_HIERARCHY_NAME
-         *  LEVEL_KEY_CARDINALITY
-         *  LEVEL_ORIGIN
-         *
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_LEVELS", MDSCHEMA_LEVELS, null,
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                    DimensionUniqueName,
-                    HierarchyUniqueName,
-                    LevelName,
-                    LevelUniqueName,
-                    LevelGuid,
-                    LevelCaption,
-                    LevelNumber,
-                    LevelCardinality,
-                    LevelType,
-                    CustomRollupSettings,
-                    LevelUniqueSettings,
-                    LevelIsVisible,
-                    Description,
-                },
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                    DimensionUniqueName,
-                    HierarchyUniqueName,
-                    LevelNumber,
-                }) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new MdschemaLevelsRowset(request, handler);
-            }
-        };
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             String roleStr = request.getRole();
-            DataSourcesConfig.Catalog[] catalogs = 
-                    handler.getCatalogs(request, ds);
+            DataSourcesConfig.Catalog[] catalogs =
+                handler.getCatalogs(request, ds);
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
@@ -4453,11 +4560,11 @@ boolean restriction, boolean nullable, String description)
                 populateCatalog(connection, role, catalogName, rows);
             }
         }
-        protected void populateCatalog(Connection connection, 
-                Role role, 
-                String catalogName, 
-                List<Row> rows)
-                throws XmlaException {
+        protected void populateCatalog(Connection connection,
+            Role role,
+            String catalogName,
+            List<Row> rows)
+            throws XmlaException {
 
             for (Cube cube : sortedCubes(connection.getSchema())) {
                 if (!cubeNameRT.passes(cube.getName())) {
@@ -4469,12 +4576,12 @@ boolean restriction, boolean nullable, String description)
         }
 
         protected void populateCube(SchemaReader schemaReader,
-                String catalogName, 
-                Cube cube, 
-                List<Row> rows)
-                throws XmlaException {
+            String catalogName,
+            Cube cube,
+            List<Row> rows)
+            throws XmlaException {
             try {
-                for (Dimension dimension : sortedDimensions(cube)) {
+                for (Dimension dimension : cube.getDimensions()) {
                     String uniqueName = dimension.getUniqueName();
                     if (dimensionUniqueNameRT.passes(uniqueName)) {
                         populateDimension(schemaReader, catalogName,
@@ -4484,12 +4591,12 @@ boolean restriction, boolean nullable, String description)
             } finally {
             }
         }
-        protected void populateDimension(SchemaReader schemaReader, 
-                String catalogName, 
-                Cube cube, 
-                Dimension dimension, 
-                List<Row> rows)
-                throws XmlaException {
+        protected void populateDimension(SchemaReader schemaReader,
+            String catalogName,
+            Cube cube,
+            Dimension dimension,
+            List<Row> rows)
+            throws XmlaException {
             try {
                 Hierarchy[] hierarchies = dimension.getHierarchies();
                 for (Hierarchy hierarchy : hierarchies) {
@@ -4502,12 +4609,12 @@ boolean restriction, boolean nullable, String description)
             } finally {
             }
         }
-        protected void populateHierarchy(SchemaReader schemaReader, 
-                String catalogName, 
-                Cube cube, 
-                Hierarchy hierarchy, 
-                List<Row> rows)
-                throws XmlaException {
+        protected void populateHierarchy(SchemaReader schemaReader,
+            String catalogName,
+            Cube cube,
+            Hierarchy hierarchy,
+            List<Row> rows)
+            throws XmlaException {
 
             final Level[] levels = hierarchy.getLevels();
             for (Level level : levels) {
@@ -4520,13 +4627,13 @@ boolean restriction, boolean nullable, String description)
                 }
             }
         }
-        protected void outputLevel(SchemaReader schemaReader, 
-                String catalogName, 
-                Cube cube, 
-                Hierarchy hierarchy, 
-                Level level,
-                List<Row> rows)
-                throws XmlaException {
+        protected void outputLevel(SchemaReader schemaReader,
+            String catalogName,
+            Cube cube,
+            Hierarchy hierarchy,
+            Level level,
+            List<Row> rows)
+            throws XmlaException {
 
             // Access control
             if (!canAccess(schemaReader, level)) {
@@ -4546,7 +4653,7 @@ boolean restriction, boolean nullable, String description)
             row.set(CatalogName.name, catalogName);
             row.set(SchemaName.name, catalogName);
             row.set(CubeName.name, cube.getName());
-            row.set(DimensionUniqueName.name, 
+            row.set(DimensionUniqueName.name,
                 hierarchy.getDimension().getUniqueName());
             row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
             row.set(LevelName.name, level.getName());
@@ -4569,14 +4676,14 @@ boolean restriction, boolean nullable, String description)
 
             if (level instanceof RolapLevel) {
                 RolapLevel rl = (RolapLevel) level;
-                row.set(LevelUniqueSettings.name, 
+                row.set(LevelUniqueSettings.name,
                     (rl.isUnique() ? 1 : 0) +
-                    (rl.isAll() ? 2 : 0)
+                        (rl.isAll() ? 2 : 0)
                 );
             } else {
                 // can not access unique member attribute
                 // this is the best we can do.
-                row.set(LevelUniqueSettings.name, 
+                row.set(LevelUniqueSettings.name,
                     (level.isAll() ? 2 : 0)
                 );
             }
@@ -4594,23 +4701,23 @@ boolean restriction, boolean nullable, String description)
             }
 
             mondrian.olap.LevelType type = lev.getLevelType();
-            switch (type.getOrdinal()) {
-            case mondrian.olap.LevelType.RegularORDINAL:
+            switch (type) {
+            case Regular:
                 ret |= MDLEVEL_TYPE_REGULAR;
                 break;
-            case mondrian.olap.LevelType.TimeDaysORDINAL:
+            case TimeDays:
                 ret |= MDLEVEL_TYPE_TIME_DAYS;
                 break;
-            case mondrian.olap.LevelType.TimeMonthsORDINAL:
+            case TimeMonths:
                 ret |= MDLEVEL_TYPE_TIME_MONTHS;
                 break;
-            case mondrian.olap.LevelType.TimeQuartersORDINAL:
+            case TimeQuarters:
                 ret |= MDLEVEL_TYPE_TIME_QUARTERS;
                 break;
-            case mondrian.olap.LevelType.TimeWeeksORDINAL:
+            case TimeWeeks:
                 ret |= MDLEVEL_TYPE_TIME_WEEKS;
                 break;
-            case mondrian.olap.LevelType.TimeYearsORDINAL:
+            case TimeYears:
                 ret |= MDLEVEL_TYPE_TIME_YEARS;
                 break;
             default:
@@ -4620,8 +4727,8 @@ boolean restriction, boolean nullable, String description)
             return ret;
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -4647,7 +4754,7 @@ boolean restriction, boolean nullable, String description)
         private final RestrictionTest measureUniqueNameRT;
         private final RestrictionTest measureNameRT;
         MdschemaMeasuresRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(MDSCHEMA_MEASURES, request, handler);
             schemaNameRT = getRestrictionTest(SchemaName);
             cubeNameRT = getRestrictionTest(CubeName);
             measureNameRT = getRestrictionTest(MeasureName);
@@ -4657,7 +4764,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -4665,7 +4772,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -4673,7 +4780,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4681,7 +4788,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column MeasureName =
             new Column(
                 "MEASURE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4689,7 +4796,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column MeasureUniqueName =
             new Column(
                 "MEASURE_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4697,7 +4804,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column MeasureCaption =
             new Column(
                 "MEASURE_CAPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -4737,7 +4844,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column LevelsList =
             new Column(
                 "LEVELS_LIST",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -4745,76 +4852,17 @@ boolean restriction, boolean nullable, String description)
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "A human-readable description of the measure. ");
-        /*
-         * http://msdn2.microsoft.com/en-us/library/ms126250(SQL.90).aspx
-         * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapmeasures_rowset.asp
-         *
-         * restrictions
-         *   CATALOG_NAME Optional.
-         *   SCHEMA_NAME Optional.
-         *   CUBE_NAME Optional.
-         *   MEASURE_NAME Optional.
-         *   MEASURE_UNIQUE_NAME Optional.
-         *   CUBE_SOURCE
-         *     (Optional) A bitmap with one of the following valid values:
-         *     1 CUBE
-         *     2 DIMENSION
-         *     Default restriction is a value of 1.
-         *   MEASURE_VISIBILITY
-         *     (Optional) A bitmap with one of the following valid values:
-         *     1 Visible
-         *     2 Not Visible
-         *     Default restriction is a value of 1.
-         *
-         * Not supported
-         *  MEASURE_GUID
-         *  NUMERIC_PRECISION
-         *  NUMERIC_SCALE
-         *  MEASURE_UNITS
-         *  EXPRESSION
-         *  MEASURE_NAME_SQL_COLUMN_NAME
-         *  MEASURE_UNQUALIFIED_CAPTION
-         *  MEASUREGROUP_NAME
-         *  MEASURE_DISPLAY_FOLDER
-         *  DEFAULT_FORMAT_STRING
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_MEASURES", MDSCHEMA_MEASURES, null,
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                    MeasureName,
-                    MeasureUniqueName,
-                    MeasureCaption,
-                    MeasureGuid,
-                    MeasureAggregator,
-                    DataType,
-                    MeasureIsVisible,
-                    LevelsList,
-                    Description,
-                },
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                    MeasureName,
-                }) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new MdschemaMeasuresRowset(request, handler);
-            }
-        };
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             DataSourcesConfig.DataSource ds = handler.getDataSource(request);
             String roleStr = request.getRole();
-            DataSourcesConfig.Catalog[] catalogs = 
-                    handler.getCatalogs(request, ds);
+            DataSourcesConfig.Catalog[] catalogs =
+                handler.getCatalogs(request, ds);
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
@@ -4834,11 +4882,11 @@ boolean restriction, boolean nullable, String description)
             }
         }
         protected void populateCatalog(
-                Connection connection, 
-                Role role, 
-                String catalogName, 
-                List<Row> rows)
-                throws XmlaException {
+            Connection connection,
+            Role role,
+            String catalogName,
+            List<Row> rows)
+            throws XmlaException {
 
             // SQL Server actually includes the LEVELS_LIST row
             StringBuilder buf = new StringBuilder(100);
@@ -4855,7 +4903,7 @@ boolean restriction, boolean nullable, String description)
                     buf.setLength(0);
 
                     int j = 0;
-                    for (Dimension dimension : sortedDimensions(cube)) {
+                    for (Dimension dimension : cube.getDimensions()) {
                         if (dimension.isMeasures()) {
                             continue;
                         }
@@ -4912,7 +4960,7 @@ boolean restriction, boolean nullable, String description)
             if (member instanceof MemberBase) {
                 MemberBase mb = (MemberBase) member;
                 Boolean isVisible = (Boolean)
-                       mb.getPropertyValue(Property.VISIBLE.name);
+                    mb.getPropertyValue(Property.VISIBLE.name);
                 if (isVisible != null && !isVisible) {
                     return;
                 }
@@ -4962,16 +5010,16 @@ boolean restriction, boolean nullable, String description)
             row.set(MeasureAggregator.name, aggNumber);
 
             // DATA_TYPE DBType best guess is string
-            int dbType = DBType.WSTR_ORDINAL;
+            int dbType = DBType.WSTR.userOrdinal;
             String datatype = (String)
-                        member.getPropertyValue(Property.DATATYPE.getName());
+                member.getPropertyValue(Property.DATATYPE.getName());
             if (datatype != null) {
                 if (datatype.equals("Integer")) {
-                    dbType = DBType.I4_ORDINAL;
+                    dbType = DBType.I4.userOrdinal;
                 } else if (datatype.equals("Numeric")) {
-                    dbType = DBType.R8_ORDINAL;
+                    dbType = DBType.R8.userOrdinal;
                 } else {
-                    dbType = DBType.WSTR_ORDINAL;
+                    dbType = DBType.WSTR.userOrdinal;
                 }
             }
             row.set(DataType.name, dbType);
@@ -4985,8 +5033,8 @@ boolean restriction, boolean nullable, String description)
             addRow(row, rows);
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -5004,7 +5052,7 @@ boolean restriction, boolean nullable, String description)
         private final RestrictionTest memberTypeRT;
 
         MdschemaMembersRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(MDSCHEMA_MEMBERS, request, handler);
             schemaNameRT = getRestrictionTest(SchemaName);
             cubeNameRT = getRestrictionTest(CubeName);
             dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
@@ -5017,7 +5065,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -5025,7 +5073,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -5033,7 +5081,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5041,7 +5089,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column DimensionUniqueName =
             new Column(
                 "DIMENSION_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5049,7 +5097,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column HierarchyUniqueName =
             new Column(
                 "HIERARCHY_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5057,7 +5105,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column LevelUniqueName =
             new Column(
                 "LEVEL_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5081,7 +5129,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column MemberName =
             new Column(
                 "MEMBER_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5089,7 +5137,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column MemberUniqueName =
             new Column(
                 "MEMBER_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5113,7 +5161,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column MemberCaption =
             new Column(
                 "MEMBER_CAPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5137,7 +5185,7 @@ boolean restriction, boolean nullable, String description)
         private static final Column ParentUniqueName =
             new Column(
                 "PARENT_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -5168,84 +5216,14 @@ boolean restriction, boolean nullable, String description)
                 Column.OPTIONAL,
                 "depth");
 
-        /*
-         *
-         * http://msdn2.microsoft.com/es-es/library/ms126046.aspx
-         *
-         *
-         * restrictions
-         *   CATALOG_NAME Optional.
-         *   SCHEMA_NAME Optional.
-         *   CUBE_NAME Optional.
-         *   DIMENSION_UNIQUE_NAME Optional.
-         *   HIERARCHY_UNIQUE_NAME Optional.
-         *   LEVEL_UNIQUE_NAME Optional.
-         *   LEVEL_NUMBER Optional.
-         *   MEMBER_NAME Optional.
-         *   MEMBER_UNIQUE_NAME Optional.
-         *   MEMBER_CAPTION Optional.
-         *   MEMBER_TYPE Optional.
-         *   TREE_OP (Optional) Only applies to a single member:
-         *      MDTREEOP_ANCESTORS (0x20) returns all of the ancestors.
-         *      MDTREEOP_CHILDREN (0x01) returns only the immediate children.
-         *      MDTREEOP_SIBLINGS (0x02) returns members on the same level.
-         *      MDTREEOP_PARENT (0x04) returns only the immediate parent.
-         *      MDTREEOP_SELF (0x08) returns itself in the list of
-         *                 returned rows.
-         *      MDTREEOP_DESCENDANTS (0x10) returns all of the descendants.
-         *   CUBE_SOURCE (Optional) A bitmap with one of the
-         *      following valid values:
-         *        1 CUBE
-         *        2 DIMENSION
-         *      Default restriction is a value of 1.         
-         *
-         * Not supported
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_MEMBERS", MDSCHEMA_MEMBERS, null,
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                    DimensionUniqueName,
-                    HierarchyUniqueName,
-                    LevelUniqueName,
-                    LevelNumber,
-                    MemberOrdinal,
-                    MemberName,
-                    MemberUniqueName,
-                    MemberType,
-                    MemberGuid,
-                    MemberCaption,
-                    ChildrenCardinality,
-                    ParentLevel,
-                    ParentUniqueName,
-                    ParentCount,
-                    TreeOp,
-                    Depth,
-                },
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                    DimensionUniqueName,
-                    HierarchyUniqueName,
-                    LevelUniqueName,
-                    LevelNumber,
-                    MemberOrdinal,
-                }) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new MdschemaMembersRowset(request, handler);
-            }
-        };
         public void populate(XmlaResponse response, List<Row> rows)
-                throws XmlaException {
+            throws XmlaException {
 
-            DataSourcesConfig.DataSource ds = 
+            DataSourcesConfig.DataSource ds =
                 handler.getDataSource(request);
             String roleStr = request.getRole();
-            DataSourcesConfig.Catalog[] catalogs = 
-                    handler.getCatalogs(request, ds);
+            DataSourcesConfig.Catalog[] catalogs =
+                handler.getCatalogs(request, ds);
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
@@ -5264,12 +5242,12 @@ boolean restriction, boolean nullable, String description)
                 }
             }
         }
-        protected void populateCatalog(Connection connection, 
-                Role role, 
-                String catalogName, 
-                List<Row> rows)
-                throws XmlaException {
-            
+        protected void populateCatalog(Connection connection,
+            Role role,
+            String catalogName,
+            List<Row> rows)
+            throws XmlaException {
+
             for (Cube cube : sortedCubes(connection.getSchema())) {
                 if (cubeNameRT.passes(cube.getName())) {
                     SchemaReader schemaReader = cube.getSchemaReader(role);
@@ -5278,10 +5256,10 @@ boolean restriction, boolean nullable, String description)
             }
         }
         protected void populateCube(SchemaReader schemaReader,
-                String catalogName, 
-                Cube cube, 
-                List<Row> rows)
-                throws XmlaException {
+            String catalogName,
+            Cube cube,
+            List<Row> rows)
+            throws XmlaException {
 
             if (isRestricted(MemberUniqueName)) {
                 // NOTE: it is believed that if MEMBER_UNIQUE_NAME is
@@ -5289,11 +5267,11 @@ boolean restriction, boolean nullable, String description)
                 // restrictions other than TREE_OP are relevant 
                 // (or allowed??).
                 outputUniqueMemberName(schemaReader,
-                                catalogName, cube, rows);
+                    catalogName, cube, rows);
             } else if (isRestricted(LevelUniqueName)) {
                 // Note: If the LEVEL_UNIQUE_NAME has been specified, then
                 // the dimension and hierarchy are specified implicitly.
-                String levelUniqueName = 
+                String levelUniqueName =
                     getRestrictionValueAsString(LevelUniqueName);
                 if (levelUniqueName == null) {
                     // The query specified two or more unique names
@@ -5318,7 +5296,7 @@ boolean restriction, boolean nullable, String description)
                 }
 
             } else {
-                for (Dimension dimension : sortedDimensions(cube)) {
+                for (Dimension dimension : cube.getDimensions()) {
                     String uniqueName = dimension.getUniqueName();
                     if (dimensionUniqueNameRT.passes(uniqueName)) {
                         populateDimension(schemaReader, catalogName,
@@ -5327,13 +5305,13 @@ boolean restriction, boolean nullable, String description)
                 }
             }
         }
-        protected void populateDimension(SchemaReader schemaReader, 
-                String catalogName, 
-                Cube cube, 
-                Dimension dimension, 
-                List<Row> rows)
-                throws XmlaException {
-            
+        protected void populateDimension(SchemaReader schemaReader,
+            String catalogName,
+            Cube cube,
+            Dimension dimension,
+            List<Row> rows)
+            throws XmlaException {
+
             Hierarchy[] hierarchies = dimension.getHierarchies();
             for (Hierarchy hierarchy : hierarchies) {
                 String uniqueName = hierarchy.getUniqueName();
@@ -5343,20 +5321,20 @@ boolean restriction, boolean nullable, String description)
                 }
             }
         }
-        protected void populateHierarchy(SchemaReader schemaReader, 
-                String catalogName, 
-                Cube cube, 
-                Hierarchy hierarchy, 
-                List<Row> rows)
-                throws XmlaException {
+        protected void populateHierarchy(SchemaReader schemaReader,
+            String catalogName,
+            Cube cube,
+            Hierarchy hierarchy,
+            List<Row> rows)
+            throws XmlaException {
 
-             
-             if (isRestricted(LevelNumber)) {
+
+            if (isRestricted(LevelNumber)) {
                 int levelNumber = getRestrictionValueAsInt(LevelNumber);
                 if (levelNumber == -1) {
                     LOGGER.warn("RowsetDefinition.populateHierarchy: " +
                         "LevelNumber invalid"
-                        );
+                    );
                     return;
                 }
                 Level[] levels = hierarchy.getLevels();
@@ -5369,26 +5347,26 @@ boolean restriction, boolean nullable, String description)
                         ") for hierarchy \"" +
                         hierarchy.getUniqueName() +
                         "\""
-                        );
+                    );
                     return;
                 }
 
                 Level level = levels[levelNumber];
-                Member[] members = 
+                Member[] members =
                     schemaReader.getLevelMembers(level, false);
                 outputMembers(schemaReader, members, catalogName, cube, rows);
-             } else {
+            } else {
                 // At this point we get ALL of the members associated with
                 // the Hierarchy (rather than getting them one at a time).
                 // The value returned is not used at this point but they are
                 // now cached in the SchemaReader.
                 Member[][] membersArray =
                     RolapMember.getAllMembers(schemaReader, hierarchy);
-                 for (Member[] members : membersArray) {
-                     outputMembers(schemaReader, members,
-                         catalogName, cube, rows);
-                 }
-             }
+                for (Member[] members : membersArray) {
+                    outputMembers(schemaReader, members,
+                        catalogName, cube, rows);
+                }
+            }
         }
 
         /**
@@ -5413,13 +5391,13 @@ boolean restriction, boolean nullable, String description)
             List<Row> rows) {
 
             // Visit node itself.
-            if (mask(treeOp, Enumeration.TreeOp.Self.ordinal)) {
+            if (mask(treeOp, Enumeration.TreeOp.Self.ordinal())) {
                 outputMember(schemaReader, member, catalogName, cube, rows);
             }
             // Visit node's siblings (not including itself).
-            if (mask(treeOp, Enumeration.TreeOp.Siblings.ordinal)) {
+            if (mask(treeOp, Enumeration.TreeOp.Siblings.ordinal())) {
                 final Member parent =
-                        schemaReader.getMemberParent(member);
+                    schemaReader.getMemberParent(member);
                 final Member[] siblings = (parent == null)
                     ?  schemaReader.getHierarchyRootMembers(member.getHierarchy())
                     : schemaReader.getMemberChildren(parent);
@@ -5430,42 +5408,42 @@ boolean restriction, boolean nullable, String description)
                     }
                     populateMember(schemaReader, catalogName,
                         cube, sibling,
-                        Enumeration.TreeOp.Self.ordinal, rows);
+                        Enumeration.TreeOp.Self.ordinal(), rows);
                 }
             }
             // Visit node's descendants or its immediate children, but not both.
-            if (mask(treeOp, Enumeration.TreeOp.Descendants.ordinal)) {
+            if (mask(treeOp, Enumeration.TreeOp.Descendants.ordinal())) {
                 final Member[] children = schemaReader.getMemberChildren(member);
                 for (Member child : children) {
                     populateMember(schemaReader, catalogName,
                         cube, child,
-                        Enumeration.TreeOp.Self.ordinal |
-                            Enumeration.TreeOp.Descendants.ordinal, rows);
+                        Enumeration.TreeOp.Self.ordinal() |
+                            Enumeration.TreeOp.Descendants.ordinal(), rows);
                 }
-            } else if (mask(treeOp, Enumeration.TreeOp.Children.ordinal)) {
+            } else if (mask(treeOp, Enumeration.TreeOp.Children.ordinal())) {
                 final Member[] children =
-                        schemaReader.getMemberChildren(member);
+                    schemaReader.getMemberChildren(member);
                 for (Member child : children) {
                     populateMember(schemaReader, catalogName,
                         cube, child,
-                        Enumeration.TreeOp.Self.ordinal, rows);
+                        Enumeration.TreeOp.Self.ordinal(), rows);
                 }
             }
             // Visit node's ancestors or its immediate parent, but not both.
-            if (mask(treeOp, Enumeration.TreeOp.Ancestors.ordinal)) {
+            if (mask(treeOp, Enumeration.TreeOp.Ancestors.ordinal())) {
                 final Member parent = schemaReader.getMemberParent(member);
                 if (parent != null) {
                     populateMember(schemaReader, catalogName,
-                            cube, parent,
-                        Enumeration.TreeOp.Self.ordinal |
-                        Enumeration.TreeOp.Ancestors.ordinal, rows);
+                        cube, parent,
+                        Enumeration.TreeOp.Self.ordinal() |
+                            Enumeration.TreeOp.Ancestors.ordinal(), rows);
                 }
-            } else if (mask(treeOp, Enumeration.TreeOp.Parent.ordinal)) {
+            } else if (mask(treeOp, Enumeration.TreeOp.Parent.ordinal())) {
                 final Member parent = schemaReader.getMemberParent(member);
                 if (parent != null) {
                     populateMember(schemaReader, catalogName,
-                            cube, parent,
-                        Enumeration.TreeOp.Self.ordinal, rows);
+                        cube, parent,
+                        Enumeration.TreeOp.Self.ordinal(), rows);
                 }
             }
         }
@@ -5497,8 +5475,8 @@ boolean restriction, boolean nullable, String description)
             final String catalogName,
             Cube cube, List<Row> rows) {
 
-            String memberUniqueName = 
-                            getRestrictionValueAsString(MemberUniqueName);
+            String memberUniqueName =
+                getRestrictionValueAsString(MemberUniqueName);
             if (memberUniqueName == null) {
                 // The query specified two or more unique names
                 // which means that nothing will match.
@@ -5507,7 +5485,7 @@ boolean restriction, boolean nullable, String description)
             final String[] nameParts = Util.explode(memberUniqueName);
 
             Member member = schemaReader.getMemberByUniqueName(
-                                nameParts, false);
+                nameParts, false);
 
             if (member == null) {
                 return;
@@ -5518,12 +5496,12 @@ boolean restriction, boolean nullable, String description)
                     return;
                 }
                 populateMember(schemaReader, catalogName,
-                            cube, member, treeOp, rows);
+                    cube, member, treeOp, rows);
             } else {
                 outputMember(schemaReader, member, catalogName, cube, rows);
             }
         }
-         
+
         private void outputMember(
             final SchemaReader schemaReader,
             Member member,
@@ -5559,15 +5537,15 @@ boolean restriction, boolean nullable, String description)
             row.set(MemberOrdinal.name, member.getOrdinal());
             row.set(MemberName.name, member.getName());
             row.set(MemberUniqueName.name, member.getUniqueName());
-            row.set(MemberType.name, member.getMemberType());
+            row.set(MemberType.name, member.getMemberType().ordinal());
             //row.set(MemberGuid.name, "");
             row.set(MemberCaption.name, member.getCaption());
-            row.set(ChildrenCardinality.name, 
+            row.set(ChildrenCardinality.name,
                 member.getPropertyValue(Property.CHILDREN_CARDINALITY.name));
             row.set(ChildrenCardinality.name, 100);
 
-            row.set(ParentLevel.name, 
-                (member.getParentMember() == null) 
+            row.set(ParentLevel.name,
+                (member.getParentMember() == null)
                     ? 0 : member.getParentMember().getDepth());
 
             String parentUniqueName = member.getParentUniqueName();
@@ -5583,8 +5561,8 @@ boolean restriction, boolean nullable, String description)
             addRow(row, rows);
         }
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -5713,55 +5691,16 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
 
     static class MdschemaSetsRowset extends Rowset {
         MdschemaSetsRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(MDSCHEMA_SETS, request, handler);
         }
 
-        private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, true, null);
-        private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
-        private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
-        private static final Column SetName = new Column("SET_NAME", Type.String, null, true, false, null);
-        private static final Column SetCaption = new Column("SET_CAPTION", Type.String, null, true, true, null);
+        private static final Column CatalogName = new Column("CATALOG_NAME", Type.string, null, true, true, null);
+        private static final Column SchemaName = new Column("SCHEMA_NAME", Type.string, null, true, true, null);
+        private static final Column CubeName = new Column("CUBE_NAME", Type.string, null, true, false, null);
+        private static final Column SetName = new Column("SET_NAME", Type.string, null, true, false, null);
+        private static final Column SetCaption = new Column("SET_CAPTION", Type.string, null, true, true, null);
         private static final Column Scope = new Column("SCOPE", Type.Integer, null, true, false, null);
-        private static final Column Description = new Column("DESCRIPTION", Type.String, null, false, true, "A human-readable description of the measure. ");
-        /*
-         * http://msdn2.microsoft.com/en-us/library/ms126290(SQL.90).aspx
-         * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapproperties_rowset.asp
-         *
-         * restrictions
-         *    CATALOG_NAME Optional.
-         *    SCHEMA_NAME Optional.
-         *    CUBE_NAME Optional.
-         *    SET_NAME Optional.
-         *    SCOPE Optional.
-         *    HIERARCHY_UNIQUE_NAME Optional.
-         *    CUBE_SOURCE Optional.
-         *        Note: Only one hierarchy can be included, and only those named
-         *        sets whose hierarchies exactly match the restriction are
-         *        returned.
-         *
-         * Not supported
-         *    EXPRESSION
-         *    DIMENSIONS
-         *    SET_DISPLAY_FOLDER
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_SETS", MDSCHEMA_SETS, null,
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                    SetName,
-                    Scope,
-                },
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                }) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new MdschemaSetsRowset(request, handler);
-            }
-        };
+        private static final Column Description = new Column("DESCRIPTION", Type.string, null, false, true, "A human-readable description of the measure. ");
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             throw new XmlaException(
@@ -5779,7 +5718,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private final RestrictionTest hierarchyUniqueNameRT;
         private final RestrictionTest propertyNameRT;
         MdschemaPropertiesRowset(XmlaRequest request, XmlaHandler handler) {
-            super(definition, request, handler);
+            super(MDSCHEMA_PROPERTIES, request, handler);
             schemaNameRT = getRestrictionTest(SchemaName);
             cubeNameRT = getRestrictionTest(CubeName);
             dimensionUniqueNameRT = getRestrictionTest(DimensionUniqueName);
@@ -5797,7 +5736,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -5805,7 +5744,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -5813,7 +5752,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5821,7 +5760,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column DimensionUniqueName =
             new Column(
                 "DIMENSION_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5829,7 +5768,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column HierarchyUniqueName =
             new Column(
                 "HIERARCHY_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5837,7 +5776,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column LevelUniqueName =
             new Column(
                 "LEVEL_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5846,7 +5785,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column MemberUniqueName =
             new Column(
                 "MEMBER_UNIQUE_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -5854,7 +5793,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column PropertyName =
             new Column(
                 "PROPERTY_NAME",
-                Type.String,
+                Type.string,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5870,7 +5809,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column PropertyCaption =
             new Column(
                 "PROPERTY_CAPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -5894,88 +5833,18 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.String,
+                Type.string,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
                 "A human-readable description of the measure. ");
-        /*
-         * http://msdn2.microsoft.com/en-us/library/ms126309(SQL.90).aspx
-         * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/oledb/htm/olapproperties_rowset.asp
-         *
-         * restrictions
-         *    CATALOG_NAME Mandatory
-         *    SCHEMA_NAME Optional
-         *    CUBE_NAME Optional
-         *    DIMENSION_UNIQUE_NAME Optional
-         *    HIERARCHY_UNIQUE_NAME Optional
-         *    LEVEL_UNIQUE_NAME Optional
-         *
-         *    MEMBER_UNIQUE_NAME Optional
-         *    PROPERTY_NAME Optional
-         *    PROPERTY_TYPE Optional
-         *    PROPERTY_CONTENT_TYPE
-         *       (Optional) A default restriction is in place on MDPROP_MEMBER
-         *       OR MDPROP_CELL.
-         *    PROPERTY_ORIGIN
-         *       (Optional) A default restriction is in place on MD_USER_DEFINED
-         *       OR MD_SYSTEM_ENABLED
-         *    CUBE_SOURCE
-         *       (Optional) A bitmap with one of the following valid values:
-         *       1 CUBE
-         *       2 DIMENSION
-         *       Default restriction is a value of 1.
-         *    PROPERTY_VISIBILITY
-         *       (Optional) A bitmap with one of the following valid values:
-         *       1 Visible
-         *       2 Not visible
-         *       Default restriction is a value of 1.
-         *
-         * Not supported
-         *    PROPERTY_ORIGIN
-         *    CUBE_SOURCE
-         *    PROPERTY_VISIBILITY
-         *    CHARACTER_MAXIMUM_LENGTH
-         *    CHARACTER_OCTET_LENGTH
-         *    NUMERIC_PRECISION
-         *    NUMERIC_SCALE
-         *    DESCRIPTION
-         *    SQL_COLUMN_NAME
-         *    LANGUAGE
-         *    PROPERTY_ATTRIBUTE_HIERARCHY_NAME
-         *    PROPERTY_CARDINALITY
-         *    MIME_TYPE
-         *    PROPERTY_IS_VISIBLE
-         */
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_PROPERTIES", MDSCHEMA_PROPERTIES, null,
-                new Column[] {
-                    CatalogName,
-                    SchemaName,
-                    CubeName,
-                    DimensionUniqueName,
-                    HierarchyUniqueName,
-                    LevelUniqueName,
-                    MemberUniqueName,
-                    PropertyName,
-                    PropertyCaption,
-                    PropertyType,
-                    DataType,
-                    PropertyContentType,
-                    Description
-                },
-                null /* not sorted */) {
-            public Rowset getRowset(XmlaRequest request, XmlaHandler handler) {
-                return new MdschemaPropertiesRowset(request, handler);
-            }
-        };
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
-            DataSourcesConfig.DataSource ds = 
+            DataSourcesConfig.DataSource ds =
                 handler.getDataSource(request);
             String roleStr = request.getRole();
-            DataSourcesConfig.Catalog[] catalogs = 
-                    handler.getCatalogs(request, ds);
+            DataSourcesConfig.Catalog[] catalogs =
+                handler.getCatalogs(request, ds);
 
             for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
                 if (dsCatalog == null || dsCatalog.definition == null) {
@@ -5994,11 +5863,11 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
                 }
             }
         }
-        protected void populateCatalog(Connection connection, 
-                Role role, 
-                String catalogName, 
-                List<Row> rows)
-                throws XmlaException {
+        protected void populateCatalog(Connection connection,
+            Role role,
+            String catalogName,
+            List<Row> rows)
+            throws XmlaException {
 
             for (Cube cube : sortedCubes(connection.getSchema())) {
                 if (cubeNameRT.passes(cube.getName())) {
@@ -6009,14 +5878,14 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         }
 
         protected void populateCube(SchemaReader schemaReader,
-                String catalogName, 
-                Cube cube, 
-                List<Row> rows)
-                throws XmlaException {
+            String catalogName,
+            Cube cube,
+            List<Row> rows)
+            throws XmlaException {
             if (isRestricted(LevelUniqueName)) {
                 // Note: If the LEVEL_UNIQUE_NAME has been specified, then
                 // the dimension and hierarchy are specified implicitly.
-                String levelUniqueName = 
+                String levelUniqueName =
                     getRestrictionValueAsString(LevelUniqueName);
                 if (levelUniqueName == null) {
                     // The query specified two or more unique names
@@ -6038,7 +5907,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
                 }
 
             } else {
-                for (Dimension dimension : sortedDimensions(cube)) {
+                for (Dimension dimension : cube.getDimensions()) {
                     String uniqueName = dimension.getUniqueName();
                     if (dimensionUniqueNameRT.passes(uniqueName)) {
                         populateDimension(schemaReader, catalogName,
@@ -6113,7 +5982,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
             row.set(PropertyContentType.name, MD_PROPTYPE_REGULAR);
             row.set(PropertyCaption.name, property.getCaption());
             DBType dbType = getDBTypeFromProperty(property);
-            row.set(DataType.name, dbType.getOrdinal());
+            row.set(DataType.name, dbType.userOrdinal);
 
             String desc = cube.getName() +
                 " Cube - " +
@@ -6130,8 +5999,8 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
 
 
         protected void setProperty(PropertyDefinition propertyDef, String value) {
-            switch (propertyDef.ordinal) {
-            case PropertyDefinition.Content_ORDINAL:
+            switch (propertyDef) {
+            case Content:
                 break;
             default:
                 super.setProperty(propertyDef, value);
@@ -6182,21 +6051,6 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
             }
         );
         return cubeList;
-    }
-
-    static List<Dimension> sortedDimensions(Cube cube) {
-        final Dimension[] dimensions = cube.getDimensions();
-        List<Dimension> dimensionList = true ?
-            Arrays.asList(dimensions) :
-            sortArray(
-                dimensions,
-                new Comparator<Dimension>() {
-                    public int compare(Dimension o1, Dimension o2) {
-                        return o1.getName().compareTo(o2.getName());
-                    }
-                }
-            );
-        return dimensionList;
     }
 }
 

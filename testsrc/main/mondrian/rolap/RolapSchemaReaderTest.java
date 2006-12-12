@@ -30,7 +30,7 @@ public class RolapSchemaReaderTest extends TestCase {
                 Util.parseConnectString(MondrianProperties
                         .instance().TestConnectString.get());
 
-        properties.put(RolapConnectionProperties.Role, "No HR Cube");
+        properties.put(RolapConnectionProperties.Role.name(), "No HR Cube");
 
         Connection connection = DriverManager.getConnection(properties, null, true);
 

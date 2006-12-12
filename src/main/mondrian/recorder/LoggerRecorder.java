@@ -28,7 +28,7 @@ public class LoggerRecorder extends AbstractRecorder {
     protected void recordMessage(
             final String msg,
             final Object info,
-            final int msgType) {
+            final MsgType msgType) {
         String context = getContext();
         logMessage(context, msg, msgType, logger);
     }

@@ -134,9 +134,7 @@ public class StandAlone {
 
         if (numSlicers > 0 && outputResults) {
             System.out.print("Slicers: {");
-            for (int idx = 0; idx < slicerpositions.length; idx++) {
-                Position pos = slicerpositions[idx];
-
+            for (Position pos : slicerpositions) {
                 printMembers(pos);
             }
 
@@ -249,9 +247,7 @@ public class StandAlone {
         Member[] members = pos.members;
         boolean needComma = false;
 
-        for (int midx = 0; midx < members.length; midx++) {
-            Member member = members[midx];
-
+        for (Member member : members) {
             if (needComma) {
                 System.out.print(',');
             }
@@ -260,7 +256,7 @@ public class StandAlone {
             System.out.print(member.getUniqueName());
 
             if (printMemberProps) {
-                Property[] props =  member.getProperties();
+                Property[] props = member.getProperties();
 
                 if (props.length > 0) {
                     System.out.print(" {");
@@ -270,7 +266,8 @@ public class StandAlone {
                         }
                         Property prop = props[idx];
 
-                        System.out.print(prop.getName() + ": " + member.getPropertyValue(prop.getName()));
+                        System.out.print(prop.getName() + ": " +
+                            member.getPropertyValue(prop.getName()));
 
                     }
                     System.out.print("}");
@@ -352,21 +349,21 @@ public class StandAlone {
             runners[idx] = new QueryRunner(idx, seconds, randomQueries);
         }
 
-        for (int idx = 0; idx < runners.length; idx++) {
-            runners[idx].start();
+        for (QueryRunner runner : runners) {
+            runner.start();
         }
 
-        for (int idx = 0; idx < runners.length; idx++) {
+        for (QueryRunner runner : runners) {
             try {
-                runners[idx].join();
+                runner.join();
             }
             catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
 
-        for (int idx = 0; idx < runners.length; idx++) {
-            runners[idx].report(System.out);
+        for (QueryRunner runner : runners) {
+            runner.report(System.out);
         }
     }
 
@@ -393,21 +390,21 @@ public class StandAlone {
 
         Dimension[] dims = cube.getDimensions();
 
-        for (int idx = 0; idx < dims.length; idx++) {
-            printDimension(dims[idx]);
+        for (Dimension dim : dims) {
+            printDimension(dim);
         }
     }
 
     private static void printDimension(Dimension dim) {
         DimensionType dimensionType = dim.getDimensionType();
         System.out.println("\tDimension " + dim.getName()
-            + " type: " + dimensionType.name);
+            + " type: " + dimensionType.name());
 
         System.out.println("\t    Description: " + dim.getDescription());
         Hierarchy[] hierarchies = dim.getHierarchies();
 
-        for (int idx = 0; idx < hierarchies.length; idx++) {
-            printHierarchy(1, hierarchies[idx]);
+        for (Hierarchy hierarchy : hierarchies) {
+            printHierarchy(1, hierarchy);
         }
 
     }
@@ -422,8 +419,8 @@ public class StandAlone {
 
         Level[] levels = hierarchy.getLevels();
 
-        for (int idx = 0; idx < levels.length; idx++) {
-            printLevel(indent + 1, levels[idx]);
+        for (Level level : levels) {
+            printLevel(indent + 1, level);
         }
     }
 

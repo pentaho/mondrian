@@ -133,7 +133,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
             // Filter out children which are invisible because of
             // access-control.
             if (hierarchyAccess != null) {
-                final int access = hierarchyAccess.getAccess(member);
+                final Access access = hierarchyAccess.getAccess(member);
                 if (access == Access.NONE) {
                     continue;
                 }
@@ -163,7 +163,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
             return false;
         }
         if (hierarchyAccess != null) {
-            final int access = hierarchyAccess.getAccess(member);
+            final Access access = hierarchyAccess.getAccess(member);
             return access != Access.NONE;
         }
         return true;

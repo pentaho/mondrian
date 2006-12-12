@@ -2079,7 +2079,7 @@ assert is not true.
     }
 
     public OlapElement lookupChild(
-        SchemaReader schemaReader, String s, int matchType)
+        SchemaReader schemaReader, String s, MatchType matchType)
     {
         // Note that non-exact matches aren't supported at this level,
         // so the matchType is ignored
@@ -2325,7 +2325,7 @@ assert is not true.
 
         public Member getMemberByUniqueName(
                 String[] uniqueNameParts, boolean failIfNotFound,
-                int matchType)
+                MatchType matchType)
         {
             Member member = (Member) lookupCompound(
                                         RolapCube.this, uniqueNameParts,

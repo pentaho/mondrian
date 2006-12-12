@@ -43,7 +43,7 @@ class RolapProperty extends Property {
      */
     RolapProperty(
             String name,
-            int type,
+            Datatype type,
             MondrianDef.Expression exp,
             String formatterDef,
             String caption) {
@@ -57,9 +57,10 @@ class RolapProperty extends Property {
         if (!Util.isEmpty(formatterDef)) {
             // there is a special property formatter class
             try {
-                Class clazz = Class.forName(formatterDef);
-                Constructor ctor = clazz.getConstructor(new Class[0]);
-                return (PropertyFormatter) ctor.newInstance(new Object[0]);
+                Class<PropertyFormatter> clazz =
+                    (Class<PropertyFormatter>) Class.forName(formatterDef);
+                Constructor<PropertyFormatter> ctor = clazz.getConstructor();
+                return ctor.newInstance();
             } catch (Exception e) {
                 StringBuilder buf = new StringBuilder(64);
                 buf.append("RolapProperty.makePropertyFormatter: ");
@@ -72,6 +73,7 @@ class RolapProperty extends Property {
         }
         return null;
     }
+
     MondrianDef.Expression getExp() {
         return exp;
     }
@@ -84,8 +86,9 @@ class RolapProperty extends Property {
      * @return Returns the caption.
      */
     public String getCaption() {
-        if (caption == null)
+        if (caption == null) {
             return getName();
+        }
         return caption;
     }
 }

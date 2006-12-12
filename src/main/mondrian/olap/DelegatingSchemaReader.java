@@ -70,7 +70,7 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     public Member getMemberByUniqueName(
             String[] uniqueNameParts,
             boolean failIfNotFound,
-            int matchType)
+            MatchType matchType)
     {
         return schemaReader.getMemberByUniqueName(
                 uniqueNameParts, failIfNotFound, matchType);
@@ -86,7 +86,7 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
 
     public OlapElement lookupCompound(
             OlapElement parent, String[] names,
-            boolean failIfNotFound, int category, int matchType) {
+            boolean failIfNotFound, int category, MatchType matchType) {
         return schemaReader.lookupCompound(
                 parent, names, failIfNotFound, category, matchType);
     }
@@ -103,7 +103,7 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
             Level level,
             Member startMember,
             Member endMember,
-            List list) {
+            List<Member> list) {
         schemaReader.getMemberRange(level, startMember, endMember, list);
     }
 
@@ -120,7 +120,7 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     }
 
     public OlapElement getElementChild(
-        OlapElement parent, String name, int matchType)
+        OlapElement parent, String name, MatchType matchType)
     {
         return schemaReader.getElementChild(parent, name, matchType);
     }
@@ -189,7 +189,7 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     }
 
     public Member lookupMemberChildByName(
-        Member member, String memberName, int matchType)
+        Member member, String memberName, MatchType matchType)
     {
         return schemaReader.lookupMemberChildByName(
             member, memberName, matchType);

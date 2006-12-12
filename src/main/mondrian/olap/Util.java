@@ -28,6 +28,8 @@ import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
@@ -68,6 +70,15 @@ public class Util extends XOMUtil {
      */
     private static final Random metaRandom =
             createRandom(MondrianProperties.instance().TestSeed.get());
+
+    /**
+     * Whether we are running a version of Java before 1.5.
+     *
+     * <p>If this variable is true, we will be running retroweaver. Retroweaver
+     * has some problems involving {@link java.util.EnumSet}.
+     */
+    private static final boolean PreJdk15 =
+        System.getProperty("java.version").startsWith("1.4");
 
     public static boolean isNull(Object o) {
         return o == null || o == nullValue;
@@ -250,7 +261,7 @@ public class Util extends XOMUtil {
      * Replaces all occurrences of a string in a buffer with another.
      *
      * @param buf String buffer to act on
-     * @param start
+     * @param start Ordinal within <code>find</code> to start searching
      * @param find String to find
      * @param replace String to replace it with
      * @return The string buffer
@@ -259,7 +270,6 @@ public class Util extends XOMUtil {
             StringBuilder buf,
             int start,
             String find, String replace) {
-
         // Search and replace from the end towards the start, to avoid O(n ^ 2)
         // copying if the string occurs very commonly.
         int findLength = find.length();
@@ -382,8 +392,8 @@ public class Util extends XOMUtil {
      *   "Product Department", "Produce"}
      * @param failIfNotFound If the element is not found, determines whether
      *   to return null or throw an error
-     * @param category Type of returned element, a {@link Category} value;
-     *   {@link Category#Unknown} if it doesn't matter.
+     * @param category Type of returned element, a {@link mondrian.olap.Category} value;
+     *   {@link mondrian.olap.Category#Unknown} if it doesn't matter.
      * @pre parent != null
      * @post !(failIfNotFound && return == null)
      * @see #explode
@@ -394,7 +404,7 @@ public class Util extends XOMUtil {
         String[] names,
         boolean failIfNotFound,
         int category,
-        int matchType)
+        MatchType matchType)
     {
 
         Util.assertPrecondition(parent != null, "parent != null");
@@ -684,10 +694,11 @@ public class Util extends XOMUtil {
      * @param memberName
      * @return Member, or null if not found
      */
-    public static Member lookupHierarchyRootMember(SchemaReader reader,
-                                                   Hierarchy hierarchy,
-                                                   String memberName,
-                                                   int matchType)
+    public static Member lookupHierarchyRootMember(
+        SchemaReader reader,
+        Hierarchy hierarchy,
+        String memberName,
+        MatchType matchType)
     {
         // Lookup member at first level.
         Member[] rootMembers = reader.getHierarchyRootMembers(hierarchy);
@@ -942,6 +953,18 @@ public class Util extends XOMUtil {
      */
     public static RuntimeException needToImplement(Object o) {
         throw new UnsupportedOperationException("need to implement " + o);
+    }
+
+    /**
+     * Returns an exception indicating that we didn't expect to find this value
+     * here.
+     */
+    public static <T extends Enum<T>> RuntimeException badValue(
+        Enum<T> anEnum)
+    {
+        return Util.newInternal("Was not expecting value '" + anEnum +
+            "' for enumeration '" + anEnum.getDeclaringClass().getName() +
+            "' in this context");
     }
 
     public static class ErrorCellValue {
@@ -1506,7 +1529,7 @@ public class Util extends XOMUtil {
      * Read a Reader until EOF and return as String.
      * Note: this ought to be in a Utility class.
      *
-     * @param rdr  Reader to read.
+     * @param rdr  Reader to Read.
      * @param bufferSize size of buffer to allocate for reading.
      * @return content of Reader as String or null if Reader was empty.
      * @throws IOException
@@ -1643,6 +1666,7 @@ public class Util extends XOMUtil {
     public static String printMemory() {
         return printMemory(null);
     }
+
     public static String printMemory(String msg) {
         final Runtime rt = Runtime.getRuntime();
         final long freeMemory = rt.freeMemory();
@@ -1673,7 +1697,123 @@ public class Util extends XOMUtil {
         return buf.toString();
     }
 
+    /**
+     * Returns whether an enumeration value is a valid not-null value of a given 
+     * enumeration class.
+     *
+     * @param clazz Enumeration class
+     * @param e Enumeration value
+     * @return Whether t is a value of enum clazz
+     */
+    public static <E extends Enum<E>> boolean isValid(Class<E> clazz, E e) {
+        E[] enumConstants = clazz.getEnumConstants();
+        for (E enumConstant : enumConstants) {
+            if (e == enumConstant) {
+                return true;
+            }
+        }
+        return false;
+    }
 
+    /**
+     * Looks up an enumeration by name, returns null if not valid.
+     */
+    public static <E extends Enum<E>> E lookup(Class<E> clazz, String name) {
+        try {
+            return Enum.valueOf(clazz, name);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Equivalent to {@link java.util.EnumSet#of(Enum, Enum[])} on JDK 1.5 or
+     * later. Otherwise, returns an ordinary set.
+     *
+     * @param first an element that the set is to contain initially
+     * @param rest the remaining elements the set is to contain initially
+     * @throws NullPointerException if any of the specified elements are null,
+     *     or if <tt>rest</tt> is null
+     * @return an enum set initially containing the specified elements
+     */
+    public static <E extends Enum<E>> Set<E> enumSetOf(E first, E... rest) {
+        if (PreJdk15) {
+            HashSet<E> set = new HashSet<E>();
+            set.add(first);
+            for (E e : rest) {
+                set.add(e);
+            }
+            return set;
+        } else {
+            try {
+                Class clazz = Class.forName("java.util.EnumSet");
+                Method method = clazz.getMethod("of", Enum.class, Enum[].class);
+                return (Set<E>) method.invoke(null, first, rest);
+            } catch (ClassNotFoundException e) {
+                throw Util.newError(e, "while invoking EnumSet.of()");
+            } catch (NoSuchMethodException e) {
+                throw Util.newError(e, "while invoking EnumSet.of()");
+            } catch (IllegalAccessException e) {
+                throw Util.newError(e, "while invoking EnumSet.of()");
+            } catch (InvocationTargetException e) {
+                throw Util.newError(e, "while invoking EnumSet.of()");
+            }
+        }
+    }
+
+    /**
+     * Equivalent to {@link java.util.EnumSet#noneOf(Class)} on JDK 1.5 or later.
+     * Otherwise, returns an ordinary set.
+
+     * @param elementType the class object of the element type for this enum
+     *     set
+     */
+    public static <E extends Enum<E>> Set<E> enumSetNoneOf(Class<E> elementType) {
+        if (PreJdk15) {
+            return new HashSet<E>();
+        } else {
+            try {
+                Class classEnumSet = Class.forName("java.util.EnumSet");
+                Method method = classEnumSet.getMethod("noneOf", Class.class);
+                return (Set<E>) method.invoke(null, elementType);
+            } catch (ClassNotFoundException e) {
+                throw Util.newError(e, "while invoking EnumSet.noneOf()");
+            } catch (NoSuchMethodException e) {
+                throw Util.newError(e, "while invoking EnumSet.noneOf()");
+            } catch (IllegalAccessException e) {
+                throw Util.newError(e, "while invoking EnumSet.noneOf()");
+            } catch (InvocationTargetException e) {
+                throw Util.newError(e, "while invoking EnumSet.noneOf()");
+            }
+        }
+    }
+
+    /**
+     * Equivalent to {@link java.util.EnumSet#allOf(Class)} on JDK 1.5 or later.
+     * Otherwise, returns an ordinary set.
+
+     * @param elementType the class object of the element type for this enum
+     *     set
+     */
+    public static <E extends Enum<E>> Set<E> enumSetAllOf(Class<E> elementType) {
+        if (PreJdk15) {
+            return new HashSet<E>(Arrays.asList(elementType.getEnumConstants()));
+        } else {
+            try {
+                Class classEnumSet = Class.forName("java.util.EnumSet");
+                Method method = classEnumSet.getMethod("allOf", Class.class);
+                return (Set<E>) method.invoke(null, elementType);
+            } catch (ClassNotFoundException e) {
+                throw Util.newError(e, "while invoking EnumSet.noneOf()");
+            } catch (NoSuchMethodException e) {
+                throw Util.newError(e, "while invoking EnumSet.noneOf()");
+            } catch (IllegalAccessException e) {
+                throw Util.newError(e, "while invoking EnumSet.noneOf()");
+            } catch (InvocationTargetException e) {
+                throw Util.newError(e, "while invoking EnumSet.noneOf()");
+            }
+        }
+    }
 }
 
 // End Util.java

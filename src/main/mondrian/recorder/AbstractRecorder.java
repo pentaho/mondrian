@@ -28,7 +28,7 @@ public abstract class AbstractRecorder implements MessageRecorder {
     public static void logMessage(
             final String context,
             final String msg,
-            final int msgType,
+            final MsgType msgType,
             final org.apache.log4j.Logger logger) {
         StringBuilder buf = new StringBuilder(64);
         buf.append(context);
@@ -36,16 +36,16 @@ public abstract class AbstractRecorder implements MessageRecorder {
         buf.append(msg);
 
         switch (msgType) {
-        case INFO_MSG_TYPE :
+        case INFO:
             logger.info(buf.toString());
             break;
-        case WARN_MSG_TYPE :
+        case WARN:
             logger.warn(buf.toString());
             break;
-        case ERROR_MSG_TYPE :
+        case ERROR:
             logger.error(buf.toString());
             break;
-        default :
+        default:
             logger.warn(
                     "Unknown message type enum \"" +
                     msgType +
@@ -55,9 +55,11 @@ public abstract class AbstractRecorder implements MessageRecorder {
         }
     }
 
-    public static final int INFO_MSG_TYPE       = 1;
-    public static final int WARN_MSG_TYPE       = 2;
-    public static final int ERROR_MSG_TYPE      = 3;
+    enum MsgType {
+        INFO,
+        WARN,
+        ERROR
+    }
 
     public static final int DEFAULT_MSG_LIMIT = 10;
 
@@ -172,7 +174,7 @@ public abstract class AbstractRecorder implements MessageRecorder {
     public void reportError(final String msg, final Object info)
             throws RecorderException {
         errorMsgCount++;
-        recordMessage(msg, info, ERROR_MSG_TYPE);
+        recordMessage(msg, info, MsgType.ERROR);
 
         if (errorMsgCount >= errorMsgLimit) {
             final String errorMsg =
@@ -188,7 +190,7 @@ public abstract class AbstractRecorder implements MessageRecorder {
     }
     public void reportWarning(final String msg, final Object info) {
         warningMsgCount++;
-        recordMessage(msg, info, WARN_MSG_TYPE);
+        recordMessage(msg, info, MsgType.WARN);
     }
 
     public void reportInfo(final String msg) {
@@ -196,7 +198,7 @@ public abstract class AbstractRecorder implements MessageRecorder {
     }
     public void reportInfo(final String msg, final Object info) {
         infoMsgCount++;
-        recordMessage(msg, info, INFO_MSG_TYPE);
+        recordMessage(msg, info, MsgType.INFO);
     }
 
     /**
@@ -211,7 +213,7 @@ public abstract class AbstractRecorder implements MessageRecorder {
     protected abstract void recordMessage(
             String msg,
             Object info,
-            int msgType);
+            MsgType msgType);
 }
 
 // End AbstractRecorder.java

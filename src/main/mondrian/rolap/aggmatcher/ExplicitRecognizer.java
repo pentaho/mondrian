@@ -89,7 +89,7 @@ class ExplicitRecognizer extends Recognizer {
             // If so, make the aggregate measure usage for that column.
             for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
                 // if marked as ignore, then do not consider
-                if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
+                if (aggColumn.hasUsage(JdbcSchema.UsageType.IGNORE)) {
                     continue;
                 }
 
@@ -121,14 +121,13 @@ class ExplicitRecognizer extends Recognizer {
             // that have a sibling foreign key usage. These can be automagically
             // generated for the aggregate table as long as it still has the
             // foreign key.
-            for (Iterator it =
-                     dbFactTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
+            for (Iterator<JdbcSchema.Table.Column.Usage> it =
+                     dbFactTable.getColumnUsages(JdbcSchema.UsageType.MEASURE);
                  it.hasNext(); ) {
-                JdbcSchema.Table.Column.Usage factUsage =
-                    (JdbcSchema.Table.Column.Usage) it.next();
+                JdbcSchema.Table.Column.Usage factUsage = it.next();
                 JdbcSchema.Table.Column factColumn = factUsage.getColumn();
 
-                if (factColumn.hasUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE)) {
+                if (factColumn.hasUsage(JdbcSchema.UsageType.FOREIGN_KEY)) {
                     // What we've got here is a measure based upon a foreign key
                     String aggFK =
                         getTableDef().getAggregateFK(factColumn.getName());
@@ -173,7 +172,7 @@ class ExplicitRecognizer extends Recognizer {
         RolapStar.Measure rm = measure.getRolapStarMeasure();
 
         JdbcSchema.Table.Column.Usage aggUsage =
-            aggColumn.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
+            aggColumn.newUsage(JdbcSchema.UsageType.MEASURE);
 
         aggUsage.setSymbolicName(measure.getSymbolicName());
         RolapAggregator ra = (factAgg == null) 
@@ -206,7 +205,7 @@ class ExplicitRecognizer extends Recognizer {
         int matchCount = 0;
         for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
             // if marked as ignore, then do not consider
-            if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
+            if (aggColumn.hasUsage(JdbcSchema.UsageType.IGNORE)) {
                 continue;
             }
 

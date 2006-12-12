@@ -267,7 +267,7 @@ public class AggTableManager {
 
 
                 if (makeAggStar) {
-                    dbTable.setTableUsage(JdbcSchema.AGG_TABLE_USAGE);
+                    dbTable.setTableUsageType(JdbcSchema.TableUsageType.AGG);
                     String alias = null;
                     dbTable.table = new MondrianDef.Table(schema,
                                                           name,
@@ -450,7 +450,7 @@ public class AggTableManager {
             // load columns
             dbFactTable.load();
 
-            dbFactTable.setTableUsage(JdbcSchema.FACT_TABLE_USAGE);
+            dbFactTable.setTableUsageType(JdbcSchema.TableUsageType.FACT);
 
             MondrianDef.Relation relation = star.getFactTable().getRelation();
             String schema = null;
@@ -471,8 +471,7 @@ public class AggTableManager {
                     if (rc instanceof RolapStar.Measure) {
                         RolapStar.Measure rm = (RolapStar.Measure) rc;
                         JdbcSchema.Table.Column.Usage usage =
-                            factColumn
-                                .newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
+                            factColumn.newUsage(JdbcSchema.UsageType.MEASURE);
                         usage.setSymbolicName(rm.getName());
 
                         usage.setAggregator(rm.getAggregator());
@@ -485,8 +484,7 @@ public class AggTableManager {
                     star.getFactTable().findTableWithLeftJoinCondition(cname);
                 if (rTable != null) {
                     JdbcSchema.Table.Column.Usage usage =
-                        factColumn
-                            .newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
+                        factColumn.newUsage(JdbcSchema.UsageType.FOREIGN_KEY);
                     usage.setSymbolicName("FOREIGN_KEY");
                     usage.rTable = rTable;
                 } else {
@@ -499,8 +497,7 @@ public class AggTableManager {
                         // (not necessarily) a measure but is also not
                         // a foreign key to an external dimension table.
                         JdbcSchema.Table.Column.Usage usage =
-                            factColumn.newUsage(
-                                JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
+                            factColumn.newUsage(JdbcSchema.UsageType.FOREIGN_KEY);
                         usage.setSymbolicName("FOREIGN_KEY");
                         usage.rColumn = rColumn;
                     }

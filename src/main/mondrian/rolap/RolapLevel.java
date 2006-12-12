@@ -293,8 +293,8 @@ public class RolapLevel extends LevelBase {
             xmlLevel.closure, createProperties(xmlLevel),
             (xmlLevel.uniqueMembers ? UNIQUE : 0),
             xmlLevel.getDatatype(),
-            HideMemberCondition.lookup(xmlLevel.hideMemberIf),
-            LevelType.lookup(xmlLevel.levelType), xmlLevel.approxRowCount);
+            HideMemberCondition.valueOf(xmlLevel.hideMemberIf), 
+            LevelType.valueOf(xmlLevel.levelType), xmlLevel.approxRowCount);
 
         if (!Util.isEmpty(xmlLevel.caption)) {
             setCaption(xmlLevel.caption);
@@ -321,7 +321,7 @@ public class RolapLevel extends LevelBase {
 
         if (nameExp != null) {
             list.add(new RolapProperty(
-                    Property.NAME.name, Property.TYPE_STRING,
+                    Property.NAME.name, Property.Datatype.TYPE_STRING,
                     nameExp, null, null));
         }
         for (int i = 0; i < xmlLevel.properties.length; i++) {
@@ -335,13 +335,13 @@ public class RolapLevel extends LevelBase {
         return list.toArray(new RolapProperty[list.size()]);
     }
 
-    private static int convertPropertyTypeNameToCode(String type) {
+    private static Property.Datatype convertPropertyTypeNameToCode(String type) {
         if (type.equals("String")) {
-            return Property.TYPE_STRING;
+            return Property.Datatype.TYPE_STRING;
         } else if (type.equals("Numeric")) {
-            return Property.TYPE_NUMERIC;
+            return Property.Datatype.TYPE_NUMERIC;
         } else if (type.equals("Boolean")) {
-            return Property.TYPE_BOOLEAN;
+            return Property.Datatype.TYPE_BOOLEAN;
         } else {
             throw Util.newError("Unknown property type '" + type + "'");
         }
@@ -405,36 +405,20 @@ public class RolapLevel extends LevelBase {
     public int getApproxRowCount() {
         return approxRowCount;
     }
+    
     /**
      * Conditions under which a level's members may be hidden (thereby creating
      * a <dfn>ragged hierarchy</dfn>).
      */
-    public static class HideMemberCondition extends EnumeratedValues.BasicValue {
-        private HideMemberCondition(String name, int ordinal) {
-            super(name, ordinal, null);
-        }
-
-        public static final int NeverORDINAL = 0;
+    public enum HideMemberCondition {
         /** A member always appears. */
-        public static final HideMemberCondition Never =
-                new HideMemberCondition("Never", NeverORDINAL);
-        public static final int IfBlankNameORDINAL = 1;
+        Never,
+
         /** A member doesn't appear if its name is null or empty. */
-        public static final HideMemberCondition IfBlankName =
-                new HideMemberCondition("IfBlankName", IfBlankNameORDINAL);
-        public static final int IfParentsNameORDINAL = 2;
+        IfBlankName,
+
         /** A member appears unless its name matches its parent's. */
-        public static final HideMemberCondition IfParentsName =
-                new HideMemberCondition("IfParentsName", IfParentsNameORDINAL);
-        public static final EnumeratedValues enumeration =
-                new EnumeratedValues(
-                        new HideMemberCondition[] {
-                            Never, IfBlankName, IfParentsName
-                        }
-                );
-        public static HideMemberCondition lookup(String s) {
-            return (HideMemberCondition) enumeration.getValue(s, true);
-        }
+        IfParentsName
     }
     
     public OlapElement lookupChild(SchemaReader schemaReader, String name) {
@@ -442,7 +426,7 @@ public class RolapLevel extends LevelBase {
     }
 
     public OlapElement lookupChild(
-        SchemaReader schemaReader, String name, int matchType)
+        SchemaReader schemaReader, String name, MatchType matchType)
     {
         Member[] levelMembers = schemaReader.getLevelMembers(this, true);
         if (levelMembers.length > 0) {

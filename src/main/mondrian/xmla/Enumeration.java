@@ -11,7 +11,8 @@
 */
 package mondrian.xmla;
 
-import mondrian.olap.EnumeratedValues;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Contains inner classes which define enumerations used in XML for Analysis.
@@ -20,158 +21,187 @@ import mondrian.olap.EnumeratedValues;
  * @since May 2, 2003
  * @version $Id$
  */
-class Enumeration extends EnumeratedValues {
+class Enumeration {
     public final String name;
     public final String description;
     public final RowsetDefinition.Type type;
+    private final Class<? extends Enum> clazz;
 
-    public Enumeration(String name, String description,
-            RowsetDefinition.Type type, Value[] values) {
-        super(values);
+    public Enumeration(
+        String name,
+        String description,
+        RowsetDefinition.Type type,
+        Class<? extends Enum> clazz)
+    {
         this.name = name;
         this.description = description;
         this.type = type;
+        this.clazz = clazz;
     }
 
-    public static final class Methods extends BasicValue {
-        public static final Methods discover = new Methods("Discover", 1);
-        public static final Methods execute = new Methods("Execute", 2);
-        public static final Methods discoverAndExecute = new Methods("Discover/Execute", 3);
-
-        private Methods(String name, int ordinal) {
-            super(name, ordinal, null);
-        }
-        public static final Enumeration enumeration = new Enumeration(
-                "Methods",
-                "Set of methods for which a property is applicable",
-                RowsetDefinition.Type.Enumeration,
-                new Methods[] {discover, execute, discoverAndExecute}
-        );
+    public String getName() {
+        return name;
     }
 
-    public static final class Access extends BasicValue {
-        public static final Access read = new Access("Read", 1);
-        public static final Access write = new Access("Write", 2);
-        public static final Access readWrite = new Access("ReadWrite", 3);
-
-        private Access(String name, int ordinal) {
-            super(name, ordinal, null);
+    public String[] getNames() {
+        List<String> names = new ArrayList<String>();
+        for (Enum anEnum : clazz.getEnumConstants()) {
+            names.add(anEnum.name());
         }
+        return names.toArray(new String[names.size()]);
+    }
+
+    public Enum<?> getValue(String valueName, boolean b) {
+        return Enum.valueOf(clazz, valueName);
+    }
+
+    public enum Methods {
+        discover,
+        execute,
+        discoverAndExecute;
+
         public static final Enumeration enumeration = new Enumeration(
+            "Methods",
+            "Set of methods for which a property is applicable",
+            RowsetDefinition.Type.Enumeration,
+            Methods.class);
+    }
+
+    public enum Access implements EnumWithOrdinal {
+        Read(1),
+        Write(2),
+        ReadWrite(3);
+        private final int userOrdinal;
+
+        Access(int userOrdinal) {
+            this.userOrdinal = userOrdinal;
+        }
+
+        public static final Enumeration enumeration =
+            new Enumeration(
                 "Access",
                 "The read/write behavior of a property",
                 RowsetDefinition.Type.Enumeration,
-                new Access[] {read, write, readWrite}
-        );
-    }
+                Access.class);
 
-    public static final class Format extends BasicValue {
-        public static final Format Tabular = new Format("Tabular", 0, "a flat or hierarchical rowset. Similar to the XML RAW format in SQL. The Format property should be set to Tabular for OLE DB for Data Mining commands.");
-        public static final Format Multidimensional = new Format("Multidimensional", 1, "Indicates that the result set will use the MDDataSet format (Execute method only).");
-        public static final Format Native = new Format("Native", 2, "The client does not request a specific format, so the provider may return the format  appropriate to the query. (The actual result type is identified by namespace of the result.)");
-        public Format(String name, int ordinal, String description) {
-            super(name, ordinal, description);
-        }
-        public static final EnumeratedValues enumeration = new EnumeratedValues(
-                new Format[] {Tabular, Multidimensional, Native}
-        );
-
-        public static Format getValue(String name) {
-            return (Format) enumeration.getValue(name, true);
+        public int userOrdinal() {
+            return userOrdinal;
         }
     }
 
-    public static final class AxisFormat extends BasicValue {
-        public AxisFormat(String name, int ordinal, String description) {
-            super(name, ordinal, description);
-        }
-        public static final AxisFormat TupleFormat = new AxisFormat("TupleFormat", 0, "The MDDataSet axis is made up of one or more CrossProduct elements.");
-        public static final AxisFormat ClusterFormat = new AxisFormat("ClusterFormat", 1, "Analysis Services uses the TupleFormat format for this setting.");
-        public static final AxisFormat CustomFormat = new AxisFormat("CustomFormat", 2, "The MDDataSet axis contains one or more Tuple elements.");
-        public static final EnumeratedValues enumeration = new EnumeratedValues(
-                new AxisFormat[] {TupleFormat, ClusterFormat, CustomFormat});
-        public static AxisFormat getValue(String name) {
-            return (AxisFormat) enumeration.getValue(name, true);
-        }
-    }
+    public enum Format implements EnumWithDesc {
+        Tabular("a flat or hierarchical rowset. Similar to the XML RAW format in SQL. The Format property should be set to Tabular for OLE DB for Data Mining commands."),
+        Multidimensional("Indicates that the result set will use the MDDataSet format (Execute method only)."),
+        Native("The client does not request a specific format, so the provider may return the format  appropriate to the query. (The actual result type is identified by namespace of the result.)");
+        private final String description;
 
-    public static class Content extends BasicValue {
-        public static final int NONE_ORDINAL        = 0;
-        public static final int SCHEMA_ORDINAL      = 1;
-        public static final int DATA_ORDINAL        = 2;
-        public static final int SCHEMA_DATA_ORDINAL = 3;
-
-        public static final Content None = new Content("None", NONE_ORDINAL, "none");
-        public static final Content Schema = new Content("Schema", SCHEMA_ORDINAL, "schema");
-        public static final Content Data = new Content("Data", DATA_ORDINAL, "data");
-        public static final Content SchemaData = new Content("SchemaData", SCHEMA_DATA_ORDINAL, "schemadata");
-
-        public Content(String name, int ordinal, String description) {
-            super(name, ordinal, description);
+        Format(String description) {
+            this.description = description;
         }
 
-        public static final EnumeratedValues enumeration = new EnumeratedValues(
-            new Content[] {None, Schema, Data, SchemaData}
-        );
-
-        public static Content getValue(String name) {
-            return (Content) enumeration.getValue(name, true);
+        public String getDescription() {
+            return description;
         }
     }
 
-    public static class MDXSupport extends BasicValue {
-        public static final EnumeratedValues enumeration = new EnumeratedValues();
+    public enum AxisFormat implements EnumWithDesc {
+        TupleFormat("The MDDataSet axis is made up of one or more CrossProduct elements."),
+        ClusterFormat("Analysis Services uses the TupleFormat format for this setting."),
+        CustomFormat("The MDDataSet axis contains one or more Tuple elements.");
+        private final String description;
 
-        public MDXSupport(String name, int ordinal, String description) {
-            super(name, ordinal, description);
+        AxisFormat(String description) {
+            this.description = description;
+        }
+
+        public String getDescription() {
+            return description;
         }
     }
 
-    public static class StateSupport extends BasicValue {
-        public static final EnumeratedValues enumeration = new EnumeratedValues();
-
-        public StateSupport(String name, int ordinal, String description) {
-            super(name, ordinal, description);
-        }
+    public enum Content {
+        None,
+        Schema,
+        Data,
+        SchemaData;
     }
 
-    static class AuthenticationMode extends BasicValue {
-        private AuthenticationMode(String name, int ordinal, String description) {
-            super(name, ordinal, description);
+    enum MDXSupport {
+        Core
+    }
+
+    enum StateSupport {
+        None,
+        Sessions
+    }
+
+    enum AuthenticationMode implements EnumWithDesc {
+        Unauthenticated("no user ID or password needs to be sent."),
+        Authenticated("User ID and Password must be included in the information required for the connection."),
+        Integrated("the data source uses the underlying security to determine authorization, such as Integrated Security provided by Microsoft Internet Information Services (IIS).");
+        private final String description;
+
+        AuthenticationMode(String description) {
+            this.description = description;
         }
-        public static final AuthenticationMode Unauthenticated = new AuthenticationMode("Unauthenticated", 0, "no user ID or password needs to be sent.");
-        public static final AuthenticationMode Authenticated = new AuthenticationMode("Authenticated", 1, "User ID and Password must be included in the information required for the connection.");
-        public static final AuthenticationMode Integrated = new AuthenticationMode("Integrated", 2, "the data source uses the underlying security to determine authorization, such as Integrated Security provided by Microsoft Internet Information Services (IIS).");
+
         public static final Enumeration enumeration = new Enumeration(
                 "AuthenticationMode",
                 "Specification of what type of security mode the data source uses.",
                 RowsetDefinition.Type.EnumString,
-                new AuthenticationMode[] {Unauthenticated, Authenticated, Integrated}
-        );
+                AuthenticationMode.class);
+
+        public String getDescription() {
+            return description;
+        }
     }
 
-    static class ProviderType extends BasicValue {
-        private ProviderType(String name, int ordinal, String description) {
-            super(name, ordinal, description);
+    enum ProviderType implements EnumWithDesc {
+        TDP("tabular data provider."),
+        MDP("multidimensional data provider."),
+        DMP("data mining provider. A DMP provider implements the OLE DB for Data Mining specification.");
+        private final String description;
+
+        private ProviderType(String description) {
+            this.description = description;
         }
-        public static final ProviderType TDP = new ProviderType("TDP", 0, "tabular data provider.");
-        public static final ProviderType MDP = new ProviderType("MDP", 1, "multidimensional data provider.");
-        public static final ProviderType DMP = new ProviderType("DMP", 2, "data mining provider. A DMP provider implements the OLE DB for Data Mining specification.");
+
         public static final Enumeration enumeration = new Enumeration(
                 "ProviderType",
                 "The types of data supported by the provider.",
                 RowsetDefinition.Type.Array,
-                new ProviderType[] {TDP, MDP, DMP}
-        );
+                ProviderType.class);
+
+        public String getDescription() {
+            return description;
+        }
     }
 
-    public static class Literal extends BasicValue {
-        public final String literalName;
-        public final String literalValue;
-        public final String literalInvalidChars;
-        public final String literalInvalidStartingChars;
-        public final int literalMaxLength;
+    enum Literal implements EnumWithDesc {
+        DBLITERAL_CATALOG_NAME(2, null, 24, ".", "0123456789", "A catalog name in a text command."),
+        DBLITERAL_CATALOG_SEPARATOR(3, ".", 0, null, null, null),
+        DBLITERAL_COLUMN_ALIAS(5, null, -1, "'\"[]", "0123456789", null),
+        DBLITERAL_COLUMN_NAME(6, null, -1, ".", "0123456789", null),
+        DBLITERAL_CORRELATION_NAME(7, null, -1, "'\"[]", "0123456789", null),
+        DBLITERAL_CUBE_NAME(21, null, -1, ".", "0123456789", null),
+        DBLITERAL_DIMENSION_NAME(22, null, -1, ".", "0123456789", null),
+        DBLITERAL_HIERARCHY_NAME(23, null, -1, ".", "0123456789", null),
+        DBLITERAL_LEVEL_NAME(24, null, -1, ".", "0123456789", null),
+        DBLITERAL_MEMBER_NAME(25, null, -1, ".", "0123456789", null),
+        DBLITERAL_PROCEDURE_NAME(14, null, -1, ".", "0123456789", null),
+        DBLITERAL_PROPERTY_NAME(26, null, -1, ".", "0123456789", null),
+        DBLITERAL_QUOTE(15, "[", -1, null, null, "The character used in a text command as the opening quote for quoting identifiers that contain special characters."),
+        DBLITERAL_QUOTE_SUFFIX(28, "]", -1, null, null, "The character used in a text command as the closing quote for quoting identifiers that contain special characters. 1.x providers that use the same character as the prefix and suffix may not return this literal value and can set the lt member of the DBLITERAL structure to DBLITERAL_INVALID if requested."),
+        DBLITERAL_TABLE_NAME(17, null, -1, ".", "0123456789", null),
+        DBLITERAL_TEXT_COMMAND(18, null, -1, null, null, "A text command, such as an SQL statement."),
+        DBLITERAL_USER_NAME(19, null, 0, null, null, null);
+        private final String literalValue;
+        private final int literalMaxLength;
+        private final String literalInvalidChars;
+        private final String literalInvalidStartingChars;
+        private final String description;
 
+        /*
         // Enum DBLITERALENUM and DBLITERALENUM20, OLEDB.H.
         public static final int DBLITERAL_INVALID   = 0,
         DBLITERAL_BINARY_LITERAL    = 1,
@@ -203,81 +233,103 @@ class Enumeration extends EnumeratedValues {
         DBLITERAL_PROPERTY_NAME = 26,
         DBLITERAL_SCHEMA_SEPARATOR  = 27,
         DBLITERAL_QUOTE_SUFFIX  = 28;
+*/
 
-        Literal(String literalName, int ordinal, String literalValue, int literalMaxLength, String literalInvalidChars, String literalInvalidStartingChars, String description) {
-            super(literalName, ordinal, description);
-            this.literalName = literalName;
+        Literal(int ordinal, String literalValue, int literalMaxLength, String literalInvalidChars, String literalInvalidStartingChars, String description) {
             this.literalValue = literalValue;
+            this.literalMaxLength = literalMaxLength;
             this.literalInvalidChars = literalInvalidChars;
             this.literalInvalidStartingChars = literalInvalidStartingChars;
-            this.literalMaxLength = literalMaxLength;
+            this.description = description;
         }
 
-        static final EnumeratedValues enumeration = new EnumeratedValues(
-                new Literal[] {
-                    new Literal("DBLITERAL_CATALOG_NAME", DBLITERAL_CATALOG_NAME, null, 24, ".", "0123456789", "A catalog name in a text command."),
-                    new Literal("DBLITERAL_CATALOG_SEPARATOR", DBLITERAL_CATALOG_SEPARATOR, ".", 0, null, null, null),
-                    new Literal("DBLITERAL_COLUMN_ALIAS", DBLITERAL_COLUMN_ALIAS, null, -1, "'\"[]", "0123456789", null),
-                    new Literal("DBLITERAL_COLUMN_NAME", DBLITERAL_COLUMN_NAME, null, -1, ".", "0123456789", null),
-                    new Literal("DBLITERAL_CORRELATION_NAME", DBLITERAL_CORRELATION_NAME, null, -1, "'\"[]", "0123456789", null),
-                    new Literal("DBLITERAL_CUBE_NAME", DBLITERAL_CUBE_NAME, null, -1, ".", "0123456789", null),
-                    new Literal("DBLITERAL_DIMENSION_NAME", DBLITERAL_DIMENSION_NAME, null, -1, ".", "0123456789", null),
-                    new Literal("DBLITERAL_HIERARCHY_NAME", DBLITERAL_HIERARCHY_NAME, null, -1, ".", "0123456789", null),
-                    new Literal("DBLITERAL_LEVEL_NAME", DBLITERAL_LEVEL_NAME, null, -1, ".", "0123456789", null),
-                    new Literal("DBLITERAL_MEMBER_NAME", DBLITERAL_MEMBER_NAME, null, -1, ".", "0123456789", null),
-                    new Literal("DBLITERAL_PROCEDURE_NAME", DBLITERAL_PROCEDURE_NAME, null, -1, ".", "0123456789", null),
-                    new Literal("DBLITERAL_PROPERTY_NAME", DBLITERAL_PROPERTY_NAME, null, -1, ".", "0123456789", null),
-                    new Literal("DBLITERAL_QUOTE", DBLITERAL_QUOTE, "[", -1, null, null, "The character used in a text command as the opening quote for quoting identifiers that contain special characters."),
-                    new Literal("DBLITERAL_QUOTE_SUFFIX", DBLITERAL_QUOTE_SUFFIX, "]", -1, null, null, "The character used in a text command as the closing quote for quoting identifiers that contain special characters. 1.x providers that use the same character as the prefix and suffix may not return this literal value and can set the lt member of the DBLITERAL structure to DBLITERAL_INVALID if requested."),
-                    new Literal("DBLITERAL_TABLE_NAME", DBLITERAL_TABLE_NAME, null, -1, ".", "0123456789", null),
-                    new Literal("DBLITERAL_TEXT_COMMAND", DBLITERAL_TEXT_COMMAND, null, -1, null, null, "A text command, such as an SQL statement."),
-                    new Literal("DBLITERAL_USER_NAME", DBLITERAL_USER_NAME, null, 0, null, null, null),
-                });
+        public String getLiteralName() {
+            return name();
+        }
+
+        public String getLiteralValue() {
+            return literalValue;
+        }
+
+        public String getLiteralInvalidChars() {
+            return literalInvalidChars;
+        }
+
+        public String getLiteralInvalidStartingChars() {
+            return literalInvalidStartingChars;
+        }
+
+        public int getLiteralMaxLength() {
+            return literalMaxLength;
+        }
+
+        public String getDescription() {
+            return description;
+        }
     }
 
-    public static class TreeOp extends BasicValue {
-        TreeOp(String name, int ordinal, String description) {
-            super(name, ordinal, description);
+    enum TreeOp implements EnumWithDesc, EnumWithOrdinal, EnumWithName {
+        Children("MDTREEOP_CHILDREN", 1, "Returns only the immediate children"),
+        Siblings("MDTREEOP_SIBLINGS", 2, "Returns members on the same level"),
+        Parent("MDTREEOP_PARENT", 4, "Returns only the immediate parent"),
+        Self("MDTREEOP_SELF", 8, "Returns the immediate member in the list of returned rows"),
+        Descendants("MDTREEOP_DESCENDANTS", 16, "Returns all descendants"),
+        Ancestors("MDTREEOP_ANCESTORS", 32, "Returns all ancestors");
+        private final String userName;
+        private final int userOrdinal;
+        private final String description;
+
+        TreeOp(String userName, int userOrdinal, String description) {
+            this.userName = userName;
+            this.userOrdinal = userOrdinal;
+            this.description = description;
         }
 
-        public static final TreeOp Children = new TreeOp("MDTREEOP_CHILDREN", 1, "Returns only the immediate children");
-        public static final TreeOp Siblings = new TreeOp("MDTREEOP_SIBLINGS", 2, "Returns members on the same level");
-        public static final TreeOp Parent = new TreeOp("MDTREEOP_PARENT", 4, "Returns only the immediate parent");
-        public static final TreeOp Self = new TreeOp("MDTREEOP_SELF", 8, "Returns the immediate member in the list of returned rows");
-        public static final TreeOp Descendants = new TreeOp("MDTREEOP_DESCENDANTS", 16, "Returns all descendants");
-        public static final TreeOp Ancestors = new TreeOp("MDTREEOP_ANCESTORS", 32, "Returns all ancestors");
-        static final Enumeration enumeration = new Enumeration(
+        static final Enumeration enumeration =
+            new Enumeration(
                 "TREE_OP",
                 "Bitmap which controls which relatives of a member are returned",
                 RowsetDefinition.Type.Integer,
-                new TreeOp[] {
-                    Children,
-                    Siblings,
-                    Parent,
-                    Self,
-                    Descendants,
-                    Ancestors,
-                }
-        );
+                TreeOp.class);
+
+        public int userOrdinal() {
+            return userOrdinal;
+        }
+
+        public String userName() {
+            return userName;
+        }
+
+        public String getDescription() {
+            return description;
+        }
     }
 
-    public static class VisualMode extends BasicValue {
-        VisualMode(String name, int ordinal, String description) {
-            super(name, ordinal, description);
-        }
-        public static final VisualMode Default = new VisualMode("DBPROPVAL_VISUAL_MODE_DEFAULT", 0, "Provider-dependent. In Microsoft SQL Server 2000 Analysis Services, this is equivalent to DBPROPVAL_VISUAL_MODE_ORIGINAL.");
-        public static final VisualMode Visual = new VisualMode("DBPROPVAL_VISUAL_MODE_VISUAL", 1, "Visual totals are enabled.");
-        public static final VisualMode Original = new VisualMode("DBPROPVAL_VISUAL_MODE_ORIGINAL", 2, "Visual totals are not enabled.");
-        static final Enumeration enumeration = new Enumeration(
+    enum VisualMode {
+        Default("DBPROPVAL_VISUAL_MODE_DEFAULT", 0, "Provider-dependent. In Microsoft SQL Server 2000 Analysis Services, this is equivalent to DBPROPVAL_VISUAL_MODE_ORIGINAL."),
+        Visual("DBPROPVAL_VISUAL_MODE_VISUAL", 1, "Visual totals are enabled."),
+        Original("DBPROPVAL_VISUAL_MODE_ORIGINAL", 2, "Visual totals are not enabled.");
+
+        VisualMode(String name2, int ordinal2, String description) {}
+
+        static final Enumeration enumeration =
+            new Enumeration(
                 "VisualMode",
                 "This property determines the default behavior for visual totals.",
                 RowsetDefinition.Type.Integer,
-                new VisualMode[] {
-                    Default,
-                    Visual,
-                    Original,
-                }
-        );
+                VisualMode.class);
+    }
+
+    interface EnumWithDesc {
+        String getDescription();
+    }
+
+    interface EnumWithOrdinal {
+        int userOrdinal();
+    }
+
+    interface EnumWithName {
+        String userName();
     }
 }
 

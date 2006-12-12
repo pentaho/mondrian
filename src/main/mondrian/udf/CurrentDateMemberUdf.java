@@ -49,11 +49,10 @@ public class CurrentDateMemberUdf implements UserDefinedFunction {
         String currDateStr = format.format(currDate);
 
         // determine the match type
-        int matchType;
+        MatchType matchType;
         if (arguments.length == 3) {
-            String matchStr =
-                ((String) arguments[2].evaluateScalar(evaluator)).toString();
-            matchType = mapMatchStrToType(matchStr);
+            String matchStr = arguments[2].evaluateScalar(evaluator).toString();
+            matchType = Enum.valueOf(MatchType.class, matchStr);
         } else {
             matchType = MatchType.EXACT;
         }
@@ -108,7 +107,7 @@ public class CurrentDateMemberUdf implements UserDefinedFunction {
         return Syntax.Function;
     }
 
-    private int mapMatchStrToType(String matchStr)
+    private MatchType mapMatchStrToType(String matchStr)
     {
         if (matchStr.equals("EXACT")) {
             return MatchType.EXACT;

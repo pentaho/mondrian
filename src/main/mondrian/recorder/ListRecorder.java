@@ -51,18 +51,18 @@ public class ListRecorder extends AbstractRecorder {
 
     protected void recordMessage(final String msg,
                                  final Object info,
-                                 final int msgType) {
+                                 final MsgType msgType) {
         String context = getContext();
 
         Entry e = new Entry(context, msg, msgType, info);
         switch (msgType) {
-        case INFO_MSG_TYPE:
+        case INFO:
             infoList.add(e);
             break;
-        case WARN_MSG_TYPE:
+        case WARN:
             warnList.add(e);
             break;
-        case ERROR_MSG_TYPE:
+        case ERROR:
             errorList.add(e);
             break;
         default :
@@ -71,7 +71,7 @@ public class ListRecorder extends AbstractRecorder {
                 "Unknown message type enum \"" +
                 msgType +
                 "\" for message: " + msg,
-                WARN_MSG_TYPE,
+                MsgType.WARN,
                 info);
             warnList.add(e);
         }
@@ -115,12 +115,12 @@ public class ListRecorder extends AbstractRecorder {
     public static class Entry {
         private final String context;
         private final String msg;
-        private final int msgType;
+        private final MsgType msgType;
         private final Object info;
 
         private Entry(final String context,
                       final String msg,
-                      final int msgType,
+                      final MsgType msgType,
                       final Object info) {
             this.context = context;
             this.msg = msg;
@@ -133,7 +133,7 @@ public class ListRecorder extends AbstractRecorder {
         public String getMessage() {
             return msg;
         }
-        public int getMsgType() {
+        public MsgType getMsgType() {
             return msgType;
         }
         public Object getInfo() {

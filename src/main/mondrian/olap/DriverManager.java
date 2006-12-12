@@ -113,9 +113,11 @@ public class DriverManager {
             throw Util.newError("Provider not recognized: " + provider);
         }
         if (locator != null) {
-            String catalog = properties.get(RolapConnectionProperties.Catalog);
-            properties.put(RolapConnectionProperties.Catalog,
-                           locator.locate(catalog));
+            String catalog = properties.get(
+                RolapConnectionProperties.Catalog.name());
+            properties.put(
+                RolapConnectionProperties.Catalog.name(),
+                locator.locate(catalog));
         }
         return new RolapConnection(properties, dataSource);
     }

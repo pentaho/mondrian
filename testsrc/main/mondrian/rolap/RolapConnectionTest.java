@@ -94,7 +94,7 @@ public class RolapConnectionTest extends TestCase {
         // This test is just like the test testPooledConnectionWithProperties
         // except with non-pooled connections.
         properties.put("jdbc.charSet", "UTF-16");
-        properties.put(RolapConnectionProperties.PoolNeeded, "false");
+        properties.put(RolapConnectionProperties.PoolNeeded.name(), "false");
         DataSource dataSource = RolapConnection.createDataSource(properties);
         Connection connection;
         try {

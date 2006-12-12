@@ -579,7 +579,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
     protected void handleFault(
                     HttpServletResponse response,
                     byte[][] responseSoapParts,
-                    int phase,
+                    Phase phase,
                     Throwable t) {
 
         // Regardless of whats been put into the response so far, clear
@@ -590,15 +590,15 @@ public class DefaultXmlaServlet extends XmlaServlet {
         // for the various phases, please make changes.
         // I think that XMLA faults always returns OK.
         switch (phase) {
-        case VALIDATE_HTTP_HEAD_PHASE :
+        case VALIDATE_HTTP_HEAD:
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             break;
-        case INITIAL_PARSE_PHASE :
-        case CALLBACK_PRE_ACTION_PHASE :
-        case PROCESS_HEADER_PHASE :
-        case PROCESS_BODY_PHASE :
-        case CALLBACK_POST_ACTION_PHASE :
-        case SEND_RESPONSE_PHASE :
+        case INITIAL_PARSE:
+        case CALLBACK_PRE_ACTION:
+        case PROCESS_HEADER:
+        case PROCESS_BODY:
+        case CALLBACK_POST_ACTION:
+        case SEND_RESPONSE:
             response.setStatus(HttpServletResponse.SC_OK);
             break;
         }
@@ -660,7 +660,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
             // information belonging to header entries. Detailed error
             // information belonging to header entries MUST be carried within
             // header entries.
-            if (phase != PROCESS_HEADER_PHASE) {
+            if (phase != Phase.PROCESS_HEADER) {
                 writer.startElement("detail");
                 writer.startElement(FAULT_NS_PREFIX +":error", new String[] {
                         "xmlns:" +FAULT_NS_PREFIX, MONDRIAN_NAMESPACE

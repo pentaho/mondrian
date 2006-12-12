@@ -73,22 +73,11 @@ public interface Parameter {
     /**
      * Scope where a parameter is defined.
      */
-    static class Scope extends EnumeratedValues.BasicValue {
-        private Scope(String name, int ordinal) {
-            super(name, ordinal, null);
-        }
-
-        public static final int System_ordinal = 0;
-        public static final Scope System = new Scope("System", System_ordinal);
-
-        public static final int Schema_ordinal = 1;
-        public static final Scope Schema = new Scope("Schema", Schema_ordinal);
-
-        public static final int Connection_ordinal = 2;
-        public static final Scope Connection = new Scope("Connection", Connection_ordinal);
-
-        public static final int Statement_ordinal = 3;
-        public static final Scope Statement = new Scope("Statement", Statement_ordinal);
+    enum Scope {
+        System,
+        Schema,
+        Connection,
+        Statement
     }
 }
 

@@ -103,7 +103,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     }
     
     public OlapElement lookupChild(
-        SchemaReader schemaReader, String s, int matchType)
+        SchemaReader schemaReader, String s, MatchType matchType)
     {
         Dimension mdxDimension = (Dimension)lookupDimension(s);
         if (mdxDimension != null) {

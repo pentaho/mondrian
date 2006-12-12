@@ -123,8 +123,8 @@ public class MemberHelperTest extends TestCase {
             return null;
         }
 
-        public int getMemberType() {
-            return 0;
+        public MemberType getMemberType() {
+            return MemberType.REGULAR;
         }
 
         public int getOrdinal() {
@@ -204,7 +204,7 @@ public class MemberHelperTest extends TestCase {
         }
 
         public OlapElement lookupChild(
-            SchemaReader schemaReader, String s, int matchType) {
+            SchemaReader schemaReader, String s, MatchType matchType) {
             return null;
         }
 

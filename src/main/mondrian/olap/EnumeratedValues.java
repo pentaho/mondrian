@@ -11,6 +11,7 @@
 */
 
 package mondrian.olap;
+
 import java.util.*;
 
 /**
@@ -90,6 +91,10 @@ public class EnumeratedValues<V extends EnumeratedValues.Value>
             register((V) new BasicValue(names[i], codes[i], descriptions[i]));
         }
         makeImmutable();
+    }
+
+    public EnumeratedValues(Class<? extends Enum> clazz) {
+        throw new UnsupportedOperationException();
     }
 
     public EnumeratedValues<V> clone() {

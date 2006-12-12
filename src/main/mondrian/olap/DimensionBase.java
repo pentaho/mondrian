@@ -91,7 +91,7 @@ public abstract class DimensionBase
     }
     
     public OlapElement lookupChild(
-        SchemaReader schemaReader, String s, int matchType)
+        SchemaReader schemaReader, String s, MatchType matchType)
     {
         OlapElement oe = lookupHierarchy(s);
 

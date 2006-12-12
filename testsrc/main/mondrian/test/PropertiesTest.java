@@ -71,7 +71,7 @@ public class PropertiesTest extends FoodMartTestCase {
         assertEquals(member.getName(), stringPropValue);
 
         intPropValue = (Integer)member.getPropertyValue("MEMBER_TYPE");
-        assertEquals(new Integer(member.getMemberType()), intPropValue);
+        assertEquals(new Integer(member.getMemberType().ordinal()), intPropValue);
 
         stringPropValue = (String)member.getPropertyValue("MEMBER_GUID");
         assertNull(stringPropValue);

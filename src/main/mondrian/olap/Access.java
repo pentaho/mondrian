@@ -18,33 +18,15 @@ package mondrian.olap;
  * @since Feb 21, 2003
  * @version $Id$
  */
-public class Access extends EnumeratedValues {
-    /** The singleton instance of <code>Access</code>. */
-    public static final Access instance = new Access();
-
-    private Access() {
-        super(
-                new String[] {
-                    "none", "custom", "all_dimensions", "all",
-                },
-                new int[] {
-                    NONE, CUSTOM, ALL_DIMENSIONS, ALL,
-                }
-        );
-    }
-
-    /** Returns the singleton instance of <code>Access</code>. */
-    public static final Access instance() {
-        return instance;
-    }
+public enum Access {
     /** No access to an object. */
-    public static final int NONE = 1;
+    NONE,
     /** Custom access to an object (described by other parameters). */
-    public static final int CUSTOM = 2;
+    CUSTOM,
     /** Access to all shared dimensions (applies to schema grant). */
-    public static final int ALL_DIMENSIONS = 3;
+    ALL_DIMENSIONS,
     /** All access to an object. */
-    public static final int ALL = 4;
+    ALL;
 }
 
 // End Access.java

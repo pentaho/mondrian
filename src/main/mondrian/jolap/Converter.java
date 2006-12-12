@@ -84,7 +84,8 @@ class Converter {
                 }
             }
         }
-        return new QueryAxis(false, exp, AxisOrdinal.get(axisIndex),
+        AxisOrdinal axisOrdinal = AxisOrdinal.forOrdinal2(axisIndex);
+        return new QueryAxis(false, exp, axisOrdinal,
                 QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
     }
 

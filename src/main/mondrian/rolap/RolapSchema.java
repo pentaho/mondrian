@@ -23,17 +23,7 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import javax.sql.DataSource;
 
@@ -86,11 +76,20 @@ import org.eigenbase.xom.XOMUtil;
 public class RolapSchema implements Schema {
     private static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
 
-    private static final int[] schemaAllowed = new int[] {Access.NONE, Access.ALL, Access.ALL_DIMENSIONS};
-    private static final int[] cubeAllowed = new int[] {Access.NONE, Access.ALL};
-    private static final int[] dimensionAllowed = new int[] {Access.NONE, Access.ALL};
-    private static final int[] hierarchyAllowed = new int[] {Access.NONE, Access.ALL, Access.CUSTOM};
-    private static final int[] memberAllowed = new int[] {Access.NONE, Access.ALL};
+    private static final Set<Access> schemaAllowed =
+        Util.enumSetOf(Access.NONE, Access.ALL, Access.ALL_DIMENSIONS);
+
+    private static final Set<Access> cubeAllowed =
+        Util.enumSetOf(Access.NONE, Access.ALL);
+
+    private static final Set<Access> dimensionAllowed =
+        Util.enumSetOf(Access.NONE, Access.ALL);
+
+    private static final Set<Access> hierarchyAllowed =
+        Util.enumSetOf(Access.NONE, Access.ALL, Access.CUSTOM);
+
+    private static final Set<Access> memberAllowed =
+        Util.enumSetOf(Access.NONE, Access.ALL);
 
     private String name;
 
@@ -458,7 +457,7 @@ public class RolapSchema implements Schema {
                         schemaReader.lookupCompound(
                             cube, Util.explode(hierarchyGrant.hierarchy), true,
                             Category.Hierarchy);
-                    final int hierarchyAccess =
+                    final Access hierarchyAccess =
                         getAccess(hierarchyGrant.access, hierarchyAllowed);
                     Level topLevel = null;
                     if (hierarchyGrant.topLevel != null) {
@@ -508,12 +507,10 @@ public class RolapSchema implements Schema {
         return role;
     }
 
-    private int getAccess(String accessString, int[] allowed) {
-        final int access = Access.instance().getOrdinal(accessString);
-        for (int anAllowed : allowed) {
-            if (access == anAllowed) {
-                return access; // value is ok
-            }
+    private Access getAccess(String accessString, Set<Access> allowed) {
+        final Access access = Access.valueOf(accessString.toUpperCase());
+        if (allowed.contains(access)) {
+            return access; // value is ok
         }
         throw Util.newError("Bad value access='" + accessString + "'");
     }
@@ -680,13 +677,13 @@ public class RolapSchema implements Schema {
             boolean hadDynProc = false;
 
             String dynProcName = connectInfo.get(
-                RolapConnectionProperties.DynamicSchemaProcessor);
+                RolapConnectionProperties.DynamicSchemaProcessor.name());
 
             // If CatalogContent is specified in the connect string, ignore
             // everything else. In particular, ignore the dynamic schema
             // processor.
             String catalogStr = connectInfo.get(
-                RolapConnectionProperties.CatalogContent);
+                RolapConnectionProperties.CatalogContent.name());
             if (catalogStr != null) {
                 dynProcName = null;
                 // REVIEW: Are we including enough in the key to make it
@@ -726,7 +723,8 @@ public class RolapSchema implements Schema {
             }
 
             boolean useContentChecksum = Boolean.parseBoolean(
-                connectInfo.get(RolapConnectionProperties.UseContentChecksum));
+                connectInfo.get(
+                    RolapConnectionProperties.UseContentChecksum.name()));
             if (useContentChecksum) {
                 // Different catalogNames can actually yield the same
                 // catalogStr! So, we use the MD5 as the key as well as
@@ -1326,7 +1324,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     }
 
     /**
-     * Creates a {@link MemberReader} with which to read a hierarchy.
+     * Creates a {@link MemberReader} with which to Read a hierarchy.
      */
     private MemberReader createMemberReader(
             final RolapHierarchy hierarchy,

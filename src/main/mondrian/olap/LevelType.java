@@ -18,90 +18,54 @@ package mondrian.olap;
  * @since 5 April, 2004
  * @version $Id$
  */
-public class LevelType extends EnumeratedValues.BasicValue {
+public enum LevelType {
 
-    private LevelType(String name, int ordinal) {
-        super(name, ordinal, null);
-    }
-
-    public static final int RegularORDINAL = 0;
     /** Indicates that the level is not related to time. */
-    public static final LevelType Regular =
-            new LevelType("Regular", RegularORDINAL);
-
-    public static final int TimeYearsORDINAL = 1;
+    Regular,
 
     /**
      * Indicates that a level refers to years.
      * It must be used in a dimension whose type is
      * {@link DimensionType#TimeDimension}.
      */
-    public static final LevelType TimeYears =
-            new LevelType("TimeYears", TimeYearsORDINAL);
-
-    public static final int TimeQuartersORDINAL = 2;
+    TimeYears,
 
     /**
      * Indicates that a level refers to quarters.
      * It must be used in a dimension whose type is
      * {@link DimensionType#TimeDimension}.
      */
-    public static final LevelType TimeQuarters =
-            new LevelType("TimeQuarters", TimeQuartersORDINAL);
-
-    public static final int TimeMonthsORDINAL = 3;
+    TimeQuarters,
 
     /**
      * Indicates that a level refers to months.
      * It must be used in a dimension whose type is
      * {@link DimensionType#TimeDimension}.
      */
-    public static final LevelType TimeMonths =
-            new LevelType("TimeMonths", TimeMonthsORDINAL);
-
-    public static final int TimeWeeksORDINAL = 4;
+    TimeMonths,
 
     /**
      * Indicates that a level refers to weeks.
      * It must be used in a dimension whose type is
      * {@link DimensionType#TimeDimension}.
      */
-    public static final LevelType TimeWeeks =
-            new LevelType("TimeWeeks", TimeWeeksORDINAL);
-
-    public static final int TimeDaysORDINAL = 5;
+    TimeWeeks,
 
     /**
      * Indicates that a level refers to days.
      * It must be used in a dimension whose type is
      * {@link DimensionType#TimeDimension}.
      */
-    public static final LevelType TimeDays =
-            new LevelType("TimeDays", TimeDaysORDINAL);
-
-    public static final int NullORDINAL = 6;
+    TimeDays,
 
     /**
      * Indicates that a level holds the null member.
      */
-    public static final LevelType Null =
-            new LevelType("Null", NullORDINAL);
+    Null;
 
-    /**
-     * Contains all of the valid values for {@link LevelType}.
-     */
-    public static final EnumeratedValues enumeration =
-            new EnumeratedValues(
-                    new LevelType[] {
-                        Regular, TimeYears, TimeQuarters, TimeMonths,
-                        TimeWeeks, TimeDays, Null,
-                    }
-            );
-    public static LevelType lookup(String s) {
-        return (LevelType) enumeration.getValue(s, true);
-    }
     public boolean isTime() {
-        return ordinal >= TimeYearsORDINAL && ordinal <= TimeDaysORDINAL;
+        return ordinal() >= TimeYears.ordinal() &&
+            ordinal() <= TimeDays.ordinal();
     }
 }
 

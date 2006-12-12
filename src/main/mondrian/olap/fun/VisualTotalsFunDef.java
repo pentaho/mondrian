@@ -202,7 +202,7 @@ public class VisualTotalsFunDef extends FunDefBase {
             super(
                 (RolapMember) member.getParentMember(),
                 (RolapLevel) member.getLevel(),
-                null, name, FORMULA_MEMBER_TYPE);
+                null, name, MemberType.FORMULA);
             this.member = member;
             this.exp = exp;
         }
@@ -233,7 +233,7 @@ public class VisualTotalsFunDef extends FunDefBase {
         }
         
         public OlapElement lookupChild(
-            SchemaReader schemaReader, String s, int matchType) {
+            SchemaReader schemaReader, String s, MatchType matchType) {
             throw new UnsupportedOperationException();
         }
 

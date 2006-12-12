@@ -35,7 +35,7 @@ class DescendantsFunDef extends FunDefBase {
             "Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.",
             new String[]{"fxm", "fxml", "fxmly", "fxmn", "fxmny"},
             DescendantsFunDef.class,
-            Flags.instance.getNames());
+            Flag.getNames());
 
     public DescendantsFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
@@ -44,25 +44,17 @@ class DescendantsFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final MemberCalc memberCalc = compiler.compileMember(call.getArg(0));
-        int flag = Flags.SELF;
+        Flag flag = Flag.SELF;
         if (call.getArgCount() == 1) {
-            flag = Flags.SELF_BEFORE_AFTER;
+            flag = Flag.SELF_BEFORE_AFTER;
         }
-        final boolean depthSpecified;
-        if (call.getArgCount() >= 2) {
-            depthSpecified = call.getArg(1).getType() instanceof NumericType;
-        } else {
-            depthSpecified = false;
-        }
+        final boolean depthSpecified = call.getArgCount() >= 2 &&
+            call.getArg(1).getType() instanceof NumericType;
         if (call.getArgCount() >= 3) {
-            flag = FunUtil.getLiteralArg(call, 2, Flags.SELF, Flags.instance);
+            flag = FunUtil.getLiteralArg(call, 2, Flag.SELF, Flag.class);
         }
-        final boolean self = FunUtil.checkFlag(flag, Flags.SELF, true);
-        final boolean before = FunUtil.checkFlag(flag, Flags.BEFORE, true);
-        final boolean after = FunUtil.checkFlag(flag, Flags.AFTER, true);
-        final boolean leaves = FunUtil.checkFlag(flag, Flags.LEAVES, true);
 
-        if (depthSpecified && leaves) {
+        if (depthSpecified && flag.leaves) {
             final IntegerCalc depthCalc = call.getArgCount() > 1 ?
                     compiler.compileInteger(call.getArg(1)) :
                     null;
@@ -85,6 +77,7 @@ class DescendantsFunDef extends FunDefBase {
             final IntegerCalc depthCalc = call.getArgCount() > 1 ?
                     compiler.compileInteger(call.getArg(1)) :
                     null;
+            final Flag flag1 = flag;
             return new AbstractListCalc(call, new Calc[] {memberCalc, depthCalc}) {
                 public List evaluateList(Evaluator evaluator) {
                     final Member member = memberCalc.evaluateMember(evaluator);
@@ -93,7 +86,7 @@ class DescendantsFunDef extends FunDefBase {
                     final SchemaReader schemaReader = evaluator.getSchemaReader();
                     descendantsByDepth(
                             member, result, schemaReader,
-                            depth, before, self, after, evaluator);
+                            depth, flag1.before, flag1.self, flag1.after, evaluator);
                     hierarchize(result, false);
                     return result;
                 }
@@ -102,6 +95,7 @@ class DescendantsFunDef extends FunDefBase {
             final LevelCalc levelCalc = call.getArgCount() > 1 ?
                     compiler.compileLevel(call.getArg(1)) :
                     null;
+            final Flag flag2 = flag;
             return new AbstractListCalc(call, new Calc[] {memberCalc, levelCalc}) {
                 public List evaluateList(Evaluator evaluator) {
                     final Evaluator context =
@@ -113,8 +107,9 @@ class DescendantsFunDef extends FunDefBase {
                             levelCalc.evaluateLevel(evaluator) :
                             member.getLevel();
                     descendantsByLevel(
-                            schemaReader, member, level, result, before, self,
-                            after, leaves, context);
+                            schemaReader, member, level, result,
+                        flag2.before, flag2.self,
+                        flag2.after, flag2.leaves, context);
                     hierarchize(result, false);
                     return result;
                 }
@@ -309,27 +304,35 @@ class DescendantsFunDef extends FunDefBase {
      * Enumeration of the flags allowed to the <code>DESCENDANTS</code>
      * function.
      */
-    static class Flags extends EnumeratedValues {
-        static final Flags instance = new Flags();
-        private Flags() {
-            super(
-                new String[] {
-                    "SELF", "AFTER", "BEFORE", "BEFORE_AND_AFTER",
-                    "SELF_AND_AFTER", "SELF_AND_BEFORE","SELF_BEFORE_AFTER",
-                    "LEAVES"},
-                new int[] {
-                    SELF, AFTER, BEFORE, BEFORE_AND_AFTER,
-                    SELF_AND_AFTER, SELF_AND_BEFORE, SELF_BEFORE_AFTER,
-                    LEAVES});
+    enum Flag {
+        SELF(true, false, false, false),
+        AFTER(false, true, false, false),
+        BEFORE(false, false, true, false),
+        BEFORE_AND_AFTER(false, true, true, false),
+        SELF_AND_AFTER(true, true, false, false),
+        SELF_AND_BEFORE(true, false, true, false),
+        SELF_BEFORE_AFTER(true, true, true, false),
+        LEAVES(false, false, false, true);
+
+        private final boolean self;
+        private final boolean after;
+        private final boolean before;
+        private final boolean leaves;
+
+        Flag(boolean self, boolean after, boolean before, boolean leaves) {
+            this.self = self;
+            this.after = after;
+            this.before = before;
+            this.leaves = leaves;
         }
-        public static final int SELF = 1;
-        public static final int AFTER = 2;
-        public static final int BEFORE = 4;
-        public static final int BEFORE_AND_AFTER = BEFORE | AFTER;
-        public static final int SELF_AND_AFTER = SELF | AFTER;
-        public static final int SELF_AND_BEFORE = SELF | BEFORE;
-        public static final int SELF_BEFORE_AFTER = SELF | BEFORE | AFTER;
-        public static final int LEAVES = 8;
+
+        public static String[] getNames() {
+            List<String> names = new ArrayList<String>();
+            for (Flag flags : Flag.class.getEnumConstants()) {
+                names.add(flags.name());
+            }
+            return names.toArray(new String[names.size()]);
+        }
     }
 }
 

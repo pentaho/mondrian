@@ -69,13 +69,13 @@ public class XmlaBasicTest extends FoodMartTestCase {
     // content
     public static final String CONTENT_PROP     = "content";
     public static final String CONTENT_NONE     =
-                Enumeration.Content.None.getName();
+                Enumeration.Content.None.name();
     public static final String CONTENT_DATA     =
-                Enumeration.Content.Data.getName();
+                Enumeration.Content.Data.name();
     public static final String CONTENT_SCHEMA   =
-                Enumeration.Content.Schema.getName();
+                Enumeration.Content.Schema.name();
     public static final String CONTENT_SCHEMADATA =
-                Enumeration.Content.SchemaData.getName();
+                Enumeration.Content.SchemaData.name();
 
     private static final String XMLA_DIRECTORY = "testsrc/main/mondrian/xmla/";
 
@@ -128,20 +128,20 @@ public class XmlaBasicTest extends FoodMartTestCase {
             Document responseDoc,
             Enumeration.Content content) {
         Document partialDoc = null;
-        switch (content.getOrdinal()) {
-        case Enumeration.Content.NONE_ORDINAL:
+        switch (content) {
+        case None:
             // return soap and no content
             break;
 
-        case Enumeration.Content.SCHEMA_ORDINAL:
+        case Schema:
             // return soap plus scheam content
             break;
 
-        case Enumeration.Content.DATA_ORDINAL:
+        case Data:
             // return soap plus data content
             break;
 
-        case Enumeration.Content.SCHEMA_DATA_ORDINAL:
+        case SchemaData:
             // return everything
             partialDoc = responseDoc;
             break;

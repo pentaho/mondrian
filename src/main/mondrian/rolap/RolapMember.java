@@ -295,7 +295,7 @@ public class RolapMember extends MemberBase {
             RolapLevel level,
             Object key,
             String name,
-            int flags) {
+            MemberType flags) {
         super(parentMember, level, flags);
 
         this.key = key;
@@ -313,7 +313,7 @@ public class RolapMember extends MemberBase {
     }
 
     RolapMember(RolapMember parentMember, RolapLevel level, Object value) {
-        this(parentMember, level, value, null, REGULAR_MEMBER_TYPE);
+        this(parentMember, level, value, null, MemberType.REGULAR);
     }
 
 
@@ -474,7 +474,7 @@ public class RolapMember extends MemberBase {
                 return getName();
 
             case Property.MEMBER_TYPE_ORDINAL:
-                return getMemberType();
+                return getMemberType().ordinal();
 
             case Property.MEMBER_GUID_ORDINAL:
                 return null;
@@ -617,17 +617,18 @@ public class RolapMember extends MemberBase {
 
     public boolean isHidden() {
         final RolapLevel rolapLevel = getRolapLevel();
-        switch (rolapLevel.getHideMemberCondition().ordinal) {
-        case RolapLevel.HideMemberCondition.NeverORDINAL:
+        switch (rolapLevel.getHideMemberCondition()) {
+        case Never:
             return false;
-        case RolapLevel.HideMemberCondition.IfBlankNameORDINAL: {
+
+        case IfBlankName: {
             // If the key value in the database is null, then we use
             // a special key value whose toString() is "null".
             final String name = getName();
             return name.equals(RolapUtil.mdxNullLiteral) || name.equals("");
         }
 
-        case RolapLevel.HideMemberCondition.IfParentsNameORDINAL: {
+        case IfParentsName: {
             final Member parentMember = getParentMember();
             if (parentMember == null) {
                 return false;
@@ -639,7 +640,7 @@ public class RolapMember extends MemberBase {
         }
 
         default:
-            throw rolapLevel.getHideMemberCondition().unexpected();
+            throw Util.badValue(rolapLevel.getHideMemberCondition());
         }
     }
 

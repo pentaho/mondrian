@@ -27,7 +27,7 @@ public interface OlapElement {
      */
     OlapElement lookupChild(SchemaReader schemaReader, String s);
     OlapElement lookupChild(
-        SchemaReader schemaReader, String s, int matchType);
+        SchemaReader schemaReader, String s, MatchType matchType);
 
     /**
      * Returns the name of this element qualified by its class, for example

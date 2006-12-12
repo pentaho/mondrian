@@ -18,25 +18,21 @@ import java.io.PrintWriter;
  * @since 21 July, 2003
  * @version $Id$
  */
-public class Syntax extends EnumeratedValues.BasicValue {
-    private Syntax(String name, int ordinal) {
-        super(name, ordinal, null);
-    }
-
+public enum Syntax {
     /**
      * Defines syntax for expression invoked <code>FUNCTION()</code> or
      * <code>FUNCTION(args)</code>.
      */
-    public static final Syntax Function = new Syntax("Function", 0) {
+    Function {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             ExpBase.unparseList(pw, args, fun + "(", ", ", ")");
         }
-    };
+    },
 
     /**
      * Defines syntax for expression invoked as <code>object.PROPERTY</code>.
      */
-    public static final Syntax Property = new Syntax("Property", 1) {
+    Property {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             Util.assertTrue(args.length >= 1);
             args[0].unparse(pw); // 'this'
@@ -48,14 +44,14 @@ public class Syntax extends EnumeratedValues.BasicValue {
             // e.g. "<Set>.Current"
             return getTypeDescription(argTypes[0]) + "." + name;
         }
-    };
+    },
 
     /**
      * Defines syntax for expression invoked invoked as
      * <code>object.METHOD()</code> or
      * <code>object.METHOD(args)</code>.
      */
-    public static final Syntax Method = new Syntax("Method", 2) {
+    Method {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             Util.assertTrue(args.length >= 1);
             args[0].unparse(pw); // 'this'
@@ -79,13 +75,13 @@ public class Syntax extends EnumeratedValues.BasicValue {
                 name + "(" + getTypeDescriptionCommaList(argTypes, 1) +
                 ")";
         }
-    };
+    },
 
     /**
      * Defines syntax for expression invoked as <code>arg OPERATOR arg</code>
      * (like '+' or 'AND').
      */
-    public static final Syntax Infix = new Syntax("Infix", 3) {
+    Infix {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             if (needParen(args)) {
                 ExpBase.unparseList(pw, args, "(", " " + fun + " ", ")");
@@ -99,13 +95,13 @@ public class Syntax extends EnumeratedValues.BasicValue {
             return getTypeDescription(argTypes[0]) + " " + name + " " +
                 getTypeDescription(argTypes[1]);
         }
-    };
+    },
 
     /**
      * Defines syntax for expression invoked as <code>OPERATOR arg</code>
      * (like unary '-').
      */
-    public static final Syntax Prefix = new Syntax("Prefix", 4) {
+    Prefix {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             if (needParen(args)) {
                 ExpBase.unparseList(pw, args, "(" + fun + " ", null, ")");
@@ -118,13 +114,13 @@ public class Syntax extends EnumeratedValues.BasicValue {
             // e.g. "- <Numeric Expression>"
             return name + " " + getTypeDescription(argTypes[0]);
         }
-    };
+    },
 
     /**
      * Defines syntax for expression invoked as <code>arg OPERATOR</code>
      * (like <code>IS EMPTY</code>).
      */
-    public static final Syntax Postfix = new Syntax("Postfix", 5) {
+    Postfix {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             if (needParen(args)) {
                 ExpBase.unparseList(pw, args, "(", null, " " + fun + ")");
@@ -137,14 +133,14 @@ public class Syntax extends EnumeratedValues.BasicValue {
             // e.g. "<Expression> IS NULL"
             return getTypeDescription(argTypes[0]) + " " + name;
         }
-    };
+    },
 
     /**
      * Defines syntax for expression invoked as
      * <code>{ARG, &#46;&#46;&#46;}</code>; that
      * is, the set construction operator.
      */
-    public static final Syntax Braces = new Syntax("Braces", 6) {
+    Braces {
         public String getSignature(String name, int returnType, int[] argTypes) {
             return "{" + getTypeDescriptionCommaList(argTypes, 0) + "}";
         }
@@ -152,14 +148,14 @@ public class Syntax extends EnumeratedValues.BasicValue {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             ExpBase.unparseList(pw, args, "{", ", ", "}");
         }
-    };
+    },
 
     /**
      * Defines syntax for expression invoked as <code>(ARG)</code> or
      * <code>(ARG, &#46;&#46;&#46;)</code>; that is, parentheses for grouping
      * expressions, and the tuple construction operator.
      */
-    public static final Syntax Parentheses = new Syntax("Parentheses", 7) {
+    Parentheses {
         public String getSignature(String name, int returnType, int[] argTypes) {
             return "(" + getTypeDescriptionCommaList(argTypes, 0) + ")";
         }
@@ -167,12 +163,12 @@ public class Syntax extends EnumeratedValues.BasicValue {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             ExpBase.unparseList(pw, args, "(", ", ", ")");
         }
-    };
+    },
 
     /**
      * Defines syntax for expression invoked as <code>CASE ... END</code>.
      */
-    public static final Syntax Case = new Syntax("Case", 8) {
+    Case {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             if (fun.equals("_CaseTest")) {
                 pw.print("CASE");
@@ -220,19 +216,19 @@ public class Syntax extends EnumeratedValues.BasicValue {
                 return "CASE " + s + " WHEN " + s + " THEN <Expression> ... END";
             }
         }
-    };
+    },
 
     /**
      * Defines syntax for expression generated by the Mondrian system which
      * cannot be specified syntactically.
      */
-    public static final Syntax Internal = new Syntax("Internal", 9);
+    Internal,
 
     /**
      * Defines syntax for a CAST expression
      * <code>CAST(expression AS type)</code>.
      */
-    public static final Syntax Cast = new Syntax("Cast", 10) {
+    Cast {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             pw.print("CAST(");
             args[0].unparse(pw);
@@ -244,43 +240,19 @@ public class Syntax extends EnumeratedValues.BasicValue {
         public String getSignature(String name, int returnType, int[] argTypes) {
             return "CAST(<Expression> AS <Type>)";
         }
-    };
+    },
 
     /**
      * Defines syntax for expression invoked <code>object&#46;&PROPERTY</code>
      * (a variant of {@link #Property}).
      */
-    public static final Syntax QuotedProperty =
-        new Syntax("Quoted property", Property.ordinal | 0x100);
+    QuotedProperty,
 
     /**
      * Defines syntax for expression invoked <code>object&#46;[&PROPERTY]</code>
      * (a variant of {@link #Property}).
      */
-    public static final Syntax AmpersandQuotedProperty =
-        new Syntax("Ampersand-quoted property", Property.ordinal | 0x200);
-
-    private static final int mask = 0xFF;
-
-    /**
-     * Converts an ordinal value into a {@link Syntax}. Returns null if not
-     * found.
-     *
-     * @param ordinal Ordinal value
-     * @return Syntax
-     */
-    public static Syntax get(int ordinal) {
-        return (Syntax) enumeration.getValue(ordinal & mask);
-    }
-
-    /**
-     * List of all valid {@link Syntax} objects.
-     */
-    public static final EnumeratedValues enumeration = new EnumeratedValues(
-            new Syntax[] {
-                Function, Property, Method, Infix,
-                Prefix, Postfix, Braces, Parentheses, Case,
-                Internal, Cast});
+    AmpersandQuotedProperty;
 
     /**
      * Converts a call to a function of this syntax into source code.

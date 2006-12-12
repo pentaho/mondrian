@@ -39,30 +39,11 @@ import org.apache.log4j.Logger;
 public class HierarchyUsage {
     private static final Logger LOGGER = Logger.getLogger(HierarchyUsage.class);
 
-
-    static final int UNKNOWN_KIND  = 0;
-    static final int SHARED_KIND   = 1;
-    static final int VIRTUAL_KIND  = 2;
-    static final int PRIVATE_KIND  = 3;
-
-    static String lookupKindName(int kind) {
-        String name = null;
-        switch (kind) {
-            case HierarchyUsage.SHARED_KIND :
-                name = "SHARED";
-                break;
-            case HierarchyUsage.VIRTUAL_KIND :
-                name = "VIRTUAL";
-                break;
-            case HierarchyUsage.PRIVATE_KIND :
-                name = "PRIVATE";
-                break;
-            case HierarchyUsage.UNKNOWN_KIND :
-            default :
-                name = "UNKNOWN";
-                break;
-        }
-        return name;
+    enum Kind {
+        UNKNOWN,
+        SHARED,
+        VIRTUAL,
+        PRIVATE
     }
 
     /**
@@ -127,7 +108,7 @@ public class HierarchyUsage {
      */
     private MondrianDef.Expression joinExp;
 
-    private final int kind;
+    private final Kind kind;
 
     /**
      *
@@ -151,7 +132,7 @@ public class HierarchyUsage {
         this.foreignKey = cubeDim.foreignKey;
 
         if (cubeDim instanceof MondrianDef.DimensionUsage) {
-            this.kind = HierarchyUsage.SHARED_KIND;
+            this.kind = Kind.SHARED;
 
 
             // Shared Hierarchy attributes
@@ -201,7 +182,7 @@ public class HierarchyUsage {
             init(cube, hierarchy, du);
 
         } else if (cubeDim instanceof MondrianDef.Dimension) {
-            this.kind = HierarchyUsage.PRIVATE_KIND;
+            this.kind = Kind.PRIVATE;
 
             // Private Hierarchy attributes
             // type
@@ -218,7 +199,7 @@ public class HierarchyUsage {
             init(cube, hierarchy, null);
 
         } else if (cubeDim instanceof MondrianDef.VirtualCubeDimension) {
-            this.kind = HierarchyUsage.VIRTUAL_KIND;
+            this.kind = Kind.VIRTUAL;
 
             // Virtual Hierarchy attributes
             MondrianDef.VirtualCubeDimension vd =
@@ -237,7 +218,7 @@ public class HierarchyUsage {
             getLogger().warn("HierarchyUsage<init>: Unknown cubeDim="
                 +cubeDim.getClass().getName());
 
-            this.kind = HierarchyUsage.UNKNOWN_KIND;
+            this.kind = Kind.UNKNOWN;
 
             this.hierarchyName = cubeDim.name;
             this.fullName = this.name;
@@ -289,17 +270,17 @@ public class HierarchyUsage {
         return this.joinExp;
     }
 
-    public int getKind() {
+    public Kind getKind() {
         return this.kind;
     }
     public boolean isShared() {
-        return (this.kind == HierarchyUsage.SHARED_KIND);
+        return this.kind == Kind.SHARED;
     }
     public boolean isVirtual() {
-        return (this.kind == HierarchyUsage.VIRTUAL_KIND);
+        return this.kind == Kind.VIRTUAL;
     }
     public boolean isPrivate() {
-        return (this.kind == HierarchyUsage.PRIVATE_KIND);
+        return this.kind == Kind.PRIVATE;
     }
 
     public boolean equals(Object o) {
@@ -329,7 +310,7 @@ public class HierarchyUsage {
         StringBuilder buf = new StringBuilder(100);
         buf.append("HierarchyUsage: ");
         buf.append("kind=");
-        buf.append(HierarchyUsage.lookupKindName(this.kind));
+        buf.append(this.kind.name());
         buf.append(", hierarchyName=");
         buf.append(this.hierarchyName);
         buf.append(", fullName=");

@@ -124,19 +124,41 @@ public class FunUtil extends Util {
      * Returns the ordinal of a literal argument. If the argument does not
      * belong to the supplied enumeration, returns -1.
      */
-    static int getLiteralArg(
+    static <E extends Enum<E>> E getLiteralArg(
             ResolvedFunCall call,
             int i,
-            int defaultValue,
-            EnumeratedValues allowedValues) {
-        final String literal = getLiteralArg(
-                call,
-                i,
-                allowedValues.getName(defaultValue),
-                allowedValues.getNames());
-        return (literal == null)
-            ? -1
-            : allowedValues.getOrdinal(literal);
+            E defaultValue,
+            Class<E> allowedValues) {
+        if (i >= call.getArgCount()) {
+            if (defaultValue == null) {
+                throw newEvalException(call.getFunDef(),
+                        "Required argument is missing");
+            } else {
+                return defaultValue;
+            }
+        }
+        Exp arg = call.getArg(i);
+        if (!(arg instanceof Literal) ||
+                arg.getCategory() != Category.Symbol) {
+            throw newEvalException(call.getFunDef(),
+                    "Expected a symbol, found '" + arg + "'");
+        }
+        String s = (String) ((Literal) arg).getValue();
+        for (E e : allowedValues.getEnumConstants()) {
+            if (e.name().equalsIgnoreCase(s)) {
+                return e;
+            }
+        }
+        StringBuilder buf = new StringBuilder(64);
+        int k = 0;
+        for (E e : allowedValues.getEnumConstants()) {
+            if (k++ > 0) {
+                buf.append(", ");
+            }
+            buf.append(e.name());
+        }
+        throw newEvalException(call.getFunDef(),
+                "Allowed values are: {" + buf + "}");
     }
 
     /**
@@ -1123,7 +1145,7 @@ public class FunUtil extends Util {
         return retvals;
     }
 
-    static List periodsToDate(
+    static List<Member> periodsToDate(
             Evaluator evaluator,
             Level level,
             Member member) {
@@ -1140,7 +1162,7 @@ public class FunUtil extends Util {
         // If m == null, then "level" was lower than member's level.
         // periodsToDate( [Time].[Quarter], [Time].[1997] is valid,
         //  but will return an empty List
-        List members = new ArrayList();
+        List<Member> members = new ArrayList<Member>();
         if (m != null) {
             // e.g. m is [Time].[1997] and member is [Time].[1997].[Q1].[3]
             // we now have to make m to be the first member of the range,
@@ -1152,20 +1174,22 @@ public class FunUtil extends Util {
         return members;
     }
 
-    static List memberRange(Evaluator evaluator,
-                            Member startMember,
-                            Member endMember) {
+    static List<Member> memberRange(
+        Evaluator evaluator,
+        Member startMember,
+        Member endMember)
+    {
         final Level level = startMember.getLevel();
         assertTrue(level == endMember.getLevel());
-        List members = new ArrayList();
-        evaluator.getSchemaReader().getMemberRange(level,
-            startMember, endMember, members);
+        List<Member> members = new ArrayList<Member>();
+        evaluator.getSchemaReader().getMemberRange(
+            level, startMember, endMember, members);
 
         if (members.isEmpty()) {
             // The result is empty, so maybe the members are reversed. This is
             // cheaper than comparing the members before we call getMemberRange.
-            evaluator.getSchemaReader().getMemberRange(level,
-                endMember, startMember, members);
+            evaluator.getSchemaReader().getMemberRange(
+                level, endMember, startMember, members);
         }
         return members;
     }
@@ -2066,7 +2090,7 @@ public class FunUtil extends Util {
             throw new UnsupportedOperationException();
         }
 
-        public int getMemberType() {
+        public MemberType getMemberType() {
             throw new UnsupportedOperationException();
         }
 
@@ -2163,7 +2187,7 @@ public class FunUtil extends Util {
         }
 
         public OlapElement lookupChild(
-            SchemaReader schemaReader, String s, int matchType) {
+            SchemaReader schemaReader, String s, MatchType matchType) {
             throw new UnsupportedOperationException();
         }
 
@@ -2182,6 +2206,10 @@ public class FunUtil extends Util {
         public int compareTo(Object o) {
             throw new UnsupportedOperationException();
         }
+    }
+
+    public static void main(String[] args) {
+        System.out.println("done");
     }
 }
 

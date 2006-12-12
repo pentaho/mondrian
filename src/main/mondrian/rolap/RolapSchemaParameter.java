@@ -90,7 +90,7 @@ public class RolapSchemaParameter implements Parameter, ParameterCompilable {
     public void setValue(Object value) {
         if (!modifiable) {
             throw MondrianResource.instance().ParameterIsNotModifiable.ex(
-                getName(), getScope().name);
+                getName(), getScope().name());
         }
         this.value = value;
     }

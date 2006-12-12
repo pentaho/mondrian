@@ -18,66 +18,43 @@ package mondrian.olap;
  * @since Feb 21, 2003
  * @version $Id$
  */
-public class AxisOrdinal extends EnumeratedValues.BasicValue {
-
-    private AxisOrdinal(String name, int ordinal) {
-        super(name, ordinal, null);
-    }
-
-    /**
-     * Converts an ordinal value into an {@link AxisOrdinal}. Returns null if
-     * not found.
-     */
-    public static AxisOrdinal get(int ordinal) {
-        return (AxisOrdinal) enumeration.getValue(ordinal);
-    }
-
-    /**
-     * Converts a name into an {@link AxisOrdinal}. Returns null if
-     * not found.
-     */
-    public static AxisOrdinal get(String name) {
-        return (AxisOrdinal) enumeration.getValue(name, true);
-    }
-
-    public static final int NoneOrdinal = -2;
-    public static final int SlicerOrdinal = -1;
-    public static final int ColumnsOrdinal = 0;
-    public static final int RowsOrdinal = 1;
-    public static final int PagesOrdinal = 2;
-    public static final int ChaptersOrdinal = 3;
-    public static final int SectionsOrdinal = 4;
-    public static final int MaxOrdinal = SectionsOrdinal;
-    public static final int MinOrdinal = NoneOrdinal;
+public enum AxisOrdinal {
 
     /** No axis.*/
-    public static final AxisOrdinal None =
-            new AxisOrdinal("NONE", NoneOrdinal);
+    NONE,
+
     /** Slicer axis (which JOLAP calls the Page axis, not to be confused with
-     * our {@link #PagesOrdinal} axis). */
-    public static final AxisOrdinal Slicer =
-            new AxisOrdinal("SLICER", SlicerOrdinal);
-    /** Columns axis (also known as X axis). */
-    public static final AxisOrdinal Columns =
-            new AxisOrdinal("COLUMNS", ColumnsOrdinal);
-    /** Rows axis (also known as Y axis). */
-    public static final AxisOrdinal Rows =
-            new AxisOrdinal("ROWS", RowsOrdinal);
-    /** Pages axis. */
-    public static final AxisOrdinal Pages =
-            new AxisOrdinal("PAGES", PagesOrdinal);
-    /** Chapters axis. */
-    public static final AxisOrdinal Chapters =
-            new AxisOrdinal("CHAPTERS", ChaptersOrdinal);
-    /** Sections axis. */
-    public static final AxisOrdinal Sections =
-            new AxisOrdinal("SECTIONS", SectionsOrdinal);
-    /** Enumerates the valid values {@link AxisOrdinal}. */
-    public static final EnumeratedValues enumeration = new EnumeratedValues(
-            new AxisOrdinal[] {
-                None, Slicer, Columns, Rows, Pages, Chapters, Sections,
-            }
-    );
+     * our {@link #PAGES} axis). */
+    SLICER,
+
+    /** Columns axis (also known as X axis), logical ordinal = 0. */
+    COLUMNS,
+
+    /** Rows axis (also known as Y axis), logical ordinal = 1. */
+    ROWS,
+
+    /** Pages axis, logical ordinal = 2. */
+    PAGES,
+
+    /** Chapters axis, logical ordinal = 3. */
+    CHAPTERS,
+
+    /** Sections axis, logical ordinal = 4. */
+    SECTIONS;
+
+    public static AxisOrdinal forOrdinal2(int ordinal) {
+        return values()[ordinal + 2];
+    }
+
+    /**
+     * Returns the ordinal of this axis with {@link #COLUMNS} = 0,
+     * {@link #ROWS} = 1, etc.
+     */
+    public int logicalOrdinal() {
+        return ordinal() - 2;
+    }
+
+    public static final int MaxLogicalOrdinal = SECTIONS.logicalOrdinal() + 1;
 }
 
 // End AxisOrdinal.java

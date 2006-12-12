@@ -148,35 +148,30 @@ public interface ExpCompiler {
      * <p>In future, we may have an "ITERABLE" result style, which allows us
      * to handle large lists without holding them in memory.
      */
-    class ResultStyle extends EnumeratedValues.BasicValue {
-
-        private ResultStyle(String name, int ordinal) {
-            super(name, ordinal, null);
-        }
-
+    enum ResultStyle {
         /**
          * Indicates that caller will accept any applicable style.
          */
-        public static final ResultStyle ANY = new ResultStyle("ANY", 0);
+        ANY,
 
         /**
          * Indicates that the expression returns its result as a list which may
          * safely be modified by the caller.
          */
-        public static final ResultStyle MUTABLE_LIST = new ResultStyle("MUTABLE_LIST", 1);
+        MUTABLE_LIST,
 
         /**
          * Indicates that the expression returns its result as a list which must
          * not be modified by the caller.
          */
-        public static final ResultStyle LIST = new ResultStyle("LIST", 2);
+        LIST,
 
         /**
          * Indicates that the expression results its result as an immutable
          * value. This is typical for expressions which return string and
          * numeric values.
          */
-        public static final ResultStyle VALUE = new ResultStyle("VALUE", 3);
+        VALUE
     }
 }
 

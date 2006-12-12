@@ -12,12 +12,12 @@
 package mondrian.test;
 
 import junit.framework.Assert;
-
 import mondrian.olap.*;
 import mondrian.rolap.RolapConnectionProperties;
+import org.eigenbase.util.property.Property;
 
-import java.util.List;
-import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * A <code>ParameterTest</code> is a test suite for functionality relating to
@@ -358,6 +358,17 @@ public class ParameterTest extends FoodMartTestCase {
             resultString);
     }
 
+    public void testFoo() {
+        Connection connection = getTestContext().getConnection();
+        try {
+            String mdx = "with member [Measures].[s] as Parameter(\"x\", NUMERIC, 1) select {[Measures].[s]} on columns, {Time.Children} on rows from [Sales]";
+            Query query = connection.parseQuery(mdx);
+            query.setParameter("x", "8");
+        } finally {
+            connection.close();
+        }
+    }
+
     // -- Tests for connection properties --------------
 
     /**
@@ -374,16 +385,15 @@ public class ParameterTest extends FoodMartTestCase {
      * statement.
      */
     public void testConnectionPropsCannotBeOverridden() {
-        String[] overrideableProps = {
+        Set<RolapConnectionProperties> overrideableProps = Util.enumSetOf(
             RolapConnectionProperties.Catalog,
-            RolapConnectionProperties.Locale,
-        };
-        List propNames = RolapConnectionProperties.instance.getValuesSortedByName();
-        for (int i = 0; i < propNames.size(); i++) {
-            String propName = ((EnumeratedValues.Value) propNames.get(i)).getName();
-            if (!Arrays.asList(overrideableProps).contains(propName)) {
+            RolapConnectionProperties.Locale);
+        for (RolapConnectionProperties prop :
+            RolapConnectionProperties.class.getEnumConstants())
+        {
+            if (!overrideableProps.contains(prop)) {
                 // try to override prop
-                assertSetPropertyFails(propName, "Connection");
+                assertSetPropertyFails(prop.name(), "Connection");
             }
         }
     }
@@ -394,10 +404,7 @@ public class ParameterTest extends FoodMartTestCase {
      * Tests accessing system properties as parameters in a statement.
      */
     public void testSystemPropsGet() {
-        List propertyList = MondrianProperties.instance().getPropertyList();
-        for (int i = 0; i < propertyList.size(); i++) {
-            org.eigenbase.util.property.Property property =
-                (org.eigenbase.util.property.Property) propertyList.get(i);
+        for (Property property : MondrianProperties.instance().getPropertyList()) {
             assertExprReturns(
                 "ParamRef(" +
                     Util.singleQuoteString(property.getPath()) + ")",
@@ -428,10 +435,7 @@ public class ParameterTest extends FoodMartTestCase {
      * Tests setting system properties.
      */
     public void testSystemPropsSet() {
-        List propertyList = MondrianProperties.instance().getPropertyList();
-        for (int i = 0; i < propertyList.size(); i++) {
-            org.eigenbase.util.property.Property property =
-                (org.eigenbase.util.property.Property) propertyList.get(i);
+        for (Property property : MondrianProperties.instance().getPropertyList()) {
             final String propName = property.getPath();
             assertSetPropertyFails(propName, "System");
         }

@@ -62,7 +62,7 @@ public class AccessControlTest extends FoodMartTestCase {
 
     private void assertMemberAccess(
             final Connection connection,
-            int expectedAccess,
+            Access expectedAccess,
             String memberName) {
         final Role role = connection.getRole(); // restricted
         Schema schema = connection.getSchema();
@@ -70,10 +70,8 @@ public class AccessControlTest extends FoodMartTestCase {
         Cube salesCube = schema.lookupCube("Sales", fail);
         final SchemaReader schemaReader = salesCube.getSchemaReader(null); // unrestricted
         final Member member = schemaReader.getMemberByUniqueName(Util.explode(memberName),true);
-        final int actualAccess = role.getAccess(member);
-        final String expectedAccessName = Access.instance().getName(expectedAccess);
-        final String actualAccessName = Access.instance().getName(actualAccess);
-        Assert.assertEquals(memberName, expectedAccessName, actualAccessName);
+        final Access actualAccess = role.getAccess(member);
+        Assert.assertEquals(memberName, expectedAccess, actualAccess);
     }
 
     public void testGrantHierarchy1a() {

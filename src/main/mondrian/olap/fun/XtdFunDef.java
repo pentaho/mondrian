@@ -83,19 +83,19 @@ class XtdFunDef extends FunDefBase {
     }
 
     private Level getLevel(Evaluator evaluator) {
-        switch (levelType.ordinal) {
-        case LevelType.TimeYearsORDINAL:
+        switch (levelType) {
+        case TimeYears:
             return evaluator.getCube().getYearLevel();
-        case LevelType.TimeQuartersORDINAL:
+        case TimeQuarters:
             return evaluator.getCube().getQuarterLevel();
-        case LevelType.TimeMonthsORDINAL:
+        case TimeMonths:
             return evaluator.getCube().getMonthLevel();
-        case LevelType.TimeWeeksORDINAL:
+        case TimeWeeks:
             return evaluator.getCube().getWeekLevel();
-        case LevelType.TimeDaysORDINAL:
+        case TimeDays:
             return evaluator.getCube().getWeekLevel();
         default:
-            throw levelType.unexpected();
+            throw Util.badValue(levelType);
         }
     }
 

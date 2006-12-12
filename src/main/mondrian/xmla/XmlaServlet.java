@@ -50,14 +50,16 @@ public abstract class XmlaServlet extends HttpServlet
 
     public static final String DEFAULT_DATASOURCE_FILE = "datasources.xml";
 
-    public static final int VALIDATE_HTTP_HEAD_PHASE    = 1;
-    public static final int INITIAL_PARSE_PHASE         = 2;
-    public static final int CALLBACK_PRE_ACTION_PHASE   = 3;
-    public static final int PROCESS_HEADER_PHASE        = 4;
-    public static final int PROCESS_BODY_PHASE          = 5;
-    public static final int CALLBACK_POST_ACTION_PHASE  = 6;
-    public static final int SEND_RESPONSE_PHASE         = 7;
-    public static final int SEND_ERROR_PHASE            = 8;
+    public enum Phase {
+        VALIDATE_HTTP_HEAD,
+        INITIAL_PARSE,
+        CALLBACK_PRE_ACTION,
+        PROCESS_HEADER,
+        PROCESS_BODY,
+        CALLBACK_POST_ACTION,
+        SEND_RESPONSE,
+        SEND_ERROR
+    }
 
     /** 
      * If paramName's value is not null and 'true', then return true. 
@@ -160,7 +162,7 @@ public abstract class XmlaServlet extends HttpServlet
         // response header in [0] and response body in [1]
         byte[][] responseSoapParts = new byte[2][];
 
-        int phase = VALIDATE_HTTP_HEAD_PHASE;
+        Phase phase = Phase.VALIDATE_HTTP_HEAD;
 
         try {
 
@@ -198,7 +200,7 @@ public abstract class XmlaServlet extends HttpServlet
             } catch (XmlaException xex) {
                 LOGGER.error("Errors when invoking callbacks validateHttpHeader", xex);
                 handleFault(response, responseSoapParts, phase, xex);
-                phase = SEND_ERROR_PHASE;
+                phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
 
@@ -210,13 +212,13 @@ public abstract class XmlaServlet extends HttpServlet
                                 CHH_CODE, 
                                 CHH_FAULT_FS,
                                 ex));
-                phase = SEND_ERROR_PHASE;
+                phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
             }
 
 
-            phase = INITIAL_PARSE_PHASE;
+            phase = Phase.INITIAL_PARSE;
 
             try {
                 if (LOGGER.isDebugEnabled()) {
@@ -235,12 +237,12 @@ public abstract class XmlaServlet extends HttpServlet
             } catch (XmlaException xex) {
                 LOGGER.error("Unable to unmarshall SOAP message", xex);
                 handleFault(response, responseSoapParts, phase, xex);
-                phase = SEND_ERROR_PHASE;
+                phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
             }
 
-            phase = PROCESS_HEADER_PHASE;
+            phase = Phase.PROCESS_HEADER;
 
             try {
                 if (LOGGER.isDebugEnabled()) {
@@ -255,12 +257,12 @@ public abstract class XmlaServlet extends HttpServlet
             } catch (XmlaException xex) {
                 LOGGER.error("Errors when handling XML/A message", xex);
                 handleFault(response, responseSoapParts, phase, xex);
-                phase = SEND_ERROR_PHASE;
+                phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
             }
 
-            phase = CALLBACK_PRE_ACTION_PHASE;
+            phase = Phase.CALLBACK_PRE_ACTION;
 
 
             try {
@@ -274,7 +276,7 @@ public abstract class XmlaServlet extends HttpServlet
             } catch (XmlaException xex) {
                 LOGGER.error("Errors when invoking callbacks preaction", xex);
                 handleFault(response, responseSoapParts, phase, xex);
-                phase = SEND_ERROR_PHASE;
+                phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
 
@@ -286,12 +288,12 @@ public abstract class XmlaServlet extends HttpServlet
                                 CPREA_CODE, 
                                 CPREA_FAULT_FS,
                                 ex));
-                phase = SEND_ERROR_PHASE;
+                phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
             }
 
-            phase = PROCESS_BODY_PHASE;
+            phase = Phase.PROCESS_BODY;
 
             try {
                 if (LOGGER.isDebugEnabled()) {
@@ -307,12 +309,12 @@ public abstract class XmlaServlet extends HttpServlet
             } catch (XmlaException xex) {
                 LOGGER.error("Errors when handling XML/A message", xex);
                 handleFault(response, responseSoapParts, phase, xex);
-                phase = SEND_ERROR_PHASE;
+                phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
             }
 
-            phase = CALLBACK_POST_ACTION_PHASE;
+            phase = Phase.CALLBACK_POST_ACTION;
 
             try {
                 if (LOGGER.isDebugEnabled()) {
@@ -327,7 +329,7 @@ public abstract class XmlaServlet extends HttpServlet
             } catch (XmlaException xex) {
                 LOGGER.error("Errors when invoking callbacks postaction", xex);
                 handleFault(response, responseSoapParts, phase, xex);
-                phase = SEND_ERROR_PHASE;
+                phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
 
@@ -339,12 +341,12 @@ public abstract class XmlaServlet extends HttpServlet
                                 CPOSTA_CODE, 
                                 CPOSTA_FAULT_FS,
                                 ex));
-                phase = SEND_ERROR_PHASE;
+                phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
             }
 
-            phase = SEND_RESPONSE_PHASE;
+            phase = Phase.SEND_RESPONSE;
 
             try {
 
@@ -354,7 +356,7 @@ public abstract class XmlaServlet extends HttpServlet
             } catch (XmlaException xex) {
                 LOGGER.error("Errors when handling XML/A message", xex);
                 handleFault(response, responseSoapParts, phase, xex);
-                phase = SEND_ERROR_PHASE;
+                phase = Phase.SEND_ERROR;
                 marshallSoapMessage(response, responseSoapParts);
                 return;
             }
@@ -411,7 +413,7 @@ public abstract class XmlaServlet extends HttpServlet
     protected abstract void handleFault(
             HttpServletResponse response,
             byte[][] responseSoapParts,
-            int phase,
+            Phase phase,
             Throwable t);
 
 

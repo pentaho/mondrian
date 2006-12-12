@@ -135,51 +135,47 @@ public class XmlaHandler implements XmlaConstants {
     }
 
     private void checkFormat(XmlaRequest request) throws XmlaException {
-
         // Check response's rowset format in request
-        String propertyName = null;
-        try {
-            final Map<String, String> properties = request.getProperties();
-            if (request.isDrillThrough()) {
-                propertyName = PropertyDefinition.Format.name;
-                final String formatName = properties.get(propertyName);
-                Enumeration.Format format = Enumeration.Format.getValue(formatName);
-                if (format != Enumeration.Format.Tabular) {
-                    throw new XmlaException(
-                        CLIENT_FAULT_FC,
-                        HSB_DRILL_THROUGH_FORMAT_CODE,
-                        HSB_DRILL_THROUGH_FORMAT_FAULT_FS,
-                        new UnsupportedOperationException("<Format>: only 'Tabular' allowed when drilling through"));
-                }
-            } else {
-                propertyName = PropertyDefinition.Format.name;
-                final String formatName = properties.get(propertyName);
-                if (formatName != null) {
-                    Enumeration.Format format = Enumeration.Format.getValue(formatName);
-                    if (format != Enumeration.Format.Multidimensional &&
-                            format != Enumeration.Format.Tabular) {
-                        throw new UnsupportedOperationException("<Format>: only 'Multidimensional', 'Tabular' currently supported");
-                    }
-                }
-                propertyName = PropertyDefinition.AxisFormat.name;
-                final String axisFormatName = properties.get(propertyName);
-                if (axisFormatName != null) {
-                    Enumeration.AxisFormat axisFormat = Enumeration.AxisFormat.getValue(axisFormatName);
-
-                    if (axisFormat != Enumeration.AxisFormat.TupleFormat) {
-                        throw new UnsupportedOperationException("<AxisFormat>: only 'TupleFormat' currently supported");
-                    }
+        final Map<String, String> properties = request.getProperties();
+        if (request.isDrillThrough()) {
+            final String formatName =
+                properties.get(PropertyDefinition.Format.name());
+            Enumeration.Format format =
+                valueOf(
+                    Enumeration.Format.class,
+                    formatName,
+                    null);
+            if (format != Enumeration.Format.Tabular) {
+                throw new XmlaException(
+                    CLIENT_FAULT_FC,
+                    HSB_DRILL_THROUGH_FORMAT_CODE,
+                    HSB_DRILL_THROUGH_FORMAT_FAULT_FS,
+                    new UnsupportedOperationException(
+                        "<Format>: only 'Tabular' allowed when drilling through"));
+            }
+        } else {
+            final String formatName =
+                properties.get(PropertyDefinition.Format.name());
+            if (formatName != null) {
+                Enumeration.Format format = valueOf(
+                    Enumeration.Format.class, formatName, null);
+                if (format != Enumeration.Format.Multidimensional &&
+                    format != Enumeration.Format.Tabular) {
+                    throw new UnsupportedOperationException(
+                        "<Format>: only 'Multidimensional', 'Tabular' currently supported");
                 }
             }
-        } catch (Error e) {
-            // Incredible, the EnumeratedValues getValue method throws an
-            // java.lang.Error
-            throw new XmlaException(
-                CLIENT_FAULT_FC,
-                HSB_UNSUPPORTED_OPERATION_CODE,
-                HSB_UNSUPPORTED_OPERATION_FAULT_FS,
-                new UnsupportedOperationException(
-                    "Property <" + propertyName + "> must be provided"));
+            final String axisFormatName =
+                properties.get(PropertyDefinition.AxisFormat.name());
+            if (axisFormatName != null) {
+                Enumeration.AxisFormat axisFormat = valueOf(
+                    Enumeration.AxisFormat.class, axisFormatName, null);
+
+                if (axisFormat != Enumeration.AxisFormat.TupleFormat) {
+                    throw new UnsupportedOperationException(
+                        "<AxisFormat>: only 'TupleFormat' currently supported");
+                }
+            }
         }
     }
 
@@ -188,11 +184,10 @@ public class XmlaHandler implements XmlaConstants {
 
         final Map<String, String> properties = request.getProperties();
         final String contentName =
-            properties.get(PropertyDefinition.Content.name);
+            properties.get(PropertyDefinition.Content.name());
         // default value is SchemaData
-        Enumeration.Content content = (contentName == null)
-            ? CONTENT_DEFAULT
-            : Enumeration.Content.getValue(contentName);
+        Enumeration.Content content =
+            valueOf(Enumeration.Content.class, contentName, CONTENT_DEFAULT);
 
         // Handle execute
         QueryResult result;
@@ -209,10 +204,10 @@ public class XmlaHandler implements XmlaConstants {
             "xmlns:xmla", NS_XMLA});
         writer.startElement("xmla:return");
         boolean rowset =
-                request.isDrillThrough() ||
-                Enumeration.Format.Tabular.name.equals(
-                        request.getProperties().get(
-                                PropertyDefinition.Format.name));
+            request.isDrillThrough() ||
+                Enumeration.Format.Tabular.name().equals(
+                    request.getProperties().get(
+                        PropertyDefinition.Format.name()));
         writer.startElement("root", new String[] {
             "xmlns",
             result == null ? NS_XMLA_EMPTY :
@@ -1006,8 +1001,9 @@ public class XmlaHandler implements XmlaConstants {
             }
 
             final String formatName = request.getProperties().get(
-                    PropertyDefinition.Format.name);
-            Enumeration.Format format = Enumeration.Format.getValue(formatName);
+                    PropertyDefinition.Format.name());
+            Enumeration.Format format = valueOf(Enumeration.Format.class, formatName,
+                null);
 
             if (format == Enumeration.Format.Multidimensional) {
                 return new MDDataSet_Multidimensional(result);
@@ -1812,30 +1808,28 @@ public class XmlaHandler implements XmlaConstants {
             throws XmlaException {
 
         final RowsetDefinition rowsetDefinition =
-            RowsetDefinition.getValue(request.getRequestType());
+            RowsetDefinition.valueOf(request.getRequestType());
         Rowset rowset = rowsetDefinition.getRowset(request, this);
 
-        try {
-            final String formatName =
-                request.getProperties().get(PropertyDefinition.Format.name);
-            Enumeration.Format format = Enumeration.Format.getValue(formatName);
-            if (format != Enumeration.Format.Tabular) {
-                throw new XmlaException(
-                    CLIENT_FAULT_FC,
-                    HSB_DISCOVER_FORMAT_CODE,
-                    HSB_DISCOVER_FORMAT_FAULT_FS,
-                    new UnsupportedOperationException("<Format>: only 'Tabular' allowed in Discover method type"));
-            }
-        } catch (Error e) {
-            // Incredible, the EnumeratedValues getValue method throws an
-            // java.lang.Error
+        final String formatName =
+            request.getProperties().get(PropertyDefinition.Format.name());
+        Enumeration.Format format =
+            valueOf(
+                Enumeration.Format.class,
+                formatName,
+                Enumeration.Format.Tabular);
+        if (format != Enumeration.Format.Tabular) {
+            throw new XmlaException(
+                CLIENT_FAULT_FC,
+                HSB_DISCOVER_FORMAT_CODE,
+                HSB_DISCOVER_FORMAT_FAULT_FS,
+                new UnsupportedOperationException("<Format>: only 'Tabular' allowed in Discover method type"));
         }
         final String contentName =
-            request.getProperties().get(PropertyDefinition.Content.name);
+            request.getProperties().get(PropertyDefinition.Content.name());
         // default value is SchemaData
-        Enumeration.Content content = (contentName == null)
-            ? CONTENT_DEFAULT
-            : Enumeration.Content.getValue(contentName);
+        Enumeration.Content content =
+            valueOf(Enumeration.Content.class, contentName, CONTENT_DEFAULT);
 
         SaxWriter writer = response.getWriter();
         writer.startDocument();
@@ -1877,6 +1871,29 @@ public class XmlaHandler implements XmlaConstants {
         }
 
         writer.endDocument();
+    }
+
+    /**
+     * Returns enum constant of the specified enum type with the given name.
+     *
+     * @param enumType Enumerated type
+     * @param name Name of constant
+     * @param defaultValue Default value if constant is not found
+     * @return Value, or null if name is null or value does not exist
+     */
+    private <E extends Enum<E>> E valueOf(
+        Class<E> enumType,
+        String name, E defaultValue)
+    {
+        if (name == null) {
+            return defaultValue;
+        } else {
+            try {
+                return Enum.valueOf(enumType, name);
+            } catch (IllegalArgumentException e) {
+                return defaultValue;
+            }
+        }
     }
 
     /**
@@ -1945,7 +1962,7 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
                 throws XmlaException {
         Map<String, String> properties = request.getProperties();
         final String dataSourceInfo =
-            properties.get(PropertyDefinition.DataSourceInfo.name);
+            properties.get(PropertyDefinition.DataSourceInfo.name());
         if (!dataSourcesMap.containsKey(dataSourceInfo)) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
@@ -2015,7 +2032,7 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
 
         Map<String, String> properties = request.getProperties();
         final String catalogName =
-            properties.get(PropertyDefinition.Catalog.name);
+            properties.get(PropertyDefinition.Catalog.name());
         if (catalogName != null) {
             DataSourcesConfig.Catalog dsCatalog = getCatalog(ds, catalogName);
             return new DataSourcesConfig.Catalog[] { dsCatalog };
@@ -2042,7 +2059,7 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
 
         Map<String, String> properties = request.getProperties();
         final String catalogName =
-            properties.get(PropertyDefinition.Catalog.name);
+            properties.get(PropertyDefinition.Catalog.name());
         DataSourcesConfig.Catalog dsCatalog = getCatalog(ds, catalogName);
         if ((dsCatalog == null) && (catalogName == null)) {
             throw new XmlaException(

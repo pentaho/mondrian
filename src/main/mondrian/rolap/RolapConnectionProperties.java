@@ -11,54 +11,42 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.EnumeratedValues;
-
 /**
  * <code>RolapConnectionProperties</code> enumerates the allowable values of
  * keywords in a Mondrian connect string.
  */
-public class RolapConnectionProperties extends EnumeratedValues {
-    public static final RolapConnectionProperties instance =
-        new RolapConnectionProperties();
-
-    private RolapConnectionProperties() {
-        super(new String[] {
-            Provider, Jdbc, JdbcDrivers, JdbcUser, JdbcPassword, Catalog,
-            Locale, CatalogContent, CatalogName, DataSource, PoolNeeded, Role,
-            UseContentChecksum, DynamicSchemaProcessor});
-    }
-
+public enum RolapConnectionProperties {
     /**
      * The "Provider" property must have the value <code>"Mondrian"</code>.
      */
-    public static final String Provider = "Provider";
+    Provider,
 
     /**
      * The "Jdbc" property is the URL of the JDBC database where the data is
      * stored. You must specify either {@link #DataSource} or {@link #Jdbc}.
      */
-    public static final String Jdbc = "Jdbc";
+    Jdbc,
 
     /**
      * The "JdbcDrivers" property is a comma-separated list of JDBC driver
      * classes, for example,
      * <code>"sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver"</code>.
      */
-    public static final String JdbcDrivers = "JdbcDrivers";
+    JdbcDrivers,
 
     /**
      * The "JdbcUser" property is the name of the user to log on to the JDBC
      * database. (You don't need to specify this parameter if it is already
      * specified in the JDBC URL.)
      */
-    public static final String JdbcUser = "JdbcUser";
+    JdbcUser,
 
     /**
      * The "JdbcPassword" property is the password to log on to the JDBC
      * database. (You don't need to specify this parameter if it is already
      * specified in the JDBC URL.)
      */
-    public static final String JdbcPassword = "JdbcPassword";
+    JdbcPassword,
 
     /**
      * The "Catalog" property is the URL of the catalog, an XML file which
@@ -67,7 +55,7 @@ public class RolapConnectionProperties extends EnumeratedValues {
      * href="{@docRoot}/../schema.html">the Schema Guide</a>.
      * See also {@link #CatalogContent}.
      */
-    public static final String Catalog = "Catalog";
+    Catalog,
 
     /**
      * The "CatalogContent" property is an XML string representing the schema:
@@ -76,21 +64,21 @@ public class RolapConnectionProperties extends EnumeratedValues {
      * href="{@docRoot}/../schema.html">the Schema Guide</a>.
      * See also {@link #Catalog}.
      */
-    public static final String CatalogContent = "CatalogContent";
+    CatalogContent,
 
     /**
      * The "CatalogName" property is not used. If, in future, we support
      * multiple catalogs, this property will specify which catalog to use.
      * See also {@link #Catalog}.
      */
-    public static final String CatalogName = "CatalogName";
+    CatalogName,
 
     /**
      * The "DataSource" property is the name of a data source class. It must
      * implement the {@link javax.sql.DataSource} interface.
      * You must specify either {@link #DataSource} or {@link #Jdbc}.
      */
-    public static final String DataSource = "DataSource";
+    DataSource,
 
     /**
      * The "PoolNeeded" property tells Mondrian whether to add a layer of
@@ -102,14 +90,38 @@ public class RolapConnectionProperties extends EnumeratedValues {
      * <li>connections created via the {@link #DataSource} are already pooled.
      * </ul>
      */
-    public static final String PoolNeeded = "PoolNeeded";
+    PoolNeeded,
 
     /**
      * The "Role" property is the name of the {@link mondrian.olap.Role role}
      * to adopt. If not specified, the connection uses a role which has access
      * to every object in the schema.
      */
-    public static final String Role = "Role";
+    Role,
+
+    /**
+     * Allows to work with dynamically changing schema. If this property is set
+     * to <code>true</code> and schema content has changed (previous checksum
+     * doesn't equal with current), schema would be reloaded. Could be used in
+     * combination with <code>DynamicSchemaProcessor</code> property
+     */
+    UseContentChecksum,
+
+    /**
+     * The name of a class implementing the
+     * {@link mondrian.rolap.DynamicSchemaProcessor} interface.
+     * A dynamic schema processor is called at runtime in order to modify the
+     * schema content.
+     */
+    DynamicSchemaProcessor,
+
+    /**
+     * The "Locale" property is the requested Locale for the
+     * LocalizingDynamicSchemaProcessor.  Example values are "en",
+     * "en_US", "hu". If Locale is not specified, then the name of system's
+     * default will be used, as per {@link java.util.Locale#getDefault()}.
+     */
+    Locale;
 
     /**
      * Any property beginning with this value will be added to the
@@ -118,29 +130,6 @@ public class RolapConnectionProperties extends EnumeratedValues {
      */
     public static final String JdbcPropertyPrefix = "jdbc.";
 
-    /**
-     * Allows to work with dynamically changing schema. If this property is set
-     * to <code>true</code> and schema content has changed (previous checksum
-     * doesn't equal with current), schema would be reloaded. Could be used in
-     * combination with <code>DynamicSchemaProcessor</code> property
-     */
-    public static final String UseContentChecksum = "UseContentChecksum";
-
-    /**
-     * The name of a class implementing the
-     * {@link mondrian.rolap.DynamicSchemaProcessor} interface.
-     * A dynamic schema processor is called at runtime in order to modify the
-     * schema content.
-     */
-    public static final String DynamicSchemaProcessor = "DynamicSchemaProcessor";
-
-    /**
-     * The "Locale" property is the requested Locale for the
-     * LocalizingDynamicSchemaProcessor.  Example values are "en",
-     * "en_US", "hu". If Locale is not specified, then the name of system's
-     * default will be used, as per {@link java.util.Locale#getDefault()}.
-     */
-    public static final String Locale = "Locale";
-}
+    }
 
 // End RolapConnectionProperties.java

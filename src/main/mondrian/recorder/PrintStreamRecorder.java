@@ -28,23 +28,23 @@ public class PrintStreamRecorder extends AbstractRecorder {
     protected void recordMessage(
             final String msg,
             final Object info,
-            final int msgType) {
+            final MsgType msgType) {
         PrintStream ps = null;
-        String prefix = null;
+        String prefix;
         switch (msgType) {
-        case INFO_MSG_TYPE :
+        case INFO:
             prefix = "INFO: ";
             ps = out;
             break;
-        case WARN_MSG_TYPE :
+        case WARN:
             prefix = "WARN: ";
             ps = out;
             break;
-        case ERROR_MSG_TYPE :
+        case ERROR:
             prefix = "ERROR: ";
             ps = err;
             break;
-        default :
+        default:
             prefix = "UNKNOWN: ";
         }
         String context = getContext();

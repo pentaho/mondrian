@@ -336,7 +336,7 @@ public class RolapUtil {
      * @param matchType match type
      * @param caseInsensitive if true, use case insensitive search (if
      * applicable) when when doing exact searches
-     * 
+     *
      * @return matching member (if it exists) or the closest matching one
      * in the case of a BEFORE or AFTER search
      */
@@ -345,7 +345,7 @@ public class RolapUtil {
         RolapMember parent,
         RolapLevel level,
         String searchName,
-        int matchType,
+        MatchType matchType,
         boolean caseInsensitive)
     {
         // create a member corresponding to the member we're trying

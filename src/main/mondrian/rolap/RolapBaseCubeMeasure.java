@@ -69,8 +69,8 @@ class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeasure {
         setProperty(
                 Property.FORMAT_EXP.name,
                 Literal.createString(formatString));
-        this.aggregator = (RolapAggregator)
-                RolapAggregator.enumeration.getValue(aggregatorName, true);
+        this.aggregator =
+            RolapAggregator.enumeration.getValue(aggregatorName, true);
         if (this.aggregator == null) {
             throw Util.newError("Unknown aggregator '" + aggregatorName + "'");
         }

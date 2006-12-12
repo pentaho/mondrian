@@ -112,14 +112,14 @@ public class Id
             if (k++ > 0) {
                 pw.print(".");
             }
-            switch (s.quoting.ordinal) {
-            case Quoting.UNQUOTED_ORDINAL:
+            switch (s.quoting) {
+            case UNQUOTED:
                 pw.print(s.name);
                 break;
-            case Quoting.KEY_ORDINAL:
+            case KEY:
                 pw.print("&[" + Util.mdxEncodeString(s.name) + "]");
                 break;
-            case Quoting.QUOTED_ORDINAL:
+            case QUOTED:
                 pw.print("[" + Util.mdxEncodeString(s.name) + "]");
                 break;
             }
@@ -148,30 +148,23 @@ public class Id
         }
     }
 
-    public static class Quoting extends EnumeratedValues.BasicValue {
+    public enum Quoting {
 
-        public static final int UNQUOTED_ORDINAL = 0;
         /**
          * Unquoted identifier, for example "Measures".
          */
-        public static final Quoting UNQUOTED = new Quoting("UNQUOTED", UNQUOTED_ORDINAL);
+        UNQUOTED,
 
-        public static final int QUOTED_ORDINAL = 1;
         /**
          * Quoted identifier, for example "[Measures]".
          */
-        public static final Quoting QUOTED = new Quoting("QUOTED", QUOTED_ORDINAL);
+        QUOTED,
 
-        public static final int KEY_ORDINAL = 2;
         /**
          * Identifier quoted with an ampersand to indicate a key value, for example
          * the second segment in "[Employees].&[89]".
          */
-        public static final Quoting KEY = new Quoting("KEY", KEY_ORDINAL);
-
-        private Quoting(String name, int ordinal) {
-            super(name, ordinal, null);
-        }
+        KEY
     }
 }
 

@@ -13,7 +13,6 @@ package mondrian.xmla;
 
 import java.util.*;
 
-import mondrian.olap.EnumeratedValues;
 import mondrian.olap.Util;
 
 import org.apache.log4j.Logger;
@@ -61,11 +60,11 @@ abstract class Rowset implements XmlaConstants {
             final RowsetDefinition.Column column = definition.lookupColumn(
                 restrictedColumn);
             if (column == null) {
-                throw Util.newError("Rowset '" + definition.name +
+                throw Util.newError("Rowset '" + definition.name() +
                     "' does not contain column '" + restrictedColumn + "'");
             }
             if (!column.restriction) {
-                throw Util.newError("Rowset '" + definition.name +
+                throw Util.newError("Rowset '" + definition.name() +
                     "' column '" + restrictedColumn +
                     "' does not allow restrictions");
             }
@@ -73,13 +72,13 @@ abstract class Rowset implements XmlaConstants {
             final List<String> requiredValue = restrictionEntry.getValue();
             if (requiredValue.size() > 1) {
                 final RowsetDefinition.Type type = column.type;
-                switch (type.ordinal) {
-                case RowsetDefinition.Type.StringArray_ORDINAL:
-                case RowsetDefinition.Type.EnumerationArray_ORDINAL:
-                case RowsetDefinition.Type.StringSometimesArray_ORDINAL:
+                switch (type) {
+                case StringArray:
+                case EnumerationArray:
+                case StringSometimesArray:
                     break; // OK
                 default:
-                    throw Util.newError("Rowset '" + definition.name +
+                    throw Util.newError("Rowset '" + definition.name() +
                         "' column '" + restrictedColumn +
                         "' can only be restricted on one value at a time");
                 }
@@ -93,9 +92,9 @@ abstract class Rowset implements XmlaConstants {
         for (Map.Entry<String, String> propertyEntry : properties.entrySet()) {
             String propertyName = propertyEntry.getKey();
             final PropertyDefinition propertyDef =
-                PropertyDefinition.getValue(propertyName);
+                Util.lookup(PropertyDefinition.class, propertyName);
             if (propertyDef == null) {
-                throw Util.newError("Rowset '" + definition.name +
+                throw Util.newError("Rowset '" + definition.name() +
                     "' does not support property '" + propertyName + "'");
             }
             final String propertyValue = propertyEntry.getValue();
@@ -118,14 +117,14 @@ abstract class Rowset implements XmlaConstants {
      * to the base class method, which will probably throw an error.<p/>
      */
     protected void setProperty(PropertyDefinition propertyDef, String value) {
-        switch (propertyDef.ordinal) {
-        case PropertyDefinition.Format_ORDINAL:
+        switch (propertyDef) {
+        case Format:
             break;
-        case PropertyDefinition.DataSourceInfo_ORDINAL:
+        case DataSourceInfo:
             break;
-        case PropertyDefinition.Catalog_ORDINAL:
+        case Catalog:
             break;
-        case PropertyDefinition.LocaleIdentifier_ORDINAL:
+        case LocaleIdentifier:
             // locale ids:
             // http://krafft.com/scripts/deluxe-calendar/lcid_chart.htm
             // 1033 is US English
@@ -134,8 +133,8 @@ abstract class Rowset implements XmlaConstants {
             }
             // fall through
         default:
-            LOGGER.warn("Warning: Rowset '" + rowsetDefinition.name +
-                    "' does not support property '" + propertyDef.name +
+            LOGGER.warn("Warning: Rowset '" + rowsetDefinition.name() +
+                    "' does not support property '" + propertyDef.name() +
                     "' (value is '" + value + "')");
         }
     }
@@ -195,7 +194,7 @@ abstract class Rowset implements XmlaConstants {
                         Util.newInternal("Value required for column " +
                             column.name +
                             " of rowset " +
-                            rowsetDefinition.name));
+                            rowsetDefinition.name()));
                 }
             } else if (value instanceof XmlElement[]) {
                 XmlElement[] elements = (XmlElement[]) value;
@@ -275,10 +274,20 @@ abstract class Rowset implements XmlaConstants {
     /**
      * Emits all of the values in an enumeration.
      */
-    protected void emit(EnumeratedValues enumeration, XmlaResponse response)
-            throws XmlaException {
-        final List<EnumeratedValues.Value> valuesSortedByName = enumeration.getValuesSortedByName();
-        for (EnumeratedValues.Value value : valuesSortedByName) {
+    protected <E extends Enum<E>> void emit(
+        Class<E> clazz, 
+        XmlaResponse response)
+        throws XmlaException
+    {
+        final E[] valuesSortedByName = clazz.getEnumConstants().clone();
+        Arrays.sort(
+            valuesSortedByName,
+            new Comparator<E>() {
+                public int compare(E o1, E o2) {
+                    return o1.name().compareTo(o2.name());
+                }
+            });
+        for (E value : valuesSortedByName) {
             emit(value, response);
         }
     }
@@ -288,7 +297,7 @@ abstract class Rowset implements XmlaConstants {
      * If there are no restrictions, always returns true.
     protected boolean passesRestriction(RowsetDefinition.Column column,
             Object value) {
-        final Object requiredValue = restrictions.get(column.name);
+        final Object requiredValue = restrictions.forOrdinal2(column.name);
 
         if (requiredValue == null) {
             return true;

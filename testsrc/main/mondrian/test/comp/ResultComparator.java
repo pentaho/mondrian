@@ -195,7 +195,7 @@ class ResultComparator {
         final Axis[] axes = result.getAxes();
         for (int i = 0; i < axes.length; i++) {
             Axis axis = axes[i];
-            String axisName = AxisOrdinal.get(i).getName().toLowerCase();
+            String axisName = AxisOrdinal.forOrdinal2(i).name().toLowerCase();
             axisToXml(document, dataResultXml, axis, axisName);
         }
         final Element dataXml = document.createElement("data");

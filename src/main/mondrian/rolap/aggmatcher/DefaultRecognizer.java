@@ -99,18 +99,17 @@ class DefaultRecognizer extends Recognizer {
         try {
             int measureCountCount = 0;
 
-            for (Iterator it =
-                    dbFactTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
+            for (Iterator<JdbcSchema.Table.Column.Usage> it =
+                    dbFactTable.getColumnUsages(JdbcSchema.UsageType.MEASURE);
                     it.hasNext(); ) {
-                JdbcSchema.Table.Column.Usage factUsage =
-                    (JdbcSchema.Table.Column.Usage) it.next();
+                JdbcSchema.Table.Column.Usage factUsage = it.next();
 
                 Matcher matcher = getMeasureMatcher(factUsage);
 
                 int matchCount = 0;
                 for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
                     // if marked as ignore, then do not consider
-                    if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
+                    if (aggColumn.hasUsage(JdbcSchema.UsageType.IGNORE)) {
                         continue;
                     }
 
@@ -161,7 +160,7 @@ class DefaultRecognizer extends Recognizer {
         int matchCount = 0;
         for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
             // if marked as ignore, then do not consider
-            if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
+            if (aggColumn.hasUsage(JdbcSchema.UsageType.IGNORE)) {
                 continue;
             }
 

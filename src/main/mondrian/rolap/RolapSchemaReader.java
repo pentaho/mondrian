@@ -82,10 +82,10 @@ public abstract class RolapSchemaReader implements SchemaReader {
         return memberReader;
     }
 
-    public void getMemberRange(Level level, Member startMember, Member endMember, List list) {
+    public void getMemberRange(Level level, Member startMember, Member endMember, List<Member> list) {
         getMemberReader(level.getHierarchy()).getMemberRange(
                 (RolapLevel) level, (RolapMember) startMember,
-                (RolapMember) endMember, list);
+                (RolapMember) endMember, (List) list);
     }
 
     public int compareMembersHierarchically(Member m1, Member m2) {
@@ -247,7 +247,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
     }
 
     public OlapElement getElementChild(
-        OlapElement parent, String name, int matchType)
+        OlapElement parent, String name, MatchType matchType)
     {
         return parent.lookupChild(this, name, matchType);
     }
@@ -260,7 +260,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
 
     public Member getMemberByUniqueName(
             String[] uniqueNameParts, boolean failIfNotFound,
-            int matchType) {
+            MatchType matchType) {
         // In general, this schema reader doesn't have a cube, so we cannot
         // start looking up members.
         return null;
@@ -281,7 +281,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
             String[] names,
             boolean failIfNotFound,
             int category,
-            int matchType)
+            MatchType matchType)
     {
         return Util.lookupCompound(
                 this, parent, names, failIfNotFound, category, matchType);
@@ -293,7 +293,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
     }
 
     public Member lookupMemberChildByName(
-        Member parent, String childName, int matchType)
+        Member parent, String childName, MatchType matchType)
     {
         LOGGER.debug("looking for child \"" + childName + "\" of " + parent);
         try {

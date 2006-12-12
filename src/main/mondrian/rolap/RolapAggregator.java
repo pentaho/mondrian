@@ -90,9 +90,9 @@ public abstract class RolapAggregator
     /**
      * List of all valid aggregation operators.
      */
-    public static final EnumeratedValues enumeration = new EnumeratedValues (
-            new RolapAggregator[] {Sum, Count, Min, Max, Avg, DistinctCount}
-    );
+    public static final EnumeratedValues<RolapAggregator> enumeration =
+        new EnumeratedValues<RolapAggregator> (
+            new RolapAggregator[] {Sum, Count, Min, Max, Avg, DistinctCount});
 
     /**
      * This is the base class for implementing aggregators over sum and

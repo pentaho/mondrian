@@ -114,7 +114,7 @@ public abstract class HierarchyBase
     }
     
     public OlapElement lookupChild(
-        SchemaReader schemaReader, String s, int matchType)
+        SchemaReader schemaReader, String s, MatchType matchType)
     {
         OlapElement oe = Util.lookupHierarchyLevel(this, s);
         if (oe == null) {

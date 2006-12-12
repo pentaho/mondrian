@@ -385,7 +385,7 @@ Revision is $Id$
                 if (type == null) {
                     return null; //DimensionType.StandardDimension;
                 } else {
-                    return DimensionType.lookup(type);
+                    return DimensionType.valueOf(type);
                 }
             }
         </Code>

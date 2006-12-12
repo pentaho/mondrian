@@ -68,38 +68,34 @@ public class AggStar {
         AggStar.FactTable aggStarFactTable = aggStar.getFactTable();
 
         // 1. load fact count
-        for (Iterator it =
-            dbTable.getColumnUsages(JdbcSchema.FACT_COUNT_COLUMN_USAGE);
+        for (Iterator<JdbcSchema.Table.Column.Usage> it =
+            dbTable.getColumnUsages(JdbcSchema.UsageType.FACT_COUNT);
                     it.hasNext();) {
-            JdbcSchema.Table.Column.Usage usage =
-                (JdbcSchema.Table.Column.Usage) it.next();
+            JdbcSchema.Table.Column.Usage usage = it.next();
             aggStarFactTable.loadFactCount(usage);
         }
 
         // 2. load measures
-        for (Iterator it =
-                dbTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
+        for (Iterator<JdbcSchema.Table.Column.Usage> it =
+                dbTable.getColumnUsages(JdbcSchema.UsageType.MEASURE);
                 it.hasNext();) {
-            JdbcSchema.Table.Column.Usage usage =
-                (JdbcSchema.Table.Column.Usage) it.next();
+            JdbcSchema.Table.Column.Usage usage = it.next();
             aggStarFactTable.loadMeasure(usage);
         }
 
         // 3. load foreign keys
-        for (Iterator it =
-                dbTable.getColumnUsages(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
+        for (Iterator<JdbcSchema.Table.Column.Usage> it =
+                dbTable.getColumnUsages(JdbcSchema.UsageType.FOREIGN_KEY);
                 it.hasNext();) {
-            JdbcSchema.Table.Column.Usage usage =
-                (JdbcSchema.Table.Column.Usage) it.next();
+            JdbcSchema.Table.Column.Usage usage = it.next();
             aggStarFactTable.loadForeignKey(usage);
         }
 
         // 4. load levels
-        for (Iterator it =
-                dbTable.getColumnUsages(JdbcSchema.LEVEL_COLUMN_USAGE);
+        for (Iterator<JdbcSchema.Table.Column.Usage> it =
+                dbTable.getColumnUsages(JdbcSchema.UsageType.LEVEL);
                 it.hasNext();) {
-            JdbcSchema.Table.Column.Usage usage =
-                (JdbcSchema.Table.Column.Usage) it.next();
+            JdbcSchema.Table.Column.Usage usage = it.next();
             aggStarFactTable.loadLevel(usage);
         }
 
@@ -1102,7 +1098,7 @@ public class AggStar {
             RolapAggregator aggregator = usage.getAggregator();
 
             MondrianDef.Expression expression;
-            if (column.hasUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE) &&
+            if (column.hasUsage(JdbcSchema.UsageType.FOREIGN_KEY) &&
                     ! aggregator.isDistinct()) {
                 expression = factCountColumn.getExpression();
             } else {

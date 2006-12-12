@@ -38,7 +38,7 @@ public class QueryAxis extends QueryPart {
      * Whether to show subtotals on this axis.
      * The "(show\hide)Subtotals" operation changes its valud.
      */
-    private int  showSubtotals;
+    private SubtotalVisibility subtotalVisibility;
     private final Id[] dimensionProperties;
 
     /**
@@ -48,40 +48,40 @@ public class QueryAxis extends QueryPart {
      *    are all empty
      * @param set Expression to populate the axis
      * @param axisDef Which axis (ROWS, COLUMNS, etc.)
-     * @param showSubtotals Whether to show subtotals
+     * @param subtotalVisibility Whether to show subtotals
      * @param dimensionProperties List of dimension properties
      */
     public QueryAxis(
             boolean nonEmpty,
             Exp set,
             AxisOrdinal axisDef,
-            int showSubtotals,
+            SubtotalVisibility subtotalVisibility,
             Id[] dimensionProperties) {
         assert dimensionProperties != null;
         this.nonEmpty = nonEmpty ||
             MondrianProperties.instance().EnableNonEmptyOnAllAxis.get();
         this.exp = set;
         this.axisOrdinal = axisDef;
-        this.showSubtotals = showSubtotals;
+        this.subtotalVisibility = subtotalVisibility;
         this.dimensionProperties = dimensionProperties;
     }
 
     /**
      * Creates an axis with no dimension properties.
      *
-     * @see #QueryAxis(boolean, Exp, AxisOrdinal, int, Id[])
+     * @see #QueryAxis(boolean,Exp,AxisOrdinal,mondrian.olap.QueryAxis.SubtotalVisibility,Id[])
      */
     public QueryAxis(
             boolean nonEmpty,
             Exp set,
             AxisOrdinal axisDef,
-            int showSubtotals) {
-        this(nonEmpty, set, axisDef, showSubtotals, new Id[0]);
+            SubtotalVisibility subtotalVisibility) {
+        this(nonEmpty, set, axisDef, subtotalVisibility, new Id[0]);
     }
 
     public Object clone() {
-        return new QueryAxis(nonEmpty, (Exp) exp.clone(), axisOrdinal,
-                showSubtotals, (Id[]) dimensionProperties.clone());
+        return new QueryAxis(nonEmpty, exp.clone(), axisOrdinal,
+            subtotalVisibility, dimensionProperties.clone());
     }
 
     static QueryAxis[] cloneArray(QueryAxis[] a) {
@@ -103,7 +103,7 @@ public class QueryAxis extends QueryPart {
 
     public Calc compile(ExpCompiler compiler) {
         Exp exp = this.exp;
-        if (axisOrdinal == AxisOrdinal.Slicer) {
+        if (axisOrdinal == AxisOrdinal.SLICER) {
             exp = normalizeSlicerExpression(exp);
             exp = exp.accept(compiler.getValidator());
         }
@@ -139,11 +139,11 @@ public class QueryAxis extends QueryPart {
     }
 
     public String getAxisName() {
-        return axisOrdinal.getName();
+        return axisOrdinal.name();
     }
 
     /**
-     * Returns the ordinal of this axis, for example {@link AxisOrdinal#Rows}.
+     * Returns the ordinal of this axis, for example {@link AxisOrdinal#ROWS}.
      */
     public AxisOrdinal getAxisOrdinal() {
         return axisOrdinal;
@@ -183,7 +183,7 @@ public class QueryAxis extends QueryPart {
         exp = validator.validate(exp, false);
         final Type type = exp.getType();
         if (!TypeUtil.isSet(type)) {
-            throw MondrianResource.instance().MdxAxisIsNotSet.ex(axisOrdinal.getName());
+            throw MondrianResource.instance().MdxAxisIsNotSet.ex(axisOrdinal.name());
         }
     }
 
@@ -208,7 +208,7 @@ public class QueryAxis extends QueryPart {
                 dimensionProperty.unparse(pw);
             }
         }
-        if (axisOrdinal != AxisOrdinal.Slicer) {
+        if (axisOrdinal != AxisOrdinal.SLICER) {
             pw.print(" ON " + axisOrdinal);
         }
     }
@@ -221,22 +221,22 @@ public class QueryAxis extends QueryPart {
                 new LevelExpr(level)})});
     }
 
-    void setShowSubtotals(boolean bShowSubtotals) {
-        showSubtotals = bShowSubtotals ?
+    void setSubtotalVisibility(boolean bShowSubtotals) {
+        subtotalVisibility = bShowSubtotals ?
             SubtotalVisibility.Show :
             SubtotalVisibility.Hide;
     }
 
-    public int getShowSubtotals() {
-        return showSubtotals;
+    public SubtotalVisibility getSubtotalVisibility() {
+        return subtotalVisibility;
     }
 
-    public void resetShowHideSubtotals() {
-        this.showSubtotals = SubtotalVisibility.Undefined;
+    public void resetSubtotalVisibility() {
+        this.subtotalVisibility = SubtotalVisibility.Undefined;
     }
 
     public void validate(Validator validator) {
-        if (axisOrdinal == AxisOrdinal.Slicer) {
+        if (axisOrdinal == AxisOrdinal.SLICER) {
             if (exp != null) {
                 exp = validator.validate(exp, false);
             }
@@ -251,17 +251,10 @@ public class QueryAxis extends QueryPart {
      * <code>SubtotalVisibility</code> enumerates the allowed values of
      * whether subtotals are visible.
      */
-    public static class SubtotalVisibility extends EnumeratedValues {
-        /** The singleton instance of <code>SubtotalVisibility</code>. */
-        public static final SubtotalVisibility instance = new SubtotalVisibility();
-
-        private SubtotalVisibility() {
-            super(new String[] {"undefined", "hide", "show"},
-                  new int[] {Undefined, Hide, Show});
-        }
-        public static final int Undefined = -1;
-        public static final int Hide = 0;
-        public static final int Show = 1;
+    public enum SubtotalVisibility {
+        Undefined,
+        Hide,
+        Show;
     }
 
 }

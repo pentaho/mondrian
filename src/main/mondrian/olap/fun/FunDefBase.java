@@ -110,7 +110,7 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
         this.name = name;
         Util.discard(signature);
         this.description = description;
-        this.flags = syntax.ordinal;
+        this.flags = syntax.ordinal();
         this.returnCategory = returnCategory;
         this.parameterCategories = parameterCategories;
     }
@@ -174,7 +174,7 @@ public abstract class FunDefBase extends FunUtil implements FunDef {
     }
 
     public Syntax getSyntax() {
-        return Syntax.get(flags);
+        return Syntax.class.getEnumConstants()[flags];
     }
 
     public int getReturnCategory() {

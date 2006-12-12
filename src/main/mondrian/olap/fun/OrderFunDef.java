@@ -32,7 +32,7 @@ class OrderFunDef extends FunDefBase {
             "Arranges members of a set, optionally preserving or breaking the hierarchy.",
             new String[]{"fxxvy", "fxxv"},
             OrderFunDef.class,
-            Flags.instance.getNames());
+            Flag.getNames());
 
     public OrderFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
@@ -41,9 +41,7 @@ class OrderFunDef extends FunDefBase {
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc = compiler.compileList(call.getArg(0), true);
         final Calc expCalc = compiler.compileScalar(call.getArg(1), true);
-        int order = getLiteralArg(call, 2, Flags.ASC, Flags.instance);
-        final boolean desc = Flags.isDescending(order);
-        final boolean brk = Flags.isBreak(order);
+        final Flag order = getLiteralArg(call, 2, Flag.ASC, Flag.class);
 
         if (expCalc instanceof MemberValueCalc) {
             MemberValueCalc memberValueCalc = (MemberValueCalc) expCalc;
@@ -71,8 +69,8 @@ class OrderFunDef extends FunDefBase {
                                 listCalc,
                                 new ValueCalc(
                                         new DummyExp(expCalc.getType())),
-                                desc,
-                                brk));
+                            order.descending,
+                            order.brk));
             } else {
                 // Some members are constant. Evaluate these before evaluating
                 // the list expression.
@@ -86,30 +84,36 @@ class OrderFunDef extends FunDefBase {
                                     new DummyExp(expCalc.getType()),
                                     variableList.toArray(
                                         new MemberCalc[variableList.size()])),
-                                desc,
-                                brk));
+                            order.descending,
+                            order.brk));
             }
         }
-        return new CalcImpl(call, listCalc, expCalc, desc, brk);
+        return new CalcImpl(call, listCalc, expCalc, order.descending, order.brk);
     }
 
     /**
      * Enumeration of the flags allowed to the <code>ORDER</code> MDX function.
      */
-    static class Flags extends EnumeratedValues {
-        static final Flags instance = new Flags();
-        private Flags() {
-            super(new String[] {"ASC","DESC","BASC","BDESC"});
+    enum Flag {
+        ASC(false, false),
+        DESC(true, false),
+        BASC(false, true),
+        BDESC(true, true);
+
+        private final boolean descending;
+        private final boolean brk;
+
+        Flag(boolean descending, boolean brk) {
+            this.descending = descending;
+            this.brk = brk;
         }
-        public static final int ASC = 0;
-        public static final int DESC = 1;
-        public static final int BASC = 2;
-        public static final int BDESC = 3;
-        public static boolean isDescending(int value) {
-            return (value & DESC) == DESC;
-        }
-        public static boolean isBreak(int value) {
-            return (value & BASC) == BASC;
+
+        public static String[] getNames() {
+            List<String> names = new ArrayList<String>();
+            for (Flag flags : Flag.class.getEnumConstants()) {
+                names.add(flags.name());
+            }
+            return names.toArray(new String[names.size()]);
         }
     }
 
@@ -146,9 +150,9 @@ class OrderFunDef extends FunDefBase {
 
         public List<Object> getArguments() {
             return Collections.singletonList(
-                    desc ?
-                    (Object) (brk ? "BDESC" : "DESC") :
-                    (Object) (brk ? "BASC" : "ASC"));
+                (Object) (desc ?
+                    (brk ? Flag.BDESC : Flag.DESC) :
+                    (brk ? Flag.BASC : Flag.ASC)));
         }
 
         public boolean dependsOn(Dimension dimension) {

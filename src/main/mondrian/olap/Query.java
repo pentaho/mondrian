@@ -326,7 +326,7 @@ public class Query extends QueryPart {
 
     private void normalizeAxes() {
         for (int i = 0; i < axes.length; i++) {
-            AxisOrdinal correctOrdinal = AxisOrdinal.get(i);
+            AxisOrdinal correctOrdinal = AxisOrdinal.forOrdinal2(i);
             if (axes[i].getAxisOrdinal() != correctOrdinal) {
                 for (int j = i + 1; j < axes.length; j++) {
                     if (axes[j].getAxisOrdinal() == correctOrdinal) {
@@ -563,15 +563,10 @@ public class Query extends QueryPart {
 
     /**
      * Adds a level to an axis expression.
-     *
-     * @pre AxisOrdinal.enumeration.isValid(axis)
-     * @pre axis &lt; axes.length
      */
-    public void addLevelToAxis(int axis, Level level) {
-        Util.assertPrecondition(AxisOrdinal.enumeration.isValid(axis),
-                "AxisOrdinal.enumeration.isValid(axis)");
-        Util.assertPrecondition(axis < axes.length, "axis < axes.length");
-        axes[axis].addLevel(level);
+    public void addLevelToAxis(AxisOrdinal axis, Level level) {
+        assert axis != null;
+        axes[axis.logicalOrdinal()].addLevel(level);
     }
 
     /**
@@ -640,7 +635,7 @@ public class Query extends QueryPart {
         }
         if (!param.isModifiable()) {
             throw MondrianResource.instance().ParameterIsNotModifiable.ex(
-                parameterName, param.getScope().getName());
+                parameterName, param.getScope().name());
         }
         final Exp exp = quickParse(
             TypeUtil.typeToCategory(param.getType()), value, this);
@@ -885,14 +880,14 @@ public class Query extends QueryPart {
      * Returns <code>Hierarchy[]</code> used on <code>axis</code>. It calls
      * {@link #collectHierarchies}.
      */
-    public Hierarchy[] getMdxHierarchiesOnAxis(int axis) {
-        if (axis >= axes.length) {
+    public Hierarchy[] getMdxHierarchiesOnAxis(AxisOrdinal axis) {
+        if (axis.logicalOrdinal() >= axes.length) {
             throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.
-                ex(axis);
+                ex(axis.logicalOrdinal());
         }
-        QueryAxis queryAxis = (axis == AxisOrdinal.SlicerOrdinal) ?
+        QueryAxis queryAxis = (axis == AxisOrdinal.SLICER) ?
                 slicerAxis :
-                axes[axis];
+                axes[axis.logicalOrdinal()];
         return collectHierarchies(queryAxis.getSet());
     }
 
@@ -1279,7 +1274,7 @@ public class Query extends QueryPart {
         public Member getMemberByUniqueName(
                 String[] uniqueNameParts,
                 boolean failIfNotFound,
-                int matchType)
+                MatchType matchType)
         {
             final String uniqueName = Util.implode(uniqueNameParts);
             Member member = lookupMemberFromCache(uniqueName);
@@ -1349,7 +1344,7 @@ public class Query extends QueryPart {
         }
 
         public OlapElement getElementChild(
-            OlapElement parent, String s, int matchType)
+            OlapElement parent, String s, MatchType matchType)
         {
             // first look in cube
             OlapElement mdxElement =
@@ -1387,7 +1382,7 @@ public class Query extends QueryPart {
                 String[] names,
                 boolean failIfNotFound,
                 int category,
-                int matchType)
+                MatchType matchType)
         {
             // First look to ourselves.
             switch (category) {
@@ -1446,7 +1441,7 @@ public class Query extends QueryPart {
             }
 
             // Look for a parameter defined in this connection.
-            if (RolapConnectionProperties.instance.getValue(name, false) != null) {
+            if (Util.lookup(RolapConnectionProperties.class, name) != null) {
                 Object value = connection.getProperty(name);
                 // TODO: Don't assume it's a string.
                 // TODO: Create expression which will get the value from the
@@ -1474,7 +1469,7 @@ public class Query extends QueryPart {
 
         public void setValue(Object value) {
             throw MondrianResource.instance().ParameterIsNotModifiable.ex(
-                getName(), getScope().getName());
+                getName(), getScope().name());
         }
     }
 }

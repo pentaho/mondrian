@@ -650,24 +650,24 @@ class RolapResult extends ResultBase {
             // Look in other places for the value. Which places we look depends
             // on the scope of the parameter.
             Parameter.Scope scope = slot.getParameter().getScope();
-            switch (scope.getOrdinal()) {
-            case Parameter.Scope.System_ordinal:
+            switch (scope) {
+            case System:
                 // TODO: implement system params
 
                 // fall through
-            case Parameter.Scope.Schema_ordinal:
+            case Schema:
                 // TODO: implement schema params
 
                 // fall through
-            case Parameter.Scope.Connection_ordinal:
+            case Connection:
                 // if it's set in the session, return that value
 
                 // fall through
-            case Parameter.Scope.Statement_ordinal:
+            case Statement:
                 break;
 
             default:
-                throw scope.unexpected();
+                throw Util.badValue(scope);
             }
 
             // Not set in any accessible scope. Evaluate the default value,

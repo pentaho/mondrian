@@ -13,7 +13,6 @@
 package mondrian.olap;
 
 import mondrian.test.FoodMartTestCase;
-import mondrian.olap.*;
 
 public class HierarchyBugTest extends FoodMartTestCase {
     public HierarchyBugTest(String name) {
@@ -53,7 +52,7 @@ public class HierarchyBugTest extends FoodMartTestCase {
         String failStr = null;
         int len = query.axes.length;
         for (int i = 0; i < len; i++) {
-            Hierarchy[] hs = query.getMdxHierarchiesOnAxis(i);
+            Hierarchy[] hs = query.getMdxHierarchiesOnAxis(AxisOrdinal.forOrdinal2(i));
             if (hs == null) {
             } else {
                 for (Hierarchy h : hs) {

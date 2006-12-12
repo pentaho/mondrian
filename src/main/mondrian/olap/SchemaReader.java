@@ -133,7 +133,7 @@ public interface SchemaReader {
      * @return The member, or null if not found
      */
     Member getMemberByUniqueName(
-        String[] uniqueNameParts, boolean failIfNotFound, int matchType);
+        String[] uniqueNameParts, boolean failIfNotFound, MatchType matchType);
 
     Member getMemberByUniqueName(
         String[] uniqueNameParts, boolean failIfNotFound);
@@ -150,8 +150,8 @@ public interface SchemaReader {
      *     "Product Department", "Produce"}
      * @param failIfNotFound If the element is not found, determines whether
      *      to return null or throw an error
-     * @param category Type of returned element, a {@link Category} value;
-     *      {@link Category#Unknown} if it doesn't matter.
+     * @param category Type of returned element, a {@link mondrian.olap.Category} value;
+     *      {@link mondrian.olap.Category#Unknown} if it doesn't matter.
      * @param matchType indicates the match mode; if not specified, EXACT
      *
      * @pre parent != null
@@ -162,7 +162,7 @@ public interface SchemaReader {
         String[] names,
         boolean failIfNotFound,
         int category,
-        int matchType);
+        MatchType matchType);
 
     OlapElement lookupCompound(
         OlapElement parent,
@@ -187,7 +187,8 @@ public interface SchemaReader {
      * and <code>endMember</code> (inclusive) which belong to
      * <code>level</code>.
      */
-    void getMemberRange(Level level, Member startMember, Member endMember, List list);
+    void getMemberRange(
+        Level level, Member startMember, Member endMember, List<Member> list);
 
     /**
      * Returns a member <code>n</code> further along in the same level from
@@ -216,7 +217,7 @@ public interface SchemaReader {
      * null if no element is found.
      */
     OlapElement getElementChild(
-        OlapElement parent, String name, int matchType);
+        OlapElement parent, String name, MatchType matchType);
 
     OlapElement getElementChild(OlapElement parent, String name);
 
@@ -283,7 +284,7 @@ public interface SchemaReader {
      * Finds a child of a member with a given name.
      */
     Member lookupMemberChildByName(
-        Member parent, String childName, int matchType);
+        Member parent, String childName, MatchType matchType);
 
     Member lookupMemberChildByName(Member parent, String childName);
 

@@ -150,7 +150,7 @@ class RolapHierarchy extends HierarchyBase {
             RolapLevel.HideMemberCondition.Never,
             LevelType.Regular, ALL_LEVEL_CARDINALITY);
         this.allMember = new RolapMember(
-            null, allLevel, null, allMemberName, Member.ALL_MEMBER_TYPE);
+            null, allLevel, null, allMemberName, Member.MemberType.ALL);
         // assign "all member" caption
         if (xmlHierarchy.allMemberCaption != null &&
             xmlHierarchy.allMemberCaption.length() > 0) {
@@ -487,20 +487,20 @@ class RolapHierarchy extends HierarchyBase {
      * @post return != null
      */
     MemberReader getMemberReader(Role role) {
-        final int access = role.getAccess(this);
+        final Access access = role.getAccess(this);
         switch (access) {
-        case Access.NONE:
+        case NONE:
             throw Util.newInternal("Illegal access to members of hierarchy "
                     + this);
-        case Access.ALL:
+        case ALL:
             return (isRagged())
                 ? new RestrictedMemberReader(memberReader, role)
                 : memberReader;
 
-        case Access.CUSTOM:
+        case CUSTOM:
             return new RestrictedMemberReader(memberReader, role);
         default:
-            throw Access.instance().badValue(access);
+            throw Util.badValue(access);
         }
     }
 
@@ -698,7 +698,7 @@ RME HACK
      */
     class RolapNullMember extends RolapMember {
         RolapNullMember(final RolapLevel level) {
-            super(null, level, null, "#Null", NULL_MEMBER_TYPE);
+            super(null, level, null, "#Null", MemberType.NULL);
             assert level != null;
         }
 

@@ -112,21 +112,20 @@ public class JolapTest extends TestCase {
             final String connectString = TestContext.getConnectString();
             final Util.PropertyList properties =
                 Util.parseConnectString(connectString);
-            String[] props = {
+            RolapConnectionProperties[] props = {
                 RolapConnectionProperties.Jdbc,
                 RolapConnectionProperties.Catalog,
                 RolapConnectionProperties.JdbcDrivers,
                 RolapConnectionProperties.JdbcUser,
                 RolapConnectionProperties.JdbcPassword,
             };
-            for (int i = 0; i < props.length; i++) {
-                String prop = props[i];
-                final String value = properties.get(prop);
+            for (RolapConnectionProperties prop : props) {
+                final String value = properties.get(prop.name());
                 if (value != null) {
-                    setProperty(cxs, prop, value);
+                    setProperty(cxs, prop.name(), value);
                 }
             }
-            
+
             // Note: if the specific type of ConnectionSpec is not known,
             // clients can introspect the returned instance to determine
             // which JavaBean-compliant attributes are required.

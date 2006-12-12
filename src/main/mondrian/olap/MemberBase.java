@@ -41,13 +41,17 @@ public abstract class MemberBase
     protected final int flags;
     protected final String parentUniqueName;
 
-    protected MemberBase(Member parentMember, Level level, int flags) {
+    protected MemberBase(
+        Member parentMember,
+        Level level,
+        MemberType memberType)
+    {
         this.parentMember = parentMember;
         this.level = level;
         this.parentUniqueName = (parentMember == null)
             ? null
             : parentMember.getUniqueName();
-        this.flags = flags;
+        this.flags = memberType.ordinal();
     }
 
     public String getQualifiedName() {
@@ -89,8 +93,8 @@ public abstract class MemberBase
         return level;
     }
 
-    public final int getMemberType() {
-        return flags & 7;
+    public final MemberType getMemberType() {
+        return MemberType.values()[flags & 7];
     }
 
     public String getDescription() {
@@ -114,7 +118,7 @@ public abstract class MemberBase
     }
     
     public OlapElement lookupChild(
-        SchemaReader schemaReader, String s, int matchType)
+        SchemaReader schemaReader, String s, MatchType matchType)
     {
         return schemaReader.lookupMemberChildByName(this, s, matchType);
     }
@@ -140,9 +144,7 @@ public abstract class MemberBase
 
     // implement Member
     public boolean isChildOrEqualTo(Member member) {
-        return (member == null)
-            ? false
-            : isChildOrEqualTo(member.getUniqueName());
+        return (member != null) && isChildOrEqualTo(member.getUniqueName());
     }
 
    /**
@@ -172,12 +174,7 @@ public abstract class MemberBase
 
     // implement Member
     public boolean isCalculated() {
-        return (isCalculatedInQuery())
-            ? true
-            // If the member is not created from the "with member ..." MDX, the
-            // calculated will be null. But it may be still a calculated measure
-            // stored in the cube.
-            : getMemberType() == FORMULA_MEMBER_TYPE;
+        return isCalculatedInQuery() || getMemberType() == MemberType.FORMULA;
     }
 
     public int getSolveOrder() {

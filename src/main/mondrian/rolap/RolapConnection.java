@@ -117,10 +117,11 @@ public class RolapConnection extends ConnectionBase {
         super();
 
         String provider = connectInfo.get(
-            RolapConnectionProperties.Provider, "mondrian");
+            RolapConnectionProperties.Provider.name(), "mondrian");
         Util.assertTrue(provider.equalsIgnoreCase("mondrian"));
         this.connectInfo = connectInfo;
-        this.catalogName = connectInfo.get(RolapConnectionProperties.Catalog);
+        this.catalogName =
+            connectInfo.get(RolapConnectionProperties.Catalog.name());
         this.dataSource = (dataSource != null)
             ? dataSource
             : createDataSource(connectInfo);
@@ -133,11 +134,11 @@ public class RolapConnection extends ConnectionBase {
                 // we expect the following properties to be set,
                 // as they are used to generate the schema cache key.
                 final String jdbcConnectString =
-                    connectInfo.get(RolapConnectionProperties.Jdbc);
+                    connectInfo.get(RolapConnectionProperties.Jdbc.name());
                 final String jdbcUser =
-                    connectInfo.get(RolapConnectionProperties.JdbcUser);
+                    connectInfo.get(RolapConnectionProperties.JdbcUser.name());
                 final String strDataSource =
-                    connectInfo.get(RolapConnectionProperties.DataSource);
+                    connectInfo.get(RolapConnectionProperties.DataSource.name());
                 final String connectionKey = jdbcConnectString +
                 getJDBCProperties(connectInfo).toString();
 
@@ -153,7 +154,8 @@ public class RolapConnection extends ConnectionBase {
                             dataSource,
                             connectInfo);
             }
-            String roleName = connectInfo.get(RolapConnectionProperties.Role);
+            String roleName =
+                connectInfo.get(RolapConnectionProperties.Role.name());
             if (roleName != null) {
                 role = schema.lookupRole(roleName);
                 if (role == null) {
@@ -166,7 +168,8 @@ public class RolapConnection extends ConnectionBase {
         }
 
         // Set the locale.
-        String localeString = connectInfo.get(RolapConnectionProperties.Locale);
+        String localeString =
+            connectInfo.get(RolapConnectionProperties.Locale.name());
         if (localeString != null) {
             String[] strings = localeString.split("_");
             switch (strings.length) {
@@ -197,16 +200,16 @@ public class RolapConnection extends ConnectionBase {
     // access.
     static DataSource createDataSource(Util.PropertyList connectInfo) {
         final String jdbcConnectString =
-                connectInfo.get(RolapConnectionProperties.Jdbc);
+                connectInfo.get(RolapConnectionProperties.Jdbc.name());
         final String poolNeededString =
-                connectInfo.get(RolapConnectionProperties.PoolNeeded);
+                connectInfo.get(RolapConnectionProperties.PoolNeeded.name());
 
         Properties jdbcProperties = getJDBCProperties(connectInfo);
         String propertyString = jdbcProperties.toString();
         if (jdbcConnectString != null) {
             // Get connection through own pooling datasource
             String jdbcDrivers =
-                    connectInfo.get(RolapConnectionProperties.JdbcDrivers);
+                connectInfo.get(RolapConnectionProperties.JdbcDrivers.name());
             if (jdbcDrivers != null) {
                 RolapUtil.loadDrivers(jdbcDrivers);
             }
@@ -221,9 +224,9 @@ public class RolapConnection extends ConnectionBase {
                 : poolNeededString.equalsIgnoreCase("true");
 
             final String jdbcUser =
-                    connectInfo.get(RolapConnectionProperties.JdbcUser);
+                connectInfo.get(RolapConnectionProperties.JdbcUser.name());
             final String jdbcPassword =
-                    connectInfo.get(RolapConnectionProperties.JdbcPassword);
+                connectInfo.get(RolapConnectionProperties.JdbcPassword.name());
 
             if (jdbcUser != null) {
                 jdbcProperties.put("user", jdbcUser);
@@ -258,7 +261,7 @@ public class RolapConnection extends ConnectionBase {
         } else {
 
             final String dataSourceName =
-                connectInfo.get(RolapConnectionProperties.DataSource);
+                connectInfo.get(RolapConnectionProperties.DataSource.name());
             if (dataSourceName == null) {
                 throw Util.newInternal(
                     "Connect string '" + connectInfo.toString() +
@@ -350,8 +353,8 @@ public class RolapConnection extends ConnectionBase {
 
     public Object getProperty(String name) {
         // Mask out the values of certain properties.
-        if (name.equals(RolapConnectionProperties.JdbcPassword) ||
-            name.equals(RolapConnectionProperties.CatalogContent)) {
+        if (name.equals(RolapConnectionProperties.JdbcPassword.name()) ||
+            name.equals(RolapConnectionProperties.CatalogContent.name())) {
             return "";
         }
         return connectInfo.get(name);
@@ -394,8 +397,8 @@ public class RolapConnection extends ConnectionBase {
     }
 
     public void setRole(Role role) {
-        Util.assertPrecondition(role != null, "role != null");
-        Util.assertPrecondition(!role.isMutable(), "!role.isMutable()");
+        assert role != null;
+        assert !role.isMutable();
 
         this.role = role;
         this.schemaReader = new RolapSchemaReader(role, schema) {

@@ -12,6 +12,7 @@ package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianDef;
+import mondrian.olap.Util;
 import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
@@ -36,7 +37,7 @@ import java.util.*;
  * tables and columnIter.
  *
  * <p>The structure of this information is as follows:
- * A database has tables. A table has columnIter. A column has one or more usageIter.
+ * A database has tables. A table has columnIter. A column has one or more usages.
  * A usage might be a column being used as a foreign key or as part of a
  * measure.
  *
@@ -210,7 +211,7 @@ public class JdbcSchema {
 
 
     //
-    // Types of column usageIter.
+    // Types of column usages.
     //
     public static final int UNKNOWN_COLUMN_USAGE         = 0x0001;
     public static final int FOREIGN_KEY_COLUMN_USAGE     = 0x0002;
@@ -227,87 +228,46 @@ public class JdbcSchema {
     public static final String IGNORE_COLUMN_NAME          = "IGNORE";
 
     /**
+     * Enumeration of ways that an aggregate table can use a column.
+     */
+    enum UsageType {
+        UNKNOWN,
+        FOREIGN_KEY,
+        MEASURE,
+        LEVEL,
+        FACT_COUNT,
+        IGNORE
+    }
+
+    /**
      * Determine if the parameter represents a single column type, i.e., the
      * column only has one usage.
      *
      * @param columnType
      * @return true if column has only one usage.
      */
-    public static boolean isUniqueColumnType(int columnType) {
-        switch (columnType) {
-        case UNKNOWN_COLUMN_USAGE :
-            return true;
-        case FOREIGN_KEY_COLUMN_USAGE :
-            return true;
-        case MEASURE_COLUMN_USAGE :
-            return true;
-        case LEVEL_COLUMN_USAGE :
-            return true;
-        case FACT_COUNT_COLUMN_USAGE :
-            return true;
-        case IGNORE_COLUMN_USAGE :
-            return true;
-        default :
-            return false;
-        }
+    public static boolean isUniqueColumnType(Set<UsageType> columnType) {
+        return columnType.size() == 1;
     }
 
     /**
      * Maps from column type enum to column type name or list of names if the
      * parameter represents more than on usage.
      */
-    public static String convertColumnTypeToName(int columnType) {
-        switch (columnType) {
-        case UNKNOWN_COLUMN_USAGE:
-            return UNKNOWN_COLUMN_NAME;
-        case FOREIGN_KEY_COLUMN_USAGE:
-            return FOREIGN_KEY_COLUMN_NAME;
-        case MEASURE_COLUMN_USAGE:
-            return MEASURE_COLUMN_NAME;
-        case LEVEL_COLUMN_USAGE:
-            return LEVEL_COLUMN_NAME;
-        case FACT_COUNT_COLUMN_USAGE:
-            return FACT_COUNT_COLUMN_NAME;
-        case IGNORE_COLUMN_USAGE:
-            return IGNORE_COLUMN_NAME;
-        default:
-            // it's a multi-purpose column
-            StringBuilder buf = new StringBuilder();
-            if ((columnType & UNKNOWN_COLUMN_USAGE) != 0) {
-                buf.append(UNKNOWN_COLUMN_NAME);
-            }
-            if ((columnType & FOREIGN_KEY_COLUMN_USAGE) != 0) {
-                if (buf.length() != 0) {
-                    buf.append('|');
-                }
-                buf.append(FOREIGN_KEY_COLUMN_NAME);
-            }
-            if ((columnType & MEASURE_COLUMN_USAGE) != 0) {
-                if (buf.length() != 0) {
-                    buf.append('|');
-                }
-                buf.append(MEASURE_COLUMN_NAME);
-            }
-            if ((columnType & LEVEL_COLUMN_USAGE) != 0) {
-                if (buf.length() != 0) {
-                    buf.append('|');
-                }
-                buf.append(LEVEL_COLUMN_NAME);
-            }
-            if ((columnType & FACT_COUNT_COLUMN_USAGE) != 0) {
-                if (buf.length() != 0) {
-                    buf.append('|');
-                }
-                buf.append(FACT_COUNT_COLUMN_NAME);
-            }
-            if ((columnType & IGNORE_COLUMN_USAGE) != 0) {
-                if (buf.length() != 0) {
-                    buf.append('|');
-                }
-                buf.append(IGNORE_COLUMN_NAME);
-            }
-            return buf.toString();
+    public static String convertColumnTypeToName(Set<UsageType> columnType) {
+        if (columnType.size() == 1) {
+            return columnType.iterator().next().name();
         }
+        // it's a multi-purpose column
+        StringBuilder buf = new StringBuilder();
+        int k = 0;
+        for (UsageType usage : columnType) {
+            if (k++ > 0) {
+                buf.append('|');
+            }
+            buf.append(usage.name());
+        }
+        return buf.toString();
     }
 
     /**
@@ -346,53 +306,20 @@ public class JdbcSchema {
      */
     public static boolean isText(int javaType) {
         switch (javaType) {
-        case Types.CHAR :
-        case Types.VARCHAR :
-        case Types.LONGVARCHAR :
+        case Types.CHAR:
+        case Types.VARCHAR:
+        case Types.LONGVARCHAR:
             return true;
-        default :
+        default:
             return false;
         }
     }
 
-    //
-    // Usages of tables.
-    //
-    public static final int UNKNOWN_TABLE_USAGE         = 10;
-    public static final int FACT_TABLE_USAGE            = 11;
-    public static final int AGG_TABLE_USAGE             = 12;
-
-    public static final String UNKNOWN_TABLE_USAGE_NAME = "UNKNOWN";
-    public static final String FACT_TABLE_USAGE_NAME    = "FACT";
-    public static final String AGG_TABLE_USAGE_NAME     = "AGG";
-
-    /**
-     * Converts from table usage enum to table usage name.
-     */
-    public static String convertTableUsageToName(int tableUsage) {
-        switch (tableUsage) {
-        case UNKNOWN_TABLE_USAGE :
-            return UNKNOWN_TABLE_USAGE_NAME;
-        case FACT_TABLE_USAGE :
-            return FACT_TABLE_USAGE_NAME;
-        case AGG_TABLE_USAGE :
-            return AGG_TABLE_USAGE_NAME;
-        default :
-            return UNKNOWN_TABLE_USAGE_NAME;
-        }
+    enum TableUsageType {
+        UNKNOWN,
+        FACT,
+        AGG
     }
-
-    //
-    // Types of tables.
-    //
-    public static final String UNKNOWN_TABLE_TYPE       = "UNKNOWN";
-    public static final String TABLE_TABLE_TYPE         = "TABLE";
-    public static final String VIEW_TYPE                = "VIEW";
-    public static final String SYSTEM_TABLE_TABLE_TYPE  = "SYSTEM TABLE";
-    public static final String GLOBAL_TEMP_TABLE_TYPE   = "GLOBAL TEMPORARY";
-    public static final String LOCAL_TEMP_TABLE_TYPE    = "LOCAL TEMPORARY";
-    public static final String ALIAS_TABLE_TYPE         = "ALIAS";
-    public static final String SYNONYM_TABLE_TYPE       = "SYNONYM";
 
     /**
      * A table in a database.
@@ -408,7 +335,7 @@ public class JdbcSchema {
              * A usage of a column.
              */
             public class Usage {
-                private final int columnType;
+                private final UsageType usageType;
                 private String symbolicName;
                 private RolapAggregator aggregator;
 
@@ -444,8 +371,8 @@ public class JdbcSchema {
                 //
                 ////////////////////////////////////////////////////
 
-                Usage(final int columnType) {
-                    this.columnType = columnType;
+                Usage(UsageType usageType) {
+                    this.usageType = usageType;
                 }
 
                 /**
@@ -460,15 +387,8 @@ public class JdbcSchema {
                 /**
                  * The column usage type.
                  */
-                public int getColumnType() {
-                    return columnType;
-                }
-
-                /**
-                 * Is this usage of this type.
-                 */
-                public boolean isColumnType(final int columnType) {
-                    return ((this.columnType & columnType) != 0);
+                public UsageType getUsageType() {
+                    return usageType;
                 }
 
                 /**
@@ -513,6 +433,7 @@ public class JdbcSchema {
                     pw.flush();
                     return sw.toString();
                 }
+
                 public void print(final PrintWriter pw, final String prefix) {
                     if (getSymbolicName() != null) {
                         pw.print("symbolicName=");
@@ -523,9 +444,8 @@ public class JdbcSchema {
                         pw.print(getAggregator().getName());
                     }
                     pw.print(", columnType=");
-                    pw.print(convertColumnTypeToName(getColumnType()));
+                    pw.print(getUsageType().name());
                 }
-
             }
 
             /** This is the name of the column. */
@@ -560,9 +480,10 @@ public class JdbcSchema {
             private final List<JdbcSchema.Table.Column.Usage> usages;
 
             /**
-             * This contains the enums of all of the column's usageIter.
+             * This contains the enums of all of the column's usages.
              */
-            private int columnType;
+            private final Set<UsageType> usageTypes =
+                Util.enumSetNoneOf(UsageType.class);
 
             private Column(final String name) {
                 this.name = name;
@@ -731,13 +652,13 @@ public class JdbcSchema {
             }
 
             /**
-             * How many usageIter does this column have. A column has
-             * between 0 and N usageIter. It has no usageIter if usageIter is some
+             * How many usages does this column have. A column has
+             * between 0 and N usages. It has no usages if usages is some
              * administrative column. It has one usage if, for example, its
              * the fact_count column or a level column (for a collapsed
-             * dimension aggregate). It might have 2 usageIter if its a foreign key
+             * dimension aggregate). It might have 2 usages if its a foreign key
              * that is also used as a measure. If its a column used in N
-             * measures, then usageIter will have N usageIter.
+             * measures, then usages will have N usages.
              */
             public int numberOfUsages() {
                 return usages.size();
@@ -754,40 +675,40 @@ public class JdbcSchema {
              * Return true if the column has at least one usage of the given
              * column type.
              */
-            public boolean hasUsage(final int columnType) {
-                return ((this.columnType & columnType) != 0);
+            public boolean hasUsage(UsageType columnType) {
+                return usageTypes.contains(columnType);
             }
 
             /**
-             * Get an iterator over all usageIter.
+             * Get an iterator over all usages.
              */
             public List<Usage> getUsages() {
                 return usages;
             }
 
             /**
-             * Get an iterator over all usageIter of the given column type.
+             * Get an iterator over all usages of the given column type.
              */
-            public Iterator<Usage> getUsages(final int columnType) {
+            public Iterator<Usage> getUsages(UsageType usageType) {
 
                 // Yes, this is legal.
                 class ColumnTypeIterator implements Iterator<Usage> {
                     private final Iterator<Usage> usageIter;
-                    private final int columnType;
+                    private final UsageType usageType;
                     private Usage nextUsage;
 
                     ColumnTypeIterator(
                         final List<Usage> usages,
-                        final int columnType)
+                        final UsageType columnType)
                     {
                         this.usageIter = usages.iterator();
-                        this.columnType = columnType;
+                        this.usageType = columnType;
                     }
 
                     public boolean hasNext() {
                         while (usageIter.hasNext()) {
                             Usage usage = usageIter.next();
-                            if (usage.isColumnType(columnType)) {
+                            if (usage.getUsageType() == this.usageType) {
                                 nextUsage = usage;
                                 return true;
                             }
@@ -806,16 +727,16 @@ public class JdbcSchema {
                     }
                 }
 
-                return new ColumnTypeIterator(getUsages(), columnType);
+                return new ColumnTypeIterator(getUsages(), usageType);
             }
 
             /**
              * Create a new usage of a given column type.
              */
-            public Usage newUsage(int columnType) {
-                this.columnType |= columnType;
+            public Usage newUsage(UsageType usageType) {
+                this.usageTypes.add(usageType);
 
-                Usage usage = new Usage(columnType);
+                Usage usage = new Usage(usageType);
                 usages.add(usage);
                 return usage;
             }
@@ -838,33 +759,33 @@ public class JdbcSchema {
                 pw.print(getColumnSize());
 
                 switch (getType()) {
-                case Types.TINYINT :
-                case Types.SMALLINT :
-                case Types.INTEGER :
-                case Types.BIGINT :
-                case Types.FLOAT :
-                case Types.REAL :
-                case Types.DOUBLE :
+                case Types.TINYINT:
+                case Types.SMALLINT:
+                case Types.INTEGER:
+                case Types.BIGINT:
+                case Types.FLOAT:
+                case Types.REAL:
+                case Types.DOUBLE:
                     break;
-                case Types.NUMERIC :
-                case Types.DECIMAL :
+                case Types.NUMERIC:
+                case Types.DECIMAL:
                     pw.print(", decimalDigits=");
                     pw.print(getDecimalDigits());
                     pw.print(", numPrecRadix=");
                     pw.print(getNumPrecRadix());
                     break;
-                case Types.CHAR :
-                case Types.VARCHAR :
+                case Types.CHAR:
+                case Types.VARCHAR:
                     pw.print(", charOctetLength=");
                     pw.print(getCharOctetLength());
                     break;
-                case Types.LONGVARCHAR :
-                case Types.DATE :
-                case Types.TIME :
-                case Types.TIMESTAMP :
-                case Types.BINARY :
-                case Types.VARBINARY :
-                case Types.LONGVARBINARY :
+                case Types.LONGVARCHAR:
+                case Types.DATE:
+                case Types.TIME:
+                case Types.TIMESTAMP:
+                case Types.BINARY:
+                case Types.VARBINARY:
+                case Types.LONGVARBINARY:
                 default:
                     break;
                 }
@@ -893,23 +814,24 @@ public class JdbcSchema {
          * Is the table a fact, aggregate or other table type.
          * Note: this assumes that a table has only ONE usage.
          */
-        private int tableUsage;
+        private TableUsageType tableUsageType;
 
         /**
          * Typical table types are: "TABLE", "VIEW", "SYSTEM TABLE",
          * "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
+         * (Depends what comes out of JDBC.)
          */
-        private String tableType;
+        private final String tableType;
 
         // mondriandef stuff
         public MondrianDef.Table table;
 
         private boolean allColumnsLoaded;
 
-        private Table(final String name) {
+        private Table(final String name, String tableType) {
             this.name = name;
-            this.tableUsage = UNKNOWN_TABLE_USAGE;
-            this.tableType = UNKNOWN_TABLE_TYPE;
+            this.tableUsageType = TableUsageType.UNKNOWN;
+            this.tableType = tableType;
         }
 
         public void load() throws SQLException {
@@ -966,24 +888,26 @@ public class JdbcSchema {
         }
 
         /**
-         * Iterate of the table's columnIter.
+         * Returns the collection of columns in this Table.
          */
         public Collection<Column> getColumns() {
             return getColumnMap().values();
         }
 
         /**
-         * Iterate over all all column usageIter of a give column type.
+         * Returns an iterator over all column usages of a given type.
          */
-        public Iterator<JdbcSchema.Table.Column.Usage> getColumnUsages(final int columnType) {
+        public Iterator<JdbcSchema.Table.Column.Usage> getColumnUsages(
+            final UsageType usageType)
+        {
 
             class CTIterator implements Iterator<JdbcSchema.Table.Column.Usage> {
                 private final Iterator<Column> columnIter;
-                private final int columnType;
+                private final UsageType columnType;
                 private Iterator<JdbcSchema.Table.Column.Usage> usageIter;
                 private JdbcSchema.Table.Column.Usage nextObject;
 
-                CTIterator(Collection<Column> columns, int columnType) {
+                CTIterator(Collection<Column> columns, UsageType columnType) {
                     this.columnIter = columns.iterator();
                     this.columnType = columnType;
                 }
@@ -999,7 +923,7 @@ public class JdbcSchema {
                             usageIter = c.getUsages().iterator();
                         }
                         JdbcSchema.Table.Column.Usage usage = usageIter.next();
-                        if (usage.isColumnType(columnType)) {
+                        if (usage.getUsageType() == columnType) {
                             nextObject = usage;
                             return true;
                         }
@@ -1012,7 +936,7 @@ public class JdbcSchema {
                     usageIter.remove();
                 }
             }
-            return new CTIterator(getColumns(), columnType);
+            return new CTIterator(getColumns(), usageType);
         }
 
         /**
@@ -1032,41 +956,26 @@ public class JdbcSchema {
         /**
          * Set the table usage (fact, aggregate or other).
          *
-         * @param tableUsage
+         * @param tableUsageType
          */
-        public void setTableUsage(final int tableUsage) {
+        public void setTableUsageType(final TableUsageType tableUsageType) {
             // if usageIter has already been set, then usageIter can NOT be reset
-            if ((this.tableUsage != UNKNOWN_TABLE_USAGE) &&
-                    (this.tableUsage != tableUsage)) {
+            if ((this.tableUsageType != TableUsageType.UNKNOWN) &&
+                    (this.tableUsageType != tableUsageType)) {
 
                 throw mres.AttemptToChangeTableUsage.ex(
                     getName(),
-                    convertTableUsageToName(this.tableUsage),
-                    convertTableUsageToName(tableUsage));
+                    this.tableUsageType.name(),
+                    tableUsageType.name());
             }
-            this.tableUsage = tableUsage;
+            this.tableUsageType = tableUsageType;
         }
 
         /**
-         * Get the table's usage.
+         * Get the table's usage type.
          */
-        public int getTableUsage() {
-            return tableUsage;
-        }
-
-        /**
-         * Set the table type
-         */
-        public void setTableType(final String tableType) {
-            // if usageIter has already been set, then usageIter can NOT be reset
-            if (!this.tableType.equals(UNKNOWN_TABLE_TYPE) &&
-                !this.tableType.equals(tableType)) {
-                throw mres.AttemptToChangeTableType.ex(
-                    getName(),
-                    this.tableType,
-                    tableType);
-            }
-            this.tableType = tableType;
+        public TableUsageType getTableUsageType() {
+            return tableUsageType;
         }
 
         /**
@@ -1095,7 +1004,7 @@ public class JdbcSchema {
             pw.print(", type=");
             pw.print(getTableType());
             pw.print(", usage=");
-            pw.println(convertTableUsageToName(getTableUsage()));
+            pw.println(getTableUsageType().name());
 
             pw.print(subprefix);
             pw.print("totalColumnSize=");
@@ -1387,8 +1296,7 @@ public class JdbcSchema {
     protected void addTable(final ResultSet rs) throws SQLException {
         String name = rs.getString(3);
         String tableType = rs.getString(4);
-        Table table = new Table(name);
-        table.setTableType(tableType);
+        Table table = new Table(name, tableType);
 
         tables.put(table.getName(), table);
     }
