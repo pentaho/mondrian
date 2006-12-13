@@ -180,7 +180,10 @@ public class SqlQuery
     private static final int DOUBLE_QUOTE_SIZE = 2 * SINGLE_QUOTE_SIZE + 1;
 
     /**
-     *
+     * Adds a subquery to the FROM clause of this Query with a given alias.
+     * If the query already exists it either, depending on
+     * <code>failIfExists</code>, throws an exception or does not add the query
+     * and returns false.
      *
      * @param query
      * @param alias (if not null, must not be zero length).
@@ -1051,12 +1054,14 @@ public class SqlQuery
                 List<String[]> valueList) {
             if (isOracle()) {
                 return generateInlineGeneric(
-                        columnNames, columnTypes, valueList, "from dual");
+                        columnNames, columnTypes, valueList,
+                        "from dual");
             } else if (isAccess()) {
                 // Fall back to using the FoodMart 'days' table, because
                 // Access SQL has no way to generate values not from a table.
                 return generateInlineGeneric(
-                        columnNames, columnTypes, valueList, "from [days] where [day] = 1");
+                        columnNames, columnTypes, valueList,
+                        "from [days] where [day] = 1");
             } else if (isMySQL()) {
                 return generateInlineGeneric(
                         columnNames, columnTypes, valueList, null);
@@ -1271,6 +1276,32 @@ public class SqlQuery
          */
         public boolean supportsGroupByExpressions() {
             return !(isDerby() || isCloudscape());
+        }
+
+        /**
+         * Returns true if this Dialect can include expressions in the ORDER BY
+         * clause only by adding an expression to the SELECT clause and using
+         * its alias.
+         *
+         * <p>For example, in such a dialect,
+         * <blockquote>
+         * <code>SELECT x FROM t ORDER BY x + y</code>
+         * </blockquote>
+         * would be illegal, but
+         * <blockquote>
+         * <code>SELECT x, x + y AS z FROM t ORDER BY z</code>
+         * </blockquote>
+         *
+         * would be legal.</p>
+         *
+         * <p>MySQL, DB2 and Ingres are examples of such dialects.</p>
+         *
+         * @return Whether this Dialect can include expressions in the ORDER BY
+         *   clause only by adding an expression to the SELECT clause and using
+         *   its alias
+         */
+        public boolean requiresOrderByAlias() {
+            return isMySQL() || isDB2() || isIngres();
         }
     }
 
