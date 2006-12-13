@@ -56,7 +56,7 @@ public class RolapMember extends MemberBase {
             // find for getting all of a hierarchy's members.
             Level[] levels = hierarchy.getLevels();
             for (Level level : levels) {
-                Member[] members = schemaReader.getLevelMembers(level, false);
+                Member[] members = schemaReader.getLevelMembers(level, true);
                 if (members != null) {
                     list.add(members);
                 }

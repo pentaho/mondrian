@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmlacycle>
+
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <RequestType>MDSCHEMA_MEMBERS</RequestType>
+      <Restrictions>
+        <RestrictionList>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        </RestrictionList>
+      </Restrictions>
+      <Properties>
+        <PropertyList>
+          <DataSourceInfo>${datasource}</DataSourceInfo>
+	      <Catalog>${catalog}</Catalog>
+          <Format>Tabular</Format>
+        </PropertyList>
+      </Properties>
+    </Discover>
+
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="HIERARCHY_UNIQUE_NAME" sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="LEVEL_UNIQUE_NAME" sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="LEVEL_NUMBER" sql:field="LEVEL_NUMBER" type="xsd:unsignedInt"/>
+            <xsd:element name="MEMBER_ORDINAL" sql:field="MEMBER_ORDINAL" type="xsd:unsignedInt"/>
+            <xsd:element name="MEMBER_NAME" sql:field="MEMBER_NAME" type="xsd:string"/>
+            <xsd:element name="MEMBER_UNIQUE_NAME" sql:field="MEMBER_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="MEMBER_TYPE" sql:field="MEMBER_TYPE" type="xsd:int"/>
+            <xsd:element minOccurs="0" name="MEMBER_GUID" sql:field="MEMBER_GUID" type="uuid"/>
+            <xsd:element name="MEMBER_CAPTION" sql:field="MEMBER_CAPTION" type="xsd:string"/>
+            <xsd:element name="CHILDREN_CARDINALITY" sql:field="CHILDREN_CARDINALITY" type="xsd:unsignedInt"/>
+            <xsd:element name="PARENT_LEVEL" sql:field="PARENT_LEVEL" type="xsd:unsignedInt"/>
+            <xsd:element minOccurs="0" name="PARENT_UNIQUE_NAME" sql:field="PARENT_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="PARENT_COUNT" sql:field="PARENT_COUNT" type="xsd:unsignedInt"/>
+            <xsd:element minOccurs="0" name="TREE_OP" sql:field="TREE_OP" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DEPTH" sql:field="DEPTH" type="xsd:int"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>0</MEMBER_ORDINAL>
+        <MEMBER_NAME>Unit Sales</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Unit Sales]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>1</MEMBER_TYPE>
+        <MEMBER_CAPTION>Unit Sales</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>1</MEMBER_ORDINAL>
+        <MEMBER_NAME>Store Cost</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Store Cost]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>1</MEMBER_TYPE>
+        <MEMBER_CAPTION>Store Cost</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>2</MEMBER_ORDINAL>
+        <MEMBER_NAME>Store Sales</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Store Sales]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>1</MEMBER_TYPE>
+        <MEMBER_CAPTION>Store Sales</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>3</MEMBER_ORDINAL>
+        <MEMBER_NAME>Sales Count</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Sales Count]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>1</MEMBER_TYPE>
+        <MEMBER_CAPTION>Sales Count</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>4</MEMBER_ORDINAL>
+        <MEMBER_NAME>Customer Count</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Customer Count]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>1</MEMBER_TYPE>
+        <MEMBER_CAPTION>Customer Count</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>5</MEMBER_ORDINAL>
+        <MEMBER_NAME>Promotion Sales</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Promotion Sales]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>1</MEMBER_TYPE>
+        <MEMBER_CAPTION>Promotion Sales</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>6</MEMBER_ORDINAL>
+        <MEMBER_NAME>Profit</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Profit]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>1</MEMBER_TYPE>
+        <MEMBER_CAPTION>Profit</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>7</MEMBER_ORDINAL>
+        <MEMBER_NAME>Profit last Period</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Profit last Period]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>1</MEMBER_TYPE>
+        <MEMBER_CAPTION>Profit last Period</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>8</MEMBER_ORDINAL>
+        <MEMBER_NAME>Profit Growth</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Profit Growth]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>1</MEMBER_TYPE>
+        <MEMBER_CAPTION>Gewinn-Wachstum</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+</xmlacycle>
