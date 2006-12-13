@@ -323,15 +323,16 @@ public class Formula extends QueryPart {
      */
     private Exp getFormatExp() {
         // If they have specified a format string (which they can do under
-        // several names) reutrn that.
+        // several names) return that.
         for (String prop : Property.FORMAT_PROPERTIES) {
             Exp formatExp = getMemberProperty(prop);
             if (formatExp != null) {
                 return formatExp;
             }
         }
+
         // Choose a format appropriate to the expression.
-        // For now, only do it for integers.
+        // For now, only do it for decimals.
         final Type type = exp.getType();
         if (type instanceof DecimalType) {
             int scale = ((DecimalType) type).getScale();
@@ -345,6 +346,14 @@ public class Formula extends QueryPart {
             return Literal.createString(formatString);
         }
 
+        if (!mdxMember.isMeasure()) {
+            // Don't try to do any format string inference on non-measure
+            // calculated members; that can hide the correct formatting
+            // from base measures (see TestCalculatedMembers.testFormatString
+            // for an example).
+            return null;
+        }
+        
         // Burrow into the expression. If we find a member, use its format
         // string.
         try {

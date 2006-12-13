@@ -710,6 +710,50 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "{[Product].[All Products].[Food]}\n" +
                 "{[Product].[All Products].[Non-Consumable]}\n"));
     }
+
+    public void testFormatString() {
+        // Verify that
+        // (a) a calculated member without a format string does not
+        //     override the format string of a base measure
+        //     ([Highly Profitable States] does not override [Store Sales])
+        // and
+        // (b) a calculated member with a format string does
+        //     override the format string of a base measure
+        //     ([Plain States] does override [Store Sales])
+        // and
+        // (c) the format string for conflicting calculated members
+        //     is chosen according to solve order
+        //     ([Plain States] overrides [Profit])
+        assertQueryReturns("WITH MEMBER [Customers].[Highly Profitable States]" + nl +
+            "AS 'SUM(FILTER([Customers].[USA].children,([Measures].[Profit] > 90000)))'" + nl +
+            "MEMBER [Customers].[Plain States]" + nl +
+            " AS 'SUM([Customers].[USA].children)', SOLVE_ORDER = 5, FORMAT_STRING='#,###'" + nl +
+            "SELECT {[Measures].[Store Sales], [Measures].[Profit]} ON COLUMNS," + nl +
+            "UNION([Customers].[USA].children,{[Customers].[Highly Profitable States],[Customers].[Plain States]}) ON ROWS" + nl +
+            "FROM [Sales]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Store Sales]}\n" +
+                "{[Measures].[Profit]}\n" +
+                "Axis #2:\n" +
+                "{[Customers].[All Customers].[USA].[CA]}\n" +
+                "{[Customers].[All Customers].[USA].[OR]}\n" +
+                "{[Customers].[All Customers].[USA].[WA]}\n" +
+                "{[Customers].[Highly Profitable States]}\n" +
+                "{[Customers].[Plain States]}\n" +
+                "Row #0: 159,167.84\n" +
+                "Row #0: $95,637.41\n" +
+                "Row #1: 142,277.07\n" +
+                "Row #1: $85,504.57\n" +
+                "Row #2: 263,793.22\n" +
+                "Row #2: $158,468.91\n" +
+                "Row #3: 422,961.06\n" +
+                "Row #3: $254,106.33\n" +
+                "Row #4: 565,238\n" +
+                "Row #4: 339,611\n"));
+    }
 }
 
 // End CalculatedMembersTestCase.java
