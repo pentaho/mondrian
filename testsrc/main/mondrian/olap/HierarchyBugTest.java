@@ -52,7 +52,7 @@ public class HierarchyBugTest extends FoodMartTestCase {
         String failStr = null;
         int len = query.axes.length;
         for (int i = 0; i < len; i++) {
-            Hierarchy[] hs = query.getMdxHierarchiesOnAxis(AxisOrdinal.forOrdinal2(i));
+            Hierarchy[] hs = query.getMdxHierarchiesOnAxis(AxisOrdinal.forLogicalOrdinal(i));
             if (hs == null) {
             } else {
                 for (Hierarchy h : hs) {

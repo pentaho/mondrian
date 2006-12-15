@@ -326,7 +326,7 @@ public class Query extends QueryPart {
 
     private void normalizeAxes() {
         for (int i = 0; i < axes.length; i++) {
-            AxisOrdinal correctOrdinal = AxisOrdinal.forOrdinal2(i);
+            AxisOrdinal correctOrdinal = AxisOrdinal.forLogicalOrdinal(i);
             if (axes[i].getAxisOrdinal() != correctOrdinal) {
                 for (int j = i + 1; j < axes.length; j++) {
                     if (axes[j].getAxisOrdinal() == correctOrdinal) {

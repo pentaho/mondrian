@@ -1423,7 +1423,7 @@ axis_specification ::=
                         new Integer(AxisOrdinal.MaxLogicalOrdinal), new Double(d));
             }
 
-            AxisOrdinal axis = AxisOrdinal.forOrdinal2(index);
+            AxisOrdinal axis = AxisOrdinal.forLogicalOrdinal(index);
             RESULT = new QueryAxis(b.booleanValue(), s, axis,
                     QueryAxis.SubtotalVisibility.Undefined,
                     Parser.toIdArray(dp));

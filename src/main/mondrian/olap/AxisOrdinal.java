@@ -42,7 +42,7 @@ public enum AxisOrdinal {
     /** Sections axis, logical ordinal = 4. */
     SECTIONS;
 
-    public static AxisOrdinal forOrdinal2(int ordinal) {
+    public static AxisOrdinal forLogicalOrdinal(int ordinal) {
         return values()[ordinal + 2];
     }
 

@@ -135,9 +135,9 @@ public class ParserTest extends TestCase {
 
         assertEquals("Number of axes", 2, axes.length);
         assertEquals("Axis index name must be correct",
-            AxisOrdinal.forOrdinal2(0).name(), axes[0].getAxisName());
+            AxisOrdinal.forLogicalOrdinal(0).name(), axes[0].getAxisName());
         assertEquals("Axis index name must be correct",
-            AxisOrdinal.forOrdinal2(1).name(), axes[1].getAxisName());
+            AxisOrdinal.forLogicalOrdinal(1).name(), axes[1].getAxisName());
 
         query = "select {[axis1mbr]} on aXiS(1), "
                 + "{[axis0mbr]} on AxIs(0) from cube";
@@ -147,9 +147,9 @@ public class ParserTest extends TestCase {
 
         assertEquals("Number of axes", 2, axes.length);
         assertEquals("Axis index name must be correct",
-            AxisOrdinal.forOrdinal2(0).name(), axes[0].getAxisName());
+            AxisOrdinal.forLogicalOrdinal(0).name(), axes[0].getAxisName());
         assertEquals("Axis index name must be correct",
-            AxisOrdinal.forOrdinal2(1).name(), axes[1].getAxisName());
+            AxisOrdinal.forLogicalOrdinal(1).name(), axes[1].getAxisName());
 
         Exp colsSetExpr = axes[0].getSet();
         assertNotNull("Column tuples", colsSetExpr);

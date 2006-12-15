@@ -297,7 +297,7 @@ abstract class Rowset implements XmlaConstants {
      * If there are no restrictions, always returns true.
     protected boolean passesRestriction(RowsetDefinition.Column column,
             Object value) {
-        final Object requiredValue = restrictions.forOrdinal2(column.name);
+        final Object requiredValue = restrictions.get(column.name);
 
         if (requiredValue == null) {
             return true;

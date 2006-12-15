@@ -84,7 +84,7 @@ class Converter {
                 }
             }
         }
-        AxisOrdinal axisOrdinal = AxisOrdinal.forOrdinal2(axisIndex);
+        AxisOrdinal axisOrdinal = AxisOrdinal.forLogicalOrdinal(axisIndex);
         return new QueryAxis(false, exp, axisOrdinal,
                 QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
     }
