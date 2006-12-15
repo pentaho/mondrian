@@ -5391,11 +5391,11 @@ TODO: see above
             List<Row> rows) {
 
             // Visit node itself.
-            if (mask(treeOp, Enumeration.TreeOp.Self.ordinal())) {
+            if (mask(treeOp, Enumeration.TreeOp.Self.userOrdinal())) {
                 outputMember(schemaReader, member, catalogName, cube, rows);
             }
             // Visit node's siblings (not including itself).
-            if (mask(treeOp, Enumeration.TreeOp.Siblings.ordinal())) {
+            if (mask(treeOp, Enumeration.TreeOp.Siblings.userOrdinal())) {
                 final Member parent =
                     schemaReader.getMemberParent(member);
                 final Member[] siblings = (parent == null)
@@ -5406,44 +5406,50 @@ TODO: see above
                     if (sibling == member) {
                         continue;
                     }
-                    populateMember(schemaReader, catalogName,
+                    populateMember(
+                        schemaReader, catalogName,
                         cube, sibling,
-                        Enumeration.TreeOp.Self.ordinal(), rows);
+                        Enumeration.TreeOp.Self.userOrdinal(), rows);
                 }
             }
             // Visit node's descendants or its immediate children, but not both.
-            if (mask(treeOp, Enumeration.TreeOp.Descendants.ordinal())) {
+            if (mask(treeOp, Enumeration.TreeOp.Descendants.userOrdinal())) {
                 final Member[] children = schemaReader.getMemberChildren(member);
                 for (Member child : children) {
-                    populateMember(schemaReader, catalogName,
+                    populateMember(
+                        schemaReader, catalogName,
                         cube, child,
-                        Enumeration.TreeOp.Self.ordinal() |
-                            Enumeration.TreeOp.Descendants.ordinal(), rows);
+                        Enumeration.TreeOp.Self.userOrdinal() |
+                            Enumeration.TreeOp.Descendants.userOrdinal(),
+                        rows);
                 }
-            } else if (mask(treeOp, Enumeration.TreeOp.Children.ordinal())) {
+            } else if (mask(treeOp, Enumeration.TreeOp.Children.userOrdinal())) {
                 final Member[] children =
                     schemaReader.getMemberChildren(member);
                 for (Member child : children) {
-                    populateMember(schemaReader, catalogName,
+                    populateMember(
+                        schemaReader, catalogName,
                         cube, child,
-                        Enumeration.TreeOp.Self.ordinal(), rows);
+                        Enumeration.TreeOp.Self.userOrdinal(), rows);
                 }
             }
             // Visit node's ancestors or its immediate parent, but not both.
-            if (mask(treeOp, Enumeration.TreeOp.Ancestors.ordinal())) {
+            if (mask(treeOp, Enumeration.TreeOp.Ancestors.userOrdinal())) {
                 final Member parent = schemaReader.getMemberParent(member);
                 if (parent != null) {
-                    populateMember(schemaReader, catalogName,
+                    populateMember(
+                        schemaReader, catalogName,
                         cube, parent,
-                        Enumeration.TreeOp.Self.ordinal() |
-                            Enumeration.TreeOp.Ancestors.ordinal(), rows);
+                        Enumeration.TreeOp.Self.userOrdinal() |
+                            Enumeration.TreeOp.Ancestors.userOrdinal(), rows);
                 }
-            } else if (mask(treeOp, Enumeration.TreeOp.Parent.ordinal())) {
+            } else if (mask(treeOp, Enumeration.TreeOp.Parent.userOrdinal())) {
                 final Member parent = schemaReader.getMemberParent(member);
                 if (parent != null) {
-                    populateMember(schemaReader, catalogName,
+                    populateMember(
+                        schemaReader, catalogName,
                         cube, parent,
-                        Enumeration.TreeOp.Self.ordinal(), rows);
+                        Enumeration.TreeOp.Self.userOrdinal(), rows);
                 }
             }
         }
@@ -5495,7 +5501,8 @@ TODO: see above
                 if (treeOp == -1) {
                     return;
                 }
-                populateMember(schemaReader, catalogName,
+                populateMember(
+                    schemaReader, catalogName,
                     cube, member, treeOp, rows);
             } else {
                 outputMember(schemaReader, member, catalogName, cube, rows);
