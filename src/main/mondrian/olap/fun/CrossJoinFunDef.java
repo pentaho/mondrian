@@ -364,7 +364,7 @@ class CrossJoinFunDef extends FunDefBase {
          * It should not be if it is a calculated measure that references
          * the cross join, unless the cross join itself also references
          * that calculated measure, in which case, we have a recursive call,
-         * an an exception is thrown.
+         * and an exception is thrown.
          * 
          * @param measure measure being examined
          * 
@@ -423,6 +423,15 @@ class CrossJoinFunDef extends FunDefBase {
         {
             if (funCall == call) {
                 found = true;
+            }
+            return null;
+        }
+        
+        public Object visit(mondrian.mdx.MemberExpr memberExpr) {
+            Member member = memberExpr.getMember();
+            if (member.isCalculated()) {
+                Exp memberExp = member.getExpression();
+                memberExp.accept(this);
             }
             return null;
         }

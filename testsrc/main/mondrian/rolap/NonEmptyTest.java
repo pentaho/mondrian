@@ -1286,7 +1286,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "on rows from Sales");
     }
 
-    public void testCrossJoinEvaluatorContext()
+    public void testCrossJoinEvaluatorContext1()
     {
         // This test ensures that the proper measure members context is
         // set when evaluating a non-empty cross join.  The context should
@@ -1344,6 +1344,72 @@ public class NonEmptyTest extends FoodMartTestCase {
                 "Row #7: 105,324.31\n" +
                 "Row #8: 29,959.28\n" +
                 "Row #9: 29,959.28\n"));
+    }
+
+    public void testCrossJoinEvaluatorContext2()
+    {
+        // calculated measure contains a calculated member
+        assertQueryReturns(
+            "With Set [*NATIVE_CJ_SET] as " +
+            "'NonEmptyCrossJoin([*BASE_MEMBERS_Dates], [*BASE_MEMBERS_Stores])' " +
+            "Set [*BASE_MEMBERS_Dates] as '{[Time].[1997].[Q1], [Time].[1997].[Q2]}' " +
+            "Set [*GENERATED_MEMBERS_Dates] as " +
+            "'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' " +
+            "Set [*GENERATED_MEMBERS_Measures] as '{[Measures].[*SUMMARY_METRIC_0]}' " +
+            "Set [*BASE_MEMBERS_Stores] as '{[Store].[USA].[CA], [Store].[USA].[WA]}' " +
+            "Set [*GENERATED_MEMBERS_Stores] as " +
+            "'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' " +
+            "Member [Time].[*SM_CTX_SEL] as 'Aggregate([*GENERATED_MEMBERS_Dates])' " +
+            "Member [Measures].[*SUMMARY_METRIC_0] as " +
+            "'[Measures].[Unit Sales]/([Measures].[Unit Sales],[Time].[*SM_CTX_SEL])', " +
+            "FORMAT_STRING = '0.00%' " +
+            "Member [Time].[*SUBTOTAL_MEMBER_SEL~SUM] as 'sum([*GENERATED_MEMBERS_Dates])' " +
+            "Member [Store].[*SUBTOTAL_MEMBER_SEL~SUM] as " +
+            "'sum(Filter([*GENERATED_MEMBERS_Stores], " +
+            "([Measures].[Unit Sales], [Time].[*SUBTOTAL_MEMBER_SEL~SUM]) > 0.0))' " +
+            "Select Union " +
+            "(CrossJoin " +
+            "(Filter " +
+            "(Generate([*NATIVE_CJ_SET], {([Time].CurrentMember)}), " +
+            "Not IsEmpty ([Measures].[Unit Sales])), " +
+            "[*GENERATED_MEMBERS_Measures]), " +
+            "CrossJoin " +
+            "(Filter " +
+            "({[Time].[*SUBTOTAL_MEMBER_SEL~SUM]}, " +
+            "Not IsEmpty ([Measures].[Unit Sales])), " +
+            "[*GENERATED_MEMBERS_Measures])) on columns, " +
+            "Non Empty Union " +
+            "(Filter " +
+            "(Filter " +
+            "(Generate([*NATIVE_CJ_SET], " +
+            "{([Store].CurrentMember)}), " +
+            "([Measures].[Unit Sales], " +
+            "[Time].[*SUBTOTAL_MEMBER_SEL~SUM]) > 0.0), " +
+            "Not IsEmpty ([Measures].[Unit Sales])), " +
+            "Filter( " +
+            "{[Store].[*SUBTOTAL_MEMBER_SEL~SUM]}, " +
+            "Not IsEmpty ([Measures].[Unit Sales]))) on rows " +
+            "From [Sales]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Time].[1997].[Q1], [Measures].[*SUMMARY_METRIC_0]}\n" +
+                "{[Time].[1997].[Q2], [Measures].[*SUMMARY_METRIC_0]}\n" +
+                "{[Time].[*SUBTOTAL_MEMBER_SEL~SUM], [Measures].[*SUMMARY_METRIC_0]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA].[CA]}\n" +
+                "{[Store].[All Stores].[USA].[WA]}\n" +
+                "{[Store].[*SUBTOTAL_MEMBER_SEL~SUM]}\n" +
+                "Row #0: 48.34%\n" +
+                "Row #0: 51.66%\n" +
+                "Row #0: 100.00%\n" +
+                "Row #1: 50.53%\n" +
+                "Row #1: 49.47%\n" +
+                "Row #1: 100.00%\n" +
+                "Row #2: 49.72%\n" +
+                "Row #2: 50.28%\n" +
+                "Row #2: 100.00%\n"));
     }
 
     /**
