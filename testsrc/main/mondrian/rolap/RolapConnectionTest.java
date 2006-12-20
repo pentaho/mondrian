@@ -14,6 +14,7 @@ package mondrian.rolap;
 
 import junit.framework.TestCase;
 import mondrian.olap.Util;
+import mondrian.olap.DriverManager;
 import mondrian.test.TestContext;
 
 import javax.sql.DataSource;
@@ -109,6 +110,55 @@ public class RolapConnectionTest extends TestCase {
             if (!System.getProperties().getProperty("java.version").startsWith("1.6.")) {
                 fail("Expect IllegalArgumentException only in JDK 1.6");
             }
+        }
+    }
+
+    /**
+     * Tests that the FORMAT function uses the connection's locale.
+     */
+    public void testFormatLocale() {
+        String expr = "FORMAT(1234.56, \"#,##.#\")";
+        checkLocale("es_ES", expr, "1.234,6", false);
+        checkLocale("es_MX", expr, "1,234.6", false);
+        checkLocale("en_US", expr, "1,234.6", false);
+    }
+
+    /**
+     * Tests that measures are formatted using the connection's locale.
+     */
+    public void testFormatStringLocale() {
+        checkLocale("es_ES", "1234.56", "1.234,6", true);
+        checkLocale("es_MX", "1234.56", "1,234.6", true);
+        checkLocale("en_US", "1234.56", "1,234.6", true);
+    }
+
+    private static void checkLocale(
+        final String localeName, String expr, String expected, boolean isQuery) {
+        TestContext testContextSpain = new TestContext() {
+            public mondrian.olap.Connection getConnection() {
+                Util.PropertyList properties =
+                    Util.parseConnectString(getConnectString());
+                properties.put(
+                    RolapConnectionProperties.Locale.name(),
+                    localeName);
+                return DriverManager.getConnection(properties, null, true);
+            }
+        };
+        if (isQuery) {
+            String query = "WITH MEMBER [Measures].[Foo] AS '" + expr + "',\n"
+                + " FORMAT_STRING = '#,##.#' \n"
+                + "SELECT {[MEasures].[Foo]} ON COLUMNS FROM [Sales]";
+            String expected2 =
+                TestContext.fold("Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Foo]}\n" +
+                    "Row #0: "
+                    + expected
+                    + "\n");
+            testContextSpain.assertQueryReturns(query, expected2);
+        } else {
+            testContextSpain.assertExprReturns(expr, expected);
         }
     }
 }

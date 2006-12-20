@@ -542,6 +542,10 @@ void printCurrentMemberNames() {
         return Format.get(formatString, root.connection.getLocale());
     }
 
+    public Locale getConnectionLocale() {
+        return root.connection.getLocale();
+    }
+
     /**
      * Converts a value of this member into a string according to this member's
      * format specification.

@@ -13,6 +13,8 @@
 
 package mondrian.olap;
 
+import java.util.Locale;
+
 import mondrian.calc.ParameterSlot;
 
 /**
@@ -109,6 +111,11 @@ public interface Evaluator {
      * Returns parent evaluator.
      */
     Evaluator getParent();
+    
+    /**
+     * Returns the connection's locale.
+     */   
+    Locale getConnectionLocale();
 
     /**
      * Retrieves the value of property <code>name</code>. If more than one

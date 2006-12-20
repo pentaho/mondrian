@@ -43,9 +43,8 @@ class FormatFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final Exp[] args = call.getArgs();
-        final Calc calc =
-                compiler.compileScalar(call.getArg(0), true);
-        final Locale locale = Locale.getDefault(); // todo: use connection's locale
+        final Calc calc = compiler.compileScalar(call.getArg(0), true);
+        final Locale locale = compiler.getEvaluator().getConnectionLocale();
         if (args[1] instanceof Literal) {
             // Constant string expression: optimize by
             // compiling format string.
