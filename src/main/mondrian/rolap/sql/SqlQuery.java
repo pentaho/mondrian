@@ -1303,6 +1303,18 @@ public class SqlQuery
         public boolean requiresOrderByAlias() {
             return isMySQL() || isDB2() || isIngres();
         }
+        
+        /**
+         * Returns true if this dialect supports multi-value IN expressions.
+         * E.g.,
+         * 
+         * <code>WHERE (col1, col2) IN ((val1a, val2a), (val1b, val2b))</code>
+         * 
+         * @return true if the dialect supports multi-value IN expressions
+         */
+        public boolean supportsMultiValueInExpr() {
+            return isLucidDB();
+        }
     }
 
     /**

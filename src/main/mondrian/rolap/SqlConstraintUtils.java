@@ -332,16 +332,20 @@ public class SqlConstraintUtils {
      */
     private static void constrainMultiLevelMembers(
         SqlQuery sqlQuery,
-        List members,
+        List<RolapMember> members,
         boolean strict)
     {
+        if (sqlQuery.getDialect().supportsMultiValueInExpr()) {
+            if (generateMultiValueInExpr(sqlQuery, members, strict)) {
+                return;
+            }
+        }
+        
         // iterate through each level in each member generating
         // AND's across the levels and OR's across the members
-        Iterator memberIter = members.iterator();
         String condition = "(";
         boolean firstMember = true;
-        for (int i = 0; i < members.size(); i++) {
-            RolapMember m = (RolapMember) memberIter.next();            
+        for (RolapMember m : members) {           
             if (m.isCalculated()) {
                 if (strict) {
                     throw Util.newInternal("addMemberConstraint: cannot " +
@@ -393,10 +397,10 @@ public class SqlConstraintUtils {
      * @return true if the members comprise the cross product of all unique
      * member keys referenced at each level
      */
-    public static boolean membersAreCrossProduct(List members)
+    private static boolean membersAreCrossProduct(List<RolapMember> members)
     {
         int crossProdSize = getNumUniqueMemberKeys(members);
-        for (Collection parents = getUniqueParentMembers(members);
+        for (Collection<RolapMember> parents = getUniqueParentMembers(members);
             !parents.isEmpty(); parents = getUniqueParentMembers(parents))
         {
             crossProdSize *= parents.size();
@@ -409,11 +413,10 @@ public class SqlConstraintUtils {
      * 
      * @return number of unique member keys in a list of members
      */
-    private static int getNumUniqueMemberKeys(List members)
+    private static int getNumUniqueMemberKeys(List<RolapMember> members)
     {
-        Set set = new HashSet();
-        for (Iterator it = members.iterator(); it.hasNext();) {
-            RolapMember m = (RolapMember) it.next();
+        Set<Object> set = new HashSet<Object>();
+        for (RolapMember m : members) {
             set.add(m.getKey());
         }
         return set.size();
@@ -426,7 +429,7 @@ public class SqlConstraintUtils {
      * 
      * @return string value corresponding to the member
      */
-    public static String getColumnValue(
+    private static String getColumnValue(
         Object key,
         SqlQuery.Dialect dialect,
         SqlQuery.Datatype datatype)
@@ -489,6 +492,93 @@ public class SqlConstraintUtils {
         }
         
         return constraint;
+    }
+    
+    /**
+     * Generates a multi-value IN expression corresponding to a list of
+     * member expressions, and adds the expression to the WHERE clause
+     * of a query, provided the member values are all non-null
+     * 
+     * @param sqlQuery query containing the where clause
+     * @param members list of constraining members
+     * @param strict defines the behavior when calculated members are present
+     * 
+     * @returns true if possible to generate a multi-value IN expression
+     */
+    private static boolean generateMultiValueInExpr(
+        SqlQuery sqlQuery,
+        List<RolapMember> members,
+        boolean strict)
+    {
+        final StringBuilder columnBuf = new StringBuilder();
+        columnBuf.append("(");
+        final StringBuilder valueBuf = new StringBuilder();
+        valueBuf.append("(");
+        
+        boolean firstMember = true;
+        for (RolapMember m : members) {           
+            if (m.isCalculated()) {
+                if (strict) {
+                    throw Util.newInternal("addMemberConstraint: cannot " +
+                        "restrict SQL to calculated member :" + m);
+                }
+                continue;
+            }
+            boolean firstLevel = true;
+            do {
+                if (m.isAll()) {
+                    continue;
+                }
+                RolapLevel level = m.getRolapLevel();
+                // generate the left-hand side of the IN expression, if we're
+                // iterating over the first member
+                if (firstMember) {
+                    RolapHierarchy hierarchy =
+                        (RolapHierarchy) level.getHierarchy();
+                    hierarchy.addToFrom(sqlQuery, level.getKeyExp());                      
+                    if (!firstLevel) {
+                        columnBuf.append(",");
+                    }
+                    MondrianDef.Expression exp = level.getNameExp();
+                    if (exp == null) {
+                        exp = level.getKeyExp();
+                    }
+                    columnBuf.append(exp.getExpression(sqlQuery));
+                }
+                
+                if (firstLevel) {
+                    if (!firstMember) {
+                        valueBuf.append("), ");
+                    }
+                    valueBuf.append("(");
+                    firstLevel = false;
+                } else {
+                    valueBuf.append(",");
+                }
+                
+                String value = getColumnValue(
+                    m.getSqlKey(),                       
+                    sqlQuery.getDialect(),
+                    level.getDatatype());
+                if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(value)) {
+                    return false;
+                }
+                final StringBuilder buf = new StringBuilder();
+                sqlQuery.getDialect().quote(buf, value, level.getDatatype());
+                valueBuf.append(buf.toString());
+                
+                m = (RolapMember) m.getParentMember();              
+            } while (m != null);            
+            firstMember = false;
+        }
+        
+        columnBuf.append(")");
+        valueBuf.append("))");
+        
+        sqlQuery.addWhere(
+            columnBuf.toString() + " in " + valueBuf.toString());
+        
+        return true;
     }
 }
 
