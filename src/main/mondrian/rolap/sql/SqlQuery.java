@@ -1313,7 +1313,7 @@ public class SqlQuery
          * @return true if the dialect supports multi-value IN expressions
          */
         public boolean supportsMultiValueInExpr() {
-            return isLucidDB();
+            return isLucidDB() || isMySQL();
         }
     }
 
