@@ -12,10 +12,7 @@
 */
 
 package mondrian.rolap;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -261,7 +258,13 @@ public class RolapSchema implements Schema {
                     throw Util.newError("Cannot get virtual file system manager");
                 }
 
-                FileObject file = fsManager.resolveFile(catalogUrl);
+                // Workaround VFS bug.
+                if (catalogUrl.startsWith("file:")) {
+                    catalogUrl = catalogUrl.substring("file:".length());
+                }
+
+                File userDir = new File("").getAbsoluteFile();
+                FileObject file = fsManager.resolveFile(userDir, catalogUrl);
                 if (!file.isReadable()) {
                     throw Util.newError("Virtual file is not readable: " +
                         catalogUrl);
