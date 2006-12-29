@@ -24,5 +24,6 @@
 	<classpathentry kind="lib" path="lib/commons-math-1.0.jar"/>
 	<classpathentry kind="lib" path="testlib/derby.jar"/>
 	<classpathentry kind="lib" path="testlib/xmlunit1.0.jar"/>
+    <classpathentry kind="lib" path="lib/commons-vfs.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
