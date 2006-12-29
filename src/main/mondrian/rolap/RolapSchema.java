@@ -12,13 +12,14 @@
 */
 
 package mondrian.rolap;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -58,6 +59,8 @@ import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.UserDefinedFunction;
 
 import org.apache.log4j.Logger;
+import org.apache.commons.vfs.*;
+
 import org.eigenbase.xom.DOMWrapper;
 import org.eigenbase.xom.Parser;
 import org.eigenbase.xom.XOMException;
@@ -184,30 +187,30 @@ public class RolapSchema implements Schema {
      * and the connectInfo object.
      *
      * @param md5Bytes may be null
-     * @param catalogName
+     * @param catalogUrl URL of catalog
      * @param catalogStr may be null
-     * @param connectInfo
+     * @param connectInfo Connection properties
      */
     private RolapSchema(
             final String key,
             final String md5Bytes,
-            final String catalogName,
+            final String catalogUrl,
             final String catalogStr,
             final Util.PropertyList connectInfo,
             final DataSource dataSource)
     {
         this(key, connectInfo, dataSource, md5Bytes);
-        load(catalogName, catalogStr);
+        load(catalogUrl, catalogStr);
     }
 
     private RolapSchema(
             final String key,
-            final String catalogName,
+            final String catalogUrl,
             final Util.PropertyList connectInfo,
             final DataSource dataSource)
     {
         this(key, connectInfo, dataSource, null);
-        load(catalogName, null);
+        load(catalogUrl, null);
     }
 
     protected void finalCleanUp() {
@@ -241,17 +244,35 @@ public class RolapSchema implements Schema {
      * Method called by all constructors to load the catalog into DOM and build
      * application mdx and sql objects.
      *
-     * @param catalogName
-     * @param catalogStr
+     * @param catalogUrl URL of catalog
+     * @param catalogStr Text of catalog, or null
      */
-    protected void load(String catalogName, String catalogStr) {
+    protected void load(String catalogUrl, String catalogStr) {
         try {
             final Parser xmlParser = XOMUtil.createDefaultParser();
 
             final DOMWrapper def;
             if (catalogStr == null) {
-                URL url = new URL(catalogName);
-                def = xmlParser.parse(url);
+                // Treat catalogUrl as an Apache VFS (Virtual File System) URL.
+                // VFS handles all of the usual protocols (http:, file:)
+                // and then some.
+                FileSystemManager fsManager = VFS.getManager();
+                if (fsManager == null) {
+                    throw Util.newError("Cannot get virtual file system manager");
+                }
+
+                FileObject file = fsManager.resolveFile(catalogUrl);
+                if (!file.isReadable()) {
+                    throw Util.newError("Virtual file is not readable: " +
+                        catalogUrl);
+                }
+
+                FileContent fileContent = file.getContent();
+                if (fileContent == null) {
+                    throw Util.newError("Cannot get virtual file content: " +
+                        catalogUrl);
+                }
+                def = xmlParser.parse(fileContent.getInputStream());
             } else {
                 def = xmlParser.parse(catalogStr);
             }
@@ -269,10 +290,10 @@ public class RolapSchema implements Schema {
 
             load(xmlSchema);
 
-        } catch (MalformedURLException e) {
-            throw Util.newError(e, "while parsing catalog " + catalogName);
         } catch (XOMException e) {
-            throw Util.newError(e, "while parsing catalog " + catalogName);
+            throw Util.newError(e, "while parsing catalog " + catalogUrl);
+        } catch (FileSystemException e) {
+            throw Util.newError(e, "while parsing catalog " + catalogUrl);
         }
 
         aggTableManager.initialize();
@@ -632,14 +653,14 @@ public class RolapSchema implements Schema {
         }
 
         synchronized RolapSchema get(
-            final String catalogName,
+            final String catalogUrl,
             final String connectionKey,
             final String jdbcUser,
             final String dataSourceStr,
             final Util.PropertyList connectInfo)
         {
             return get(
-                catalogName,
+                catalogUrl,
                 connectionKey,
                 jdbcUser,
                 dataSourceStr,
@@ -648,12 +669,12 @@ public class RolapSchema implements Schema {
         }
 
         synchronized RolapSchema get(
-            final String catalogName,
+            final String catalogUrl,
             final DataSource dataSource,
             final Util.PropertyList connectInfo)
         {
             return get(
-                catalogName,
+                catalogUrl,
                 null,
                 null,
                 null,
@@ -662,7 +683,7 @@ public class RolapSchema implements Schema {
         }
 
         private RolapSchema get(
-            final String catalogName,
+            final String catalogUrl,
             final String connectionKey,
             final String jdbcUser,
             final String dataSourceStr,
@@ -670,8 +691,8 @@ public class RolapSchema implements Schema {
             final Util.PropertyList connectInfo)
         {
             String key = (dataSource == null) ?
-                makeKey(catalogName, connectionKey, jdbcUser, dataSourceStr) :
-                makeKey(catalogName, dataSource);
+                makeKey(catalogUrl, connectionKey, jdbcUser, dataSourceStr) :
+                makeKey(catalogUrl, dataSource);
 
             RolapSchema schema = null;
             boolean hadDynProc = false;
@@ -699,7 +720,7 @@ public class RolapSchema implements Schema {
                 assert catalogStr == null;
 
                 try {
-                    final URL url = new URL(catalogName);
+                    final URL url = new URL(catalogUrl);
 
                     final Class<DynamicSchemaProcessor> clazz =
                         (Class<DynamicSchemaProcessor>) Class.forName(dynProcName);
@@ -716,7 +737,7 @@ public class RolapSchema implements Schema {
 
                 if (LOGGER.isDebugEnabled()) {
                     String msg = "Pool.get: create schema \"" +
-                        catalogName +
+                        catalogUrl +
                         "\" using dynamic processor";
                     LOGGER.debug(msg);
                 }
@@ -726,7 +747,7 @@ public class RolapSchema implements Schema {
                 connectInfo.get(
                     RolapConnectionProperties.UseContentChecksum.name()));
             if (useContentChecksum) {
-                // Different catalogNames can actually yield the same
+                // Different catalogUrls can actually yield the same
                 // catalogStr! So, we use the MD5 as the key as well as
                 // the key made above - its has two entries in the
                 // mapUrlToSchema Map. We must then also during the
@@ -735,7 +756,7 @@ public class RolapSchema implements Schema {
                 String md5Bytes = null;
                 try {
                     if (catalogStr == null) {
-                        catalogStr = Util.readURL(catalogName);
+                        catalogStr = Util.readURL(catalogUrl);
                     }
                     md5Bytes = encodeMD5(catalogStr);
 
@@ -768,7 +789,7 @@ public class RolapSchema implements Schema {
                     schema = new RolapSchema(
                         key,
                         md5Bytes,
-                        catalogName,
+                        catalogUrl,
                         catalogStr,
                         connectInfo,
                         dataSource);
@@ -781,14 +802,14 @@ public class RolapSchema implements Schema {
 
                     if (LOGGER.isDebugEnabled()) {
                         String msg = "Pool.get: create schema \"" +
-                            catalogName +
+                            catalogUrl +
                             "\" with MD5";
                         LOGGER.debug(msg);
                     }
 
                 } else if (LOGGER.isDebugEnabled()) {
                     String msg = "Pool.get: schema \"" +
-                        catalogName +
+                        catalogUrl +
                         "\" exists already with MD5";
                     LOGGER.debug(msg);
                 }
@@ -799,7 +820,7 @@ public class RolapSchema implements Schema {
                 schema = new RolapSchema(
                     key,
                     null,
-                    catalogName,
+                    catalogUrl,
                     catalogStr,
                     connectInfo,
                     dataSource);
@@ -818,14 +839,14 @@ public class RolapSchema implements Schema {
                     if (catalogStr == null) {
                         schema = new RolapSchema(
                             key,
-                            catalogName,
+                            catalogUrl,
                             connectInfo,
                             dataSource);
                     } else {
                         schema = new RolapSchema(
                             key,
                             null,
-                            catalogName,
+                            catalogUrl,
                             catalogStr,
                             connectInfo,
                             dataSource);
@@ -835,14 +856,14 @@ public class RolapSchema implements Schema {
 
                     if (LOGGER.isDebugEnabled()) {
                         String msg = "Pool.get: create schema \"" +
-                            catalogName +
+                            catalogUrl +
                             "\"";
                         LOGGER.debug(msg);
                     }
 
                 } else if (LOGGER.isDebugEnabled()) {
                     String msg = "Pool.get: schema \"" +
-                        catalogName +
+                        catalogUrl +
                         "\" exists already ";
                     LOGGER.debug(msg);
                 }
@@ -853,18 +874,19 @@ public class RolapSchema implements Schema {
         }
 
         synchronized void remove(
-            final String catalogName,
+            final String catalogUrl,
             final String connectionKey,
             final String jdbcUser,
             final String dataSourceStr)
         {
-            final String key = makeKey(catalogName,
-                                       connectionKey,
-                                       jdbcUser,
-                                       dataSourceStr);
+            final String key = makeKey(
+                catalogUrl,
+                connectionKey,
+                jdbcUser,
+                dataSourceStr);
             if (LOGGER.isDebugEnabled()) {
                 String msg = "Pool.remove: schema \"" +
-                     catalogName +
+                     catalogUrl +
                     "\" and datasource string \"" +
                     dataSourceStr +
                     "\"";
@@ -875,14 +897,13 @@ public class RolapSchema implements Schema {
         }
 
         synchronized void remove(
-            final String catalogName,
+            final String catalogUrl,
             final DataSource dataSource)
         {
-            final String key = makeKey(catalogName,
-                                       dataSource);
+            final String key = makeKey(catalogUrl, dataSource);
             if (LOGGER.isDebugEnabled()) {
                 String msg = "Pool.remove: schema \"" +
-                    catalogName +
+                    catalogUrl +
                     "\" and datasource object";
                 LOGGER.debug(msg);
             }
@@ -959,13 +980,15 @@ public class RolapSchema implements Schema {
         /**
          * Creates a key with which to identify a schema in the cache.
          */
-        private static String makeKey(final String catalogName,
-                                      final String connectionKey,
-                                      final String jdbcUser,
-                                      final String dataSourceStr) {
+        private static String makeKey(
+            final String catalogUrl,
+            final String connectionKey,
+            final String jdbcUser,
+            final String dataSourceStr)
+        {
             final StringBuilder buf = new StringBuilder(100);
 
-            appendIfNotNull(buf, catalogName);
+            appendIfNotNull(buf, catalogUrl);
             appendIfNotNull(buf, connectionKey);
             appendIfNotNull(buf, jdbcUser);
             appendIfNotNull(buf, dataSourceStr);
@@ -977,11 +1000,13 @@ public class RolapSchema implements Schema {
         /**
          * Creates a key with which to identify a schema in the cache.
          */
-        private static String makeKey(final String catalogName,
-                                      final DataSource dataSource) {
+        private static String makeKey(
+            final String catalogUrl,
+            final DataSource dataSource)
+        {
             final StringBuilder buf = new StringBuilder(100);
 
-            appendIfNotNull(buf, catalogName);
+            appendIfNotNull(buf, catalogUrl);
             buf.append('.');
             buf.append("external#");
             buf.append(System.identityHashCode(dataSource));
@@ -1000,28 +1025,34 @@ public class RolapSchema implements Schema {
         }
     }
 
-    public static void flushSchema(final String catalogName,
-                                   final String connectionKey,
-                                   final String jdbcUser,
-                                   String dataSourceStr) {
-        Pool.instance().remove(catalogName,
-                               connectionKey,
-                               jdbcUser,
-                               dataSourceStr);
+    public static void flushSchema(
+        final String catalogUrl,
+        final String connectionKey,
+        final String jdbcUser,
+        String dataSourceStr)
+    {
+        Pool.instance().remove(
+            catalogUrl,
+            connectionKey,
+            jdbcUser,
+            dataSourceStr);
     }
 
-    public static void flushSchema(final String catalogName,
-                                   final DataSource dataSource) {
-        Pool.instance().remove(catalogName,
-                               dataSource);
+    public static void flushSchema(
+        final String catalogUrl,
+        final DataSource dataSource)
+    {
+        Pool.instance().remove(catalogUrl, dataSource);
     }
 
     public static void clearCache() {
         Pool.instance().clear();
     }
+
     public static Iterator<RolapSchema> getRolapSchemas() {
         return Pool.instance().getRolapSchemas();
     }
+
     public static boolean cacheContains(RolapSchema rolapSchema) {
         return Pool.instance().contains(rolapSchema);
     }
@@ -1487,7 +1518,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     public Collection<RolapStar> getStars() {
       return getRolapStarRegistry().getStars();
     }
-    
+
     public void flushRolapStarCaches(boolean forced) {
         for (RolapStar star : getStars()) {
             // this will only flush the star's aggregate cache if
@@ -1496,7 +1527,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             star.clearCachedAggregations(forced);
         }
     }
-    
+
     public static void flushAllRolapStarCachedAggregations() {
         for (Iterator<RolapSchema> itSchemas = RolapSchema.getRolapSchemas();
                 itSchemas.hasNext(); ) {

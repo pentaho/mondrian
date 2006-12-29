@@ -84,8 +84,10 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${lib.dir}/jsp-api.jar"/>
     <pathelement location="${lib.dir}/commons-dbcp.jar"/>
     <pathelement location="${lib.dir}/commons-collections.jar"/>
+    <pathelement location="${lib.dir}/commons-logging.jar"/>
     <pathelement location="${lib.dir}/commons-math-1.0.jar"/>
     <pathelement location="${lib.dir}/commons-pool.jar"/>
+    <pathelement location="${lib.dir}/commons-vfs.jar"/>
     <pathelement location="${lib.dir}/eigenbase-properties.jar"/>
     <pathelement location="${lib.dir}/eigenbase-resgen.jar"/>
     <pathelement location="${lib.dir}/eigenbase-xom.jar"/>
@@ -234,7 +236,9 @@ demo/access/MondrianFoodMart.mdb"/>
 
     <unjar src="${lib.dir}/commons-dbcp.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/commons-collections.jar" dest="${crtmp.dir}"/>
+    <unjar src="${lib.dir}/commons-logging.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/commons-pool.jar" dest="${crtmp.dir}"/>
+    <unjar src="${lib.dir}/commons-vfs.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/eigenbase-properties.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/eigenbase-resgen.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/eigenbase-xom.jar" dest="${crtmp.dir}"/>
@@ -555,8 +559,10 @@ ${java.dir}/**/*.gif,
 ${java.dir}/**/*.html,
 ${lib.dir}/commons-collections.jar,
 ${lib.dir}/commons-dbcp.jar,
+${lib.dir}/commons-logging.jar,
 ${lib.dir}/commons-math-1.0.jar,
 ${lib.dir}/commons-pool.jar,
+${lib.dir}/commons-vfs.jar,
 ${lib.dir}/eigenbase-properties.jar,
 ${lib.dir}/eigenbase-resgen.jar,
 ${lib.dir}/eigenbase-xom.jar,
@@ -712,7 +718,7 @@ ${doc.dir}/api/src-html/**/*"/>
           includes="${dist.name}-src.zip"/>
     </zip>
   </target>
-  
+
   <target name="binDerbyzip"
       depends="version,derby-war,srczip,javadoc,xml_schema,unzip-FoodMartDerbyDB">
     <mkdir dir="${dist.dir}" />
