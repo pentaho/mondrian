@@ -6,7 +6,7 @@
       <Restrictions>
         <RestrictionList>
           <CUBE_NAME>Sales</CUBE_NAME>
-          <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+          <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
         </RestrictionList>
       </Restrictions>
       <Properties>

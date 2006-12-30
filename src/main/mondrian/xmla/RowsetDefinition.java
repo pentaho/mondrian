@@ -5264,7 +5264,7 @@ TODO: see above
             if (isRestricted(MemberUniqueName)) {
                 // NOTE: it is believed that if MEMBER_UNIQUE_NAME is
                 // a restriction, then none of the remaining possible
-                // restrictions other than TREE_OP are relevant 
+                // restrictions other than TREE_OP are relevant
                 // (or allowed??).
                 outputUniqueMemberName(schemaReader,
                     catalogName, cube, rows);
@@ -5288,13 +5288,13 @@ TODO: see above
                     if (!level.getUniqueName().equals(levelUniqueName)) {
                         continue;
                     }
+                    // Get members of this level, without access control, but
+                    // including calculated members.
                     Member[] members =
-                        cube.getSchemaReader(null).getLevelMembers(level,
-                            false);
+                        cube.getSchemaReader(null).getLevelMembers(level, true);
                     outputMembers(schemaReader, members,
                         catalogName, cube, rows);
                 }
-
             } else {
                 for (Dimension dimension : cube.getDimensions()) {
                     String uniqueName = dimension.getUniqueName();
@@ -5530,6 +5530,13 @@ TODO: see above
                 RolapMember.setOrdinals(schemaReader, member);
             }
 
+            // Check whether the members is visible, otherwise do not dump.
+            Boolean isVisible = (Boolean)
+                member.getPropertyValue(Property.VISIBLE.name);
+            if (isVisible != null && !isVisible) {
+                return;
+            }
+
             final Level level = member.getLevel();
             final Hierarchy hierarchy = level.getHierarchy();
             final Dimension dimension = hierarchy.getDimension();
@@ -5594,7 +5601,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: v==" +v);
                 // result is same as v == 0
                 // For very big data set, it takes time= 73880ms
                 Hierarchy hierarchy = startMember.getHierarchy();
-                Member[][] membersArray = 
+                Member[][] membersArray =
                     RolapMember.getAllMembers(schemaReader, hierarchy);
                 RolapMember.setOrdinals(schemaReader, startMember);
             } else if (v == 2) {
@@ -5602,7 +5609,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: v==" +v);
                 // result is NOT same as v == 0
                 int ordinal = 0;
                 Hierarchy hierarchy = startMember.getHierarchy();
-                Member[][] membersArray = 
+                Member[][] membersArray =
                     RolapMember.getAllMembers(schemaReader, hierarchy);
 
                 // RME: this does a breath first setting of ordinals
@@ -5620,7 +5627,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: v==" +v);
                 int ordinal = 1;
                 int depth = 1;
                 Hierarchy hierarchy = startMember.getHierarchy();
-                Member[][] membersArray = 
+                Member[][] membersArray =
                     RolapMember.getAllMembers(schemaReader, hierarchy);
                 Member[] rootMembers = membersArray[0];
 LOGGER.debug("RowsetDefinition.setOrdinals: rootMembers.length=" +rootMembers.length);
@@ -5643,7 +5650,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: NO member=" +member.getName());
                 // For very big data set, it takes time= 4241ms
                 int ordinal = 1;
                 Hierarchy hierarchy = startMember.getHierarchy();
-                Member[][] membersArray = 
+                Member[][] membersArray =
                     RolapMember.getAllMembers(schemaReader, hierarchy);
                 Member[] leafMembers = membersArray[membersArray.length-1];
 
@@ -5685,7 +5692,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
                 if (member.getParentMember() == parent) {
                     ((RolapMember) member).setOrdinal(ordinal++);
                     if (nextLevelExists) {
-                        ordinal = 
+                        ordinal =
                             setOrdinals(ordinal, member, membersArray, depth+1);
                     }
                 }
