@@ -850,6 +850,15 @@ public class SqlQuery
          * <p>In the default dialect, boolean literals are printed as is.
          */
         public void quoteBooleanLiteral(StringBuilder buf, String value) {
+            // NOTE jvs 1-Jan-2007:  See quoteDateLiteral for explanation.
+            // In addition, note that we leave out UNKNOWN (even though
+            // it is a valid SQL:2003 literal) because it's really
+            // NULL in disguise, and NULL is always treated specially.
+            if (!value.equalsIgnoreCase("TRUE")
+                && !(value.equalsIgnoreCase("FALSE"))) {
+                throw new NumberFormatException(
+                    "Illegal BOOLEAN literal:  " + value);
+            }
             buf.append(value);
         }
 
@@ -861,6 +870,17 @@ public class SqlQuery
          * appends <code>DATE '1969-03-17'</code>.
          */
         public void quoteDateLiteral(StringBuilder buf, String value) {
+            // NOTE jvs 1-Jan-2007: Check that the supplied literal is in valid
+            // SQL:2003 date format.  A hack in
+            // RolapSchemaReader.lookupMemberChildByName looks for
+            // NumberFormatException to suppress it, so that is why
+            // we convert the exception here.
+            try {
+                java.sql.Date.valueOf(value);
+            } catch (IllegalArgumentException ex) {
+                throw new NumberFormatException(
+                    "Illegal DATE literal:  " + value);
+            }
             buf.append("DATE ");
             Util.singleQuoteString(value, buf);
         }
@@ -873,6 +893,13 @@ public class SqlQuery
          * appends <code>TIME '12:34:56'</code>.
          */
         public void quoteTimeLiteral(StringBuilder buf, String value) {
+            // NOTE jvs 1-Jan-2007:  See quoteDateLiteral for explanation.
+            try {
+                java.sql.Time.valueOf(value);
+            } catch (IllegalArgumentException ex) {
+                throw new NumberFormatException(
+                    "Illegal TIME literal:  " + value);
+            }
             buf.append("TIME ");
             Util.singleQuoteString(value, buf);
         }
@@ -885,6 +912,13 @@ public class SqlQuery
          * appends <code>TIMESTAMP '1969-03-17 12:34:56'</code>.
          */
         public void quoteTimestampLiteral(StringBuilder buf, String value) {
+            // NOTE jvs 1-Jan-2007:  See quoteTimestampLiteral for explanation.
+            try {
+                java.sql.Timestamp.valueOf(value);
+            } catch (IllegalArgumentException ex) {
+                throw new NumberFormatException(
+                    "Illegal TIMESTAMP literal:  " + value);
+            }
             buf.append("TIMESTAMP ");
             Util.singleQuoteString(value, buf);
         }

@@ -375,7 +375,8 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
 
   <Dimension name="Has coffee bar">
     <Hierarchy hasAll="true">
-      <Level name="Has coffee bar" column="coffee_bar" uniqueMembers="true"/>
+      <Level name="Has coffee bar" column="coffee_bar" uniqueMembers="true" 
+          type="Boolean"/>
     </Hierarchy>
   </Dimension>
 

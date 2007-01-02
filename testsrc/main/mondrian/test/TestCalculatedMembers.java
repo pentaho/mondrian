@@ -711,6 +711,23 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "{[Product].[All Products].[Non-Consumable]}\n"));
     }
 
+    public void testNonCharacterMembers() {
+        assertQueryReturns(
+            "with member [Has Coffee Bar].[Maybe] as " + nl
+            + "'SUM([Has Coffee Bar].members)' " + nl
+            + "SELECT {[Has Coffee Bar].[Maybe]} on rows, " + nl
+            + "{[Measures].[Store Sqft]} on columns " + nl
+            + "FROM [Store]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Store Sqft]}\n" +
+                "Axis #2:\n" +
+                "{[Has coffee bar].[Maybe]}\n" +
+                "Row #0: 1,143,192\n"));
+     }
+
     public void testFormatString() {
         // Verify that
         // (a) a calculated member without a format string does not

@@ -779,12 +779,14 @@ public class RolapStar {
             int notNullCount = 0;
             StringBuilder buf = new StringBuilder(expr);
             buf.append(" in (");
+            Object lastNotNull = null;
             for (int i = 0; i < constraints.length; i++) {
                 final ColumnConstraint constraint = constraints[i];
                 Object key = constraint.getValue();
                 if (key == RolapUtil.sqlNullValue) {
                     continue;
                 }
+                lastNotNull = key;
                 if (notNullCount > 0) {
                     buf.append(", ");
                 }
@@ -806,7 +808,7 @@ public class RolapStar {
                     buf.append('(');
                     buf.append(expr);
                     buf.append(" = ");
-                    dialect.quote(buf, constraints[0].getValue(), datatype);
+                    dialect.quote(buf, lastNotNull, datatype);
                     buf.append(" or ");
                     buf.append(expr);
                     buf.append(" is null)");
