@@ -273,6 +273,12 @@ public class SchemaTest extends FoodMartTestCase {
                 "    <SQL dialect=\"generic\">\n" +
                 "     <![CDATA[select * from \"inventory_fact_1997\" as \"FOOBAR\"]]>\n" +
                 "    </SQL>\n" +
+                "    <SQL dialect=\"oracle\">\n" +
+                "     <![CDATA[select * from \"inventory_fact_1997\" \"FOOBAR\"]]>\n" +
+                "    </SQL>\n" +
+                "    <SQL dialect=\"mysql\">\n" +
+                "     <![CDATA[select * from `inventory_fact_1997` as `FOOBAR`]]>\n" +
+                "    </SQL>\n" +
                 "  </View>\n" +
                 "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
                 "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n" +
@@ -326,6 +332,12 @@ public class SchemaTest extends FoodMartTestCase {
                 "  <View alias=\"FACT\">\n" +
                 "    <SQL dialect=\"generic\">\n" +
                 "     <![CDATA[select * from \"store\" as \"FOOBAR\"]]>\n" +
+                "    </SQL>\n" +
+                "    <SQL dialect=\"oracle\">\n" +
+                "     <![CDATA[select * from \"store\" \"FOOBAR\"]]>\n" +
+                "    </SQL>\n" +
+                "    <SQL dialect=\"mysql\">\n" +
+                "     <![CDATA[select * from `store` as `FOOBAR`]]>\n" +
                 "    </SQL>\n" +
                 "  </View>\n" +
                 "  <!-- We could have used the shared dimension \"Store Type\", but we\n" +
