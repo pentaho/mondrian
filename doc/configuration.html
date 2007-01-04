@@ -723,8 +723,17 @@ suite of regression tests.</p>
 <h3>Connect string syntax<a name="Connect_string_syntax">&nbsp;</a></h3>
 
 <p>Mondrian connect strings are a connection of property/value pairs, of the 
-form 'property=value;property=value;...'.</p>
-<p>Values can be enclosed in single-quotes, which allows them to contain spaces 
+form 'property=value;property=value;...'. For example:</p>
+
+<blockquote><code>Provider=Mondrian;
+    Jdbc='jdbc:mysql://localhost/foodmart';
+    JdbcUser=foodmart;
+    JdbcPassword=foodmart;
+    JdbcDrivers=com.mysql.jdbc.Driver;
+    Catalog=file:demo/FoodMart.xml</code>
+</blockquote>
+
+<p>Values can be enclosed in single-quotes, which allows them to contain spaces
 and punctuation. See the the
 <a target="_blank" href="http://msdn.microsoft.com/library/en-us/oledb/htm/oledbconnectionstringsyntax.asp">
 OLE DB connect string syntax specification</a>.</p>
