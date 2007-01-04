@@ -13,7 +13,8 @@ import mondrian.olap.Evaluator;
 
 /**
  * Expression which has a void result.
- * Since it doesn't return anything, any useful implementation of this
+ *
+ * <p>Since it doesn't return anything, any useful implementation of this
  * class will do its work by causing side-effects.
  *
  * @author jhyde

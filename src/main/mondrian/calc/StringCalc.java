@@ -12,9 +12,9 @@ package mondrian.calc;
 import mondrian.olap.Evaluator;
 
 /**
- * Compiled expression whose result is a {@link String}.<p/>
+ * Compiled expression whose result is a {@link String}.
  *
- * When implementing this interface, it is convenient to extend
+ * <p>When implementing this interface, it is convenient to extend
  * {@link mondrian.calc.impl.AbstractStringCalc}, but it is not required.
  *
  * @author jhyde

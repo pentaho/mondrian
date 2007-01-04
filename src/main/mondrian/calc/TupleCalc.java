@@ -14,10 +14,11 @@ import mondrian.olap.Evaluator;
 
 /**
  * Expression which yields a tuple.
- * The tuple is represented as an array of {@link Member} objects,
- * <code>null</code> to represent the null tuple.<p/>
  *
- * When implementing this interface, it is convenient to extend
+ * <p>The tuple is represented as an array of {@link Member} objects,
+ * <code>null</code> to represent the null tuple.
+ *
+ * <p>When implementing this interface, it is convenient to extend
  * {@link mondrian.calc.impl.AbstractTupleCalc}, but it is not required.
  *
  * @author jhyde

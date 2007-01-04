@@ -8,7 +8,7 @@
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
-<project name="mondrian" default="compile">
+<project name="mondrian" default="all">
   <property environment="env"/>
   <property name="project.location" location="."/>
   <property name="lib.location" location="${project.location}/lib"/>
@@ -210,8 +210,6 @@ demo/access/MondrianFoodMart.mdb"/>
   <echo>==============================================================</echo>
   </target>
 
-  <target name="all" depends="clean,compile,test"/>
-
   <target name="clean">
     <delete includeEmptyDirs="true" quiet="true">
       <fileset dir="${classes.dir}" includes="**/*.class,**/*.properties"/>
@@ -282,15 +280,18 @@ demo/access/MondrianFoodMart.mdb"/>
     <delete dir="${crtmp.dir}" quiet="true"/>
   </target>
 
+    <target name="all" depends="
+compile,
+unzip-FoodMartCreateData,
+unzip-FoodMartAccessDB,
+unzip-FoodMartDerbyDB"/>
+
   <target name="compile" depends="
 prepare,
 parser,
 generate.resources,
 def,
-compile.java,
-unzip-FoodMartCreateData,
-unzip-FoodMartAccessDB,
-unzip-FoodMartDerbyDB"/>
+compile.java"/>
 
   <target name="generate.resources">
     <taskdef name="resgen" classname="org.eigenbase.resgen.ResourceGenTask">
@@ -753,7 +754,7 @@ ${doc.dir}/api/src-html/**/*"/>
   </target>
 
   <target name="doczip"
-      depends="javadoc, xml_schema"
+      depends="javadoc-with-ydoc, xml_schema"
       description="Builds a zipfile of the documentation, which can then be
                    deployed to sf.net. See also doc/deployDoc.sh.">
     <mkdir dir="${dist.dir}" />
@@ -829,8 +830,6 @@ doc/**/*.xml"
         Windowtitle="Mondrian OLAP Server, version ${version}"
         additionalparam="-linksource"
       >
-      <!--
-        -->
       <tag name="pre" description="Pre-condition:"
            scope="constructors,methods"/>
       <tag name="post" description="Post-condition:"
@@ -842,6 +841,45 @@ doc/**/*.xml"
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
       <link href="http://eigenbase.sourceforge.net/resgen/api/"/>
       <link href="http://farrago.sourceforge.net/api/"/>
+    </javadoc>
+    <copy file="${java.dir}/mondrian/olap/Mondrian.xml"
+        todir="${javadoc.dir}/mondrian/olap"/>
+  </target>
+
+  <!-- Generate javadoc with embedded UML diagrams using the yDoc doclet from
+       yWorks.com. Set ydoc.home in build.properties, then replace
+       ${ydoc.home}/resources/ydoc.license with a full license (free for open
+       source use). -->
+  <target name="javadoc-with-ydoc">
+    <mkdir dir="${javadoc.dir}" />
+    <delete quiet="true" file="${javadoc.dir}/index.html"/>
+    <property name="ps" value="${path.separator}"/>
+    <javadoc sourcepath="${java.dir}"
+        classpathref="project.test.classpath"
+        destdir="${javadoc.dir}"
+        packagenames="mondrian.*,javax.*,org.omg.*"
+        overview="${java.dir}/overview.html"
+        footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sourceforge.net/sflogo.php?group_id=35302&#38;type=1&quot; width=&quot;88&quot; height=&quot;31&quot; border=&quot;0&quot; alt=&quot;SourceForge.net_Logo&quot;&gt;&lt;/a&gt;"
+        author="true"
+        source="1.5"
+        access="package"
+        Windowtitle="Mondrian OLAP Server, version ${version}"
+        additionalparam="-linksource"
+      >
+      <doclet
+          name="ydoc.doclets.YStandard"
+          path="${ydoc.home}/lib/ydoc.jar${ps}${ydoc.home}/lib/class2svg.jar${ps}${ydoc.home}/resources${ps}${ydoc.home}/doc">
+        <param name="-author"/>
+        <param name="-generic"/>
+        <param name="-umlautogen"/>
+        <param name="-tag" value="y.precondition"/>
+        <param name="-tag" value="y.postcondition"/>
+        <param name="-tag" value="y.complexity"/>
+        <param name="-tag" value="param"/>
+        <param name="-tag" value="return"/>
+        <param name="-tag" value="see"/>
+        <param name="-tag" value="y.uml"/>
+      </doclet>
     </javadoc>
     <copy file="${java.dir}/mondrian/olap/Mondrian.xml"
         todir="${javadoc.dir}/mondrian/olap"/>

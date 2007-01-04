@@ -13,9 +13,9 @@ import mondrian.olap.Evaluator;
 import mondrian.olap.Member;
 
 /**
- * Expression which yields a {@link Member}.<p/>
+ * Expression which yields a {@link Member}.
  *
- * When implementing this interface, it is convenient to extend
+ * <p>When implementing this interface, it is convenient to extend
  * {@link mondrian.calc.impl.AbstractMemberCalc}, but it is not required.
 
  * @author jhyde
