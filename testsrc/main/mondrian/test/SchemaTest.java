@@ -360,14 +360,12 @@ public class SchemaTest extends FoodMartTestCase {
             fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
-                "{[Store Type].[All Store Types]}\n" +
                 "{[Store Type].[All Store Types].[Deluxe Supermarket]}\n" +
                 "{[Store Type].[All Store Types].[Gourmet Supermarket]}\n" +
                 "{[Store Type].[All Store Types].[HeadQuarters]}\n" +
                 "{[Store Type].[All Store Types].[Mid-Size Grocery]}\n" +
                 "{[Store Type].[All Store Types].[Small Grocery]}\n" +
                 "{[Store Type].[All Store Types].[Supermarket]}\n" +
-                "Row #0: 571,596\n" +
                 "Row #0: 146,045\n" +
                 "Row #0: 47,447\n" +
                 "Row #0: \n" +
