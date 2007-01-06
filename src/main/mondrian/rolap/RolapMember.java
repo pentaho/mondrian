@@ -605,7 +605,7 @@ public class RolapMember extends MemberBase {
             if (this.key instanceof String) {
                 return Util.compareName((String) this.key, (String) other.key);
             } else {
-                return ((Comparable) this.key).compareTo(other.key);
+                return Util.compareKey(this.key, other.key);
             }
         }
         // Compare by unique name in case of different key classes.

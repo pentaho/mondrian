@@ -223,6 +223,22 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Returns the result of ((Comparable) k1).compareTo(k2), with
+     * special-casing for the fact that Boolean only became
+     * comparable in JDK 1.5.
+     *
+     * @see Comparable#compareTo
+     */
+    public static int compareKey(Object k1, Object k2) {
+        if (k1 instanceof Boolean) {
+            // Luckily, "F" comes before "T" in the alphabet.
+            k1 = k1.toString();
+            k2 = k2.toString();
+        }
+        return ((Comparable) k1).compareTo(k2);
+    }
+
+    /**
      * Returns a string with every occurrence of a seek string replaced with
      * another.
      */
