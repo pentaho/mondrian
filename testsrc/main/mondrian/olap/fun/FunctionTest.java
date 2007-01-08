@@ -6771,18 +6771,17 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         // To boolean (trivial)
         assertExprReturns("1=1 AND Cast(1 = 1 AND 1 = 2 AS Boolean)", "false");
 
-        // From null
-        // To Integer
-        assertExprThrows("0 + Cast(NULL AS Integer)",
-            "cannot convert value 'null' to targetType 'DECIMAL(0)'");
-        // To Numeric
-        assertExprThrows("0 + Cast(NULL AS Numeric)",
-            "cannot convert value 'null' to targetType 'NUMERIC'");
-        // To String
+        // From null : should not throw exceptions since RolapResult.executeBody can receive NULL
+        // values when the cell value is not loaded yet, so should return null instead.        
+        // To Integer : Expect to return NULL
+        assertExprReturns("0 * Cast(NULL AS Integer)", "");  // Expect to return NULL
+        // To Numeric : Expect to return NULL
+        assertExprReturns("0 * Cast(NULL AS Numeric)", "");  // Expect to return NULL
+        // To String : Expect to return "null"
         assertExprReturns("'' || Cast(NULL AS String)", "null");
-        // To Boolean
-        assertExprThrows("1=1 AND Cast(NULL AS Boolean)",
-            "cannot convert value 'null' to targetType 'BOOLEAN'");
+        // To Boolean : Expect to return NULL, but since FunUtil.BooleanNull does not 
+        // implement three-valued boolean logic yet, this will return false
+        assertExprReturns("1=1 AND Cast(NULL AS Boolean)", "false");
 
         // Double is not allowed as a type
         assertExprThrows("Cast(1 AS Double)",

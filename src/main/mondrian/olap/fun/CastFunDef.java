@@ -16,6 +16,7 @@ import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.fun.FunUtil;
 
 /**
  * Definition of the <code>CAST</code> MDX operator.
@@ -67,6 +68,9 @@ public class CastFunDef extends FunDefBase {
 
             public int evaluateInteger(Evaluator evaluator) {
                 final Object o = evaluate(evaluator);
+                if (o == null) {
+                    return FunUtil.IntegerNull;
+                }                
                 if (o instanceof String) {
                     return Integer.parseInt((String) o);
                 }
@@ -78,6 +82,9 @@ public class CastFunDef extends FunDefBase {
 
             public double evaluateDouble(Evaluator evaluator) {
                 final Object o = evaluate(evaluator);
+                if (o == null) {
+                    return FunUtil.DoubleNull;
+                }                                
                 if (o instanceof String) {
                     return Double.valueOf((String) o);
                 }
@@ -89,6 +96,9 @@ public class CastFunDef extends FunDefBase {
 
             public boolean evaluateBoolean(Evaluator evaluator) {
                 final Object o = evaluate(evaluator);
+                if (o == null) {
+                    return FunUtil.BooleanNull;
+                }                                                
                 if (o instanceof Boolean) {
                     return (Boolean) o;
                 }
