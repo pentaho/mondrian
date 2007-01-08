@@ -20,6 +20,8 @@ import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 
+import mondrian.spi.DataSourceChangeListener;
+
 import java.util.*;
 
 /**
@@ -54,13 +56,15 @@ public class SmartMemberReader implements MemberReader, MemberCache {
     final SmartMemberListCache<RolapMember, List<RolapMember>> mapMemberToChildren;
 
     /** a cache for alle members to ensure uniqueness */
-    final SmartCache<Object, RolapMember> mapKeyToMember;
+    SmartCache<Object, RolapMember> mapKeyToMember;
 
     /** maps a level to its members */
     final SmartMemberListCache<RolapLevel, List<RolapMember>> mapLevelToMembers;
 
-    private List<RolapMember> rootMembers;
+    DataSourceChangeListener changeListener;
 
+    private List<RolapMember> rootMembers;
+    
     SmartMemberReader(MemberReader source) {
         this.source = source;
         if (!source.setCache(this)) {
@@ -73,6 +77,13 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         this.mapKeyToMember = new SoftSmartCache<Object, RolapMember>();
         this.mapMemberToChildren =
             new SmartMemberListCache<RolapMember, List<RolapMember>>();
+
+        if (source.getHierarchy() != null) {
+            changeListener = source.getHierarchy().getRolapSchema().getDataSourceChangeListener();
+        }
+        else {
+            changeListener = null;
+        }
     }
 
     // implement MemberReader
@@ -86,6 +97,18 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         // own cache
         return false;
     }
+    
+    private synchronized void checkCacheStatus() {
+        
+        if (changeListener != null) {
+            if (changeListener.isHierarchyChanged(getHierarchy())) {
+                /* Flush the cache */
+                mapMemberToChildren.clear();
+                mapKeyToMember.clear();            
+                mapLevelToMembers.clear();               
+            }            
+        }
+    }
 
     // implement MemberCache
     public Object makeKey(RolapMember parent, Object key) {
@@ -95,8 +118,20 @@ public class SmartMemberReader implements MemberReader, MemberCache {
     // implement MemberCache
     // synchronization: Must synchronize, because uses mapKeyToMember
     public synchronized RolapMember getMember(Object key) {
+        return getMember(key, true);
+    }
+    
+    // implement MemberCache
+    // synchronization: Must synchronize, because uses mapKeyToMember
+    public synchronized RolapMember getMember(Object key, boolean mustCheckCacheStatus) {
+                
+        if (mustCheckCacheStatus == true) {
+            checkCacheStatus();
+        }        
+        
         return mapKeyToMember.get(key);
     }
+    
 
     // implement MemberCache
     // synchronization: Must synchronize, because modifies mapKeyToMember
@@ -143,10 +178,15 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         int endOrdinal,
         TupleConstraint constraint)
     {
-        List<RolapMember> members = mapLevelToMembers.get(level, constraint);
+        List<RolapMember> members = null;
+        
+        checkCacheStatus();
+        
+        members = mapLevelToMembers.get(level, constraint);
         if (members != null) {
             return members;
         }
+
         members = source.getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
         mapLevelToMembers.put(level, constraint, members);
         return members;
@@ -183,6 +223,9 @@ public class SmartMemberReader implements MemberReader, MemberCache {
             List<RolapMember> parentMembers,
             List<RolapMember> children,
             MemberChildrenConstraint constraint) {
+        
+        checkCacheStatus();
+        
         List<RolapMember> missed = new ArrayList<RolapMember>();
         for (RolapMember parentMember : parentMembers) {
             List<RolapMember> list =

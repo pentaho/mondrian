@@ -128,6 +128,7 @@ public class SqlTupleReader implements TupleReader {
             if (currMember != null) {
                 member = currMember;
             } else {
+                boolean checkCacheStatus=true;
                 for (int i = 0; i <= levelDepth; i++) {
                     RolapLevel childLevel = levels[i];
                     if (childLevel.isAll()) {
@@ -146,7 +147,8 @@ public class SqlTupleReader implements TupleReader {
                     }
                     RolapMember parentMember = member;
                     Object key = cache.makeKey(parentMember, value);
-                    member = cache.getMember(key);
+                    member = cache.getMember(key, checkCacheStatus);
+                    checkCacheStatus = false; /* Only check the first time */
                     if (member == null) {
                         member = memberBuilder.makeMember(
                             parentMember, childLevel, value, captionValue,

@@ -121,8 +121,15 @@ public enum RolapConnectionProperties {
      * "en_US", "hu". If Locale is not specified, then the name of system's
      * default will be used, as per {@link java.util.Locale#getDefault()}.
      */
-    Locale;
-
+    Locale,
+    
+    /**
+     * The name of a class implementing the
+     * {@link mondrian.spi.DataSourceChangeListener} interface.
+     * A data source change listener is used to flush the cache of 
+     * mondrian every time the datasource is changed.
+     */
+    DataSourceChangeListener;
     /**
      * Any property beginning with this value will be added to the
      * JDBC connection properties, after removing this prefix. This

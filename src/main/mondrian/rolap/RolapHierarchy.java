@@ -34,7 +34,7 @@ import java.util.ArrayList;
  * @since 10 August, 2001
  * @version $Id$
  */
-class RolapHierarchy extends HierarchyBase {
+public class RolapHierarchy extends HierarchyBase {
 
     private static final Logger LOGGER = Logger.getLogger(RolapHierarchy.class);
 
@@ -353,11 +353,11 @@ class RolapHierarchy extends HierarchyBase {
         return false;
     }
 
-    RolapSchema getRolapSchema() {
+    public RolapSchema getRolapSchema() {
         return (RolapSchema) dimension.getSchema();
     }
 
-    MondrianDef.Relation getRelation() {
+    public MondrianDef.Relation getRelation() {
         return relation;
     }
 

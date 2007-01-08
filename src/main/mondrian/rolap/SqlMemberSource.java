@@ -727,6 +727,7 @@ RME is this right
 
             int limit = MondrianProperties.instance().ResultLimit.get();
             int nFetch = 0;
+            boolean checkCacheStatus=true;
 
             while (resultSet.next()) {
 
@@ -747,7 +748,8 @@ RME is this right
                     captionValue = null;
                 }
                 Object key = cache.makeKey(parentMember, value);
-                RolapMember member = cache.getMember(key);
+                RolapMember member = cache.getMember(key, checkCacheStatus);
+                checkCacheStatus = false; /* Only check the first time */
                 if (member == null) {
                     member = makeMember(
                             parentMember, childLevel, value, captionValue,

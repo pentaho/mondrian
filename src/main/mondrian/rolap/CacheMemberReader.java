@@ -78,6 +78,9 @@ class CacheMemberReader implements MemberReader, MemberCache {
     public RolapMember getMember(Object key) {
         return mapKeyToMember.get(key);
     }
+    public RolapMember getMember(Object key, boolean mustCheckCacheStatus) {        
+        return mapKeyToMember.get(key);
+    }
 
     // implement MemberCache
     public Object putMember(Object key, RolapMember value) {

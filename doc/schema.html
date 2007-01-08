@@ -72,6 +72,7 @@
 			<li><a href="#Member_formatter">Member formatter</a></li>
 			<li><a href="#Property_formatter">Property formatter</a></li>
 			<li><a href="#Schema_processor">Schema processor</a></li>
+			<li><a href="#DataSource_change_listener">Data source change listener</a></li>
 		</ol>
 	</li>
   	<li><a href="#I18n">Internationalization</a></li>
@@ -1538,7 +1539,8 @@ ensure that it appears on the classpath.</p>
 user-defined functions</a>; <a href="#Cell_formatter">
 cell</a>, <a href="#Member_formatter">member</a> and 
 <a href="#Property_formatter">property formatters</a>; 
-and <a href="#Schema_processor">dynamic schema processors</a>. 
+<a href="#Schema_processor">dynamic schema processors</a> and
+<a href="#DataSource_change_listener">data source change listeners</a>. 
 There is incomplete support for <a href="#Member_reader">member 
 readers</a> and <a href="#Cell_reader">cell readers</a>, 
 and in future we may support pluggable 
@@ -1931,6 +1933,61 @@ schema content has changed, it would be reloaded (and processed).</p>
 
 <p>Dynamic schemas are a very powerful construct. As we shall see, an important application
 for them is <a href="#I18n">internationalization</a>.</p>
+
+<!-- 
+#########################################
+##  6.8 Data source change listener #####
+######################################### -->
+<h1>6.8 Data source change listener<a name="DataSource_change_listener">&nbsp;</a></h1>
+
+<p>A data source change listener implements the <code>
+<a href="api/mondrian/spi/DataSourceChangeListener.html">
+mondrian.spi.DataSourceChangeListener</a></code> interface. It is specified as part of 
+the connection string, like this:</p>
+
+<blockquote>
+  <code>Jdbc=jdbc:odbc:MondrianFoodMart; JdbcUser=ziggy;
+JdbcPassword=stardust; DataSourceChangeListener=com.acme.MyChangeListener;</code>
+</blockquote>
+
+<p>Everytime mondrian has to decide whether it will use data from cache, it
+will call the change listener.  When the change listener tells mondrian
+the datasource has changed for a dimension, cube, ... then mondrian will
+flush the cache and read from database again.</p>
+
+<p>This class should be called in mondrian before any data is read, so
+even before cache is build.  This way, the plugin is able to register
+the first timestamp mondrian tries to read the datasource.</p>
+
+<p>For now, only flushing of the hierarchy cache is implemented.</p>
+
+<p>Here is an example of a data source change listener plugin class :
+<blockquote>
+  <code>&nbsp;package com.acme;<br>
+  <br>
+&nbsp;public class MyChangeListener extends DataSourceChangeListenerImpl {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public MyChangeListener() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public synchronized boolean isHierarchyChanged(RolapHierarchy hierarchy) {<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Since this function is called many times, it is a good idea to not check the database every time<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// And use some sort of time interval...<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Get name of the table (does not work if based on view)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;String tableName = getTableName(hierarchy);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Connection jdbcConnection = null;<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DataSource dataSource =<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hierarchy.getRolapSchema().getInternalConnection().getDataSource();<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;try {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jdbcConnection = dataSource.getConnection();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (jdbcConnection != null) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Check database whether hierarchy data source has changed<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// ...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;}<br>
+</blockquote>
 
 <!-- 
 #################################

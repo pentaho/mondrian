@@ -54,6 +54,7 @@ import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.UserDefinedFunction;
+import mondrian.spi.DataSourceChangeListener;
 
 import org.apache.log4j.Logger;
 import org.apache.commons.vfs.*;
@@ -149,6 +150,8 @@ public class RolapSchema implements Schema {
         new ArrayList<RolapSchemaParameter >();
 
     private Date schemaLoadDate;
+    
+    private DataSourceChangeListener dataSourceChangeListener;
 
     /**
      * This is ONLY called by other constructors (and MUST be called
@@ -176,6 +179,7 @@ public class RolapSchema implements Schema {
         this.mapNameToCube = new HashMap<String, RolapCube>();
         this.mapNameToRole = new HashMap<String, Role>();
         this.aggTableManager = new AggTableManager(this);
+        this.dataSourceChangeListener = createDataSourceChangeListener(connectInfo);
     }
 
 
@@ -1426,6 +1430,49 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             }
         };
     }
+    
+    /**
+     * Creates a {@link DataSourceChangeListener} with which to detect changes to datasources.
+     */
+    private DataSourceChangeListener createDataSourceChangeListener(
+            Util.PropertyList connectInfo) {
+        
+        DataSourceChangeListener changeListener = null;
+
+        // If CatalogContent is specified in the connect string, ignore
+        // everything else. In particular, ignore the dynamic schema
+        // processor.
+        String dataSourceChangeListenerStr = connectInfo.get(
+            RolapConnectionProperties.DataSourceChangeListener.name());
+
+        if ( ! Util.isEmpty(dataSourceChangeListenerStr)) {
+            try {
+                
+                Class<?> clazz = Class.forName(dataSourceChangeListenerStr);
+                Constructor<?> constructor = clazz.getConstructor();
+                changeListener = (DataSourceChangeListener)constructor.newInstance();
+                
+/*                final Class<DataSourceChangeListener> clazz =
+                    (Class<DataSourceChangeListener>) Class.forName(dataSourceChangeListenerStr);
+                final Constructor<DataSourceChangeListener> ctor =
+                    clazz.getConstructor();
+                changeListener = ctor.newInstance(); */
+
+            } catch (Exception e) {
+                throw Util.newError(e, "loading DataSourceChangeListener "
+                    + dataSourceChangeListenerStr);
+            }
+
+            if (LOGGER.isDebugEnabled()) {
+                String msg = "RolapSchema.createDataSourceChangeListener: create datasource change listener \"" +
+                dataSourceChangeListenerStr;
+
+                LOGGER.debug(msg);
+            }
+        }
+        return changeListener;
+    }
+    
 
     /**
      * Connection for purposes of parsing and validation. Careful! It won't
@@ -1551,6 +1598,23 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
 
     public synchronized int getNextDimensionOrdinal() {
         return nextDimensionOrdinal++;
+    }
+
+
+    /**
+     * @return Returns the dataSourceChangeListener.
+     */
+    public DataSourceChangeListener getDataSourceChangeListener() {
+        return dataSourceChangeListener;
+    }
+
+
+    /**
+     * @param dataSourceChangeListener The dataSourceChangeListener to set.
+     */
+    public void setDataSourceChangeListener(
+            DataSourceChangeListener dataSourceChangeListener) {
+        this.dataSourceChangeListener = dataSourceChangeListener;
     }
 
 }

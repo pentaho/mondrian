@@ -186,6 +186,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(CmdRunnerTest.class);
             suite.addTestSuite(BUG_1541077.class);
             suite.addTestSuite(JolapTest.class);
+            suite.addTestSuite(DataSourceChangeListenerTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get())

@@ -41,6 +41,13 @@ interface MemberCache {
     RolapMember getMember(Object key);
 
     /**
+     * Retrieves the {@link RolapMember} with a given key (created by
+     * {@link #makeKey}).  It is possible to disable the checking of the
+     * cache status with this call.
+     */
+    RolapMember getMember(Object key, boolean mustCheckCacheStatus);
+    
+    /**
      * Replaces the {@link RolapMember} with a given key (created by {@link
      * #makeKey}). Returns the previous member with that key, or null.
      */
