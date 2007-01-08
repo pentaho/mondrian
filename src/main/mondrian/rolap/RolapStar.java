@@ -85,7 +85,7 @@ public class RolapStar {
     private final Map<RolapCube, Map<RolapLevel, Column>> mapCubeToMapLevelToColumn;
 
     /** holds all aggregations of this star */
-    private Map<BitKey,Aggregation> aggregations;
+    private Map<RolapStarAggregationKey,Aggregation> aggregations;
 
     /** how many columns (column and columnName) there are */
     private int columnCount;
@@ -120,7 +120,7 @@ public class RolapStar {
 
         this.mapCubeToMapLevelToColumn =
             new HashMap<RolapCube, Map<RolapLevel, Column>>();
-        this.aggregations = new HashMap<BitKey, Aggregation>();
+        this.aggregations = new HashMap<RolapStarAggregationKey, Aggregation>();
 
         clearAggStarList();
 
@@ -281,7 +281,8 @@ public class RolapStar {
      * caching set to off.
      *
      * @param forced if true, then the cached aggregations are cleared
-     * regardless of any other settings.
+     * regardless of any other settings.  When set to false, only cache
+     * from the current thread context is cleared.
      */
     void clearCachedAggregations(boolean forced) {
         if (forced || (! this.cacheAggregations) || RolapStar.disableCaching) {
@@ -294,8 +295,26 @@ public class RolapStar {
                 buf.append(getFactTable().getAlias());
                 LOGGER.debug(buf.toString());
             }
-
-            aggregations.clear();
+            synchronized(aggregations) {
+                if (forced) {                    
+                    aggregations.clear();
+                }
+                else {
+                    /* Only clear aggregation cache for the currect thread context */
+                    Thread thread = Thread.currentThread();                
+                    long threadId = thread.getId();
+                                         
+                    Iterator<Map.Entry<RolapStarAggregationKey, Aggregation>> it = aggregations.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry<RolapStarAggregationKey, Aggregation> e = it.next();
+                        RolapStarAggregationKey aggregationKey = e.getKey();
+                        
+                        if (aggregationKey.getThreadId() == threadId) {
+                            it.remove();
+                        }                                                    
+                    }                                        
+                }                    
+            }
         }
     }
 
@@ -309,7 +328,9 @@ public class RolapStar {
             Aggregation aggregation = lookupAggregation(bitKey);
             if (aggregation == null) {
                 aggregation = new Aggregation(this, bitKey);
-                this.aggregations.put(bitKey, aggregation);
+                RolapStarAggregationKey aggregationKey = new RolapStarAggregationKey(bitKey, (! this.cacheAggregations) || RolapStar.disableCaching);
+                
+                this.aggregations.put(aggregationKey, aggregation);
             }
             return aggregation;
         }
@@ -323,7 +344,8 @@ public class RolapStar {
      */
     public Aggregation lookupAggregation(BitKey bitKey) {
         synchronized (aggregations) {
-            return aggregations.get(bitKey);
+            RolapStarAggregationKey aggregationKey = new RolapStarAggregationKey(bitKey, (! this.cacheAggregations) || RolapStar.disableCaching);
+            return aggregations.get(aggregationKey);
         }
     }
 
@@ -1645,5 +1667,71 @@ public class RolapStar {
         }
     }
 }
+/* 
+ * Class to create an aggregation key for the cache that is thread based.
+ */
+class RolapStarAggregationKey {
+    private BitKey bitKey;
+    private long threadId;
+    /*
+     * Creates an aggregation key, specify whether the cache is local to the thread
+     */
+    RolapStarAggregationKey(final BitKey bitKey, boolean threadLocal) {
+        this.bitKey = bitKey.copy(); 
+        if (threadLocal) {
+            Thread thread = Thread.currentThread();                
+            this.threadId = thread.getId();
+        } 
+        else {
+            this.threadId = -1;
+        }
+    }
+    public int hashCode() {    
+        int c = 1;
+        if (bitKey != null) {
+            c = bitKey.hashCode();
+        }
+        if (threadId != -1) {
+            c = c ^ (int)threadId;
+        }
+        return c;        
+    }    
+    public boolean equals(Object other) {
+        if (other instanceof RolapStarAggregationKey) {
+            RolapStarAggregationKey aggregationKey = (RolapStarAggregationKey) other;
+            return bitKey.equals(aggregationKey.bitKey) && (threadId == aggregationKey.threadId);
+        } else {
+            return false;
+        }
+    }
+    public String toString() {
+        return bitKey.toString() + " thread id = " + threadId;
+    }    
+    /**
+     * @return Returns the bitKey.
+     */
+    public BitKey getBitKey() {
+        return bitKey;
+    }
+    /**
+     * @param bitKey The bitKey to set.
+     */
+    public void setBitKey(BitKey bitKey) {
+        this.bitKey = bitKey;
+    }
+    /**
+     * @return Returns the threadId.
+     */
+    public long getThreadId() {
+        return threadId;
+    }
+    /**
+     * @param threadId The threadId to set.
+     */
+    public void setThreadId(long threadId) {
+        this.threadId = threadId;
+    }    
+};    
+
 
 // End RolapStar.java
