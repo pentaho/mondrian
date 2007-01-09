@@ -309,6 +309,9 @@ compile.java"/>
       <include name="mondrian/olap/MondrianException.java" />
       <include name="mondrian/olap/ResultLimitExceeded.java" />
       <include name="mondrian/olap/InvalidHierarchy.java" />
+      <include name="mondrian/olap/ResourceLimitExceeded.java" />
+      <include name="mondrian/olap/QueryCanceledException.java" />
+      <include name="mondrian/olap/QueryTimeoutException.java" />
     </javac>
 
     <resgen
