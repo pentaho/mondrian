@@ -16,6 +16,7 @@
  dtdName="mondrian.dtd"
  className="MondrianDef"
  packageName="mondrian.olap"
+ importName="mondrian.rolap.sql.SqlQuery"
  root="Schema"
  version="1.0">
     <Doc>
@@ -679,8 +680,8 @@ Revision is $Id$
                 return new Column(table, properties[i].column);
             }
 
-            public mondrian.rolap.sql.SqlQuery.Datatype getDatatype() {
-                return mondrian.rolap.sql.SqlQuery.Datatype.valueOf(type);
+            public SqlQuery.Datatype getDatatype() {
+                return SqlQuery.Datatype.valueOf(type);
             }
         </Code>
     </Element>
@@ -1455,7 +1456,7 @@ Revision is $Id$
 
     <Class class="Expression">
         <Code>
-            public abstract String getExpression(mondrian.rolap.sql.SqlQuery query);
+            public abstract String getExpression(SqlQuery query);
             public abstract String getGenericExpression();
             public abstract String getTableAlias();
         </Code>
@@ -1481,7 +1482,7 @@ Revision is $Id$
                 this.table = table;
                 this.name = name;
             }
-            public String getExpression(mondrian.rolap.sql.SqlQuery query) {
+            public String getExpression(SqlQuery query) {
                 return query.getDialect().quoteIdentifier(table, name);
             }
             public String getGenericExpression() {
@@ -1521,7 +1522,7 @@ Revision is $Id$
             public String toString() {
                 return expressions[0].cdata;
             }
-            public String getExpression(mondrian.rolap.sql.SqlQuery query) {
+            public String getExpression(SqlQuery query) {
                 return query.getDialect().chooseQuery(expressions);
             }
             public String getGenericExpression() {
