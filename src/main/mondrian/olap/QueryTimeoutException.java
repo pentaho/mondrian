@@ -10,14 +10,14 @@
 package mondrian.olap;
 
 /**
- * Abstract base class for exceptions that indicate some limit was exceeded.
+ * Exception which indicates query timeout was hit
  *
  * @version $Id$
  */
-public abstract class ResultLimitExceeded extends MondrianException {
-    public ResultLimitExceeded(String message) {
+public class QueryTimeoutException extends ResultLimitExceeded {
+    public QueryTimeoutException(String message) {
         super(message);
     }
 }
 
-// End ResultLimitExceeded.java
+// End QueryTimeoutException.java

@@ -55,7 +55,7 @@ class VarFunDef extends AbstractAggregateFunDef {
                 new ValueCalc(call);
         return new AbstractCalc(call) {
             public Object evaluate(Evaluator evaluator) {
-                List memberList = listCalc.evaluateList(evaluator);
+                List memberList = evaluateCurrentList(listCalc, evaluator);
                 return var(evaluator.push(), memberList, calc, false);
             }
 

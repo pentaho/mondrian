@@ -9,9 +9,7 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.FunDef;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Dimension;
+import mondrian.olap.*;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.ListCalc;
@@ -48,7 +46,7 @@ class SumFunDef extends AbstractAggregateFunDef {
                 new ValueCalc(call);
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
-                List memberList = listCalc.evaluateList(evaluator);
+                List memberList = evaluateCurrentList(listCalc, evaluator);
                 return sumDouble(evaluator.push(), memberList, calc);
             }
 

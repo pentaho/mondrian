@@ -65,7 +65,7 @@ public class NthQuartileFunDef extends AbstractAggregateFunDef {
                 new ValueCalc(call);
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, doubleCalc}) {
             public double evaluateDouble(Evaluator evaluator) {
-                List members = listCalc.evaluateList(evaluator);
+                List members = evaluateCurrentList(listCalc, evaluator);
                 return quartile(evaluator.push(), members, doubleCalc, range);
             }
 

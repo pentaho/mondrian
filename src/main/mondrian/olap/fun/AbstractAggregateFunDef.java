@@ -9,8 +9,12 @@
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.*;
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 import mondrian.mdx.UnresolvedFunCall;
+
+import java.util.*;
 
 /**
  * Abstract base class for all aggregate functions (<code>Aggregate</code>,
@@ -40,6 +44,47 @@ public class AbstractAggregateFunDef extends FunDefBase {
             }
         }
         return super.validateArg(validator, args, i, category);
+    }
+    
+    /**
+     * Evaluates the list of members used in computing the aggregate.
+     * Keeps track of the number of iterations that will be required to
+     * iterate over the members needed to compute the aggregate within the
+     * current context.  In doing so, also determines if the cross product
+     * of all iterations across all parent evaluation contexts will exceed the
+     * limit set in the properties file.
+     * 
+     * @param listCalc calculator used to evaluate the member list
+     * @param evaluator current evalutor
+     * 
+     * @return list of evaluated members
+     */
+    protected List evaluateCurrentList(ListCalc listCalc, Evaluator evaluator)
+    {
+        List memberList = listCalc.evaluateList(evaluator);
+        int currLen = memberList.size();
+        long iterationLimit =
+            MondrianProperties.instance().IterationLimit.get();
+        if (iterationLimit > 0) {
+            int productLen = crossProd(evaluator, currLen);
+            if (productLen > iterationLimit) {
+                throw 
+                    MondrianResource.instance().
+                        IterationLimitExceeded.ex(iterationLimit);
+            }
+        }
+        evaluator.setIterationLength(currLen);
+        return memberList;
+    }
+    
+    private int crossProd(Evaluator evaluator, int currLen) {
+        int productLen = currLen;
+        Evaluator parent = evaluator.getParent();
+        while (parent != null) {
+            productLen *= parent.getIterationLength();
+            parent = parent.getParent();
+        }
+        return productLen;
     }
 }
 

@@ -54,7 +54,7 @@ class CountFunDef extends AbstractAggregateFunDef {
                 call, new Calc[] {memberListCalc}) {
             public int evaluateInteger(Evaluator evaluator) {
                 List memberList =
-                        memberListCalc.evaluateList(evaluator);
+                    evaluateCurrentList(memberListCalc, evaluator);
                 return count(evaluator, memberList, includeEmpty);
             }
 

@@ -189,6 +189,18 @@ public interface Evaluator {
      * not set.
      */
     Object getParameterValue(ParameterSlot slot);
+    
+    /**
+     * @return the iteration length of the current context
+     */
+    int getIterationLength();
+    
+    /**
+     * Sets the iteration length for the current evaluator context
+     * 
+     * @param length length to be set
+     */
+    void setIterationLength(int length);
 }
 
 // End Evaluator.java

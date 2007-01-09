@@ -5279,6 +5279,43 @@ public class BasicQueryTest extends FoodMartTestCase {
         TestContext.checkThrowable(
             throwable, "Query timeout of 2 seconds reached");
     }
+    
+    public void testQueryIterationLimit()
+    {
+        // Query will need to iterate 4*3 times to compute aggregates,
+        // so set iteration limit to 11
+        String query =
+            "With Set [*NATIVE_CJ_SET] as " +
+            "'NonEmptyCrossJoin([*BASE_MEMBERS_Dates], [*BASE_MEMBERS_Stores])' " +
+            "Set [*BASE_MEMBERS_Dates] as '{[Time].[1997].[Q1], [Time].[1997].[Q2], [Time].[1997].[Q3], [Time].[1997].[Q4]}' " +
+            "Set [*GENERATED_MEMBERS_Dates] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' " +
+            "Set [*GENERATED_MEMBERS_Measures] as '{[Measures].[*SUMMARY_METRIC_0]}' " +
+            "Set [*BASE_MEMBERS_Stores] as '{[Store].[USA].[CA], [Store].[USA].[WA], [Store].[USA].[OR]}' " +
+            "Set [*GENERATED_MEMBERS_Stores] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' " +
+            "Member [Time].[*SM_CTX_SEL] as 'Aggregate([*GENERATED_MEMBERS_Dates])' " +
+            "Member [Measures].[*SUMMARY_METRIC_0] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],[Time].[*SM_CTX_SEL])' " +
+            "Member [Time].[*SUBTOTAL_MEMBER_SEL~SUM] as 'sum([*GENERATED_MEMBERS_Dates])' " +
+            "Member [Store].[*SUBTOTAL_MEMBER_SEL~SUM] as 'sum([*GENERATED_MEMBERS_Stores])' " +
+            "select crossjoin({[Time].[*SUBTOTAL_MEMBER_SEL~SUM]}, {[Store].[*SUBTOTAL_MEMBER_SEL~SUM]}) " +
+            "on columns from [Sales]";
+
+        Throwable throwable = null;
+        int origLimit = MondrianProperties.instance().IterationLimit.get();
+        try {
+            MondrianProperties.instance().IterationLimit.set(11);
+            executeQuery(query);
+        } catch (Throwable ex) {
+            throwable = ex;
+        } finally {
+            // reset the timeout back to the original value
+            MondrianProperties.instance().IterationLimit.set(origLimit);
+        }
+        TestContext.checkThrowable(
+            throwable, "Number of iterations exceeded limit of 11");
+        
+        // make sure the query runs without the limit set
+        executeQuery(query);
+    }
 
     /**
      * A simple user-defined function which adds one to its argument, but

@@ -360,6 +360,14 @@ public class RolapConnection extends ConnectionBase {
         return connectInfo.get(name);
     }
 
+    /**
+     * @throws ResourceLimitExceeded if some resource limit specified in the
+     * property file was exceeded
+     * @throws QueryCanceledException if query was canceled in the middle of
+     * execution
+     * @throws QueryTimeoutException if query exceeded timeout specified in
+     * the property file
+     */
     public Result execute(Query query) {
         try {
             if (LOGGER.isDebugEnabled()) {

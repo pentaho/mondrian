@@ -54,6 +54,7 @@ public class RolapEvaluator implements Evaluator {
     private Member expandingMember;
     private boolean nonEmpty;
     protected final RolapEvaluatorRoot root;
+    private int iterationLength;
 
     /**
      * Creates an evaluator.
@@ -72,6 +73,7 @@ public class RolapEvaluator implements Evaluator {
           this.depth = parent.depth + 1;
           this.nonEmpty = parent.nonEmpty;
         }
+        this.iterationLength = 1;
 
         this.cellReader = cellReader;
         if (currentMembers == null) {
@@ -704,6 +706,16 @@ void printCurrentMemberNames() {
                 calcMembers[calcMemberCount] = null; // to allow gc
             }
         }
+    }
+    
+    public int getIterationLength()
+    {
+        return iterationLength;
+    }
+    
+    public void setIterationLength(int length)
+    {
+        iterationLength = length;
     }
 }
 

@@ -801,6 +801,12 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public final BooleanProperty IgnoreInvalidMembers = new BooleanProperty(
         this, "mondrian.rolap.ignoreInvalidMembers", false);
+    
+    /**
+     * Iteration limit when computing an aggregate; 0 indicates unlimited
+     */
+    public final IntegerProperty IterationLimit = new IntegerProperty(
+        this, "mondrian.rolap.iterationLimit", 0);
 }
 
 // End MondrianProperties.java

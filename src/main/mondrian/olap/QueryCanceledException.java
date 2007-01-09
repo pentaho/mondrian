@@ -10,14 +10,14 @@
 package mondrian.olap;
 
 /**
- * Abstract base class for exceptions that indicate some limit was exceeded.
+ * Exception which indicates query was canceled
  *
  * @version $Id$
  */
-public abstract class ResultLimitExceeded extends MondrianException {
-    public ResultLimitExceeded(String message) {
+public class QueryCanceledException extends ResultLimitExceeded {
+    public QueryCanceledException(String message) {
         super(message);
     }
 }
 
-// End ResultLimitExceeded.java
+// End QueryCanceledException.java

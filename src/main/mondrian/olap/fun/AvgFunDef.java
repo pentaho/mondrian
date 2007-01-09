@@ -48,7 +48,7 @@ class AvgFunDef extends AbstractAggregateFunDef {
                 new ValueCalc(call);
         return new AbstractCalc(call) {
             public Object evaluate(Evaluator evaluator) {
-                List memberList = listCalc.evaluateList(evaluator);
+                List memberList = evaluateCurrentList(listCalc, evaluator);
                 return avg(evaluator.push(), memberList, calc);
             }
 

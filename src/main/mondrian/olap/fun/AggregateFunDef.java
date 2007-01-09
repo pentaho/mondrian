@@ -53,7 +53,7 @@ class AggregateFunDef extends AbstractAggregateFunDef {
                 if (rollup == null) {
                     throw newEvalException(null, "Don't know how to rollup aggregator '" + aggregator + "'");
                 }
-                final List list = listCalc.evaluateList(evaluator);
+                final List list = evaluateCurrentList(listCalc, evaluator);
                 return rollup.aggregate(evaluator.push(), list, calc);
             }
 

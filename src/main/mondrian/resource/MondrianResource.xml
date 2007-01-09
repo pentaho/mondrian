@@ -474,20 +474,24 @@
 <!-- ====================================================================== -->
 <!-- Runtime limit overflow -->
 
-<exception id="600010" name="LimitExceededDuringCrossjoin" className="mondrian.olap.ResultLimitExceeded">
+<exception id="600010" name="LimitExceededDuringCrossjoin" className="mondrian.olap.ResourceLimitExceeded">
    <text>Size of CrossJoin result ({0,number}) exceeded limit ({1,number})</text>
 </exception>
 
-<exception id="600020" name="MemberFetchLimitExceeded" className="mondrian.olap.ResultLimitExceeded">
+<exception id="600020" name="MemberFetchLimitExceeded" className="mondrian.olap.ResourceLimitExceeded">
    <text>Number of members to be read exceeded limit ({0,number})</text>
 </exception>
 
-<exception id="600030" name="QueryCanceled" className="mondrian.olap.ResultLimitExceeded">
+<exception id="600030" name="QueryCanceled" className="mondrian.olap.QueryCanceledException">
     <text>Query canceled</text>
 </exception>
 
-<exception id="600040" name="QueryTimeout" className="mondrian.olap.ResultLimitExceeded">
+<exception id="600040" name="QueryTimeout" className="mondrian.olap.QueryTimeoutException">
     <text>Query timeout of {0,number} seconds reached</text>
+</exception>
+
+<exception id="600050" name="IterationLimitExceeded" className="mondrian.olap.ResourceLimitExceeded">
+    <text>Number of iterations exceeded limit of {0,number} </text>
 </exception>
 
 <!-- empty ,invalid Dimension -->

@@ -10,14 +10,14 @@
 package mondrian.olap;
 
 /**
- * Abstract base class for exceptions that indicate some limit was exceeded.
+ * Exception which indicates some resource limit was exceeded.
  *
  * @version $Id$
  */
-public abstract class ResultLimitExceeded extends MondrianException {
-    public ResultLimitExceeded(String message) {
+public class ResourceLimitExceeded extends ResultLimitExceeded {
+    public ResourceLimitExceeded(String message) {
         super(message);
     }
 }
 
-// End ResultLimitExceeded.java
+// End ResourceLimitExceeded.java
