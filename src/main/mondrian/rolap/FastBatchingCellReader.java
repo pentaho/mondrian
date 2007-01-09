@@ -420,7 +420,7 @@ public class FastBatchingCellReader implements CellReader {
             while (iter1.hasNext()) {
                 T v1 = iter1.next();
                 T v2 = iter2.next();
-                int c = ((Comparable) v1).compareTo(v2);
+                int c = Util.compareKey(v1, v2);
                 if (c != 0) {
                     return c;
                 }
