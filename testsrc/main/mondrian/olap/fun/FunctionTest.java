@@ -6848,6 +6848,54 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         pw.println("</table>");
         pw.close();
     }
+    
+    public void testComplexOrExpr()
+    {
+        // make sure all aggregates referenced in the OR expression are
+        // processed in a single load request by setting the eval depth to
+        // a value smaller than the number of measures
+        int origDepth = MondrianProperties.instance().MaxEvalDepth.get();
+        MondrianProperties.instance().MaxEvalDepth.set(3);
+        assertQueryReturns(
+            "with set [*NATIVE_CJ_SET] as '[Store].[Store Country].members' " +
+            "set [*GENERATED_MEMBERS_Measures] as " +
+                "'{[Measures].[Unit Sales], [Measures].[Store Cost], " +
+                "[Measures].[Sales Count], [Measures].[Customer Count], " +
+                "[Measures].[Promotion Sales]}' " +
+            "set [*GENERATED_MEMBERS] as " +
+                "'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' " +
+            "member [Store].[*SUBTOTAL_MEMBER_SEL~SUM] as 'Sum([*GENERATED_MEMBERS])' " +
+            "select [*GENERATED_MEMBERS_Measures] ON COLUMNS, " +
+            "NON EMPTY " +
+                "Filter( " +
+                    "Generate( " +
+                    "[*NATIVE_CJ_SET], " +
+                    "{[Store].CurrentMember}), " +
+                    "(((((NOT IsEmpty([Measures].[Unit Sales])) OR " +
+                        "(NOT IsEmpty([Measures].[Store Cost]))) OR " +
+                        "(NOT IsEmpty([Measures].[Sales Count]))) OR " +
+                        "(NOT IsEmpty([Measures].[Customer Count]))) OR " +
+                        "(NOT IsEmpty([Measures].[Promotion Sales])))) " +
+            "on rows " +
+            "from [Sales]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "{[Measures].[Store Cost]}\n" +
+                "{[Measures].[Sales Count]}\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "{[Measures].[Promotion Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA]}\n" +
+                "Row #0: 266,773\n" +
+                "Row #0: 225,627.23\n" +
+                "Row #0: 86,837\n" +
+                "Row #0: 5,581\n" +
+                "Row #0: 151,211.21\n"));
+        MondrianProperties.instance().MaxEvalDepth.set(origDepth);
+    }
 
     private static void printHtml(PrintWriter pw, String s) {
         final String escaped = StringEscaper.htmlEscaper.escapeString(s);

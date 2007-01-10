@@ -203,6 +203,18 @@ public interface Evaluator {
      * @param length length to be set
      */
     void setIterationLength(int length);
+    
+    /**
+     * @return true if evaluating axes
+     */
+    boolean isEvalAxes();
+    
+    /**
+     * Indicate whether the evaluator is evaluating the axes
+     * 
+     * @param evalAxes true if evaluating axes
+     */
+    void setEvalAxes(boolean evalAxes);
 }
 
 // End Evaluator.java

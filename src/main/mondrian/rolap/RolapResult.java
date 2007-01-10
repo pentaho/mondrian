@@ -259,6 +259,7 @@ class RolapResult extends ResultBase {
 
         } else {
             evaluator.setNonEmpty(axis.isNonEmpty());
+            evaluator.setEvalAxes(true);
             Object value = axisCalc.evaluate(evaluator);
             evaluator.setNonEmpty(false);
             if (value != null) {
@@ -290,6 +291,7 @@ class RolapResult extends ResultBase {
                     }
                 }
             }
+            evaluator.setEvalAxes(false);
         }
         return axisResult;
     }

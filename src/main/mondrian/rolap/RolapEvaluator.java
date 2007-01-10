@@ -55,6 +55,7 @@ public class RolapEvaluator implements Evaluator {
     private boolean nonEmpty;
     protected final RolapEvaluatorRoot root;
     private int iterationLength;
+    private boolean evalAxes;
 
     /**
      * Creates an evaluator.
@@ -74,6 +75,7 @@ public class RolapEvaluator implements Evaluator {
           this.nonEmpty = parent.nonEmpty;
         }
         this.iterationLength = 1;
+        this.evalAxes = false;
 
         this.cellReader = cellReader;
         if (currentMembers == null) {
@@ -249,11 +251,14 @@ public class RolapEvaluator implements Evaluator {
     protected RolapEvaluator _push() {
         getQuery().checkCancelOrTimeout();
         Member[] cloneCurrentMembers = currentMembers.clone();
-        return new RolapEvaluator(
+        RolapEvaluator newEvaluator =
+            new RolapEvaluator(
                 root,
                 this,
                 cellReader,
                 cloneCurrentMembers);
+        newEvaluator.setEvalAxes(evalAxes);
+        return newEvaluator;
     }
 
     public Evaluator pop() {
@@ -733,6 +738,16 @@ void printCurrentMemberNames() {
     public void setIterationLength(int length)
     {
         iterationLength = length;
+    }
+    
+    public boolean isEvalAxes()
+    {
+        return evalAxes;
+    }
+    
+    public void setEvalAxes(boolean evalAxes)
+    {
+        this.evalAxes = evalAxes;
     }
 }
 

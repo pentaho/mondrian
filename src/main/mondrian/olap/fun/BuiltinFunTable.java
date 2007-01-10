@@ -1606,10 +1606,15 @@ public class BuiltinFunTable extends FunTableImpl {
                 final BooleanCalc calc1 = compiler.compileBoolean(call.getArg(1));
                 return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
-                        if (!calc0.evaluateBoolean(evaluator)) {
+                        boolean b0 = calc0.evaluateBoolean(evaluator);
+                        // don't short-circuit evaluation if we're evaluating
+                        // the axes; that way, we can combine all measures
+                        // referenced in the AND expression in a single query
+                        if (!evaluator.isEvalAxes() && !b0) {
                             return false;
                         }
-                        return calc1.evaluateBoolean(evaluator);
+                        boolean b1 = calc1.evaluateBoolean(evaluator);
+                        return b0 && b1;
                     }
                 };
             }
@@ -1625,10 +1630,15 @@ public class BuiltinFunTable extends FunTableImpl {
                 final BooleanCalc calc1 = compiler.compileBoolean(call.getArg(1));
                 return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                     public boolean evaluateBoolean(Evaluator evaluator) {
-                        if (calc0.evaluateBoolean(evaluator)) {
+                        boolean b0 = calc0.evaluateBoolean(evaluator);
+                        // don't short-circuit evaluation if we're evaluating
+                        // the axes; that way, we can combine all measures
+                        // referenced in the OR expression in a single query
+                        if (!evaluator.isEvalAxes() && b0) {
                             return true;
                         }
-                        return calc1.evaluateBoolean(evaluator);
+                        boolean b1 = calc1.evaluateBoolean(evaluator);
+                        return b0 || b1;
                     }
                 };
             }
