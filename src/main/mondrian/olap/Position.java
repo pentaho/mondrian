@@ -13,6 +13,8 @@
 
 package mondrian.olap;
 
+import java.util.List;
+
 /**
  * A <code>Position</code> is an item on an {@link Axis}.  It contains
  * one or more {@link Member}s.
@@ -21,45 +23,7 @@ package mondrian.olap;
  * @since 6 August, 2001
  * @version $Id$
  */
-public class Position {
-
-    /**
-     * public-private: This must be public because it is still accessed in olap.ResultBase
-     */
-    public final Member[] members;
-
-    protected Position(Member[] members) {
-        this.members = members;
-    }
-
-    public Member[] getMembers() {
-        return members;
-    }
-
-    // override Object
-    public boolean equals(Object o) {
-        if (o instanceof Position) {
-            Position other = (Position) o;
-            if (other.members.length == this.members.length) {
-                for (int i = 0; i < this.members.length; i++) {
-                    if (this.members[i] != other.members[i]) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-    // override Object
-    public int hashCode() {
-        int h = 0;
-        for (int i = 0; i < members.length; i++) {
-            h = (h << 4) ^ members[i].hashCode();
-        }
-        return h;
-    }
-};
-
+public interface Position extends List<Member> {
+}
 
 // End Position.java

@@ -339,8 +339,8 @@ public class TestCalculatedMembers extends FoodMartTestCase {
         String mdx = "select {[Measures].[Profit Growth]} on columns from Sales";
         Result result = TestContext.instance().executeQuery(mdx);
         Axis axis0 = result.getAxes()[0];
-        Position pos0 = axis0.positions[0];
-        Member profGrowth = pos0.members[0];
+        Position pos0 = axis0.getPositions().get(0);
+        Member profGrowth = pos0.get(0);
         String caption = profGrowth.getCaption();
         Assert.assertEquals(caption, "Gewinn-Wachstum");
     }

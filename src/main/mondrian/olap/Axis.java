@@ -13,19 +13,17 @@
 
 package mondrian.olap;
 
+import java.util.List;
+
 /**
  * A <code>Axis</code> is a component of a {@link Result}.
+ * It contains a list of {@link Position}s.
  *
  * @author jhyde
  * @since 6 August, 2001
  * @version $Id$
  */
-public class Axis {
-    public final Position[] positions;
-
-    protected Axis(Position[] positions) {
-        this.positions = positions;
-    }
+public interface Axis {
+    List<Position> getPositions();
 }
-
 // End Axis.java

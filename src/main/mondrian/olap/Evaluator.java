@@ -13,9 +13,9 @@
 
 package mondrian.olap;
 
-import java.util.Locale;
-
 import mondrian.calc.ParameterSlot;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * An <code>Evaluator</code> holds the context necessary to evaluate an
@@ -70,6 +70,8 @@ public interface Evaluator {
      * @post return != null
      */
     Member setContext(Member member);
+
+    void setContext(List<Member> memberList);
 
     void setContext(Member[] members);
 

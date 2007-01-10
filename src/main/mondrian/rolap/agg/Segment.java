@@ -80,7 +80,7 @@ class Segment {
         this.aggregation = aggregation;
         this.measure = measure;
         this.axes = axes;
-        this.cellKey = new CellKey(new int[axes.length]);
+        this.cellKey = CellKey.Generator.create(axes.length);
         this.state = State.Loading;
     }
 
@@ -186,7 +186,7 @@ class Segment {
                     return null;
                 }
             }
-            cellKey.ordinals[i] = integer;
+            cellKey.setAxis(i, integer);
         }
         if (missed > 0) {
             // the value should be in this segment, but isn't, because one
@@ -343,7 +343,7 @@ class Segment {
                 }
                 CellKey key;
                 if (sparse) {
-                    key = new CellKey(pos.clone());
+                    key = CellKey.Generator.create(pos);
                     for (int j = 0; j < segments.length; j++) {
                         final Object o = row[arity + j];
                         sparseDatasets[j].put(key, o);

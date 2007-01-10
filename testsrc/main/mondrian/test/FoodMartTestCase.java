@@ -88,8 +88,8 @@ public class FoodMartTestCase extends TestCase {
         Result result = executeQuery(queryString);
         Axis[] axes = result.getAxes();
         Assert.assertTrue(axes.length == 2);
-        Assert.assertTrue(axes[0].positions.length == columnCount);
-        Assert.assertTrue(axes[1].positions.length == rowCount);
+        Assert.assertTrue(axes[0].getPositions().size() == columnCount);
+        Assert.assertTrue(axes[1].getPositions().size() == rowCount);
     }
 
     /**

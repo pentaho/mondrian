@@ -238,9 +238,9 @@ public class UdfTest extends FoodMartTestCase {
                         "  {[Store Type].children} ON ROWS " + nl +
                         "FROM [Store]");
         Axis rowAxis = result.getAxes()[0];
-        assertTrue(rowAxis.positions.length == 1);
+        assertTrue(rowAxis.getPositions().size() == 1);
         Axis colAxis = result.getAxes()[1];
-        assertTrue(colAxis.positions.length == 6);
+        assertTrue(colAxis.getPositions().size() == 6);
         Cell cell = result.getCell(new int[] {0, 0});
         assertTrue(cell.isError());
         getTestContext().assertMatchesVerbose(

@@ -74,9 +74,17 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
         // create database tables
         this.loader.executeStatements(this.tables);
 
-        String cubeDescription = getCubeDescription();
+        String parameterDefs = getParameterDescription();
+        String cubeDefs = getCubeDescription();
+        String virtualCubeDefs = getVirtualCubeDescription();
+        String namedSetDefs = getNamedSetDescription();
+        String udfDefs = getUdfDescription();
         this.testContext = TestContext.create(
-            null, cubeDescription, null, null, null);
+            parameterDefs, 
+            cubeDefs, 
+            virtualCubeDefs, 
+            namedSetDefs, 
+            udfDefs);
     }
 
     protected void tearDown() throws Exception {
@@ -110,7 +118,20 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
 
     protected abstract String getDirectoryName();
     protected abstract String getFileName();
+
+    protected String getParameterDescription() {
+        return null;
+    }
     protected abstract String getCubeDescription();
+    protected String getVirtualCubeDescription() {
+        return null;
+    }
+    protected String getNamedSetDescription() {
+        return null;
+    }
+    protected String getUdfDescription() {
+        return null;
+    }
 }
 
 // End CsvDBTestCase.java

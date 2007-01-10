@@ -34,8 +34,12 @@ class MondrianDimensionCursor extends CursorSupport implements DimensionCursor {
                 new Accessor() {
                     public Object getObject(int i) throws OLAPException {
                         int positionIndex = (int) edgeCursor.navigator.getPosition();
-                        final Position position = axis.positions[positionIndex];
-                        return position.members[axisOffset];
+                        // RME
+                        //final Position position = axis.positions[positionIndex];
+                        //return position.members[axisOffset];
+                        final Position position = 
+                            axis.getPositions().get(positionIndex);
+                        return position.get(axisOffset);
                     }
                 });
         this.edgeCursor = edgeCursor;

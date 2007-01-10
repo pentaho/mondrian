@@ -29,6 +29,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Pattern;
+import java.util.List;
 import java.util.Locale;
 import java.sql.*;
 
@@ -440,7 +441,7 @@ public class TestContext {
             String expression,
             String expected) {
         Axis axis = executeAxis(expression);
-        assertEqualsVerbose(expected, toString(axis.positions));
+        assertEqualsVerbose(expected, toString(axis.getPositions()));
     }
 
     /**
@@ -495,7 +496,7 @@ public class TestContext {
         Result result = executeQuery(
                 "select {" + expression + "} on columns from " + cubeName);
         Axis axis = result.getAxes()[0];
-        switch (axis.positions.length) {
+        switch (axis.getPositions().size()) {
         case 0:
             // The mdx "{...}" operator eliminates null members (that is,
             // members for which member.isNull() is true). So if "expression"
@@ -503,15 +504,15 @@ public class TestContext {
             return null;
         case 1:
             // Java nulls should never happen during expression evaluation.
-            Position position = axis.positions[0];
-            Util.assertTrue(position.members.length == 1);
-            Member member = position.members[0];
+            Position position = axis.getPositions().get(0);
+            Util.assertTrue(position.size() == 1);
+            Member member = position.get(0);
             Util.assertTrue(member != null);
             return member;
         default:
             throw Util.newInternal(
                     "expression " + expression + " yielded " +
-                    axis.positions.length + " positions");
+                    axis.getPositions().size() + " positions");
         }
     }
 
@@ -726,26 +727,27 @@ public class TestContext {
      * Converts a set of positions into a string. Useful if you want to check
      * that an axis has the results you expected.
      */
-    public static String toString(Position[] positions) {
+    public static String toString(List<Position> positions) {
         StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < positions.length; i++) {
-            Position position = positions[i];
+        int i = 0;
+        for (Position position: positions) {
             if (i > 0) {
                 buf.append(nl);
             }
-            if (position.members.length != 1) {
+            if (position.size() != 1) {
                 buf.append("{");
             }
-            for (int j = 0; j < position.members.length; j++) {
-                Member member = position.members[j];
+            for (int j = 0; j < position.size(); j++) {
+                Member member = position.get(j);
                 if (j > 0) {
                     buf.append(", ");
                 }
                 buf.append(member.getUniqueName());
             }
-            if (position.members.length != 1) {
+            if (position.size() != 1) {
                 buf.append("}");
             }
+            i++;
         }
         return buf.toString();
     }

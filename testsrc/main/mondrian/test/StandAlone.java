@@ -13,6 +13,7 @@ import mondrian.olap.*;
 
 import java.io.*;
 import java.text.*;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
 
@@ -128,9 +129,9 @@ public class StandAlone {
         int numRows = 0;
         int numColumns;
 
-        Position[] slicerpositions = slicer.positions;
+        List<Position> slicerpositions = slicer.getPositions();
 
-        int numSlicers = slicer.positions.length;
+        int numSlicers = slicer.getPositions().size();
 
         if (numSlicers > 0 && outputResults) {
             System.out.print("Slicers: {");
@@ -153,12 +154,12 @@ public class StandAlone {
             }
         } else if (axes.length == 1) {
             // Only columns
-            Position[] cols = axes[0].positions;
+            List<Position> cols = axes[0].getPositions();
 
-            numColumns = cols.length;
+            numColumns = cols.size();
 
-            for (int idx = 0; idx < cols.length; idx++) {
-                Position col = cols[idx];
+            for (int idx = 0; idx < cols.size(); idx++) {
+                Position col = cols.get(idx);
 
                 if (outputResults) {
                     System.out.print("Column " + idx + ": ");
@@ -179,11 +180,11 @@ public class StandAlone {
                 }
             }
         } else {
-            Position[] colPositions = axes[0].positions;
-            Position[] rowPositions = axes[1].positions;
+            List<Position> colPositions = axes[0].getPositions();
+            List<Position> rowPositions = axes[1].getPositions();
 
-            numColumns = colPositions.length;
-            numRows = rowPositions.length;
+            numColumns = colPositions.size();
+            numRows = rowPositions.size();
 
             int[] coords = new int[2];
 
@@ -191,8 +192,8 @@ public class StandAlone {
                 System.out.println("Column tuples: ");
             }
 
-            for (int colIdx = 0; colIdx < colPositions.length; colIdx++) {
-                Position col = colPositions[colIdx];
+            for (int colIdx = 0; colIdx < colPositions.size(); colIdx++) {
+                Position col = colPositions.get(colIdx);
 
                 if (outputResults) {
                     System.out.print("Column " + colIdx + ": ");
@@ -200,10 +201,10 @@ public class StandAlone {
                     System.out.println();
                 }
 
-                for (int rowIdx = 0; rowIdx < rowPositions.length; rowIdx++) {
+                for (int rowIdx = 0; rowIdx < rowPositions.size(); rowIdx++) {
                     if (outputResults) {
                         System.out.print("(" + colIdx + ", " + rowIdx + ") ");
-                        printMembers(rowPositions[rowIdx]);
+                        printMembers(rowPositions.get(rowIdx));
                         System.out.print("} = ");
                     }
 
@@ -244,10 +245,9 @@ public class StandAlone {
         System.out.println(cell.getFormattedValue());
     }
     private static void printMembers(Position pos) {
-        Member[] members = pos.members;
         boolean needComma = false;
 
-        for (Member member : members) {
+        for (Member member : pos) {
             if (needComma) {
                 System.out.print(',');
             }

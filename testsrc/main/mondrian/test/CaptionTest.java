@@ -15,6 +15,7 @@ import mondrian.olap.*;
 import mondrian.rolap.DynamicSchemaProcessor;
 
 import java.net.URL;
+import java.util.List;
 
 /**
  * Unit test special "caption" settings.
@@ -34,8 +35,8 @@ public class CaptionTest extends TestCase {
         mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
         mondrian.olap.Result monResult = monConnection.execute(monQuery);
         Axis[] axes = monResult.getAxes();
-        Position[] positions = axes[0].positions;
-        Member m0 = positions[0].members[0];
+        List<Position> positions = axes[0].getPositions();
+        Member m0 = positions.get(0).get(0);
         String caption = m0.getCaption();
         Assert.assertEquals("Anzahl Verkauf", caption);
     }
@@ -50,8 +51,8 @@ public class CaptionTest extends TestCase {
         mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
         mondrian.olap.Result monResult = monConnection.execute(monQuery);
         Axis[] axes = monResult.getAxes();
-        Position[] positions = axes[1].positions;
-        Member mall = positions[0].members[0];
+        List<Position> positions = axes[1].getPositions();
+        Member mall = positions.get(0).get(0);
 
         String caption = mall.getHierarchy().getCaption();
         Assert.assertEquals("Werbemedium", caption);
@@ -67,8 +68,8 @@ public class CaptionTest extends TestCase {
          mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
         mondrian.olap.Result monResult = monConnection.execute(monQuery);
         Axis[] axes = monResult.getAxes();
-        Position[] positions = axes[1].positions;
-        Member mall = positions[0].members[0];
+        List<Position> positions = axes[1].getPositions();
+        Member mall = positions.get(0).get(0);
 
         String caption = mall.getHierarchy().getCaption();
         Assert.assertEquals("Quadrat-Fuesse:-)", caption);

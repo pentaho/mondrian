@@ -584,7 +584,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         String expectedCell,
         String expectedSql)
     {
-        final Member empMember = result.getAxes()[1].positions[row].members[0];
+        final Member empMember = result.getAxes()[1].getPositions().get(row).get(0);
         assertEquals(expectedMember, empMember.getUniqueName());
         // drill through member
         final Cell cell = result.getCell(new int[] {0, row});

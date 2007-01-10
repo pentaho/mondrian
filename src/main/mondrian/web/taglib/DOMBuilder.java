@@ -31,6 +31,7 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.List;
 
 /**
  * transforms a mondrian result into a DOM
@@ -96,14 +97,14 @@ public class DOMBuilder {
         int [] prevSpan;
 
         Element parent;
-        Position[] positions;
+        List<Position> positions;
         int levels;
 
         AxisBuilder(Element parent, Axis axis) {
             this.parent   = parent;
 
-            positions = axis.positions;
-            levels = positions[0].members.length;
+            positions = axis.getPositions();
+            levels = positions.get(0).size();
             prevMembers = new Member[levels];
             prevElems = new Element[levels];
             prevSpan = new int[levels];
@@ -121,17 +122,17 @@ public class DOMBuilder {
         Element build(int rowIndex) {
             boolean even = (rowIndex % 2 != 0);  // counting starts at row 1
             Element row = elem("row", parent);
-            build(row, positions[rowIndex].members, even);
+            build(row, positions.get(rowIndex), even);
             return row;
         }
 
         int getRowCount() {
-            return positions.length;
+            return positions.size();
         }
 
-        private void build(Element row, Member[] currentMembers, boolean even) {
+        private void build(Element row, List<Member> currentMembers, boolean even) {
             for (int i = 0; i < levels; i++) {
-                Member currentMember = currentMembers[i];
+                Member currentMember = currentMembers.get(i);
                 Member prevMember    = prevMembers[i];
                 if (prevMember == null || !prevMember.equals(currentMember)) {
                     Element currentElem = createMemberElem("row-heading", row, currentMember);
@@ -177,11 +178,12 @@ public class DOMBuilder {
             for (int i = 0; i < levels; i++)
                 prevMembers[i] = null;
 
-            for (int i = 0; i < positions.length; i++) {
-                Member[] currentMembers = positions[i].members;
+            for (int i = 0; i < positions.size(); i++) {
+                Position position = positions.get(i);
+                //Member[] currentMembers = positions.get(i).getMembers();
 
                 for (int j = 0; j < rowIndex - 1; j++) {
-                    Member currentMember = currentMembers[j];
+                    Member currentMember = position.get(j);
                     if (prevMembers[j] == null || !prevMembers[j].equals(currentMember)) {
                         prevMembers[j] = currentMember;
                         for (int k = j + 1; k < levels; k++)
@@ -189,7 +191,7 @@ public class DOMBuilder {
                     }
                 }
 
-                Member currentMember = currentMembers[rowIndex];
+                Member currentMember = position.get(rowIndex);
                 Member prevMember    = prevMembers[rowIndex];
                 if (prevMember == null || !prevMember.equals(currentMember)) {
                     Element currentElem = createMemberElem("column-heading", row, currentMember);
@@ -210,8 +212,8 @@ public class DOMBuilder {
 
         void buildCornerElement(Element row) {
             Element corner = elem("corner", row);
-            corner.setAttribute("rowspan", Integer.toString(result.getAxes()[0].positions[0].members.length));
-            corner.setAttribute("colspan", Integer.toString(result.getAxes()[1].positions[0].members.length));
+            corner.setAttribute("rowspan", Integer.toString(result.getAxes()[0].getPositions().get(0).size()));
+            corner.setAttribute("colspan", Integer.toString(result.getAxes()[1].getPositions().get(0).size()));
         }
     }
 
@@ -244,7 +246,7 @@ public class DOMBuilder {
 
 
     private void buildCells(Element row, int[] cellIndex, boolean even) {
-        int columns = result.getAxes()[0].positions.length;
+        int columns = result.getAxes()[0].getPositions().size();
         for (int i = 0; i < columns; i++) {
             cellIndex[0] = i;
             Cell cell = result.getCell(cellIndex);
@@ -269,13 +271,13 @@ public class DOMBuilder {
     }
 
     private void buildSlicer(Element parent) {
-        Position[] positions = result.getSlicerAxis().positions;
-        for (int i = 0; i < positions.length; i++) {
-            Member[] members = positions[i].members;
-            if (members.length > 0) {
-                Element position = elem("position", parent);
-                for (int j = 0; j < members.length; j++) {
-                    createMemberElem("member", position, members[j]);
+        List<Position> positions = result.getSlicerAxis().getPositions();
+        for (int i = 0; i < positions.size(); i++) {
+            Position position = positions.get(i);
+            if (position.size() > 0) {
+                Element el = elem("position", parent);
+                for (int j = 0; j < position.size(); j++) {
+                    createMemberElem("member", el, position.get(j));
                 }
             }
         }

@@ -13,6 +13,8 @@
 
 package mondrian.olap;
 
+import java.util.Iterator;
+import java.util.List;
 import org.apache.log4j.Logger;
 import java.io.PrintWriter;
 
@@ -61,7 +63,8 @@ public abstract class ResultBase implements Result {
     }
     private void printRows(PrintWriter pw, int axis, int[] pos) {
         Axis _axis = axis < 0 ? slicerAxis : axes[axis];
-        for (int i = 0, count = _axis.positions.length; i < count; i++) {
+        List<Position> positions = _axis.getPositions();
+        for (int i = 0, count = positions.size(); i < count; i++) {
             if (axis < 0) {
                 if (i > 0) {
                     pw.print(", ");
@@ -81,15 +84,16 @@ public abstract class ResultBase implements Result {
         }
     }
     private void printAxis(PrintWriter pw, Axis axis) {
-        for (int i = 0; i < axis.positions.length; i++) {
-            Position position = axis.positions[i];
+        List<Position> positions = axis.getPositions();
+        for (Position position: positions) {
+            boolean firstTime = true;
             pw.print("{");
-            for (int j = 0; j < position.members.length; j++) {
-                Member member = position.members[j];
-                if (j > 0) {
+            for (Member member: position) {
+                if (! firstTime) {
                     pw.print(", ");
                 }
                 pw.print(member.getUniqueName());
+                firstTime = false;
             }
             pw.println("}");
         }
@@ -110,9 +114,9 @@ public abstract class ResultBase implements Result {
                 axis = axes[i];
                 index = pos[i];
             }
-            Position position = axis.positions[index];
-            for (int j = 0; j < position.members.length; j++) {
-                Member member = position.members[j];
+            List<Position> positions = axis.getPositions();
+            Position position = positions.get(index);
+            for (Member member: position) {
                 if (member.getDimension() == dimension) {
                     return member;
                 }

@@ -196,7 +196,7 @@ public class AccessControlTest extends FoodMartTestCase {
         testContext.assertAxisThrows("[Customers].[USA].[CA].[San Francisco].[Catherine Abel]", "not found");
         testContext.assertAxisReturns("[Customers].[USA].[CA].[San Francisco].children", "");
         Axis axis = testContext.executeAxis("[Customers].members");
-        Assert.assertEquals(122, axis.positions.length); // 13 states, 109 cities
+        Assert.assertEquals(122, axis.getPositions().size()); // 13 states, 109 cities
     }
 
     public void testGrantHierarchy8AllMembers() {
@@ -205,7 +205,7 @@ public class AccessControlTest extends FoodMartTestCase {
         testContext.assertAxisThrows("[Customers].[USA].[CA].[San Francisco].[Catherine Abel]", "not found");
         testContext.assertAxisReturns("[Customers].[USA].[CA].[San Francisco].children", "");
         Axis axis = testContext.executeAxis("[Customers].allmembers");
-        Assert.assertEquals(122, axis.positions.length); // 13 states, 109 cities
+        Assert.assertEquals(122, axis.getPositions().size()); // 13 states, 109 cities
     }
 
     /**

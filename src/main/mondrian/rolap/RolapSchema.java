@@ -263,6 +263,9 @@ public class RolapSchema implements Schema {
                 }
 
                 // Workaround VFS bug.
+                if (catalogUrl.startsWith("file://localhost")) {
+                    catalogUrl = catalogUrl.substring("file://localhost".length());
+                }
                 if (catalogUrl.startsWith("file:")) {
                     catalogUrl = catalogUrl.substring("file:".length());
                 }

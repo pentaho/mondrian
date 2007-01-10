@@ -37,7 +37,7 @@ class MondrianEdgeCursor extends CursorSupport implements EdgeCursor {
     }
 
     public MondrianEdgeCursor(MondrianCubeCursor cubeCursor, boolean isPage, MondrianEdgeView edgeView, Axis axis) throws OLAPException {
-        super(new ArrayNavigator(axis.positions), new Accessor() {
+        super(new ArrayNavigator(axis.getPositions().toArray()), new Accessor() {
             public Object getObject(int i) throws OLAPException {
                 throw new UnsupportedOperationException();
             }

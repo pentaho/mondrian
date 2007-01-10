@@ -23,19 +23,16 @@ class RolapCell implements Cell {
     private final RolapResult result;
     protected final Object value;
     protected String cachedFormatString;
-    private final int ordinal;
+    protected final int[] pos;
 
-    RolapCell(RolapResult result, int ordinal, Object value) {
-        this.result = result;
-        this.value = value;
-        this.ordinal = ordinal;
-        this.cachedFormatString = null;
+    RolapCell(RolapResult result, int[] pos, Object value) {
+        this(result, pos, value, null);
     }
     
-    RolapCell(RolapResult result, int ordinal, Object value, String cachedFormatString) {
+    RolapCell(RolapResult result, int[] pos, Object value, String cachedFormatString) {
         this.result = result;
         this.value = value;
-        this.ordinal = ordinal;
+        this.pos = pos;
         this.cachedFormatString = cachedFormatString;
     }
 
@@ -48,7 +45,6 @@ class RolapCell implements Cell {
     }
     
     public String getFormattedValue() {
-        final int[] pos = result.getCellPos(ordinal);
         final Evaluator evaluator = result.getEvaluator(pos);
         RolapCube c = (RolapCube) evaluator.getCube();
         Dimension measuresDim = c.getMeasuresHierarchy().getDimension();
@@ -58,8 +54,7 @@ class RolapCell implements Cell {
         
         if (cf != null) {
             return cf.formatCell(value);
-        }
-        else {                                
+        } else {                                
             if (cachedFormatString == null) {
                 cachedFormatString = evaluator.getFormatString();
             }
@@ -162,7 +157,6 @@ class RolapCell implements Cell {
     }
 
     private RolapEvaluator getEvaluator() {
-        final int[] pos = result.getCellPos(ordinal);
         return result.getCellEvaluator(pos);
     }
 
@@ -172,7 +166,7 @@ class RolapCell implements Cell {
         if (property != null) {
             switch (property.ordinal) {
             case Property.CELL_ORDINAL_ORDINAL:
-                return ordinal;
+                return result.getCellOrdinal(pos);
             case Property.VALUE_ORDINAL:
                 return getValue();
             case Property.FORMAT_STRING_ORDINAL:
@@ -193,7 +187,7 @@ class RolapCell implements Cell {
     }
 
     public Member getContextMember(Dimension dimension) {
-        return result.getMember(result.getCellPos(ordinal), dimension);
+        return result.getMember(pos, dimension);
     }
 }
 

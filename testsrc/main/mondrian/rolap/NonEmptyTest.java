@@ -562,7 +562,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                 "         [Product].[All Products].children ) ) )) on rows\n" +
                 "from Sales where ([Time].[1997])");
         final Axis rowsAxis = result.getAxes()[1];
-        Assert.assertEquals(21, rowsAxis.positions.length);
+        Assert.assertEquals(21, rowsAxis.getPositions().size());
     }
 
     /**
@@ -590,7 +590,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                 "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
         assertTrue("no additional members should be read:" + smr.mapKeyToMember.size(),
                 smr.mapKeyToMember.size() <= 5);
-        RolapMember sf = (RolapMember) result.getAxes()[0].positions[0].members[0];
+        RolapMember sf = (RolapMember) result.getAxes()[0].getPositions().get(0).get(0);
         RolapMember ca = (RolapMember) sf.getParentMember();
 
         List list = smr.mapMemberToChildren.get(ca, scf.getMemberChildrenConstraint(null));
@@ -690,7 +690,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                 monLimit.set(this.resultLimit);
                 Result result = executeQuery(query, con);
                 Axis a = result.getAxes()[1];
-                assertEquals(rowCount, a.positions.length);
+                assertEquals(rowCount, a.getPositions().size());
                 return result;
             } finally {
                 monLimit.set(oldLimit);
@@ -740,7 +740,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         // make sure that the parent/child for the context are cached
 
         // [Customers].[All Customers].[USA].[CA].[Burlingame].[Peggy Justice]
-        Member member = r.getAxes()[1].positions[1].members[0];
+        Member member = r.getAxes()[1].getPositions().get(1).get(0);
         Member parent = member.getParentMember();
 
         // lookup all children of [Burlingame] -> not in cache
@@ -787,7 +787,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         // make sure that the parent/child for the context are cached
 
         // [Customers].[All Customers].[Canada].[BC].[Burnaby]
-        Member member = r.getAxes()[1].positions[1].members[0];
+        Member member = r.getAxes()[1].getPositions().get(1).get(0);
         Member parent = member.getParentMember();
 
         // lookup all children of [Burlingame] -> yes, found in cache
@@ -918,7 +918,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                         + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1] )");
         Result result = c.run();
         // [Customers].[All Customers].[USA].[CA].[Burlingame].[Peggy Justice]
-        RolapMember peggy = (RolapMember) result.getAxes()[1].positions[1].members[0];
+        RolapMember peggy = (RolapMember) result.getAxes()[1].getPositions().get(1).get(0);
         RolapMember burlingame = (RolapMember) peggy.getParentMember();
         // all children of burlingame are not in cache
         MemberChildrenConstraint mcc = scf.getMemberChildrenConstraint(null);

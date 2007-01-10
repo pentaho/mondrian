@@ -902,7 +902,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         Result result = executeQuery("SELECT {[Measures].[Unit Sales]} on columns,\n" +
                         " {[Product].members} on rows\n" +
                         "from Sales");
-        final int rowCount = result.getAxes()[1].positions.length;
+        final int rowCount = result.getAxes()[1].getPositions().size();
         assertEquals(2256, rowCount);
         assertEquals("152", result.getCell(new int[] {0, rowCount - 1}).getFormattedValue());
     }
@@ -945,9 +945,9 @@ public class BasicQueryTest extends FoodMartTestCase {
                         "from Sales\n" +
                         "where ([Measures].[Unit Sales], [Promotion Media].[All Media].[Street Handout], [Time].[1997])");
         assertTrue(result.getAxes().length == 1);
-        assertTrue(result.getAxes()[0].positions.length == 3);
-        assertTrue(result.getSlicerAxis().positions.length == 1);
-        assertTrue(result.getSlicerAxis().positions[0].members.length == 3);
+        assertTrue(result.getAxes()[0].getPositions().size() == 3);
+        assertTrue(result.getSlicerAxis().getPositions().size() == 1);
+        assertTrue(result.getSlicerAxis().getPositions().get(0).size() == 3);
     }
 
     public void testSlicerIsEvaluatedBeforeAxes() {
@@ -1439,7 +1439,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void _testProduct2() {
         final Axis axis = getTestContext().executeAxis("{[Product2].members}");
-        System.out.println(TestContext.toString(axis.positions));
+        System.out.println(TestContext.toString(axis.getPositions()));
     }
 
     public static final QueryAndResult[] taglibQueries = {
@@ -2748,7 +2748,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " milliseconds", parseMillis <= 10000);
 
         Result result = connection.execute(query);
-        assertEquals(59, result.getAxes()[1].positions.length);
+        assertEquals(59, result.getAxes()[1].getPositions().size());
 
         // If this call took longer than 10 seconds,
         // or 2 seconds exclusing db access,
@@ -2799,7 +2799,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "[Gender2].[All Gender]\n" +
                 "[Gender2].[All Gender].[F]\n" +
                 "[Gender2].[All Gender].[M]"),
-                TestContext.toString(axis.positions));
+                TestContext.toString(axis.getPositions()));
     }
 
     /**
@@ -3113,7 +3113,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                     "from Sales";
             Query query = connection.parseQuery(queryString);
             Result result = connection.execute(query);
-            assertEquals(10407, result.getAxes()[1].positions.length);
+            assertEquals(10407, result.getAxes()[1].getPositions().size());
         } finally {
             MondrianProperties.instance().LargeDimensionThreshold.set(old);
         }
@@ -4491,7 +4491,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 ")\n");
         // ok if no OutOfMemoryError occurs
         Axis a = result.getAxes()[1];
-        assertEquals(12, a.positions.length);
+        assertEquals(12, a.getPositions().size());
     }
 
     /**
@@ -4512,7 +4512,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 ")\n");
         // ok if no OutOfMemoryError occurs
         Axis a = result.getAxes()[1];
-        assertEquals(67, a.positions.length);
+        assertEquals(67, a.getPositions().size());
     }
 
     /**
@@ -4531,7 +4531,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                    "from Sales\n" +
                    "where ([Customers].[All Customers].[USA].[WA].[Anacortes])\n");
         Axis a = result.getAxes()[1];
-        assertEquals(306, a.positions.length);
+        assertEquals(306, a.getPositions().size());
     }
 
     public void testNonEmptyNonEmptyCrossJoin2() {
@@ -4545,7 +4545,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                    "from Sales\n" +
                    "where ([Customers].[All Customers].[USA].[WA].[Anacortes])\n");
         Axis a = result.getAxes()[1];
-        assertEquals(10, a.positions.length);
+        assertEquals(10, a.getPositions().size());
     }
 
     public void testNonEmptyNonEmptyCrossJoin3() {
@@ -4559,7 +4559,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                    "from Sales\n" +
                    "where ([Customers].[All Customers].[USA].[WA].[Anacortes])\n");
         Axis a = result.getAxes()[1];
-        assertEquals(1, a.positions.length);
+        assertEquals(1, a.getPositions().size());
     }
 
     public void testNonEmptyNonEmptyCrossJoin4() {
@@ -4573,7 +4573,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                    "from Sales\n" +
                    "where ([Customers].[All Customers].[USA].[WA].[Anacortes])\n");
         Axis a = result.getAxes()[1];
-        assertEquals(1, a.positions.length);
+        assertEquals(1, a.getPositions().size());
     }
 
     /**
@@ -4593,7 +4593,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "[Time].[1997].[Q1].[xxx]}, [Time].[1997].Children),\n" +
                 "[Time].[1997].[Q1].Children)) ON rows from [Sales]");
         Axis a = result.getAxes()[1];
-        assertEquals(10, a.positions.length);
+        assertEquals(10, a.getPositions().size());
     }
 
 
@@ -4655,10 +4655,10 @@ public class BasicQueryTest extends FoodMartTestCase {
                 salesCube,
                 "<DimensionUsage name=\"Other Store\" source=\"Store\" foreignKey=\"unit_sales\" />");
         Axis axis = getTestContext().executeAxis("[Other Store].members");
-        assertEquals(63, axis.positions.length);
+        assertEquals(63, axis.getPositions().size());
 
         axis = getTestContext().executeAxis("[Store].members");
-        assertEquals(63, axis.positions.length);
+        assertEquals(63, axis.getPositions().size());
 
         final String q1 =
             "select {[Measures].[Unit Sales]} on columns,\n" +
@@ -4823,8 +4823,8 @@ public class BasicQueryTest extends FoodMartTestCase {
         String mdx = "select {[Gender3].[All Gender]} on columns from Sales";
         Result result = TestContext.instance().executeQuery(mdx);
         Axis axis0 = result.getAxes()[0];
-        Position pos0 = axis0.positions[0];
-        Member allGender = pos0.members[0];
+        Position pos0 = axis0.getPositions().get(0);
+        Member allGender = pos0.get(0);
         String caption = allGender.getCaption();
         Assert.assertEquals(caption, "Frauen und Maenner");
     }
@@ -4844,8 +4844,8 @@ public class BasicQueryTest extends FoodMartTestCase {
         String mdx = "select {[Gender4].[All Gender]} on columns from Sales";
         Result result = TestContext.instance().executeQuery(mdx);
         Axis axis0 = result.getAxes()[0];
-        Position pos0 = axis0.positions[0];
-        Member allGender = pos0.members[0];
+        Position pos0 = axis0.getPositions().get(0);
+        Member allGender = pos0.get(0);
         String caption = allGender.getLevel().getName();
         Assert.assertEquals(caption, "GenderLevel");
     }

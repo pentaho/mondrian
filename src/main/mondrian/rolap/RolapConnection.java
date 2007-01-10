@@ -508,20 +508,18 @@ public class RolapConnection extends ConnectionBase {
             int axisCount = underlying.getAxes().length;
             this.pos = new int[axisCount];
             this.slicerAxis = underlying.getSlicerAxis();
-            Position[] positions = underlying.getAxes()[axis].positions;
+            List<Position> positions = underlying.getAxes()[axis].getPositions();
+
             List<Position> positionsList = new ArrayList<Position>();
-            for (int i = 0, count = positions.length; i < count; i++) {
-                Position position = positions[i];
-                if (isEmpty(i, axis)) {
-                    continue;
-                } else {
+            int i = 0;
+            for (Position position: positions) {
+                if (! isEmpty(i, axis)) {
                     map.put(positionsList.size(), i);
                     positionsList.add(position);
                 }
+                i++;
             }
-            this.axes[axis] =
-                new RolapAxis(
-                    positionsList.toArray(new Position[positionsList.size()]));
+            this.axes[axis] = new RolapAxis.PositionList(positionsList);
         }
 
         protected Logger getLogger() {
@@ -549,8 +547,8 @@ public class RolapConnection extends ConnectionBase {
             } else if (axis == fixedAxis) {
                 return isEmptyRecurse(fixedAxis, axis - 1);
             } else {
-                Position[] positions = getAxes()[axis].positions;
-                for (int i = 0, count = positions.length; i < count; i++) {
+                List<Position> positions = getAxes()[axis].getPositions();
+                for (int i = 0, count = positions.size(); i < count; i++) {
                     pos[axis] = i;
                     if (!isEmptyRecurse(fixedAxis, axis - 1)) {
                         return false;

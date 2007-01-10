@@ -12,6 +12,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
+import java.util.List;
 
 /**
  * <code>VirtualCubeTest</code> shows virtual cube tests.
@@ -213,8 +214,8 @@ public class VirtualCubeTest extends FoodMartTestCase {
         Result result, int ordinal, String expectedName,
         boolean expectedVisibility)
     {
-        Position[] columnPositions = result.getAxes()[0].positions;
-        Member measure = columnPositions[ordinal].getMembers()[0];
+        List<Position> columnPositions = result.getAxes()[0].getPositions();
+        Member measure = columnPositions.get(ordinal).get(0);
         assertEquals(expectedName, measure.getName());
         assertEquals(
             Boolean.valueOf(expectedVisibility),

@@ -1426,7 +1426,7 @@ public class FunctionTest extends FoodMartTestCase {
         Result result = executeQuery(
                  "select {[Time.Weekly].DefaultMember} on columns\n" +
                  "from Sales");
-        Assert.assertEquals("1997", result.getAxes()[0].positions[0].members[0].getName());
+        Assert.assertEquals("1997", result.getAxes()[0].getPositions().get(0).get(0).getName());
     }
 
     public void testCurrentMemberFromAxis() {
@@ -1697,52 +1697,52 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testBasic2() {
         Result result = executeQuery("select {[Gender].[F].NextMember} ON COLUMNS from Sales");
-        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("M"));
+        Assert.assertTrue(result.getAxes()[0].getPositions().get(0).get(0).getName().equals("M"));
     }
 
     public void testFirstInLevel2() {
         Result result = executeQuery("select {[Gender].[M].NextMember} ON COLUMNS from Sales");
-        Assert.assertTrue(result.getAxes()[0].positions.length == 0);
+        Assert.assertTrue(result.getAxes()[0].getPositions().size() == 0);
     }
 
     public void testAll2() {
         Result result = executeQuery("select {[Gender].PrevMember} ON COLUMNS from Sales");
         // previous to [Gender].[All] is null, so no members are returned
-        Assert.assertTrue(result.getAxes()[0].positions.length == 0);
+        Assert.assertTrue(result.getAxes()[0].getPositions().size() == 0);
     }
 
 
     public void testBasic5() {
         Result result = executeQuery("select{ [Product].[All Products].[Drink].Parent} on columns from Sales");
-        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("All Products"));
+        Assert.assertTrue(result.getAxes()[0].getPositions().get(0).get(0).getName().equals("All Products"));
     }
 
     public void testFirstInLevel5() {
         Result result = executeQuery("select {[Time].[1997].[Q2].[4].Parent} on columns,{[Gender].[M]} on rows from Sales");
-        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("Q2"));
+        Assert.assertTrue(result.getAxes()[0].getPositions().get(0).get(0).getName().equals("Q2"));
     }
 
     public void testAll5() {
         Result result = executeQuery("select {[Time].[1997].[Q2].Parent} on columns,{[Gender].[M]} on rows from Sales");
         // previous to [Gender].[All] is null, so no members are returned
-        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("1997"));
+        Assert.assertTrue(result.getAxes()[0].getPositions().get(0).get(0).getName().equals("1997"));
     }
 
 
     public void testBasic() {
         Result result = executeQuery("select {[Gender].[M].PrevMember} ON COLUMNS from Sales");
-        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("F"));
+        Assert.assertTrue(result.getAxes()[0].getPositions().get(0).get(0).getName().equals("F"));
     }
 
     public void testFirstInLevel() {
         Result result = executeQuery("select {[Gender].[F].PrevMember} ON COLUMNS from Sales");
-        Assert.assertTrue(result.getAxes()[0].positions.length == 0);
+        Assert.assertTrue(result.getAxes()[0].getPositions().size() == 0);
     }
 
     public void testAll() {
         Result result = executeQuery("select {[Gender].PrevMember} ON COLUMNS from Sales");
         // previous to [Gender].[All] is null, so no members are returned
-        Assert.assertTrue(result.getAxes()[0].positions.length == 0);
+        Assert.assertTrue(result.getAxes()[0].getPositions().size() == 0);
     }
 
     public void testAggregateDepends() {
@@ -3603,7 +3603,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "                   [Store].CurrentMember.Properties(\"Store Type\") = \"Supermarket\" ),\n" +
                     "           10, [Store Sales]) ON ROWS\n" +
                     "FROM [Sales]");
-        Assert.assertEquals(8, result.getAxes()[1].positions.length);
+        Assert.assertEquals(8, result.getAxes()[1].getPositions().size());
     }
 
     public void testPropertyInCalculatedMember() {
@@ -3617,13 +3617,13 @@ public class FunctionTest extends FoodMartTestCase {
                     "FROM Sales");
         Member member;
         Cell cell;
-        member = result.getAxes()[1].positions[18].members[0];
+        member = result.getAxes()[1].getPositions().get(18).get(0);
         Assert.assertEquals("[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]", member.getUniqueName());
         cell = result.getCell(new int[]{0, 18});
         Assert.assertEquals("2,237", cell.getFormattedValue());
         cell = result.getCell(new int[]{1, 18});
         Assert.assertEquals(".17", cell.getFormattedValue());
-        member = result.getAxes()[1].positions[3].members[0];
+        member = result.getAxes()[1].getPositions().get(3).get(0);
         Assert.assertEquals("[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]", member.getUniqueName());
         cell = result.getCell(new int[]{0, 3});
         Assert.assertEquals("", cell.getFormattedValue());
@@ -4335,7 +4335,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "where ([Time].[1997].[Q1])");
         Axis rows = result.getAxes()[1];
         // if slicer were ignored, there would be 3 rows
-        Assert.assertEquals(1, rows.positions.length);
+        Assert.assertEquals(1, rows.getPositions().size());
         Cell cell = result.getCell(new int[]{0, 0});
         Assert.assertEquals("30,114", cell.getFormattedValue());
     }
@@ -4350,14 +4350,14 @@ public class FunctionTest extends FoodMartTestCase {
                     "    [Measures].[Unit Sales] > 9500) on rows\n" +
                     "from Sales\n" +
                     "where ([Time].[1997].[Q1])");
-        Position[] rows = result.getAxes()[1].positions;
-        Assert.assertTrue(rows.length == 3);
-        Assert.assertEquals("F", rows[0].members[0].getName());
-        Assert.assertEquals("WA", rows[0].members[1].getName());
-        Assert.assertEquals("M", rows[1].members[0].getName());
-        Assert.assertEquals("OR", rows[1].members[1].getName());
-        Assert.assertEquals("M", rows[2].members[0].getName());
-        Assert.assertEquals("WA", rows[2].members[1].getName());
+        List<Position> rows = result.getAxes()[1].getPositions();
+        Assert.assertTrue(rows.size() == 3);
+        Assert.assertEquals("F", rows.get(0).get(0).getName());
+        Assert.assertEquals("WA", rows.get(0).get(1).getName());
+        Assert.assertEquals("M", rows.get(1).get(0).getName());
+        Assert.assertEquals("OR", rows.get(1).get(1).getName());
+        Assert.assertEquals("M", rows.get(2).get(0).getName());
+        Assert.assertEquals("WA", rows.get(2).get(1).getName());
     }
 
     public void testGenerateDepends() {
@@ -5461,7 +5461,7 @@ public class FunctionTest extends FoodMartTestCase {
                     "         [Product].[All Products].children ) ) )) on rows\n" +
                     "from Sales where ([Time].[1997])");
         final Axis rowsAxis = result.getAxes()[1];
-        Assert.assertEquals(45, rowsAxis.positions.length);
+        Assert.assertEquals(45, rowsAxis.getPositions().size());
     }
 
     public void testItemMember() {
@@ -6072,13 +6072,13 @@ public class FunctionTest extends FoodMartTestCase {
         final Result result = getTestContext().executeQuery(query);
         final Axis[] axes = result.getAxes();
         final Axis rowsAxis = axes[1];
-        final int rowCount = rowsAxis.positions.length;
+        final int rowCount = rowsAxis.getPositions().size();
         assertEquals(2256, rowCount);
         // [All Products], [All Gender], [Rank]
         Cell cell = result.getCell(new int[] {1, 0});
         assertEquals("1", cell.getFormattedValue());
         // [Robust Monthly Sports Magazine]
-        Member member = rowsAxis.positions[rowCount - 1].members[0];
+        Member member = rowsAxis.getPositions().get(rowCount - 1).get(0);
         assertEquals("Robust Monthly Sports Magazine", member.getName());
         // [Robust Monthly Sports Magazine], [All Gender], [Rank]
         cell = result.getCell(new int[] {0, rowCount - 1});

@@ -1194,11 +1194,11 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement("AxisInfo", new String[] { "name", axisName});
 
             Hierarchy[] hierarchies;
-            if (axis.positions.length > 0) {
-                final Position position = axis.positions[0];
-                hierarchies = new Hierarchy[position.members.length];
-                for (int j = 0; j < position.members.length; j++) {
-                    Member member = position.members[j];
+            if (axis.getPositions().size() > 0) {
+                final Position position = axis.getPositions().get(0);
+                hierarchies = new Hierarchy[position.size()];
+                for (int j = 0; j < position.size(); j++) {
+                    Member member = position.get(j);
                     hierarchies[j] = member.getHierarchy();
                 }
             } else {
@@ -1262,8 +1262,8 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement("Tuple");
 
             final QueryAxis slicerAxis = result.getQuery().getSlicerAxis();
-            final Member[] slicerMembers =
-                result.getSlicerAxis().positions[0].getMembers();
+            final List<Member> slicerMembers =
+                result.getSlicerAxis().getPositions().get(0);
             for (Hierarchy hierarchy : hierarchies) {
                 // Find which member is on the slicer. If it's not explicitly
                 // there, use the default member.
@@ -1317,12 +1317,12 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement("Axis", new String[] { "name", axisName});
             writer.startElement("Tuples");
 
-            Position[] positions = axis.positions;
-            for (int j = 0; j < positions.length; j++) {
-                Position position = positions[j];
+            List<Position> positions = axis.getPositions();
+            for (int j = 0; j < positions.size(); j++) {
+                Position position = positions.get(j);
                 writer.startElement("Tuple");
-                for (int k = 0; k < position.members.length; k++) {
-                    Member member = position.members[k];
+                for (int k = 0; k < position.size(); k++) {
+                    Member member = position.get(k);
                     writer.startElement("Member", new String[] {
                         "Hierarchy", member.getHierarchy().getName()});
                     for (String prop1 : props) {
@@ -1337,9 +1337,9 @@ public class XmlaHandler implements XmlaConstants {
                                 (Integer) member
                                     .getPropertyValue(Property.CHILDREN_CARDINALITY.name);
                             value = calculateDisplayInfo(
-                                (j == 0 ? null : positions[j - 1]),
-                                (j + 1 == positions.length
-                                    ? null : positions[j + 1]),
+                                (j == 0 ? null : positions.get(j - 1)),
+                                (j + 1 == positions.size()
+                                    ? null : positions.get(j + 1)),
                                 member, k, childrenCard);
                         } else if (propLong.equals(Property.DEPTH.name)) {
                             value = member.getDepth();
@@ -1404,12 +1404,12 @@ public class XmlaHandler implements XmlaConstants {
 
             if (nextPosition != null) {
                 String currentUName = currentMember.getUniqueName();
-                String nextParentUName = nextPosition.members[memberOrdinal].getParentUniqueName();
+                String nextParentUName = nextPosition.get(memberOrdinal).getParentUniqueName();
                 displayInfo |= (currentUName.equals(nextParentUName) ? 0x10000 : 0);
             }
             if (prevPosition != null) {
                 String currentParentUName = currentMember.getParentUniqueName();
-                String prevParentUName = prevPosition.members[memberOrdinal].getParentUniqueName();
+                String prevParentUName = prevPosition.get(memberOrdinal).getParentUniqueName();
                 displayInfo |= (currentParentUName != null && currentParentUName.equals(prevParentUName) ? 0x20000 : 0);
             }
             return displayInfo;
@@ -1432,7 +1432,7 @@ public class XmlaHandler implements XmlaConstants {
 
         private void recurse(
                 SaxWriter writer, int[] pos, int axis, int[] cellOrdinal) {
-            final int axisLength = result.getAxes()[axis].positions.length;
+            final int axisLength = result.getAxes()[axis].getPositions().size();
             for (int i = 0; i < axisLength; i++) {
                 pos[axis] = i;
                 if (axis == 0) {
@@ -1606,12 +1606,12 @@ public class XmlaHandler implements XmlaConstants {
             int dimensionCount = 0;
             for (int i = axes.length - 1; i > 0; i--) {
                 Axis axis = axes[i];
-                if (axis.positions.length == 0) {
+                if (axis.getPositions().size() == 0) {
                     // If any axis is empty, the whole data set is empty.
                     empty = true;
                     continue;
                 }
-                dimensionCount += axis.positions[0].members.length;
+                dimensionCount += axis.getPositions().get(0).size();
             }
             this.empty = empty;
 
@@ -1624,12 +1624,12 @@ public class XmlaHandler implements XmlaConstants {
                     final Axis axis = axes[i];
                     final QueryAxis queryAxis = result.getQuery().getAxes()[i];
                     final int z0 = memberOrdinal; // save ordinal so can rewind
-                    final Position[] positions = axis.positions;
-                    for (int j = 0; j < positions.length; j++) {
+                    final List<Position> positions = axis.getPositions();
+                    for (int j = 0; j < positions.size(); j++) {
                         memberOrdinal = z0; // rewind to start
-                        Position position = positions[j];
-                        final Member[] members = position.members;
-                        for (Member member : members) {
+                        Position position = positions.get(j);
+                        //final Member[] members = position.members;
+                        for (Member member : position) {
                             if (j == 0 ||
                                 member.getLevel().getDepth() >
                                     levels[memberOrdinal].getDepth()) {
@@ -1668,10 +1668,10 @@ public class XmlaHandler implements XmlaConstants {
 
             // Deduce the list of column headings.
             Axis columnsAxis = axes[0];
-            for (Position position : columnsAxis.positions) {
+            for (Position position : columnsAxis.getPositions()) {
                 String name = null;
-                for (int j = 0; j < position.members.length; j++) {
-                    Member member = position.members[j];
+                for (int j = 0; j < position.size(); j++) {
+                    Member member = position.get(j);
                     if (j == 0) {
                         name = member.getUniqueName();
                     } else {
@@ -1765,11 +1765,11 @@ public class XmlaHandler implements XmlaConstants {
                 SaxWriter writer,
                 int axis,
                 final int headerOrdinal) throws SAXException {
-            final Position[] positions = result.getAxes()[axis].positions;
-            final int axisLength = positions.length;
+            final List<Position> positions = result.getAxes()[axis].getPositions();
+            final int axisLength = positions.size();
             for (int i = 0; i < axisLength; i++) {
                 pos[axis] = i;
-                final Position position = positions[i];
+                final Position position = positions.get(i);
 
                 if (axis == 0) {
                     final Cell cell = result.getCell(pos);
@@ -1777,7 +1777,7 @@ public class XmlaHandler implements XmlaConstants {
                 } else {
                     // Populate headers and values with levels.
                     int ho = headerOrdinal;
-                    for (Member member : position.members) {
+                    for (Member member : position) {
                         members[ho++] = member;
                     }
 

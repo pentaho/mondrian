@@ -344,6 +344,23 @@ void printCurrentMemberNames() {
         return previous;
     }
 
+    public void setContext(List<Member> memberList) {
+        int i = 0;
+        for (Member member: memberList) {
+            // more than one usage
+            if (member == null) {
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug(
+                        "RolapEvaluator.setContext: member == null "
+                         + " , count=" + i);
+                }
+                assert false;
+            } else {
+                setContext(member);
+            }
+            i++;
+        }
+    }
     public void setContext(Member[] members) {
         for (int i = 0; i < members.length; i++) {
             Member member = members[i];

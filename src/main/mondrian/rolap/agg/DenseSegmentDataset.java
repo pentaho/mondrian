@@ -35,7 +35,7 @@ class DenseSegmentDataset implements SegmentDataset {
         this.values = values;
     }
     public Object get(CellKey keys) {
-        int offset = getOffset(keys.ordinals);
+        int offset = getOffset(keys.getOrdinals());
         return values[offset];
     }
     public double getBytes() {

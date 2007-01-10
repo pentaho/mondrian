@@ -19,6 +19,7 @@ import org.w3c.dom.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import java.util.HashSet;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -59,11 +60,11 @@ class ResultComparator {
         }
 
         Axis slicerAxis = result.getSlicerAxis();
-        Member[] members = slicerAxis.positions[0].members;
+        List<Member> members = slicerAxis.getPositions().get(0);
 
         Element slicerTuple = (Element) slicerList.item(0);
         if (slicerTuple == null) {
-            _assertEquals("Expected no slicers", 0, members.length);
+            _assertEquals("Expected no slicers", 0, members.size());
             return;
         }
 
@@ -91,11 +92,11 @@ class ResultComparator {
 
         _assertEquals(
             "The query returned more slicer members than were expected",
-            members.length, seenMembers);
+            members.size(), seenMembers);
     }
 
     private boolean resultMembersContainsExpected(String expectedMemberName,
-            Member[] members) {
+            List<Member> members) {
         for (Member member : members) {
             if (member.getUniqueName().equals(expectedMemberName)) {
                 return true;
@@ -111,7 +112,7 @@ class ResultComparator {
         NodeList columnList = xmlRoot.getElementsByTagName("columns");
 
         if (axes.length >= 1) {
-            compareTuples("Column", columnList, axes[0].positions);
+            compareTuples("Column", columnList, axes[0].getPositions());
         } else {
             Assert.assertTrue("Must be no columns",
                 columnList.getLength() == 0);
@@ -130,7 +131,7 @@ class ResultComparator {
                 break;
 
             case 2:
-                compareTuples("Row", rowList, axes[1].positions);
+                compareTuples("Row", rowList, axes[1].getPositions());
                 break;
 
             default:
@@ -213,7 +214,7 @@ class ResultComparator {
             int[] pos,
             int axisOrdinal) {
         Axis axis = result.getAxes()[axisOrdinal];
-        for (int i = 0; i < axis.positions.length; i++) {
+        for (int i = 0; i < axis.getPositions().size(); i++) {
             pos[axisOrdinal] = i;
             if (axisOrdinal == 0) {
                 Cell cell = result.getCell(pos);
@@ -276,8 +277,8 @@ class ResultComparator {
     private Member findSlicerAxisMember(Result result, Dimension dimension) {
         final Axis slicerAxis = result.getSlicerAxis();
         if (slicerAxis != null &&
-                slicerAxis.positions.length == 1) {
-            final Member[] members = slicerAxis.positions[0].members;
+                slicerAxis.getPositions().size() == 1) {
+            final List<Member> members = slicerAxis.getPositions().get(0);
             for (Member member : members) {
                 if (member.getDimension() == dimension) {
                     return member;
@@ -286,8 +287,8 @@ class ResultComparator {
         }
         final Axis[] axes = result.getAxes();
         for (Axis axis : axes) {
-            if (axis.positions.length > 0) {
-                final Member[] members = axis.positions[0].members;
+            if (axis.getPositions().size() > 0) {
+                final List<Member> members = axis.getPositions().get(0);
                 for (Member member : members) {
                     if (member.getDimension() == dimension) {
                         // Dimension occurs on non-slicer axis, so it should
@@ -307,11 +308,11 @@ class ResultComparator {
             final String axisName) {
         final Element axisXml = document.createElement(axisName);
         dataResultXml.appendChild(axisXml);
-        if (axis.positions.length > 0) {
+        if (axis.getPositions().size() > 0) {
             final Element dimensionsXml = document.createElement("dimensions");
             axisXml.appendChild(dimensionsXml);
-            final Position position0 = axis.positions[0];
-            for (Member member : position0.members) {
+            final Position position0 = axis.getPositions().get(0);
+            for (Member member : position0) {
                 final Element dimXml = document.createElement("dim");
                 dimensionsXml.appendChild(dimXml);
                 final Text textXml = document.createTextNode(
@@ -320,10 +321,10 @@ class ResultComparator {
             }
             final Element tuplesXml = document.createElement("tuples");
             axisXml.appendChild(tuplesXml);
-            for (Position position : axis.positions) {
+            for (Position position : axis.getPositions()) {
                 final Element tupleXml = document.createElement("tuple");
                 tuplesXml.appendChild(tupleXml);
-                for (final Member member : position.members) {
+                for (final Member member : position) {
                     final Element memberXml = document.createElement("member");
                     tupleXml.appendChild(memberXml);
                     final Text textXml = document.createTextNode(
@@ -371,7 +372,7 @@ class ResultComparator {
     private void compareTuples(
             String message,
             NodeList axisValues,
-            Position[] resultTuples) {
+            List<Position> resultTuples) {
         NodeList expectedTuples = null;
         NodeList expectedDims = null;
 
@@ -387,7 +388,7 @@ class ResultComparator {
 
         int numExpectedTuples = expectedTuples == null ? 0 : expectedTuples.getLength();
         _assertEquals(message + " number of tuples", numExpectedTuples,
-                resultTuples.length);
+                resultTuples.size());
 
         if (numExpectedTuples != 0) {
             _assertEquals("Invalid test case. Number of dimensions does not match tuple lengths",
@@ -395,7 +396,7 @@ class ResultComparator {
         }
 
         for (int idx = 0; idx < numExpectedTuples; idx++) {
-            compareTuple(message + " tuple " + idx, (Element) expectedTuples.item(idx), resultTuples[idx]);
+            compareTuple(message + " tuple " + idx, (Element) expectedTuples.item(idx), resultTuples.get(idx));
         }
     }
 
@@ -404,10 +405,10 @@ class ResultComparator {
         NodeList expectedMembers = expectedTuple.getElementsByTagName("member");
         int numExpectedMembers = expectedMembers.getLength();
 
-        _assertEquals(message + " number of members", numExpectedMembers, resultTuple.members.length);
+        _assertEquals(message + " number of members", numExpectedMembers, resultTuple.size());
 
         for (int idx = 0; idx < numExpectedMembers; idx++) {
-            String resultName = resultTuple.members[idx].getUniqueName();
+            String resultName = resultTuple.get(idx).getUniqueName();
             String expectedName = expectedMembers.item(idx).getFirstChild().getNodeValue();
 
             _assertEquals(message + " member " + idx, expectedName, resultName);
@@ -463,7 +464,7 @@ class ResultComparator {
 
         int numColumns = cellList.getLength();
 
-        _assertEquals("Unexpected number of columns", numColumns, axes[0].positions.length);
+        _assertEquals("Unexpected number of columns", numColumns, axes[0].getPositions().size());
 
         int[] coord = new int[1];
 
@@ -481,7 +482,7 @@ class ResultComparator {
         int[] coord = new int[2];
 
         _assertEquals("Number of row tuples must match", numRows,
-                axes[1].positions.length);
+                axes[1].getPositions().size());
 
         for (int rowIdx = 0; rowIdx < numRows; rowIdx++) {
             Element drow = (Element) expectedRows.item(rowIdx);
@@ -489,12 +490,12 @@ class ResultComparator {
 
             if (rowIdx == 0) {
                 _assertEquals("Number of data columns: ",
-                    cellList.getLength(), axes[0].positions.length);
+                    cellList.getLength(), axes[0].getPositions().size());
             }
 
             coord[1] = rowIdx;
 
-            for (int colIdx = 0; colIdx < axes[0].positions.length; colIdx++) {
+            for (int colIdx = 0; colIdx < axes[0].getPositions().size(); colIdx++) {
                 coord[0] = colIdx;
 
                 Cell cell = result.getCell(coord);

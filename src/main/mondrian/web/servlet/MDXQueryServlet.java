@@ -14,6 +14,7 @@
 package mondrian.web.servlet;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Enumeration;
 
 import javax.servlet.ServletConfig;
@@ -83,19 +84,19 @@ public class MDXQueryServlet extends HttpServlet {
             mdxConnection = DriverManager.getConnection(connectString, locator, false);
             Query q = mdxConnection.parseQuery(queryString);
             Result result = mdxConnection.execute(q);
-            Position slicers[] = result.getSlicerAxis().positions;
+            List<Position> slicers = result.getSlicerAxis().getPositions();
             html.append("<table class='resulttable' cellspacing=1 border=0>");
             html.append(Util.nl);
 
-            Position[] columns = result.getAxes()[0].positions;
-            Position[] rows = null;
+            List<Position> columns = result.getAxes()[0].getPositions();
+            List<Position> rows = null;
             if( result.getAxes().length == 2 )
-                rows = result.getAxes()[1].positions;
+                rows = result.getAxes()[1].getPositions();
 
-            int columnWidth = columns[0].members.length;
+            int columnWidth = columns.get(0).size();
             int rowWidth = 0;
             if( result.getAxes().length == 2 )
-                    rowWidth = result.getAxes()[1].positions[0].members.length;
+                    rowWidth = result.getAxes()[1].getPositions().get(0).size();
 
             for (int j=0; j<columnWidth; j++) {
                 html.append("<tr>");
@@ -107,23 +108,35 @@ public class MDXQueryServlet extends HttpServlet {
                         columnWidth).append("' colspan='").append(rowWidth)
                         .append("'>");
                     for (Position position : slicers) {
-                        for (int k = 0; k < position.members.length; k++) {
+                        int k = 0;
+                        for (Member member : position) {
                             if (k > 0) {
                                 html.append("<br/>");
                             }
-                            Member member = position.members[k];
+                            html.append(member.getUniqueName());
+                            k++;
+                        }
+/*
+                        for (int k = 0; k < position.size(); k++) {
+                            if (k > 0) {
+                                html.append("<br/>");
+                            }
+                            Member member = position.getMember(k);
                             html.append(member.getUniqueName());
                         }
+*/
                     }
                     html.append("&nbsp;</td>").append(Util.nl);
                 }
 
                 // Print the column headings.
-                for (int i=0; i<columns.length; i++) {
-                    Member member = columns[i].members[j];
+                for (int i=0; i<columns.size(); i++) {
+                    Position position = columns.get(i);
+                    //Member member = columns[i].getMember(j);
+                    Member member = position.get(j);
                     int width = 1;
-                    while ((i + 1) < columns.length &&
-                            columns[i + 1].members[j] == member) {
+                    while ((i + 1) < columns.size() &&
+                            columns.get(i + 1).get(j) == member) {
                         i++;
                         width++;
                     }
@@ -135,21 +148,21 @@ public class MDXQueryServlet extends HttpServlet {
             }
             //if is two axes, show
             if (result.getAxes().length > 1) {
-                for (int i=0; i<rows.length; i++) {
+                for (int i=0; i<rows.size(); i++) {
                     html.append("<tr>");
-                    final Position row = rows[i];
-                    for (Member member : row.members) {
+                    final Position row = rows.get(i);
+                    for (Member member : row) {
                         html.append("<td nowrap class='rowheading'>").append(
                             member.getUniqueName()).append("</td>");
                     }
-                    for (int j=0; j<columns.length; j++) {
+                    for (int j=0; j<columns.size(); j++) {
                         showCell(html,result.getCell(new int[]{j,i}));
                     }
                     html.append("</tr>");
                 }
             } else {
                 html.append("<tr>");
-                for (int i=0; i<columns.length; i++) {
+                for (int i=0; i<columns.size(); i++) {
                     showCell(html,result.getCell(new int[]{i}));
                 }
                 html.append("</tr>");
