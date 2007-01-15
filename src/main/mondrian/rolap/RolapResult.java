@@ -83,6 +83,20 @@ class RolapResult extends ResultBase {
             // during execution of the other axes.
             List<Member> slicerMembers = new ArrayList<Member>();
 
+/*
+Formula[] formulas;
+if (query.formulas == null) {
+System.out.println("RolapResult: query.formulas= NULL");
+} else {
+for (int i = 0; i < query.formulas.length; i++) {
+java.io.StringWriter sw = new java.io.StringWriter();
+java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+    query.formulas[i].unparse(pw);
+pw.flush();
+System.out.println("RolapResult: query.formulas " +i+"=" +sw.toString());
+}
+}
+*/
             for (int i = -1; i < axes.length; i++) {
                 QueryAxis axis;
                 final Calc calc;
@@ -94,6 +108,17 @@ class RolapResult extends ResultBase {
                     calc = query.axisCalcs[i];
                 }
 
+/*
+if (calc == null) {
+System.out.println("RolapResult: calc " +i+"= NULL");
+} else {
+java.io.StringWriter sw = new java.io.StringWriter();
+java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+calc.accept(new mondrian.calc.CalcWriter(pw));
+pw.flush();
+System.out.println("RolapResult: calc " +i+"=" +sw.toString());
+}
+*/
                 int attempt = 0;
                 while (true) {
                     evaluator.setCellReader(batchingReader);
@@ -263,8 +288,82 @@ class RolapResult extends ResultBase {
             Object value = axisCalc.evaluate(evaluator);
             evaluator.setNonEmpty(false);
             if (value != null) {
-                // List of Member or Member[]
-                // TODO: value could be an ITERABLE in future
+                // List or Iterable of Member or Member[]
+/*
+                if (! (value instanceof List)) {
+                    // materialize the Iterable.
+                    Iterable<Object> iterable = (Iterable) value; 
+                    Iterator it = iterable.iterator();
+                    List list = new ArrayList();
+                    while (it.hasNext()) {
+                        list.add(it.next());
+                    }
+                    value = list;
+                } 
+*/
+                if ((value instanceof List)) {
+                    List<Object> list = (List) value; 
+                    if (construct) {
+                        if (list.size() == 0) {
+                            // should be???
+                            axisResult = new RolapAxis.NoPosition();
+                        } else if (list.get(0) instanceof Member[]) {
+                            axisResult = 
+                                new RolapAxis.MemberArrayList((List<Member[]>)value);
+                        } else {
+                            axisResult = 
+                                new RolapAxis.MemberList((List<Member>)value);
+                        }
+                    } else {
+                        if (list.size() != 0) {
+                            if (list.get(0) instanceof Member[]) {
+                                for (Member[] o : (List<Member[]>) value) {
+                                    merge(axisMembers, o);
+                                }
+                            } else {
+                                for (Member o : (List<Member>) value) {
+                                    merge(axisMembers, o);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Iterable
+                    Iterable<Object> iter = (Iterable) value; 
+                    Iterator it = iter.iterator();
+                    if (construct) {
+                        if (! it.hasNext()) {
+                            axisResult = new RolapAxis.NoPosition();
+                        } else if (it.next() instanceof Member[]) {
+                            axisResult = new RolapAxis.MemberArrayIterable(
+                                            (Iterable<Member[]>)value);
+                        } else {
+                            axisResult = new RolapAxis.MemberIterable(
+                                            (Iterable<Member>)value);
+                        }
+                    } else {
+                        if (it.hasNext()) {
+                            Object o = it.next();
+                            if (o instanceof Member[]) {
+                                merge(axisMembers, (Member[]) o);
+                                while (it.hasNext()) {
+                                    o = it.next();
+                                    merge(axisMembers, (Member[]) o);
+                                }
+                            } else {
+                                merge(axisMembers, (Member) o);
+                                while (it.hasNext()) {
+                                    o = it.next();
+                                    merge(axisMembers, (Member) o);
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+/*
+                // better be a list
                 List<Object> list = (List) value; 
                 if (construct) {
                     if (list.size() == 0) {
@@ -290,6 +389,7 @@ class RolapResult extends ResultBase {
                         }
                     }
                 }
+*/
             }
             evaluator.setEvalAxes(false);
         }
@@ -610,7 +710,27 @@ class RolapResult extends ResultBase {
                 final RolapEvaluator.RolapEvaluatorRoot root =
                     slicerEvaluator.root;
                 final Calc calc = root.getCompiled(exp, false);
-                List list = (List) result.evaluateExp(calc, slicerEvaluator.push());
+                Object o = result.evaluateExp(calc, slicerEvaluator.push());
+                List list = null;
+                if (o instanceof List) {
+                    list = (List) o;
+                } else {
+                    // Iterable
+                    
+                    // TODO:
+                    // Here, we have to convert the Iterable into a List,
+                    // materialize it, because in the class
+                    // mondrian.mdx.NamedSetExpr the Calc returned by the
+                    // 'accept' method is an AbstractListCalc (hence we must
+                    // provide a list here). It would be better if the
+                    // NamedSetExpr class knew if it needed a ListCalc or
+                    // an IterCalc.
+                    Iterable iter = (Iterable) o;
+                    list = new ArrayList();
+                    for (Object e: iter) {
+                        list.add(e);
+                    }
+                }
                 // Make immutable, just in case expressions are modifying the
                 // results we give them.
                 value = Collections.unmodifiableList(list);

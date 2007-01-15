@@ -12,7 +12,9 @@
 */
 
 package mondrian.olap;
-import mondrian.calc.*;
+import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
+import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.calc.impl.BetterExpCompiler;
 import mondrian.mdx.*;
 import mondrian.olap.fun.FunUtil;
@@ -145,6 +147,14 @@ public class Query extends QueryPart {
      * If true, loading schema
      */
     private boolean load;
+
+    /**
+     * How should the query be returned? Valid values are: 
+     *    ResultStyle.ITERABLE
+     *    ResultStyle.LIST
+     *    ResultStyle.MUTABLE_LIST
+     */
+    private ResultStyle resultStyle = ResultStyle.ITERABLE;
 
     /**
      * Creates a Query.
@@ -368,6 +378,36 @@ public class Query extends QueryPart {
             MondrianProperties.instance().IgnoreInvalidMembers.get();
     }
 
+    /** 
+     * A Query's ResultStyle can only be one of the following: 
+     *   ResultStyle.ITERABLE
+     *   ResultStyle.LIST
+     *   ResultStyle.MUTABLE_LIST
+     * 
+     * @param resultStyle 
+     */
+    public void setResultStyle(ResultStyle resultStyle) {
+        switch (resultStyle) {
+        case ITERABLE :
+        case LIST :
+        case MUTABLE_LIST:
+            this.resultStyle = resultStyle;
+            break;
+        default :
+            throw ResultStyleException.generateBadType(
+                    new ResultStyle[] {
+                        ResultStyle.ITERABLE,
+                        ResultStyle.LIST,
+                        ResultStyle.MUTABLE_LIST
+                    },
+                    resultStyle
+                );
+        }
+    }
+    public ResultStyle getResultStyle() {
+        return resultStyle;
+    }
+
     /**
      * Generates compiled forms of all expressions.
      *
@@ -383,11 +423,13 @@ public class Query extends QueryPart {
         if (axes != null) {
             axisCalcs = new Calc[axes.length];
             for (int i = 0; i < axes.length; i++) {
-                axisCalcs[i] = axes[i].compile(compiler);
+                axisCalcs[i] = axes[i].compile(compiler, 
+                                    new ResultStyle[] { resultStyle });
             }
         }
         if (slicerAxis != null) {
-            slicerCalc = slicerAxis.compile(compiler);
+            slicerCalc = slicerAxis.compile(compiler, 
+                                new ResultStyle[] { resultStyle });
         }
     }
 
@@ -895,18 +937,17 @@ public class Query extends QueryPart {
         Evaluator evaluator = RolapEvaluator.create(this);
         final Validator validator = createValidator();
         final ExpCompiler compiler = createCompiler(evaluator, validator);
-        Calc calc;
-        if (scalar) {
-            calc = compiler.compileScalar(exp, false);
-        } else {
-            calc = exp.accept(compiler);
-        }
+        Calc calc = (scalar)
+            ? compiler.compileScalar(exp, false)
+            : compiler.compile(exp);
         return calc;
     }
 
     private ExpCompiler createCompiler(
             Evaluator evaluator, final Validator validator) {
         ExpCompiler compiler = new BetterExpCompiler(evaluator, validator);
+        ((BetterExpCompiler) compiler).setAcceptableResultStyles(
+            new ResultStyle[] { resultStyle });
         final int expDeps = MondrianProperties.instance().TestExpDependencies.get();
         if (expDeps > 0) {
             compiler = RolapUtil.createDependencyTestingCompiler(compiler);

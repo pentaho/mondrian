@@ -10,9 +10,12 @@ package mondrian.rolap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Iterator;
 import java.sql.*;
 
+import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.cache.HardSmartCache;
@@ -130,7 +133,65 @@ public abstract class RolapNativeSet extends RolapNative {
             this.constraint = constraint;
         }
 
-        public Object execute() {
+        public Object execute(ResultStyle desiredResultStyle) {
+//System.out.println("RolapNativeSet.SetEvaluator.execute: desiredResultStyle="+desiredResultStyle);
+            switch (desiredResultStyle) {
+            case ITERABLE :
+                return executeIterable();
+            case MUTABLE_LIST :
+            case LIST :
+                return executeList();
+            }
+            throw ResultStyleException.generate(
+                new ResultStyle[] {
+                    ResultStyle.ITERABLE, 
+                    ResultStyle.MUTABLE_LIST, 
+                    ResultStyle.LIST
+                },
+                new ResultStyle[] {
+                    desiredResultStyle
+                }
+            );
+        }
+        protected Object executeIterable() {
+            final List list = executeList();
+            if (args.length == 1) {
+                return new Iterable<Member>() {
+                    public Iterator<Member> iterator() {
+                        return new Iterator<Member>() {
+                            int index = 0;
+                            public boolean hasNext() {
+                                return (index < list.size());
+                            }
+                            public Member next() {
+                                return (Member) list.get(index++);
+                            }
+                            public void remove() {
+                                throw new UnsupportedOperationException("remove");
+                            }
+                        };
+                    }
+                }; 
+            } else {
+                return new Iterable<Member[]>() {
+                    public Iterator<Member[]> iterator() {
+                        return new Iterator<Member[]>() {
+                            int index = 0;
+                            public boolean hasNext() {
+                                return (index < list.size());
+                            }
+                            public Member[] next() {
+                                return (Member[]) list.get(index++);
+                            }
+                            public void remove() {
+                                throw new UnsupportedOperationException("remove");
+                            }
+                        };
+                    }
+                }; 
+            }
+        }
+        protected List executeList() {
             SqlTupleReader tr = new SqlTupleReader(constraint);
             tr.setMaxRows(maxRows);
             for (CrossJoinArg arg : args) {

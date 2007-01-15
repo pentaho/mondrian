@@ -41,8 +41,8 @@ class HierarchizeFunDef extends FunDefBase {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        final ListCalc listCalc =
-                compiler.compileList(call.getArg(0));
+        final ListCalc listCalc = (ListCalc) compiler.compile(call.getArg(0), 
+                    ExpCompiler.MUTABLE_LIST_RESULT_STYLE_ARRAY);
         String order = getLiteralArg(call, 1, "PRE", prePost);
         final boolean post = order.equals("POST");
         return new AbstractListCalc(call, new Calc[] {listCalc}) {

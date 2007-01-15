@@ -15,6 +15,7 @@ import mondrian.calc.ExpCompiler;
 import mondrian.calc.IntegerCalc;
 import mondrian.calc.ListCalc;
 import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.TupleType;
@@ -80,7 +81,7 @@ class TopBottomCountFunDef extends FunDefBase {
                         schemaReader.getNativeSetEvaluator(
                                 call.getFunDef(), call.getArgs(), evaluator, this);
                 if (nativeEvaluator != null) {
-                    return (List) nativeEvaluator.execute();
+                    return (List) nativeEvaluator.execute(ResultStyle.LIST);
                 }
 
                 List list = listCalc.evaluateList(evaluator);

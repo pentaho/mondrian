@@ -68,7 +68,8 @@ class TopBottomPercentSumFunDef extends FunDefBase {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        final ListCalc listCalc = compiler.compileList(call.getArg(0));
+        final ListCalc listCalc = (ListCalc) compiler.compile(call.getArg(0),
+                    ExpCompiler.MUTABLE_LIST_RESULT_STYLE_ARRAY);
         final DoubleCalc doubleCalc = compiler.compileDouble(call.getArg(1));
         final Calc calc = compiler.compileScalar(call.getArg(2), true);
         return new CalcImpl(call, listCalc, doubleCalc, calc);
@@ -112,12 +113,14 @@ class TopBottomPercentSumFunDef extends FunDefBase {
             }
             Map mapMemberToValue;
             Object first = list.get(0);
+            boolean isMember = true;
             if (first instanceof Member) {
                 List<Member> memberList = (List<Member>) list;
                 mapMemberToValue =
                     evaluateMembers(evaluator, calc, memberList, false);
                 sortMembers(evaluator, memberList, calc, top, true);
             } else {
+                isMember = false;
                 List<Member[]> tupleList = (List<Member[]>) list;
                 mapMemberToValue =
                     evaluateTuples(evaluator, calc, tupleList);
@@ -125,7 +128,7 @@ class TopBottomPercentSumFunDef extends FunDefBase {
                 sortTuples(evaluator, tupleList, calc, top, true, arity);
             }
             if (percent) {
-                toPercent(list, mapMemberToValue);
+                toPercent(list, mapMemberToValue, isMember);
             }
             double runningTotal = 0;
             int memberCount = list.size();
@@ -135,7 +138,10 @@ class TopBottomPercentSumFunDef extends FunDefBase {
                     list = list.subList(0, i);
                     break;
                 }
-                Object o = mapMemberToValue.get(list.get(i));
+                Object o = (isMember)
+                    ? mapMemberToValue.get(list.get(i))
+                    : mapMemberToValue.get(
+                        new Member.ArrayEquals(list.get(i)));
                 if (o == Util.nullValue) {
                     nullCount++;
                 } else if (o instanceof Number) {

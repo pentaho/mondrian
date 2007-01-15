@@ -15,6 +15,7 @@ package mondrian.olap;
 
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
+import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.mdx.*;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.TypeUtil;
@@ -101,13 +102,13 @@ public class QueryAxis extends QueryPart {
         return o;
     }
 
-    public Calc compile(ExpCompiler compiler) {
+    public Calc compile(ExpCompiler compiler, ResultStyle[] resultStyles) {
         Exp exp = this.exp;
         if (axisOrdinal == AxisOrdinal.SLICER) {
             exp = normalizeSlicerExpression(exp);
             exp = exp.accept(compiler.getValidator());
         }
-        return compiler.compile(exp);
+        return compiler.compile(exp, resultStyles);
     }
 
     private static Exp normalizeSlicerExpression(Exp exp) {

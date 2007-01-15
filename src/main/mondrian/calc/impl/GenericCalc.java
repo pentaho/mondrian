@@ -24,7 +24,8 @@ import java.util.List;
  */
 public abstract class GenericCalc
         extends AbstractCalc
-        implements ListCalc, StringCalc, IntegerCalc, DoubleCalc, BooleanCalc,
+        implements ListCalc, IterCalc,
+            StringCalc, IntegerCalc, DoubleCalc, BooleanCalc,
             VoidCalc, MemberCalc, LevelCalc, HierarchyCalc, DimensionCalc
 {
 
@@ -34,6 +35,10 @@ public abstract class GenericCalc
 
     public List evaluateList(Evaluator evaluator) {
         return (List) evaluate(evaluator);
+    }
+
+    public Iterable evaluateIterable(Evaluator evaluator) {
+        return (Iterable) evaluate(evaluator);
     }
 
     public String evaluateString(Evaluator evaluator) {

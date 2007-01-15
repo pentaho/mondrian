@@ -15,6 +15,8 @@ import mondrian.olap.Evaluator;
 import mondrian.olap.Dimension;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
+import mondrian.calc.ExpCompiler.ResultStyle;
+import mondrian.calc.IterCalc;
 import mondrian.calc.ListCalc;
 import mondrian.calc.impl.AbstractIntegerCalc;
 import mondrian.mdx.ResolvedFunCall;
@@ -44,6 +46,55 @@ class CountFunDef extends AbstractAggregateFunDef {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+/*
+//RME
+        ResultStyle[] rs = compiler.getAcceptableResultStyles();
+for (int i = 0; i < rs.length; i++) {
+System.out.println("CountFunDef.compileCall: "+rs[i]);
+}
+*/
+        final Calc calc = compiler.compile(call.getArg(0), 
+                                ExpCompiler.ITERABLE_ANY_RESULT_STYLE_ARRAY
+                                );
+        final boolean includeEmpty =
+                call.getArgCount() < 2 ||
+                ((Literal) call.getArg(1)).getValue().equals(
+                        "INCLUDEEMPTY");
+        return new AbstractIntegerCalc(
+                call, new Calc[] {calc}) {
+            public int evaluateInteger(Evaluator evaluator) {
+                if (calc instanceof IterCalc) {
+                    IterCalc iterCalc = (IterCalc) calc;
+                    Iterable iterable =
+                        evaluateCurrentIterable(iterCalc, evaluator);
+                    return count(evaluator, iterable, includeEmpty);
+                } else {
+                    // must be ListCalc
+                    ListCalc listCalc = (ListCalc) calc;
+                    List memberList = evaluateCurrentList(listCalc, evaluator);
+                    return count(evaluator, memberList, includeEmpty);
+                }
+            }
+
+            public boolean dependsOn(Dimension dimension) {
+                // COUNT(<set>, INCLUDEEMPTY) is straightforward -- it
+                // depends only on the dimensions that <Set> depends
+                // on.
+                if (super.dependsOn(dimension)) {
+                    return true;
+                }
+                if (includeEmpty) {
+                    return false;
+                }
+                // COUNT(<set>, EXCLUDEEMPTY) depends only on the
+                // dimensions that <Set> depends on, plus all
+                // dimensions not masked by the set.
+                return ! calc.getType().usesDimension(dimension, true);
+            }
+        };
+
+/*
+ RME OLD STUFF
         final ListCalc memberListCalc =
                 compiler.compileList(call.getArg(0));
         final boolean includeEmpty =
@@ -77,6 +128,7 @@ class CountFunDef extends AbstractAggregateFunDef {
                 return true;
             }
         };
+*/
     }
 }
 

@@ -88,6 +88,11 @@ public class DelegatingExpCompiler implements ExpCompiler {
         return (ListCalc) afterCompile(exp, calc, mutable);
     }
 
+    public IterCalc compileIter(Exp exp) {
+        final IterCalc calc = parent.compileIter(exp);
+        return (IterCalc) afterCompile(exp, calc, false);
+    }
+
     public BooleanCalc compileBoolean(Exp exp) {
         final BooleanCalc calc = parent.compileBoolean(exp);
         return (BooleanCalc) afterCompile(exp, calc, false);

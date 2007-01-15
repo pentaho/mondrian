@@ -99,6 +99,12 @@ public interface ExpCompiler {
     ListCalc compileList(Exp exp, boolean mutable);
 
     /**
+     * Compiles an expression which yields an immutable {@
+     * link * java.lang.Iterable} * result.
+     */
+    IterCalc compileIter(Exp exp);
+
+    /**
      * Compiles an expression which yields a <code>boolean</code> result.
      */
     BooleanCalc compileBoolean(Exp exp);
@@ -167,12 +173,67 @@ public interface ExpCompiler {
         LIST,
 
         /**
+         * Indicates that the expression returns its result as an Iterable
+         * which must not be modified by the caller.
+         */
+        ITERABLE,
+
+        /**
          * Indicates that the expression results its result as an immutable
          * value. This is typical for expressions which return string and
          * numeric values.
          */
         VALUE
     }
+
+    ResultStyle[] ANY_RESULT_STYLE_ARRAY = 
+        new ResultStyle[] { 
+            ResultStyle.ANY 
+        };
+    ResultStyle[] ITERABLE_RESULT_STYLE_ARRAY = 
+        new ResultStyle[] { 
+            ResultStyle.ITERABLE 
+        };
+    ResultStyle[] MUTABLE_LIST_RESULT_STYLE_ARRAY = 
+        new ResultStyle[] { 
+            ResultStyle.MUTABLE_LIST 
+        };
+    ResultStyle[] LIST_RESULT_STYLE_ARRAY = 
+        new ResultStyle[] { 
+            ResultStyle.LIST 
+        };
+
+    ResultStyle[] ITERABLE_ANY_RESULT_STYLE_ARRAY = 
+        new ResultStyle[] { 
+            ResultStyle.ITERABLE,
+            ResultStyle.ANY
+        };
+    ResultStyle[] ITERABLE_LIST_RESULT_STYLE_ARRAY = 
+        new ResultStyle[] { 
+            ResultStyle.ITERABLE,
+            ResultStyle.LIST
+        };
+    ResultStyle[] ITERABLE_MUTABLE_LIST_RESULT_STYLE_ARRAY = 
+        new ResultStyle[] { 
+            ResultStyle.ITERABLE,
+            ResultStyle.MUTABLE_LIST
+        };
+    ResultStyle[] ITERABLE_LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY = 
+        new ResultStyle[] { 
+            ResultStyle.ITERABLE,
+            ResultStyle.LIST,
+            ResultStyle.MUTABLE_LIST
+        };
+    ResultStyle[] LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY = 
+        new ResultStyle[] { 
+            ResultStyle.LIST,
+            ResultStyle.MUTABLE_LIST
+        };
+    ResultStyle[] MUTABLE_LIST_LIST_RESULT_STYLE_ARRAY = 
+        new ResultStyle[] { 
+            ResultStyle.MUTABLE_LIST,
+            ResultStyle.LIST
+        };
 }
 
 // End ExpCompiler.java

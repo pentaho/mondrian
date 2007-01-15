@@ -16,16 +16,23 @@ import mondrian.olap.type.TupleType;
 import mondrian.olap.type.SetType;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
+import mondrian.calc.ExpCompiler.ResultStyle;
+import mondrian.calc.impl.AbstractIterCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.*;
 import mondrian.util.Bug;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.ListIterator;
 import java.util.Iterator;
+import java.util.RandomAccess;
 import java.util.List;
 import java.util.Set;
+import java.util.NoSuchElementException;
+import java.util.ConcurrentModificationException;
 
 /**
  * Definition of the <code>CrossJoin</code> MDX function.
@@ -85,8 +92,1877 @@ class CrossJoinFunDef extends FunDefBase {
             list.add(type);
         }
     }
-
     public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
+        ResultStyle[] rs = compiler.getAcceptableResultStyles();
+/*
+ //RME
+for (int i = 0; i < rs.length; i++) {
+System.out.println("CrossJoinFunDef.compileCall: "+rs[i]);
+}
+*/
+        // What is the desired return type?
+        for (int i = 0; i < rs.length; i++) {
+            switch (rs[i]) {
+            case ITERABLE :
+            case ANY :
+                // Consumer wants ITERABLE or ANY
+                return compileCallIterable(call, compiler);
+            case MUTABLE_LIST:
+                // Consumer MUTABLE_LIST 
+                return compileCallMutableList(call, compiler);
+            case LIST :
+                // Consumer wants (immutable) LIST
+                return compileCallImmutableList(call, compiler);
+            }
+        }
+        throw ResultStyleException.generate(
+            new ResultStyle[] {
+                ResultStyle.ITERABLE,
+                ResultStyle.LIST,
+                ResultStyle.MUTABLE_LIST,
+                ResultStyle.ANY
+            },
+            rs
+        );
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    // Iterable
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    
+    protected IterCalc compileCallIterable(final ResolvedFunCall call, 
+            ExpCompiler compiler) {
+        final Calc calc1 = toIter(compiler, call.getArg(0));
+        final Calc calc2 = toIter(compiler, call.getArg(1));
+        Calc[] calcs = new Calc[] {calc1, calc2};
+        // The Calcs, 1 and 2, can be of type: Member or Member[] and
+        // of ResultStyle: ITERABLE, LIST or MUTABLE_LIST, but
+        // LIST and MUTABLE_LIST are treated the same; so 
+        // there are 16 possible combinations - sweet.
+        
+        // Check returned calc ResultStyles
+        checkIterListResultStyles(calc1);
+        checkIterListResultStyles(calc2);
+        
+        if (isMemberType(calc1)) {
+            // Member
+            if (isMemberType(calc2)) {
+                // Member
+                if (calc1.getResultStyle() == ResultStyle.ITERABLE) {
+                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
+                        return new IterMemberIterMemberIterCalc(call, calcs);
+                    } else {
+                        return new IterMemberListMemberIterCalc(call, calcs);
+                    }
+                } else {
+                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
+                        return new ListMemberIterMemberIterCalc(call, calcs);
+                    } else {
+                        return new ListMemberListMemberIterCalc(call, calcs);
+                    }
+                }
+            } else {
+                // Member[]
+                if (calc1.getResultStyle() == ResultStyle.ITERABLE) {
+                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
+                        return new IterMemberIterMemberArrayIterCalc(call, calcs);
+                    } else {
+                        return new IterMemberListMemberArrayIterCalc(call, calcs);
+                    }
+                } else {
+                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
+                        return new ListMemberIterMemberArrayIterCalc(call, calcs);
+                    } else {
+                        return new ListMemberListMemberArrayIterCalc(call, calcs);
+                    }
+                }
+            }
+        } else {
+            // Member[]
+            if (isMemberType(calc2)) {
+                // Member
+                if (calc1.getResultStyle() == ResultStyle.ITERABLE) {
+                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
+                        return new IterMemberArrayIterMemberIterCalc(call, calcs);
+                    } else {
+                        return new IterMemberArrayListMemberIterCalc(call, calcs);
+                    }
+                } else {
+                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
+                        return new ListMemberArrayIterMemberIterCalc(call, calcs);
+                    } else {
+                        return new ListMemberArrayListMemberIterCalc(call, calcs);
+                    }
+                }
+            } else {
+                // Member[]
+                if (calc1.getResultStyle() == ResultStyle.ITERABLE) {
+                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
+                        return new IterMemberArrayIterMemberArrayIterCalc(call, calcs);
+                    } else {
+                        return new IterMemberArrayListMemberArrayIterCalc(call, calcs);
+                    }
+                } else {
+                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
+                        return new ListMemberArrayIterMemberArrayIterCalc(call, calcs);
+                    } else {
+                        return new ListMemberArrayListMemberArrayIterCalc(call, calcs);
+                    }
+                }
+            }
+        }
+    }
+    private Calc toIter(ExpCompiler compiler, final Exp exp) {
+        // Want iterable, immutable list or mutable list in that order
+        // It is assumed that an immutable list is easier to get than
+        // a mutable list.
+        final Type type = exp.getType();
+        if (type instanceof SetType) {
+            // this can return an IterCalc or ListCalc
+            return compiler.compile(exp,
+                ExpCompiler.ITERABLE_LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY);
+        } else {
+            // this always returns an IterCalc
+            return new SetFunDef.IterSetCalc(
+                new DummyExp(new SetType(type)),
+                new Exp[] {exp},
+                compiler,
+                ExpCompiler.ITERABLE_LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY);
+        }
+    }
+    private static abstract class BaseIterCalc extends AbstractIterCalc {
+        protected BaseIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        public Iterable evaluateIterable(Evaluator evaluator) {
+            ResolvedFunCall call = (ResolvedFunCall) exp;
+            // Use a native evaluator, if more efficient.
+            // TODO: Figure this out at compile time.
+            SchemaReader schemaReader = evaluator.getSchemaReader();
+            NativeEvaluator nativeEvaluator =
+                schemaReader.getNativeSetEvaluator(
+                    call.getFunDef(), call.getArgs(), evaluator, this);
+            if (nativeEvaluator != null) {
+                return (Iterable) nativeEvaluator.execute(
+                            ResultStyle.ITERABLE);
+            }
+
+            Calc[] calcs = getCalcs();
+            Calc calc1 = calcs[0];
+            Calc calc2 = calcs[1];
+
+            Evaluator oldEval = null;
+            assert (oldEval = evaluator.push()) != null;
+
+            Object o1 = calc1.evaluate(evaluator);
+            assert oldEval.equals(evaluator) : "calc1 changed context";
+
+            if (o1 instanceof List) {
+                List l1 = (List) o1;
+                l1 = checkList(evaluator, l1);
+                if (l1.isEmpty()) {
+                    return Collections.EMPTY_LIST;
+                }
+                o1 = l1;
+            }
+
+            Object o2 = calc2.evaluate(evaluator);
+            assert oldEval.equals(evaluator) : "calc2 changed context";
+
+            if (o2 instanceof List) {
+                List l2 = (List) o2;
+                l2 = checkList(evaluator, l2);
+                if (l2.isEmpty()) {
+                    return Collections.EMPTY_LIST;
+                }
+                o2 = l2;
+            }
+
+            return makeIterable(o1, o2);
+        }
+        protected abstract Iterable<Member[]> makeIterable(Object o1, Object o2);
+
+        protected abstract Member[] makeNext(Object o1, Object o2);
+
+        protected List checkList(Evaluator evaluator, List list) {
+            int opSize = Bug.Checkin7634Size;
+            boolean useOptimizer = Bug.Checkin7634UseOptimizer;
+            boolean doOld = Bug.Checkin7634DoOld;
+
+            int size = list.size();
+            if (useOptimizer && size > opSize && evaluator.isNonEmpty()) {
+                // instead of overflow exception try to further
+                // optimize nonempty(crossjoin(a,b)) ==
+                // nonempty(crossjoin(nonempty(a),nonempty(b))
+                final int missCount = evaluator.getMissCount();
+
+                if (doOld) {
+                    list = nonEmptyListOld(evaluator, list);
+                } else {
+                    ResolvedFunCall call = (ResolvedFunCall) exp;
+                    list = nonEmptyList(evaluator, list, call);
+                }
+                size = list.size();
+                // list may be empty after nonEmpty optimization
+                if (size == 0) {
+            	    return Collections.EMPTY_LIST;
+                }
+                final int missCount2 = evaluator.getMissCount();
+                if (missCount2 > missCount && size > 1000) {
+                    // We've hit some cells which are not in the cache. They
+                    // registered as non-empty, but we won't really know until
+                    // we've populated the cache. The cartesian product is still
+                    // huge, so let's quit now, and try again after the cache
+                    // has been loaded.
+                    return Collections.EMPTY_LIST;
+                }
+            }
+            return list;
+        }
+
+
+        protected Iterable<Member[]> makeIterableIterable(final Iterable it1,
+                final Iterable it2) {
+            // There is no knowledge about how large either it1 ore it2 
+            // are or how many null members they might have, so all
+            // one can do is iterate across them:
+            // iterate across it1 and for each member iterate across it2
+            Iterable<Member[]> iterable = new Iterable<Member[]>() {
+                public Iterator<Member[]> iterator() {
+                    return new Iterator<Member[]>() {
+                        Iterator i1 = it1.iterator();
+                        Object o1 = null;
+                        Iterator i2 = it2.iterator();
+                        Object o2 = null;
+                        public boolean hasNext() {
+                            if (! hasNextO1()) {
+                                return false;
+                            }
+                            if (! hasNextO2()) {
+                                 o1 = null;
+                                // got to end of i2, get next m1
+                                if (! hasNextO1()) {
+                                    return false;
+                                }
+                                // reset i2
+                                i2 = it2.iterator();
+                                if (! hasNextO2()) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+                        public Member[] next() {
+                            return makeNext(o1, o2);
+                        }
+                        public void remove() {
+                            throw new UnsupportedOperationException("remove");
+                        }
+
+                        private boolean hasNextO1() {
+                            while (o1 == null) {
+                                if (! i1.hasNext()) {
+                                    return false;
+                                }
+                                o1 = i1.next();
+                            }
+                            return true;
+                        }
+                        private boolean hasNextO2() {
+                            o2 = null;
+                            while (o2 == null) {
+                                if (! i2.hasNext()) {
+                                    return false;
+                                }
+                                o2 = i2.next();
+                            }
+                            return true;
+                        }
+                    };
+                }
+            };
+
+            return iterable;
+        }
+        protected Iterable<Member[]> makeIterableList(final Iterable it1,
+                final List l2) {
+
+            Iterable<Member[]> iterable = new Iterable<Member[]>() {
+                public Iterator<Member[]> iterator() {
+                    return new Iterator<Member[]>() {
+                        Iterator i1 = it1.iterator();
+                        Object o1 = null;
+                        int index2 = 0;
+                        Object o2 = null;
+                        public boolean hasNext() {
+                            if (! hasNextO1()) {
+                                return false;
+                            }
+                            if (! hasNextO2()) {
+                                 o1 = null;
+                                // got to end of l2, get next m1
+                                if (! hasNextO1()) {
+                                    return false;
+                                }
+                                // reset l2
+                                index2 = 0;
+                                if (! hasNextO2()) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+                        public Member[] next() {
+                            return makeNext(o1, o2);
+                        }
+                        public void remove() {
+                            throw new UnsupportedOperationException("remove");
+                        }
+
+                        private boolean hasNextO1() {
+                            while (o1 == null) {
+                                if (! i1.hasNext()) {
+                                    return false;
+                                }
+                                o1 = i1.next();
+                            }
+                            return true;
+                        }
+                        private boolean hasNextO2() {
+                            o2 = null;
+                            while (o2 == null) {
+                                if (index2 == l2.size()) {
+                                    return false;
+                                }
+                                o2 = l2.get(index2++);
+                            }
+                            return true;
+                        }
+                    };
+                }
+            };
+            return iterable;
+        }
+        protected Iterable<Member[]> makeListIterable(final List l1,
+                final Iterable it2) {
+
+            Iterable<Member[]> iterable = new Iterable<Member[]>() {
+                public Iterator<Member[]> iterator() {
+                    return new Iterator<Member[]>() {
+                        int index1 = 0;
+                        Object o1 = null;
+                        Iterator i2 = it2.iterator();
+                        Object o2 = null;
+                        public boolean hasNext() {
+                            if (! hasNextO1()) {
+                                return false;
+                            }
+                            if (! hasNextO2()) {
+                                 o1 = null;
+                                // got to end of i2, get next o1
+                                if (! hasNextO1()) {
+                                    return false;
+                                }
+                                // reset i2
+                                i2 = it2.iterator();
+                                if (! hasNextO2()) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+                        public Member[] next() {
+                            return makeNext(o1, o2);
+                        }
+                        public void remove() {
+                            throw new UnsupportedOperationException("remove");
+                        }
+
+                        private boolean hasNextO1() {
+                            while (o1 == null) {
+                                if (index1 == l1.size()) {
+                                    return false;
+                                }
+                                o1 = l1.get(index1++);
+                            }
+                            return true;
+                        }
+                        private boolean hasNextO2() {
+                            o2 = null;
+                            while (o2 == null) {
+                                if (! i2.hasNext()) {
+                                    return false;
+                                }
+                                o2 = i2.next();
+                            }
+                            return true;
+                        }
+                    };
+                }
+            };
+
+            return iterable;
+        }
+        protected Iterable<Member[]> makeListList(final List l1,
+                final List l2) {
+
+            Iterable<Member[]> iterable = new Iterable<Member[]>() {
+                public Iterator<Member[]> iterator() {
+                    return new Iterator<Member[]>() {
+                        int index1 = 0;
+                        Object o1 = null;
+                        int index2 = 0;
+                        Object o2 = null;
+                        public boolean hasNext() {
+                            if (! hasNextO1()) {
+                                return false;
+                            }
+                            if (! hasNextO2()) {
+                                 o1 = null;
+                                // got to end of i2, get next o1
+                                if (! hasNextO1()) {
+                                    return false;
+                                }
+                                // reset i2
+                                index2 = 0;
+                                if (! hasNextO2()) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+                        public Member[] next() {
+                            return makeNext(o1, o2);
+                        }
+                        public void remove() {
+                            throw new UnsupportedOperationException("remove");
+                        }
+
+                        private boolean hasNextO1() {
+                            while (o1 == null) {
+                                if (index1 == l1.size()) {
+                                    return false;
+                                }
+                                o1 = l1.get(index1++);
+                            }
+                            return true;
+                        }
+                        private boolean hasNextO2() {
+                            o2 = null;
+                            while (o2 == null) {
+                                if (index2 == l2.size()) {
+                                    return false;
+                                }
+                                o2 = l2.get(index2++);
+                            }
+                            return true;
+                        }
+                    };
+                }
+            };
+            return iterable;
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    
+    // Member Member
+    static abstract class BaseMemberMemberIterCalc 
+            extends BaseIterCalc {
+        BaseMemberMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Member[] makeNext(Object o1, Object o2) {
+            return new Member[] {(Member) o1, (Member) o2};
+        }
+    }
+    // Member Member[]
+    static abstract class BaseMemberMemberArrayIterCalc 
+                    extends BaseIterCalc {
+        BaseMemberMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Member[] makeNext(Object o1, Object o2) {
+            Member m1 = (Member) o1;
+            Member[] ma2 = (Member[]) o2;
+            Member[] ma = new Member[ma2.length+1];
+            ma[0] = m1;
+            System.arraycopy(ma2, 0, ma, 1, ma2.length);
+            return ma;
+        }
+    }
+    // Member[] Member
+    static abstract class BaseMemberArrayMemberIterCalc 
+                    extends BaseIterCalc {
+        BaseMemberArrayMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Member[] makeNext(Object o1, Object o2) {
+            Member[] ma1 = (Member[]) o1;
+            Member m2 = (Member) o2;
+            Member[] ma = new Member[ma1.length+1];
+            System.arraycopy(ma1, 0, ma, 0, ma1.length);
+            ma[ma1.length] = m2;
+            return ma;
+        }
+    }
+    // Member[] Member[]
+    static abstract class BaseMemberArrayMemberArrayIterCalc 
+                    extends BaseIterCalc {
+        BaseMemberArrayMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Member[] makeNext(Object o1, Object o2) {
+            Member[] ma1 = (Member[]) o1;
+            Member[] ma2 = (Member[]) o2;
+            Member[] ma = new Member[ma1.length+ma2.length];
+            System.arraycopy(ma1, 0, ma, 0, ma1.length);
+            System.arraycopy(ma2, 0, ma, ma1.length, ma2.length);
+            return ma;
+        }
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////
+
+    // ITERABLE Member ITERABLE Member
+    static class IterMemberIterMemberIterCalc 
+            extends BaseMemberMemberIterCalc {
+        IterMemberIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            Iterable<Member> it1 = (Iterable<Member>) o1;
+            Iterable<Member> it2 = (Iterable<Member>) o2;
+            return makeIterableIterable(it1, it2);
+        }
+    }
+
+    // ITERABLE Member LIST Member
+    static class IterMemberListMemberIterCalc 
+            extends BaseMemberMemberIterCalc {
+        IterMemberListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            Iterable<Member> it1 = (Iterable<Member>) o1;
+            List<Member> l2 = (List<Member>) o2;
+
+            if (l2 instanceof RandomAccess) {
+                // direct access faster
+                return makeIterableList(it1, l2);
+            } else {
+                // iteration faster
+                return makeIterableIterable(it1, l2);
+            }
+        }
+    }
+    // LIST Member ITERABLE Member
+    static class ListMemberIterMemberIterCalc 
+            extends BaseMemberMemberIterCalc {
+        ListMemberIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            List<Member> l1 = (List<Member>) o1;
+            Iterable<Member> it2 = (Iterable<Member>) o2;
+
+            if (l1 instanceof RandomAccess) {
+                // direct access faster
+                return makeListIterable(l1, it2);
+            } else {
+                // iteration faster
+                return makeIterableIterable(l1, it2);
+            }
+        }
+    }
+
+    // LIST Member LIST Member
+    static class ListMemberListMemberIterCalc 
+            extends BaseMemberMemberIterCalc {
+        ListMemberListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            List<Member> l1 = (List<Member>) o1;
+            List<Member> l2 = (List<Member>) o2;
+
+            if (l1 instanceof RandomAccess) {
+                // l1 direct access faster
+                if (l2 instanceof RandomAccess) {
+                    // l2 direct access faster
+                    return makeListList(l1, l2);
+                } else {
+                    // l2 iteration faster
+                    return makeListIterable(l1, l2);
+                }
+            } else {
+                // l1 iteration faster
+                if (l2 instanceof RandomAccess) {
+                    // l2 direct access faster
+                    return makeIterableList(l1, l2);
+                } else {
+                    // l2 iteration faster
+                    return makeIterableIterable(l1, l2);
+                }
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+   
+    // ITERABLE Member ITERABLE Member[]
+    static class IterMemberIterMemberArrayIterCalc 
+                extends BaseMemberMemberArrayIterCalc {
+        IterMemberIterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            Iterable<Member> it1 = (Iterable<Member>) o1;
+            Iterable<Member[]> it2 = (Iterable<Member[]>) o2;
+            return makeIterableIterable(it1, it2);
+        }
+    }
+
+    // ITERABLE Member LIST Member[]
+    static class IterMemberListMemberArrayIterCalc 
+                extends BaseMemberMemberArrayIterCalc {
+        IterMemberListMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            Iterable<Member> it1 = (Iterable<Member>) o1;
+            List<Member[]> l2 = (List<Member[]>) o2;
+
+            if (l2 instanceof RandomAccess) {
+                // direct access faster
+                return makeIterableList(it1, l2);
+            } else {
+                // iteration faster
+                return makeIterableIterable(it1, l2);
+            }
+        }
+    }
+
+    // LIST Member ITERABLE Member[]
+    static class ListMemberIterMemberArrayIterCalc 
+                extends BaseMemberMemberArrayIterCalc {
+        ListMemberIterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            List<Member> l1 = (List<Member>) o1;
+            Iterable<Member[]> it2 = (Iterable<Member[]>) o2;
+
+            if (l1 instanceof RandomAccess) {
+                // direct access faster
+                return makeListIterable(l1, it2);
+            } else {
+                // iteration faster
+                return makeIterableIterable(l1, it2);
+            }
+        }
+    }
+    
+    // LIST Member LIST Member[]
+    static class ListMemberListMemberArrayIterCalc 
+                extends BaseMemberMemberArrayIterCalc {
+        ListMemberListMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            List<Member> l1 = (List<Member>) o1;
+            List<Member[]> l2 = (List<Member[]>) o2;
+
+            if (l1 instanceof RandomAccess) {
+                // l1 direct access faster
+                if (l2 instanceof RandomAccess) {
+                    // l2 direct access faster
+                    return makeListList(l1, l2);
+                } else {
+                    // l2 iteration faster
+                    return makeListIterable(l1, l2);
+                }
+            } else {
+                // l1 iteration faster
+                if (l2 instanceof RandomAccess) {
+                    // l2 direct access faster
+                    return makeIterableList(l1, l2);
+                } else {
+                    // l2 iteration faster
+                    return makeIterableIterable(l1, l2);
+                }
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    // ITERABLE Member[] ITERABLE Member
+    static class IterMemberArrayIterMemberIterCalc 
+                extends BaseMemberArrayMemberIterCalc {
+        IterMemberArrayIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            Iterable<Member[]> it1 = (Iterable<Member[]>) o1;
+            Iterable<Member> it2 = (Iterable<Member>) o2;
+            return makeIterableIterable(it1, it2);
+        }
+    }
+
+    // ITERABLE Member[] LIST Member
+    static class IterMemberArrayListMemberIterCalc 
+                extends BaseMemberArrayMemberIterCalc {
+        IterMemberArrayListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            Iterable<Member[]> it1 = (Iterable<Member[]>) o1;
+            List<Member> l2 = (List<Member>) o2;
+
+            if (l2 instanceof RandomAccess) {
+                // direct access faster
+                return makeIterableList(it1, l2);
+            } else {
+                // iteration faster
+                return makeIterableIterable(it1, l2);
+            }
+        }
+    }
+
+    // LIST Member[] ITERABLE Member
+    static class ListMemberArrayIterMemberIterCalc 
+                extends BaseMemberArrayMemberIterCalc {
+        ListMemberArrayIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            List<Member[]> l1 = (List<Member[]>) o1;
+            Iterable<Member> it2 = (Iterable<Member>) o2;
+
+            if (l1 instanceof RandomAccess) {
+                // direct access faster
+                return makeListIterable(l1, it2);
+            } else {
+                // iteration faster
+                return makeIterableIterable(l1, it2);
+            }
+        }
+    }
+    
+    // LIST Member[] LIST Member
+    static class ListMemberArrayListMemberIterCalc 
+                extends BaseMemberArrayMemberIterCalc {
+        ListMemberArrayListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            List<Member[]> l1 = (List<Member[]>) o1;
+            List<Member> l2 = (List<Member>) o2;
+
+            if (l1 instanceof RandomAccess) {
+                // l1 direct access faster
+                if (l2 instanceof RandomAccess) {
+                    // l2 direct access faster
+                    return makeListList(l1, l2);
+                } else {
+                    // l2 iteration faster
+                    return makeListIterable(l1, l2);
+                }
+            } else {
+                // l1 iteration faster
+                if (l2 instanceof RandomAccess) {
+                    // l2 direct access faster
+                    return makeIterableList(l1, l2);
+                } else {
+                    // l2 iteration faster
+                    return makeIterableIterable(l1, l2);
+                }
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    // ITERABLE Member[] ITERABLE Member[]
+    static class IterMemberArrayIterMemberArrayIterCalc 
+                extends BaseMemberArrayMemberArrayIterCalc {
+        IterMemberArrayIterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            Iterable<Member[]> it1 = (Iterable<Member[]>) o1;
+            Iterable<Member[]> it2 = (Iterable<Member[]>) o2;
+            return makeIterableIterable(it1, it2);
+        }
+    }
+
+    // ITERABLE Member[] LIST Member[]
+    static class IterMemberArrayListMemberArrayIterCalc 
+                extends BaseMemberArrayMemberArrayIterCalc {
+        IterMemberArrayListMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            Iterable<Member[]> it1 = (Iterable<Member[]>) o1;
+            List<Member[]> l2 = (List<Member[]>) o2;
+
+            if (l2 instanceof RandomAccess) {
+                // direct access faster
+                return makeIterableList(it1, l2);
+            } else {
+                // iteration faster
+                return makeIterableIterable(it1, l2);
+            }
+        }
+    }
+
+    // LIST Member[] ITERABLE Member[]
+    static class ListMemberArrayIterMemberArrayIterCalc 
+                extends BaseMemberArrayMemberArrayIterCalc {
+        ListMemberArrayIterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            List<Member[]> l1 = (List<Member[]>) o1;
+            Iterable<Member[]> it2 = (Iterable<Member[]>) o2;
+
+            if (l1 instanceof RandomAccess) {
+                // direct access faster
+                return makeListIterable(l1, it2);
+            } else {
+                // iteration faster
+                return makeIterableIterable(l1, it2);
+            }
+        }
+    }
+    
+    // LIST Member[] LIST Member[]
+    static class ListMemberArrayListMemberArrayIterCalc 
+                extends BaseMemberArrayMemberArrayIterCalc {
+        ListMemberArrayListMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs);
+        }
+        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
+            List<Member[]> l1 = (List<Member[]>) o1;
+            List<Member[]> l2 = (List<Member[]>) o2;
+
+            if (l1 instanceof RandomAccess) {
+                // l1 direct access faster
+                if (l2 instanceof RandomAccess) {
+                    // l2 direct access faster
+                    return makeListList(l1, l2);
+                } else {
+                    // l2 iteration faster
+                    return makeListIterable(l1, l2);
+                }
+            } else {
+                // l1 iteration faster
+                if (l2 instanceof RandomAccess) {
+                    // l2 direct access faster
+                    return makeIterableList(l1, l2);
+                } else {
+                    // l2 iteration faster
+                    return makeIterableIterable(l1, l2);
+                }
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    // Immutable List
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    
+    protected ListCalc compileCallImmutableList(final ResolvedFunCall call, 
+            ExpCompiler compiler) {
+        final ListCalc listCalc1 = toList(compiler, call.getArg(0));
+        final ListCalc listCalc2 = toList(compiler, call.getArg(1));
+        Calc[] calcs = new Calc[] {listCalc1, listCalc2};
+        // The Calcs, 1 and 2, can be of type: Member or Member[] and
+        // of ResultStyle: LIST or MUTABLE_LIST.
+        // Since we want an immutable list as the result, it does not
+        // matter whether the Calc list are of type
+        // LIST and MUTABLE_LIST - they are treated the same; so 
+        // there are 4 possible combinations - even sweeter.
+        
+        // Check returned calc ResultStyles
+        checkListResultStyles(listCalc1);
+        checkListResultStyles(listCalc2);
+        
+        if (isMemberType(listCalc1)) {
+            // Member
+            if (isMemberType(listCalc2)) {
+                // Member
+                return new ImmutableListMemberListMemberListCalc(call, calcs);
+            } else {
+                // Member[]
+                return new ImmutableListMemberListMemberArrayListCalc(call, calcs);
+            }
+        } else {
+            // Member[]
+            if (isMemberType(listCalc2)) {
+                // Member
+                return new ImmutableListMemberArrayListMemberListCalc(call, calcs);
+            } else {
+                // Member[]
+                return new ImmutableListMemberArrayListMemberArrayListCalc(call, calcs);
+            }
+        }
+    }
+
+    private ListCalc toList(ExpCompiler compiler, final Exp exp) {
+        // Want immutable list or mutable list in that order
+        // It is assumed that an immutable list is easier to get than
+        // a mutable list.
+        final Type type = exp.getType();
+        if (type instanceof SetType) {
+            return (ListCalc) compiler.compile(exp,
+                ExpCompiler.LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY);
+        } else {
+            return new SetFunDef.ListSetCalc(
+                    new DummyExp(new SetType(type)),
+                    new Exp[] {exp},
+                    compiler,
+                    ExpCompiler.LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY
+                    );
+        }
+    }
+
+    static abstract class BaseListCalc extends AbstractListCalc {
+        protected BaseListCalc(ResolvedFunCall call, 
+                    Calc[] calcs,
+                    boolean mutable) {
+            super(call, calcs, mutable);
+        }
+        public List<Member[]> evaluateList(Evaluator evaluator) {
+            ResolvedFunCall call = (ResolvedFunCall) exp;
+            // Use a native evaluator, if more efficient.
+            // TODO: Figure this out at compile time.
+            SchemaReader schemaReader = evaluator.getSchemaReader();
+            NativeEvaluator nativeEvaluator =
+                schemaReader.getNativeSetEvaluator(
+                    call.getFunDef(), call.getArgs(), evaluator, this);
+            if (nativeEvaluator != null) {
+                return (List) nativeEvaluator.execute(
+                            ResultStyle.LIST);
+            }
+
+            Calc[] calcs = getCalcs();
+            ListCalc listCalc1 = (ListCalc) calcs[0];
+            ListCalc listCalc2 = (ListCalc) calcs[1];
+
+            Evaluator oldEval = null;
+            assert (oldEval = evaluator.push()) != null;
+
+            List l1 = listCalc1.evaluateList(evaluator);
+            assert oldEval.equals(evaluator) : "listCalc1 changed context";
+
+            List l2 = listCalc2.evaluateList(evaluator);
+            assert oldEval.equals(evaluator) : "listCalc2 changed context";
+
+            l1 = checkList(evaluator, l1);
+            if (l1.isEmpty()) {
+                return Collections.EMPTY_LIST;
+            }
+            l2 = checkList(evaluator, l2);
+            if (l2.isEmpty()) {
+                return Collections.EMPTY_LIST;
+            }
+
+            return makeList(l1, l2);
+        }
+        protected abstract List<Member[]> makeList(List l1, List l2);
+
+        protected List checkList(Evaluator evaluator, List list) {
+            int opSize = Bug.Checkin7634Size;
+            boolean useOptimizer = Bug.Checkin7634UseOptimizer;
+            boolean doOld = Bug.Checkin7634DoOld;
+
+            int size = list.size();
+            if (useOptimizer && size > opSize && evaluator.isNonEmpty()) {
+                // instead of overflow exception try to further
+                // optimize nonempty(crossjoin(a,b)) ==
+                // nonempty(crossjoin(nonempty(a),nonempty(b))
+                final int missCount = evaluator.getMissCount();
+
+                if (doOld) {
+                    list = nonEmptyListOld(evaluator, list);
+                } else {
+                    ResolvedFunCall call = (ResolvedFunCall) exp;
+                    list = nonEmptyList(evaluator, list, call);
+                }
+                size = list.size();
+                // list may be empty after nonEmpty optimization
+                if (size == 0) {
+            	    return Collections.EMPTY_LIST;
+                }
+                final int missCount2 = evaluator.getMissCount();
+                if (missCount2 > missCount && size > 1000) {
+                    // We've hit some cells which are not in the cache. They
+                    // registered as non-empty, but we won't really know until
+                    // we've populated the cache. The cartesian product is still
+                    // huge, so let's quit now, and try again after the cache
+                    // has been loaded.
+                    return Collections.EMPTY_LIST;
+                }
+            }
+            return list;
+        }
+    }
+
+    public static abstract class BaseImmutableList implements List<Member[]> {
+        protected BaseImmutableList() {
+        }
+        public abstract int size();
+        public abstract Member[] get(int index);
+
+        public Object[] toArray() {
+            int size = size();
+            Object[] result = new Object[size];
+            for (int i = 0; i < size; i++) {
+                result[i] = get(i);
+            }
+            return result;
+        }
+        public List<Member[]> toArrayList() {
+            List<Member[]> l = new ArrayList<Member[]>(size());
+            Iterator i = iterator();
+            while (i.hasNext()) {
+                l.add((Member[]) i.next());
+            }
+            return l;
+        }
+        public ListIterator<Member[]> listIterator() {
+            return new ListItr(0);
+        }
+        public ListIterator<Member[]> listIterator(int index) {
+            return new ListItr(index);
+        }
+        public Iterator<Member[]> iterator() {
+            return new Itr();
+        }
+
+        public Member[] set(int index, Member[] element) {
+            throw new UnsupportedOperationException("set");
+        }
+
+        // Collection
+        public boolean isEmpty() {
+            return (size() == 0);
+        }
+        public void add(int index, Member[] element) {
+            throw new UnsupportedOperationException("add");
+        }
+        public Member[] remove(int index) {
+            throw new UnsupportedOperationException("remove");
+        }
+        public int indexOf(Object o) {
+            throw new UnsupportedOperationException("indexOf");
+        }
+        public int lastIndexOf(Object o) {
+            throw new UnsupportedOperationException("lastIndexOf");
+        }
+        public List<Member[]> subList(int fromIndex, int toIndex) {
+            throw new UnsupportedOperationException("subList");
+        }
+
+        // Collection
+        public boolean contains(Object o) {
+            throw new UnsupportedOperationException("contains");
+        }
+        public <T> T[] toArray(T[] a) {
+            throw new UnsupportedOperationException("toArray");
+        }
+        public boolean add(Member[] o) {
+            throw new UnsupportedOperationException("add");
+        }
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException("remove");
+        }
+        public boolean containsAll(Collection<?> c) {
+            throw new UnsupportedOperationException("containsAll");
+        }
+        public boolean addAll(Collection<? extends Member[]> c) {
+            throw new UnsupportedOperationException("addAll");
+        }
+        public boolean addAll(int index, Collection<? extends Member[]> c) {
+            throw new UnsupportedOperationException("addAll");
+        }
+        public boolean removeAll(Collection<?> c) {
+            throw new UnsupportedOperationException("removeAll");
+        }
+        public boolean retainAll(Collection<?> c) {
+            throw new UnsupportedOperationException("retainAll");
+        }
+        public void clear() {
+            throw new UnsupportedOperationException("retainAll");
+        }
+        public boolean equals(Object o) {
+            throw new UnsupportedOperationException("equals");
+        }
+        public int hashCode() {
+            throw new UnsupportedOperationException("hashCode");
+        }
+
+        private class Itr implements Iterator<Member[]> {
+            int cursor = 0;
+            int lastRet = -1;
+
+            public boolean hasNext() {
+                //return (cursor < size());
+                return (cursor != size());
+            }
+            public Member[] next() {
+                try { 
+                    Member[] next = get(cursor);
+                    lastRet = cursor++;
+                    return next;
+                } catch(IndexOutOfBoundsException e) {
+System.out.println("MemberList.Itr: cursor=" +cursor);
+System.out.println("MemberList.Itr: size=" +size());
+                    throw new NoSuchElementException();
+                }
+            }
+            public void remove() {
+                throw new UnsupportedOperationException("remove");
+            }
+        }
+
+        private class ListItr extends Itr implements ListIterator<Member[]> {
+            ListItr(int index) {
+                cursor = index;
+            }
+
+            public boolean hasPrevious() {
+                return cursor != 0;
+            }
+            public Member[] previous() {
+                try {
+                    int i = cursor - 1;
+                    Member[] previous = get(i);
+                    lastRet = cursor = i;
+                    return previous;
+                } catch(IndexOutOfBoundsException e) {
+                    throw new NoSuchElementException();
+                }
+            }
+
+            public int nextIndex() {
+                return cursor;
+            }
+
+            public int previousIndex() {
+                return cursor-1;
+            }
+
+            public void set(Member[] o) {
+                throw new UnsupportedOperationException("set");
+            }
+
+            public void add(Member[] o) {
+                throw new UnsupportedOperationException("add");
+            }
+        }
+    }
+
+    // LIST Member LIST Member
+    static class ImmutableListMemberListMemberListCalc 
+            extends BaseListCalc {
+        ImmutableListMemberListMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs, false);
+        }
+        protected List<Member[]> makeList(final List l1, final List l2) {
+            final int size = l1.size() * l2.size();
+
+            List<Member[]> list = new BaseImmutableList() {
+                public int size() {
+                    //return l1.size() * l2.size();
+                    return size;
+                }
+                public Member[] get(int index) {
+                    int i = (index / l2.size());
+                    int j = (index % l2.size());
+                    Member m1 = (Member) l1.get(i);
+                    Member m2 = (Member) l2.get(j);
+                    return new Member[] { m1, m2 };
+                }
+            };
+            return list;
+        }
+    }
+
+    // LIST Member LIST Member[]
+    static class ImmutableListMemberListMemberArrayListCalc 
+            extends BaseListCalc {
+        ImmutableListMemberListMemberArrayListCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs, false);
+        }
+        protected List<Member[]> makeList(final List l1, final List l2) {
+            final int len2 = ((Member[])l2.get(0)).length;
+            final int size = (l1.size() * l2.size());
+
+            List<Member[]> list = new BaseImmutableList() {
+                public int size() {
+                    return size;
+                }
+                public Member[] get(int index) {
+                    int i = (index / l2.size());
+                    int j = (index % l2.size());
+                    Member[] ma = new Member[1 + len2];
+                    Member m1 = (Member) l1.get(i);
+                    Member[] ma2 = (Member[]) l2.get(j);
+                    ma[0] = m1;
+                    System.arraycopy(ma2, 0, ma, 1, len2);
+                    return ma;
+                }
+            };
+            return list;
+        }
+    }
+    // LIST Member[] LIST Member
+    static class ImmutableListMemberArrayListMemberListCalc 
+            extends BaseListCalc {
+        ImmutableListMemberArrayListMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs, false);
+        }
+        protected List<Member[]> makeList(final List l1, final List l2) {
+            final int len1 = ((Member[])l1.get(0)).length;
+            final int size = (l1.size() * l2.size());
+
+            List<Member[]> list = new BaseImmutableList() {
+                public int size() {
+                    return size;
+                }
+                public Member[] get(int index) {
+                    int i = (index / l2.size());
+                    int j = (index % l2.size());
+                    Member[] ma = new Member[len1 + 1];
+                    Member[] ma1 = (Member[]) l1.get(i);
+                    Member m2 = (Member) l2.get(j);
+                    System.arraycopy(ma1, 0, ma, 0, len1);
+                    ma[len1] = m2;
+                    return ma;
+                }
+            };
+            return list;
+        }
+    }
+    // LIST Member[] LIST Member[]
+    static class ImmutableListMemberArrayListMemberArrayListCalc 
+            extends BaseListCalc {
+        ImmutableListMemberArrayListMemberArrayListCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs, false);
+        }
+        protected List<Member[]> makeList(final List l1, final List l2) {
+            final int len1 = ((Member[])l1.get(0)).length;
+            final int len2 = ((Member[])l2.get(0)).length;
+            final int size = (l1.size() * l2.size());
+
+            List<Member[]> list = new BaseImmutableList() {
+                public int size() {
+                    return size;
+                }
+                public Member[] get(int index) {
+                    int i = (index / l2.size());
+                    int j = (index % l2.size());
+                    Member[] ma = new Member[len1 + len2];
+                    Member[] ma1 = (Member[]) l1.get(i);
+                    Member[] ma2 = (Member[]) l2.get(j);
+                    System.arraycopy(ma1, 0, ma, 0, len1);
+                    System.arraycopy(ma2, 0, ma, len1, len2);
+                    return ma;
+                }
+            };
+            return list;
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    // Mutable List
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    
+    protected ListCalc compileCallMutableList(final ResolvedFunCall call, 
+            ExpCompiler compiler) {
+        final ListCalc listCalc1 = toList(compiler, call.getArg(0));
+        final ListCalc listCalc2 = toList(compiler, call.getArg(1));
+
+        Calc[] calcs = new Calc[] {listCalc1, listCalc2};
+        // The Calcs, 1 and 2, can be of type: Member or Member[] and
+        // of ResultStyle: LIST or MUTABLE_LIST.
+        // Since we want an mutable list as the result, it does not
+        // matter whether the Calc list are of type
+        // LIST and MUTABLE_LIST - they are treated the same, 
+        // regardless of type, one must materialize the result list; so 
+        // there are 4 possible combinations - even sweeter.
+        
+        // Check returned calc ResultStyles
+        checkListResultStyles(listCalc1);
+        checkListResultStyles(listCalc2);
+        
+        if (isMemberType(listCalc1)) {
+            // Member
+            if (isMemberType(listCalc2)) {
+                // Member
+//System.out.println("CrossJoinFunDef.MutableListMemberListMemberListCalc");                
+                return new MutableListMemberListMemberListCalc(call, calcs);
+            } else {
+                // Member[]
+//System.out.println("CrossJoinFunDef.MutableListMemberListMemberArrayListCalc");                
+                return new MutableListMemberListMemberArrayListCalc(call, calcs);
+            }
+        } else {
+            // Member[]
+            if (isMemberType(listCalc2)) {
+                // Member
+//System.out.println("CrossJoinFunDef.MutableListMemberArrayListMemberListCalc");                
+                return new MutableListMemberArrayListMemberListCalc(call, calcs);
+            } else {
+                // Member[]
+//System.out.println("CrossJoinFunDef.MutableListMemberArrayListMemberArrayListCalc");                
+                return new MutableListMemberArrayListMemberArrayListCalc(call, calcs);
+            }
+        }
+    }
+    
+    /** 
+     * A BaseMutableList can be sorted, its elements rearranged, but
+     * its size can not be changed (the add or remove methods are not 
+     * supported).
+     */
+    public static abstract class BaseMutableList implements List<Member[]> {
+        protected final Member[] members;
+        protected BaseMutableList(Member[] members) {
+            this.members = members;
+        }
+        public abstract int size();
+        public abstract Member[] get(int index);
+        public abstract Member[] set(int index, Member[] element);
+
+        public Object[] toArray() {
+            int size = size();
+            Object[] result = new Object[size];
+            for (int i = 0; i < size; i++) {
+                result[i] = get(i);
+            }
+            return result;
+        }
+        public List<Member[]> toArrayList() {
+            List<Member[]> l = new ArrayList<Member[]>(size());
+            Iterator i = iterator();
+            while (i.hasNext()) {
+                l.add((Member[]) i.next());
+            }
+            return l;
+        }
+        public ListIterator<Member[]> listIterator() {
+            return new ListItr(0);
+        }
+        public ListIterator<Member[]> listIterator(int index) {
+            return new ListItr(index);
+        }
+        public Iterator<Member[]> iterator() {
+            return new Itr();
+        }
+
+        // Collection
+        public boolean isEmpty() {
+            return (size() == 0);
+        }
+        public void add(int index, Member[] element) {
+            throw new UnsupportedOperationException("add");
+        }
+        public int indexOf(Object o) {
+            // TODO : this could be supported
+            throw new UnsupportedOperationException("indexOf");
+        }
+        public int lastIndexOf(Object o) {
+            // TODO : this could be supported
+            throw new UnsupportedOperationException("lastIndexOf");
+        }
+
+        // Collection
+        public boolean contains(Object o) {
+            // TODO : this could be supported
+            throw new UnsupportedOperationException("contains");
+        }
+        public <T> T[] toArray(T[] a) {
+            // TODO : this could be supported
+            throw new UnsupportedOperationException("toArray");
+        }
+        public boolean add(Member[] o) {
+            throw new UnsupportedOperationException("add");
+        }
+        public boolean remove(Object o) {
+            // TODO : this could be supported
+            throw new UnsupportedOperationException("remove");
+        }
+        public boolean containsAll(Collection<?> c) {
+            // TODO : this could be supported
+            throw new UnsupportedOperationException("containsAll");
+        }
+        public boolean addAll(Collection<? extends Member[]> c) {
+            throw new UnsupportedOperationException("addAll");
+        }
+        public boolean addAll(int index, Collection<? extends Member[]> c) {
+            throw new UnsupportedOperationException("addAll");
+        }
+        public boolean removeAll(Collection<?> c) {
+            // TODO : this could be supported
+            throw new UnsupportedOperationException("removeAll");
+        }
+        public boolean retainAll(Collection<?> c) {
+            throw new UnsupportedOperationException("retainAll");
+        }
+        public void clear() {
+            throw new UnsupportedOperationException("retainAll");
+        }
+        public boolean equals(Object o) {
+            // TODO : this could be supported
+            throw new UnsupportedOperationException("equals");
+        }
+        public int hashCode() {
+            // TODO : this could be supported
+            throw new UnsupportedOperationException("hashCode");
+        }
+
+        private class Itr implements Iterator<Member[]> {
+            int cursor = 0;
+            int lastRet = -1;
+
+            public boolean hasNext() {
+                return (cursor != size());
+            }
+            public Member[] next() {
+                try { 
+                    Member[] next = get(cursor);
+                    lastRet = cursor++;
+                    return next;
+                } catch(IndexOutOfBoundsException e) {
+System.out.println("MemberList.Itr: cursor=" +cursor);
+System.out.println("MemberList.Itr: size=" +size());
+                    throw new NoSuchElementException();
+                }
+            }
+            public void remove() {
+                if (lastRet == -1) {
+                    throw new IllegalStateException();
+                }
+                //checkForComodification();
+
+                try {
+                    CrossJoinFunDef.BaseMutableList.this.remove(lastRet);
+                    if (lastRet < cursor) {
+                        cursor--;
+                    }
+                    lastRet = -1;
+                    //expectedModCount = modCount;
+                } catch(IndexOutOfBoundsException e) {
+                    throw new ConcurrentModificationException();
+                }
+            }
+        }
+
+        private class ListItr extends Itr implements ListIterator<Member[]> {
+            ListItr(int index) {
+                cursor = index;
+            }
+
+            public boolean hasPrevious() {
+                return cursor != 0;
+            }
+            public Member[] previous() {
+                try {
+                    int i = cursor - 1;
+                    Member[] previous = get(i);
+                    lastRet = cursor = i;
+                    return previous;
+                } catch(IndexOutOfBoundsException e) {
+                    throw new NoSuchElementException();
+                }
+            }
+
+            public int nextIndex() {
+                return cursor;
+            }
+
+            public int previousIndex() {
+                return cursor-1;
+            }
+
+            public void set(Member[] o) {
+                if (lastRet == -1)
+                    throw new IllegalStateException();
+                try {
+                    CrossJoinFunDef.BaseMutableList.this.set(lastRet, o);
+                } catch(IndexOutOfBoundsException e) {
+                    throw new ConcurrentModificationException();
+                }
+            }
+
+            public void add(Member[] o) {
+                throw new UnsupportedOperationException("add");
+            }
+        }
+    }
+
+    // LIST Member LIST Member
+    static class MutableListMemberListMemberListCalc 
+            extends BaseListCalc {
+        MutableListMemberListMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs, true);
+        }
+        protected List<Member[]> makeList(final List l1, final List l2) {
+            int size1 = l1.size();
+            // len1 == 1
+            int size2 = l2.size();
+            // len2 == 1
+            int arraySize = (2 * (size1 * size2));
+
+            Member[] members = new Member[arraySize];
+            for (int i = 0; i < size1; i++) {
+                Member m1 = (Member) l1.get(i);
+                int ii = i*size2;
+                for (int j = 0; j < size2; j++) {
+                    Member m2 = (Member) l2.get(j);
+                    members[2*(ii + j)] = m1;
+                    members[2*(ii + j)+1] = m2;
+                }
+            }
+            return makeList(members);
+        }
+        protected List<Member[]> makeList(Member[] members) {
+            // externally looks like:
+            //  [] <- [a][A]
+            //  [] <- [a][B]
+            //  ...
+            //  [] <- [m][N]
+            //
+            // but internally is:
+            //  [a][A][a][B] ... [m][M][m][N] 
+            List<Member[]> list = new BaseMutableList(members) {
+                int size = members.length/2;
+                public int size() {
+                    return size;
+                }
+                public Member[] get(int index) {
+                    int i = index+index;
+                    return new Member[] { members[i], members[i+1] };
+                }
+                public Member[] set(int index, Member[] element) {
+                    int i = index+index;
+                    Member[] oldValue = 
+                        new Member[] { members[i], members[i+1] };
+
+                    members[i] = element[0];
+                    members[i+1] = element[1];
+
+                    return oldValue;
+                }
+                public Member[] remove(int index) {
+                    int i = index+index;
+                    Member[] oldValue = 
+                        new Member[] { members[i], members[i+1] };
+
+                    System.arraycopy(members, i+2, members, i, 
+                            members.length - (i+2));
+
+                    size--;
+                    return oldValue;
+                }
+                public List<Member[]> subList(int fromIndex, int toIndex) {
+                    int from = fromIndex + fromIndex;
+                    int to = toIndex + toIndex;
+                    Member[] sublist = new Member[to - from];
+                    System.arraycopy(members, from, sublist, 0, to - from);
+                    return makeList(sublist);
+                }
+            };
+            return list;
+        }
+    }
+
+    // LIST Member LIST Member[]
+    static class MutableListMemberListMemberArrayListCalc 
+            extends BaseListCalc {
+        MutableListMemberListMemberArrayListCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs, true);
+        }
+        protected List<Member[]> makeList(final List l1, final List l2) {
+            int size1 = l1.size();
+            // len1 == 1
+            int size2 = l2.size();
+            int len2 = ((Member[])l2.get(0)).length;
+            int totalLen = 1+len2;
+            int arraySize = (totalLen * (size1 * size2));
+
+            Member[] members = new Member[arraySize];
+            for (int i = 0; i < size1; i++) {
+                Member m1 = (Member) l1.get(i);
+                int ii = i*size2;
+                for (int j = 0; j < size2; j++) {
+                    Member[] ma2 = (Member[]) l2.get(j);
+                    members[totalLen*(ii + j)] = m1;
+                    for (int k = 0; k < len2; k++) {
+                        Member m2 = (Member) ma2[k];
+                        members[totalLen*(ii + j)+k+1] = m2;
+                    }
+                }
+            }
+
+            return makeList(members, totalLen);
+        }
+        protected List<Member[]> makeList(Member[] members, final int totalLen) {
+            // l1: a,b
+            // l2: {A,B,C},{D,E,F}
+            //
+            // externally looks like:
+            //  [] <- {a,A,B,C}
+            //  [] <- {a,D,E,F}
+            //  [] <- {b,A,B,C}
+            //  [] <- {b,D,E,F}
+            //
+            // but internally is:
+            // a,A,B,C,a,D,E,F,b,A,B,C,b,D,E,F
+            List<Member[]> list = new BaseMutableList(members) {
+                int size = members.length/totalLen;
+                public int size() {
+                    return size;
+                }
+                public Member[] get(int index) {
+                    int i = totalLen*index;
+                    Member[] ma = new Member[totalLen];
+                    System.arraycopy(members, i, ma, 0, totalLen);
+                    return ma;
+                }
+                public Member[] set(int index, Member[] element) {
+                    int i = totalLen*index;
+                    Member[] oldValue = new Member[totalLen];
+                    System.arraycopy(members, i, oldValue, 0, totalLen);
+
+                    System.arraycopy(element, 0, members, i, totalLen);
+
+                    return oldValue;
+                }
+                public Member[] remove(int index) {
+                    int i = totalLen*index;
+                    Member[] oldValue = new Member[totalLen];
+                    System.arraycopy(members, i, oldValue, 0, totalLen);
+
+                    System.arraycopy(members, i+totalLen, 
+                            members, i, 
+                            members.length-(i+totalLen));
+
+                    size--;
+                    return oldValue;
+                }
+                public List<Member[]> subList(int fromIndex, int toIndex) {
+                    int from = totalLen*fromIndex;
+                    int to = totalLen*toIndex;
+                    Member[] sublist = new Member[to - from];
+                    System.arraycopy(members, from, sublist, 0, to - from);
+                    return makeList(sublist, totalLen);
+                }
+            };
+            return list;
+        }
+    }
+    // LIST Member[] LIST Member
+    static class MutableListMemberArrayListMemberListCalc 
+            extends BaseListCalc {
+        MutableListMemberArrayListMemberListCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs, true);
+        }
+        protected List<Member[]> makeList(final List l1, final List l2) {
+            int size1 = l1.size();
+            int len1 = ((Member[])l1.get(0)).length;
+            int size2 = l2.size();
+            // len2 == 1
+            int totalLen = 1+len1;
+            int arraySize = (totalLen * (size1 * size2));
+
+            Member[] members = new Member[arraySize];
+            for (int i = 0; i < size1; i++) {
+                Member[] ma1 = (Member[]) l1.get(i);
+                int ii = i*size2;
+                for (int j = 0; j < size2; j++) {
+                    for (int k = 0; k < len1; k++) {
+                        Member m1 = (Member) ma1[k];
+                        members[totalLen*(ii + j)+k] = m1;
+                    }
+                    Member m2 = (Member) l2.get(j);
+                    members[totalLen*(ii + j)+len1] = m2;
+                }
+            }
+
+            return makeList(members, totalLen);
+        }
+        protected List<Member[]> makeList(Member[] members, final int totalLen) {
+            // l1: {A,B,C},{D,E,F}
+            // l2: a,b
+            //
+            // externally looks like:
+            //  [] <- {A,B,C,a}
+            //  [] <- {A,B,C,b}
+            //  [] <- {D,E,F,a}
+            //  [] <- {D,E,F,b}
+            //
+            // but internally is:
+            //  A,B,C,a,A,B,C,b,D,E,F,a,D,E,F,b
+            List<Member[]> list = new BaseMutableList(members) {
+                int size = members.length/totalLen;
+                public int size() {
+                    return size;
+                }
+                public Member[] get(int index) {
+                    int i = totalLen*index;
+                    Member[] ma = new Member[totalLen];
+                    System.arraycopy(members, i, ma, 0, totalLen);
+                    return ma;
+                }
+                public Member[] set(int index, Member[] element) {
+                    int i = totalLen*index;
+                    Member[] oldValue = new Member[totalLen];
+                    System.arraycopy(members, i, oldValue, 0, totalLen);
+
+                    System.arraycopy(element, 0, members, i, totalLen);
+
+                    return oldValue;
+                }
+                public Member[] remove(int index) {
+                    int i = totalLen*index;
+                    Member[] oldValue = new Member[totalLen];
+                    System.arraycopy(members, i, oldValue, 0, totalLen);
+
+                    System.arraycopy(members, i+totalLen, 
+                            members, i, 
+                            members.length-(i+totalLen));
+
+                    size--;
+                    return oldValue;
+                }
+                public List<Member[]> subList(int fromIndex, int toIndex) {
+                    int from = totalLen*fromIndex;
+                    int to = totalLen*toIndex;
+                    Member[] sublist = new Member[to - from];
+                    System.arraycopy(members, from, sublist, 0, to - from);
+                    return makeList(sublist, totalLen);
+                }
+            };
+            return list;
+        }
+    }
+    // LIST Member[] LIST Member[]
+    static class MutableListMemberArrayListMemberArrayListCalc 
+            extends BaseListCalc {
+        MutableListMemberArrayListMemberArrayListCalc(ResolvedFunCall call, Calc[] calcs) {
+            super(call, calcs, true);
+        }
+        protected List<Member[]> makeList(final List l1, final List l2) {
+            int size1 = l1.size();
+            int len1 = ((Member[])l1.get(0)).length;
+            int size2 = l2.size();
+            int len2 = ((Member[])l2.get(0)).length;
+            int totalLen = len1+len2;
+            int arraySize = (totalLen * (size1 * size2));
+
+            Member[] members = new Member[arraySize];
+            for (int i = 0; i < size1; i++) {
+                Member[] ma1 = (Member[]) l1.get(i);
+                int ii = i*size2;
+                for (int j = 0; j < size2; j++) {
+                    for (int k = 0; k < len1; k++) {
+                        Member m1 = (Member) ma1[k];
+                        members[totalLen*(ii + j)+k] = m1;
+                    }
+                    Member[] ma2 = (Member[]) l2.get(j);
+                    for (int k = 0; k < len2; k++) {
+                        Member m2 = (Member) ma2[k];
+                        members[totalLen*(ii + j)+len1+k] = m2;
+                    }
+                }
+            }
+            return makeList(members, totalLen);
+        }
+        protected List<Member[]> makeList(Member[] members, final int totalLen) {
+
+            // l1: {A,B,C},{D,E,F}
+            // l2: {a,b},{c,d},{e,f}
+            //
+            // externally looks like:
+            //  [] <- {A,B,C,a,b}
+            //  [] <- {A,B,C,c,d}
+            //  [] <- {A,B,C,e,f}
+            //  [] <- {D,E,F,a,b}
+            //  [] <- {D,E,F,c,d}
+            //  [] <- {D,E,F,e,d}
+            //
+            // but internally is:
+            //  A,B,C,a,b,A,B,C,c,d,A,B,C,e,f,D,E,F,a,b,D,E,F,c,d,D,E,F,e,d
+            //  
+            List<Member[]> list = new BaseMutableList(members) {
+                int size = members.length/totalLen;
+                public int size() {
+                    return size;
+                }
+                public Member[] get(int index) {
+                    int i = totalLen*index;
+                    Member[] ma = new Member[totalLen];
+                    System.arraycopy(members, i, ma, 0, totalLen);
+                    return ma;
+                }
+                public Member[] set(int index, Member[] element) {
+                    int i = totalLen*index;
+                    Member[] oldValue = new Member[totalLen];
+                    System.arraycopy(members, i, oldValue, 0, totalLen);
+
+                    System.arraycopy(element, 0, members, i, totalLen);
+
+                    return oldValue;
+                }
+
+                public Member[] remove(int index) {
+                    int i = totalLen*index;
+                    Member[] oldValue = new Member[totalLen];
+                    System.arraycopy(members, i, oldValue, 0, totalLen);
+
+                    System.arraycopy(members, i+totalLen, 
+                            members, i, 
+                            members.length-(i+totalLen));
+
+                    size--;
+                    return oldValue;
+                }
+                public List<Member[]> subList(int fromIndex, int toIndex) {
+                    int from = totalLen*fromIndex;
+                    int to = totalLen*toIndex;
+                    Member[] sublist = new Member[to - from];
+                    System.arraycopy(members, from, sublist, 0, to - from);
+                    return makeList(sublist, totalLen);
+                }
+            };
+            return list;
+        }
+    }
+
+
+
+
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    // OLD STUFF
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+
+
+    public Calc compileCallOld(final ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc1 = toList(compiler, call.getArg(0));
         final ListCalc listCalc2 = toList(compiler, call.getArg(1));
         return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
@@ -96,7 +1972,8 @@ class CrossJoinFunDef extends FunDefBase {
                         schemaReader.getNativeSetEvaluator(
                                 call.getFunDef(), call.getArgs(), evaluator, this);
                 if (nativeEvaluator != null) {
-                    return (List) nativeEvaluator.execute();
+                    return (List) nativeEvaluator.execute(
+                                ResultStyle.LIST);
                 }
 
                 Evaluator oldEval = null;
@@ -111,18 +1988,6 @@ class CrossJoinFunDef extends FunDefBase {
                 return crossJoin(list1, list2, evaluator, call);
             }
         };
-    }
-
-    private ListCalc toList(ExpCompiler compiler, final Exp exp) {
-        final Type type = exp.getType();
-        if (type instanceof SetType) {
-            return compiler.compileList(exp);
-        } else {
-            return new SetFunDef.SetCalc(
-                    new DummyExp(new SetType(type)),
-                    new Exp[] {exp},
-                    compiler);
-        }
     }
 
     List crossJoin(

@@ -14,7 +14,9 @@ package mondrian.olap.fun;
 
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.AbstractIterCalc;
 import mondrian.calc.impl.AbstractVoidCalc;
+import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
@@ -22,6 +24,7 @@ import mondrian.mdx.ResolvedFunCall;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -70,7 +73,8 @@ public class SetFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final Exp[] args = call.getArgs();
-        return new SetCalc(call, args, compiler);
+        return new ListSetCalc(call, args, compiler,
+                    ExpCompiler.LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY);
     }
 
     /**
@@ -85,30 +89,36 @@ public class SetFunDef extends FunDefBase {
      * <p>The implementation uses {@link VoidCalc} objects with side-effects
      * to avoid generating lots of intermediate lists.
      */
-    public static class SetCalc extends AbstractListCalc {
-        private final List result = new ArrayList();
+    public static class ListSetCalc extends AbstractListCalc {
+        private List result = new ArrayList();
         private final VoidCalc[] voidCalcs;
 
-        public SetCalc(Exp exp, Exp[] args, ExpCompiler compiler) {
+        public ListSetCalc(Exp exp, Exp[] args, ExpCompiler compiler,
+                ResultStyle[] resultStyles) {
             super(exp, null);
-            voidCalcs = compileSelf(args, compiler);
+            voidCalcs = compileSelf(args, compiler, resultStyles);
         }
 
         public Calc[] getCalcs() {
             return voidCalcs;
         }
 
-        private VoidCalc[] compileSelf(Exp[] args, ExpCompiler compiler) {
+        private VoidCalc[] compileSelf(Exp[] args, 
+                ExpCompiler compiler,
+                ResultStyle[] resultStyles) {
             VoidCalc[] voidCalcs = new VoidCalc[args.length];
             for (int i = 0; i < args.length; i++) {
-                voidCalcs[i] = createCalc(args[i], compiler);
+                voidCalcs[i] = createCalc(args[i], compiler, resultStyles);
             }
             return voidCalcs;
         }
 
-        private VoidCalc createCalc(Exp arg, ExpCompiler compiler) {
+        private VoidCalc createCalc(Exp arg, 
+                ExpCompiler compiler,
+                ResultStyle[] resultStyles) {
             final Type type = arg.getType();
             if (type instanceof SetType) {
+                // TODO use resultStyles
                 final ListCalc listCalc = compiler.compileList(arg);
                 final Type elementType = ((SetType) type).getElementType();
                 if (elementType instanceof MemberType) {
@@ -144,8 +154,8 @@ public class SetFunDef extends FunDefBase {
                                         continue list;
                                     }
                                 }
+                                result.add(members);
                             }
-                            result.addAll(list);
                         }
 
                         protected String getName() {
@@ -191,6 +201,247 @@ public class SetFunDef extends FunDefBase {
                 voidCalcs[i].evaluateVoid(evaluator);
             }
             return new ArrayList(result);
+        }
+    }
+    public static class IterSetCalc extends AbstractIterCalc {
+        private final IterCalc[] iterCalcs;
+
+        public IterSetCalc(Exp exp, Exp[] args, ExpCompiler compiler,
+                ResultStyle[] resultStyles) {
+            super(exp, null);
+            iterCalcs = compileSelf(args, compiler, resultStyles);
+        }
+
+        public Calc[] getCalcs() {
+            return iterCalcs;
+        }
+
+        private IterCalc[] compileSelf(Exp[] args, 
+                ExpCompiler compiler,
+                ResultStyle[] resultStyles) {
+            IterCalc[] iterCalcs = new IterCalc[args.length];
+            for (int i = 0; i < args.length; i++) {
+                iterCalcs[i] = createCalc(args[i], compiler, resultStyles);
+            }
+            return iterCalcs;
+        }
+
+        private IterCalc createCalc(Exp arg, 
+                ExpCompiler compiler,
+                ResultStyle[] resultStyles) {
+
+            final Type type = arg.getType();
+            if (type instanceof SetType) {
+                final Calc calc = compiler.compile(arg, resultStyles);
+                final Type elementType = ((SetType) type).getElementType();
+                if (elementType instanceof MemberType) {
+                    switch (calc.getResultStyle()) {
+                    case ITERABLE :
+                    return new AbstractIterCalc(arg, new Calc[] {calc}) {
+                        private final IterCalc iterCalc = (IterCalc) calc;
+                        public Iterable evaluateIterable(Evaluator evaluator) {
+                            Iterable iterable = 
+                                iterCalc.evaluateIterable(evaluator);
+                            return iterable;
+                        }
+                        protected String getName() {
+                            return "Sublist";
+                        }
+                    };
+                    case LIST :
+                    case MUTABLE_LIST :
+                    return new AbstractIterCalc(arg, new Calc[] {calc}) {
+                        private final ListCalc listCalc = (ListCalc) calc;
+                        public Iterable evaluateIterable(Evaluator evaluator) {
+                            List result = new ArrayList();
+                            List list = listCalc.evaluateList(evaluator);
+                            // Add only members which are not null.
+                            for (int i = 0; i < list.size(); i++) {
+                                Member member = (Member) list.get(i);
+                                if (member == null || member.isNull()) {
+                                    continue;
+                                }
+                                result.add(member);
+                            }
+                            return result;
+                        }
+                        protected String getName() {
+                            return "Sublist";
+                        }
+                    };
+                    }
+                    throw ResultStyleException.generateBadType(
+                        new ResultStyle[] {
+                            ResultStyle.ITERABLE,
+                            ResultStyle.LIST,
+                            ResultStyle.MUTABLE_LIST
+                        }, calc.getResultStyle());
+                } else {
+                    switch (calc.getResultStyle()) {
+                    case ITERABLE :
+                    return new AbstractIterCalc(arg, new Calc[] {calc}) {
+                        private final IterCalc iterCalc = (IterCalc) calc;
+                        public Iterable evaluateIterable(Evaluator evaluator) {
+                            Iterable iterable = 
+                                iterCalc.evaluateIterable(evaluator);
+                            return iterable;
+                        }
+                        protected String getName() {
+                            return "Sublist";
+                        }
+                    };
+                    case LIST :
+                    case MUTABLE_LIST :
+                    return new AbstractIterCalc(arg, new Calc[] {calc}) {
+                        private final ListCalc listCalc = (ListCalc) calc;
+                        public Iterable evaluateIterable(Evaluator evaluator) {
+                            List result = new ArrayList();
+                            List list = listCalc.evaluateList(evaluator);
+                            // Add only tuples which are not null. Tuples with
+                            // any null members are considered null.
+                            list:
+                            for (int i = 0; i < list.size(); i++) {
+                                Member[] members = (Member[]) list.get(i);
+                                for (int j = 0; j < members.length; j++) {
+                                    Member member = members[j];
+                                    if (member == null || member.isNull()) {
+                                        continue list;
+                                    }
+                                }
+                                result.add(members);
+                            }
+                            return result;
+                        }
+
+                        protected String getName() {
+                            return "Sublist";
+                        }
+                    };
+                    }
+                    throw ResultStyleException.generateBadType(
+                        new ResultStyle[] {
+                            ResultStyle.ITERABLE,
+                            ResultStyle.LIST,
+                            ResultStyle.MUTABLE_LIST
+                        },
+                        calc.getResultStyle());
+
+                }
+            } else if (TypeUtil.couldBeMember(type)) {
+                final MemberCalc memberCalc = compiler.compileMember(arg);
+                return new AbstractIterCalc(arg, new Calc[] {memberCalc}) {
+                    public Iterable evaluateIterable(Evaluator evaluator) {
+                        final Member member = 
+                            memberCalc.evaluateMember(evaluator);
+                        Iterable<Member> iterable = new Iterable<Member>() {
+                            public Iterator<Member> iterator() { 
+                                return new Iterator<Member>() {
+                                    private Member m = null;
+                                    public boolean hasNext() {
+                                        if (m == null) {
+                                            m = member;
+                                            return true;
+                                        } else {
+                                            return false;
+                                        }
+                                    }
+                                    public Member next() {
+                                        return m;
+                                    }
+                                    public void remove() {
+                                        throw new UnsupportedOperationException("remove");
+                                    }
+                                };
+                            }
+                        };
+                        return iterable;
+                    }
+                    protected String getName() {
+                        return "Sublist";
+                    }
+                };
+            } else {
+                final TupleCalc tupleCalc = compiler.compileTuple(arg);
+
+                return new AbstractIterCalc(arg, new Calc[] {tupleCalc}) {
+                    public Iterable evaluateIterable(Evaluator evaluator) {
+                        final Member[] members = tupleCalc.evaluateTuple(evaluator);
+                        Iterable<Member[]> iterable = new Iterable<Member[]>() {
+                            public Iterator<Member[]> iterator() { 
+                                return new Iterator<Member[]>() {
+                                    private Member[] m = null;
+                                    public boolean hasNext() {
+                                        if (m == null) {
+                                            m = members;
+                                            return true;
+                                        } else {
+                                            return false;
+                                        }
+                                    }
+                                    public Member[] next() {
+                                        return m;
+                                    }
+                                    public void remove() {
+                                        throw new UnsupportedOperationException("remove");
+                                    }
+                                };
+                            }
+                        };
+                        return iterable;
+                    }
+                    protected String getName() {
+                        return "Sublist";
+                    }
+                };
+            }
+        }
+
+        public Iterable evaluateIterable(final Evaluator evaluator) {
+            Iterable result = new Iterable<Member>() {
+                public Iterator<Member> iterator() {
+                    return new Iterator<Member>() {
+                        int index = 0;
+                        Iterator<Member> currentIterator = null;
+                        Member member = null;
+                        public boolean hasNext() {
+                            if (currentIterator == null) {
+                                if (index >= iterCalcs.length) {
+                                    return false;
+                                }
+                                IterCalc iterCalc = iterCalcs[index++];
+                                Iterable iter = 
+                                    iterCalc.evaluateIterable(evaluator);
+                                currentIterator = iter.iterator();
+                            }
+                            while(true) {
+                                boolean b = currentIterator.hasNext();
+                                while (! b) {
+                                    if (index >= iterCalcs.length) {
+                                        return false;
+                                    }
+                                    IterCalc iterCalc = iterCalcs[index++];
+                                    Iterable iter = 
+                                        iterCalc.evaluateIterable(evaluator);
+                                    currentIterator = iter.iterator();
+                                    b = currentIterator.hasNext();
+                                }
+                                member = currentIterator.next();
+                                if (member != null) {
+                                    break;
+                                }
+                            }
+                            return true;
+                        }
+                        public Member next() {
+                            return member;
+                        }
+                        public void remove() {
+                            throw new UnsupportedOperationException("remove");
+                        }
+                    };
+                }
+            };
+            return result;
         }
     }
 

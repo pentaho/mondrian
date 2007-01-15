@@ -9,6 +9,7 @@
 */
 package mondrian.olap;
 
+import mondrian.calc.ExpCompiler.ResultStyle;
 
 /**
  * Allows expressions to be evaluated native, e.g. in SQL.
@@ -19,7 +20,7 @@ package mondrian.olap;
  */
 
 public interface NativeEvaluator {
-    Object execute();
+    Object execute(ResultStyle resultStyle);
 }
 
 // End NativeEvaluator.java

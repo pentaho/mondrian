@@ -16,6 +16,7 @@ import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.calc.DoubleCalc;
 import mondrian.mdx.*;
 
@@ -81,6 +82,44 @@ public class FunUtil extends Util {
     public static RuntimeException newEvalException(Throwable throwable) {
         return new MondrianEvaluationException(throwable.getMessage());
     }
+
+    public static final boolean isMemberType(Calc calc) {
+        Type type = calc.getType();
+        return (type instanceof SetType) &&
+          (((SetType) type).getElementType() instanceof MemberType);
+    }
+
+    public static final void checkIterListResultStyles(Calc calc) {
+        switch (calc.getResultStyle()) {
+        case ITERABLE :
+        case LIST :
+        case MUTABLE_LIST :
+            break;
+        default :
+            throw ResultStyleException.generateBadType(
+                new ResultStyle[] {
+                    ResultStyle.ITERABLE,
+                    ResultStyle.LIST,
+                    ResultStyle.MUTABLE_LIST
+                },
+                calc.getResultStyle());
+        }
+    }
+    public static final void checkListResultStyles(Calc calc) {
+        switch (calc.getResultStyle()) {
+        case LIST :
+        case MUTABLE_LIST :
+            break;
+        default :
+            throw ResultStyleException.generateBadType(
+                new ResultStyle[] {
+                    ResultStyle.LIST,
+                    ResultStyle.MUTABLE_LIST
+                },
+                calc.getResultStyle());
+        }
+    }
+
 
     /**
      * Returns an argument whose value is a literal.
@@ -291,6 +330,9 @@ public class FunUtil extends Util {
             Calc exp,
             List<Member> members,
             boolean parentsToo) {
+        // RME
+        evaluator= evaluator.push();
+
         assert exp.getType() instanceof ScalarType;
         Map<Member, Object> mapMemberToValue = new HashMap<Member, Object>();
         for (int i = 0, count = members.size(); i < count; i++) {
@@ -328,12 +370,15 @@ public class FunUtil extends Util {
      * @pre exp != null
      * @pre exp.getType() instanceof ScalarType
      */
-    static Map<Member[], Object> evaluateTuples(
+    static Map<Object, Object> evaluateTuples(
             Evaluator evaluator,
             Calc exp,
             List<Member[]> members) {
+        // RME
+        evaluator= evaluator.push();
+
         assert exp.getType() instanceof ScalarType;
-        Map<Member[], Object> mapMemberToValue = new HashMap<Member[], Object>();
+        Map<Object, Object> mapMemberToValue = new HashMap<Object, Object>();
         for (int i = 0, count = members.size(); i < count; i++) {
             Member[] tuples = members.get(i);
             evaluator.setContext(tuples);
@@ -341,7 +386,7 @@ public class FunUtil extends Util {
             if (result == null) {
                 result = Util.nullValue;
             }
-            mapMemberToValue.put(tuples, result);
+            mapMemberToValue.put(new Member.ArrayEquals(tuples), result);
         }
         return mapMemberToValue;
     }
@@ -589,23 +634,34 @@ public class FunUtil extends Util {
      * use by the general topOrBottom function. This might also be a useful
      * function in itself.
      */
-    static void toPercent(List members, Map mapMemberToValue) {
+    static void toPercent(List members, Map mapMemberToValue, boolean isMember) {
         double total = 0;
         int memberCount = members.size();
         for (int i = 0; i < memberCount; i++) {
-            Object o = mapMemberToValue.get(members.get(i));
+            Object o = (isMember)
+                    ? mapMemberToValue.get(members.get(i))
+                    : mapMemberToValue.get(
+                        new Member.ArrayEquals(members.get(i)));
             if (o instanceof Number) {
                 total += ((Number) o).doubleValue();
             }
         }
         for (int i = 0; i < memberCount; i++) {
-            Object member = members.get(i);
-            Object o = mapMemberToValue.get(member);
+            Object mo = members.get(i);
+            Object o = (isMember)
+                    ? mapMemberToValue.get(mo)
+                    : mapMemberToValue.get(new Member.ArrayEquals(mo));
             if (o instanceof Number) {
                 double d = ((Number) o).doubleValue();
-                mapMemberToValue.put(
-                    member,
-                    d / total * (double) 100);
+                if (isMember) {
+                    mapMemberToValue.put(
+                        mo,
+                        d / total * (double) 100);
+                } else {
+                    mapMemberToValue.put(
+                        new Member.ArrayEquals(mo),
+                        d / total * (double) 100);
+                }
             }
         }
     }
@@ -1024,15 +1080,73 @@ public class FunUtil extends Util {
             return sum;
         }
     }
-
+    public static double sumDouble(Evaluator evaluator, Iterable iterable, Calc exp) {
+        SetWrapper sw = evaluateSet(evaluator, iterable, exp);
+        if (sw.errorCount > 0) {
+            return Double.NaN;
+        } else if (sw.v.size() == 0) {
+            return DoubleNull;
+        } else {
+            double sum = 0.0;
+            for (int i = 0; i < sw.v.size(); i++) {
+                sum += ((Double) sw.v.get(i)).doubleValue();
+            }
+            return sum;
+        }
+    }
     public static int count(
+            Evaluator evaluator,
+            Iterable iterable,
+            boolean includeEmpty) {
+//System.out.println("FunUtil.count NEW: TOP");
+        if (iterable == null) {
+//System.out.println("FunUtil.count NEW: null 0");
+            return 0;
+        }
+        if (includeEmpty) {
+            if (iterable instanceof Collection) {
+//System.out.println("FunUtil.count NEW: Collection =" + ((Collection) iterable).size());
+                return ((Collection) iterable).size();
+            } else {
+                int retval = 0;
+                Iterator it = iterable.iterator();
+                while (it.hasNext()) {
+                    // must get the next one
+                    it.next();
+                    retval++;
+                }
+//System.out.println("FunUtil.count NEW: includeEmpty =" +retval);
+                return retval;
+            }
+        } else {
+            int retval = 0;
+            for (Object object: iterable) {
+                if (object instanceof Member) {
+                    evaluator.setContext((Member) object);
+                } else {
+                    evaluator.setContext((Member[]) object);
+                }
+                Object o = evaluator.evaluateCurrent();
+                if (o != Util.nullValue && o != null) {
+                    retval++;
+                }
+            }
+//System.out.println("FunUtil.count NEW: =" +retval);
+            return retval;
+        }
+    }
+
+/*
+    public static int countOld(
             Evaluator evaluator,
             List members,
             boolean includeEmpty) {
         if (members == null) {
+System.out.println("FunUtil.count List: null 0");
             return 0;
         }
         if (includeEmpty) {
+System.out.println("FunUtil.count List: "+members.size());
             return members.size();
         } else {
             int retval = 0;
@@ -1048,9 +1162,40 @@ public class FunUtil extends Util {
                     retval++;
                 }
             }
+System.out.println("FunUtil.count List: "+retval);
             return retval;
         }
     }
+    public static int countIterable(
+            Evaluator evaluator,
+            Iterable iterable,
+            boolean includeEmpty) {
+        if (iterable == null) {
+System.out.println("FunUtil.countIterable Iterable: null 0");
+            return 0;
+        }
+        int retval = 0;
+        Iterator it = iterable.iterator();
+        while (it.hasNext()) {
+            final Object member = it.next();
+            if (member instanceof Member) {
+                evaluator.setContext((Member) member);
+            } else if (member instanceof Member[]) {
+                evaluator.setContext((Member[]) member);
+            }
+            if (includeEmpty) {
+                retval++;
+            } else {
+                Object o = evaluator.evaluateCurrent();
+                if (o != Util.nullValue && o != null) {
+                    retval++;
+                }
+            }
+        }
+System.out.println("FunUtil.countIterable Iterable: "+retval);
+        return retval;
+    }
+*/
 
     /**
      * Evaluates <code>exp</code> (if defined) over <code>members</code> to
@@ -1062,7 +1207,7 @@ public class FunUtil extends Util {
      */
     static SetWrapper evaluateSet(
             Evaluator evaluator,
-            List members,
+            Iterable members,
             Calc calc) {
         Util.assertPrecondition(members != null, "members != null");
         Util.assertPrecondition(calc != null, "calc != null");

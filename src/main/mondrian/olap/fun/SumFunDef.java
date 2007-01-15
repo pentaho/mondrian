@@ -12,7 +12,9 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
+import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.calc.ListCalc;
+import mondrian.calc.IterCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
@@ -39,19 +41,53 @@ class SumFunDef extends AbstractAggregateFunDef {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        final ListCalc listCalc =
-                compiler.compileList(call.getArg(0));
+        ResultStyle[] rs = compiler.getAcceptableResultStyles();
+/*
+// RME
+for (int i = 0; i < rs.length; i++) {
+System.out.println("SumFunDef.compileCall: "+rs[i]);
+}
+*/
+        // What is the desired type to use to get the underlying values
+        for (int i = 0; i < rs.length; i++) {
+            switch (rs[i]) {
+            case ITERABLE :
+            case ANY :
+                // Consumer wants ITERABLE or ANY to be used
+                return compileCallIterable(call, compiler);
+            case MUTABLE_LIST:
+            case LIST :
+                // Consumer wants MUTABLE_LIST or LIST to be used
+                return compileCallList(call, compiler);
+            }
+        }
+        throw ResultStyleException.generate(
+            new ResultStyle[] {
+                ResultStyle.ITERABLE,
+                ResultStyle.LIST,
+                ResultStyle.MUTABLE_LIST,
+                ResultStyle.ANY
+            },
+            rs
+        );
+    }
+
+    protected Calc compileCallIterable(final ResolvedFunCall call, 
+            ExpCompiler compiler) {
+        final Calc ncalc = compiler.compile(call.getArg(0));
         final Calc calc = call.getArgCount() > 1 ?
                 compiler.compileScalar(call.getArg(1), true) :
                 new ValueCalc(call);
-        return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
+        return new AbstractDoubleCalc(call, new Calc[] {ncalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
-                List memberList = evaluateCurrentList(listCalc, evaluator);
-                return sumDouble(evaluator.push(), memberList, calc);
+                IterCalc iterCalc = (IterCalc) ncalc; 
+                Iterable iterable = 
+                    evaluateCurrentIterable(iterCalc, evaluator);
+                return sumDouble(evaluator.push(), iterable, calc);
             }
 
             public Calc[] getCalcs() {
-                return new Calc[] {listCalc, calc};
+                return new Calc[] {ncalc, calc};
             }
 
             public boolean dependsOn(Dimension dimension) {
@@ -59,6 +95,29 @@ class SumFunDef extends AbstractAggregateFunDef {
             }
         };
     }
+    protected Calc compileCallList(final ResolvedFunCall call, 
+            ExpCompiler compiler) {
+        final Calc ncalc = compiler.compile(call.getArg(0));
+        final Calc calc = call.getArgCount() > 1 ?
+                compiler.compileScalar(call.getArg(1), true) :
+                new ValueCalc(call);
+        return new AbstractDoubleCalc(call, new Calc[] {ncalc, calc}) {
+            public double evaluateDouble(Evaluator evaluator) {
+                ListCalc listCalc = (ListCalc) ncalc;
+                List memberList = evaluateCurrentList(listCalc, evaluator);
+                return sumDouble(evaluator.push(), memberList, calc);
+            }
+
+            public Calc[] getCalcs() {
+                return new Calc[] {ncalc, calc};
+            }
+
+            public boolean dependsOn(Dimension dimension) {
+                return anyDependsButFirst(getCalcs(), dimension);
+            }
+        };
+    }
+
 }
 
 // End SumFunDef.java

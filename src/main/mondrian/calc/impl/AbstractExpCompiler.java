@@ -31,8 +31,7 @@ public class AbstractExpCompiler implements ExpCompiler {
     private final Validator validator;
     private final Map<Parameter, ParameterSlotImpl> parameterSlots =
         new HashMap<Parameter, ParameterSlotImpl>();
-    private ResultStyle[] resultStyles = {ResultStyle.ANY};
-    private static final ResultStyle[] MUTABLE_LIST_ONLY = {ResultStyle.MUTABLE_LIST};
+    private ResultStyle[] resultStyles = ANY_RESULT_STYLE_ARRAY;
 
     public AbstractExpCompiler(Evaluator evaluator, Validator validator) {
         this.evaluator = evaluator;
@@ -47,17 +46,39 @@ public class AbstractExpCompiler implements ExpCompiler {
         return validator;
     }
 
+    /** 
+     * Uses the current ResultStyle to compile the expression.
+     * 
+     * @param exp 
+     * @return 
+     */
     public Calc compile(Exp exp) {
         return exp.accept(this);
+        //return compile(exp, ANY_RESULT_STYLE_ARRAY);
     }
 
+    /** 
+     * Uses a new ResultStyle to compile the expression.
+     * 
+     * @param exp 
+     * @param preferredResultTypes  
+     * @return 
+     */
     public Calc compile(Exp exp, ResultStyle[] preferredResultTypes) {
         assert preferredResultTypes != null;
         ResultStyle[] save = this.resultStyles;
+        try {
+            this.resultStyles = preferredResultTypes;
+            return exp.accept(this);
+        } finally {
+            this.resultStyles = save;
+        }
+/*
         this.resultStyles = preferredResultTypes;
         Calc calc = exp.accept(this);
         this.resultStyles = save;
         return calc;
+*/
     }
 
     public MemberCalc compileMember(Exp exp) {
@@ -147,14 +168,21 @@ public class AbstractExpCompiler implements ExpCompiler {
     public ListCalc compileList(Exp exp, boolean mutable) {
         ListCalc listCalc;
         if (mutable) {
+/*
             ResultStyle[] save = this.resultStyles;
-            this.resultStyles = MUTABLE_LIST_ONLY;
-            listCalc = (ListCalc) compile(exp);
+            this.resultStyles = MUTABLE_LIST_RESULT_STYLE_ARRAY;
+            listCalc = (ListCalc) compile(exp, MUTABLE_LIST_RESULT_STYLE_ARRAY);
             this.resultStyles = save;
+*/
+            listCalc = (ListCalc) compile(exp, MUTABLE_LIST_RESULT_STYLE_ARRAY);
         } else {
-            listCalc = (ListCalc) compile(exp);
+            listCalc = (ListCalc) compile(exp, LIST_RESULT_STYLE_ARRAY);
         }
         return listCalc;
+    }
+
+    public IterCalc compileIter(Exp exp) {
+        return (IterCalc) compile(exp, ITERABLE_RESULT_STYLE_ARRAY);
     }
 
     public BooleanCalc compileBoolean(Exp exp) {
@@ -242,6 +270,9 @@ public class AbstractExpCompiler implements ExpCompiler {
 
     public ResultStyle[] getAcceptableResultStyles() {
         return resultStyles;
+    }
+    public void setAcceptableResultStyles(ResultStyle[] resultStyles) {
+        this.resultStyles = resultStyles;
     }
 
     /**

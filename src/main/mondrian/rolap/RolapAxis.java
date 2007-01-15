@@ -18,14 +18,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.ListIterator;
 import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 /** 
  * Derived classes of RolapAxis implements the Axis interface which are
- * specializations based upon the number of Positions and how each Position's
- * Members are orgainized.
+ * specializations based upon the number of Positions, how each Position's
+ * Members are orgainized and whether the Members/Member[]s are in a List
+ * or an Iterable.
  * 
  * @author <a>Richard M. Emberson</a>
  * @version $Id$
@@ -101,6 +103,154 @@ public abstract class RolapAxis implements Axis {
             }
         }
     }
+
+    /** 
+     * A MemberIterable takes an Iterable&lt;Member&gt; where each Position has
+     * a single Member from the corresponding location in the iterator.
+     * If the client request any of the List, non-Iterable, API, then
+     * a List is materialized from the Iterable.
+     */
+    public static class MemberIterable extends RolapAxis {
+        private final Iterable<Member> iter;
+        private List<Member> list;
+        public MemberIterable(Iterable<Member> iter) {
+            this.iter = iter;
+            this.list = null;
+        }
+        public synchronized List<Position> getPositions() {
+            return (list == null) 
+                ? new PositionWrapper()
+                : new PositionList();
+        }
+        protected synchronized void materialize() {
+            if (list == null) {
+                Iterator<Member> it = iter.iterator();
+                list = new ArrayList<Member>();
+                while (it.hasNext()) {
+                    list.add(it.next());
+                }
+                list = list;
+            }
+        }
+
+        
+        /** 
+         * This List<Position> starts life with a List<Position> implementation
+         * that is based upon an non-List (Iterable). If all accesses
+         * are simply through iteration, then the initial implementation
+         * remains, but if the client uses either the 'size' or 'get' methods
+         * then the Iterable is materialized into a List.
+         */
+        class PositionWrapper extends PositionListUnsupported {
+            List<Position> positionList;
+            PositionWrapper() {
+                positionList = new PositionIter();
+            }
+            protected synchronized void materialize() {
+                RolapAxis.MemberIterable.this.materialize();
+                positionList = new PositionList();
+            }
+            public int size() {
+                try {
+                    return positionList.size();
+                } catch (UnsupportedOperationException ex) {
+                    this.materialize();
+                    return positionList.size();
+                }
+            }
+            public Position get(int index) {
+                try {
+                    return positionList.get(index);
+                } catch (UnsupportedOperationException ex) {
+                    this.materialize();
+                    return positionList.get(index);
+                }
+            }
+            public Iterator<Position> iterator() {
+                return positionList.iterator();
+            }
+        }
+
+        // List<Position>
+        class PositionIter extends PositionIterBase {
+            private Iterator<Member> it;
+            PositionIter() {
+                it = iter.iterator();
+            }
+            public Iterator<Position> iterator() {
+                return new Iterator<Position>() {
+                    public boolean hasNext() {
+                        return it.hasNext();
+                    }
+                    public Position next() {
+                        return new MIPosition(it.next());
+                    }
+                    public void remove() {
+                        throw new UnsupportedOperationException("remove");
+                    }
+                };
+            }
+        }
+        class MIPosition extends PositionUnsupported {
+            Member member;
+            MIPosition(Member member) {
+                this.member = member;
+            }
+
+            public Iterator<Member> iterator() {
+                return new Iterator<Member>() {
+                    public boolean hasNext() {
+                        return (member != null);
+                    }
+                    public Member next() {
+                        Member m = member;
+                        member = null;
+                        return m;
+                    }
+                    public void remove() {
+                        throw new UnsupportedOperationException("remove");
+                    }
+                };
+            }
+        }
+
+        /** 
+         *  Each Position has a single Member.
+         */
+        class PositionList extends PositionListBase {
+            PositionList() {
+            }
+            public int size() {
+                return list.size();
+            }
+            public Position get(int index) {
+                return new MLPosition(index);
+            }
+        }
+
+        /** 
+         *  Allows access only the the Member at the given offset.
+         */
+        class MLPosition extends PositionBase {
+            protected final int offset;
+            MLPosition(int offset) {
+                this.offset = offset;
+            }
+            public int size() {
+                return 1;
+            }
+            public Member get(int index) {
+                if (index != 0) {
+                    throw new IndexOutOfBoundsException(
+                        "Index: "+index+", Size: 1");
+                }
+                return list.get(offset);
+            }
+        }
+    }
+
+
+
     /** 
      * A MemberList takes a List&lt;Member&gt; where each Position has
      * a single Member from the corresponding location in the list.
@@ -147,6 +297,157 @@ public abstract class RolapAxis implements Axis {
             }
         }
     }
+
+    /** 
+     * A MemberArrayIterable takes an Iterable&lt;Member[]&gt; where 
+     * each Position has
+     * an array of Members from the corresponding location in the iterator.
+     * If the client request any of the List, non-Iterable, API, then
+     * a List is materialized from the Iterable.
+     */
+    public static class MemberArrayIterable extends RolapAxis {
+        private final Iterable<Member[]> iter;
+        private List<Member[]> list;
+        private int len;
+        public MemberArrayIterable(Iterable<Member[]> iter) {
+            this.iter = iter;
+            this.list = null;
+            this.len = 0;
+        }
+        public synchronized List<Position> getPositions() {
+            return (list == null) 
+                ? new PositionWrapper()
+                : new PositionList();
+        }
+        protected synchronized void materialize() {
+            if (list == null) {
+                Iterator<Member[]> it = iter.iterator();
+                list = new ArrayList<Member[]>();
+                while (it.hasNext()) {
+                    list.add(it.next());
+                }
+                list = list;
+                len = list.get(0).length;
+            }
+        }
+
+        // List<Position>
+        class PositionWrapper extends PositionListUnsupported {
+            List<Position> positionList;
+            PositionWrapper() {
+                positionList = new PositionIter();
+            }
+            protected synchronized void materialize() {
+                RolapAxis.MemberArrayIterable.this.materialize();
+                positionList = new PositionList();
+            }
+            public int size() {
+                try {
+                    return positionList.size();
+                } catch (UnsupportedOperationException ex) {
+                    this.materialize();
+                    return positionList.size();
+                }
+            }
+            public Position get(int index) {
+                try {
+                    return positionList.get(index);
+                } catch (UnsupportedOperationException ex) {
+                    this.materialize();
+                    return positionList.get(index);
+                }
+            }
+            public Iterator<Position> iterator() {
+                return positionList.iterator();
+            }
+        }
+
+        // List<Position>
+        class PositionIter extends PositionIterBase {
+            private Iterator<Member[]> it;
+            PositionIter() {
+                it = iter.iterator();
+            }
+            public Iterator<Position> iterator() {
+                return new Iterator<Position>() {
+                    int hasNextCnt = 0;
+                    int nextCnt = 0;
+                    public boolean hasNext() {
+                        hasNextCnt++;
+                        return it.hasNext();
+                    }
+                    public Position next() {
+                        nextCnt++;
+                        return new MIPosition(it.next());
+                    }
+                    public void remove() {
+                        throw new UnsupportedOperationException("remove");
+                    }
+                };
+            }
+        }
+        class MIPosition extends PositionUnsupported {
+            Member[] members;
+            MIPosition(Member[] members) {
+                this.members = members;
+            }
+
+            public Iterator<Member> iterator() {
+                return new Iterator<Member>() {
+                    int index = 0;
+                    public boolean hasNext() {
+                        return (index < members.length);
+                    }
+                    public Member next() {
+                        return members[index++];
+                    }
+                    public void remove() {
+                        throw new UnsupportedOperationException("remove");
+                    }
+                };
+            }
+        }
+
+        /** 
+         *  Each Position has a single Member.
+         */
+        class PositionList extends PositionListBase {
+            PositionList() {
+            }
+            public int size() {
+                return list.size();
+            }
+            public Position get(int index) {
+                return new MALPosition(index);
+            }
+        }
+
+        /** 
+         *  Allows access only the the Member at the given offset.
+         */
+        class MALPosition extends PositionBase {
+            protected final int offset;
+            MALPosition(int offset) {
+                this.offset = offset;
+            }
+            public int size() {
+                return RolapAxis.MemberArrayIterable.this.len;
+            }
+            public Member get(int index) {
+                if (index > RolapAxis.MemberArrayIterable.this.len) {
+                    throw new IndexOutOfBoundsException(
+                        "Index: " +
+                        index +
+                        ", Size: " +
+                        RolapAxis.MemberArrayIterable.this.len);
+                }
+                return list.get(offset)[index];
+            }
+        }
+    }
+
+
+
     /** 
      * A MemberArrayList takes a List&lt;Member[]&gt; where each Position has
      * the Member's from the corresponding location in the list.
@@ -200,13 +501,14 @@ public abstract class RolapAxis implements Axis {
         }
     }
 
-    /** 
-     * The PositionBase is an abstract implementation of the Position 
-     * interface and provides both Iterator&lt;Member&gt; and 
-     * ListIterator&lt;Member&gt; implementations.
-     */
-    protected static abstract class PositionBase implements Position {
-        protected PositionBase() {
+    protected static abstract class PositionUnsupported implements Position {
+        protected PositionUnsupported() {
+        }
+        public int size() {
+            throw new UnsupportedOperationException("size");
+        }
+        public Member get(int index) {
+            throw new UnsupportedOperationException("get");
         }
         public Member set(int index, Member element) {
             throw new UnsupportedOperationException("set");
@@ -271,6 +573,24 @@ public abstract class RolapAxis implements Axis {
         }
         public int hashCode() {
             throw new UnsupportedOperationException("hashCode");
+        }
+        public ListIterator<Member> listIterator() {
+            throw new UnsupportedOperationException("listIterator");
+        }
+        public ListIterator<Member> listIterator(int index) {
+            throw new UnsupportedOperationException("listIterator");
+        }
+        public Iterator<Member> iterator() {
+            throw new UnsupportedOperationException("iterator");
+        }
+    }
+    /** 
+     * The PositionBase is an abstract implementation of the Position 
+     * interface and provides both Iterator&lt;Member&gt; and 
+     * ListIterator&lt;Member&gt; implementations.
+     */
+    protected static abstract class PositionBase extends PositionUnsupported {
+        protected PositionBase() {
         }
         public ListIterator<Member> listIterator() {
             return new ListItr(0);
@@ -349,17 +669,18 @@ System.out.println("RolapAxis.PositionBase.Itr: size=" +size());
             }
         }
     }
-    /** 
-     * The PositionListBase is an abstract implementation of the 
-     * List&lt;Position&gt
-     * interface and provides both Iterator&lt;Position&gt; and 
-     * ListIterator&lt;Position&gt; implementations.
-     */
-    protected static abstract class PositionListBase implements List<Position> {
-        protected PositionListBase() {
+
+
+    protected static abstract class PositionListUnsupported 
+                implements List<Position> {
+        protected PositionListUnsupported() {
         }
-        public abstract int size();
-        public abstract Position get(int index);
+        public int size() {
+            throw new UnsupportedOperationException("size");
+        }
+        public Position get(int index) {
+            throw new UnsupportedOperationException("get");
+        }
         public Position set(int index, Position element) {
             throw new UnsupportedOperationException("set");
         }
@@ -423,6 +744,42 @@ System.out.println("RolapAxis.PositionBase.Itr: size=" +size());
         }
         public int hashCode() {
             throw new UnsupportedOperationException("hashCode");
+        }
+        public ListIterator<Position> listIterator() {
+            throw new UnsupportedOperationException("listIterator");
+        }
+        public ListIterator<Position> listIterator(int index) {
+            throw new UnsupportedOperationException("listIterator");
+        }
+        public Iterator<Position> iterator() {
+            throw new UnsupportedOperationException("iterator");
+        }
+    }
+    protected static abstract class PositionIterBase 
+                                extends PositionListUnsupported {
+        protected PositionIterBase() {
+            super();
+        }
+        public abstract Iterator<Position> iterator();
+    }
+
+    /** 
+     * The PositionListBase is an abstract implementation of the 
+     * List&lt;Position&gt
+     * interface and provides both Iterator&lt;Position&gt; and 
+     * ListIterator&lt;Position&gt; implementations.
+     */
+    protected static abstract class PositionListBase 
+                                extends PositionListUnsupported {
+        protected PositionListBase() {
+            super();
+        }
+        public abstract int size();
+        public abstract Position get(int index);
+
+        // Collection 
+        public boolean isEmpty() {
+            return (size() == 0);
         }
         public ListIterator<Position> listIterator() {
             return new ListItr(0);

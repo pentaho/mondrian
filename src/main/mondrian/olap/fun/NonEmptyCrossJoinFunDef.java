@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Collections;
 
 import mondrian.olap.*;
+import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
@@ -50,7 +51,7 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
                     schemaReader.getNativeSetEvaluator(
                         call.getFunDef(), call.getArgs(), evaluator, this);
                 if (nativeEvaluator != null) {
-                    return (List) nativeEvaluator.execute();
+                    return (List) nativeEvaluator.execute(ResultStyle.LIST);
                 }
 
                 final List list1 = listCalc1.evaluateList(evaluator);

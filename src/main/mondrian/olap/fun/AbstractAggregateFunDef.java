@@ -59,24 +59,43 @@ public class AbstractAggregateFunDef extends FunDefBase {
      * 
      * @return list of evaluated members
      */
-    protected List evaluateCurrentList(ListCalc listCalc, Evaluator evaluator)
-    {
+    protected List evaluateCurrentList(ListCalc listCalc, Evaluator evaluator) {
         List memberList = listCalc.evaluateList(evaluator);
+
         int currLen = memberList.size();
+        crossProd(evaluator, currLen);
+
+        return memberList;
+    }
+    protected Iterable evaluateCurrentIterable(IterCalc iterCalc, 
+                Evaluator evaluator) {
+        Iterable iter = iterCalc.evaluateIterable(evaluator);
+
+        int currLen = 0;
+        crossProd(evaluator, currLen);
+
+        return iter;
+    }
+    private void crossProd(Evaluator evaluator, int currLen) {
         long iterationLimit =
             MondrianProperties.instance().IterationLimit.get();
+        int productLen = currLen;
         if (iterationLimit > 0) {
-            int productLen = crossProd(evaluator, currLen);
+            Evaluator parent = evaluator.getParent();
+            while (parent != null) {
+                productLen *= parent.getIterationLength();
+                parent = parent.getParent();
+            }
             if (productLen > iterationLimit) {
-                throw 
-                    MondrianResource.instance().
-                        IterationLimitExceeded.ex(iterationLimit);
+                throw MondrianResource.instance().
+                            IterationLimitExceeded.ex(iterationLimit);
             }
         }
         evaluator.setIterationLength(currLen);
-        return memberList;
     }
     
+/*
+RME OLD STUFF
     private int crossProd(Evaluator evaluator, int currLen) {
         int productLen = currLen;
         Evaluator parent = evaluator.getParent();
@@ -86,6 +105,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
         }
         return productLen;
     }
+*/
 }
 
 // End AbstractAggregateFunDef.java

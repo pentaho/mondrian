@@ -5284,7 +5284,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     {
         // Query will need to iterate 4*3 times to compute aggregates,
         // so set iteration limit to 11
-        String query =
+        String queryString =
             "With Set [*NATIVE_CJ_SET] as " +
             "'NonEmptyCrossJoin([*BASE_MEMBERS_Dates], [*BASE_MEMBERS_Stores])' " +
             "Set [*BASE_MEMBERS_Dates] as '{[Time].[1997].[Q1], [Time].[1997].[Q2], [Time].[1997].[Q3], [Time].[1997].[Q4]}' " +
@@ -5303,18 +5303,22 @@ public class BasicQueryTest extends FoodMartTestCase {
         int origLimit = MondrianProperties.instance().IterationLimit.get();
         try {
             MondrianProperties.instance().IterationLimit.set(11);
-            executeQuery(query);
+            Connection connection = getConnection();
+            Query query = connection.parseQuery(queryString);
+            query.setResultStyle(mondrian.calc.ExpCompiler.ResultStyle.LIST);
+            connection.execute(query);
         } catch (Throwable ex) {
             throwable = ex;
         } finally {
             // reset the timeout back to the original value
             MondrianProperties.instance().IterationLimit.set(origLimit);
         }
+
         TestContext.checkThrowable(
             throwable, "Number of iterations exceeded limit of 11");
         
         // make sure the query runs without the limit set
-        executeQuery(query);
+        executeQuery(queryString);
     }
 
     /**
