@@ -123,6 +123,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             sqlLogger.clear();                            
             assertEquals(s4,s5);                                               
         } finally {
+            smr.changeListener = null;
             RolapUtil.threadHooks.set(null);
         }                
 }
