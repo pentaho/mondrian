@@ -94,12 +94,6 @@ class CrossJoinFunDef extends FunDefBase {
     }
     public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
         ResultStyle[] rs = compiler.getAcceptableResultStyles();
-/*
- //RME
-for (int i = 0; i < rs.length; i++) {
-System.out.println("CrossJoinFunDef.compileCall: "+rs[i]);
-}
-*/
         // What is the desired return type?
         for (int i = 0; i < rs.length; i++) {
             switch (rs[i]) {
@@ -282,8 +276,29 @@ System.out.println("CrossJoinFunDef.compileCall: "+rs[i]);
 
             return makeIterable(o1, o2);
         }
+        
+        /** 
+         * Derived classes implement and create Iterable&lt;Member[]&gt;
+         * based upon the types of the parameters: 
+         * List&lt;Member&gt;,
+         * List&lt;Member[]&gt;,
+         * Iterable&lt;Member&gt;, or
+         * Iterable&lt;Member[]&gt;.
+         * 
+         * @param o1 List or Iterable of Member or Member[]
+         * @param o2 List or Iterable of Member or Member[]
+         * @return Iterable&lt;Member[]&gt; over contents of o1 and o2
+         */
         protected abstract Iterable<Member[]> makeIterable(Object o1, Object o2);
 
+        /** 
+         * Derived classes implement depending upon the types of parameter
+         * o1 and o2.
+         * 
+         * @param o1 Member or Member[]
+         * @param o2 Member or Member[]
+         * @return combining o1 and o2 into Member[]
+         */
         protected abstract Member[] makeNext(Object o1, Object o2);
 
         protected List checkList(Evaluator evaluator, List list) {
@@ -1075,6 +1090,7 @@ System.out.println("CrossJoinFunDef.compileCall: "+rs[i]);
 
             return makeList(l1, l2);
         }
+
         protected abstract List<Member[]> makeList(List l1, List l2);
 
         protected List checkList(Evaluator evaluator, List list) {
@@ -1409,22 +1425,18 @@ System.out.println("MemberList.Itr: size=" +size());
             // Member
             if (isMemberType(listCalc2)) {
                 // Member
-//System.out.println("CrossJoinFunDef.MutableListMemberListMemberListCalc");                
                 return new MutableListMemberListMemberListCalc(call, calcs);
             } else {
                 // Member[]
-//System.out.println("CrossJoinFunDef.MutableListMemberListMemberArrayListCalc");                
                 return new MutableListMemberListMemberArrayListCalc(call, calcs);
             }
         } else {
             // Member[]
             if (isMemberType(listCalc2)) {
                 // Member
-//System.out.println("CrossJoinFunDef.MutableListMemberArrayListMemberListCalc");                
                 return new MutableListMemberArrayListMemberListCalc(call, calcs);
             } else {
                 // Member[]
-//System.out.println("CrossJoinFunDef.MutableListMemberArrayListMemberArrayListCalc");                
                 return new MutableListMemberArrayListMemberArrayListCalc(call, calcs);
             }
         }

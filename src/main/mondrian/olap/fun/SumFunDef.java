@@ -42,12 +42,6 @@ class SumFunDef extends AbstractAggregateFunDef {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         ResultStyle[] rs = compiler.getAcceptableResultStyles();
-/*
-// RME
-for (int i = 0; i < rs.length; i++) {
-System.out.println("SumFunDef.compileCall: "+rs[i]);
-}
-*/
         // What is the desired type to use to get the underlying values
         for (int i = 0; i < rs.length; i++) {
             switch (rs[i]) {

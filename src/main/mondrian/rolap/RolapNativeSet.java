@@ -134,7 +134,6 @@ public abstract class RolapNativeSet extends RolapNative {
         }
 
         public Object execute(ResultStyle desiredResultStyle) {
-//System.out.println("RolapNativeSet.SetEvaluator.execute: desiredResultStyle="+desiredResultStyle);
             switch (desiredResultStyle) {
             case ITERABLE :
                 return executeIterable();

@@ -138,7 +138,8 @@ public abstract class RolapAxis implements Axis {
 
         
         /** 
-         * This List<Position> starts life with a List<Position> implementation
+         * This List&lt;Position&gt; starts life with a List&lt;Position&gt; 
+         * implementation
          * that is based upon an non-List (Iterable). If all accesses
          * are simply through iteration, then the initial implementation
          * remains, but if the client uses either the 'size' or 'get' methods
@@ -174,7 +175,12 @@ public abstract class RolapAxis implements Axis {
             }
         }
 
-        // List<Position>
+        /** 
+         * PositionIter is a List&lt;Position&gt; that only support the
+         * 'iterator' method. This assumes that one iterates over Positions
+         * and for each Postion one iterates over Members. In this case,
+         * each Position has a single Member.
+         */
         class PositionIter extends PositionIterBase {
             private Iterator<Member> it;
             PositionIter() {
@@ -194,6 +200,11 @@ public abstract class RolapAxis implements Axis {
                 };
             }
         }
+        
+        /** 
+         * A List&lt;Member&gt; which only implements the 'iterator' method.
+         * Each Iterator&lt;Member&gt; has only one Member.
+         */
         class MIPosition extends PositionUnsupported {
             Member member;
             MIPosition(Member member) {
@@ -337,7 +348,14 @@ public abstract class RolapAxis implements Axis {
             }
         }
 
-        // List<Position>
+        /** 
+         * This List&lt;Position&gt; starts life with a List&lt;Position&gt; 
+         * implementation
+         * that is based upon an non-List (Iterable). If all accesses
+         * are simply through iteration, then the initial implementation
+         * remains, but if the client uses either the 'size' or 'get' methods
+         * then the Iterable is materialized into a List.
+         */
         class PositionWrapper extends PositionListUnsupported {
             List<Position> positionList;
             PositionWrapper() {
@@ -368,7 +386,12 @@ public abstract class RolapAxis implements Axis {
             }
         }
 
-        // List<Position>
+        /** 
+         * PositionIter is a List&lt;Position&gt; that only support the
+         * 'iterator' method. This assumes that one iterates over Positions
+         * and for each Postion one iterates over Members. Each Position
+         * has two or more Members.
+         */
         class PositionIter extends PositionIterBase {
             private Iterator<Member[]> it;
             PositionIter() {
@@ -392,6 +415,10 @@ public abstract class RolapAxis implements Axis {
                 };
             }
         }
+        /** 
+         * A List&lt;Member&gt; which only implements the 'iterator' method.
+         * Each Iterator&lt;Member&gt; two or more Members.
+         */
         class MIPosition extends PositionUnsupported {
             Member[] members;
             MIPosition(Member[] members) {
@@ -415,7 +442,7 @@ public abstract class RolapAxis implements Axis {
         }
 
         /** 
-         *  Each Position has a single Member.
+         *  Each Position has two or more Members.
          */
         class PositionList extends PositionListBase {
             PositionList() {
@@ -507,6 +534,11 @@ public abstract class RolapAxis implements Axis {
         }
     }
 
+    /** 
+     * A List&lt;Member&gt; for which all methods throw the
+     * UnsupportedOperationException exception when invoked. Derived classes
+     * can implement those methods that they require.
+     */
     protected static abstract class PositionUnsupported implements Position {
         protected PositionUnsupported() {
         }

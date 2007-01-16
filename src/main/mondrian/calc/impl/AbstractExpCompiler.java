@@ -54,7 +54,6 @@ public class AbstractExpCompiler implements ExpCompiler {
      */
     public Calc compile(Exp exp) {
         return exp.accept(this);
-        //return compile(exp, ANY_RESULT_STYLE_ARRAY);
     }
 
     /** 
@@ -73,12 +72,6 @@ public class AbstractExpCompiler implements ExpCompiler {
         } finally {
             this.resultStyles = save;
         }
-/*
-        this.resultStyles = preferredResultTypes;
-        Calc calc = exp.accept(this);
-        this.resultStyles = save;
-        return calc;
-*/
     }
 
     public MemberCalc compileMember(Exp exp) {
@@ -166,18 +159,9 @@ public class AbstractExpCompiler implements ExpCompiler {
     }
 
     public ListCalc compileList(Exp exp, boolean mutable) {
-        ListCalc listCalc;
-        if (mutable) {
-/*
-            ResultStyle[] save = this.resultStyles;
-            this.resultStyles = MUTABLE_LIST_RESULT_STYLE_ARRAY;
-            listCalc = (ListCalc) compile(exp, MUTABLE_LIST_RESULT_STYLE_ARRAY);
-            this.resultStyles = save;
-*/
-            listCalc = (ListCalc) compile(exp, MUTABLE_LIST_RESULT_STYLE_ARRAY);
-        } else {
-            listCalc = (ListCalc) compile(exp, LIST_RESULT_STYLE_ARRAY);
-        }
+        ListCalc listCalc = (mutable)
+            ? (ListCalc) compile(exp, MUTABLE_LIST_RESULT_STYLE_ARRAY)
+            : (ListCalc) compile(exp, LIST_RESULT_STYLE_ARRAY);
         return listCalc;
     }
 

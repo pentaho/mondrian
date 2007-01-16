@@ -48,7 +48,6 @@ class RolapResult extends ResultBase {
     RolapResult(Query query, boolean execute) {
         super(query, new Axis[query.axes.length]);
 
-        //this.point = new CellKey(new int[query.axes.length]);
         this.point = CellKey.Generator.create(query.axes.length);
         final int expDeps = MondrianProperties.instance().TestExpDependencies.get();
         if (expDeps > 0) {
@@ -83,20 +82,6 @@ class RolapResult extends ResultBase {
             // during execution of the other axes.
             List<Member> slicerMembers = new ArrayList<Member>();
 
-/*
-Formula[] formulas;
-if (query.formulas == null) {
-System.out.println("RolapResult: query.formulas= NULL");
-} else {
-for (int i = 0; i < query.formulas.length; i++) {
-java.io.StringWriter sw = new java.io.StringWriter();
-java.io.PrintWriter pw = new java.io.PrintWriter(sw);
-    query.formulas[i].unparse(pw);
-pw.flush();
-System.out.println("RolapResult: query.formulas " +i+"=" +sw.toString());
-}
-}
-*/
             for (int i = -1; i < axes.length; i++) {
                 QueryAxis axis;
                 final Calc calc;
@@ -108,17 +93,6 @@ System.out.println("RolapResult: query.formulas " +i+"=" +sw.toString());
                     calc = query.axisCalcs[i];
                 }
 
-/*
-if (calc == null) {
-System.out.println("RolapResult: calc " +i+"= NULL");
-} else {
-java.io.StringWriter sw = new java.io.StringWriter();
-java.io.PrintWriter pw = new java.io.PrintWriter(sw);
-calc.accept(new mondrian.calc.CalcWriter(pw));
-pw.flush();
-System.out.println("RolapResult: calc " +i+"=" +sw.toString());
-}
-*/
                 int attempt = 0;
                 while (true) {
                     evaluator.setCellReader(batchingReader);
@@ -289,18 +263,6 @@ System.out.println("RolapResult: calc " +i+"=" +sw.toString());
             evaluator.setNonEmpty(false);
             if (value != null) {
                 // List or Iterable of Member or Member[]
-/*
-                if (! (value instanceof List)) {
-                    // materialize the Iterable.
-                    Iterable<Object> iterable = (Iterable) value; 
-                    Iterator it = iterable.iterator();
-                    List list = new ArrayList();
-                    while (it.hasNext()) {
-                        list.add(it.next());
-                    }
-                    value = list;
-                } 
-*/
                 if ((value instanceof List)) {
                     List<Object> list = (List) value; 
                     if (construct) {
@@ -360,36 +322,6 @@ System.out.println("RolapResult: calc " +i+"=" +sw.toString());
                         }
                     }
                 }
-
-
-/*
-                // better be a list
-                List<Object> list = (List) value; 
-                if (construct) {
-                    if (list.size() == 0) {
-                        // should be???
-                        axisResult = new RolapAxis.NoPosition();
-                    } else if (list.get(0) instanceof Member[]) {
-                        axisResult = 
-                            new RolapAxis.MemberArrayList((List<Member[]>)value);
-                    } else {
-                        axisResult = 
-                            new RolapAxis.MemberList((List<Member>)value);
-                    }
-                } else {
-                    if (list.size() != 0) {
-                        if (list.get(0) instanceof Member[]) {
-                            for (Member[] o : (List<Member[]>) value) {
-                                merge(axisMembers, o);
-                            }
-                        } else {
-                            for (Member o : (List<Member>) value) {
-                                merge(axisMembers, o);
-                            }
-                        }
-                    }
-                }
-*/
             }
             evaluator.setEvalAxes(false);
         }

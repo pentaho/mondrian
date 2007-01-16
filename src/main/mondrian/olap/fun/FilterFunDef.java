@@ -46,12 +46,6 @@ class FilterFunDef extends FunDefBase {
 
     public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
         ResultStyle[] rs = compiler.getAcceptableResultStyles();
-/*
- //RME
-for (int i = 0; i < rs.length; i++) {
-System.out.println("FilterFunDef.compileCall: "+rs[i]);
-}
-*/
         // What is the desired return type?
         for (int i = 0; i < rs.length; i++) {
             switch (rs[i]) {
@@ -376,10 +370,8 @@ System.out.println("FilterFunDef.compileCall: "+rs[i]);
 
             switch (ilcalc.getResultStyle()) {
             case LIST :
-//System.out.println("FilterFunDef.compileCallList: LIST");
                 return new ImMutableMemberArrayListCalc(call, calcs);
             case MUTABLE_LIST :
-//System.out.println("FilterFunDef.compileCallList: MUTABLE_LIST");
                 return new MutableMemberArrayListCalc(call, calcs);
             }
             throw ResultStyleException.generateBadType(

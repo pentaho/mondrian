@@ -94,18 +94,6 @@ public class AbstractAggregateFunDef extends FunDefBase {
         evaluator.setIterationLength(currLen);
     }
     
-/*
-RME OLD STUFF
-    private int crossProd(Evaluator evaluator, int currLen) {
-        int productLen = currLen;
-        Evaluator parent = evaluator.getParent();
-        while (parent != null) {
-            productLen *= parent.getIterationLength();
-            parent = parent.getParent();
-        }
-        return productLen;
-    }
-*/
 }
 
 // End AbstractAggregateFunDef.java

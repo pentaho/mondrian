@@ -19,16 +19,17 @@ import mondrian.calc.ExpCompiler;
 import java.util.List;
 
 /**
- * Abstract implementation of the {@link mondrian.calc.ListCalc} interface.
+ * Abstract implementation of the {@link mondrian.calc.IterCalc} interface.
  *
  * <p>The derived class must
- * implement the {@link #evaluateList(mondrian.olap.Evaluator)} method,
+ * implement the {@link #evaluateIterable(mondrian.olap.Evaluator)} method,
  * and the {@link #evaluate(mondrian.olap.Evaluator)} method will call it.
  *
- * @author jhyde
+ * @author <a>Richard M. Emberson</a>
  * @version $Id$
- * @since Sep 27, 2005
+ * @since Jan 14, 2007
  */
+
 public abstract class AbstractIterCalc
         extends AbstractCalc
         implements IterCalc {
