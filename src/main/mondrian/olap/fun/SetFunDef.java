@@ -237,6 +237,7 @@ public class SetFunDef extends FunDefBase {
                 if (elementType instanceof MemberType) {
                     switch (calc.getResultStyle()) {
                     case ITERABLE :
+if (! Util.PreJdk15) {
                     return new AbstractIterCalc(arg, new Calc[] {calc}) {
                         private final IterCalc iterCalc = (IterCalc) calc;
                         public Iterable evaluateIterable(Evaluator evaluator) {
@@ -248,6 +249,7 @@ public class SetFunDef extends FunDefBase {
                             return "Sublist";
                         }
                     };
+}
                     case LIST :
                     case MUTABLE_LIST :
                     return new AbstractIterCalc(arg, new Calc[] {calc}) {
@@ -279,6 +281,7 @@ public class SetFunDef extends FunDefBase {
                 } else {
                     switch (calc.getResultStyle()) {
                     case ITERABLE :
+if (! Util.PreJdk15) {
                     return new AbstractIterCalc(arg, new Calc[] {calc}) {
                         private final IterCalc iterCalc = (IterCalc) calc;
                         public Iterable evaluateIterable(Evaluator evaluator) {
@@ -290,6 +293,7 @@ public class SetFunDef extends FunDefBase {
                             return "Sublist";
                         }
                     };
+}
                     case LIST :
                     case MUTABLE_LIST :
                     return new AbstractIterCalc(arg, new Calc[] {calc}) {

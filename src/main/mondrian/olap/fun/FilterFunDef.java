@@ -51,8 +51,10 @@ class FilterFunDef extends FunDefBase {
             switch (rs[i]) {
             case ITERABLE :
             case ANY :
+if (! Util.PreJdk15) {
                 // Consumer wants ITERABLE or ANY
                 return compileCallIterable(call, compiler);
+}
             case MUTABLE_LIST:
             case LIST :
                 // Consumer wants MUTABLE_LIST or LIST

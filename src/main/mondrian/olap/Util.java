@@ -77,7 +77,7 @@ public class Util extends XOMUtil {
      * <p>If this variable is true, we will be running retroweaver. Retroweaver
      * has some problems involving {@link java.util.EnumSet}.
      */
-    private static final boolean PreJdk15 =
+    public static final boolean PreJdk15 =
         System.getProperty("java.version").startsWith("1.4");
 
     public static boolean isNull(Object o) {

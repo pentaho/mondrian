@@ -46,13 +46,6 @@ class CountFunDef extends AbstractAggregateFunDef {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-/*
-//RME
-        ResultStyle[] rs = compiler.getAcceptableResultStyles();
-for (int i = 0; i < rs.length; i++) {
-System.out.println("CountFunDef.compileCall: "+rs[i]);
-}
-*/
         final Calc calc = compiler.compile(call.getArg(0), 
                                 ExpCompiler.ITERABLE_ANY_RESULT_STYLE_ARRAY
                                 );
@@ -63,6 +56,19 @@ System.out.println("CountFunDef.compileCall: "+rs[i]);
         return new AbstractIntegerCalc(
                 call, new Calc[] {calc}) {
             public int evaluateInteger(Evaluator evaluator) {
+/*
+                if (calc instanceof ListCalc) {
+                    ListCalc listCalc = (ListCalc) calc;
+                    List memberList = evaluateCurrentList(listCalc, evaluator);
+                    return count(evaluator, memberList, includeEmpty);
+                } else {
+                    // must be IterCalc
+                    IterCalc iterCalc = (IterCalc) calc;
+                    Iterable iterable =
+                        evaluateCurrentIterable(iterCalc, evaluator);
+                    return count(evaluator, iterable, includeEmpty);
+                }
+*/
                 if (calc instanceof IterCalc) {
                     IterCalc iterCalc = (IterCalc) calc;
                     Iterable iterable =

@@ -47,8 +47,10 @@ class SumFunDef extends AbstractAggregateFunDef {
             switch (rs[i]) {
             case ITERABLE :
             case ANY :
+if (! Util.PreJdk15) {
                 // Consumer wants ITERABLE or ANY to be used
                 return compileCallIterable(call, compiler);
+}
             case MUTABLE_LIST:
             case LIST :
                 // Consumer wants MUTABLE_LIST or LIST to be used

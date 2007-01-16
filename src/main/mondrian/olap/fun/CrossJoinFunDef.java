@@ -20,6 +20,7 @@ import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.calc.impl.AbstractIterCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.*;
+import mondrian.util.UnsupportedList;
 import mondrian.util.Bug;
 
 import java.util.ArrayList;
@@ -100,13 +101,16 @@ class CrossJoinFunDef extends FunDefBase {
             case ITERABLE :
             case ANY :
                 // Consumer wants ITERABLE or ANY
-                return compileCallIterable(call, compiler);
-            case MUTABLE_LIST:
-                // Consumer MUTABLE_LIST 
-                return compileCallMutableList(call, compiler);
+if (! Util.PreJdk15) {
+                    // jdk14 does not use Iterable
+                    return compileCallIterable(call, compiler);
+}
             case LIST :
                 // Consumer wants (immutable) LIST
                 return compileCallImmutableList(call, compiler);
+            case MUTABLE_LIST:
+                // Consumer MUTABLE_LIST 
+                return compileCallMutableList(call, compiler);
             }
         }
         throw ResultStyleException.generate(
@@ -1130,7 +1134,8 @@ class CrossJoinFunDef extends FunDefBase {
         }
     }
 
-    public static abstract class BaseImmutableList implements List<Member[]> {
+    public static abstract class BaseImmutableList 
+                            extends UnsupportedList<Member[]> {
         protected BaseImmutableList() {
         }
         public abstract int size();
@@ -1160,128 +1165,6 @@ class CrossJoinFunDef extends FunDefBase {
         }
         public Iterator<Member[]> iterator() {
             return new Itr();
-        }
-
-        public Member[] set(int index, Member[] element) {
-            throw new UnsupportedOperationException("set");
-        }
-
-        // Collection
-        public boolean isEmpty() {
-            return (size() == 0);
-        }
-        public void add(int index, Member[] element) {
-            throw new UnsupportedOperationException("add");
-        }
-        public Member[] remove(int index) {
-            throw new UnsupportedOperationException("remove");
-        }
-        public int indexOf(Object o) {
-            throw new UnsupportedOperationException("indexOf");
-        }
-        public int lastIndexOf(Object o) {
-            throw new UnsupportedOperationException("lastIndexOf");
-        }
-        public List<Member[]> subList(int fromIndex, int toIndex) {
-            throw new UnsupportedOperationException("subList");
-        }
-
-        // Collection
-        public boolean contains(Object o) {
-            throw new UnsupportedOperationException("contains");
-        }
-        public <T> T[] toArray(T[] a) {
-            throw new UnsupportedOperationException("toArray");
-        }
-        public boolean add(Member[] o) {
-            throw new UnsupportedOperationException("add");
-        }
-        public boolean remove(Object o) {
-            throw new UnsupportedOperationException("remove");
-        }
-        public boolean containsAll(Collection<?> c) {
-            throw new UnsupportedOperationException("containsAll");
-        }
-        public boolean addAll(Collection<? extends Member[]> c) {
-            throw new UnsupportedOperationException("addAll");
-        }
-        public boolean addAll(int index, Collection<? extends Member[]> c) {
-            throw new UnsupportedOperationException("addAll");
-        }
-        public boolean removeAll(Collection<?> c) {
-            throw new UnsupportedOperationException("removeAll");
-        }
-        public boolean retainAll(Collection<?> c) {
-            throw new UnsupportedOperationException("retainAll");
-        }
-        public void clear() {
-            throw new UnsupportedOperationException("retainAll");
-        }
-        public boolean equals(Object o) {
-            throw new UnsupportedOperationException("equals");
-        }
-        public int hashCode() {
-            throw new UnsupportedOperationException("hashCode");
-        }
-
-        private class Itr implements Iterator<Member[]> {
-            int cursor = 0;
-            int lastRet = -1;
-
-            public boolean hasNext() {
-                //return (cursor < size());
-                return (cursor != size());
-            }
-            public Member[] next() {
-                try { 
-                    Member[] next = get(cursor);
-                    lastRet = cursor++;
-                    return next;
-                } catch(IndexOutOfBoundsException e) {
-System.out.println("MemberList.Itr: cursor=" +cursor);
-System.out.println("MemberList.Itr: size=" +size());
-                    throw new NoSuchElementException();
-                }
-            }
-            public void remove() {
-                throw new UnsupportedOperationException("remove");
-            }
-        }
-
-        private class ListItr extends Itr implements ListIterator<Member[]> {
-            ListItr(int index) {
-                cursor = index;
-            }
-
-            public boolean hasPrevious() {
-                return cursor != 0;
-            }
-            public Member[] previous() {
-                try {
-                    int i = cursor - 1;
-                    Member[] previous = get(i);
-                    lastRet = cursor = i;
-                    return previous;
-                } catch(IndexOutOfBoundsException e) {
-                    throw new NoSuchElementException();
-                }
-            }
-
-            public int nextIndex() {
-                return cursor;
-            }
-
-            public int previousIndex() {
-                return cursor-1;
-            }
-
-            public void set(Member[] o) {
-                throw new UnsupportedOperationException("set");
-            }
-
-            public void add(Member[] o) {
-                throw new UnsupportedOperationException("add");
-            }
         }
     }
 
@@ -1447,7 +1330,8 @@ System.out.println("MemberList.Itr: size=" +size());
      * its size can not be changed (the add or remove methods are not 
      * supported).
      */
-    public static abstract class BaseMutableList implements List<Member[]> {
+    public static abstract class BaseMutableList 
+                            extends UnsupportedList<Member[]> {
         protected final Member[] members;
         protected BaseMutableList(Member[] members) {
             this.members = members;
@@ -1455,6 +1339,8 @@ System.out.println("MemberList.Itr: size=" +size());
         public abstract int size();
         public abstract Member[] get(int index);
         public abstract Member[] set(int index, Member[] element);
+        public abstract Member[] remove(int index);
+        public abstract List<Member[]> subList(int fromIndex, int toIndex);
 
         public Object[] toArray() {
             int size = size();
@@ -1473,93 +1359,17 @@ System.out.println("MemberList.Itr: size=" +size());
             return l;
         }
         public ListIterator<Member[]> listIterator() {
-            return new ListItr(0);
+            return new LocalListItr(0);
         }
         public ListIterator<Member[]> listIterator(int index) {
-            return new ListItr(index);
+            return new LocalListItr(index);
         }
         public Iterator<Member[]> iterator() {
-            return new Itr();
+            return new LocalItr();
         }
-
-        // Collection
-        public boolean isEmpty() {
-            return (size() == 0);
-        }
-        public void add(int index, Member[] element) {
-            throw new UnsupportedOperationException("add");
-        }
-        public int indexOf(Object o) {
-            // TODO : this could be supported
-            throw new UnsupportedOperationException("indexOf");
-        }
-        public int lastIndexOf(Object o) {
-            // TODO : this could be supported
-            throw new UnsupportedOperationException("lastIndexOf");
-        }
-
-        // Collection
-        public boolean contains(Object o) {
-            // TODO : this could be supported
-            throw new UnsupportedOperationException("contains");
-        }
-        public <T> T[] toArray(T[] a) {
-            // TODO : this could be supported
-            throw new UnsupportedOperationException("toArray");
-        }
-        public boolean add(Member[] o) {
-            throw new UnsupportedOperationException("add");
-        }
-        public boolean remove(Object o) {
-            // TODO : this could be supported
-            throw new UnsupportedOperationException("remove");
-        }
-        public boolean containsAll(Collection<?> c) {
-            // TODO : this could be supported
-            throw new UnsupportedOperationException("containsAll");
-        }
-        public boolean addAll(Collection<? extends Member[]> c) {
-            throw new UnsupportedOperationException("addAll");
-        }
-        public boolean addAll(int index, Collection<? extends Member[]> c) {
-            throw new UnsupportedOperationException("addAll");
-        }
-        public boolean removeAll(Collection<?> c) {
-            // TODO : this could be supported
-            throw new UnsupportedOperationException("removeAll");
-        }
-        public boolean retainAll(Collection<?> c) {
-            throw new UnsupportedOperationException("retainAll");
-        }
-        public void clear() {
-            throw new UnsupportedOperationException("retainAll");
-        }
-        public boolean equals(Object o) {
-            // TODO : this could be supported
-            throw new UnsupportedOperationException("equals");
-        }
-        public int hashCode() {
-            // TODO : this could be supported
-            throw new UnsupportedOperationException("hashCode");
-        }
-
-        private class Itr implements Iterator<Member[]> {
-            int cursor = 0;
-            int lastRet = -1;
-
-            public boolean hasNext() {
-                return (cursor != size());
-            }
-            public Member[] next() {
-                try { 
-                    Member[] next = get(cursor);
-                    lastRet = cursor++;
-                    return next;
-                } catch(IndexOutOfBoundsException e) {
-System.out.println("MemberList.Itr: cursor=" +cursor);
-System.out.println("MemberList.Itr: size=" +size());
-                    throw new NoSuchElementException();
-                }
+        private class LocalItr extends Itr {
+            public LocalItr() {
+                super();
             }
             public void remove() {
                 if (lastRet == -1) {
@@ -1579,34 +1389,10 @@ System.out.println("MemberList.Itr: size=" +size());
                 }
             }
         }
-
-        private class ListItr extends Itr implements ListIterator<Member[]> {
-            ListItr(int index) {
-                cursor = index;
+        private class LocalListItr extends ListItr {
+            public LocalListItr(int index) {
+                super(index);
             }
-
-            public boolean hasPrevious() {
-                return cursor != 0;
-            }
-            public Member[] previous() {
-                try {
-                    int i = cursor - 1;
-                    Member[] previous = get(i);
-                    lastRet = cursor = i;
-                    return previous;
-                } catch(IndexOutOfBoundsException e) {
-                    throw new NoSuchElementException();
-                }
-            }
-
-            public int nextIndex() {
-                return cursor;
-            }
-
-            public int previousIndex() {
-                return cursor-1;
-            }
-
             public void set(Member[] o) {
                 if (lastRet == -1)
                     throw new IllegalStateException();
@@ -1616,11 +1402,8 @@ System.out.println("MemberList.Itr: size=" +size());
                     throw new ConcurrentModificationException();
                 }
             }
-
-            public void add(Member[] o) {
-                throw new UnsupportedOperationException("add");
-            }
         }
+
     }
 
     // LIST Member LIST Member

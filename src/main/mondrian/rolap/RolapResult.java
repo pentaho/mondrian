@@ -41,7 +41,7 @@ class RolapResult extends ResultBase {
     private final Map<CellKey, String> formatStrings;
     private final FastBatchingCellReader batchingReader;
     AggregatingCellReader aggregatingReader = new AggregatingCellReader();
-    private Modulos modulos;
+    private Modulos modulos = null;
     private final int maxEvalDepth =
             MondrianProperties.instance().MaxEvalDepth.get();
 
@@ -190,8 +190,6 @@ class RolapResult extends ResultBase {
                         LimitExceededDuringCrossjoin.ex(n, limit);
                 }
             }
-
-            modulos = Modulos.Generator.create(axes);
 
             executeBody(query);
         } finally {
@@ -432,10 +430,8 @@ class RolapResult extends ResultBase {
         if (axisOrdinal < 0) {
             Axis axis = slicerAxis;
             List<Position> positions = axis.getPositions();
-            int count = positions.size();
-            for (int i = 0; i < count; i++) {
+            for (Position position: positions) {
                 evaluator.getQuery().checkCancelOrTimeout();
-                Position position = positions.get(i);
                 evaluator.setContext(position);
                 Object o;
                 try {
@@ -472,13 +468,13 @@ class RolapResult extends ResultBase {
         } else {
             Axis axis = axes[axisOrdinal];
             List<Position> positions = axis.getPositions();
-            int count = positions.size();
-            for (int i = 0; i < count; i++) {
+            int i = 0;
+            for (Position position: positions) {
                 point.setAxis(axisOrdinal, i);
-                Position position = positions.get(i);
                 evaluator.setContext(position);
                 evaluator.getQuery().checkCancelOrTimeout();
                 executeStripe(axisOrdinal - 1, evaluator);
+                i++;
             }
         }
     }
@@ -489,6 +485,9 @@ class RolapResult extends ResultBase {
      * then cell ordinal 537 has coordinates (5, 3, 7).
      */
     public int[] getCellPos(int cellOrdinal) {
+        if (modulos == null) {
+            makeModulos();
+        }
         return modulos.getCellPos(cellOrdinal);
     }
 
@@ -497,7 +496,16 @@ class RolapResult extends ResultBase {
      * {@link #getCellPos}.
      */
     int getCellOrdinal(int[] pos) {
+        if (modulos == null) {
+            makeModulos();
+        }
         return modulos.getCellOrdinal(pos);
+    }
+
+    protected void makeModulos() {
+        // Any axis that's based upon an Iterable is converted into
+        // a List - thus increasing memory usage.
+        modulos = Modulos.Generator.create(axes);
     }
 
     RolapEvaluator getCellEvaluator(int[] pos) {

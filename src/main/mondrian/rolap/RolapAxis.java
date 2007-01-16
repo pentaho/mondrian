@@ -14,6 +14,7 @@ package mondrian.rolap;
 import mondrian.olap.Axis;
 import mondrian.olap.Member;
 import mondrian.olap.Position;
+import mondrian.util.UnsupportedList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ListIterator;
@@ -539,87 +540,10 @@ public abstract class RolapAxis implements Axis {
      * UnsupportedOperationException exception when invoked. Derived classes
      * can implement those methods that they require.
      */
-    protected static abstract class PositionUnsupported implements Position {
+    protected static abstract class PositionUnsupported 
+                        extends UnsupportedList<Member>
+                        implements Position {
         protected PositionUnsupported() {
-        }
-        public int size() {
-            throw new UnsupportedOperationException("size");
-        }
-        public Member get(int index) {
-            throw new UnsupportedOperationException("get");
-        }
-        public Member set(int index, Member element) {
-            throw new UnsupportedOperationException("set");
-        }
-
-        // Collection 
-        public boolean isEmpty() {
-            return (size() == 0);
-        }
-        public Object[] toArray() {
-            throw new UnsupportedOperationException("toArray");
-        }
-
-        public void add(int index, Member element) {
-            throw new UnsupportedOperationException("add");
-        }
-        public Member remove(int index) {
-            throw new UnsupportedOperationException("remove");
-        }
-        public int indexOf(Object o) {
-            throw new UnsupportedOperationException("indexOf"); 
-        }
-        public int lastIndexOf(Object o) {
-            throw new UnsupportedOperationException("lastIndexOf");
-        }
-        public List<Member> subList(int fromIndex, int toIndex) {
-            throw new UnsupportedOperationException("subList");
-        }
-
-        public boolean contains(Object o) {
-            throw new UnsupportedOperationException("contains");
-        }
-        public <Member> Member[] toArray(Member[] a) {
-            throw new UnsupportedOperationException("toArray");
-        }
-        public boolean add(Member o) {
-            throw new UnsupportedOperationException("add");
-        }
-        public boolean remove(Object o) {
-            throw new UnsupportedOperationException("remove");
-        }
-        public boolean containsAll(Collection<?> c) {
-            throw new UnsupportedOperationException("containsAll");
-        }
-        public boolean addAll(Collection<? extends Member> c) {
-            throw new UnsupportedOperationException("addAll");
-        }
-        public boolean addAll(int index, Collection<? extends Member> c) {
-            throw new UnsupportedOperationException("addAll");
-        }
-        public boolean removeAll(Collection<?> c) {
-            throw new UnsupportedOperationException("removeAll");
-        }
-        public boolean retainAll(Collection<?> c) {
-            throw new UnsupportedOperationException("retainAll");
-        }
-        public void clear() {
-            throw new UnsupportedOperationException("retainAll");
-        }
-        public boolean equals(Object o) {
-            throw new UnsupportedOperationException("equals");
-        }
-        public int hashCode() {
-            throw new UnsupportedOperationException("hashCode");
-        }
-        public ListIterator<Member> listIterator() {
-            throw new UnsupportedOperationException("listIterator");
-        }
-        public ListIterator<Member> listIterator(int index) {
-            throw new UnsupportedOperationException("listIterator");
-        }
-        public Iterator<Member> iterator() {
-            throw new UnsupportedOperationException("iterator");
         }
     }
     /** 
@@ -639,160 +563,14 @@ public abstract class RolapAxis implements Axis {
         public Iterator<Member> iterator() {
             return new Itr();
         }
-        private class Itr implements Iterator<Member> {
-            int cursor = 0;
-            int lastRet = -1;
-
-            public boolean hasNext() {
-                //return (cursor < size());
-                return (cursor != size());
-            }
-            public Member next() {
-                try { 
-                    Member next = get(cursor);
-                    lastRet = cursor++;
-                    return next;
-                } catch(IndexOutOfBoundsException e) {
-System.out.println("RolapAxis.PositionBase.Itr: cursor=" +cursor);
-System.out.println("RolapAxis.PositionBase.Itr: size=" +size());
-                    throw new NoSuchElementException();
-                }
-            }
-            public void remove() {
-                throw new UnsupportedOperationException("remove");
-            }
-        }
-        private class ListItr extends Itr implements ListIterator<Member> {
-            ListItr(int index) {
-                cursor = index;
-            }
-
-            public boolean hasPrevious() {
-                return cursor != 0;
-            }
-            public Member previous() {
-                try {
-                    int i = cursor - 1;
-                    Member previous = get(i);
-                    lastRet = cursor = i;
-                    return previous;
-                } catch(IndexOutOfBoundsException e) {
-                    throw new NoSuchElementException();
-                }
-            }
-
-            public int nextIndex() {
-                return cursor;
-            }
-
-            public int previousIndex() {
-                return cursor-1;
-            }
-
-            public void set(Member o) {
-/*
-                if (lastRet == -1)
-                    throw new IllegalStateException();
-                try {
-                    MemberList.this.set(lastRet, o);
-                } catch(IndexOutOfBoundsException e) {
-                    throw new ConcurrentModificationException();
-                }
-*/
-                throw new UnsupportedOperationException("set");
-            }
-
-            public void add(Member o) {
-                throw new UnsupportedOperationException("add");
-            }
-        }
     }
-
 
     protected static abstract class PositionListUnsupported 
-                implements List<Position> {
+                        extends UnsupportedList<Position> {
         protected PositionListUnsupported() {
         }
-        public int size() {
-            throw new UnsupportedOperationException("size");
-        }
-        public Position get(int index) {
-            throw new UnsupportedOperationException("get");
-        }
-        public Position set(int index, Position element) {
-            throw new UnsupportedOperationException("set");
-        }
-
-        // Collection 
-        public boolean isEmpty() {
-            return (size() == 0);
-        }
-        public Object[] toArray() {
-            throw new UnsupportedOperationException("toArray");
-        }
-
-        public void add(int index, Position element) {
-            throw new UnsupportedOperationException("add");
-        }
-        public Position remove(int index) {
-            throw new UnsupportedOperationException("remove");
-        }
-        public int indexOf(Object o) {
-            throw new UnsupportedOperationException("indexOf"); 
-        }
-        public int lastIndexOf(Object o) {
-            throw new UnsupportedOperationException("lastIndexOf");
-        }
-        public List<Position> subList(int fromIndex, int toIndex) {
-            throw new UnsupportedOperationException("subList");
-        }
-
-        public boolean contains(Object o) {
-            throw new UnsupportedOperationException("contains");
-        }
-        public <Position> Position[] toArray(Position[] a) {
-            throw new UnsupportedOperationException("toArray");
-        }
-        public boolean add(Position o) {
-            throw new UnsupportedOperationException("add");
-        }
-        public boolean remove(Object o) {
-            throw new UnsupportedOperationException("remove");
-        }
-        public boolean containsAll(Collection<?> c) {
-            throw new UnsupportedOperationException("containsAll");
-        }
-        public boolean addAll(Collection<? extends Position> c) {
-            throw new UnsupportedOperationException("addAll");
-        }
-        public boolean addAll(int index, Collection<? extends Position> c) {
-            throw new UnsupportedOperationException("addAll");
-        }
-        public boolean removeAll(Collection<?> c) {
-            throw new UnsupportedOperationException("removeAll");
-        }
-        public boolean retainAll(Collection<?> c) {
-            throw new UnsupportedOperationException("retainAll");
-        }
-        public void clear() {
-            throw new UnsupportedOperationException("retainAll");
-        }
-        public boolean equals(Object o) {
-            throw new UnsupportedOperationException("equals");
-        }
-        public int hashCode() {
-            throw new UnsupportedOperationException("hashCode");
-        }
-        public ListIterator<Position> listIterator() {
-            throw new UnsupportedOperationException("listIterator");
-        }
-        public ListIterator<Position> listIterator(int index) {
-            throw new UnsupportedOperationException("listIterator");
-        }
-        public Iterator<Position> iterator() {
-            throw new UnsupportedOperationException("iterator");
-        }
     }
+
     protected static abstract class PositionIterBase 
                                 extends PositionListUnsupported {
         protected PositionIterBase() {
@@ -827,73 +605,6 @@ System.out.println("RolapAxis.PositionBase.Itr: size=" +size());
         }
         public Iterator<Position> iterator() {
             return new Itr();
-        }
-        private class Itr implements Iterator<Position> {
-            int cursor = 0;
-            int lastRet = -1;
-
-            public boolean hasNext() {
-                //return (cursor < size());
-                return (cursor != size());
-            }
-            public Position next() {
-                try { 
-                    Position next = get(cursor);
-                    lastRet = cursor++;
-                    return next;
-                } catch(IndexOutOfBoundsException e) {
-System.out.println("RolapAxis.PositionListBase.Itr: cursor=" +cursor);
-System.out.println("RolapAxis.PositionListBase.Itr: size=" +size());
-                    throw new NoSuchElementException();
-                }
-            }
-            public void remove() {
-                throw new UnsupportedOperationException("remove");
-            }
-        }
-        private class ListItr extends Itr implements ListIterator<Position> {
-            ListItr(int index) {
-                cursor = index;
-            }
-
-            public boolean hasPrevious() {
-                return cursor != 0;
-            }
-            public Position previous() {
-                try {
-                    int i = cursor - 1;
-                    Position previous = get(i);
-                    lastRet = cursor = i;
-                    return previous;
-                } catch(IndexOutOfBoundsException e) {
-                    throw new NoSuchElementException();
-                }
-            }
-
-            public int nextIndex() {
-                return cursor;
-            }
-
-            public int previousIndex() {
-                return cursor-1;
-            }
-
-            public void set(Position o) {
-/*
-                if (lastRet == -1)
-                    throw new IllegalStateException();
-                try {
-                    MemberList.this.set(lastRet, o);
-                } catch(IndexOutOfBoundsException e) {
-                    throw new ConcurrentModificationException();
-                }
-*/
-                throw new UnsupportedOperationException("set");
-            }
-
-            public void add(Position o) {
-                throw new UnsupportedOperationException("add");
-            }
         }
     }
 

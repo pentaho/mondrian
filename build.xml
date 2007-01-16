@@ -449,6 +449,7 @@ META-INF/**"/>
   </target>
 
   <target name="test-nobuild"
+      depends="set.connectString"
       description="
 Runs all JUnit tests, using the given database connection
 in {mondrian.foodmart.jdbcURL}.">

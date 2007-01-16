@@ -85,36 +85,44 @@ public class CrossJoinTest extends FoodMartTestCase {
     // Member Member
     ////////////////////////////////////////////////////////////////////////
     public void testIterMemberIterMemberIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberIterMemberIterCalc calc = 
             new CrossJoinFunDef.IterMemberIterMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberIterMemberIterCalc");
         doMemberMemberIterTest(calc);
+}
     }
     public void testIterMemberListMemberIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberListMemberIterCalc calc = 
             new CrossJoinFunDef.IterMemberListMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberListMemberIterCalc");
         doMemberMemberIterTest(calc);
+}
     }
     public void testListMemberIterMemberIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberIterMemberIterCalc calc = 
             new CrossJoinFunDef.ListMemberIterMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberIterMemberIterCalc");
         doMemberMemberIterTest(calc);
+}
     }
     public void testListMemberListMemberIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberListMemberIterCalc calc = 
             new CrossJoinFunDef.ListMemberListMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberListMemberIterCalc");
         doMemberMemberIterTest(calc);
+}
     }
 
     protected void doMemberMemberIterTest(
@@ -143,37 +151,45 @@ public class CrossJoinTest extends FoodMartTestCase {
     ////////////////////////////////////////////////////////////////////////
 
     public void testIterMemberIterMemberArrayIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberIterMemberArrayIterCalc calc = 
             new CrossJoinFunDef.IterMemberIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberIterMemberArrayIterCalc");
         doMemberMemberArrayIterTest(calc);
+}
     }
 
     public void testIterMemberListMemberArrayIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberListMemberArrayIterCalc calc = 
             new CrossJoinFunDef.IterMemberListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberListMemberArrayIterCalc");
         doMemberMemberArrayIterTest(calc);
+}
     }
     public void testListMemberIterMemberArrayIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberIterMemberArrayIterCalc calc = 
             new CrossJoinFunDef.ListMemberIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberIterMemberArrayIterCalc");
         doMemberMemberArrayIterTest(calc);
+}
     }
     public void testListMemberListMemberArrayIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberListMemberArrayIterCalc calc = 
             new CrossJoinFunDef.ListMemberListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberListMemberArrayIterCalc");
         doMemberMemberArrayIterTest(calc);
+}
     }
 
     protected void doMemberMemberArrayIterTest(
@@ -201,36 +217,44 @@ public class CrossJoinTest extends FoodMartTestCase {
     // Member[] Member
     ////////////////////////////////////////////////////////////////////////
     public void testIterMemberArrayIterMemberIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberArrayIterMemberIterCalc calc = 
             new CrossJoinFunDef.IterMemberArrayIterMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberArrayIterMemberIterCalc");
         doMemberArrayMemberIterTest(calc);
+}
     }
     public void testIterMemberArrayListMemberIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberArrayListMemberIterCalc calc = 
             new CrossJoinFunDef.IterMemberArrayListMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberArrayListMemberIterCalc");
         doMemberArrayMemberIterTest(calc);
+}
     }
     public void testListMemberArrayIterMemberIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberArrayIterMemberIterCalc calc = 
             new CrossJoinFunDef.ListMemberArrayIterMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberArrayIterMemberIterCalc");
         doMemberArrayMemberIterTest(calc);
+}
     }
     public void testListMemberArrayListMemberIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberArrayListMemberIterCalc calc = 
             new CrossJoinFunDef.ListMemberArrayListMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberArrayListMemberIterCalc");
         doMemberArrayMemberIterTest(calc);
+}
     }
 
     protected void doMemberArrayMemberIterTest(
@@ -258,36 +282,44 @@ public class CrossJoinTest extends FoodMartTestCase {
     // Member[] Member[]
     ////////////////////////////////////////////////////////////////////////
     public void testIterMemberArrayIterMemberArrayIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberArrayIterMemberArrayIterCalc calc = 
             new CrossJoinFunDef.IterMemberArrayIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberArrayIterMemberArrayIterCalc");
         doMemberArrayMemberArrayIterTest(calc);
+}
     }
     public void testIterMemberArrayListMemberArrayIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberArrayListMemberArrayIterCalc calc = 
             new CrossJoinFunDef.IterMemberArrayListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberArrayListMemberArrayIterCalc");
         doMemberArrayMemberArrayIterTest(calc);
+}
     }
     public void testListMemberArrayIterMemberArrayIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberArrayIterMemberArrayIterCalc calc = 
             new CrossJoinFunDef.ListMemberArrayIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberArrayIterMemberArrayIterCalc");
         doMemberArrayMemberArrayIterTest(calc);
+}
     }
     public void testListMemberArrayListMemberArrayIterCalc() {
+if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberArrayListMemberArrayIterCalc calc = 
             new CrossJoinFunDef.ListMemberArrayListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberArrayListMemberArrayIterCalc");
         doMemberArrayMemberArrayIterTest(calc);
+}
     }
 
     protected void doMemberArrayMemberArrayIterTest(

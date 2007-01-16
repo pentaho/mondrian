@@ -1098,14 +1098,11 @@ public class FunUtil extends Util {
             Evaluator evaluator,
             Iterable iterable,
             boolean includeEmpty) {
-//System.out.println("FunUtil.count NEW: TOP");
         if (iterable == null) {
-//System.out.println("FunUtil.count NEW: null 0");
             return 0;
         }
         if (includeEmpty) {
             if (iterable instanceof Collection) {
-//System.out.println("FunUtil.count NEW: Collection =" + ((Collection) iterable).size());
                 return ((Collection) iterable).size();
             } else {
                 int retval = 0;
@@ -1115,7 +1112,6 @@ public class FunUtil extends Util {
                     it.next();
                     retval++;
                 }
-//System.out.println("FunUtil.count NEW: includeEmpty =" +retval);
                 return retval;
             }
         } else {
@@ -1131,7 +1127,6 @@ public class FunUtil extends Util {
                     retval++;
                 }
             }
-//System.out.println("FunUtil.count NEW: =" +retval);
             return retval;
         }
     }
