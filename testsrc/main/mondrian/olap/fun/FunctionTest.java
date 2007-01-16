@@ -4416,6 +4416,15 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Store].[All Stores].[USA].[OR]"));
     }
 
+    public void testGenerateUniqueTuple() {
+        assertAxisReturns(
+            "Generate({([Store].[USA].[CA],[Product].[All Products]), " +
+            "([Store].[USA].[CA],[Product].[All Products])}," +
+            "{([Store].CurrentMember, [Product].CurrentMember)})",
+            fold(
+                "{[Store].[All Stores].[USA].[CA], [Product].[All Products]}"));
+     }
+
     public void testGenerateCrossJoin() {
         // Note that the different regions have different Top 2.
         assertAxisReturns(

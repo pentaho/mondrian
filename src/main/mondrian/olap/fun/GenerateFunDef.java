@@ -21,6 +21,7 @@ import mondrian.calc.impl.AbstractStringCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -127,11 +128,7 @@ class GenerateFunDef extends FunDefBase {
                         evaluator2.setContext(members);
                         final List<Object> result2 =
                             listCalc2.evaluateList(evaluator2);
-                        for (Object row : result2) {
-                            if (emitted.add(row)) {
-                                result.add(row);
-                            }
-                        }
+                        addDistinct(result, result2, emitted);
                     }
                 }
             } else {
@@ -148,16 +145,30 @@ class GenerateFunDef extends FunDefBase {
                     Set<Object> emitted = new HashSet<Object>();
                     for (Member member : list1) {
                         evaluator2.setContext(member);
-                        final List<Object> result2 = listCalc2.evaluateList(evaluator2);
-                        for (Object row : result2) {
-                            if (emitted.add(row)) {
-                                result.add(row);
-                            }
-                        }
+                        final List<Object> result2 =
+                            listCalc2.evaluateList(evaluator2);
+                        addDistinct(result, result2, emitted);
                     }
                 }
             }
             return result;
+        }
+
+        private void addDistinct(
+            List<Object> result,
+            List<Object> result2,
+            Set<Object> emitted) {
+            
+            for (Object row : result2) {
+                Object entry = row;
+                if (entry instanceof Member []) {
+                    // wrap array for correct distinctness test
+                    entry = new Member.ArrayEquals(entry);
+                }
+                if (emitted.add(entry)) {
+                    result.add(row);
+                }
+            }
         }
 
         public boolean dependsOn(Dimension dimension) {
