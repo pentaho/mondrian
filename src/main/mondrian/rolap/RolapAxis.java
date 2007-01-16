@@ -111,7 +111,7 @@ public abstract class RolapAxis implements Axis {
      * a List is materialized from the Iterable.
      */
     public static class MemberIterable extends RolapAxis {
-        private final Iterable<Member> iter;
+        private Iterable<Member> iter;
         private List<Member> list;
         public MemberIterable(Iterable<Member> iter) {
             this.iter = iter;
@@ -129,6 +129,9 @@ public abstract class RolapAxis implements Axis {
                 while (it.hasNext()) {
                     list.add(it.next());
                 }
+                // allow gc of iter
+                iter = null;
+
                 list = list;
             }
         }
@@ -306,7 +309,7 @@ public abstract class RolapAxis implements Axis {
      * a List is materialized from the Iterable.
      */
     public static class MemberArrayIterable extends RolapAxis {
-        private final Iterable<Member[]> iter;
+        private Iterable<Member[]> iter;
         private List<Member[]> list;
         private int len;
         public MemberArrayIterable(Iterable<Member[]> iter) {
@@ -326,6 +329,9 @@ public abstract class RolapAxis implements Axis {
                 while (it.hasNext()) {
                     list.add(it.next());
                 }
+                // allow gc of iter
+                iter = null;
+
                 list = list;
                 len = list.get(0).length;
             }

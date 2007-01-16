@@ -28,6 +28,8 @@ import mondrian.olap.Util;
 import mondrian.olap.UtilTestCase;
 import mondrian.olap.fun.FunctionTest;
 import mondrian.olap.fun.SortTest;
+import mondrian.olap.fun.CrossJoinTest;
+import mondrian.olap.fun.MemberHelperTest;
 import mondrian.olap.HierarchyBugTest;
 import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.*;
@@ -187,6 +189,11 @@ public class Main extends TestSuite {
             suite.addTestSuite(BUG_1541077.class);
             suite.addTestSuite(JolapTest.class);
             suite.addTestSuite(DataSourceChangeListenerTest.class);
+            suite.addTestSuite(ModulosTest.class);
+            suite.addTestSuite(CellKeyTest.class);
+            suite.addTestSuite(RolapAxisTest.class);
+            suite.addTestSuite(MemberHelperTest.class);
+            suite.addTestSuite(CrossJoinTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get())
