@@ -40,6 +40,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Axis #1:\n" +
             "Axis #2:\n");
 
+    public BasicQueryTest() {
+        super();
+    }
     public BasicQueryTest(String name) {
         super(name);
     }

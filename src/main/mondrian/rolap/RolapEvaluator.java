@@ -57,6 +57,10 @@ public class RolapEvaluator implements Evaluator {
     private int iterationLength;
     private boolean evalAxes;
 
+    private final Member[] calcMembers;
+    private int calcMemberCount;
+
+
     /**
      * Creates an evaluator.
      */
@@ -204,6 +208,11 @@ public class RolapEvaluator implements Evaluator {
     Member[] getCurrentMembers() {
         return this.currentMembers;
     }
+
+    public Member[] getMembers() {
+        return currentMembers;
+    }
+
 
     void setCellReader(CellReader cellReader) {
         this.cellReader = cellReader;
@@ -666,10 +675,6 @@ void printCurrentMemberNames() {
         return root.evaluateNamedSet(name, exp);
     }
 
-    public Member[] getMembers() {
-        return currentMembers;
-    }
-
     public int getMissCount() {
         return cellReader.getMissCount();
     }
@@ -677,9 +682,6 @@ void printCurrentMemberNames() {
     public Object getParameterValue(ParameterSlot slot) {
         return root.getParameterValue(slot);
     }
-
-    private final Member[] calcMembers;
-    private int calcMemberCount;
 
     void addCalcMember(Member member) {
         assert member != null;
@@ -730,23 +732,19 @@ void printCurrentMemberNames() {
         }
     }
     
-    public int getIterationLength()
-    {
+    public int getIterationLength() {
         return iterationLength;
     }
     
-    public void setIterationLength(int length)
-    {
+    public void setIterationLength(int length) {
         iterationLength = length;
     }
     
-    public boolean isEvalAxes()
-    {
+    public boolean isEvalAxes() {
         return evalAxes;
     }
     
-    public void setEvalAxes(boolean evalAxes)
-    {
+    public void setEvalAxes(boolean evalAxes) {
         this.evalAxes = evalAxes;
     }
 }

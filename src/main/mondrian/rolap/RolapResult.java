@@ -122,6 +122,13 @@ class RolapResult extends ResultBase {
                     // Sales] > 100) on columns from Sales where
                     // ([Time].[1998])" should show customers whose 1998 (not
                     // total) purchases exceeded 100.
+
+                    // Getting the Position list's size and the Position
+                    // at index == 0 will, in fact, cause an Iterable-base
+                    // Axis Position List to become a List-base Axis
+                    // Position List (and increae memory usage), but for 
+                    // the slicer axis, the number of Positions is very
+                    // small, so who cares.
                     switch (this.slicerAxis.getPositions().size()) {
                     case 0:
                         throw MondrianResource.instance().EmptySlicer.ex();
@@ -178,6 +185,9 @@ class RolapResult extends ResultBase {
 
             // Now that the axes are evaluated, make sure that the number of
             // cells does not exceed the result limit.
+            // If we set the ResultLimit, then we force a conversion of
+            // Iterable-base Axis Position Lists into List-based version -
+            // thats just the way it is.
             int limit = MondrianProperties.instance().ResultLimit.get();
             if (limit > 0) {
                 // result limit exceeded, throw an exception
@@ -202,6 +212,9 @@ class RolapResult extends ResultBase {
 
     protected Logger getLogger() {
         return LOGGER;
+    }
+    public Cube getCube() {
+        return evaluator.getCube();
     }
 
     // implement Result
@@ -451,10 +464,41 @@ class RolapResult extends ResultBase {
                     // Get the cell without default format string, if it returns
                     // null getFormattedValue() will try to evaluate a new
                     // format string
-                    Cell cell = getCellNoDefaultFormatString(key);
-                    Util.discard(cell.getFormattedValue());   
-                    String cachedFormatString = cell.getCachedFormatString(); 
+
+                    // The previous implementation created a RolapCell
+                    // with its int array of position indexes and then
+                    // used that array to set the context of the 
+                    // Evaluator (and as a result, forcing Iterable-base
+                    // RolapAxis to become List-base). Thats not necessary 
+                    // since at this point the current evaluator already has
+                    // the correct context, so we just use it here.
+                    //
+                    // This code is a combination of the code found in
+                    // the getCellNoDefaultFormatString method and 
+                    // the RolapCell getFormattedValue method.
+                    Object value = cellValues.get(key);
+                    if (value == null) {
+                        value = Util.nullValue;
+                    }
+                    String cachedFormatString = formatStrings.get(key);
+
+                    RolapCube cube = (RolapCube) getCube();
+                    Dimension measuresDim = 
+                            cube.getMeasuresHierarchy().getDimension();
+                    RolapMeasure m = 
+                            (RolapMeasure) evaluator.getContext(measuresDim);
+                    CellFormatter cf = m.getFormatter();
+                    if (cf != null) {
+                        cf.formatCell(value);
+                    } else {                                
+                        if (cachedFormatString == null) {
+                            cachedFormatString = evaluator.getFormatString();
+                        }
+                        evaluator.format(value, cachedFormatString);    
+                    } 
+
                     formatStrings.put(key, cachedFormatString);
+                    
                 } catch (MondrianEvaluationException e) {
                     // ignore
                 } catch (Throwable e) {
@@ -508,6 +552,12 @@ class RolapResult extends ResultBase {
         modulos = Modulos.Generator.create(axes);
     }
 
+    /** 
+     * Called only by RolapCell. 
+     * 
+     * @param pos 
+     * @return 
+     */
     RolapEvaluator getCellEvaluator(int[] pos) {
         final RolapEvaluator cellEvaluator = (RolapEvaluator) evaluator.push();
         for (int i = 0; i < pos.length; i++) {
@@ -515,6 +565,28 @@ class RolapResult extends ResultBase {
             cellEvaluator.setContext(position);
         }
         return cellEvaluator;
+    }
+
+    /** 
+     * Called only by RolapCell. Use this when creating an Evaluator
+     * (using method getCellEvaluator) is not required.
+     * 
+     * @param pos 
+     * @return 
+     */
+    Member[] getCellMembers(int[] pos) {
+        Member[] members = evaluator.getMembers().clone();
+        final Cube cube = getCube();
+        for (int i = 0; i < pos.length; i++) {
+            Position position = axes[i].getPositions().get(pos[i]);
+            for (Member member: position) {
+                RolapMember m = (RolapMember) member;
+                int ordinal = m.getDimension().getOrdinal(cube);
+                members[ordinal] = m;
+            }
+
+        }
+        return members;
     }
 
     Evaluator getRootEvaluator() {

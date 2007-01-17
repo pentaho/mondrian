@@ -45,9 +45,9 @@ class RolapCell implements Cell {
     }
     
     public String getFormattedValue() {
-        final Evaluator evaluator = result.getEvaluator(pos);
-        RolapCube c = (RolapCube) evaluator.getCube();
+        RolapCube c = (RolapCube) result.getCube();
         Dimension measuresDim = c.getMeasuresHierarchy().getDimension();
+        final Evaluator evaluator = result.getEvaluator(pos);
         RolapMeasure m = (RolapMeasure) evaluator.getContext(measuresDim);
 
         CellFormatter cf = m.getFormatter();
@@ -80,9 +80,7 @@ class RolapCell implements Cell {
      */
     public String getDrillThroughSQL(boolean extendedContext) {
         RolapAggregationManager aggMan = AggregationManager.instance();
-
-        final RolapEvaluator evaluator = getEvaluator();
-        final Member[] currentMembers = evaluator.getCurrentMembers();
+        final Member[] currentMembers = getMembers();
         CellRequest cellRequest = RolapAggregationManager.makeRequest(
                 currentMembers, extendedContext, true);
         return (cellRequest == null)
@@ -93,16 +91,14 @@ class RolapCell implements Cell {
 
     public int getDrillThroughCount() {
         RolapAggregationManager aggMan = AggregationManager.instance();
-
-        final RolapEvaluator evaluator = getEvaluator();
-        final Member[] currentMembers = evaluator.getCurrentMembers();
+        final Member[] currentMembers = getMembers();
         CellRequest cellRequest = RolapAggregationManager.makeRequest(
             currentMembers, false, true);
         if (cellRequest == null) {
             return -1;
         }
         RolapConnection connection =
-            (RolapConnection) evaluator.getQuery().getConnection();
+            (RolapConnection) result.getQuery().getConnection();
         java.sql.Connection jdbcConnection = null;
         ResultSet rs = null;
         final String sql = aggMan.getDrillThroughSql(cellRequest, true);
@@ -146,11 +142,11 @@ class RolapCell implements Cell {
      */
     public boolean canDrillThrough() {
         // Cannot drill through query based on virtual cube.
-        if (((RolapCube) getEvaluator().getCube()).isVirtual()) {
+        if (((RolapCube) result.getCube()).isVirtual()) {
             return false;
-        }
+        } 
         // get current members
-        final Member[] currentMembers = getEvaluator().getCurrentMembers();
+        final Member[] currentMembers = getMembers();
         // First member is the measure, test if it is stored measure, return
         // true if it is, false if not.
         return (currentMembers[0] instanceof RolapStoredMeasure);
@@ -158,6 +154,9 @@ class RolapCell implements Cell {
 
     private RolapEvaluator getEvaluator() {
         return result.getCellEvaluator(pos);
+    }
+    private Member[] getMembers() {
+        return result.getCellMembers(pos);
     }
 
     public Object getPropertyValue(String propertyName) {

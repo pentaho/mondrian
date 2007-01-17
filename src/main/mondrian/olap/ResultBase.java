@@ -64,6 +64,27 @@ public abstract class ResultBase implements Result {
     private void printRows(PrintWriter pw, int axis, int[] pos) {
         Axis _axis = axis < 0 ? slicerAxis : axes[axis];
         List<Position> positions = _axis.getPositions();
+        int i = 0;
+        for (Position position: positions) {
+            if (axis < 0) {
+                if (i > 0) {
+                    pw.print(", ");
+                }
+                printCell(pw, pos);
+            } else {
+                pos[axis] = i;
+                if (axis == 0) {
+                    int row = axis + 1 < pos.length ? pos[axis + 1] : 0;
+                    pw.print("Row #" + row + ": ");
+                }
+                printRows(pw, axis - 1, pos);
+                if (axis == 0) {
+                    pw.println();
+                }
+            }
+            i++;
+        }
+/*
         for (int i = 0, count = positions.size(); i < count; i++) {
             if (axis < 0) {
                 if (i > 0) {
@@ -82,6 +103,7 @@ public abstract class ResultBase implements Result {
                 }
             }
         }
+*/
     }
     private void printAxis(PrintWriter pw, Axis axis) {
         List<Position> positions = axis.getPositions();

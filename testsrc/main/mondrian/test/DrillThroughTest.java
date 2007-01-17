@@ -27,6 +27,9 @@ import mondrian.rolap.sql.SqlQuery;
  * @version $Id$
  */
 public class DrillThroughTest extends FoodMartTestCase {
+    public DrillThroughTest() {
+        super();
+    }
     public DrillThroughTest(String name) {
         super(name);
     }
