@@ -61,4 +61,4 @@ public class ResultStyleException extends MondrianException {
     }
 }
 
-// End ResourceLimitExceeded.java
+// End ResultStyleException.java

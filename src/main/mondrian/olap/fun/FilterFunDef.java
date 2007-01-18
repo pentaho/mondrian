@@ -212,6 +212,9 @@ if (! Util.PreJdk15) {
                         Iterator<Member> it = iter.iterator();
                         Member m = null;
                         public boolean hasNext() {
+                            if (m != null) {
+                                return true;
+                            }
                             if (! it.hasNext()) {
                                 return false;
                             } 
@@ -227,7 +230,11 @@ if (! Util.PreJdk15) {
                             return true;
                         }
                         public Member next() {
-                            return this.m;
+                            try {
+                                return this.m;
+                            } finally {
+                                this.m = null;
+                            }
                         }
                         public void remove() {
                             throw new UnsupportedOperationException("remove");
@@ -310,6 +317,9 @@ if (! Util.PreJdk15) {
                         Iterator<Member[]> it = iter.iterator();
                         Member[] m = null;
                         public boolean hasNext() {
+                            if (m != null) {
+                                return true;
+                            }
                             if (! it.hasNext()) {
                                 return false;
                             } 
@@ -325,7 +335,11 @@ if (! Util.PreJdk15) {
                             return true;
                         }
                         public Member[] next() {
-                            return this.m;
+                            try {
+                                return this.m;
+                            } finally {
+                                this.m = null;
+                            }
                         }
                         public void remove() {
                             throw new UnsupportedOperationException("remove");

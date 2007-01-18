@@ -61,6 +61,7 @@ class RolapResult extends ResultBase {
         this.batchingReader = new FastBatchingCellReader(rcube);
         this.cellValues = new HashMap<CellKey, Object>();
         this.formatStrings = new HashMap<CellKey, String>();
+
         if (!execute) {
             return;
         }
@@ -497,7 +498,10 @@ class RolapResult extends ResultBase {
                         evaluator.format(value, cachedFormatString);    
                     } 
 
-                    formatStrings.put(key, cachedFormatString);
+                    // no need to store a null format string
+                    if (cachedFormatString != null) {
+                        formatStrings.put(key, cachedFormatString);
+                    }
                     
                 } catch (MondrianEvaluationException e) {
                     // ignore

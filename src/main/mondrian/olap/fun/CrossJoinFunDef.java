@@ -356,6 +356,9 @@ if (! Util.PreJdk15) {
                         Iterator i2 = it2.iterator();
                         Object o2 = null;
                         public boolean hasNext() {
+                            if (o2 != null) {
+                                return true;
+                            }
                             if (! hasNextO1()) {
                                 return false;
                             }
@@ -374,7 +377,11 @@ if (! Util.PreJdk15) {
                             return true;
                         }
                         public Member[] next() {
-                            return makeNext(o1, o2);
+                            try {
+                                return makeNext(o1, o2);
+                            } finally {
+                                o2 = null;
+                            }
                         }
                         public void remove() {
                             throw new UnsupportedOperationException("remove");
@@ -416,6 +423,9 @@ if (! Util.PreJdk15) {
                         int index2 = 0;
                         Object o2 = null;
                         public boolean hasNext() {
+                            if (o2 != null) {
+                                return true;
+                            }
                             if (! hasNextO1()) {
                                 return false;
                             }
@@ -434,7 +444,11 @@ if (! Util.PreJdk15) {
                             return true;
                         }
                         public Member[] next() {
-                            return makeNext(o1, o2);
+                            try {
+                                return makeNext(o1, o2);
+                            } finally {
+                                o2 = null;
+                            }
                         }
                         public void remove() {
                             throw new UnsupportedOperationException("remove");
@@ -475,6 +489,9 @@ if (! Util.PreJdk15) {
                         Iterator i2 = it2.iterator();
                         Object o2 = null;
                         public boolean hasNext() {
+                            if (o2 != null) {
+                                return true;
+                            }
                             if (! hasNextO1()) {
                                 return false;
                             }
@@ -493,7 +510,11 @@ if (! Util.PreJdk15) {
                             return true;
                         }
                         public Member[] next() {
-                            return makeNext(o1, o2);
+                            try {
+                                return makeNext(o1, o2);
+                            } finally {
+                                o2 = null;
+                            }
                         }
                         public void remove() {
                             throw new UnsupportedOperationException("remove");
@@ -535,6 +556,9 @@ if (! Util.PreJdk15) {
                         int index2 = 0;
                         Object o2 = null;
                         public boolean hasNext() {
+                            if (o2 != null) {
+                                return true;
+                            }
                             if (! hasNextO1()) {
                                 return false;
                             }
@@ -553,7 +577,11 @@ if (! Util.PreJdk15) {
                             return true;
                         }
                         public Member[] next() {
-                            return makeNext(o1, o2);
+                            try {
+                                return makeNext(o1, o2);
+                            } finally {
+                                o2 = null;
+                            }
                         }
                         public void remove() {
                             throw new UnsupportedOperationException("remove");

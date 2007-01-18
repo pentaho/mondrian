@@ -340,17 +340,16 @@ if (! Util.PreJdk15) {
                         Iterable<Member> iterable = new Iterable<Member>() {
                             public Iterator<Member> iterator() { 
                                 return new Iterator<Member>() {
-                                    private Member m = null;
+                                    private Member m = member;
                                     public boolean hasNext() {
-                                        if (m == null) {
-                                            m = member;
-                                            return true;
-                                        } else {
-                                            return false;
-                                        }
+                                        return (m != null);
                                     }
                                     public Member next() {
-                                        return m;
+                                        try {
+                                            return m;
+                                        } finally {
+                                            m = null;
+                                        }
                                     }
                                     public void remove() {
                                         throw new UnsupportedOperationException("remove");
@@ -373,17 +372,16 @@ if (! Util.PreJdk15) {
                         Iterable<Member[]> iterable = new Iterable<Member[]>() {
                             public Iterator<Member[]> iterator() { 
                                 return new Iterator<Member[]>() {
-                                    private Member[] m = null;
+                                    private Member[] m = members;
                                     public boolean hasNext() {
-                                        if (m == null) {
-                                            m = members;
-                                            return true;
-                                        } else {
-                                            return false;
-                                        }
+                                        return (m != null);
                                     }
                                     public Member[] next() {
-                                        return m;
+                                        try {
+                                            return m;
+                                        } finally {
+                                            m = null;
+                                        }
                                     }
                                     public void remove() {
                                         throw new UnsupportedOperationException("remove");
@@ -408,6 +406,9 @@ if (! Util.PreJdk15) {
                         Iterator<Member> currentIterator = null;
                         Member member = null;
                         public boolean hasNext() {
+                            if (member != null) {
+                                return true;
+                            }
                             if (currentIterator == null) {
                                 if (index >= iterCalcs.length) {
                                     return false;
@@ -437,7 +438,11 @@ if (! Util.PreJdk15) {
                             return true;
                         }
                         public Member next() {
-                            return member;
+                            try {
+                                return member;
+                            } finally {
+                                member = null;
+                            }
                         }
                         public void remove() {
                             throw new UnsupportedOperationException("remove");

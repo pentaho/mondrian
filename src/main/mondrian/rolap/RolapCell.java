@@ -169,7 +169,9 @@ class RolapCell implements Cell {
             case Property.VALUE_ORDINAL:
                 return getValue();
             case Property.FORMAT_STRING_ORDINAL:
-                return getEvaluator().getFormatString();
+                return (cachedFormatString == null)
+                    ? getEvaluator().getFormatString()
+                    : cachedFormatString;
             case Property.FORMATTED_VALUE_ORDINAL:
                 return getFormattedValue();
             case Property.FONT_FLAGS_ORDINAL:

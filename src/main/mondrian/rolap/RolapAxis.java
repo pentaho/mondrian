@@ -15,6 +15,7 @@ import mondrian.olap.Axis;
 import mondrian.olap.Member;
 import mondrian.olap.Position;
 import mondrian.util.UnsupportedList;
+import org.apache.log4j.Logger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ListIterator;
@@ -34,6 +35,7 @@ import java.util.NoSuchElementException;
  * @version $Id$
  */
 public abstract class RolapAxis implements Axis {
+    private static final Logger LOGGER = Logger.getLogger(RolapAxis.class);
     /** 
      * A Wrapper has many uses. In particular, if one is using Java 5 or
      * above, one can create a Wrapper that is also a memory usage listener.
@@ -152,6 +154,11 @@ public abstract class RolapAxis implements Axis {
                 positionList = new PositionIter();
             }
             protected synchronized void materialize() {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(
+                       "PositionWrapper.materialize: Member iter.class="
+                             + iter.getClass().getName());
+                }
                 RolapAxis.MemberIterable.this.materialize();
                 positionList = new PositionList();
             }
@@ -218,9 +225,11 @@ public abstract class RolapAxis implements Axis {
                         return (member != null);
                     }
                     public Member next() {
-                        Member m = member;
-                        member = null;
-                        return m;
+                        try {
+                            return member;
+                        } finally {
+                            member = null;
+                        }
                     }
                     public void remove() {
                         throw new UnsupportedOperationException("remove");
@@ -363,6 +372,11 @@ public abstract class RolapAxis implements Axis {
                 positionList = new PositionIter();
             }
             protected synchronized void materialize() {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(
+                       "PositionWrapper.materialize: Member[] iter.class="
+                             + iter.getClass().getName());
+                }
                 RolapAxis.MemberArrayIterable.this.materialize();
                 positionList = new PositionList();
             }
@@ -400,10 +414,8 @@ public abstract class RolapAxis implements Axis {
             }
             public Iterator<Position> iterator() {
                 return new Iterator<Position>() {
-                    int hasNextCnt = 0;
                     int nextCnt = 0;
                     public boolean hasNext() {
-                        hasNextCnt++;
                         return it.hasNext();
                     }
                     public Position next() {
