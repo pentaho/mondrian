@@ -134,8 +134,6 @@ public abstract class RolapAxis implements Axis {
                 }
                 // allow gc of iter
                 iter = null;
-
-                list = list;
             }
         }
 
@@ -154,6 +152,8 @@ public abstract class RolapAxis implements Axis {
                 positionList = new PositionIter();
             }
             protected synchronized void materialize() {
+//System.out.println("materialize Member");
+//new Exception().printStackTrace();
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
                        "PositionWrapper.materialize: Member iter.class="
@@ -353,8 +353,7 @@ public abstract class RolapAxis implements Axis {
                 // allow gc of iter
                 iter = null;
 
-                list = list;
-                len = list.get(0).length;
+                len = (list.size() == 0) ? 0 : list.get(0).length;
             }
         }
 
@@ -372,6 +371,8 @@ public abstract class RolapAxis implements Axis {
                 positionList = new PositionIter();
             }
             protected synchronized void materialize() {
+//System.out.println("materialize Member[]");
+//new Exception().printStackTrace();
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
                        "PositionWrapper.materialize: Member[] iter.class="
@@ -505,7 +506,7 @@ public abstract class RolapAxis implements Axis {
         private final int len;
         public MemberArrayList(List<Member[]> list) {
             this.list = list;
-            this.len = list.get(0).length;
+            this.len = (list.size() == 0) ? 0 : list.get(0).length;
         }
         public List<Position> getPositions() {
             return new PositionList();

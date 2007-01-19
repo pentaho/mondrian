@@ -548,11 +548,13 @@ public class RolapConnection extends ConnectionBase {
                 return isEmptyRecurse(fixedAxis, axis - 1);
             } else {
                 List<Position> positions = getAxes()[axis].getPositions();
-                for (int i = 0, count = positions.size(); i < count; i++) {
+                int i = 0;
+                for (Position position: positions) {
                     pos[axis] = i;
                     if (!isEmptyRecurse(fixedAxis, axis - 1)) {
                         return false;
                     }
+                    i++;
                 }
                 return true;
             }

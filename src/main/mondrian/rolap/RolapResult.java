@@ -35,10 +35,31 @@ class RolapResult extends ResultBase {
 
     private static final Logger LOGGER = Logger.getLogger(ResultBase.class);
 
+    /** 
+     * CellInfo's contain all of the information that a Cell requires.
+     * They are placed in the cellInfos Map during evaluation and 
+     * serve as a constructor parameter for RolapCell. During the
+     * evaluation stage they are mutable but after evaluation has
+     * finished they are not changed.
+     */
+    static class CellInfo {
+        Object value;
+        String formatString;
+        String formattedValue;
+        CellInfo() {
+            this(null, null, null);
+        }
+        CellInfo(Object value, String formatString, String formattedValue) {
+            this.value = value;
+            this.formatString = formatString;
+            this.formattedValue = formattedValue;
+        }
+    }
+
     private final RolapEvaluator evaluator;
     private final CellKey point;
-    private final Map<CellKey, Object> cellValues;
-    private final Map<CellKey, String> formatStrings;
+
+    private final Map<CellKey, CellInfo> cellInfos;
     private final FastBatchingCellReader batchingReader;
     AggregatingCellReader aggregatingReader = new AggregatingCellReader();
     private Modulos modulos = null;
@@ -59,8 +80,7 @@ class RolapResult extends ResultBase {
         }
         RolapCube rcube = (RolapCube) query.getCube();
         this.batchingReader = new FastBatchingCellReader(rcube);
-        this.cellValues = new HashMap<CellKey, Object>();
-        this.formatStrings = new HashMap<CellKey, String>();
+        this.cellInfos = new HashMap<CellKey, CellInfo>();
 
         if (!execute) {
             return;
@@ -69,8 +89,8 @@ class RolapResult extends ResultBase {
         // for use in debugging Checkin_7634
         Util.discard(Bug.Checkin7634DoOld);
         try {
-            // An array of lists which will hold each axis' implicit members (does
-            // not include slicer axis).
+            // An array of lists which will hold each axis' implicit members 
+            // (does not include slicer axis).
             // One might imagine that one could have an axisMembers list per
             // non-slicer axis and then keep track on a per-axis basis and
             // finally only re-evaluate those axes for which the other axes have
@@ -222,37 +242,22 @@ class RolapResult extends ResultBase {
     public Axis[] getAxes() {
         return axes;
     }
+
     public Cell getCell(int[] pos) {
         if (pos.length != point.size()) {
             throw Util.newError(
                     "coordinates should have dimension " + point.size());
         }
+
         CellKey key = point.make(pos);
-        Object value = cellValues.get(key);
-        if (value == null) {
-            value = Util.nullValue;
+        CellInfo ci = cellInfos.get(key);
+        if (ci.value == null) {
+            ci.value = Util.nullValue;
         }
-        String formatString = formatStrings.get(key);
-        if (formatString == null) {
-            Cell cell = getCellNoDefaultFormatString(key);
-            Util.discard(cell.getFormattedValue());   
-            formatString = cell.getCachedFormatString(); 
-            if (formatString == null) {
-                formatString = "Standard";
-            }
-        }        
-        return new RolapCell(this, (int[]) pos.clone(), value, formatString);
+
+        return new RolapCell(this, (int[]) pos.clone(), ci);
     }
         
-    private Cell getCellNoDefaultFormatString(CellKey key) {
-        Object value = cellValues.get(key);
-        if (value == null) {
-            value = Util.nullValue;
-        }
-        String formatString = formatStrings.get(key);
-        return new RolapCell(this, key.getOrdinals(), value, formatString);
-    }    
-
     private Axis executeAxis(
         Evaluator evaluator,
         QueryAxis axis,
@@ -346,12 +351,11 @@ class RolapResult extends ResultBase {
             // evaluator which collects requests.
             int count = 0;
             while (true) {
-                cellValues.clear();
-                formatStrings.clear();
+                cellInfos.clear();
 
                 evaluator.setCellReader(this.batchingReader);
-                executeStripe(query.axes.length - 1,
-                    (RolapEvaluator) evaluator.push());
+                executeStripe(query.axes.length - 1, 
+                                (RolapEvaluator) evaluator.push());
                 evaluator.clearExpResultCache();
 
                 // Retrieve the aggregations collected.
@@ -440,23 +444,25 @@ class RolapResult extends ResultBase {
         }
     }
 
-    private void executeStripe(int axisOrdinal, RolapEvaluator evaluator) {
+    private void executeStripe(int axisOrdinal, RolapEvaluator revaluator) {
         if (axisOrdinal < 0) {
             Axis axis = slicerAxis;
             List<Position> positions = axis.getPositions();
             for (Position position: positions) {
-                evaluator.getQuery().checkCancelOrTimeout();
-                evaluator.setContext(position);
+                getQuery().checkCancelOrTimeout();
+                revaluator.setContext(position);
+CellInfo ci = null;
                 Object o;
                 try {
-                    o = evaluator.evaluateCurrent();
+                    o = revaluator.evaluateCurrent();
                 } catch (MondrianEvaluationException e) {
                     o = e;
                 }
+/*
                 if (o == null) {
                     continue;
                 }                
-                
+*/
                 CellKey key = point.copy();
                 // Compute the formatted value, to ensure that any needed values
                 // are in the cache.  Also compute this when value is null
@@ -477,32 +483,44 @@ class RolapResult extends ResultBase {
                     // This code is a combination of the code found in
                     // the getCellNoDefaultFormatString method and 
                     // the RolapCell getFormattedValue method.
-                    Object value = cellValues.get(key);
-                    if (value == null) {
-                        value = Util.nullValue;
+
+                    ci = cellInfos.get(key);
+                    if (ci == null) {
+                        ci = new CellInfo();
+                        cellInfos.put(key, ci);
                     }
-                    String cachedFormatString = formatStrings.get(key);
+
+                    String cachedFormatString = null;
+                    String cachedValueString = null;
 
                     RolapCube cube = (RolapCube) getCube();
                     Dimension measuresDim = 
                             cube.getMeasuresHierarchy().getDimension();
                     RolapMeasure m = 
-                            (RolapMeasure) evaluator.getContext(measuresDim);
+                            (RolapMeasure) revaluator.getContext(measuresDim);
                     CellFormatter cf = m.getFormatter();
                     if (cf != null) {
-                        cf.formatCell(value);
+                        cachedValueString = cf.formatCell(o);
                     } else {                                
                         if (cachedFormatString == null) {
-                            cachedFormatString = evaluator.getFormatString();
+                            cachedFormatString = revaluator.getFormatString();
                         }
-                        evaluator.format(value, cachedFormatString);    
+                        cachedValueString = 
+                            revaluator.format(o, cachedFormatString);    
                     } 
+
+                    if (cachedFormatString == null) {
+                        cachedFormatString = revaluator.getFormatString();
+                    }
 
                     // no need to store a null format string
                     if (cachedFormatString != null) {
-                        formatStrings.put(key, cachedFormatString);
+                        ci.formatString = cachedFormatString;
                     }
-                    
+                    if (cachedValueString != null) {
+                        ci.formattedValue = cachedValueString;
+                    }
+
                 } catch (MondrianEvaluationException e) {
                     // ignore
                 } catch (Throwable e) {
@@ -511,7 +529,7 @@ class RolapResult extends ResultBase {
                 if (o == RolapUtil.valueNotReadyException) {
                     continue;
                 }                
-                cellValues.put(key, o);                
+                ci.value = o;
             }
         } else {
             Axis axis = axes[axisOrdinal];
@@ -519,9 +537,9 @@ class RolapResult extends ResultBase {
             int i = 0;
             for (Position position: positions) {
                 point.setAxis(axisOrdinal, i);
-                evaluator.setContext(position);
-                evaluator.getQuery().checkCancelOrTimeout();
-                executeStripe(axisOrdinal - 1, evaluator);
+                revaluator.setContext(position);
+                getQuery().checkCancelOrTimeout();
+                executeStripe(axisOrdinal - 1, revaluator);
                 i++;
             }
         }

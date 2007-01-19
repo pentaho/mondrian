@@ -21,53 +21,51 @@ import java.sql.*;
  */
 class RolapCell implements Cell {
     private final RolapResult result;
-    protected final Object value;
-    protected String cachedFormatString;
     protected final int[] pos;
+    protected RolapResult.CellInfo ci;
 
-    RolapCell(RolapResult result, int[] pos, Object value) {
-        this(result, pos, value, null);
-    }
-    
-    RolapCell(RolapResult result, int[] pos, Object value, String cachedFormatString) {
+    RolapCell(RolapResult result, int[] pos, RolapResult.CellInfo ci) {
         this.result = result;
-        this.value = value;
         this.pos = pos;
-        this.cachedFormatString = cachedFormatString;
+        this.ci = ci;
     }
 
     public Object getValue() {
-        return value;
+        return ci.value;
     }
     
     public String getCachedFormatString() {
-        return cachedFormatString;
+        return ci.formatString;
     }
     
     public String getFormattedValue() {
-        RolapCube c = (RolapCube) result.getCube();
-        Dimension measuresDim = c.getMeasuresHierarchy().getDimension();
-        final Evaluator evaluator = result.getEvaluator(pos);
-        RolapMeasure m = (RolapMeasure) evaluator.getContext(measuresDim);
+        if (ci.formatString == null) {
+            RolapCube c = (RolapCube) result.getCube();
+            Dimension measuresDim = c.getMeasuresHierarchy().getDimension();
+            final Evaluator evaluator = result.getEvaluator(pos);
+            RolapMeasure m = (RolapMeasure) evaluator.getContext(measuresDim);
 
-        CellFormatter cf = m.getFormatter();
-        
-        if (cf != null) {
-            return cf.formatCell(value);
-        } else {                                
-            if (cachedFormatString == null) {
-                cachedFormatString = evaluator.getFormatString();
-            }
-            return evaluator.format(value, cachedFormatString);    
-        } 
+            CellFormatter cf = m.getFormatter();
+            
+            if (cf != null) {
+                ci.formattedValue = cf.formatCell(ci.value);
+            } else {                                
+                if (ci.formatString == null) {
+                    ci.formatString = evaluator.getFormatString();
+                }
+                ci.formattedValue = 
+                    evaluator.format(ci.value, ci.formatString);    
+            } 
+        }
+        return ci.formattedValue;
     }
     
     public boolean isNull() {
-        return (value == Util.nullValue);
+        return (ci.value == Util.nullValue);
     }
     
     public boolean isError() {
-        return (value instanceof Throwable);
+        return (ci.value instanceof Throwable);
     }
 
     /**
@@ -169,9 +167,10 @@ class RolapCell implements Cell {
             case Property.VALUE_ORDINAL:
                 return getValue();
             case Property.FORMAT_STRING_ORDINAL:
-                return (cachedFormatString == null)
-                    ? getEvaluator().getFormatString()
-                    : cachedFormatString;
+                if (ci.formatString == null) {
+                    ci.formatString = getEvaluator().getFormatString();
+                }
+                return ci.formatString;
             case Property.FORMATTED_VALUE_ORDINAL:
                 return getFormattedValue();
             case Property.FONT_FLAGS_ORDINAL:
