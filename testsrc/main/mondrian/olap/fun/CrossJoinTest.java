@@ -377,10 +377,78 @@ if (! Util.PreJdk15) {
 //System.out.println("l2="+s2);
         Assert.assertEquals(s2, e2);
 
-        List<Member[]> iter = calc.makeList(l1, l2);
-        String s = toString(iter);
+        List<Member[]> list = calc.makeList(l1, l2);
+        String s = toString(list);
         String e = "{[a,A],[a,B],[a,C],[a,D],[b,A],[b,B],[b,C],[b,D],[c,A],[c,B],[c,C],[c,D]}";
-//System.out.println("iter="+s);
+//System.out.println("list="+s);
+        Assert.assertEquals(s, e);
+
+        List<Member[]> subList = list.subList(0, 12);
+        s = toString(subList);
+//System.out.println("list="+s);
+        Assert.assertEquals(s, e);
+
+        subList = list.subList(5, 12);
+        s = toString(subList);
+//System.out.println("list="+s);
+        e = "{[b,B],[b,C],[b,D],[c,A],[c,B],[c,C],[c,D]}";
+        Assert.assertEquals(s, e);
+
+        subList = list.subList(0, 8);
+//System.out.println("subList.size="+subList.size());
+        Assert.assertEquals(8, subList.size());
+        s = toString(subList);
+//System.out.println("subList="+s);
+        e = "{[a,A],[a,B],[a,C],[a,D],[b,A],[b,B],[b,C],[b,D]}";
+//System.out.println("expect ="+e);
+        Assert.assertEquals(s, e);
+
+        subList = list.subList(0, 12);
+//System.out.println("subList.size="+subList.size());
+        Assert.assertEquals(12, subList.size());
+        subList = subList.subList(4, 10);
+        Assert.assertEquals(6, subList.size());
+//System.out.println("subList.size="+subList.size());
+        s = toString(subList);
+//System.out.println("subList="+s);
+        e = "{[b,A],[b,B],[b,C],[b,D],[c,A],[c,B]}";
+//System.out.println("expect ="+e);
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(1, 4);
+//System.out.println("subList.size="+subList.size());
+        Assert.assertEquals(3, subList.size());
+        s = toString(subList);
+//System.out.println("subList="+s);
+        e = "{[b,B],[b,C],[b,D]}";
+//System.out.println("expect ="+e);
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(1, 2);
+//System.out.println("subList.size="+subList.size());
+        Assert.assertEquals(1, subList.size());
+        s = toString(subList);
+//System.out.println("subList="+s);
+        e = "{[b,C]}";
+//System.out.println("expect ="+e);
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(0, 1);
+//System.out.println("subList.size="+subList.size());
+        Assert.assertEquals(1, subList.size());
+        s = toString(subList);
+//System.out.println("subList="+s);
+        e = "{[b,C]}";
+//System.out.println("expect ="+e);
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(0, 0);
+//System.out.println("subList.size="+subList.size());
+        Assert.assertEquals(0, subList.size());
+        s = toString(subList);
+//System.out.println("subList="+s);
+        e = "{}";
+//System.out.println("expect ="+e);
         Assert.assertEquals(s, e);
     }
     ////////////////////////////////////////////////////////////////////////
@@ -410,10 +478,56 @@ if (! Util.PreJdk15) {
 //System.out.println("l3="+s3);
         Assert.assertEquals(s3, e3);
 
-        List<Member[]> iter = calc.makeList(l1, l3);
-        String s = toString(iter);
+        List<Member[]> list = calc.makeList(l1, l3);
+        String s = toString(list);
         String e = "{[a,k,l],[a,m,n],[b,k,l],[b,m,n],[c,k,l],[c,m,n]}";
-//System.out.println("iter="+s);
+//System.out.println("list="+s);
+        Assert.assertEquals(s, e);
+
+        List<Member[]> subList = list.subList(0, 6);
+        s = toString(subList);
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(6, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(0, 6);
+        s = toString(subList);
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(6, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = list.subList(1, 5);
+        s = toString(subList);
+        e = "{[a,m,n],[b,k,l],[b,m,n],[c,k,l]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(4, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(1, 3);
+        s = toString(subList);
+        e = "{[b,k,l],[b,m,n]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(2, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(1, 2);
+        s = toString(subList);
+        e = "{[b,m,n]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(1, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = list.subList(4, 4);
+        s = toString(subList);
+        e = "{}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(0, subList.size());
         Assert.assertEquals(s, e);
     }
 
@@ -444,10 +558,89 @@ if (! Util.PreJdk15) {
 //System.out.println("l2="+s2);
         Assert.assertEquals(s2, e2);
 
-        List<Member[]> iter = calc.makeList(l3, l2);
-        String s = toString(iter);
+        List<Member[]> list = calc.makeList(l3, l2);
+        String s = toString(list);
         String e = "{[k,l,A],[k,l,B],[k,l,C],[k,l,D],[m,n,A],[m,n,B],[m,n,C],[m,n,D]}";
-//System.out.println("iter="+s);
+//System.out.println("list="+s);
+        Assert.assertEquals(s, e);
+
+        List<Member[]> subList = list.subList(0, 8);
+        s = toString(subList);
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(8, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = list.subList(1, 7);
+        s = toString(subList);
+        e = "{[k,l,B],[k,l,C],[k,l,D],[m,n,A],[m,n,B],[m,n,C]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(6, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = list.subList(4, 5);
+        s = toString(subList);
+        e = "{[m,n,A]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(1, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(0, 1);
+        s = toString(subList);
+        e = "{[m,n,A]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(1, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(0, 0);
+        s = toString(subList);
+        e = "{}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(0, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = list.subList(0, 8);
+        s = toString(subList);
+        e = "{[k,l,A],[k,l,B],[k,l,C],[k,l,D],[m,n,A],[m,n,B],[m,n,C],[m,n,D]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(8, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(0, 8);
+        s = toString(subList);
+        e = "{[k,l,A],[k,l,B],[k,l,C],[k,l,D],[m,n,A],[m,n,B],[m,n,C],[m,n,D]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(8, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(1, 7);
+        s = toString(subList);
+        e = "{[k,l,B],[k,l,C],[k,l,D],[m,n,A],[m,n,B],[m,n,C]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(6, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(1, 5);
+        s = toString(subList);
+        e = "{[k,l,C],[k,l,D],[m,n,A],[m,n,B]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(4, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(1, 3);
+        s = toString(subList);
+        e = "{[k,l,D],[m,n,A]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(2, subList.size());
         Assert.assertEquals(s, e);
     }
 
@@ -479,10 +672,80 @@ if (! Util.PreJdk15) {
 //System.out.println("l3="+s3);
         Assert.assertEquals(s3, e3);
 
-        List<Member[]> iter = calc.makeList(l4, l3);
-        String s = toString(iter);
+        List<Member[]> list = calc.makeList(l4, l3);
+        String s = toString(list);
         String e = "{[U,V,k,l],[U,V,m,n],[W,X,k,l],[W,X,m,n],[Y,Z,k,l],[Y,Z,m,n]}";
-//System.out.println("iter="+s);
+//System.out.println("list="+s);
+        Assert.assertEquals(s, e);
+
+        List<Member[]> subList = list.subList(0, 6);
+        s = toString(subList);
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(6, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(0, 6);
+        s = toString(subList);
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(6, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(1, 5);
+        s = toString(subList);
+        e = "{[U,V,m,n],[W,X,k,l],[W,X,m,n],[Y,Z,k,l]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(4, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(2, 4);
+        s = toString(subList);
+        e = "{[W,X,m,n],[Y,Z,k,l]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(2, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = subList.subList(1, 2);
+        s = toString(subList);
+        e = "{[Y,Z,k,l]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(1, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = list.subList(1, 4);
+        s = toString(subList);
+        e = "{[U,V,m,n],[W,X,k,l],[W,X,m,n]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(3, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = list.subList(2, 4);
+        s = toString(subList);
+        e = "{[W,X,k,l],[W,X,m,n]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(2, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = list.subList(2, 3);
+        s = toString(subList);
+        e = "{[W,X,k,l]}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(1, subList.size());
+        Assert.assertEquals(s, e);
+
+        subList = list.subList(4, 4);
+        s = toString(subList);
+        e = "{}";
+//System.out.println("subList="+s);
+//System.out.println("expect ="+e);
+        Assert.assertEquals(0, subList.size());
         Assert.assertEquals(s, e);
     }
 

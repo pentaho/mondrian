@@ -1247,7 +1247,7 @@ if (! Util.PreJdk15) {
                             return Outer.this.get(index + this.fromIndex);
                         }
                         public List<Member[]> subList(int fromIndex, int toIndex) {
-                            return new Inner(this.fromIndex+fromIndex, toIndex);
+                            return new Inner(this.fromIndex+fromIndex, this.fromIndex+toIndex);
                         }
                     }
                     return new Inner(fromIndex, toIndex);
@@ -1296,7 +1296,7 @@ if (! Util.PreJdk15) {
                             return Outer.this.get(index + this.fromIndex);
                         }
                         public List<Member[]> subList(int fromIndex, int toIndex) {
-                            return new Inner(this.fromIndex+fromIndex, toIndex);
+                            return new Inner(this.fromIndex+fromIndex, this.fromIndex+toIndex);
                         }
                     }
                     return new Inner(fromIndex, toIndex);
@@ -1344,7 +1344,7 @@ if (! Util.PreJdk15) {
                             return Outer.this.get(index + this.fromIndex);
                         }
                         public List<Member[]> subList(int fromIndex, int toIndex) {
-                            return new Inner(this.fromIndex+fromIndex, toIndex);
+                            return new Inner(this.fromIndex+fromIndex, this.fromIndex+toIndex);
                         }
                     }
                     return new Inner(fromIndex, toIndex);
@@ -1394,7 +1394,7 @@ if (! Util.PreJdk15) {
                             return Outer.this.get(index + this.fromIndex);
                         }
                         public List<Member[]> subList(int fromIndex, int toIndex) {
-                            return new Inner(this.fromIndex+fromIndex, toIndex);
+                            return new Inner(this.fromIndex+fromIndex, this.fromIndex+toIndex);
                         }
                     }
                     return new Inner(fromIndex, toIndex);
