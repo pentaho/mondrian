@@ -51,6 +51,9 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
     // session id properpty
     public static final String SESSION_ID_PROP     = "session.id";
 
+    public XmlaExcel2000Test() {
+        super();
+    }
     public XmlaExcel2000Test(String name) {
         super(name);
     }

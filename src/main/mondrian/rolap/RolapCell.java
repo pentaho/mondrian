@@ -39,25 +39,7 @@ class RolapCell implements Cell {
     }
     
     public String getFormattedValue() {
-        if (ci.formatString == null) {
-            RolapCube c = (RolapCube) result.getCube();
-            Dimension measuresDim = c.getMeasuresHierarchy().getDimension();
-            final Evaluator evaluator = result.getEvaluator(pos);
-            RolapMeasure m = (RolapMeasure) evaluator.getContext(measuresDim);
-
-            CellFormatter cf = m.getFormatter();
-            
-            if (cf != null) {
-                ci.formattedValue = cf.formatCell(ci.value);
-            } else {                                
-                if (ci.formatString == null) {
-                    ci.formatString = evaluator.getFormatString();
-                }
-                ci.formattedValue = 
-                    evaluator.format(ci.value, ci.formatString);    
-            } 
-        }
-        return ci.formattedValue;
+        return ci.getFormatValue();
     }
     
     public boolean isNull() {

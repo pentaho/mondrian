@@ -57,11 +57,18 @@ public interface Modulos {
         public static Modulos createMany(Axis[] axes) {
             return new Modulos.Many(axes);
         }
+        public static Modulos createMany(int[] lengths) {
+            return new Modulos.Many(lengths);
+        }
     }
     public abstract class Base implements Modulos {
         protected final int[] modulos;
         protected Base(final Axis[] axes) {
             this.modulos = new int[axes.length+1];
+            this.modulos[0] = 1;
+        }
+        protected Base(final int[] lengths) {
+            this.modulos = new int[lengths.length+1];
             this.modulos[0] = 1;
         }
         public abstract int[] getCellPos(int cellOrdinal);
@@ -162,6 +169,15 @@ public interface Modulos {
             int modulo = 1;
             for (int i = 0; i < axes.length; i++) {
                 modulo *= axes[i].getPositions().size();
+                this.modulos[i + 1] = modulo;
+            }
+        }
+        private Many(final int[] lengths) {
+            super(lengths);
+
+            int modulo = 1;
+            for (int i = 0; i < lengths.length; i++) {
+                modulo *= lengths[i];
                 this.modulos[i + 1] = modulo;
             }
         }

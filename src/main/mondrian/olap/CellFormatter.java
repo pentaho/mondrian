@@ -10,8 +10,16 @@
 package mondrian.olap;
 
 /**
- * this interface provides a user exit to format
- * the cell value beeing beeing displayed.
+ * This interface provides a user exit to format
+ * the cell value to be displayed. The user registers the CellFormatter's
+ * full class name as an attribute of a Measure in the schema file.
+ * A single instance of the CellFormatter is created for the Measure.
+ * <p>
+ * It is important that different CellFormatter's, CellFormatter that will
+ * be used to format different Measures in different ways, implement
+ * the <code>equals</code> and <code>hashCode</code> methods so that
+ * the different CellFormatter are not treated as being the same in
+ * a java.util.Collection.
  */
 public interface CellFormatter {
 
