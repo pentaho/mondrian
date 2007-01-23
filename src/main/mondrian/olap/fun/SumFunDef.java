@@ -49,12 +49,16 @@ class SumFunDef extends AbstractAggregateFunDef {
             case ANY :
 if (! Util.PreJdk15) {
                 // Consumer wants ITERABLE or ANY to be used
-                return compileCallIterable(call, compiler);
+                //return compileCallIterable(call, compiler);
+                return compileCall(call, compiler, ResultStyle.ITERABLE);
 }
             case MUTABLE_LIST:
+                // Consumer wants MUTABLE_LIST 
+                return compileCall(call, compiler, ResultStyle.MUTABLE_LIST);
             case LIST :
-                // Consumer wants MUTABLE_LIST or LIST to be used
-                return compileCallList(call, compiler);
+                // Consumer wants LIST to be used
+                //return compileCallList(call, compiler);
+                return compileCall(call, compiler, ResultStyle.LIST);
             }
         }
         throw ResultStyleException.generate(
@@ -67,13 +71,22 @@ if (! Util.PreJdk15) {
             rs
         );
     }
-
-    protected Calc compileCallIterable(final ResolvedFunCall call, 
-            ExpCompiler compiler) {
-        final Calc ncalc = compiler.compile(call.getArg(0));
+    protected Calc compileCall(final ResolvedFunCall call, 
+            ExpCompiler compiler, ResultStyle resultStyle) {
+        final Calc ncalc = compiler.compile(call.getArg(0),
+                    new ResultStyle[] { resultStyle});
         final Calc calc = call.getArgCount() > 1 ?
                 compiler.compileScalar(call.getArg(1), true) :
                 new ValueCalc(call);
+        // we may have asked for one sort of Calc, but here's what we got.
+        if (ncalc instanceof ListCalc) {
+            return genListCalc(call, ncalc, calc);
+        } else {
+            return genIterCalc(call, ncalc, calc);
+        }
+    }
+    protected Calc genIterCalc(final ResolvedFunCall call, 
+            final Calc ncalc, final Calc calc) {
         return new AbstractDoubleCalc(call, new Calc[] {ncalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 IterCalc iterCalc = (IterCalc) ncalc; 
@@ -91,12 +104,9 @@ if (! Util.PreJdk15) {
             }
         };
     }
-    protected Calc compileCallList(final ResolvedFunCall call, 
-            ExpCompiler compiler) {
-        final Calc ncalc = compiler.compile(call.getArg(0));
-        final Calc calc = call.getArgCount() > 1 ?
-                compiler.compileScalar(call.getArg(1), true) :
-                new ValueCalc(call);
+
+    protected Calc genListCalc(final ResolvedFunCall call, 
+            final Calc ncalc, final Calc calc) {
         return new AbstractDoubleCalc(call, new Calc[] {ncalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 ListCalc listCalc = (ListCalc) ncalc;
@@ -113,7 +123,6 @@ if (! Util.PreJdk15) {
             }
         };
     }
-
 }
 
 // End SumFunDef.java
