@@ -1204,10 +1204,25 @@ if (! Util.PreJdk15) {
         }
         protected List<Member[]> makeList(final List l1, final List l2) {
             final int size = l1.size() * l2.size();
-
-            List<Member[]> list = new BaseImmutableList() {
+            // This is the mythical "local class" declaration.
+            // Observer that in the subList method, there is another
+            // such class declaration. The outer one can not be an 
+            // anonymous class because
+            // the inner one must reference, have a name for, the
+            // outer one. The inner one is needed because it includes
+            // the offset into the outer one as instance variables.
+            // The outer class has no explicit instance variables
+            // though it does have the implicit List finals, l1 and l2.
+            // One can call the inner class's subList method repeatedly
+            // and each new Inner object return adds an additional
+            // "fromIndex" to the "get" method calls.
+            // 
+            // All of this works because the underlying lists are
+            // immutable.
+            // 
+            class Outer extends BaseImmutableList {
+                Outer() {}
                 public int size() {
-                    //return l1.size() * l2.size();
                     return size;
                 }
                 public Member[] get(int index) {
@@ -1217,8 +1232,28 @@ if (! Util.PreJdk15) {
                     Member m2 = (Member) l2.get(j);
                     return new Member[] { m1, m2 };
                 }
+                public List<Member[]> subList(int fromIndex, int toIndex) {
+                    class Inner extends Outer {
+                        int fromIndex;
+                        int toIndex;
+                        Inner(int fromIndex, int toIndex) {
+                            this.fromIndex = fromIndex;
+                            this.toIndex = toIndex;
+                        }
+                        public int size() {
+                            return (this.toIndex - this.fromIndex);
+                        }
+                        public Member[] get(int index) {
+                            return Outer.this.get(index + this.fromIndex);
+                        }
+                        public List<Member[]> subList(int fromIndex, int toIndex) {
+                            return new Inner(this.fromIndex+fromIndex, toIndex);
+                        }
+                    }
+                    return new Inner(fromIndex, toIndex);
+                }
             };
-            return list;
+            return new Outer();
         }
     }
 
@@ -1231,8 +1266,8 @@ if (! Util.PreJdk15) {
         protected List<Member[]> makeList(final List l1, final List l2) {
             final int len2 = ((Member[])l2.get(0)).length;
             final int size = (l1.size() * l2.size());
-
-            List<Member[]> list = new BaseImmutableList() {
+            class Outer extends BaseImmutableList {
+                Outer() {}
                 public int size() {
                     return size;
                 }
@@ -1246,8 +1281,28 @@ if (! Util.PreJdk15) {
                     System.arraycopy(ma2, 0, ma, 1, len2);
                     return ma;
                 }
+                public List<Member[]> subList(int fromIndex, int toIndex) {
+                    class Inner extends Outer {
+                        int fromIndex;
+                        int toIndex;
+                        Inner(int fromIndex, int toIndex) {
+                            this.fromIndex = fromIndex;
+                            this.toIndex = toIndex;
+                        }
+                        public int size() {
+                            return (this.toIndex - this.fromIndex);
+                        }
+                        public Member[] get(int index) {
+                            return Outer.this.get(index + this.fromIndex);
+                        }
+                        public List<Member[]> subList(int fromIndex, int toIndex) {
+                            return new Inner(this.fromIndex+fromIndex, toIndex);
+                        }
+                    }
+                    return new Inner(fromIndex, toIndex);
+                }
             };
-            return list;
+            return new Outer();
         }
     }
     // LIST Member[] LIST Member
@@ -1259,8 +1314,8 @@ if (! Util.PreJdk15) {
         protected List<Member[]> makeList(final List l1, final List l2) {
             final int len1 = ((Member[])l1.get(0)).length;
             final int size = (l1.size() * l2.size());
-
-            List<Member[]> list = new BaseImmutableList() {
+            class Outer extends BaseImmutableList {
+                Outer() {}
                 public int size() {
                     return size;
                 }
@@ -1274,8 +1329,28 @@ if (! Util.PreJdk15) {
                     ma[len1] = m2;
                     return ma;
                 }
-            };
-            return list;
+                public List<Member[]> subList(int fromIndex, int toIndex) {
+                    class Inner extends Outer {
+                        int fromIndex;
+                        int toIndex;
+                        Inner(int fromIndex, int toIndex) {
+                            this.fromIndex = fromIndex;
+                            this.toIndex = toIndex;
+                        }
+                        public int size() {
+                            return (this.toIndex - this.fromIndex);
+                        }
+                        public Member[] get(int index) {
+                            return Outer.this.get(index + this.fromIndex);
+                        }
+                        public List<Member[]> subList(int fromIndex, int toIndex) {
+                            return new Inner(this.fromIndex+fromIndex, toIndex);
+                        }
+                    }
+                    return new Inner(fromIndex, toIndex);
+                }
+            }
+            return new Outer();
         }
     }
     // LIST Member[] LIST Member[]
@@ -1289,7 +1364,8 @@ if (! Util.PreJdk15) {
             final int len2 = ((Member[])l2.get(0)).length;
             final int size = (l1.size() * l2.size());
 
-            List<Member[]> list = new BaseImmutableList() {
+            class Outer extends BaseImmutableList {
+                Outer() {}
                 public int size() {
                     return size;
                 }
@@ -1303,8 +1379,28 @@ if (! Util.PreJdk15) {
                     System.arraycopy(ma2, 0, ma, len1, len2);
                     return ma;
                 }
-            };
-            return list;
+                public List<Member[]> subList(int fromIndex, int toIndex) {
+                    class Inner extends Outer {
+                        int fromIndex;
+                        int toIndex;
+                        Inner(int fromIndex, int toIndex) {
+                            this.fromIndex = fromIndex;
+                            this.toIndex = toIndex;
+                        }
+                        public int size() {
+                            return (this.toIndex - this.fromIndex);
+                        }
+                        public Member[] get(int index) {
+                            return Outer.this.get(index + this.fromIndex);
+                        }
+                        public List<Member[]> subList(int fromIndex, int toIndex) {
+                            return new Inner(this.fromIndex+fromIndex, toIndex);
+                        }
+                    }
+                    return new Inner(fromIndex, toIndex);
+                }
+            }
+            return new Outer();
         }
     }
 
