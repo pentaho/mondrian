@@ -725,7 +725,6 @@ class RolapResult extends ResultBase {
             // evaluator which collects requests.
             int count = 0;
             while (true) {
-                cellInfos.clear();
 
                 evaluator.setCellReader(this.batchingReader);
                 executeStripe(query.axes.length - 1, 
@@ -754,6 +753,8 @@ class RolapResult extends ResultBase {
                             + count + " iterations");
                     }
                 }
+
+                cellInfos.clear();
             }
         } finally {
             // This call to clear the cube's cache only has an
