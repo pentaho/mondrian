@@ -9,6 +9,8 @@
 */
 package mondrian.spi.impl;
 
+import java.util.Random;
+
 import mondrian.spi.DataSourceChangeListener; 
 import mondrian.olap.MondrianDef;
 import mondrian.rolap.RolapHierarchy;
@@ -17,7 +19,7 @@ import mondrian.rolap.agg.Aggregation;
 
 /**
  * Default implementation of a data source change listener 
- * that always returns that the datasource is unchanged.
+ * that always returns that the datasource is changed.
  *
  * A change listener can be specified in the connection string.  It is used
  * to ask what is changed in the datasource (e.g. database).  
@@ -42,21 +44,47 @@ import mondrian.rolap.agg.Aggregation;
  * @since Dec 12, 2006
  */
 
-public class DataSourceChangeListenerImpl implements DataSourceChangeListener {
+public class DataSourceChangeListenerImpl4 implements DataSourceChangeListener {
+    private int flushInverseFrequencyHierarchy;
+    private int flushInverseFrequencyAggregation;
+    final Random random = new Random(123456);
 	
-    /** Creates a new instance of DataSourceChangeListenerImpl */
-    public DataSourceChangeListenerImpl() {
+    /** Creates a new instance of DataSourceChangeListenerImpl2 */
+    public DataSourceChangeListenerImpl4() {
+        this(0,0);
     }
-    
+    public DataSourceChangeListenerImpl4(int flushInverseFrequencyHierarchy, 
+            int flushInverseFrequencyAggregation) {
+        this.flushInverseFrequencyHierarchy = flushInverseFrequencyHierarchy;
+        this.flushInverseFrequencyAggregation = flushInverseFrequencyAggregation;
+    }    
     
     public synchronized boolean isHierarchyChanged(RolapHierarchy hierarchy) {
-    	return false;
+        if (flushInverseFrequencyHierarchy != 0) {
+            if (random.nextInt(flushInverseFrequencyHierarchy) == 0) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        } else {        
+            return true;
+        }
     }    
     
     public synchronized boolean isAggregationChanged(Aggregation aggregation) {
-        return false;
+        if (flushInverseFrequencyAggregation != 0) {
+            if (random.nextInt(flushInverseFrequencyAggregation) == 0) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        } else {        
+            return true;
+        }
     }
-        
+    
     String getTableName(RolapHierarchy hierarchy) {
         MondrianDef.Relation relation = hierarchy.getRelation();
         if (relation instanceof MondrianDef.Table) {
@@ -66,5 +94,5 @@ public class DataSourceChangeListenerImpl implements DataSourceChangeListener {
         } else {
             return null;
         }
-    }       
+    }           
 }

@@ -446,6 +446,9 @@ class RolapResult extends ResultBase {
         // for use in debugging Checkin_7634
         Util.discard(Bug.Checkin7634DoOld);
         try {
+            // Check if there are modifications to the aggregate cache
+            rcube.checkAggregateModifications();            
+            
             // An array of lists which will hold each axis' implicit members 
             // (does not include slicer axis).
             // One might imagine that one could have an axisMembers list per
@@ -593,6 +596,10 @@ class RolapResult extends ResultBase {
             }
 
         } finally {
+            // Push all modifications to the aggregate cache to the global cache
+            // so each thread can start using it
+            rcube.pushAggregateModificationsToGlobalCache();            
+            
             evaluator.clearExpResultCache();
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("RolapResult<init>: " + Util.printMemory());

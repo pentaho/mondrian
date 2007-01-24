@@ -7,15 +7,17 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-package mondrian.spi;
+package mondrian.spi.impl;
 
-
+import mondrian.spi.DataSourceChangeListener; 
+import mondrian.olap.MondrianDef;
 import mondrian.rolap.RolapHierarchy;
 import mondrian.rolap.agg.Aggregation;
 
 
 /**
- * Definition of a data source change listener.
+ * Default implementation of a data source change listener 
+ * that always returns that the datasource is changed.
  *
  * A change listener can be specified in the connection string.  It is used
  * to ask what is changed in the datasource (e.g. database).  
@@ -40,29 +42,29 @@ import mondrian.rolap.agg.Aggregation;
  * @since Dec 12, 2006
  */
 
-public interface DataSourceChangeListener {
+public class DataSourceChangeListenerImpl3 implements DataSourceChangeListener {
 	
-    /**
-     * Checks if the given hierarchy has changed since the previous
-     * time this function was called. 
-     *          
-     * The first time, this function will be called when the cache
-     * is still empty.  This is because the plugin is able to register
-     * the first timestamp the function was accessed.
-     * 
-     * It is highly recommended to optimize the plugin and minimize
-     * the time needed to evaluate this function, because this plugin
-     * is called many times for each mondrian query.     
-     */
-    public boolean isHierarchyChanged(RolapHierarchy hierarchy);
+    /** Creates a new instance of DataSourceChangeListenerImpl2 */
+    public DataSourceChangeListenerImpl3() {
+    }
     
-    /**
-     * Checks if the given aggregation has changed since the previous
-     * time this function was called. 
-     *          
-     * The first time, this function will be called when the cache
-     * is still empty.  This is because the plugin is able to register
-     * the first timestamp the function was accessed. 
-     */
-    public boolean isAggregationChanged(Aggregation aggregation);    
+    
+    public synchronized boolean isHierarchyChanged(RolapHierarchy hierarchy) {
+    	return true;
+    }    
+    
+    public synchronized boolean isAggregationChanged(Aggregation aggregation) {
+        return true;
+    }
+    
+    String getTableName(RolapHierarchy hierarchy) {
+        MondrianDef.Relation relation = hierarchy.getRelation();
+        if (relation instanceof MondrianDef.Table) {
+            MondrianDef.Table tableRelation = (MondrianDef.Table)relation;
+            
+            return tableRelation.name;
+        } else {
+            return null;
+        }
+    }           
 }

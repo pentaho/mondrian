@@ -16,6 +16,7 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.DataSourceChangeListener;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.Property;
@@ -84,8 +85,34 @@ public class RolapStar {
      */
     private final Map<RolapCube, Map<RolapLevel, Column>> mapCubeToMapLevelToColumn;
 
-    /** holds all aggregations of this star */
+    /** holds all global aggregations of this star */
     private Map<RolapStarAggregationKey,Aggregation> aggregations;
+    
+    /** holds all thread local aggregations of this star */
+    private ThreadLocal<Map<RolapStarAggregationKey,Aggregation>> 
+        localAggregations = 
+            new ThreadLocal<Map<RolapStarAggregationKey,Aggregation>>() {
+        
+            protected Map<RolapStarAggregationKey,Aggregation> initialValue() {
+                return new HashMap<RolapStarAggregationKey, Aggregation>();
+            }            
+        };
+        
+    /** holds all pending aggregations of this star that are waiting to
+     * be pushed into the global cache.  They cannot be pushed yet, because
+     * the aggregates in question are currently in use by other threads */
+    private Map<RolapStarAggregationKey,Aggregation> pendingAggregations;        
+    
+    /** holds all requests of aggregations */
+    private List<RolapStarAggregationKey> aggregationRequests;
+    
+    /** holds all requests of aggregations per thread*/
+    private ThreadLocal<List<RolapStarAggregationKey>> localAggregationRequests =
+        new ThreadLocal<List<RolapStarAggregationKey>>() {
+            protected List<RolapStarAggregationKey> initialValue() {
+                return new ArrayList<RolapStarAggregationKey>();
+            }                                
+        };
 
     /** how many columns (column and columnName) there are */
     private int columnCount;
@@ -103,6 +130,8 @@ public class RolapStar {
      * table
      */
     private List<AggStar> aggStars;
+           
+    private DataSourceChangeListener changeListener;
 
     /**
      * Creates a RolapStar. Please use
@@ -121,10 +150,15 @@ public class RolapStar {
         this.mapCubeToMapLevelToColumn =
             new HashMap<RolapCube, Map<RolapLevel, Column>>();
         this.aggregations = new HashMap<RolapStarAggregationKey, Aggregation>();
-
+        this.pendingAggregations = new HashMap<RolapStarAggregationKey, Aggregation>();
+        
+        this.aggregationRequests = new ArrayList<RolapStarAggregationKey>();
+        
         clearAggStarList();
 
-        sqlQueryDialect = schema.getDialect();
+        sqlQueryDialect = schema.getDialect();        
+
+        changeListener = schema.getDataSourceChangeListener();
     }
 
     /**
@@ -284,7 +318,7 @@ public class RolapStar {
      * regardless of any other settings.  When set to false, only cache
      * from the current thread context is cleared.
      */
-    synchronized void clearCachedAggregations(boolean forced) {
+    void clearCachedAggregations(boolean forced) {        
         if (forced || (! this.cacheAggregations) || RolapStar.disableCaching) {
 
             if (LOGGER.isDebugEnabled()) {
@@ -295,55 +329,270 @@ public class RolapStar {
                 buf.append(getFactTable().getAlias());
                 LOGGER.debug(buf.toString());
             }
-
-            if (forced) {                    
-                aggregations.clear();
+            
+            if (forced) { 
+                synchronized(aggregations) {
+                    aggregations.clear();
+                }
+                localAggregations.get().clear(); 
             }
             else {
                 /* Only clear aggregation cache for the currect thread context */
-                Thread thread = Thread.currentThread();                
-                int threadId = System.identityHashCode(thread);                               
-                                     
-                Iterator<Map.Entry<RolapStarAggregationKey, Aggregation>> it = aggregations.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<RolapStarAggregationKey, Aggregation> e = it.next();
-                    RolapStarAggregationKey aggregationKey = e.getKey();
-                    
-                    if (aggregationKey.getThreadId() == threadId) {
-                        it.remove();
-                    }                                                    
-                }                                        
-            }                    
+                localAggregations.get().clear();
+            }
         }
     }
 
     /**
      * Looks up an aggregation or creates one if it does not exist in an
      * atomic (synchronized) operation.
+     * 
+     * When a new aggregation is created, it is marked as thread local.
+     * 
      * @param bitKey this is the contrained column bitkey
      */
-    public synchronized Aggregation lookupOrCreateAggregation(final BitKey bitKey) {
+    public Aggregation lookupOrCreateAggregation(
+            final BitKey bitKey) {
+    
         Aggregation aggregation = lookupAggregation(bitKey);
+                
         if (aggregation == null) {
             aggregation = new Aggregation(this, bitKey);
-            RolapStarAggregationKey aggregationKey = new RolapStarAggregationKey(bitKey, (! this.cacheAggregations) || RolapStar.disableCaching);
+            RolapStarAggregationKey aggregationKey = 
+                new RolapStarAggregationKey(bitKey);
+                
+            this.localAggregations.get().put(aggregationKey, aggregation);          
             
-            this.aggregations.put(aggregationKey, aggregation);
+            // Let the change listener get the opportunity to register the 
+            // first time the aggregation is used
+            if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {
+                if (changeListener != null) {
+                    Util.discard(changeListener.isAggregationChanged(aggregation));
+                }
+            }
         }
-        return aggregation;
+        return aggregation;        
     }
+    
 
     /**
      * Looks for an existing aggregation over a given set of columns, or
      * returns <code>null</code> if there is none.
+     * 
+     * Thread local cache is taken first.
      *
      * <p>Must be called from synchronized context.
      */
-    public synchronized Aggregation lookupAggregation(BitKey bitKey) {
-        RolapStarAggregationKey aggregationKey = new RolapStarAggregationKey(bitKey, (! this.cacheAggregations) || RolapStar.disableCaching);
-        return aggregations.get(aggregationKey);
-    }
+    public Aggregation lookupAggregation(BitKey bitKey) {
+        
+        Aggregation aggregation = null;
+        
+        // First try thread local cache 
+        RolapStarAggregationKey aggregationKey = 
+            new RolapStarAggregationKey(bitKey);
+        aggregation = localAggregations.get().get(aggregationKey);
+        if (aggregation != null) {
+            return aggregation;
+        }
 
+        if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {            
+            // Look in global cache
+            synchronized(aggregations) {
+                aggregation = aggregations.get(aggregationKey);
+                if (aggregation != null) {
+                    // Keep track of global aggregates that a query is using
+                    recordAggregationRequest(bitKey);
+                }
+            }            
+        }
+        
+        return aggregation;
+    }
+    
+    /**
+     * Checks whether an aggregation has changed since the last the time
+     * loaded.
+     * 
+     * If so, a new thread local aggregation will be made and added after
+     * the query has finished.
+     * 
+     * This function should be called before a query is executed and afterwards
+     * the function pushAggregateModificationsToGlobalCache() should
+     * be called.
+     * 
+     */
+    public void checkAggregateModifications() {                    
+        if (changeListener != null) {
+            if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {
+                synchronized(aggregations) {
+                                        
+                    Iterator<Map.Entry<RolapStarAggregationKey, Aggregation>> 
+                            it = aggregations.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry<RolapStarAggregationKey, Aggregation> e = 
+                            it.next();
+                        RolapStarAggregationKey aggregationKey = e.getKey();
+                        
+                        Aggregation aggregation = e.getValue(); 
+                        if (changeListener.isAggregationChanged(aggregation)) {
+                            // Create new thread local aggregation
+                            // This thread will renew aggregations
+                            // And these will be checked in if all queries
+                            // that are currently using these aggregates
+                            // are finished
+                            aggregation = new Aggregation(this, 
+                                            aggregationKey.getBitKey());
+                            RolapStarAggregationKey localAggregationKey = 
+                                new RolapStarAggregationKey(
+                                        aggregationKey.getBitKey());
+                                                    
+                            localAggregations.get().put(localAggregationKey, 
+                                    aggregation);                                                               
+                        }                                                    
+                    }
+                }
+            }    
+        }            
+    }
+    
+    /**
+     * 
+     * Checks if changed modifications may be pushed into global cache.
+     * 
+     * It will check whether there are other running queries that are
+     * using the requested modifications.  If this is the case, modifications
+     * are not pushed yet.
+     * 
+     */
+    public void pushAggregateModificationsToGlobalCache() {
+        // Need synchronized access to both aggregationRequests as to
+        // aggregations, synchronize this instead
+        synchronized(this) {        
+            if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {
+                
+                // Push pending modifications other thread could not push
+                // to global cache, because it was in use
+                Iterator<Map.Entry<RolapStarAggregationKey, Aggregation>> 
+                    it = pendingAggregations.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry<RolapStarAggregationKey, Aggregation> e = 
+                        it.next();
+                    RolapStarAggregationKey aggregationKey = e.getKey();                    
+                    Aggregation aggregation = e.getValue();
+                    // In case this aggregation is not requested by anyone
+                    // this aggregation may be pushed into global cache
+                    // otherwise put it in pending cache, that will be pushed
+                    // when another query finishes
+                    if (!isAggregationRequested(aggregationKey.getBitKey())) {
+                        pushAggregateModification(aggregationKey, aggregation,
+                                aggregations);
+                        it.remove();
+                    }                                           
+                }
+                // Push thread local modifications                 
+                it = localAggregations.get().entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry<RolapStarAggregationKey, Aggregation> e = 
+                        it.next();
+                    RolapStarAggregationKey aggregationKey = e.getKey();                    
+                    Aggregation aggregation = e.getValue();
+                    // In case this aggregation is not requested by anyone
+                    // this aggregation may be pushed into global cache
+                    // otherwise put it in pending cache, that will be pushed
+                    // when another query finishes
+                    if (!isAggregationRequested(aggregationKey.getBitKey())) {
+                        pushAggregateModification(aggregationKey, aggregation,
+                                aggregations);                        
+                    } 
+                    else {
+                        pushAggregateModification(aggregationKey, aggregation,
+                                pendingAggregations);
+                    }                                            
+                }
+                localAggregations.get().clear();
+            }
+            // Clear own aggregation requests
+            clearAggregationRequests();
+        }                    
+    }    
+    /* Push aggregations in destination aggregations, replacing older
+     * entries.
+     */
+    private void pushAggregateModification(
+            RolapStarAggregationKey localAggregationKey, 
+            Aggregation aggregation,
+            Map<RolapStarAggregationKey,Aggregation> destAggregations) {                    
+        if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {
+            synchronized(destAggregations) {
+                
+                boolean found = false;
+                Iterator<Map.Entry<RolapStarAggregationKey, Aggregation>> 
+                        it = destAggregations.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry<RolapStarAggregationKey, Aggregation> e = 
+                        it.next();
+                    RolapStarAggregationKey aggregationKey = e.getKey();
+                    
+                    if (localAggregationKey.getBitKey()
+                                .equals(aggregationKey.getBitKey())) {
+                        
+                        if (localAggregationKey.getTimeStamp()
+                                .after(aggregationKey.getTimeStamp())) {    
+                            
+                            it.remove();
+                        } else {
+                            // Entry is newer, do not replace
+                            found = true;
+                        }
+                        break;
+                    }                                                    
+                }
+                if (!found) {
+                    destAggregations.put(localAggregationKey, aggregation);
+                }
+            }
+        }                
+    }      
+    
+    /* Record global cache requests per thread */
+    private void recordAggregationRequest(BitKey bitKey) {
+        RolapStarAggregationKey aggregationKey = 
+            new RolapStarAggregationKey(bitKey);        
+        synchronized(aggregationRequests) {
+            aggregationRequests.add(aggregationKey);
+        }     
+        // Store own request for cleanup afterwards
+        localAggregationRequests.get().add(aggregationKey);
+    }
+    
+    /* Checks whether an aggregation is requested by another thread */
+    private boolean isAggregationRequested(BitKey bitKey) {
+        
+        synchronized(aggregationRequests) {
+            RolapStarAggregationKey aggregationKey = 
+                new RolapStarAggregationKey(bitKey);        
+            
+            return aggregationRequests.contains(aggregationKey);      
+        }
+    }    
+    
+    /**
+     * Clear the aggregation requests from the current thread
+     *
+     */
+    private void clearAggregationRequests() {
+        synchronized(aggregationRequests) {
+            
+            for (RolapStarAggregationKey aggregationKey : 
+                localAggregationRequests.get()) {
+                
+                // Remove first occurence
+                aggregationRequests.remove(aggregationKey);
+            }            
+            localAggregationRequests.get().clear();
+        }                
+    }
+        
     /**
      * Allocates a connection to the underlying RDBMS.
      *
@@ -1661,46 +1910,53 @@ public class RolapStar {
                 : table;
         }
     }
+
+    /**
+     * @return Returns the Data source change listener.
+     */
+    public DataSourceChangeListener getChangeListener() {
+        return changeListener;
+    }
+
+    /**
+     * @param changeListener The Data source change listener to set.
+     */
+    public void setChangeListener(DataSourceChangeListener changeListener) {
+        this.changeListener = changeListener;
+    }
 }
 /* 
  * Class to create an aggregation key for the cache that is thread based.
  */
 class RolapStarAggregationKey {
     private BitKey bitKey;
-    private int threadId;
+    private Timestamp timeStamp;
     /*
-     * Creates an aggregation key, specify whether the cache is local to the thread
+     * Creates an aggregation key, specify whether the cache is local 
+     * to the thread
      */
-    RolapStarAggregationKey(final BitKey bitKey, boolean threadLocal) {
+    RolapStarAggregationKey(final BitKey bitKey) {
         this.bitKey = bitKey.copy(); 
-        if (threadLocal) {
-            Thread thread = Thread.currentThread();                
-            this.threadId = System.identityHashCode(thread);
-        } 
-        else {
-            this.threadId = -1;
-        }
+        this.timeStamp = new Timestamp(System.currentTimeMillis());
     }
     public int hashCode() {    
         int c = 1;
         if (bitKey != null) {
             c = bitKey.hashCode();
         }
-        if (threadId != -1) {
-            c = c ^ (int)threadId;
-        }
         return c;        
     }    
     public boolean equals(Object other) {
         if (other instanceof RolapStarAggregationKey) {
-            RolapStarAggregationKey aggregationKey = (RolapStarAggregationKey) other;
-            return bitKey.equals(aggregationKey.bitKey) && (threadId == aggregationKey.threadId);
+            RolapStarAggregationKey aggregationKey = 
+                (RolapStarAggregationKey) other;
+            return bitKey.equals(aggregationKey.bitKey);
         } else {
             return false;
         }
     }
     public String toString() {
-        return bitKey.toString() + " thread id = " + threadId;
+        return bitKey.toString() + " time_stamp = " + timeStamp.toString();
     }    
     /**
      * @return Returns the bitKey.
@@ -1715,18 +1971,16 @@ class RolapStarAggregationKey {
         this.bitKey = bitKey;
     }
     /**
-     * @return Returns the threadId.
+     * @return Returns the time stamp the aggregation is created.
      */
-    public long getThreadId() {
-        return threadId;
+    public Timestamp getTimeStamp() {
+        return timeStamp;
     }
     /**
-     * @param threadId The threadId to set.
+     * @param timeStamp the time stamp the aggregation is created.
      */
-    public void setThreadId(int threadId) {
-        this.threadId = threadId;
+    public void setTimeStamp(Timestamp timeStamp) {
+        this.timeStamp = timeStamp;
     }    
-};    
-
-
+};
 // End RolapStar.java

@@ -1089,6 +1089,37 @@ assert is not true.
             star.clearCachedAggregations(false);
         }
     }
+    
+    /**
+     * Check if there are modifications in the aggregations cache
+     */
+    public void checkAggregateModifications() {
+        if (isVirtual()) {
+            // TODO:
+            // Currently a virtual cube does not keep a list of all of its
+            // base cubes, so we need to iterate through each and flush
+            // the ones that should be flushed
+            schema.checkAggregateModifications();
+        } else {
+            star.checkAggregateModifications();
+        }        
+    }
+    /**
+     * Push all modifications of the aggregations to global cache,
+     * so other queries can start using the new cache
+     */
+    public void pushAggregateModificationsToGlobalCache() {
+        if (isVirtual()) {
+            // TODO:
+            // Currently a virtual cube does not keep a list of all of its
+            // base cubes, so we need to iterate through each and flush
+            // the ones that should be flushed
+            schema.pushAggregateModificationsToGlobalCache();
+        } else {
+            star.pushAggregateModificationsToGlobalCache();
+        }                
+    }
+    
 
 
     /**

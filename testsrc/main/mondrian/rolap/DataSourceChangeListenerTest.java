@@ -10,6 +10,7 @@ package mondrian.rolap;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Random;
 
 import mondrian.olap.Connection;
 import mondrian.olap.Query;
@@ -18,9 +19,14 @@ import mondrian.olap.Util;
 import mondrian.rolap.cache.CachePool;
 import mondrian.rolap.cache.HardSmartCache;
 import mondrian.test.FoodMartTestCase;
+import mondrian.test.TestContext;
 import mondrian.spi.impl.DataSourceChangeListenerImpl;
 import mondrian.spi.impl.DataSourceChangeListenerImpl2;
+import mondrian.spi.impl.DataSourceChangeListenerImpl3;
+import mondrian.spi.impl.DataSourceChangeListenerImpl4;
 import org.apache.log4j.Logger;
+
+import junit.framework.TestCase;
 
 /**
  * Tests for testing the DataSourceChangeListener plugin.
@@ -32,7 +38,7 @@ import org.apache.log4j.Logger;
 public class DataSourceChangeListenerTest extends FoodMartTestCase {
     private static Logger logger = Logger.getLogger(DataSourceChangeListenerTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
-
+    
           
     public DataSourceChangeListenerTest() {
         super();
@@ -44,7 +50,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
 
     /**
      * Test whether the data source plugin is able to tell mondrian
-     * to read the hierarchy again.
+     * to read the hierarchy and aggregates again.
      */
     public void testDataSourceChangeListenerPlugin() {
         
@@ -70,7 +76,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         RolapUtil.threadHooks.set(sqlLogger);
                 
         try {
-            String s1, s2, s3, s4, s5;
+            String s1, s2, s3, s4, s5, s6;
             
             // Flush the cache, to ensure that the query gets executed.            
             RolapResult r1 = (RolapResult) executeQuery(
@@ -121,12 +127,297 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             Util.discard(r5);
             s5 = sqlLogger.getSqlQueries().toString();
             sqlLogger.clear();                            
-            assertEquals(s4,s5);                                               
+            assertEquals(s4,s5);
+            
+            // Attach dummy change listener that tells mondrian the datasource is always changed
+            // and tells that aggregate cache is always cached
+            smr.changeListener = new DataSourceChangeListenerImpl3();
+            RolapStar star = getStar("Sales");
+            star.setChangeListener(smr.changeListener);
+            // Run query again, to make sure only cache is used
+            RolapResult r6 = (RolapResult) executeQuery(
+            "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
+            Util.discard(r6);
+            s6 = sqlLogger.getSqlQueries().toString();
+            sqlLogger.clear();                            
+            assertEquals(s1,s6);                           
         } finally {
             smr.changeListener = null;
+            RolapStar star = getStar("Sales");
+            star.setChangeListener(null);
+            
             RolapUtil.threadHooks.set(null);
-        }                
-}
+        }        
+    }    
+    /**
+     * Test to see whether the flushing of the cache is thread safe.        
+     */
+    public void testParallelDataSourceChangeListenerPlugin() {
+        // 5 threads, 8 cycles each
+        checkCacheFlushing(5, 8);
+    }
+    
+    /**
+     * Tests several threads, each of which is creating connections and
+     * periodically flushing the schema cache.
+     * 
+     * @param count
+     * @param cycleCount
+     * @param flushInverseFrequency
+     */
+    private void checkCacheFlushing(
+        final int count,
+        final int cycleCount)     
+    {
+        final Random random = new Random(123456);
+        Worker[] workers = new Worker[count];
+        Thread[] threads = new Thread[count];
+        
+        
+        final String[] queries = {
+            "with member [Store Type].[All Store Types].[All Types] as 'Aggregate({[Store Type].[All Store Types].[Deluxe Supermarket],  "
+            + "[Store Type].[All Store Types].[Gourmet Supermarket],  "
+            + "[Store Type].[All Store Types].[HeadQuarters],  "
+            + "[Store Type].[All Store Types].[Mid-Size Grocery],  "
+            + "[Store Type].[All Store Types].[Small Grocery],  "
+            + "[Store Type].[All Store Types].[Supermarket]})'  "
+            + "select NON EMPTY {[Time].[1997]} ON COLUMNS,   "
+            + "NON EMPTY [Store].[All Stores].[USA].[CA].Children ON ROWS   "
+            + "from [Sales] "
+            + "where ([Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink])  ",
+            
+            "with member [Measures].[Shipped per Ordered] as ' [Measures].[Units Shipped] / [Measures].[Unit Sales] ', format_string='#.00%'\n" +
+            " member [Measures].[Profit per Unit Shipped] as ' [Measures].[Profit] / [Measures].[Units Shipped] '\n" +
+            "select\n" +
+            " {[Measures].[Unit Sales], \n" +
+            "  [Measures].[Units Shipped],\n" +
+            "  [Measures].[Shipped per Ordered],\n" +
+            "  [Measures].[Profit per Unit Shipped]} on 0,\n" +
+            " NON EMPTY Crossjoin([Product].Children, [Time].[1997].Children) on 1\n" +
+            "from [Warehouse and Sales]",
+            
+            "select {[Measures].[Profit Per Unit Shipped]} ON COLUMNS, " +
+            "{[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR], [Store].[All Stores].[USA].[WA]} ON ROWS " +
+            "from [Warehouse and Sales Format Expression Cube No Cache] " +
+            "where [Time].[1997]",
+            
+            "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]"
+            };
+        final String[] results = {
+            fold(
+                "Axis #0:\n" +
+                "{[Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink]}\n" +
+                "Axis #1:\n" + 
+                "{[Time].[1997]}\n" + 
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Diego]}\n" +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" + 
+                "Row #0: 1,945\n" +
+                "Row #1: 2,422\n" + 
+                "Row #2: 2,560\n" + 
+                "Row #3: 175\n"),
+                
+            fold("Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "{[Measures].[Units Shipped]}\n" +
+                    "{[Measures].[Shipped per Ordered]}\n" +
+                    "{[Measures].[Profit per Unit Shipped]}\n" +
+                    "Axis #2:\n" +
+                    "{[Product].[All Products].[Drink], [Time].[1997].[Q1]}\n" +
+                    "{[Product].[All Products].[Drink], [Time].[1997].[Q2]}\n" +
+                    "{[Product].[All Products].[Drink], [Time].[1997].[Q3]}\n" +
+                    "{[Product].[All Products].[Drink], [Time].[1997].[Q4]}\n" +
+                    "{[Product].[All Products].[Food], [Time].[1997].[Q1]}\n" +
+                    "{[Product].[All Products].[Food], [Time].[1997].[Q2]}\n" +
+                    "{[Product].[All Products].[Food], [Time].[1997].[Q3]}\n" +
+                    "{[Product].[All Products].[Food], [Time].[1997].[Q4]}\n" +
+                    "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q1]}\n" +
+                    "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q2]}\n" +
+                    "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q3]}\n" +
+                    "{[Product].[All Products].[Non-Consumable], [Time].[1997].[Q4]}\n" +
+                    "Row #0: 5,976\n" +
+                    "Row #0: 4637.0\n" +
+                    "Row #0: 77.59%\n" +
+                    "Row #0: $1.50\n" +
+                    "Row #1: 5,895\n" +
+                    "Row #1: 4501.0\n" +
+                    "Row #1: 76.35%\n" +
+                    "Row #1: $1.60\n" +
+                    "Row #2: 6,065\n" +
+                    "Row #2: 6258.0\n" +
+                    "Row #2: 103.18%\n" +
+                    "Row #2: $1.15\n" +
+                    "Row #3: 6,661\n" +
+                    "Row #3: 5802.0\n" +
+                    "Row #3: 87.10%\n" +
+                    "Row #3: $1.38\n" +
+                    "Row #4: 47,809\n" +
+                    "Row #4: 37153.0\n" +
+                    "Row #4: 77.71%\n" +
+                    "Row #4: $1.64\n" +
+                    "Row #5: 44,825\n" +
+                    "Row #5: 35459.0\n" +
+                    "Row #5: 79.11%\n" +
+                    "Row #5: $1.62\n" +
+                    "Row #6: 47,440\n" +
+                    "Row #6: 41545.0\n" +
+                    "Row #6: 87.57%\n" +
+                    "Row #6: $1.47\n" +
+                    "Row #7: 51,866\n" +
+                    "Row #7: 34706.0\n" +
+                    "Row #7: 66.91%\n" +
+                    "Row #7: $1.91\n" +
+                    "Row #8: 12,506\n" +
+                    "Row #8: 9161.0\n" +
+                    "Row #8: 73.25%\n" +
+                    "Row #8: $1.76\n" +
+                    "Row #9: 11,890\n" +
+                    "Row #9: 9227.0\n" +
+                    "Row #9: 77.60%\n" +
+                    "Row #9: $1.65\n" +
+                    "Row #10: 12,343\n" +
+                    "Row #10: 9986.0\n" +
+                    "Row #10: 80.90%\n" +
+                    "Row #10: $1.59\n" +
+                    "Row #11: 13,497\n" +
+                    "Row #11: 9291.0\n" +
+                    "Row #11: 68.84%\n" +
+                    "Row #11: $1.86\n"),
+                    
+            fold(
+                    "Axis #0:\n" +
+                        "{[Time].[1997]}\n" +
+                        "Axis #1:\n" +
+                        "{[Measures].[Profit Per Unit Shipped]}\n" +
+                        "Axis #2:\n" +
+                        "{[Store].[All Stores].[USA].[CA]}\n" +
+                        "{[Store].[All Stores].[USA].[OR]}\n" + 
+                        "{[Store].[All Stores].[USA].[WA]}\n" +
+                        "Row #0: |1.6|style=red\n" +
+                        "Row #1: |2.1|style=green\n" +
+                        "Row #2: |1.5|style=red\n"),
+                        
+            fold("Axis #0:\n" +
+                 "{}\n" +
+                 "Axis #1:\n" +
+                 "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" +
+                 "Row #0: 2,117\n")
+        };
+        final TestContext testContext = TestContext.create(
+                null, null,
+                "<Cube name=\"Warehouse No Cache\" cache=\"false\">\n" +
+                    "  <Table name=\"inventory_fact_1997\"/>\n" +
+                    "\n" +
+                    "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n" +
+                    "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n" +
+                    "  <Measure name=\"Units Shipped\" column=\"units_shipped\" aggregator=\"sum\" formatString=\"#.0\"/>\n" +
+                    "</Cube>\n" +
+                "<VirtualCube name=\"Warehouse and Sales Format Expression Cube No Cache\">\n" +
+                    "  <VirtualCubeDimension name=\"Store\"/>\n" +
+                    "  <VirtualCubeDimension name=\"Time\"/>\n" +
+                    "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Cost]\"/>\n" +
+                    "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n" +
+                    "  <VirtualCubeMeasure cubeName=\"Warehouse No Cache\" name=\"[Measures].[Units Shipped]\"/>\n" +
+                    "  <CalculatedMember name=\"Profit\" dimension=\"Measures\">\n" +
+                    "    <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>\n" +
+                    "  </CalculatedMember>\n" +
+                    "  <CalculatedMember name=\"Profit Per Unit Shipped\" dimension=\"Measures\">\n" +
+                    "    <Formula>[Measures].[Profit] / [Measures].[Units Shipped]</Formula>\n" +
+                    "    <CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"IIf(([Measures].[Profit Per Unit Shipped] > 2.0), '|0.#|style=green', '|0.#|style=red')\"/>\n" +
+                    "  </CalculatedMember>\n" +
+                    "</VirtualCube>",
+                null, null);
+        
+        SmartMemberReader smrStore = getSmartMemberReader(testContext.getConnection(), "Store");
+        SmartMemberReader smrProduct = getSmartMemberReader(testContext.getConnection(), "Product");
+        // 1/500 of the time, the hierarchies are flushed
+        // 1/50 of the time, the aggregates are flushed
+        smrStore.changeListener = new DataSourceChangeListenerImpl4(500,50);
+        smrProduct.changeListener = smrStore.changeListener;
+        
+        RolapStar star = getStar(testContext.getConnection(), "Sales");
+        star.setChangeListener(smrStore.changeListener);
+                
+        star = getStar(testContext.getConnection(), "Warehouse No Cache");                
+        star.setChangeListener(smrStore.changeListener);        
+        
+            
+        for (int i = 0; i < count; i++) {
+            workers[i] = new Worker() {
+                public void runSafe() {
+                    for (int i = 0; i < cycleCount; ++i) {
+                        cycle();
+                        try {
+                            // Sleep up to 100ms.
+                            Thread.sleep(random.nextInt(100));
+                        } catch (InterruptedException e) {
+                            throw Util.newInternal(e, "interrupted");
+                        }
+                    }
+                }
+
+                private void cycle() {
+                    int idx = random.nextInt(4);
+                    String query = queries[idx];
+                    String result = results[idx];
+                    testContext.assertQueryReturns(query, result);
+                }
+            };
+            threads[i] = new Thread(workers[i]);
+        }
+        for (int i = 0; i < count; i++) {
+            threads[i].start();
+        }
+        for (int i = 0; i < count; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+                throw Util.newInternal(e, "while joining thread #" + i);
+            }
+        }
+        String messages = null;
+        int failures = 0;
+        for (int i = 0; i < count; i++) {            
+            if (workers[i].failures.size() > 0) {
+                
+                for (int j = 0; j < workers[i].failures.size(); j++) {
+                    Throwable throwable = workers[i].failures.get(j);                    
+                    String message = throwable.toString() + throwable.getMessage();
+                    if (message != null) {
+                        failures++;
+                        if (messages == null) {
+                            messages = message;
+                        }
+                        else {
+                            messages += "\n" + message;
+                        }
+                    }
+                }                                                                
+            }
+        }
+        if ((failures != 0) && (messages != null)) {
+            TestCase.fail(failures + " threads failed\n"+messages);
+        }
+    }
+
+    private static abstract class Worker implements Runnable {
+        List<Throwable> failures = new ArrayList<Throwable>();
+
+        public void run() {
+            try {
+                runSafe();
+            } catch (Throwable e) {
+                synchronized(failures) {
+                    failures.add(e);
+                }
+            }
+        }
+        public abstract void runSafe();
+    }            
     
     private static class SqlLogger implements RolapUtil.ExecuteQueryHook {
         private final List<String> sqlQueries;
@@ -165,6 +456,15 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         assertNotNull(hierarchy);
         return (SmartMemberReader) hierarchy.getMemberReader(schemaReader.getRole());
     }
+
+    RolapStar getStar(String starName) {
+        Connection con = super.getConnection(false);
+        return getStar(con, starName);
+    }    
+    RolapStar getStar(Connection con, String starName) {
+        RolapCube cube = (RolapCube) con.getSchema().lookupCube(starName, true);
+        return cube.getStar();
+    }        
 }
 
 // End NonEmptyTest.java

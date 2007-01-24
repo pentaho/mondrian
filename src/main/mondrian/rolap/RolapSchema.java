@@ -1580,6 +1580,23 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             star.clearCachedAggregations(forced);
         }
     }
+    /**
+     * Check if there are modifications in the aggregations cache
+     */
+    public void checkAggregateModifications() {        
+        for (RolapStar star : getStars()) {
+            star.checkAggregateModifications();
+        }        
+    }
+    /**
+     * Push all modifications of the aggregations to global cache,
+     * so other queries can start using the new cache
+     */
+    public void pushAggregateModificationsToGlobalCache() {
+        for (RolapStar star : getStars()) {
+            star.pushAggregateModificationsToGlobalCache();
+        }                
+    }    
 
     public static void flushAllRolapStarCachedAggregations() {
         for (Iterator<RolapSchema> itSchemas = RolapSchema.getRolapSchemas();

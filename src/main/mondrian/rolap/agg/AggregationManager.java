@@ -92,10 +92,13 @@ public class AggregationManager extends RolapAggregationManager {
             // cell is not in any aggregation
             return null;
         }
-        Object o = aggregation.get(
-                measure, request.getSingleValues(), null);
-        if (o != null) {
-            return o;
+        // synchronized access
+        synchronized(aggregation) {
+            Object o = aggregation.get(
+                    measure, request.getSingleValues(), null);
+            if (o != null) {
+                return o;
+            }            
         }
         throw Util.newInternal("not found");
     }
@@ -111,7 +114,10 @@ public class AggregationManager extends RolapAggregationManager {
             // cell is not in any aggregation
             return null;
         } else {
-            return aggregation.get(measure, request.getSingleValues(), pinSet);
+            // synchronized access
+            synchronized(aggregation) {
+                return aggregation.get(measure, request.getSingleValues(), pinSet);
+            }
         }
     }
 

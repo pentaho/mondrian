@@ -12,6 +12,7 @@ package mondrian.spi.impl;
 import mondrian.spi.DataSourceChangeListener; 
 import mondrian.olap.MondrianDef;
 import mondrian.rolap.RolapHierarchy;
+import mondrian.rolap.agg.Aggregation;
 
 
 /**
@@ -51,6 +52,11 @@ public class DataSourceChangeListenerImpl2 implements DataSourceChangeListener {
     public synchronized boolean isHierarchyChanged(RolapHierarchy hierarchy) {
     	return true;
     }    
+    
+    public synchronized boolean isAggregationChanged(Aggregation aggregation) {
+        return false;
+    }
+    
     String getTableName(RolapHierarchy hierarchy) {
         MondrianDef.Relation relation = hierarchy.getRelation();
         if (relation instanceof MondrianDef.Table) {
