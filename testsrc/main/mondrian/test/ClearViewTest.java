@@ -11,20 +11,6 @@
 */
 package mondrian.test;
 
-import mondrian.olap.*;
-import mondrian.olap.type.NumericType;
-import mondrian.olap.type.Type;
-import mondrian.rolap.cache.CachePool;
-import mondrian.spi.UserDefinedFunction;
-
-import java.util.regex.Pattern;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import junit.framework.Assert;
-
 /**
  * <code>ClearViewTest</code> is a test case which tests complex 
  * queries against the FoodMart database.
@@ -47,10 +33,13 @@ public class ClearViewTest extends FoodMartTestCase {
         super(name);
     }
 
-    private static final QueryAndResult[] sampleQueries = new QueryAndResult[] {
-        // 0
-        new QueryAndResult(
-                "with set [*NATIVE_CJ_SET] as \n" +
+    /**
+     * Complex query involving Head(Crossjoin(...)), which was the testcase for
+     * bug 1642828.
+     */
+    public void testHeadCrossjoinComplex() {
+        assertQueryReturns(
+            "with set [*NATIVE_CJ_SET] as \n" +
                 "'NonEmptyCrossJoin([*BASE_MEMBERS_Product], [*BASE_MEMBERS_Education Level])' \n" +
                 "set [*GENERATED_MEMBERS_Measures] as \n" +
                 "'{[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[*SUMMARY_METRIC_0]}' \n" +
@@ -76,7 +65,7 @@ public class ClearViewTest extends FoodMartTestCase {
                 "Generate([*NATIVE_CJ_SET], \n" +
                 "{([Product].CurrentMember, [Education Level].CurrentMember)}))) ON ROWS \n" +
                 "from [Sales]\n",
-                "Axis #0:\n" +
+            fold("Axis #0:\n" +
                 "{}\n" +
                 "Axis #1:\n" +
                 "{[Measures].[Unit Sales]}\n" +
@@ -158,15 +147,21 @@ public class ClearViewTest extends FoodMartTestCase {
                 "Row #17: 35,492\n" +
                 "Row #18: 14,744\n" +
                 "Row #18: 12,638.49\n" +
-                "Row #18: 50,236\n"
-                ),
-
-    };
-
-    public void testSample0() {
-        assertQueryReturns(sampleQueries[0].query, sampleQueries[0].result);
+                "Row #18: 50,236\n"));
     }
 
+
+    /**
+     * Simplified version of {@link #testHeadCrossjoinComplex()}.
+     */
+    public void testHeadCrossjoin() {
+        assertAxisReturns(
+            "Head(Crossjoin([Gender].Members, [Marital Status].Members), 4)",
+            fold("{[Gender].[All Gender], [Marital Status].[All Marital Status]}\n" +
+                "{[Gender].[All Gender], [Marital Status].[All Marital Status].[M]}\n" +
+                "{[Gender].[All Gender], [Marital Status].[All Marital Status].[S]}\n" +
+                "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status]}"));
+    }
 }
 
 // End ClearViewTest.java
