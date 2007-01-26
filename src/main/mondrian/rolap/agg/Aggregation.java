@@ -356,16 +356,24 @@ public class Aggregation {
     /**
      * This is called during Sql generation.
      */
-    RolapStar.Column[] getColumns() {
+    public RolapStar.Column[] getColumns() {
         return columns;
     }
 
     /**
      * This is called during Sql generation.
      */
-    RolapStar getStar() {
+    public RolapStar getStar() {
         return star;
     }
+    
+    /**
+     * Returns the BitKey for ALL columns (Measures and Levels) involved in the
+     * query.
+     */
+    public BitKey getConstrainedColumnsBitKey() {
+        return constrainedColumnsBitKey;
+    }    
 
     // -- classes -------------------------------------------------------------
 
@@ -444,6 +452,8 @@ public class Aggregation {
             return valueSet.contains(key);
         }
     }
+
+
 }
 
 // End Aggregation.java

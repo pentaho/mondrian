@@ -1959,12 +1959,29 @@ flush the cache and read from database again.</p>
 even before cache is build.  This way, the plugin is able to register
 the first timestamp mondrian tries to read the datasource.</p>
 
-<p>For now, only flushing of the hierarchy cache is implemented.</p>
+<p>Each time a query is started, aggregate cache is checked to see if
+it has changed.  If so, cache will be flushed and aggregates will be
+reloaded from the data source.</p>
 
 <p>Here is an example of a data source change listener plugin class :
 <blockquote>
   <code>&nbsp;package com.acme;<br>
   <br>
+&nbsp;//...<br>
+&nbsp;import javax.sql.DataSource;<br>
+&nbsp;import java.sql.Connection;<br>
+&nbsp;import java.sql.ResultSet;<br>
+&nbsp;import java.sql.SQLException;<br>
+&nbsp;import java.sql.Timestamp;<br>
+&nbsp;//...<br>
+&nbsp;import mondrian.olap.MondrianDef;<br>
+&nbsp;import mondrian.rolap.RolapHierarchy;<br>
+&nbsp;import mondrian.rolap.RolapUtil;<br>
+&nbsp;import mondrian.rolap.agg.Aggregation;<br>
+&nbsp;import mondrian.rolap.RolapStar;<br>
+&nbsp;import mondrian.spi.impl.DataSourceChangeListenerImpl;<br>
+&nbsp;//...<br>
+<br>
 &nbsp;public class MyChangeListener extends DataSourceChangeListenerImpl {<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public MyChangeListener() {<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
@@ -1986,6 +2003,20 @@ the first timestamp mondrian tries to read the datasource.</p>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public synchronized boolean isAggregationChanged(Aggregation aggregation) {<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// The first time, register star and bitKey and remember first time of access...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RolapStar star = aggregation.getStar();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BitKey bitKey = aggregation.getConstrainedColumnsBitKey();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// The first time this function is called, only the bitKey is set,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// the columns are not filled up yet.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RolapStar.Column[] columns = aggregation.getColumns();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (columns != null) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Check database...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+
 &nbsp;}<br>
 </blockquote>
 

@@ -57,7 +57,7 @@ public class DataSourceChangeListenerImpl3 implements DataSourceChangeListener {
         return true;
     }
     
-    String getTableName(RolapHierarchy hierarchy) {
+    public String getTableName(RolapHierarchy hierarchy) {
         MondrianDef.Relation relation = hierarchy.getRelation();
         if (relation instanceof MondrianDef.Table) {
             MondrianDef.Table tableRelation = (MondrianDef.Table)relation;
