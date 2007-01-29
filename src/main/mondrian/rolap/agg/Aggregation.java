@@ -21,7 +21,7 @@ import mondrian.rolap.RolapAggregationManager;
 import java.lang.ref.SoftReference;
 import java.util.*;
 import java.io.PrintWriter;
-
+import java.sql.Timestamp;
 /**
  * A <code>Aggregation</code> is a pre-computed aggregation over a set of
  * columns.
@@ -74,6 +74,12 @@ public class Aggregation {
      */
     private final List<SoftReference<Segment>> segmentRefs;
 
+    
+    /**
+     * Timestamp of when the aggregation was created
+     */
+    private final Timestamp creationTimestamp;
+    
     /**
      * This is set in the load method and is used during
      * the processing of a particular aggregate load.
@@ -90,6 +96,14 @@ public class Aggregation {
         this.segmentRefs = new ArrayList<SoftReference<Segment>>();
         this.maxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
+        this.creationTimestamp = new Timestamp(System.currentTimeMillis());
+    }
+
+    /**
+     * @return Returns the timestamp of creating the aggregation.
+     */
+    public Timestamp getCreationTimestamp() {
+        return creationTimestamp;
     }
 
     /**

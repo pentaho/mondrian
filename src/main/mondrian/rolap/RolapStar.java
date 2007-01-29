@@ -86,31 +86,31 @@ public class RolapStar {
     private final Map<RolapCube, Map<RolapLevel, Column>> mapCubeToMapLevelToColumn;
 
     /** holds all global aggregations of this star */
-    private Map<RolapStarAggregationKey,Aggregation> aggregations;
+    private Map<BitKey,Aggregation> aggregations;
     
     /** holds all thread local aggregations of this star */
-    private ThreadLocal<Map<RolapStarAggregationKey,Aggregation>> 
+    private ThreadLocal<Map<BitKey,Aggregation>> 
         localAggregations = 
-            new ThreadLocal<Map<RolapStarAggregationKey,Aggregation>>() {
+            new ThreadLocal<Map<BitKey,Aggregation>>() {
         
-            protected Map<RolapStarAggregationKey,Aggregation> initialValue() {
-                return new HashMap<RolapStarAggregationKey, Aggregation>();
+            protected Map<BitKey,Aggregation> initialValue() {
+                return new HashMap<BitKey, Aggregation>();
             }            
         };
         
     /** holds all pending aggregations of this star that are waiting to
      * be pushed into the global cache.  They cannot be pushed yet, because
      * the aggregates in question are currently in use by other threads */
-    private Map<RolapStarAggregationKey,Aggregation> pendingAggregations;        
+    private Map<BitKey,Aggregation> pendingAggregations;        
     
     /** holds all requests of aggregations */
-    private List<RolapStarAggregationKey> aggregationRequests;
+    private List<BitKey> aggregationRequests;
     
     /** holds all requests of aggregations per thread*/
-    private ThreadLocal<List<RolapStarAggregationKey>> localAggregationRequests =
-        new ThreadLocal<List<RolapStarAggregationKey>>() {
-            protected List<RolapStarAggregationKey> initialValue() {
-                return new ArrayList<RolapStarAggregationKey>();
+    private ThreadLocal<List<BitKey>> localAggregationRequests =
+        new ThreadLocal<List<BitKey>>() {
+            protected List<BitKey> initialValue() {
+                return new ArrayList<BitKey>();
             }                                
         };
 
@@ -149,10 +149,10 @@ public class RolapStar {
 
         this.mapCubeToMapLevelToColumn =
             new HashMap<RolapCube, Map<RolapLevel, Column>>();
-        this.aggregations = new HashMap<RolapStarAggregationKey, Aggregation>();
-        this.pendingAggregations = new HashMap<RolapStarAggregationKey, Aggregation>();
+        this.aggregations = new HashMap<BitKey, Aggregation>();
+        this.pendingAggregations = new HashMap<BitKey, Aggregation>();
         
-        this.aggregationRequests = new ArrayList<RolapStarAggregationKey>();
+        this.aggregationRequests = new ArrayList<BitKey>();
         
         clearAggStarList();
 
@@ -358,10 +358,8 @@ public class RolapStar {
                 
         if (aggregation == null) {
             aggregation = new Aggregation(this, bitKey);
-            RolapStarAggregationKey aggregationKey = 
-                new RolapStarAggregationKey(bitKey);
                 
-            this.localAggregations.get().put(aggregationKey, aggregation);          
+            this.localAggregations.get().put(bitKey, aggregation);          
             
             // Let the change listener get the opportunity to register the 
             // first time the aggregation is used
@@ -388,9 +386,7 @@ public class RolapStar {
         Aggregation aggregation = null;
         
         // First try thread local cache 
-        RolapStarAggregationKey aggregationKey = 
-            new RolapStarAggregationKey(bitKey);
-        aggregation = localAggregations.get().get(aggregationKey);
+        aggregation = localAggregations.get().get(bitKey);
         if (aggregation != null) {
             return aggregation;
         }
@@ -398,7 +394,7 @@ public class RolapStar {
         if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {            
             // Look in global cache
             synchronized(aggregations) {
-                aggregation = aggregations.get(aggregationKey);
+                aggregation = aggregations.get(bitKey);
                 if (aggregation != null) {
                     // Keep track of global aggregates that a query is using
                     recordAggregationRequest(bitKey);
@@ -426,12 +422,12 @@ public class RolapStar {
             if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {
                 synchronized(aggregations) {
                                         
-                    Iterator<Map.Entry<RolapStarAggregationKey, Aggregation>> 
+                    Iterator<Map.Entry<BitKey, Aggregation>> 
                             it = aggregations.entrySet().iterator();
                     while (it.hasNext()) {
-                        Map.Entry<RolapStarAggregationKey, Aggregation> e = 
+                        Map.Entry<BitKey, Aggregation> e = 
                             it.next();
-                        RolapStarAggregationKey aggregationKey = e.getKey();
+                        BitKey bitKey = e.getKey();
                         
                         Aggregation aggregation = e.getValue(); 
                         if (changeListener.isAggregationChanged(aggregation)) {
@@ -440,14 +436,9 @@ public class RolapStar {
                             // And these will be checked in if all queries
                             // that are currently using these aggregates
                             // are finished
-                            aggregation = new Aggregation(this, 
-                                            aggregationKey.getBitKey());
-                            RolapStarAggregationKey localAggregationKey = 
-                                new RolapStarAggregationKey(
-                                        aggregationKey.getBitKey());
+                            aggregation = new Aggregation(this, bitKey);                            
                                                     
-                            localAggregations.get().put(localAggregationKey, 
-                                    aggregation);                                                               
+                            localAggregations.get().put(bitKey, aggregation);                                                               
                         }                                                    
                     }
                 }
@@ -472,19 +463,19 @@ public class RolapStar {
                 
                 // Push pending modifications other thread could not push
                 // to global cache, because it was in use
-                Iterator<Map.Entry<RolapStarAggregationKey, Aggregation>> 
+                Iterator<Map.Entry<BitKey, Aggregation>> 
                     it = pendingAggregations.entrySet().iterator();
                 while (it.hasNext()) {
-                    Map.Entry<RolapStarAggregationKey, Aggregation> e = 
+                    Map.Entry<BitKey, Aggregation> e = 
                         it.next();
-                    RolapStarAggregationKey aggregationKey = e.getKey();                    
+                    BitKey bitKey = e.getKey();                    
                     Aggregation aggregation = e.getValue();
                     // In case this aggregation is not requested by anyone
                     // this aggregation may be pushed into global cache
                     // otherwise put it in pending cache, that will be pushed
                     // when another query finishes
-                    if (!isAggregationRequested(aggregationKey.getBitKey())) {
-                        pushAggregateModification(aggregationKey, aggregation,
+                    if (!isAggregationRequested(bitKey)) {
+                        pushAggregateModification(bitKey, aggregation,
                                 aggregations);
                         it.remove();
                     }                                           
@@ -492,20 +483,20 @@ public class RolapStar {
                 // Push thread local modifications                 
                 it = localAggregations.get().entrySet().iterator();
                 while (it.hasNext()) {
-                    Map.Entry<RolapStarAggregationKey, Aggregation> e = 
+                    Map.Entry<BitKey, Aggregation> e = 
                         it.next();
-                    RolapStarAggregationKey aggregationKey = e.getKey();                    
+                    BitKey bitKey = e.getKey();                    
                     Aggregation aggregation = e.getValue();
                     // In case this aggregation is not requested by anyone
                     // this aggregation may be pushed into global cache
                     // otherwise put it in pending cache, that will be pushed
                     // when another query finishes
-                    if (!isAggregationRequested(aggregationKey.getBitKey())) {
-                        pushAggregateModification(aggregationKey, aggregation,
+                    if (!isAggregationRequested(bitKey)) {
+                        pushAggregateModification(bitKey, aggregation,
                                 aggregations);                        
                     } 
                     else {
-                        pushAggregateModification(aggregationKey, aggregation,
+                        pushAggregateModification(bitKey, aggregation,
                                 pendingAggregations);
                     }                                            
                 }
@@ -519,25 +510,25 @@ public class RolapStar {
      * entries.
      */
     private void pushAggregateModification(
-            RolapStarAggregationKey localAggregationKey, 
-            Aggregation aggregation,
-            Map<RolapStarAggregationKey,Aggregation> destAggregations) {                    
+            BitKey localBitKey, 
+            Aggregation localAggregation,
+            Map<BitKey,Aggregation> destAggregations) {                    
         if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {
             synchronized(destAggregations) {
                 
                 boolean found = false;
-                Iterator<Map.Entry<RolapStarAggregationKey, Aggregation>> 
+                Iterator<Map.Entry<BitKey, Aggregation>> 
                         it = destAggregations.entrySet().iterator();
                 while (it.hasNext()) {
-                    Map.Entry<RolapStarAggregationKey, Aggregation> e = 
+                    Map.Entry<BitKey, Aggregation> e = 
                         it.next();
-                    RolapStarAggregationKey aggregationKey = e.getKey();
+                    BitKey bitKey = e.getKey();
+                    Aggregation aggregation = e.getValue();
                     
-                    if (localAggregationKey.getBitKey()
-                                .equals(aggregationKey.getBitKey())) {
+                    if (localBitKey.equals(bitKey)) {
                         
-                        if (localAggregationKey.getTimeStamp()
-                                .after(aggregationKey.getTimeStamp())) {    
+                        if (localAggregation.getCreationTimestamp()
+                                .after(aggregation.getCreationTimestamp())) {    
                             
                             it.remove();
                         } else {
@@ -548,7 +539,7 @@ public class RolapStar {
                     }                                                    
                 }
                 if (!found) {
-                    destAggregations.put(localAggregationKey, aggregation);
+                    destAggregations.put(localBitKey, localAggregation);
                 }
             }
         }                
@@ -556,23 +547,19 @@ public class RolapStar {
     
     /* Record global cache requests per thread */
     private void recordAggregationRequest(BitKey bitKey) {
-        RolapStarAggregationKey aggregationKey = 
-            new RolapStarAggregationKey(bitKey);        
+        
         synchronized(aggregationRequests) {
-            aggregationRequests.add(aggregationKey);
+            aggregationRequests.add(bitKey);
         }     
         // Store own request for cleanup afterwards
-        localAggregationRequests.get().add(aggregationKey);
+        localAggregationRequests.get().add(bitKey);
     }
     
     /* Checks whether an aggregation is requested by another thread */
     private boolean isAggregationRequested(BitKey bitKey) {
         
-        synchronized(aggregationRequests) {
-            RolapStarAggregationKey aggregationKey = 
-                new RolapStarAggregationKey(bitKey);        
-            
-            return aggregationRequests.contains(aggregationKey);      
+        synchronized(aggregationRequests) {                 
+            return aggregationRequests.contains(bitKey);      
         }
     }    
     
@@ -583,11 +570,11 @@ public class RolapStar {
     private void clearAggregationRequests() {
         synchronized(aggregationRequests) {
             
-            for (RolapStarAggregationKey aggregationKey : 
+            for (BitKey bitKey : 
                 localAggregationRequests.get()) {
                 
                 // Remove first occurence
-                aggregationRequests.remove(aggregationKey);
+                aggregationRequests.remove(bitKey);
             }            
             localAggregationRequests.get().clear();
         }                
@@ -1925,62 +1912,5 @@ public class RolapStar {
         this.changeListener = changeListener;
     }
 }
-/* 
- * Class to create an aggregation key for the cache that is thread based.
- */
-class RolapStarAggregationKey {
-    private BitKey bitKey;
-    private Timestamp timeStamp;
-    /*
-     * Creates an aggregation key, specify whether the cache is local 
-     * to the thread
-     */
-    RolapStarAggregationKey(final BitKey bitKey) {
-        this.bitKey = bitKey.copy(); 
-        this.timeStamp = new Timestamp(System.currentTimeMillis());
-    }
-    public int hashCode() {    
-        int c = 1;
-        if (bitKey != null) {
-            c = bitKey.hashCode();
-        }
-        return c;        
-    }    
-    public boolean equals(Object other) {
-        if (other instanceof RolapStarAggregationKey) {
-            RolapStarAggregationKey aggregationKey = 
-                (RolapStarAggregationKey) other;
-            return bitKey.equals(aggregationKey.bitKey);
-        } else {
-            return false;
-        }
-    }
-    public String toString() {
-        return bitKey.toString() + " time_stamp = " + timeStamp.toString();
-    }    
-    /**
-     * @return Returns the bitKey.
-     */
-    public BitKey getBitKey() {
-        return bitKey;
-    }
-    /**
-     * @param bitKey The bitKey to set.
-     */
-    public void setBitKey(BitKey bitKey) {
-        this.bitKey = bitKey;
-    }
-    /**
-     * @return Returns the time stamp the aggregation is created.
-     */
-    public Timestamp getTimeStamp() {
-        return timeStamp;
-    }
-    /**
-     * @param timeStamp the time stamp the aggregation is created.
-     */
-    public void setTimeStamp(Timestamp timeStamp) {
-        this.timeStamp = timeStamp;
-    }    
-};
+
 // End RolapStar.java
