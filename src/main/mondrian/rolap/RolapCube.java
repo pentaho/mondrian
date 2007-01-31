@@ -879,6 +879,7 @@ return dim;
         Util.singleQuoteString(xmlCalcMember.getFormula(), buf);
 
         assert propNames.size() == propExprs.size();
+        processFormatStringAttribute(xmlCalcMember, buf);
 
         for (int i = 0; i < propNames.size(); i++) {
             String name = propNames.get(i);
@@ -899,6 +900,13 @@ return dim;
                     append(measureCount + j);
         }
         buf.append(Util.nl);
+    }
+
+    void processFormatStringAttribute(MondrianDef.CalculatedMember xmlCalcMember, StringBuilder buf) {
+        if (xmlCalcMember.formatString != null) {
+            buf.append(",").append(Util.nl)
+                    .append(Property.FORMAT_STRING.name).append(" = ").append(Util.quoteForMdx(xmlCalcMember.formatString));
+        }
     }
 
     /**

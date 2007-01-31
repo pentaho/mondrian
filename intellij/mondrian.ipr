@@ -182,13 +182,28 @@
       <module fileurl="file://$PROJECT_DIR$/mondrianTest.iml" filepath="$PROJECT_DIR$/mondrianTest.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="false" project-jdk-name="JDK 1.4.2_02" />
+  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" />
   <component name="RmicSettings">
     <option name="IS_EANABLED" value="false" />
     <option name="DEBUGGING_INFO" value="true" />
     <option name="GENERATE_NO_WARNINGS" value="false" />
     <option name="GENERATE_IIOP_STUBS" value="false" />
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
+  </component>
+  <component name="TestDox.ConfigurationController">
+    <option name="allowCustomPackages" value="false" />
+    <option name="testNameTemplate" value="&lt;classname&gt;Test" />
+    <option name="alphabeticalSorting" value="false" />
+    <option name="createTestIfMissing" value="true" />
+    <option name="underscoreMode" value="false" />
+    <option name="showFullyQualifiedClassName" value="false" />
+    <option name="autoscrolling" value="false" />
+    <option name="autoApplyChangesToTests" value="true" />
+    <option name="deletePackageOccurrences" value="true" />
+    <option name="testMethodPrefix" value="test" />
+    <option name="testMethodAnnotation" />
+    <option name="usingAnnotations" value="false" />
+    <custom-packaging allow="false" />
   </component>
   <component name="libraryTable">
     <library name="all">
@@ -209,6 +224,9 @@
         <root url="jar://$PROJECT_DIR$/../lib/eigenbase-xom.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/eigenbase-resgen.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/servlet.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-vfs.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-math-1.0.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-logging.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
