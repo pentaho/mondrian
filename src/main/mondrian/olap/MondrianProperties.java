@@ -36,6 +36,23 @@ import java.lang.reflect.Modifier;
  * properties using the inherited {@link Properties#getProperty(String)}
  * method, we recommend that you use methods in this class.
  *
+ * <h2>Note to developers</h2>
+ *
+ * If you add a property, you must:<ul>
+ *
+ * <li>Add a property definition to this class</li>
+ *
+ * <li>Modify the default <code>mondrian.properties</code> file checked into
+ * source control, with a description of the property and its default
+ * value.</li>
+ *
+ * <li>Modify the
+ * <a target="_top" href="{@docRoot}/../configuration.html#Property_list">
+ * Configuration Specification</a>.</li>
+ * </ul>
+ *
+ * <p>Similarly if you update or delete a property.
+ *
  * @author jhyde
  * @since 22 December, 2002
  * @version $Id$
