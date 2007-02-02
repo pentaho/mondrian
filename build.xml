@@ -243,6 +243,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <unjar src="${lib.dir}/javacup.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/log4j-1.2.9.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/mondrian.jar" dest="${crtmp.dir}"/>
+    <unjar src="${lib.dir}/servlet.jar" dest="${crtmp.dir}"/>
 
     <unjar dest="${crtmp.dir}">
         <fileset dir="${testlib.dir}">
