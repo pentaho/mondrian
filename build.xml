@@ -308,9 +308,9 @@ compile.java"/>
         classpathref="project.build.classpath"
         source="1.5">
       <include name="mondrian/olap/MondrianException.java" />
-      <include name="mondrian/olap/ResultLimitExceeded.java" />
-      <include name="mondrian/olap/InvalidHierarchy.java" />
-      <include name="mondrian/olap/ResourceLimitExceeded.java" />
+      <include name="mondrian/olap/ResultLimitExceededException.java" />
+      <include name="mondrian/olap/InvalidHierarchyException.java" />
+      <include name="mondrian/olap/ResourceLimitExceededException.java" />
       <include name="mondrian/olap/QueryCanceledException.java" />
       <include name="mondrian/olap/QueryTimeoutException.java" />
     </javac>

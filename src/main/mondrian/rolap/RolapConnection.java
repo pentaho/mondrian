@@ -361,7 +361,7 @@ public class RolapConnection extends ConnectionBase {
     }
 
     /**
-     * @throws ResourceLimitExceeded if some resource limit specified in the
+     * @throws ResourceLimitExceededException if some resource limit specified in the
      * property file was exceeded
      * @throws QueryCanceledException if query was canceled in the middle of
      * execution

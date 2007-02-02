@@ -14,10 +14,17 @@ package mondrian.olap;
  *
  * @version $Id$
  */
-public class ResourceLimitExceeded extends ResultLimitExceeded {
-    public ResourceLimitExceeded(String message) {
+public class ResourceLimitExceededException
+    extends ResultLimitExceededException
+{
+    /**
+     * Creates a ResourceLimitExceededException
+     *
+     * @param message Localized message
+     */
+    public ResourceLimitExceededException(String message) {
         super(message);
     }
 }
 
-// End ResourceLimitExceeded.java
+// End ResourceLimitExceededException.java

@@ -8,7 +8,8 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2000-2005 Kana Software, Inc. and others.
+  == (C) Copyright 2000-2002 Kana Software, Inc.
+  == (C) Copyright 2002-2007 Julian Hyde and others
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -474,11 +475,11 @@
 <!-- ====================================================================== -->
 <!-- Runtime limit overflow -->
 
-<exception id="600010" name="LimitExceededDuringCrossjoin" className="mondrian.olap.ResourceLimitExceeded">
+<exception id="600010" name="LimitExceededDuringCrossjoin" className="mondrian.olap.ResourceLimitExceededException">
    <text>Size of CrossJoin result ({0,number}) exceeded limit ({1,number})</text>
 </exception>
 
-<exception id="600020" name="MemberFetchLimitExceeded" className="mondrian.olap.ResourceLimitExceeded">
+<exception id="600020" name="MemberFetchLimitExceeded" className="mondrian.olap.ResourceLimitExceededException">
    <text>Number of members to be read exceeded limit ({0,number})</text>
 </exception>
 
@@ -490,13 +491,13 @@
     <text>Query timeout of {0,number} seconds reached</text>
 </exception>
 
-<exception id="600050" name="IterationLimitExceeded" className="mondrian.olap.ResourceLimitExceeded">
+<exception id="600050" name="IterationLimitExceeded" className="mondrian.olap.ResourceLimitExceededException">
     <text>Number of iterations exceeded limit of {0,number} </text>
 </exception>
 
 <!-- empty ,invalid Dimension -->
 
-<exception id="601010" name="InvalidHierarchyCondition" className="mondrian.olap.InvalidHierarchy">
+<exception id="601010" name="InvalidHierarchyCondition" className="mondrian.olap.InvalidHierarchyException">
    <text>Hierarchy ''{0}'' is invalid (has no members)</text>
 </exception>
 
