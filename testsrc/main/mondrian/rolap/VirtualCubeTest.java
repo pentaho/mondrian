@@ -490,6 +490,51 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "Row #0: $2.21\n" +
                 "Row #0: $1.63\n"));
     }
+    
+    /**
+     * Test a virtual cube where one of the dimensions contains an
+     * ordinalColumn property
+     */
+    public void testOrdinalColumn()
+    {
+        TestContext testContext = TestContext.create(
+            null, null,
+            "<VirtualCube name=\"Sales vs HR\">\n" +
+                "<VirtualCubeDimension name=\"Store\"/>\n" +
+                "<VirtualCubeDimension cubeName=\"HR\" name=\"Position\"/>\n" +
+                "<VirtualCubeMeasure cubeName=\"HR\" name=\"[Measures].[Org Salary]\"/>\n" +
+                "</VirtualCube>",
+            null, null);
+        testContext.assertQueryReturns(
+            "select {[Measures].[Org Salary]} on columns, " +
+            "non empty " +
+            "crossjoin([Store].[Store Country].members, [Position].[Store Management].children) " +
+            "on rows from [Sales vs HR]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Org Salary]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[Canada], [Position].[All Position].[Store Management].[Store Manager]}\n" +
+                "{[Store].[All Stores].[Canada], [Position].[All Position].[Store Management].[Store Assistant Manager]}\n" +
+                "{[Store].[All Stores].[Canada], [Position].[All Position].[Store Management].[Store Shift Supervisor]}\n" +
+                "{[Store].[All Stores].[Mexico], [Position].[All Position].[Store Management].[Store Manager]}\n" +
+                "{[Store].[All Stores].[Mexico], [Position].[All Position].[Store Management].[Store Assistant Manager]}\n" +
+                "{[Store].[All Stores].[Mexico], [Position].[All Position].[Store Management].[Store Shift Supervisor]}\n" +
+                "{[Store].[All Stores].[USA], [Position].[All Position].[Store Management].[Store Manager]}\n" +
+                "{[Store].[All Stores].[USA], [Position].[All Position].[Store Management].[Store Assistant Manager]}\n" +
+                "{[Store].[All Stores].[USA], [Position].[All Position].[Store Management].[Store Shift Supervisor]}\n" +
+                "Row #0: $462.86\n" +
+                "Row #1: $394.29\n" +
+                "Row #2: $565.71\n" +
+                "Row #3: $13,254.55\n" +
+                "Row #4: $11,443.64\n" +
+                "Row #5: $17,705.46\n" +
+                "Row #6: $4,069.80\n" +
+                "Row #7: $3,417.72\n" +
+                "Row #8: $5,145.96\n"));
+    }
 }
 
 // End VirtualCubeTest.java

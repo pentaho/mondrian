@@ -729,10 +729,16 @@ public class SqlTupleReader implements TupleReader {
             String ordinalSql = level2.getOrdinalExp().getExpression(sqlQuery);
             sqlQuery.addGroupBy(ordinalSql);
             if (finalSelect) {
-                // if this is a select on a virtual cube, the query will be
+                // If this is a select on a virtual cube, the query will be
                 // a union, so the order by columns need to be numbers,
-                // not column name strings
+                // not column name strings.  If the level contains an
+                // ordinal column, the ordering needs to be done on that
+                // column, so add it to the projection so we can order on it.
                 if (levelToColumnMap != null) {
+                    if (!ordinalSql.equals(keySql)) {
+                        sqlQuery.addSelect(ordinalSql);
+                        orderByColNo++;
+                    }
                     ordinalSql = String.valueOf(orderByColNo);
                     orderByColNo++;
                 }
