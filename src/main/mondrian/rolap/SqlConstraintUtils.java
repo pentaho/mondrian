@@ -473,22 +473,25 @@ public class SqlConstraintUtils {
         if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(columnValue)) {
             constraint = column + " is " + RolapUtil.sqlNullLiteral;
         } else {
-            String value = columnValue;
-            if (caseSensitive && datatype == SqlQuery.Datatype.String) {
-                // some dbs (like DB2) compare case sensitive
-                if (!MondrianProperties.instance().CaseSensitive.get()) {
-                    column = query.getDialect().toUpper(column);
-                    value = value.toUpperCase();
-                }
-            }
-            
             if (datatype.isNumeric()) {
                 // make sure it can be parsed
-                Double.valueOf(value);
+                Double.valueOf(columnValue);
             }
             final StringBuilder buf = new StringBuilder();
-            query.getDialect().quote(buf, value, datatype);
-            constraint = column + " = " + buf.toString();
+            query.getDialect().quote(buf, columnValue, datatype);
+            String value = buf.toString();
+            if (caseSensitive && datatype == SqlQuery.Datatype.String) {
+                // Some databases (like DB2) compare case-sensitive. We convert
+                // the value to upper-case in the DBMS (e.g. UPPER('Foo'))
+                // rather than in Java (e.g. 'FOO') in case the DBMS is running
+                // a different locale.
+                if (!MondrianProperties.instance().CaseSensitive.get()) {
+                    column = query.getDialect().toUpper(column);
+                    value = query.getDialect().toUpper(value);
+                }
+            }
+
+            constraint = column + " = " + value;
         }
         
         return constraint;
