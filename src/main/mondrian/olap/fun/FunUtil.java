@@ -1743,27 +1743,38 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         final FunTable funTable = validator.getFunTable();
         FunDef funDef = funTable.getDef(newArgs, validator, name, syntax);
 
-        // if a measure or the measures dimension is referenced in a function,
-        // then native cross joins cannot be used because the functions need
-        // to be executed to determine the resultant measures; the set
-        // function is ok since it just enumerates its arguments
+        // If the first argument to a function is either:
+        // 1) the measures dimension or
+        // 2) a measures member where the function returns another member or
+        //    a set,
+        // then these are functions that dynamically return one or more
+        // members ofthe measures dimension.  In that case, we cannot use
+        // native cross joins because the functions need to be executed to
+        // determine the resultant measures.
+        //
+        // As a result, we disallow functions like AllMembers applied on the
+        // Measures dimension as well as functions like the range operator,
+        // siblings, and lag, when the argument is a measure member.
+        // However, we do allow functions like isEmpty, rank, and topPercent.
+        // Also, the set function is ok since it just enumerates its
+        // arguments.
         if (!(funDef instanceof SetFunDef) && query != null &&
             query.nativeCrossJoinVirtualCube())
         {
             int[] paramCategories = funDef.getParameterCategories();
-            for (int i = 0; i < paramCategories.length; i++) {
-                if ((paramCategories[i] == Category.Dimension &&
-                        newArgs[i] instanceof DimensionExpr &&
-                        ((DimensionExpr) newArgs[i]).getDimension().
-                            getOrdinal(cube) == 0) ||
-                    (paramCategories[i] == Category.Member &&
-                        newArgs[i] instanceof MemberExpr &&
-                        ((MemberExpr) newArgs[i]).getMember().getDimension().
-                            getOrdinal(cube) == 0))
-                {
-                    query.setVirtualCubeNonNativeCrossJoin();
-                    break;
-                }
+            if (paramCategories.length > 0 &&
+                ((paramCategories[0] == Category.Dimension &&
+                    newArgs[0] instanceof DimensionExpr &&
+                    ((DimensionExpr) newArgs[0]).getDimension().
+                        getOrdinal(cube) == 0) ||
+                (paramCategories[0] == Category.Member &&
+                    newArgs[0] instanceof MemberExpr &&
+                    ((MemberExpr) newArgs[0]).getMember().getDimension().
+                        getOrdinal(cube) == 0 &&
+                    (funDef.getReturnCategory() == Category.Member ||
+                        funDef.getReturnCategory() == Category.Set))))
+            {
+                query.setVirtualCubeNonNativeCrossJoin();
             }
         }
 

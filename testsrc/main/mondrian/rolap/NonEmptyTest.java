@@ -1411,6 +1411,53 @@ public class NonEmptyTest extends FoodMartTestCase {
                 "Row #2: 50.28%\n" +
                 "Row #2: 100.00%\n"));
     }
+    
+    public void testVCNativeCJWithIsEmptyOnMeasure()
+    {
+        // Don't use checkNative method here because in the case where 
+        // native cross join isn't used, the query causes a stack overflow.
+        //
+        // A measures member is referenced in the IsEmpty() function.  This
+        // shouldn't prevent native cross join from being used.
+        assertQueryReturns(
+            "with " +
+            "set BM_PRODUCT as {[Product].[All Products].[Drink]} " +
+            "set BM_EDU as [Education Level].[Education Level].Members " +
+            "set BM_GENDER as {[Gender].[Gender].[M]} " +
+            "set CJ as NonEmptyCrossJoin(BM_GENDER,NonEmptyCrossJoin(BM_EDU,BM_PRODUCT)) " +
+            "set GM_PRODUCT as Generate(CJ, {[Product].CurrentMember}) " +
+            "set GM_EDU as Generate(CJ, {[Education Level].CurrentMember}) " +
+            "set GM_GENDER as Generate(CJ, {[Gender].CurrentMember}) " +
+            "set GM_MEASURE as {[Measures].[Unit Sales]} " +
+            "member [Education Level].FILTER1 as Aggregate(GM_EDU) " +
+            "member [Gender].FILTER2 as Aggregate(GM_GENDER) " +
+            "select " +
+            "Filter(GM_PRODUCT, Not IsEmpty([Measures].[Unit Sales])) on rows, " +
+            "GM_MEASURE on columns " +
+            "from [Warehouse and Sales] " +
+            "where ([Education Level].FILTER1, [Gender].FILTER2)",
+            fold(
+                "Axis #0:\n" +
+                "{[Education Level].[FILTER1], [Gender].[FILTER2]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products].[Drink]}\n" +
+                "Row #0: 12,395\n"));
+    }
+    
+    public void testVCNativeCJWithTopPercent()
+    {
+        // The reference to [Store Sales] inside the topPercent function
+        // should not prevent native cross joins from being used
+        checkNative(
+            92,
+            1,
+            "select {topPercent(nonemptycrossjoin([Product].[Product Department].members, " +
+            "[Time].[1997].children),10,[Measures].[Store Sales])} on columns, " +
+            "{[Measures].[Store Sales]} on rows from " +
+            "[Warehouse and Sales]");
+    }
 
     /**
      * make sure the following is not run natively
