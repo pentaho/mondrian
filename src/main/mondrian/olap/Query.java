@@ -112,6 +112,12 @@ public class Query extends QueryPart {
     private boolean isCanceled;
     
     /**
+     * If true, this query was notified that it might cause an 
+     * OutOfMemoryError.
+     */
+    private String outOfMemoryMsg;
+
+    /**
      * If true, query is in the middle of execution
      */
     private boolean isExecuting;
@@ -292,6 +298,10 @@ public class Query extends QueryPart {
         isCanceled = true;
     }
 
+    void setOutOfMemory(String msg) {
+        outOfMemoryMsg = msg;
+    }
+
     /**
      * Checks if either a cancel request has been issued on the query or
      * the execution time has exceeded the timeout value (if one has been
@@ -313,6 +323,9 @@ public class Query extends QueryPart {
                 throw MondrianResource.instance().QueryTimeout.ex(
                     (long) queryTimeout / 1000);
             }
+        }
+        if (outOfMemoryMsg != null) {
+            throw new MemoryLimitExceededException(outOfMemoryMsg);
         }
     }
 

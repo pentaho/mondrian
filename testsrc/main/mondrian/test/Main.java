@@ -36,6 +36,8 @@ import mondrian.rolap.aggmatcher.*;
 import mondrian.test.comp.ResultComparatorTest;
 import mondrian.util.ScheduleTest;
 import mondrian.util.FormatTest;
+import mondrian.util.ObjectPoolTest;
+import mondrian.util.MemoryMonitorTest;
 import mondrian.xmla.XmlaBasicTest;
 import mondrian.xmla.XmlaExcel2000Test;
 import mondrian.xmla.XmlaExcelXPTest;
@@ -151,6 +153,8 @@ public class Main extends TestSuite {
                 suite.addTest((Test) o);
             }
         } else {
+            suite.addTestSuite(MemoryMonitorTest.class);
+            suite.addTestSuite(ObjectPoolTest.class);
             suite.addTestSuite(RolapConnectionTest.class);
             suite.addTest(ResultComparatorTest.suite());
             suite.addTestSuite(DrillThroughTest.class);

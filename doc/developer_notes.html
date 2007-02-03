@@ -27,6 +27,7 @@
   <li><a href="#Log_Levels">Logging Levels and Information</a></li>
   <li><a href="#Agg_default_rules">Default aggregate table recognition rules</a></li>
   <li><a href="#Snowflakes">Snowflakes and the DimensionUsage level attribute</a></li>
+  <li><a href="#Memory_monitoring">Memory Monitoring</a></li>
 </ol>
 
 <h2>Logging Levels and Information<a name="Log_Levels">&nbsp;</a></h2>
@@ -962,6 +963,32 @@ Note that the
 <code>Level</code>
 element's table attribute MUST use the table alias and NOT the table name. 
 </p>
+
+<h2>Memory monitoring, Java5 and memory usage<a name="Memory_monitoring">&nbsp;</a></h2>
+<p>
+With Java5, developers using its memory monitoring capabilities 
+need to make sure the code they create will best use this new feature.
+In particular, if a given algorithm which uses significant memory
+is surrounded by 
+block in which a <code>MemoryMonitor.Listener</code> has been
+registered with the <code>MemoryMonitor</code>, then the code
+must periodically check if a memory notification has occurred.
+If the algorithm has long stretches of allocating memory for
+data structures that will exist throughout the life-time of the
+algorithm's execution during which it does not check for 
+memory notifications, then it is possible that an 
+<code>OutOfMemoryError</code> could still occur.
+You can see for the ResultSet object where, basically, all memory
+is created in its constructor, throughout the Member determination
+and value evaluation code, the Query object's checkCancelOrTimeout
+method is called repeatedly.
+<p>
+The Java5 memory management mechanism is not fool proof, so to speak.
+If one, as an example, attempts to allocate a very big
+array, an <code>OutOfMemoryError</code> will occur. This
+technique works best when memory is allocated incrementally between
+checks for memory notifications allowing the developer to 
+take steps before a possible OOME gotterdammerung.
 
 <hr noshade size="1"/>
 <p>

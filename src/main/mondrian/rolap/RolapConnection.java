@@ -13,6 +13,8 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.util.MemoryMonitor;
+import mondrian.util.MemoryMonitorFactory;
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DataSourceConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
@@ -369,7 +371,31 @@ public class RolapConnection extends ConnectionBase {
      * the property file
      */
     public Result execute(Query query) {
+        class Listener implements MemoryMonitor.Listener {
+            private final Query query;
+            Listener(final Query query) {
+                this.query = query;
+            }
+            public void memoryUsageNotification(long used, long max) {
+                StringBuffer buf = new StringBuffer(200);
+                buf.append("OutOfMemory used=");
+                buf.append(used);
+                buf.append(", max=");
+                buf.append(max);
+                buf.append(" for connection: ");
+                buf.append(getConnectString());
+                // Call ConnectionBase method which has access to
+                // Query methods.
+                RolapConnection.memoryUsageNotification(query, buf.toString());
+            }
+        }
+        Listener listener = new Listener(query);
+        MemoryMonitor mm = MemoryMonitorFactory.instance().getObject();
         try {
+            mm.addListener(listener);
+            // Check to see if we must punt
+            query.checkCancelOrTimeout();
+
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(Util.unparse(query));
             }
@@ -391,6 +417,9 @@ public class RolapConnection extends ConnectionBase {
             query.setQueryEndExecution();
             return result;
 
+        } catch (ResultLimitExceededException e) {
+            // query has been punted
+            throw e;
         } catch (Exception e) {
             String queryString;
             query.setQueryEndExecution();
@@ -401,6 +430,8 @@ public class RolapConnection extends ConnectionBase {
             }
             throw Util.newError(e, "Error while executing query [" +
                     queryString + "]");
+        } finally {
+            mm.removeListener(listener);
         }
     }
 

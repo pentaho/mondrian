@@ -410,11 +410,11 @@ class RolapResult extends ResultBase {
 
 
 
-    private final RolapEvaluator evaluator;
+    private RolapEvaluator evaluator;
     private final CellKey point;
 
-    private final CellInfoContainer cellInfos;
-    private final FastBatchingCellReader batchingReader;
+    private CellInfoContainer cellInfos;
+    private FastBatchingCellReader batchingReader;
     AggregatingCellReader aggregatingReader = new AggregatingCellReader();
     private Modulos modulos = null;
     private final int maxEvalDepth =
@@ -445,6 +445,7 @@ class RolapResult extends ResultBase {
 
         // for use in debugging Checkin_7634
         Util.discard(Bug.Checkin7634DoOld);
+        boolean normalExecution = true;
         try {
             // Check if there are modifications to the aggregate cache
             rcube.checkAggregateModifications();            
@@ -595,12 +596,31 @@ class RolapResult extends ResultBase {
                 this.cellInfos.trimToSize();
             }
 
-        } finally {
-            // Push all modifications to the aggregate cache to the global cache
-            // so each thread can start using it
-            rcube.pushAggregateModificationsToGlobalCache();            
+        } catch (ResultLimitExceededException ex) {
+            // If one gets a ResultLimitExceededException, then
+            // don't count on anything being worth caching.
+            normalExecution = false;
+
+            // De-reference data structures that might be holding
+            // partial results but surely are taking up memory.
+            evaluator = null;
+            cellInfos = null;
+            batchingReader = null;
+            for (int i = 0; i < axes.length; i++) {
+                axes[i] = null;
+            }
+            slicerAxis = null;
             
-            evaluator.clearExpResultCache();
+            throw ex;
+
+        } finally {
+            if (normalExecution) {
+                // Push all modifications to the aggregate cache to the global
+                // cache so each thread can start using it
+                rcube.pushAggregateModificationsToGlobalCache();            
+
+                evaluator.clearExpResultCache();
+            }
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("RolapResult<init>: " + Util.printMemory());
             }
@@ -887,8 +907,13 @@ class RolapResult extends ResultBase {
                     ci.formatString = cachedFormatString;
                     ci.valueFormatter = valueFormatter;
 
+                } catch (ResultLimitExceededException e) {
+                    // Do NOT ignore a ResultLimitExceededException!!!
+                    throw e;
+
                 } catch (MondrianEvaluationException e) {
                     // ignore
+                    
                 } catch (Throwable e) {
                     Util.discard(e);
                 }

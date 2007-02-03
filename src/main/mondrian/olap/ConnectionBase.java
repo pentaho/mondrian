@@ -27,10 +27,15 @@ import org.apache.log4j.Logger;
  */
 public abstract class ConnectionBase implements Connection {
 
+    public static void memoryUsageNotification(Query query, String msg) {
+        query.setOutOfMemory(msg);
+    }
+
     protected ConnectionBase() {
     }
 
     protected abstract Logger getLogger();
+
 
     public String getFullConnectString() {
         String s = getConnectString();

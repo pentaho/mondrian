@@ -824,6 +824,19 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public final IntegerProperty IterationLimit = new IntegerProperty(
         this, "mondrian.rolap.iterationLimit", 0);
+
+    /**
+     * Whether the <code>MemoryMonitor</code> should be enabled. By
+     * default for Java5 and above it is enabled.
+     */
+    public final BooleanProperty MemoryMonitor = new BooleanProperty(
+        this, "mondrian.util.memoryMonitor.enable", true);
+
+    /**
+     * The default <code>MemoryMonitor</code> percentage threshold.
+     */
+    public final IntegerProperty MemoryMonitorThreshold = new IntegerProperty(
+        this, "mondrian.util.memoryMonitor.percentage.threshold", 90);
 }
 
 // End MondrianProperties.java
