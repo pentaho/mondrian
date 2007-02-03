@@ -5,7 +5,7 @@
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
   == Copyright (C) 2001-2002 Kana Software, Inc.
-  == Copyright (C) 2001-2005 Julian Hyde
+  == Copyright (C) 2001-2007 Julian Hyde
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   == jhyde, 24 September, 2002
@@ -202,17 +202,16 @@ sort</a>, then re-execute the query.</p>
 information about the Mondrian API, see <a href="api/overview-summary.html">
 the javadoc</a>.</p>
 
-<p>To comply with emerging standards, we are adding two APIs to Mondrian:</p>
+<p><a href="http://xmla.org/default.asp">XML for Analysis</a> is a standard for accessing
+OLAP servers via SOAP (Simple Object Access Protocol).
+This allows non-Java components like Microsoft Excel to run
+queries against Mondrian.</p>
 
-<ul>
-  <li><a href="http://java.sun.com/aboutJava/communityprocess/jsr/jsr_069_jolap.html">JOLAP</a>
-  is a standard emerging from the JSR process, and it will become part of J2EE sometime in 2003. We have a few simple JOLAP
-  queries running in <a href="api/mondrian/test/JolapTest.html">
-  class mondrian.test.JolapTest</a>.</li>
-  <li><a href="http://xmla.org/default.asp">XML for Analysis</a> is a standard for accessing
-  OLAP servers via SOAP (Simple Object Access Protocol). This will allow non-Java components like Microsoft Excel to run
-  queries against Mondrian.</li>
-</ul>
+<p>Mondrian included support for the
+<a href="http://java.sun.com/aboutJava/communityprocess/jsr/jsr_069_jolap.html">JSR-069</a>
+('JOLAP') proposed standard, but this support was removed in mondrian-2.3
+when it became clear that the standard would never be ratified.</p>
+
 <!--
 ########################
 ##     MDX         #####

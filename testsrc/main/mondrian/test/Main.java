@@ -188,7 +188,6 @@ public class Main extends TestSuite {
             suite.addTestSuite(SchemaTest.class);
             suite.addTestSuite(CmdRunnerTest.class);
             suite.addTestSuite(BUG_1541077.class);
-            suite.addTestSuite(JolapTest.class);
             suite.addTestSuite(DataSourceChangeListenerTest.class);
             suite.addTestSuite(ModulosTest.class);
             suite.addTestSuite(CellKeyTest.class);

@@ -60,14 +60,6 @@
       <priority value="INFO"/>
    </category>
 
-   <category name="org.omg">
-      <priority value="INFO"/>
-   </category>
-
-   <category name="javax.olap">
-      <priority value="INFO"/>
-   </category>
-
    <!-- ======================= -->
    <!-- Setup the Root category -->
    <!-- ======================= -->

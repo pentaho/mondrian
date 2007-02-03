@@ -78,9 +78,13 @@ a API which Microsoft built in order to make OLE DB for OLAP easier to use.</p>
 rather than COM, and therefore seems to offer a platform-neutral standard for
 OLAP, but take-up seems to be limited to vendors who supported OLE DB for OLAP
 already.</p>
-<p>The other query vendors failed to reach consensus several years ago with the
-OLAP Council API, and are now encamped on the JOLAP specification.</p>
-<p>We plan to provide a JOLAP API to Mondrian as soon as JOLAP is available.</p>
+<p>The other OLAP vendors failed to reach consensus several years ago with the
+OLAP Council API, then moved onto the JSR-069 ('JOLAP') specification. Mondrian 
+included a partial implementation of the JOLAP API for several years, but this 
+was removed in mondrian-2.3.</p>
+<p>During 2006, Julian Hyde started work, in collaboration with some other 
+projects and companies, on a pragmatic open API for Java-based OLAP called
+<a href="http://www.olap4j.org">olap4j</a>.</p>
 <!-- 
 #####################################################################
 ##  3. How does Mondrian's dialect of MDX differ from MSOLAP's? #####
@@ -215,7 +219,6 @@ mondrian.olap.DriverManager.getConnection(String connectString, boolean fresh)</
   JPivot</a> for more details).</li>
   <li>Complete implementation of MDX (not all of the functions implemented yet)</li>
   <li>Tuning</li>
-  <li>Support JOLAP API.</li>
 </ol>
 <!-- 
 ########################################

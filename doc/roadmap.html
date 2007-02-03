@@ -68,7 +68,6 @@
 		<li><a href="#Feature_Compound_slicer">Compound slicer</a></li>
 		<li><a href="#Feature_Enhancements_to_schema_cache">Enhancements to schema
 	cache</a></li>
-		<li><a href="#Feature_JOLAP_support">JOLAP support</a></li>
 		<li><a href="#Feature_Schema_and_query_validation">Schema and query validation</a></li>
 		<li><a href="#Feature_Documentation">Documentation</a></li>
 
@@ -641,17 +640,7 @@ Values are:</p>
 ############################
 ##  3.13 JOLAP support #####
 ############################ -->
-<h1>3.13 JOLAP support<a name="Feature_JOLAP_support">&nbsp;</a></h1>
-
-<p><i>Effort: very high; importance: medium; priority: low.</i></p>
-
-<p>Mondrian's support for the JOLAP API is currently incomplete. This feature
-would complete the implementation of the API.</p>
-<!--
-##########################################
-##  3.14 Schema and query validation #####
-########################################## -->
-<h1>3.14 Schema and query validation<a name="Feature_Schema_and_query_validation">&nbsp;</a></h1>
+<h1>3.13 Schema and query validation<a name="Feature_Schema_and_query_validation">&nbsp;</a></h1>
 
 <p>Process to validate a schema.</p>
 
@@ -663,7 +652,7 @@ specific members not existing because the data hasn't been loaded yet.</p>
 ############################
 ##  3.15 Documentation #####
 ############################ -->
-<h1>3.15 Documentation<a name="Feature_Documentation">&nbsp;</a></h1>
+<h1>3.14 Documentation<a name="Feature_Documentation">&nbsp;</a></h1>
 
 <ul>
 <li>Document 'ordinalColumn'</li>
@@ -672,7 +661,7 @@ specific members not existing because the data hasn't been loaded yet.</p>
 ##############################
 ##  3.16 Name-resolution #####
 ############################## -->
-<h1>3.16 Name-resolution<a name="Feature_Name-resolution">&nbsp;</a></h1>
+<h1>3.15 Name-resolution<a name="Feature_Name-resolution">&nbsp;</a></h1>
 
 <p>Mondrian's name resolution is not always compatible with other MDX
 implementations such as MSAS and SAS.</p>
@@ -690,7 +679,7 @@ implementations such as MSAS and SAS.</p>
 #####################################
 ##  3.17 XML/A interoperability #####
 ##################################### -->
-<h1>3.17 XML/A interoperability<a name="Feature_XMLA_interoperability">&nbsp;</a></h1>
+<h1>3.16 XML/A interoperability<a name="Feature_XMLA_interoperability">&nbsp;</a></h1>
 
 <p>Other improvements (Schema, Tabular Format, ...)</p>
 
@@ -702,7 +691,7 @@ implementations such as MSAS and SAS.</p>
 #################################
 ##  3.18 Standard functions #####
 ################################# -->
-<h1>3.18 Standard functions<a name="Feature_Standard_functions">&nbsp;</a></h1>
+<h1>3.17 Standard functions<a name="Feature_Standard_functions">&nbsp;</a></h1>
 
 <p>Implement standard MDX functions:<ul>
 <li>SetToArray(&lt;Set&gt;[, &lt;Set&gt;]...[, &lt;Numeric Expression&gt;])</li>
@@ -730,7 +719,7 @@ keyword.</p>
 ############################
 ##  3.19 Bridge to CWM #####
 ############################ -->
-<h1>3.19 Bridge to CWM<a name="Feature_Bridge_to_CWM">&nbsp;</a></h1>
+<h1>3.18 Bridge to CWM<a name="Feature_Bridge_to_CWM">&nbsp;</a></h1>
 
 <p>CWM (Common Warehouse Model) is a standard model for defining data warehouse
 and multidimensional schemas. It allows interoperability with tools such as UML
@@ -746,7 +735,7 @@ diagrams, relational report design tools, and ETL tools.</p>
 ######################################
 ##  3.20 Graphical administrator #####
 ###################################### -->
-<h1>3.20 Graphical administrator<a name="Feature_Graphical_administrator">&nbsp;</a></h1>
+<h1>3.19 Graphical administrator<a name="Feature_Graphical_administrator">&nbsp;</a></h1>
 
 <p><i>Effort: high; importance: high; priority: high.</i></p>
 
@@ -780,7 +769,7 @@ together in one application, which can easily be installed and launched.</p>
 ####################################
 ##  3.21 Mondrian XML/A server #####
 #################################### -->
-<h1>3.21 Mondrian XML/A server<a name="Feature_Mondrian_XMLA_server">&nbsp;</a></h1>
+<h1>3.20 Mondrian XML/A server<a name="Feature_Mondrian_XMLA_server">&nbsp;</a></h1>
 
 <p>The standard installation will include a script to start and stop a Mondrian
 instance running XML/A. This will invoke a lightweight servlet engine running
@@ -790,7 +779,7 @@ servlet in your web server of choice.)</p>
 ###############################################
 ##  3.22 User-defined aggregate functions #####
 ############################################### -->
-<h1>3.22 User-defined aggregate functions<a name="Feature_User_defined_aggregate_functions">&nbsp;</a></h1>
+<h1>3.21 User-defined aggregate functions<a name="Feature_User_defined_aggregate_functions">&nbsp;</a></h1>
 
 <p>The standard aggregate functions are sum, count, distinct-count, min, max and
 avg. This feature will provide an SPI by which application developers can write
@@ -829,7 +818,7 @@ tables.</p>
 #################################################
 ##  3.23 Time function and scalar functions #####
 ################################################# -->
-<h1>3.23 Time function and scalar functions<a name="Feature_Time_function_and_scalar_functions">&nbsp;</a></h1>
+<h1>3.22 Time function and scalar functions<a name="Feature_Time_function_and_scalar_functions">&nbsp;</a></h1>
 
 <p><i>Gang Chen</i>: We may split them (common UDFs) into a standalone UDF package or
 project. Autoload them to setup a GlobalFunTable when constructing
@@ -844,7 +833,7 @@ them. They will serve as great examples for others writing UDFs.</p>
 ###############################################
 ##  3.24 Further work on aggregate tables #####
 ############################################### -->
-<h1>3.24 Further work on aggregate tables<a name="Feature_Further_work_on_aggregate_tables">&nbsp;</a></h1>
+<h1>3.23 Further work on aggregate tables<a name="Feature_Further_work_on_aggregate_tables">&nbsp;</a></h1>
 
 <p>1. Utility to populate (or generate INSERT statements to populate) the  agg
 tables. (For extra credit: populate the tables in topological order, so that
@@ -875,10 +864,10 @@ make them smarter.</p>
 <br />
 
 <p>
-    Author: Julian Hyde; last modified August 2006.<br/>
+    Author: Julian Hyde; last modified February 2007.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/roadmap.html?ac=22">log</a>)<br/>
-    Copyright (C) 2002-2006 Julian Hyde and others
+    Copyright (C) 2002-2007 Julian Hyde and others
 </p>
 
 <br />

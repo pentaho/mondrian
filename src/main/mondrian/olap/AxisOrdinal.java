@@ -23,8 +23,7 @@ public enum AxisOrdinal {
     /** No axis.*/
     NONE,
 
-    /** Slicer axis (which JOLAP calls the Page axis, not to be confused with
-     * our {@link #PAGES} axis). */
+    /** Slicer axis. */
     SLICER,
 
     /** Columns axis (also known as X axis), logical ordinal = 0. */

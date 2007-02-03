@@ -93,8 +93,6 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${lib.dir}/eigenbase-xom.jar"/>
     <pathelement location="${lib.dir}/javacup.jar"/>
     <pathelement location="${lib.dir}/log4j-1.2.9.jar"/>
-    <pathelement location="${lib.dir}/mof.jar"/>
-    <pathelement location="${lib.dir}/jmi.jar"/>
     <pathelement location="${lib.dir}/xalan.jar"/>
     <pathelement location="${lib.dir}/xml-apis.jar"/>
     <pathelement location="${lib.dir}/xercesImpl.jar"/>
@@ -333,8 +331,6 @@ compile.java"/>
         classpathref="project.build.classpath"
         source="1.5">
       <include name="mondrian/**/*.java"/>
-      <include name="javax/**/*.java"/>
-      <include name="org/**/*.java"/>
     </javac>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml" 
         todir="${classes.dir}"/>
@@ -558,7 +554,6 @@ ${java.dir}/mondrian/olap/Mondrian.xml,
 ${java.dir}/mondrian/rolap/aggmatcher/DefaultRules.xml,
 ${java.dir}/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml,
 ${java.dir}/mondrian/xmla/DataSourcesConfig.xml,
-${java.dir}/javax/jmi/model/resources/mof.xml,
 ${java.dir}/**/*.java,
 ${java.dir}/**/*.cup,
 ${java.dir}/**/*.gif,
@@ -573,11 +568,9 @@ ${lib.dir}/eigenbase-properties.jar,
 ${lib.dir}/eigenbase-resgen.jar,
 ${lib.dir}/eigenbase-xom.jar,
 ${lib.dir}/javacup.jar,
-${lib.dir}/jmi.jar,
 ${lib.dir}/log4j-1.2.9.jar,
 ${lib.dir}/mondrian.xsd,
 ${lib.dir}/jsp-api.jar,
-${lib.dir}/mof.jar,
 ${lib.dir}/eigenbase-resgen.jar,
 ${lib.dir}/eigenbase-xom.jar,
 ${lib.dir}/servlet.jar,
@@ -826,7 +819,7 @@ doc/**/*.xml"
     <javadoc sourcepath="${java.dir}:${javatest.dir}"
         classpathref="project.test.classpath"
         destdir="${javadoc.dir}"
-        packagenames="mondrian.*,javax.*,org.omg.*"
+        packagenames="mondrian.*"
         overview="${java.dir}/overview.html"
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sourceforge.net/sflogo.php?group_id=35302&#38;type=1&quot; width=&quot;88&quot; height=&quot;31&quot; border=&quot;0&quot; alt=&quot;SourceForge.net_Logo&quot;&gt;&lt;/a&gt;"
         author="true"
@@ -862,7 +855,7 @@ doc/**/*.xml"
     <javadoc sourcepath="${java.dir}"
         classpathref="project.test.classpath"
         destdir="${javadoc.dir}"
-        packagenames="mondrian.*,javax.*,org.omg.*"
+        packagenames="mondrian.*"
         overview="${java.dir}/overview.html"
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sourceforge.net/sflogo.php?group_id=35302&#38;type=1&quot; width=&quot;88&quot; height=&quot;31&quot; border=&quot;0&quot; alt=&quot;SourceForge.net_Logo&quot;&gt;&lt;/a&gt;"
         author="true"
@@ -1049,8 +1042,6 @@ and lib contains ant.jar, junit.jar etc. (use 'copy-jars' target)">
       <lib dir="${lib.dir}" includes="
 ${name}.jar,
 javacup.jar,
-jmi.jar,
-mof.jar,
 xalan.jar"/>
     </war>
   </target>
