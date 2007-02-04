@@ -31,7 +31,7 @@ import javax.servlet.Servlet;
 
 
 /**
- * These test the compatibility of Mondrian XMLA with Excel 2000.
+ * Test suite for compatibility of Mondrian XMLA with Excel 2000.
  * Simba (the maker of the O2X bridge) supplied captured request/response
  * soap messages between Excel 2000 and SQL Server. These form the
  * basis of the output files in the  excel_2000 directory.
@@ -414,6 +414,7 @@ System.out.println("GOT:\n"+gotStr);
 System.out.println("EXPECTED:\n"+expectedStr);
 System.out.println("XXXXXXX");
 }
+        gotStr = Util.maskVersion(gotStr);
         XMLAssert.assertXMLEqual(expectedStr, gotStr);
     }
 

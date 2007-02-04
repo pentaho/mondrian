@@ -1223,6 +1223,10 @@ enum RowsetDefinition {
                 this == EnumerationArray ||
                 this == EnumString;
         }
+
+        String getName() {
+            return this == String ? "string" : name();
+        }
     }
 
     private static DBType getDBTypeFromProperty(Property prop) {
@@ -1742,7 +1746,7 @@ enum RowsetDefinition {
                 Row row = new Row();
                 row.set(PropertyName.name, propertyDefinition.name());
                 row.set(PropertyDescription.name, propertyDefinition.description);
-                row.set(PropertyType.name, propertyDefinition.type);
+                row.set(PropertyType.name, propertyDefinition.type.getName());
                 row.set(PropertyAccessType.name, propertyDefinition.access);
                 row.set(IsRequired.name, false);
                 row.set(Value.name, propertyDefinition.value);
@@ -5708,13 +5712,61 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
             super(MDSCHEMA_SETS, request, handler);
         }
 
-        private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, true, null);
-        private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
-        private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
-        private static final Column SetName = new Column("SET_NAME", Type.String, null, true, false, null);
-        private static final Column SetCaption = new Column("SET_CAPTION", Type.String, null, true, true, null);
-        private static final Column Scope = new Column("SCOPE", Type.Integer, null, true, false, null);
-        private static final Column Description = new Column("DESCRIPTION", Type.String, null, false, true, "A human-readable description of the measure. ");
+        private static final Column CatalogName =
+            new Column(
+                "CATALOG_NAME",
+                Type.String,
+                null,
+                true,
+                true,
+                null);
+        private static final Column SchemaName =
+            new Column(
+                "SCHEMA_NAME",
+                Type.String,
+                null,
+                true,
+                true,
+                null);
+        private static final Column CubeName =
+            new Column(
+                "CUBE_NAME",
+                Type.String,
+                null,
+                true,
+                false,
+                null);
+        private static final Column SetName =
+            new Column(
+                "SET_NAME",
+                Type.String,
+                null,
+                true,
+                false,
+                null);
+        private static final Column SetCaption =
+            new Column(
+                "SET_CAPTION",
+                Type.String,
+                null,
+                true,
+                true,
+                null);
+        private static final Column Scope =
+            new Column(
+                "SCOPE",
+                Type.Integer,
+                null,
+                true,
+                false,
+                null);
+        private static final Column Description =
+            new Column("DESCRIPTION",
+                Type.String,
+                null,
+                false,
+                true,
+                "A human-readable description of the measure.");
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             throw new XmlaException(

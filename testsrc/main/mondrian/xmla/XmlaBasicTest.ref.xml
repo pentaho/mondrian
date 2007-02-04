@@ -8918,7 +8918,7 @@
                         <PropertyType>string</PropertyType>
                         <PropertyAccessType>Read</PropertyAccessType>
                         <IsRequired>false</IsRequired>
-                        <Value>2.1.0.0</Value>
+                        <Value>${mondrianVersion}</Value>
                     </row>
                     <row>
                         <PropertyName>StateSupport</PropertyName>
@@ -8983,10 +8983,10 @@
                     <row>
                         <PropertyName>AdvancedFlag</PropertyName>
                         <PropertyDescription/>
-                        <PropertyType>string</PropertyType>
+                        <PropertyType>Boolean</PropertyType>
                         <PropertyAccessType>Read</PropertyAccessType>
                         <IsRequired>false</IsRequired>
-                        <Value/>
+                        <Value>false</Value>
                     </row>
                 </root>
             </xmla:return>

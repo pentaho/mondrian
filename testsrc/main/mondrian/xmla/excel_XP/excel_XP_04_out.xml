@@ -50,7 +50,7 @@
             <PropertyType>string</PropertyType>
             <PropertyAccessType>Read</PropertyAccessType>
             <IsRequired>false</IsRequired>
-            <Value>2.1.0.0</Value>
+            <Value>${mondrianVersion}</Value>
           </row>
         </root>
       </xmla:return>

@@ -567,6 +567,7 @@ if (DEBUG) {
 
         Document gotDoc = ignoreLastUpdateDate(XmlUtil.parse(bytes));
         String gotStr = XmlUtil.toString(gotDoc, true);
+        gotStr = Util.maskVersion(gotStr);
         if (expectedDoc != null) {
             String expectedStr = XmlUtil.toString(expectedDoc, true);
 if (DEBUG) {
@@ -594,7 +595,7 @@ System.out.println("XXXXXXX");
         }
     }
 
-	private Document ignoreLastUpdateDate(Document document) {
+    private Document ignoreLastUpdateDate(Document document) {
 		NodeList elements = document.getElementsByTagName("LAST_SCHEMA_UPDATE");
 		for (int i = elements.getLength(); i > 0; i--) {
 			removeNode(elements.item(i-1));

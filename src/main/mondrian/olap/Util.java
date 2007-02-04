@@ -983,6 +983,20 @@ public class Util extends XOMUtil {
             "' in this context");
     }
 
+    /**
+     * Masks Mondrian's version number from a string.
+     *
+     * @param str String
+     * @return String with each occurrence of mondrian's version number
+     *    (e.g. "2.3.0.0") replaced with "${mondrianVersion}"
+     */
+    public static String maskVersion(String str) {
+        MondrianServer.MondrianVersion mondrianVersion =
+            MondrianServer.forConnection(null).getVersion();
+        String versionString = mondrianVersion.getVersionString();
+        return replace(str, versionString, "${mondrianVersion}");
+    }
+
     public static class ErrorCellValue {
         public String toString() {
             return "#ERR";

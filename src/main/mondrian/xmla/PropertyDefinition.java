@@ -12,6 +12,7 @@
 package mondrian.xmla;
 
 import mondrian.olap.Util;
+import mondrian.olap.MondrianServer;
 
 import java.util.Set;
 
@@ -131,13 +132,11 @@ enum PropertyDefinition {
         Enumeration.Methods.discover,
         "The XML for Analysis Provider name."),
 
-    //TODO: the below version string "2.3.0.0" ought to be read at compile
-    // time from some build property rather than being hard-coded.
     ProviderVersion(
         RowsetDefinition.Type.String,
         null,
         Enumeration.Access.Read,
-        "2.3.0.0",
+        MondrianServer.forConnection(null).getVersion().getVersionString(),
         Enumeration.Methods.discover,
         "The version of the Mondrian XMLA Provider"),
 

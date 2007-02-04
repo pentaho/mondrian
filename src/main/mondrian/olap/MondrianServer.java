@@ -53,6 +53,21 @@ public abstract class MondrianServer {
      * for all cubes in all schemas will be flushed.
      */
     public abstract void flushDataCache();
+
+    /**
+     * Returns the version of this MondrianServer.
+     */
+    public abstract MondrianVersion getVersion();
+
+    /**
+     * Description of the version of the server.
+     */
+    public interface MondrianVersion {
+        /**
+         * Returns the version string, for example "2.3.0".
+         */
+        String getVersionString();
+    }
 }
 
 // End MondrianServer.java

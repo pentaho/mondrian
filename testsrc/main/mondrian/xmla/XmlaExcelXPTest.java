@@ -28,7 +28,7 @@ import java.util.Properties;
 
 
 /**
- * These test the compatibility of Mondrian XMLA with Excel XP.
+ * Test suite for compatibility of Mondrian XMLA with Excel XP.
  * Simba (the maker of the O2X bridge) supplied captured request/response
  * soap messages between Excel XP and SQL Server. These form the
  * basis of the output files in the  excel_XP directory.
@@ -37,7 +37,7 @@ import java.util.Properties;
  * @version $Id$
  */
 public class XmlaExcelXPTest extends XmlaBaseTestCase {
-    // session id properpty
+    // session id property
     public static final String SESSION_ID_PROP     = "session.id";
 
     private static String EXPECT = XmlaRequestCallback.EXPECT;
@@ -436,6 +436,7 @@ System.out.println("GOT:\n"+gotStr);
 System.out.println("EXPECTED:\n"+expectedStr);
 System.out.println("XXXXXXX");
 }
+        gotStr = Util.maskVersion(gotStr);
         XMLAssert.assertXMLEqual(expectedStr, gotStr);
     }
 

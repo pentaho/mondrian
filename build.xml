@@ -4,7 +4,7 @@
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
   == Copyright (C) 2001-2003 Kana Software, Inc.
-  == Copyright (C) 2001-2006 Julian Hyde and others.
+  == Copyright (C) 2001-2007 Julian Hyde and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -18,6 +18,7 @@
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
   <property name="version" value="2.3-dev"/>
+  <property name="vendor" value="Pentaho"/>
 
   <!--
     ===================================================================
@@ -534,7 +535,10 @@ in {mondrian.foodmart.jdbcURL}.">
   </target>
 
   <target name="version">
-    <echo message="Mondrian ${version}" file="VERSION.txt"/>
+    <echo file="VERSION.txt">Title: ${name}
+Version: ${version}
+Vendor: ${vendor}
+</echo>
   </target>
 
   <target name="srczip" depends="version">
@@ -779,8 +783,8 @@ doc/**/*.xml"
 
     <target name="jar" depends="version,compile,compile.tests">
       <mkdir dir="${lib.dir}" />
-      <zip
-          zipfile="${jar.file}"
+      <jar
+          destfile="${jar.file}"
           update="true">
         <zipfileset
             dir="${classes.dir}"
@@ -803,7 +807,15 @@ doc/**/*.xml"
   LICENSE.html,
   README.txt,
   VERSION.txt"/>
-      </zip>
+        <manifest>
+          <attribute name="Built-By" value="${user.name}"/>
+          <section name="mondrian.olap">
+            <attribute name="Implementation-Title" value="${name}"/>
+            <attribute name="Implementation-Version" value="${version}"/>
+            <attribute name="Implementation-Vendor" value="${vendor}"/>
+          </section>
+        </manifest>
+      </jar>
     </target>
 
   <target name="xml_schema"
