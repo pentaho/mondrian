@@ -1195,7 +1195,7 @@ enum RowsetDefinition {
     }
 
     enum Type {
-        string("xsd:string"),
+        String("xsd:string"),
         StringArray("xsd:string"),
         Array("xsd:string"),
         Enumeration("xsd:string"),
@@ -1489,7 +1489,7 @@ enum RowsetDefinition {
         private static final Column DataSourceName =
             new Column(
                 "DataSourceName",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -1497,7 +1497,7 @@ enum RowsetDefinition {
         private static final Column DataSourceDescription =
             new Column(
                 "DataSourceDescription",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -1505,7 +1505,7 @@ enum RowsetDefinition {
         private static final Column URL =
             new Column(
                 "URL",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -1513,7 +1513,7 @@ enum RowsetDefinition {
         private static final Column DataSourceInfo =
             new Column(
                 "DataSourceInfo",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -1522,7 +1522,7 @@ enum RowsetDefinition {
         private static final Column ProviderName =
             new Column(
                 "ProviderName",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -1609,7 +1609,7 @@ enum RowsetDefinition {
         private static final Column Description =
             new Column(
                 "Description",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -1695,7 +1695,7 @@ enum RowsetDefinition {
         private static final Column PropertyDescription =
             new Column(
                 "PropertyDescription",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -1703,7 +1703,7 @@ enum RowsetDefinition {
         private static final Column PropertyType =
             new Column(
                 "PropertyType",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -1727,7 +1727,7 @@ enum RowsetDefinition {
         private static final Column Value =
             new Column(
                 "Value",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -1775,7 +1775,7 @@ enum RowsetDefinition {
         private static final Column EnumDescription =
             new Column(
                 "EnumDescription",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -1783,7 +1783,7 @@ enum RowsetDefinition {
         private static final Column EnumType =
             new Column(
                 "EnumType",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -1791,7 +1791,7 @@ enum RowsetDefinition {
         private static final Column ElementName =
             new Column(
                 "ElementName",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -1799,7 +1799,7 @@ enum RowsetDefinition {
         private static final Column ElementDescription =
             new Column(
                 "ElementDescription",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -1807,7 +1807,7 @@ enum RowsetDefinition {
         private static final Column ElementValue =
             new Column(
                 "ElementValue",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -1841,7 +1841,7 @@ enum RowsetDefinition {
                     }
 
                     switch (enumerator.type) {
-                    case string:
+                    case String:
                     case StringArray:
                         // these don't have ordinals
                         break;
@@ -1994,7 +1994,7 @@ enum RowsetDefinition {
 
         private static final Column LiteralValue = new Column(
             "LiteralValue",
-            Type.string,
+            Type.String,
             null,
             Column.NOT_RESTRICTION,
             Column.REQUIRED,
@@ -2002,7 +2002,7 @@ enum RowsetDefinition {
 
         private static final Column LiteralInvalidChars = new Column(
             "LiteralInvalidChars",
-            Type.string,
+            Type.String,
             null,
             Column.NOT_RESTRICTION,
             Column.REQUIRED,
@@ -2010,7 +2010,7 @@ enum RowsetDefinition {
 
         private static final Column LiteralInvalidStartingChars = new Column(
             "LiteralInvalidStartingChars",
-            Type.string,
+            Type.String,
             null,
             Column.NOT_RESTRICTION,
             Column.REQUIRED,
@@ -2048,7 +2048,7 @@ enum RowsetDefinition {
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2056,7 +2056,7 @@ enum RowsetDefinition {
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -2064,7 +2064,7 @@ enum RowsetDefinition {
         private static final Column Roles =
             new Column(
                 "ROLES",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -2140,7 +2140,7 @@ enum RowsetDefinition {
         private static final Column TableCatalog =
             new Column(
                 "TABLE_CATALOG",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2148,7 +2148,7 @@ enum RowsetDefinition {
         private static final Column TableSchema =
             new Column(
                 "TABLE_SCHEMA",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -2156,7 +2156,7 @@ enum RowsetDefinition {
         private static final Column TableName =
             new Column(
                 "TABLE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2164,7 +2164,7 @@ enum RowsetDefinition {
         private static final Column ColumnName =
             new Column(
                 "COLUMN_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2537,7 +2537,7 @@ TODO: see above
         private static final Column TypeName =
             new Column(
                 "TYPE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -2561,7 +2561,7 @@ TODO: see above
         private static final Column LiteralPrefix =
             new Column(
                 "LITERAL_PREFIX",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -2569,7 +2569,7 @@ TODO: see above
         private static final Column LiteralSuffix =
             new Column(
                 "LITERAL_SUFFIX",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -2772,7 +2772,7 @@ TODO: see above
         private static final Column TableCatalog =
             new Column(
                 "TABLE_CATALOG",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2780,7 +2780,7 @@ TODO: see above
         private static final Column TableSchema =
             new Column(
                 "TABLE_SCHEMA",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -2788,7 +2788,7 @@ TODO: see above
         private static final Column TableName =
             new Column(
                 "TABLE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2796,7 +2796,7 @@ TODO: see above
         private static final Column TableType =
             new Column(
                 "TABLE_TYPE",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -2813,7 +2813,7 @@ TODO: see above
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3028,7 +3028,7 @@ TODO: see above
         private static final Column TableCatalog =
             new Column(
                 "TABLE_CATALOG",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -3036,7 +3036,7 @@ TODO: see above
         private static final Column TableSchema =
             new Column(
                 "TABLE_SCHEMA",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -3044,7 +3044,7 @@ TODO: see above
         private static final Column TableName =
             new Column(
                 "TABLE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3052,7 +3052,7 @@ TODO: see above
         private static final Column TableType =
             new Column(
                 "TABLE_TYPE",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3125,7 +3125,7 @@ TODO: see above
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3202,7 +3202,7 @@ TODO: see above
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3210,7 +3210,7 @@ TODO: see above
         private static final Column Coordinate =
             new Column(
                 "COORDINATE",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3257,7 +3257,7 @@ TODO: see above
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -3265,7 +3265,7 @@ TODO: see above
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -3273,7 +3273,7 @@ TODO: see above
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3281,7 +3281,7 @@ TODO: see above
         private static final Column CubeType =
             new Column(
                 "CUBE_TYPE",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3313,7 +3313,7 @@ TODO: see above
         private static final Column SchemaUpdatedBy =
             new Column(
                 "SCHEMA_UPDATED_BY",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3329,7 +3329,7 @@ TODO: see above
         private static final Column DataUpdatedBy =
             new Column(
                 "DATA_UPDATED_BY",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3369,7 +3369,7 @@ TODO: see above
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3476,7 +3476,7 @@ TODO: see above
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -3484,7 +3484,7 @@ TODO: see above
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -3492,7 +3492,7 @@ TODO: see above
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3500,7 +3500,7 @@ TODO: see above
         private static final Column DimensionName =
             new Column(
                 "DIMENSION_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3508,7 +3508,7 @@ TODO: see above
         private static final Column DimensionUniqueName =
             new Column(
                 "DIMENSION_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3524,7 +3524,7 @@ TODO: see above
         private static final Column DimensionCaption =
             new Column(
                 "DIMENSION_CAPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -3562,7 +3562,7 @@ TODO: see above
         private static final Column DefaultHierarchy =
             new Column(
                 "DEFAULT_HIERARCHY",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -3570,7 +3570,7 @@ TODO: see above
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3604,7 +3604,7 @@ TODO: see above
         private static final Column DimensionMasterUniqueName =
             new Column(
                 "DIMENSION_MASTER_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3836,7 +3836,7 @@ TODO: see above
         private static final Column FunctionName =
             new Column(
                 "FUNCTION_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3844,7 +3844,7 @@ TODO: see above
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3852,7 +3852,7 @@ TODO: see above
         private static final Column ParameterList =
             new Column(
                 "PARAMETER_LIST",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -3876,7 +3876,7 @@ TODO: see above
         private static final Column InterfaceName =
             new Column(
                 "INTERFACE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -3884,7 +3884,7 @@ TODO: see above
         private static final Column LibraryName =
             new Column(
                 "LIBRARY_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -3892,7 +3892,7 @@ TODO: see above
         private static final Column Caption =
             new Column(
                 "CAPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -4018,7 +4018,7 @@ TODO: see above
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -4026,7 +4026,7 @@ TODO: see above
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -4034,7 +4034,7 @@ TODO: see above
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4042,7 +4042,7 @@ TODO: see above
         private static final Column DimensionUniqueName =
             new Column(
                 "DIMENSION_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4050,7 +4050,7 @@ TODO: see above
         private static final Column HierarchyName =
             new Column(
                 "HIERARCHY_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4058,7 +4058,7 @@ TODO: see above
         private static final Column HierarchyUniqueName =
             new Column(
                 "HIERARCHY_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4076,7 +4076,7 @@ TODO: see above
         private static final Column HierarchyCaption =
             new Column(
                 "HIERARCHY_CAPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -4100,7 +4100,7 @@ TODO: see above
         private static final Column DefaultMember =
             new Column(
                 "DEFAULT_MEMBER",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -4108,7 +4108,7 @@ TODO: see above
         private static final Column AllMember =
             new Column(
                 "ALL_MEMBER",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -4116,7 +4116,7 @@ TODO: see above
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -4410,7 +4410,7 @@ TODO: see above
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -4418,7 +4418,7 @@ TODO: see above
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -4426,7 +4426,7 @@ TODO: see above
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4434,7 +4434,7 @@ TODO: see above
         private static final Column DimensionUniqueName =
             new Column(
                 "DIMENSION_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4442,7 +4442,7 @@ TODO: see above
         private static final Column HierarchyUniqueName =
             new Column(
                 "HIERARCHY_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4450,7 +4450,7 @@ TODO: see above
         private static final Column LevelName =
             new Column(
                 "LEVEL_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4458,7 +4458,7 @@ TODO: see above
         private static final Column LevelUniqueName =
             new Column(
                 "LEVEL_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4474,7 +4474,7 @@ TODO: see above
         private static final Column LevelCaption =
             new Column(
                 "LEVEL_CAPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -4530,7 +4530,7 @@ TODO: see above
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -4764,7 +4764,7 @@ TODO: see above
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -4772,7 +4772,7 @@ TODO: see above
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -4780,7 +4780,7 @@ TODO: see above
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4788,7 +4788,7 @@ TODO: see above
         private static final Column MeasureName =
             new Column(
                 "MEASURE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4796,7 +4796,7 @@ TODO: see above
         private static final Column MeasureUniqueName =
             new Column(
                 "MEASURE_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -4804,7 +4804,7 @@ TODO: see above
         private static final Column MeasureCaption =
             new Column(
                 "MEASURE_CAPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -4844,7 +4844,7 @@ TODO: see above
         private static final Column LevelsList =
             new Column(
                 "LEVELS_LIST",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -4852,7 +4852,7 @@ TODO: see above
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -5065,7 +5065,7 @@ TODO: see above
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -5073,7 +5073,7 @@ TODO: see above
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -5081,7 +5081,7 @@ TODO: see above
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5089,7 +5089,7 @@ TODO: see above
         private static final Column DimensionUniqueName =
             new Column(
                 "DIMENSION_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5097,7 +5097,7 @@ TODO: see above
         private static final Column HierarchyUniqueName =
             new Column(
                 "HIERARCHY_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5105,7 +5105,7 @@ TODO: see above
         private static final Column LevelUniqueName =
             new Column(
                 "LEVEL_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5129,7 +5129,7 @@ TODO: see above
         private static final Column MemberName =
             new Column(
                 "MEMBER_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5137,7 +5137,7 @@ TODO: see above
         private static final Column MemberUniqueName =
             new Column(
                 "MEMBER_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5161,7 +5161,7 @@ TODO: see above
         private static final Column MemberCaption =
             new Column(
                 "MEMBER_CAPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5185,7 +5185,7 @@ TODO: see above
         private static final Column ParentUniqueName =
             new Column(
                 "PARENT_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,
@@ -5708,13 +5708,13 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
             super(MDSCHEMA_SETS, request, handler);
         }
 
-        private static final Column CatalogName = new Column("CATALOG_NAME", Type.string, null, true, true, null);
-        private static final Column SchemaName = new Column("SCHEMA_NAME", Type.string, null, true, true, null);
-        private static final Column CubeName = new Column("CUBE_NAME", Type.string, null, true, false, null);
-        private static final Column SetName = new Column("SET_NAME", Type.string, null, true, false, null);
-        private static final Column SetCaption = new Column("SET_CAPTION", Type.string, null, true, true, null);
+        private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, true, null);
+        private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
+        private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
+        private static final Column SetName = new Column("SET_NAME", Type.String, null, true, false, null);
+        private static final Column SetCaption = new Column("SET_CAPTION", Type.String, null, true, true, null);
         private static final Column Scope = new Column("SCOPE", Type.Integer, null, true, false, null);
-        private static final Column Description = new Column("DESCRIPTION", Type.string, null, false, true, "A human-readable description of the measure. ");
+        private static final Column Description = new Column("DESCRIPTION", Type.String, null, false, true, "A human-readable description of the measure. ");
 
         public void populate(XmlaResponse response, List<Row> rows) throws XmlaException {
             throw new XmlaException(
@@ -5750,7 +5750,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column CatalogName =
             new Column(
                 "CATALOG_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -5758,7 +5758,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column SchemaName =
             new Column(
                 "SCHEMA_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -5766,7 +5766,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column CubeName =
             new Column(
                 "CUBE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5774,7 +5774,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column DimensionUniqueName =
             new Column(
                 "DIMENSION_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5782,7 +5782,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column HierarchyUniqueName =
             new Column(
                 "HIERARCHY_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5790,7 +5790,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column LevelUniqueName =
             new Column(
                 "LEVEL_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5799,7 +5799,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column MemberUniqueName =
             new Column(
                 "MEMBER_UNIQUE_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.OPTIONAL,
@@ -5807,7 +5807,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column PropertyName =
             new Column(
                 "PROPERTY_NAME",
-                Type.string,
+                Type.String,
                 null,
                 Column.RESTRICTION,
                 Column.REQUIRED,
@@ -5823,7 +5823,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column PropertyCaption =
             new Column(
                 "PROPERTY_CAPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
@@ -5847,7 +5847,7 @@ LOGGER.debug("RowsetDefinition.setOrdinals: needsFullTopDown=" +needsFullTopDown
         private static final Column Description =
             new Column(
                 "DESCRIPTION",
-                Type.string,
+                Type.String,
                 null,
                 Column.NOT_RESTRICTION,
                 Column.OPTIONAL,

@@ -42,7 +42,7 @@ enum PropertyDefinition {
             "The default value for this property is -1."),
 
     Catalog(
-        RowsetDefinition.Type.string,
+        RowsetDefinition.Type.String,
         null,
         Enumeration.Access.ReadWrite,
         "",
@@ -64,7 +64,7 @@ enum PropertyDefinition {
             "SchemaData: Returns both the schema information as well as the data."),
 
     Cube(
-        RowsetDefinition.Type.string,
+        RowsetDefinition.Type.String,
         null,
         Enumeration.Access.ReadWrite,
         "",
@@ -72,7 +72,7 @@ enum PropertyDefinition {
         "The cube context for the Command parameter. If the command contains a cube name (such as an MDX FROM clause) the setting of this property is ignored."),
 
     DataSourceInfo(
-        RowsetDefinition.Type.string,
+        RowsetDefinition.Type.String,
         null,
         Enumeration.Access.ReadWrite,
         "",
@@ -116,7 +116,7 @@ enum PropertyDefinition {
         "Enumeration that describes the degree of MDX support. At initial release Core is the only value in the enumeration. In future releases, other values will be defined for this enumeration."),
 
     Password(
-        RowsetDefinition.Type.string,
+        RowsetDefinition.Type.String,
         null,
         Enumeration.Access.Read,
         "",
@@ -124,7 +124,7 @@ enum PropertyDefinition {
         "This property is deprecated in XMLA 1.1. To support legacy applications, the provider accepts but ignores the Password property setting when it is used with the Discover and Execute method"),
 
     ProviderName(
-        RowsetDefinition.Type.string,
+        RowsetDefinition.Type.String,
         null,
         Enumeration.Access.Read,
         "Mondrian XML for Analysis Provider",
@@ -134,7 +134,7 @@ enum PropertyDefinition {
     //TODO: the below version string "2.3.0.0" ought to be read at compile
     // time from some build property rather than being hard-coded.
     ProviderVersion(
-        RowsetDefinition.Type.string,
+        RowsetDefinition.Type.String,
         null,
         Enumeration.Access.Read,
         "2.3.0.0",
@@ -159,7 +159,7 @@ enum PropertyDefinition {
         "A numeric time-out specifying in seconds the amount of time to wait for a request to be successful."),
 
     UserName(
-        RowsetDefinition.Type.string,
+        RowsetDefinition.Type.String,
         null, Enumeration.Access.Read,
         "",
         Enumeration.Methods.discoverAndExecute,
@@ -177,7 +177,7 @@ enum PropertyDefinition {
 
     // mondrian-specific property for advanced drill-through
     TableFields(
-        RowsetDefinition.Type.string,
+        RowsetDefinition.Type.String,
         null,
         Enumeration.Access.Read,
         "",
@@ -186,12 +186,12 @@ enum PropertyDefinition {
             "The default value of this property is the empty string,"  +
             "in which case, all fields are returned."),
 
-    // mondrian-specific
+    // mondrian-specific property for advanced drill-through
     AdvancedFlag(
         RowsetDefinition.Type.Boolean,
         null,
         Enumeration.Access.Read,
-        "",
+        "false",
         Enumeration.Methods.discoverAndExecute,
         "");
 
