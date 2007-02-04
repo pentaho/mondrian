@@ -30,6 +30,9 @@ import org.apache.log4j.Logger;
  * Specialists' Newsletter, 
  * <a href="http://www.javaspecialists.co.za/archive/newsletter.do?issue=092"
  *  >issue 92</a> authored by Dr. Heinz M. Kabutz.
+ * As a note, his on-line newletters are a good source of Java information,
+ * take a look.
+ * <p>
  *  For more information one should review the Java5 classes in
  *  java.lang.management.
  *

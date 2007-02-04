@@ -18,7 +18,7 @@ import mondrian.olap.Util;
 /** 
  * The <code>MemoryMonitorFactory</code> is used to get the application's
  * <code>MemoryMonitor</code>. The <code>MemoryMonitorFactory</code> is
- * based upon the <code>ObjectFactory</code> generic. The 
+ * based upon the <code>ObjectFactory.Singleton</code> generic. The 
  * <code>MemoryMonitorFactory</code> implementation has a single, default
  * <code>MemoryMonitor</code> per JVM instance which can be overridden
  * using the provided <code>ThreadLocal</code> variable. Normally, this
@@ -27,16 +27,20 @@ import mondrian.olap.Util;
  * own implementation of the <code>MemoryMonitor</code> interface and
  * then calls the <code>ObjectFactory</code> <code>getObject</code> method.
  * After doing the test, the <code>ThreadLocal</code> variable should
- * be cleared. While the <code>ObjectFactory</code> permits the use
+ * be cleared. 
+ * <p>
+ * The <code>ObjectFactory.Singleton</code> permits the use
  * of <code>System</code> properties to provide a class name to the
- * factory, such usage is not thread-safe while using the
- * <code>ThreadLocal</code> is thread-safe.
+ * factory. This can be used to create a <code>MemoryMonitor</code>
+ * that is not the default one. The property name is the
+ * <code>MemoryMonitor</code> class name, "mondrian.util.MemoryMonitor".
  * 
  * @author <a>Richard M. Emberson</a>
  * @since Feb 03 2007
  * @version $Id$
  */
-public final class MemoryMonitorFactory extends ObjectFactory<MemoryMonitor> {
+public final class MemoryMonitorFactory 
+        extends ObjectFactory.Singleton<MemoryMonitor> {
 
     /** 
      * Single instance of the <code>MemoryMonitorFactory</code>. 
@@ -84,8 +88,6 @@ public final class MemoryMonitorFactory extends ObjectFactory<MemoryMonitor> {
         ClassName.set(className);
     }
 
-    // put if finally clause
-    
     /** 
      * Clear the class name (regardless of whether a class name was set). 
      * When a class name is set using <code>setThreadLocalClassName</code>,
@@ -95,12 +97,6 @@ public final class MemoryMonitorFactory extends ObjectFactory<MemoryMonitor> {
     public static void clearThreadLocalClassName() {
         ClassName.set(null);
     }
-
-    /** 
-     * The <code>MemoryMonitorFactory</code>'s default
-     * <code>MemoryMonitor</code> implementation.
-     */
-    private static MemoryMonitor defaultMemoryMonitor;
 
     /** 
      * The constructor for the <code>MemoryMonitorFactory</code>. This passes 
@@ -148,16 +144,11 @@ public final class MemoryMonitorFactory extends ObjectFactory<MemoryMonitor> {
     protected MemoryMonitor getDefault(Class[] parameterTypes,
                                        Object[] parameterValues)
             throws CreationException {
-        if (defaultMemoryMonitor == null) {
-            if (! enabled() || Util.PreJdk15) {
-                // not enabled or Java4 or below
-                defaultMemoryMonitor = new FauxMemoryMonitor();
-            } else {
-                // enabled and Java5 or above
-                defaultMemoryMonitor = new NotificationMemoryMonitor();
-            }
-        }
-        return defaultMemoryMonitor;
+        return (! enabled() || Util.PreJdk15)
+                    // not enabled or Java4 or below
+                ? new FauxMemoryMonitor()
+                    // enabled and Java5 or above
+                : new NotificationMemoryMonitor();
     }
 
 }

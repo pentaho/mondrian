@@ -989,6 +989,23 @@ array, an <code>OutOfMemoryError</code> will occur. This
 technique works best when memory is allocated incrementally between
 checks for memory notifications allowing the developer to 
 take steps before a possible OOME gotterdammerung.
+<p>
+One last issue, if a developer needs to embed Mondrian in
+a Web or Application server and the server has its own
+way of dealing with Java5 memory notification system, then
+it is important that Mondrian be a good application citizen
+in the server. It is much like the use of JAAS in an 
+application. A JVM allows for a single JAAS instance and 
+most servers register their mechanism with the JVM.
+It is bad for the application in the server to use its own
+JAAS rather than register with the server's. So, if 
+Mondrian is in a Web or Application server that has its own
+dealings with the Java5 memory notification system and 
+the server expects applications to use its mechanism, then the developer 
+must create an instance of the <code>MemoryManager</code> interface
+that communicates the Webserver/Appserver mechanism and
+uses a System property to instruct the <code>MemoryManagerFactory</code>
+to create that specialized version.
 
 <hr noshade size="1"/>
 <p>

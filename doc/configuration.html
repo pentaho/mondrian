@@ -995,6 +995,28 @@ the processing of the current query is stopped and a
 <code>MemoryLimitExceededException</code> is return to the client.
 See the Memory monitoring properties above on this page 
 for additional information.
+<p>
+Lastly, the gorilla in the closet. Java5 in its wisdom only allows
+for one memory threshold notification level to be registered with the JVM.
+What this means is if within the same JVM, some code registers
+one level, say, at 80% (here I use percentages for ease of presentation
+rather than number of
+bytes which is what the Java5 API actually supports) 
+and some other code later on registers a level of
+90%, then it is the 90% that the JVM knows about - it knows nothing
+of the previously registered 80%. What this means is that the code
+expecting to be notified when the memory level crosses 80%, wont be
+notified!!! For many applications that don't share their JVM with
+other applications, this is not a problem. For Mondrian is it
+potentially an issue. Mondrian can be running in a Webserver and
+Webservers can have more than one independent applications.
+Each such application can register a different memory threshold
+notification level.
+In general, application containing applications such as
+Webservers or Appservers are a problem with the current
+Java5 memory threshold notification approach.
+At the current time, I do not know a way around this problem.
+
 
 <hr noshade size="1"/>
 <p>
