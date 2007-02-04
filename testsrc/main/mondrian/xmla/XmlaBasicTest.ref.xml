@@ -8969,6 +8969,25 @@
                         <IsRequired>false</IsRequired>
                         <Value>1</Value>
                     </row>
+                    <row>
+                        <PropertyName>TableFields</PropertyName>
+                        <PropertyDescription>List of fields to return
+                            for drill-through. The default value of this
+                            property is the empty string,in which case,
+                            all fields are returned.</PropertyDescription>
+                        <PropertyType>string</PropertyType>
+                        <PropertyAccessType>Read</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value/>
+                    </row>
+                    <row>
+                        <PropertyName>AdvancedFlag</PropertyName>
+                        <PropertyDescription/>
+                        <PropertyType>string</PropertyType>
+                        <PropertyAccessType>Read</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value/>
+                    </row>
                 </root>
             </xmla:return>
         </xmla:DiscoverResponse>

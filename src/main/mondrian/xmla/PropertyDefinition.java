@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2003-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -131,13 +131,13 @@ enum PropertyDefinition {
         Enumeration.Methods.discover,
         "The XML for Analysis Provider name."),
 
-    //TODO: the below version string "2.1.0.0" ought to be read at compile
+    //TODO: the below version string "2.3.0.0" ought to be read at compile
     // time from some build property rather than being hard-coded.
     ProviderVersion(
         RowsetDefinition.Type.string,
         null,
         Enumeration.Access.Read,
-        "2.1.0.0",
+        "2.3.0.0",
         Enumeration.Methods.discover,
         "The version of the Mondrian XMLA Provider"),
 
@@ -173,7 +173,27 @@ enum PropertyDefinition {
         String.valueOf(Enumeration.VisualMode.Visual.ordinal()),
         Enumeration.Methods.discoverAndExecute,
         "This property is equivalent to the OLE DB property, MDPROP_VISUALMODE.\n" +
-            "The default value for this property is zero (0), equivalent to DBPROPVAL_VISUAL_MODE_DEFAULT.");
+            "The default value for this property is zero (0), equivalent to DBPROPVAL_VISUAL_MODE_DEFAULT."),
+
+    // mondrian-specific property for advanced drill-through
+    TableFields(
+        RowsetDefinition.Type.string,
+        null,
+        Enumeration.Access.Read,
+        "",
+        Enumeration.Methods.discoverAndExecute,
+        "List of fields to return for drill-through.\n" +
+            "The default value of this property is the empty string,"  +
+            "in which case, all fields are returned."),
+
+    // mondrian-specific
+    AdvancedFlag(
+        RowsetDefinition.Type.Boolean,
+        null,
+        Enumeration.Access.Read,
+        "",
+        Enumeration.Methods.discoverAndExecute,
+        "");
 
     final RowsetDefinition.Type type;
     final Set<? extends Enum> enumSet;
@@ -201,6 +221,11 @@ enum PropertyDefinition {
         this.description = description;
     }
 
+    /**
+     * Returns the description of this PropertyDefinition.
+     *
+     * @return description
+     */
     public String getDescription() {
         return description;
     }
