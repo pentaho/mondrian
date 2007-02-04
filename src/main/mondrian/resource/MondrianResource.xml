@@ -96,20 +96,12 @@
     <text>Couldn''t repair and continue parse</text>
 </message>
 
-<exception id="350060" name="UserDoesNotHaveRightsTo">
-    <text>User does not have rights to run query, which contains {0}</text>
-</exception>
-
 <exception id="350070" name="MdxCubeSlicerMemberError">
     <text>Failed to add Cube Slicer with member ''{0}'' for hierarchy ''{1}'' on cube ''{2}''</text>
 </exception>
 
 <exception id="350080" name="MdxCubeSlicerHierarchyError">
     <text>Failed to add Cube Slicer for hierarchy ''{0}'' on cube ''{1}''</text>
-</exception>
-
-<exception id="350090" name="MdxOlapServerConnectError">
-    <text>Connection error was received using connect string ''{0}'' on catalog ''{1}''</text>
 </exception>
 
 <exception id="350100" name="MdxInvalidMember">
@@ -140,84 +132,20 @@
     <text>Argument ''{0,number}'' of function ''{1}'' must be a hierarchy</text>
 </exception>
 
-<exception id="350170" name="MdxFuncMethodNoArg">
-    <text>Method function ''{0}'' must have at least one argument</text>
-</exception>
-
-<exception id="350180" name="MdxFuncPropertyArg">
-    <text>Property function ''{0}'' must not have arguments.  (To access a member of a property, like ''Members'', which returns a collection, write ''Members.Item(n)'' instead of ''Members(n)''.)</text>
-</exception>
-
-<exception id="350190" name="MdxFuncUnknown">
-    <text>unknown overloaded function ''{0}''</text>
-</exception>
-
-<exception id="350200" name="MdxDefaultHierNotFound">
-    <text>Could not locate DefaultHierarchy for ''{0}''</text>
-</exception>
-
-<exception id="350210" name="MdxDefaultMemNotFound">
-    <text>Could not locate DefaultMember for ''{0}''</text>
-</exception>
-
-<exception id="350215" name="MdxMemberNotFound">
-    <text>Could not locate member  ''{0}'' in query ''{1}''</text>
-</exception>
-
-<exception id="350220" name="MdxParamArgInvalid">
-    <text>Argument ''{0}'' of Parameter ''{1}'' must be a quoted string</text>
-</exception>
-
-<exception id="350230" name="MdxParamTypeInvalid">
-    <text>Type ''{0}'' of Parameter ''{1}'' has to be a quoted string or dimension</text>
-</exception>
-
-<exception id="350240" name="MdxParamMultipleDef">
-    <text>Parameter ''{0}'' is defined ''{1,number}'' times</text>
-</exception>
-
 <exception id="350245" name="UnknownParameter">
     <text>Unknown parameter ''{0}''</text>
-</exception>
-
-<exception id="350250" name="MdxParamValueNotFound">
-    <text>Parameter''s ''{0}'' value not found</text>
-</exception>
-
-<exception id="350260" name="MdxHierarchyUsed">
-    <text>Hierarchy ''{0}'' is already used</text>
-</exception>
-
-<exception id="350270" name="MdxHierarchyNotUsed">
-    <text>Hierarchy ''{0}'' is not used</text>
-</exception>
-
-<exception id="350280" name="MdxCalcMemberCanNotHaveChildren">
-    <text>Calculated MdxMember ''{0}'' can not have children</text>
 </exception>
 
 <exception id="350290" name="MdxFormulaNotFound">
     <text>Calculated {0} ''{1}'' has not been found in query ''{2}''</text>
 </exception>
 
-<exception id="350300" name="MdxFormulaAlreadyExists">
-    <text>Calculated {0} ''{1}'' is already defined in query ''{2}''</text>
-</exception>
-
 <exception id="350310" name="MdxCantFindMember">
     <text>Cannot find MDX member ''{0}''. Make sure it is indeed a member and not a level or a hierarchy.</text>
 </exception>
 
-<message id="350320" name="Member">
-    <text>member</text>
-</message>
-
 <message id="350325" name="CalculatedMember">
     <text>calculated member</text>
-</message>
-
-<message id="350330" name="Set">
-    <text>set</text>
 </message>
 
 <message id="350335" name="CalculatedSet">
@@ -240,24 +168,8 @@
     <text>Cannot delete {0} ''{1}''. It is used in query ''{2}''.</text>
 </exception>
 
-<exception id="350380" name="MdxTopBottomNRequireSortMember">
-    <text>Top/Bottom functions require at least one sort Member.</text>
-</exception>
-
-<exception id="350390" name="MdxTopBottomInvalidFunctionName">
-    <text>Unknown Top/Bottom function name ''{0}''. Supported names are ''TopCount'', ''BottomCount'', ''TopPercent'', ''BottomPercent''.</text>
-</exception>
-
-<exception id="350400" name="MdxAxisSortNotSupported">
-    <text>Sort on axis ''{0}'' is not supported.</text>
-</exception>
-
 <exception id="350410" name="MdxAxisShowSubtotalsNotSupported">
     <text>Show/hide subtotals operation on axis ''{0,number}'' is not supported.</text>
-</exception>
-
-<exception id="350420" name="MdxAxisShowEmptyCellsNotSupported">
-    <text>Show/hide empty cells operation on axis ''{0,number}'' is not supported.</text>
 </exception>
 
 <exception id="350430" name="NoFunctionMatchesSignature">
@@ -282,10 +194,6 @@
 
 <exception id="350475" name="EmptySlicer">
     <text>WHERE clause expression returned NULL or empty set.</text>
-</exception>
-
-<exception id="350480" name="LeavesNotSupported">
-    <text>LEAVES option in Descendants function is not supported.</text>
 </exception>
 
 <exception id="350490" name="FunctionMbrAndLevelHierarchyMismatch">
@@ -314,10 +222,6 @@
 
 <exception id="350550" name="DupDimensionsInTuple">
     <text>Tuple contains more than one member of dimension ''{0}''.</text>
-</exception>
-
-<exception id="350560" name="NullMemberProperty">
-    <text>Illegal access to ''{0}'' property of null member.</text>
 </exception>
 
 <exception id="350570" name="VisualTotalsAppliedToTuples">
@@ -379,10 +283,6 @@
 
 <exception id="40100" name="DimensionUsageHasUnknownLevel">
     <text>In usage of dimension ''{0}'' in cube ''{1}'', the level ''{2}'' is unknown</text>
-</exception>
-
-<exception id="40110" name="CalcMemberHasBadFormula">
-    <text>Calculated member ''{0}'' in cube ''{1}'' has bad formula</text>
 </exception>
 
 <exception id="40120" name="CalcMemberHasBadDimension">
@@ -518,12 +418,6 @@
 
 
 <!-- Aggregate tables: start -->
-<message id="7000100" name="SuperfluousExludeName">
-    <text>
-        Context ''{0}'': The Exclude Name ''{1}'' does not match the Pattern ''{2}'' so the name element is superfluous.
-    </text>
-</message>
-
 <message id="7000101" name="UnknownLevelName">
     <text>
         Context ''{0}'': The Hierarchy Level ''{1}'' does not have a Level named ''{2}''
@@ -563,12 +457,6 @@
 <message id="7000102" name="DuplicateFactForeignKey">
     <text>
         Context ''{0}'': Duplicate fact foreign keys ''{1}'' for key ''{2}''.
-    </text>
-</message>
-
-<message id="7000103" name="DuplicateAggregateForeignKey">
-    <text>
-        Context ''{0}'': Duplicate aggregate foreign keys ''{1}'' for key ''{2}''.
     </text>
 </message>
 
@@ -654,12 +542,6 @@
     <text>Too many errors, ''{0,number}'', while loading/reloadin aggregates.</text>
 </exception>
 
-<message id="7000405" name="NonNumericMeasure">
-    <text>
-        Context ''{0}'': For Fact table ''{1}'', the measure column ''{2}'' of type ''{3}'' is not numeric".
-    </text>
-</message>
-
 <message id="7000406" name="UnknownFactTableColumn">
     <text>
         Context ''{0}'': For Fact table ''{1}'', the column ''{2}'' is neither a measure or foreign key".
@@ -693,12 +575,6 @@
 <exception id="700411" name="AttemptToChangeTableUsage">
     <text>
         JdbcSchema.Table ''{0}'' already set to usage ''{1}'' and can not be reset to usage ''{2}''.
-    </text>
-</exception>
-
-<exception id="700411" name="AttemptToChangeTableType">
-    <text>
-        JdbcSchema.Table ''{0}'' already set to type ''{1}'' and can not be reset to type ''{2}''.
     </text>
 </exception>
 
