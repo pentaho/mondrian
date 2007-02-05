@@ -9,6 +9,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.fun.*;
 import mondrian.rolap.sql.TupleConstraint;
 
 /**
@@ -62,26 +63,52 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
     }
 
     NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
-        if (!isEnabled())
+        if (!isEnabled()) {
+            // native crossjoins were explicitly disabled, so no need
+            // to alert about not using them
             return null;
+        }
         RolapCube cube = (RolapCube) evaluator.getCube();
         
         CrossJoinArg[] cargs = checkCrossJoin(fun, args);
-        if (cargs == null)
+        if (cargs == null) {
+            // Something in the arguments to the crossjoin prevented
+            // native evaluation; may need to alert
+            alertCrossJoinNonNative(
+                evaluator,
+                fun,
+                "arguments not supported");
             return null;
-        if (isPreferInterpreter(cargs))
+        }
+        if (isPreferInterpreter(cargs)) {
+            // Native evaluation wouldn't buy us anything, so no
+            // need to alert
             return null;
+        }
         RolapLevel [] levels = new RolapLevel[cargs.length];
         for (int i = 0; i < cargs.length; i++) {
             levels[i] = cargs[i].getLevel();
         }
+
         if ((cube.isVirtual() &&
-                !evaluator.getQuery().nativeCrossJoinVirtualCube()) ||
-            !NonEmptyCrossJoinConstraint.isValidContext(
+                !evaluator.getQuery().nativeCrossJoinVirtualCube())) {
+            // Something in the query at large (namely, some unsupported
+            // function on the [Measures] dimension) prevented native
+            // evaluation with virtual cubes; may need to alert
+            alertCrossJoinNonNative(
+                evaluator,
+                fun,
+                "not all functions on [Measures] dimension supported");
+            return null;
+        }
+        if (!NonEmptyCrossJoinConstraint.isValidContext(
                 evaluator,
                 false,
-                levels))
-        {
+                levels)) {
+            // Missing join conditions due to non-conforming dimensions
+            // meant native evaluation would have led to a true cross
+            // product, which we want to defer instead of pushing it down;
+            // so no need to alert
             return null;
         }
 
@@ -95,5 +122,21 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         TupleConstraint constraint = new NonEmptyCrossJoinConstraint(cargs, evaluator);
         SchemaReader schemaReader = evaluator.getSchemaReader();
         return new SetEvaluator(cargs, schemaReader, constraint);
+    }
+
+    private void alertCrossJoinNonNative(
+        RolapEvaluator evaluator,
+        FunDef fun,
+        String reason) {
+        if (!(fun instanceof NonEmptyCrossJoinFunDef)) {
+            // Only alert for an explicit NonEmptyCrossJoin,
+            // since query authors use that to indicate that
+            // they expect it to be "wicked fast"
+            return;
+        }
+        if (!evaluator.getQuery().shouldAlertForNonNative(fun)) {
+            return;
+        }
+        RolapUtil.alertNonNative("NonEmptyCrossJoin", reason);
     }
 }

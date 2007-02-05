@@ -17,6 +17,7 @@ import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 
 import org.apache.log4j.Logger;
+import org.eigenbase.util.property.StringProperty;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.sql.Connection;
@@ -285,6 +286,42 @@ public class RolapUtil {
                 LOGGER.debug(component + ": executing sql [" + sql + "]" + status);
             }
             getQuerySemaphore().leave();
+        }
+    }
+
+    /**
+     * Raises an alert that native SQL evaluation could not be used
+     * in a case where it might have been beneficial, but some
+     * limitation in Mondrian's implementation prevented it.
+     * (Do not call this in cases where native evaluation would
+     * have been wasted effort.)
+     *
+     * @param functionName name of function for which native evaluation
+     * was skipped
+     *
+     * @param reason reason why native evaluation was skipped
+     */
+    public static void alertNonNative(
+        String functionName, String reason)
+        throws NativeEvaluationUnsupportedException {
+
+        // No i18n for log message, but yes for excn
+        String alertMsg = 
+            "Unable to use native SQL evaluation for '" + functionName
+            + "'; reason:  " + reason;
+        
+        StringProperty alertProperty =
+            MondrianProperties.instance().AlertNativeEvaluationUnsupported;
+        String alertValue = alertProperty.get();
+        
+        if (alertValue.equalsIgnoreCase(
+                org.apache.log4j.Level.WARN.toString())) {
+            LOGGER.warn(alertMsg);
+        } else if (alertValue.equalsIgnoreCase(
+                       org.apache.log4j.Level.ERROR.toString())) {
+            LOGGER.error(alertMsg);
+            throw MondrianResource.instance().NativeEvaluationUnsupported.ex(
+                functionName);
         }
     }
 

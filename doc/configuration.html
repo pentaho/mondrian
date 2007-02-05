@@ -265,7 +265,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code>
-		<a href="api/mondrian/olap/MondrianProperties.html#api/mondrian/olap/MondrianProperties.html">
+		<a href="api/mondrian/olap/MondrianProperties.html#EnableNonEmptyOnAllAxis">
 		mondrian.rolap.nonempty</a></code></td>
       <td>boolean</td>
       <td>false</td>
@@ -670,6 +670,18 @@ suite of regression tests.</p>
       and <code>member.descendants</code> will be computed in the database and
       not within Mondrian/Java </td>
 
+    </tr>
+    <tr>
+      <td><a href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported">
+      <code>mondrian.native.unsupported.alert</code></a></td>
+      <td>string</td>
+      <td>OFF</td>
+      <td>Alerting action {OFF, WARN, ERROR} to take in case 
+          native evaluation of a function is
+          enabled but not supported for that function's usage in a particular
+          query.  (No alert is ever raised in cases where native evaluation 
+          would definitely have been wasted effort.)  Currently, alerts are
+          only raised for the NonEmptyCrossJoin function.</td>
     </tr>
     <tr>
       <td><code>

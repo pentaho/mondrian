@@ -755,6 +755,31 @@ public class MondrianProperties extends TriggerableProperties {
         this, "mondrian.native.nonempty.enable", true);
 
     /**
+     * Alerting action to take in case native evaluation of a function is
+     * enabled but not supported for that function's usage in a particular
+     * query.  (No alert is ever raised in cases where native evaluation would
+     * definitely have been wasted effort.)
+     *
+     *<p>
+     *
+     * Recognized actions:
+     *
+     *<ul>
+     *
+     *<li><code>OFF</code>:  do nothing (default action, also used if
+     * unrecognized action is specified)
+     *
+     *<li><code>WARN</code>:  log a warning to RolapUtil logger
+     *
+     *<li><code>ERROR</code>:  throw an instance of
+     * {@link NativeEvaluationUnsupportedException}
+     *
+     *</ul>
+     */
+    public final StringProperty AlertNativeEvaluationUnsupported =
+        new StringProperty(this, "mondrian.native.unsupported.alert", "OFF");
+    
+    /**
      * If enabled, first row in the result of an XML/A drill-through request
      * will be filled with the total count of rows in underlying database.
      */

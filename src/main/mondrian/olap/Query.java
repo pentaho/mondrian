@@ -97,6 +97,12 @@ public class Query extends QueryPart {
     public Calc slicerCalc;
 
     /**
+     * Set of FunDefs for which alerts about non-native evaluation
+     * have already been posted.
+     */
+    Set<FunDef> alertedNonNativeFunDefs;
+
+    /**
      * Start time of query execution
      */
     private long startTime;
@@ -211,6 +217,7 @@ public class Query extends QueryPart {
         // processed natively; as we parse the query, we'll know otherwise
         this.nativeCrossJoinVirtualCube = true;
         this.load = load;
+        this.alertedNonNativeFunDefs = new HashSet<FunDef>();
         resolve();
     }
 
@@ -345,6 +352,18 @@ public class Query extends QueryPart {
      */
     public void setQueryEndExecution() {
         isExecuting = false;
+    }
+
+    /**
+     * Determines whether an alert for non-native evaluation needs
+     * to be posted.
+     *
+     * @param funDef function type to alert for
+     *
+     * @return true if alert should be raised
+     */
+    public boolean shouldAlertForNonNative(FunDef funDef) {
+        return alertedNonNativeFunDefs.add(funDef);
     }
 
     private void normalizeAxes() {

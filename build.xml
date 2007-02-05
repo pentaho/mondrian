@@ -310,6 +310,7 @@ compile.java"/>
       <include name="mondrian/olap/ResultLimitExceededException.java" />
       <include name="mondrian/olap/InvalidHierarchyException.java" />
       <include name="mondrian/olap/ResourceLimitExceededException.java" />
+      <include name="mondrian/olap/NativeEvaluationUnsupportedException.java" />
       <include name="mondrian/olap/QueryCanceledException.java" />
       <include name="mondrian/olap/QueryTimeoutException.java" />
     </javac>

@@ -675,6 +675,15 @@
     </text>
 </exception>
 
+<!-- ====================================================================== -->
+<!-- Optimizer -->
+<exception id="8000000" name="NativeEvaluationUnsupported" 
+    className="mondrian.olap.NativeEvaluationUnsupportedException">
+    <text>
+        Native evaluation not supported for this usage of function ''{0}''
+    </text>
+</exception>
+
 <!-- End of last error section ============================================ -->
 
 </resourceBundle>

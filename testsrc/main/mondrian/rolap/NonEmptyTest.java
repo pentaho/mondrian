@@ -11,6 +11,7 @@ package mondrian.rolap;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.ArrayList;
 
 import junit.framework.Assert;
 import mondrian.olap.Axis;
@@ -22,6 +23,7 @@ import mondrian.olap.Member;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Query;
 import mondrian.olap.Result;
+import mondrian.olap.NativeEvaluationUnsupportedException;
 import mondrian.rolap.RolapConnection.NonEmptyResult;
 import mondrian.rolap.RolapNative.Listener;
 import mondrian.rolap.RolapNative.NativeEvent;
@@ -34,8 +36,9 @@ import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
 
-import org.apache.log4j.Logger;
-import org.eigenbase.util.property.IntegerProperty;
+import org.apache.log4j.*;
+import org.apache.log4j.spi.*;
+import org.eigenbase.util.property.*;
 
 /**
  * Tests for NON EMPTY Optimization, includes SqlConstraint type hierarchy and
@@ -1002,26 +1005,51 @@ public class NonEmptyTest extends FoodMartTestCase {
 
     public void testVirtualCubeCrossJoinNonConformingDim()
     {
-        // cross join involves non-conforming dimensions should not use
-        // native cross joins because it will result in a cartesian
-        // product join
-        checkNotNative(0,
-            "select " +
-            "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, " +
-            "non empty crossjoin([Customers].[All Customers].children, " +
-            "[Warehouse].[All Warehouses].children) on rows " +
-            "from [Warehouse and Sales]");
+        // for this test, verify that no alert is raised even though
+        // native evaluation isn't supported, because lack of
+        // support is intentional
+        StringProperty alertProperty =
+            MondrianProperties.instance().AlertNativeEvaluationUnsupported;
+        String oldAlert = alertProperty.get();
+        alertProperty.set("ERROR");
+
+        try {
+        
+            // cross join involves non-conforming dimensions should not use
+            // native cross joins because it will result in a cartesian
+            // product join
+            checkNotNative(0,
+                "select " +
+                "{[Measures].[Units Ordered], [Measures].[Store Sales]} on columns, " +
+                "NonEmptyCrossJoin([Customers].[All Customers].children, " +
+                "[Warehouse].[All Warehouses].children) on rows " +
+                "from [Warehouse and Sales]");
+        } finally {
+            alertProperty.set(oldAlert);
+        }
     }
 
     public void testNotNativeVirtualCubeCrossJoin1()
     {
-        // native cross join cannot be used due to AllMembers
-        checkNotNative(3,
-            "select " +
-            "{[Measures].AllMembers} on columns, " +
-            "non empty crossjoin([Product].[All Products].children, " +
-            "[Store].[All Stores].children) on rows " +
-            "from [Warehouse and Sales]");
+        // for this test, verify that no alert is raised even though
+        // native evaluation isn't supported, because query
+        // doesn't use explicit NonEmptyCrossJoin
+        StringProperty alertProperty =
+            MondrianProperties.instance().AlertNativeEvaluationUnsupported;
+        String oldAlert = alertProperty.get();
+        alertProperty.set("ERROR");
+
+        try {
+            // native cross join cannot be used due to AllMembers
+            checkNotNative(3,
+                "select " +
+                "{[Measures].AllMembers} on columns, " +
+                "non empty crossjoin([Product].[All Products].children, " +
+                "[Store].[All Stores].children) on rows " +
+                "from [Warehouse and Sales]");
+        } finally {
+            alertProperty.set(oldAlert);
+        }
     }
 
     public void testNotNativeVirtualCubeCrossJoin2()
@@ -1033,6 +1061,122 @@ public class NonEmptyTest extends FoodMartTestCase {
             "non empty crossjoin([Product].[All Products].children, " +
             "[Store].[All Stores].children) on rows " +
             "from [Warehouse and Sales]");
+    }
+
+    public void testNotNativeVirtualCubeCrossJoinUnsupported()
+    {
+        BooleanProperty enableProperty =
+            MondrianProperties.instance().EnableNativeCrossJoin;
+        if (!enableProperty.get()) {
+            // When native cross joins are explicitly disabled, no alerts
+            // are supposed to be raised.
+            return;
+        }
+        
+        String mdx =
+            "select " +
+            "{[Measures].AllMembers} on columns, " +
+            "NonEmptyCrossJoin([Product].[All Products].children, " +
+            "[Store].[All Stores].children) on rows " +
+            "from [Warehouse and Sales]";
+
+        final List<LoggingEvent> events = new ArrayList<LoggingEvent>();
+        
+        // set up log4j listener to detect alerts
+        Appender alertListener = new AppenderSkeleton() {
+                protected void append(LoggingEvent event) {
+                    events.add(event);
+                }
+                public void close() {
+                }
+                public boolean requiresLayout() {
+                    return false;
+                }
+            };
+        Logger rolapUtilLogger = Logger.getLogger(RolapUtil.class);
+        rolapUtilLogger.addAppender(alertListener);
+        String expectedMessage =
+            "Unable to use native SQL evaluation for 'NonEmptyCrossJoin'";
+        
+        // verify that exception is thrown if alerting is set to ERROR
+        StringProperty alertProperty =
+            MondrianProperties.instance().AlertNativeEvaluationUnsupported;
+        String oldAlert = alertProperty.get();
+        alertProperty.set(org.apache.log4j.Level.ERROR.toString());
+        try {
+            checkNotNative(3, mdx);
+            fail("Expected NativeEvaluationUnsupportedException");
+        } catch (NativeEvaluationUnsupportedException ex) {
+            // Expected
+        } finally {
+            alertProperty.set(oldAlert);
+        }
+
+        // should have gotten one ERROR
+        int nEvents = countFilteredEvents(
+            events,
+            org.apache.log4j.Level.ERROR,
+            expectedMessage);
+        assertEquals(1, nEvents);
+        events.clear();
+
+        // verify that exactly one warning is posted but execution succeeds
+        // if alerting is set to WARN
+        alertProperty.set(org.apache.log4j.Level.WARN.toString());
+        try {
+            checkNotNative(3, mdx);
+        } finally {
+            alertProperty.set(oldAlert);
+        }
+
+        // should have gotten one WARN
+        nEvents = countFilteredEvents(
+            events,
+            org.apache.log4j.Level.WARN,
+            expectedMessage);
+        assertEquals(1, nEvents);
+        events.clear();
+
+        // verify that no warning is posted if native evaluation is
+        // explicitly disabled
+        alertProperty.set(org.apache.log4j.Level.WARN.toString());
+        enableProperty.set(false);
+        try {
+            checkNotNative(3, mdx);
+        } finally {
+            alertProperty.set(oldAlert);
+            enableProperty.set(true);
+        }
+
+        // should have gotten no WARN
+        nEvents = countFilteredEvents(
+            events,
+            org.apache.log4j.Level.WARN,
+            expectedMessage);
+        assertEquals(0, nEvents);
+        events.clear();
+
+        // no biggie if we don't get here for some reason; just being
+        // half-heartedly clean 
+        rolapUtilLogger.removeAppender(alertListener);
+    }
+
+    private int countFilteredEvents(
+        List<LoggingEvent> events,
+        org.apache.log4j.Level level,
+        String pattern)
+    {
+        int filteredEventCount = 0;
+        for (LoggingEvent event : events) {
+            if (!event.getLevel().equals(level)) {
+                continue;
+            }
+            if (event.getMessage().toString().indexOf(pattern) == -1) {
+                continue;
+            }
+            filteredEventCount++;
+        }
+        return filteredEventCount;
     }
 
     public void testVirtualCubeCrossJoinCalculatedMember1()
