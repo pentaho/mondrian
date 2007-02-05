@@ -112,8 +112,8 @@ public class Query extends QueryPart {
     private boolean isCanceled;
     
     /**
-     * If true, this query was notified that it might cause an 
-     * OutOfMemoryError.
+     * If not <code>null</code>, this query was notified that it 
+     * might cause an OutOfMemoryError.
      */
     private String outOfMemoryMsg;
 
