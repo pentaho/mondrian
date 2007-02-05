@@ -12,6 +12,7 @@ package mondrian.util;
 
 import mondrian.test.*;
 import mondrian.olap.Connection;
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Result;
 import mondrian.olap.Util;
 import mondrian.olap.MemoryLimitExceededException;
@@ -25,6 +26,7 @@ import junit.framework.TestCase;
  * @author Richard Emberson
  */
 public class MemoryMonitorTest extends FoodMartTestCase {
+    protected boolean enabled;
     public MemoryMonitorTest() {
         super();
     }
@@ -32,9 +34,16 @@ public class MemoryMonitorTest extends FoodMartTestCase {
         super(name);
     }
 
+    protected void setUp() throws Exception {
+        super.setUp();
+        enabled = MondrianProperties.instance().MemoryMonitor.get();
+    }
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
     
     public void testZeroUsage() throws Exception {
-        if (Util.PreJdk15) {
+        if (Util.PreJdk15 || !enabled) {
             return;
         }
         class Listener implements MemoryMonitor.Listener {
@@ -59,7 +68,7 @@ public class MemoryMonitorTest extends FoodMartTestCase {
         }
     }
     public void testDeltaUsage() throws Exception {
-        if (Util.PreJdk15) {
+        if (Util.PreJdk15 || !enabled) {
             return;
         }
         class Listener implements MemoryMonitor.Listener {
@@ -104,7 +113,7 @@ public class MemoryMonitorTest extends FoodMartTestCase {
         }
     }
     public void testUpdatePercent() throws Exception {
-        if (Util.PreJdk15) {
+        if (Util.PreJdk15 || !enabled) {
             return;
         }
         class Listener implements MemoryMonitor.Listener {
@@ -148,7 +157,7 @@ public class MemoryMonitorTest extends FoodMartTestCase {
         }
     }
     public void testQuery() throws Exception {
-        if (Util.PreJdk15) {
+        if (Util.PreJdk15 || !enabled) {
             return;
         }
         class Listener implements MemoryMonitor.Listener {
