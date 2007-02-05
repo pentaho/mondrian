@@ -1,3 +1,13 @@
+/*
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2007-2007 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
+
 //   Copyright (c) 1999 CERN - European Organization for Nuclear Research.
 //   Permission to use, copy, modify, distribute and sell this software
 //   and its documentation for any purpose is hereby granted without fee,
@@ -6,21 +16,10 @@
 //   supporting documentation. CERN makes no representations about the
 //   suitability of this software for any purpose. It is provided "as is"
 //   without expressed or implied warranty.
-//package cern.colt.map;
 
-// 
+// Created from package cern.colt.map by Richard Emberson, 2007/1/23.
 // For the source to the Colt project, go to:
 // http://dsd.lbl.gov/~hoschek/colt/
-//
-
-// $Id$
-// This software is subject to the terms of the Common Public License
-// Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2006 Julian Hyde and others
-// All Rights Reserved.
-// You must accept the terms of that agreement to use this software.
 
 package mondrian.util;
 
@@ -28,13 +27,14 @@ import java.util.Iterator;
 
 /**
  * An <code>ObjectPool</code> is a low-memory replacement for a
- * java.util.HashSet. A HashSet uses a HashMap which in turn has
+ * {@link java.util.HashSet}. A HashSet contains a {@link java.util.HashMap}
+ * which in turn has
  * an array of Entry objects, the Entry objects themselves, and the
  * key and value objects. An ObjectPool has simply an array of
  * objects and the objects themselves which server as both key and value.
  * <p>
  * This is like the String <code>intern</code> method, but works for
- * an Object type and where as the String <code>intern</code> method is global
+ * an Object type and whereas the String <code>intern</code> method is global
  * an ObjectPool can be used within a context and then garbage collected.
  * Objects can not removed from an ObjectPool except by calling the
  * <code>clear</code> method which removes all objects.
@@ -56,7 +56,7 @@ public class ObjectPool<T> {
     // state byte array could be a bit vector which would save
     // some memory.
     protected static final byte FREE = 0;
-    protected static final byte FULL = 1; 
+    protected static final byte FULL = 1;
 
     protected static final int DEFAULT_CAPACITY = 277;
     protected static final double DEFAULT_MIN_LOAD_FACTOR = 0.2;
@@ -100,32 +100,32 @@ public class ObjectPool<T> {
     public ObjectPool(int initialCapacity) {
         this(initialCapacity, DEFAULT_MIN_LOAD_FACTOR, DEFAULT_MAX_LOAD_FACTOR);
     }
-    public ObjectPool(int initialCapacity, 
-                      double minLoadFactor, 
+    public ObjectPool(int initialCapacity,
+                      double minLoadFactor,
                       double maxLoadFactor) {
         setUp(initialCapacity,minLoadFactor,maxLoadFactor);
     }
 
-    /** 
-     * Return the number of entries in the ObjectPool. 
-     * 
+    /**
+     * Return the number of entries in the ObjectPool.
+     *
      * @return number of entries.
      */
     public int size() {
         return distinct;
     }
 
-    /** 
+    /**
      * Reduce the size of the internal arrays to a size just big
      * enough to hold the current set of entries. Generally, this
      * should only be called after all entries have been added.
-     * Calling this causes a new, smaller array to be allocated, the 
+     * Calling this causes a new, smaller array to be allocated, the
      * objects are copied to the new array and then the old array is
      * free to be garbage collected; there is a small time when both
      * arrays are in memory.
      */
     public void trimToSize() {
-        // * 1.2 because open addressing's performance 
+        // * 1.2 because open addressing's performance
         // exponentially degrades beyond that point
         // so that even rehashing the table can take very long
         int newCapacity = nextPrime((int)(1 + 1.2*size()));
@@ -134,28 +134,28 @@ public class ObjectPool<T> {
         }
     }
 
-    /** 
+    /**
      * Returns true it the Object is already in the ObjectPool and false
-     * otherwise. 
-     * 
+     * otherwise.
+     *
      * @param key Object to test if member already or not.
      * @return true is already member
      */
     public boolean contains(T key) {
-        int i = indexOfInsertion(key);  
+        int i = indexOfInsertion(key);
         return (i < 0);
     }
 
-    /** 
-     * This method either adds an object to the ObjectPool if it is not
+    /**
+     * Adds an object to the ObjectPool if it is not
      * already in the pool or returns the object that is already in the
      * pool that matches the object being added.
-     * 
-     * @param key 
-     * @return 
+     *
+     * @param key
+     * @return
      */
     public T add(T key) {
-        int i = indexOfInsertion(key);  
+        int i = indexOfInsertion(key);
         if (i < 0) {
             //already contained
             i = -i -1;
@@ -164,7 +164,7 @@ public class ObjectPool<T> {
 
         if (this.distinct > this.highWaterMark) {
             int newCapacity = chooseGrowCapacity(this.distinct+1,
-                                                 this.minLoadFactor, 
+                                                 this.minLoadFactor,
                                                  this.maxLoadFactor);
             rehash(newCapacity);
             return add(key);
@@ -178,10 +178,10 @@ public class ObjectPool<T> {
         this.state[i] = FULL;
         this.distinct++;
 
-        if (this.freeEntries < 1) { 
+        if (this.freeEntries < 1) {
             //delta
             int newCapacity = chooseGrowCapacity(this.distinct+1,
-                                                 this.minLoadFactor, 
+                                                 this.minLoadFactor,
                                                  this.maxLoadFactor);
              rehash(newCapacity);
         }
@@ -189,7 +189,7 @@ public class ObjectPool<T> {
         return key;
     }
 
-    /** 
+    /**
      * Removes all objects from the pool but keeps the current size of
      * the internal storage.
      */
@@ -202,15 +202,13 @@ public class ObjectPool<T> {
         trimToSize();
     }
 
-    /** 
-     * Return an Iterator of this <code>ObjectPool. The</code> order of 
-     * the Objects returned by the <code>Iterator</code> can not be 
+    /**
+     * Returns an Iterator of this <code>ObjectPool</code>. The order of
+     * the Objects returned by the <code>Iterator</code> can not be
      * counted on to be in the same order as they were inserted
-     * into the <code>ObjectPool</code>.  The 
-     * <code>Iterator</code> returned does not 
+     * into the <code>ObjectPool</code>.  The
+     * <code>Iterator</code> returned does not
      * support the removal of <code>ObjectPool</code> members.
-     * 
-     * @return 
      */
     public Iterator iterator() {
         return new Itr();
@@ -219,12 +217,12 @@ public class ObjectPool<T> {
 
 
     protected int chooseGrowCapacity(int size, double minLoad, double maxLoad) {
-        return nextPrime(Math.max(size+1, 
+        return nextPrime(Math.max(size+1,
             (int) ((4*size / (3*minLoad+maxLoad)))));
     }
     protected int chooseHighWaterMark(int capacity, double maxLoad) {
         //makes sure there is always at least one FREE slot
-        return Math.min(capacity-2, (int) (capacity * maxLoad)); 
+        return Math.min(capacity-2, (int) (capacity * maxLoad));
     }
     protected int chooseLowWaterMark(int capacity, double minLoad) {
         return (int) (capacity * minLoad);
@@ -240,14 +238,14 @@ public class ObjectPool<T> {
         return PrimeFinder.nextPrime(desiredCapacity);
     }
 
-    protected void setUp(int initialCapacity, 
-                         double minLoadFactor, 
+    protected void setUp(int initialCapacity,
+                         double minLoadFactor,
                          double maxLoadFactor) {
         int capacity = initialCapacity;
 
         if (initialCapacity < 0) {
             throw new IllegalArgumentException(
-                "Initial Capacity must not be less than zero: "+ 
+                "Initial Capacity must not be less than zero: "+
                 initialCapacity);
         }
         if (minLoadFactor < 0.0 || minLoadFactor >= 1.0) {
@@ -267,14 +265,14 @@ public class ObjectPool<T> {
 
         // open addressing needs at least one FREE slot at any time.
         if (capacity == 0) {
-            capacity = 1; 
+            capacity = 1;
         }
-        
+
         //this.table = new long[capacity];
         this.values = (T[]) new Object[capacity];
         this.state = new byte[capacity];
 
-        // memory will be exhausted long before this 
+        // memory will be exhausted long before this
         // pathological case happens, anyway.
         this.minLoadFactor = minLoadFactor;
         if (capacity == PrimeFinder.largestPrime) {
@@ -286,9 +284,9 @@ public class ObjectPool<T> {
         this.distinct = 0;
         this.freeEntries = capacity; // delta
         // lowWaterMark will be established upon first expansion.
-        // establishing it now (upon instance construction) would 
+        // establishing it now (upon instance construction) would
         // immediately make the table shrink upon first put(...).
-        // After all the idea of an "initialCapacity" implies 
+        // After all the idea of an "initialCapacity" implies
         // violating lowWaterMarks when an object is young.
         // See ensureCapacity(...)
         this.lowWaterMark = 0;
@@ -310,16 +308,16 @@ public class ObjectPool<T> {
         final int length = tab.length;
 
         final int hash = hash(key) & 0x7FFFFFFF;
-        int i = hash % length; 
+        int i = hash % length;
 
-        // double hashing, 
+        // double hashing,
         // see http://www.eece.unm.edu/faculty/heileman/hash/node4.html
         int decrement = hash % (length-2);
 
         //int decrement = (hash / length) % length;
         if (decrement == 0) {
             decrement = 1;
-        } 
+        }
 
         // stop if we find a free slot, or if we find the key itself
         while ((stat[i] == FULL) && !equals(tab[i], key)) {
@@ -327,7 +325,7 @@ public class ObjectPool<T> {
             //hashCollisions++;
             if (i < 0) {
                 i += length;
-            } 
+            }
         }
 
         // key already contained at slot i.
@@ -362,7 +360,7 @@ public class ObjectPool<T> {
         }
     }
 
-    class Itr implements Iterator<T> {
+    private class Itr implements Iterator<T> {
         int index = 0;
         Itr() {
         }
@@ -385,56 +383,6 @@ public class ObjectPool<T> {
             throw new UnsupportedOperationException("ObjectPool.Itr.remove");
         }
     }
-
-    //////////////////////////////////////////////////////////////////
-    // TESTING
-    //////////////////////////////////////////////////////////////////
-    private static String[] genStrings(int nos) {
-        java.util.List l = new java.util.ArrayList(nos);
-        for (int i = 0; i < nos; i++) {
-            l.add(new Integer(i).toString());
-        }
-        return (String[]) l.toArray(new String[l.size()]);
-    }
-
-    public static void main(String[] args) {
-        ObjectPool<String> strings = new ObjectPool<String>();
-        int nos = 100000;
-        String[] ss = genStrings(nos);
-        for (int i = 0; i < nos; i++) {
-            strings.add(ss[i]);
-        }
-        System.out.println("size="+strings.size());
-        Object[] v = strings.values;
-        System.out.println("strings.values.length="+v.length);
-        for (int i = 0; i < nos; i++) {
-            String s = strings.add(ss[i]);
-            if (! s.equals(ss[i])){
-                System.out.println("not equals s="+s+", ss[]"+ss[i]);
-            }
-        }
-        System.out.println("size="+strings.size());
-        v = strings.values;
-        System.out.println("strings.values.length="+v.length);
-        strings.trimToSize();
-        System.out.println("size="+strings.size());
-        v = strings.values;
-        System.out.println("strings.values.length="+v.length);
-
-        strings.clear();
-        System.out.println("size="+strings.size());
-        v = strings.values;
-        System.out.println("strings.values.length="+v.length);
-
-        nos = 10;
-        ss = genStrings(nos);
-        for (int i = 0; i < nos; i++) {
-            strings.add(ss[i]);
-        }
-        Iterator it = strings.iterator();
-        while (it.hasNext()) {
-            System.out.println("  "+it.next());
-        }
-    }
-
 }
+
+// End ObjectPool.java

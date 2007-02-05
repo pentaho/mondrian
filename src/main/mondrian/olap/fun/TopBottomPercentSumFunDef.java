@@ -141,7 +141,7 @@ class TopBottomPercentSumFunDef extends FunDefBase {
                 Object o = (isMember)
                     ? mapMemberToValue.get(list.get(i))
                     : mapMemberToValue.get(
-                        new Member.ArrayEquals(list.get(i)));
+                        new ArrayHolder<Member>((Member []) list.get(i)));
                 if (o == Util.nullValue) {
                     nullCount++;
                 } else if (o instanceof Number) {

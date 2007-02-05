@@ -15,19 +15,22 @@ import junit.framework.TestCase;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Iterator;
+import java.util.Arrays;
 
-/** 
+/**
  * Test that the implementations of the Modulos interface are correct.
- * 
+ *
  * @author <a>Richard M. Emberson</a>
  * @version $Id$
  */
 public class ModulosTest extends TestCase {
     public ModulosTest() {
     }
+
     public ModulosTest(String name) {
         super(name);
     }
+
     public void testMany() {
         Axis[] axes = new Axis[3];
         List<Position> positions = new PositionList(4);
@@ -47,6 +50,7 @@ public class ModulosTest extends TestCase {
         assertTrue("Pos[2] length equals 1" , (pos[2] == 1));
 
     }
+
     public void testOne() {
         Axis[] axes = new Axis[1];
         List<Position> positions = new PositionList(53);
@@ -58,17 +62,17 @@ public class ModulosTest extends TestCase {
 
         int[] posMany = modulosMany.getCellPos(ordinal);
         int[] pos = modulos.getCellPos(ordinal);
-        assertTrue("Pos are not equal " , (equals(posMany, pos)));
+        assertTrue("Pos are not equal " , (Arrays.equals(posMany, pos)));
 
         ordinal = 23;
         posMany = modulosMany.getCellPos(ordinal);
         pos = modulos.getCellPos(ordinal);
-        assertTrue("Pos are not equal " , (equals(posMany, pos)));
+        assertTrue("Pos are not equal " , (Arrays.equals(posMany, pos)));
 
         ordinal = 7;
         posMany = modulosMany.getCellPos(ordinal);
         pos = modulos.getCellPos(ordinal);
-        assertTrue("Pos are not equal " , (equals(posMany, pos)));
+        assertTrue("Pos are not equal " , (Arrays.equals(posMany, pos)));
 
         pos[0] = 23;
 
@@ -86,6 +90,7 @@ public class ModulosTest extends TestCase {
         o = modulos.getCellOrdinal(pos);
         assertTrue("Ordinals are not equal " , (oMany == o));
     }
+
     public void testTwo() {
         Axis[] axes = new Axis[2];
         List<Position> positions = new PositionList(23);
@@ -99,17 +104,17 @@ public class ModulosTest extends TestCase {
 
         int[] posMany = modulosMany.getCellPos(ordinal);
         int[] pos = modulos.getCellPos(ordinal);
-        assertTrue("Pos are not equal " , (equals(posMany, pos)));
+        assertTrue("Pos are not equal " , (Arrays.equals(posMany, pos)));
 
         ordinal = 11;
         posMany = modulosMany.getCellPos(ordinal);
         pos = modulos.getCellPos(ordinal);
-        assertTrue("Pos are not equal " , (equals(posMany, pos)));
+        assertTrue("Pos are not equal " , (Arrays.equals(posMany, pos)));
 
         ordinal = 7;
         posMany = modulosMany.getCellPos(ordinal);
         pos = modulos.getCellPos(ordinal);
-        assertTrue("Pos are not equal " , (equals(posMany, pos)));
+        assertTrue("Pos are not equal " , (Arrays.equals(posMany, pos)));
 
         pos[0] = 3;
         pos[1] = 2;
@@ -128,6 +133,7 @@ public class ModulosTest extends TestCase {
         o = modulos.getCellOrdinal(pos);
         assertTrue("Ordinals are not equal " , (oMany == o));
     }
+
     public void testThree() {
         Axis[] axes = new Axis[3];
         List<Position> positions = new PositionList(4);
@@ -143,17 +149,17 @@ public class ModulosTest extends TestCase {
 
         int[] posMany = modulosMany.getCellPos(ordinal);
         int[] pos = modulos.getCellPos(ordinal);
-        assertTrue("Pos are not equal " , (equals(posMany, pos)));
+        assertTrue("Pos are not equal " , (Arrays.equals(posMany, pos)));
 
         ordinal = 11;
         posMany = modulosMany.getCellPos(ordinal);
         pos = modulos.getCellPos(ordinal);
-        assertTrue("Pos are not equal " , (equals(posMany, pos)));
+        assertTrue("Pos are not equal " , (Arrays.equals(posMany, pos)));
 
         ordinal = 7;
         posMany = modulosMany.getCellPos(ordinal);
         pos = modulos.getCellPos(ordinal);
-        assertTrue("Pos are not equal " , (equals(posMany, pos)));
+        assertTrue("Pos are not equal " , (Arrays.equals(posMany, pos)));
 
         pos[0] = 3;
         pos[1] = 2;
@@ -174,37 +180,25 @@ public class ModulosTest extends TestCase {
         assertTrue("Ordinals are not equal " , (oMany == o));
     }
 
-    protected boolean equals(int[] pos0, int[] pos1) {
-        if (pos0.length != pos1.length) {
-            return false;
-        }
-        for (int i = 0; i < pos0.length; i++) {
-            if (pos0[i] != pos1[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     static class PositionList extends RolapAxis.PositionListBase {
-            int size;
-            PositionList(int size) {
-                this.size = size;
-            }
-            public int size() {
-                return size;
-            }
-            public Position get(int index) {
-                return null;
-            }
-            public ListIterator<Position> listIterator() {
-                return null;
-            }
-            public ListIterator<Position> listIterator(int index) {
-                return null;
-            }
-            public Iterator<Position> iterator() {
-                return null;
-            }
+        int size;
+        PositionList(int size) {
+            this.size = size;
+        }
+        public int size() {
+            return size;
+        }
+        public Position get(int index) {
+            return null;
+        }
+        public ListIterator<Position> listIterator() {
+            return null;
+        }
+        public ListIterator<Position> listIterator(int index) {
+            return null;
+        }
+        public Iterator<Position> iterator() {
+            return null;
+        }
     }
 }

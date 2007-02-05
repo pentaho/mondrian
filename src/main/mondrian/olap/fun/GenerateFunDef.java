@@ -158,12 +158,12 @@ class GenerateFunDef extends FunDefBase {
             List<Object> result,
             List<Object> result2,
             Set<Object> emitted) {
-            
+
             for (Object row : result2) {
                 Object entry = row;
                 if (entry instanceof Member []) {
                     // wrap array for correct distinctness test
-                    entry = new Member.ArrayEquals(entry);
+                    entry = new ArrayHolder<Member>((Member []) entry);
                 }
                 if (emitted.add(entry)) {
                     result.add(row);

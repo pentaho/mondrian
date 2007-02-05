@@ -35,7 +35,7 @@ class IntersectFunDef extends FunDefBase
             new String[] {"fxxxy", "fxxx"},
             IntersectFunDef.class,
             ReservedWords);
-    
+
     public IntersectFunDef(FunDef dummyFunDef)
     {
         super(dummyFunDef);
@@ -86,7 +86,7 @@ class IntersectFunDef extends FunDefBase
             Object element = iter.next();
 
             if (element instanceof Object[]) {
-                element = new FunUtil.ArrayHolder((Object[])element);
+                element = new ArrayHolder((Object[])element);
             }
 
             result.add(element);

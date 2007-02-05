@@ -13,7 +13,6 @@
 
 package mondrian.olap;
 
-import java.util.Arrays;
 /**
  * A <code>Member</code> is a 'point' on a dimension of a cube. Examples are
  * <code>[Time].[1997].[January]</code>,
@@ -35,40 +34,6 @@ import java.util.Arrays;
  * defines which are allowed.
  */
 public interface Member extends OlapElement, Comparable {
-    
-    /** 
-     * ArrayEquals allows two arrays of members (Member[]) that are
-     * different arrays but have the same Members in their arrays
-     * to be used as the same key to a Map. What is required is an 
-     * equality test over all members of the array since one can not use 
-     * the naked array of members as a key.
-     */
-    public class ArrayEquals {
-
-        private final Member[] members;
-
-        // For use when you know the Object is a Member[].
-        public ArrayEquals(Object o) {
-            this((Member[]) o);
-        }
-        public ArrayEquals(Member[] members) {
-            this.members = members;
-        }
-        public Member[] get() {
-            return this.members;
-        }
-        public boolean equals(Object o) {
-            if (o instanceof ArrayEquals) {
-                ArrayEquals other = (ArrayEquals) o;
-                return Arrays.equals(this.members, other.members);
-            } else {
-                return false;
-            }
-        }
-        public int hashCode() {
-            return Arrays.hashCode(this.members);
-        }
-    }
 
     /**
      * Returns this member's parent, or null (not the 'null member', as

@@ -42,373 +42,6 @@ import java.util.Locale;
 class RolapResult extends ResultBase {
 
     private static final Logger LOGGER = Logger.getLogger(ResultBase.class);
-    
-    /** 
-     * Every Cell has a value, a format string (or CellFormatter) and a 
-     * formatted value string.  
-     * There are a wide range of possible values (pick a Double, any
-     * Double - its a value). Because there are lots of possible values,
-     * there are also lots of possible formatted value strings. On the
-     * other hand, there are only a very small number of format strings
-     * and CellFormatter's. These formatters are to be cached 
-     * in a synchronized HashMaps in order to limit how many copies
-     * need to be kept around.
-     * <p>
-     * There are two implementations of the ValueFormatter interface:
-     * the CellFormatterValueFormatter which formats using a 
-     * user registered CellFormatter and the FormatValueFormatter
-     * which takes the Locale object.
-     */
-    interface ValueFormatter {
-        String format(Object value, String formatString);
-    }
-    
-    /** 
-     * A CellFormatterValueFormatter takes a user-defined CellFormatter   
-     * as a parameter and uses the CellFormatter to format Object values.
-     */
-    class CellFormatterValueFormatter implements ValueFormatter{
-        final CellFormatter cf;
-        CellFormatterValueFormatter(CellFormatter cf) {
-            this.cf = cf;
-        }
-        public String format(Object value, String formatString) {
-            return cf.formatCell(value);
-        }
-    }
-    /** 
-     * A FormatValueFormatter takes a Locale
-     * as a parameter and use it to get the mondrian.util.Format
-     * Object to be used in formatting an Object value with a 
-     * given format string.
-     */
-    class FormatValueFormatter implements ValueFormatter{
-        final Locale locale;
-        FormatValueFormatter(Locale locale) {
-            this.locale = locale;
-        }
-        public String format(Object value, String formatString) {
-            if (value == Util.nullValue) {
-                Format format = getFormat(formatString);
-                return format.format(null);
-            } else if (value instanceof Throwable) {
-                return "#ERR: " + value.toString();
-            } else if (value instanceof String) {
-                return (String) value;
-            } else {
-                Format format = getFormat(formatString);
-                return format.format(value);
-            }
-        }
-        private Format getFormat(String formatString) {
-            return Format.get(formatString, locale);
-        }
-    }
-
-    /*
-     * Generate a long ordinal based upon the values of the integers
-     * stored in the cell position array. With this mechanism, the
-     * Cell information can be stored using a long key (rather than
-     * the array integer of positions) thus saving memory. The trick
-     * is to use a 'large number' per axis in order to convert from
-     * position array to long key where the 'large number' is greater
-     * than the number of members in the axis.
-     * The largest 'long' is java.lang.Long.MAX_VALUE which is
-     * 9,223,372,036,854,776,000. The product of the maximum number
-     * of members per axis must be less than this maximum 'long'
-     * value (otherwise one gets hashing collisions).
-     * <p>
-     * For a single axis, the maximum number of members is equal to
-     * the max 'long' number, 9,223,372,036,854,776,000.
-     * <p>
-     * For two axes, the maximum number of members is the square root
-     * of the max 'long' number, 9,223,372,036,854,776,000, which is
-     * slightly bigger than 2,147,483,647 (which is the maximum integer).
-     * <p>
-     * For three axes, the maximum number of members per axis is the 
-     * cube root of the max 'long' which is about 2,000,000
-     * <p>
-     * For four axes the forth root is about 50,000.
-     * <p>
-     * For five or more axes, the maximum number of members per axis
-     * based upon the root of the maximum 'long' number,
-     * start getting too small to guarantee that it will be 
-     * smaller than the number of members on a given axis and so
-     * we must resort to the Map-base Cell container.
-     */
-
-    /** 
-     * The maximum number of Members, 2,147,483,647, that can be any given 
-     * Axis when the number of Axes is 2.
-     */
-    protected static final int MAX_AXIS_SIZE_2 = 2147483647;
-    /** 
-     * The maximum number of Members, 2,000,000, that can be any given 
-     * Axis when the number of Axes is 3.
-     */
-    protected static final int MAX_AXIS_SIZE_3 = 2000000;
-    /** 
-     * The maximum number of Members, 50,000, that can be any given 
-     * Axis when the number of Axes is 4.
-     */
-    protected static final int MAX_AXIS_SIZE_4 = 50000;
-
-    
-    /** 
-     * Synchronized Map from Locale to ValueFormatter. It is expected that
-     * there will be only a small number of Locale's.
-     * Should these be a WeakHashMap?
-     */
-    protected static final Map<Locale, ValueFormatter> 
-            formatValueFormatters = 
-            Collections.synchronizedMap(new HashMap<Locale, ValueFormatter>());
-
-    /** 
-     * Synchronized Map from CellFormatter to ValueFormatter.
-     * CellFormatter's are defined in schema files. It is expected
-     * the there will only be a small number of CellFormatter's.
-     * Should these be a WeakHashMap?
-     */
-    protected static final Map<CellFormatter, ValueFormatter> 
-            cellFormatters = 
-            Collections.synchronizedMap(new HashMap<CellFormatter, ValueFormatter>());
-
-    /** 
-     * CellInfo's contain all of the information that a Cell requires.
-     * They are placed in the cellInfos Map during evaluation and 
-     * serve as a constructor parameter for RolapCell. During the
-     * evaluation stage they are mutable but after evaluation has
-     * finished they are not changed.
-     */
-    static class CellInfo {
-        Object value;
-        String formatString;
-        ValueFormatter valueFormatter;
-        long key;
-        CellInfo(long key) {
-            this(key, null, null, null);
-        }
-        CellInfo(long key, Object value, 
-                 String formatString,     
-                 ValueFormatter valueFormatter) {
-            this.key = key;
-            this.value = value;
-            this.formatString = formatString;
-            this.valueFormatter = valueFormatter;
-        }
-        public int hashCode() {
-            return (int)(key ^ (key >>> 32));
-        }
-        public boolean equals(Object o) {
-            return (o instanceof CellInfo)
-                ? (((CellInfo) o).key == this.key)
-                : false;
-        }
-        String getFormatValue() {
-            return valueFormatter.format(value, formatString);
-        }
-    }
-
-    /** 
-     * The CellInfoContainer defines the API for the creation and
-     * lookup of CellInfo objects. There are two implementations,
-     * one that uses a Map for storage and the other uses an ObjectPool.
-     */
-    interface CellInfoContainer {
-        /** 
-         * Return the number of CellInfo objects in this container.
-         * @return  the number of CellInfo objects.
-         */
-        int size();
-        /** 
-         * Reduce the size of the internal data structures need to
-         * support the current entries. This should be called after
-         * all CellInfo objects have been added to container.
-         */
-        void trimToSize();
-        /** 
-         * Remove all CellInfo objects from container. Does not
-         * change the size of the internal data structures.
-         */
-        void clear();
-        /** 
-         * Create a new CellInfo object, add it to the container
-         * a location <code>pos</code> and return it.
-         * 
-         * @param pos where to store CellInfo object.
-         * @return the newly create CellInfo object.
-         */
-        CellInfo create(int[] pos); 
-        /** 
-         * Get the CellInfo object at the location <code>pos</code>.
-         * 
-         * @param pos where to find the CellInfo object.
-         * @return the CellInfo found or null.
-         */
-        CellInfo lookup(int[] pos); 
-    }
-    
-    /** 
-     * The CellInfoMap uses a Map to store CellInfo Objects.  
-     * Note that the CellKey point instance variable is the same
-     * Object (NOT a copy) that is used and modified during
-     * the recursive calls to executeStripe - the
-     * <code>create</code> method relies on this fact.
-     */
-    static class CellInfoMap implements CellInfoContainer {
-        private final Map<CellKey, CellInfo> cellInfoMap;
-        private final CellKey point;
-        CellInfoMap(CellKey point) {
-            this.point = point;
-            this.cellInfoMap = new HashMap<CellKey, CellInfo>();
-        }
-        public int size() {
-            return this.cellInfoMap.size();
-        }
-        public void trimToSize() {
-            // empty
-        }
-        public void clear() {
-            this.cellInfoMap.clear();
-        }
-        public CellInfo create(int[] pos) {
-            CellKey key = this.point.copy();
-            CellInfo ci = this.cellInfoMap.get(key);
-            if (ci == null) {
-                ci = new CellInfo(0);
-                this.cellInfoMap.put(key, ci);
-            }
-            return ci;
-        }
-        public CellInfo lookup(int[] pos) {
-            CellKey key = this.point.make(pos);
-            return this.cellInfoMap.get(key);
-        }
-    }
-    /** 
-     * The CellInfoPool uses an ObjectPool to store CellInfo Objects.  
-     * There is an inner interface (<code>CellKeyMaker</code>) and
-     * implementations for 0 through 4 axes that convert the Cell
-     * position integer array into a long.
-     * <p>
-     * It should be noted that there is an alternate approach.
-     * As the <code>executeStripe</code> 
-     * method is recursively called, at each call it is known which
-     * axis is being iterated across and it is known whether or
-     * not the Position object for that axis is a List or just
-     * an Iterable. It it is a List, then one knows the real
-     * size of the axis. If it is an Iterable, then one has to
-     * use one of the MAX_AXIS_SIZE values. Given that this information
-     * is available when one recursives down to the next
-     * <code>executeStripe</code> call, the Cell ordinal, the position 
-     * integer array could converted to an <code>long</code>, could
-     * be generated on the call stack!! Just a thought for the future.
-     */
-    static class CellInfoPool implements CellInfoContainer {
-        /** 
-         * Implementations of CellKeyMaker convert the Cell
-         * position integer array to a <code>long</code>.
-         */
-        interface CellKeyMaker {
-            long generate(int[] pos);
-        }
-        /** 
-         * For axis of size 0.
-         */
-        static class Zero implements CellKeyMaker {
-            public long generate(int[] pos) {
-                return 0;
-            }
-        }
-        /** 
-         * For axis of size 1.
-         */
-        static class One implements CellKeyMaker {
-            public long generate(int[] pos) {
-                return pos[0];
-            }
-        }
-        /** 
-         * For axis of size 2.
-         */
-        static class Two implements CellKeyMaker {
-            public long generate(int[] pos) {
-                long l = pos[0];
-                l += (MAX_AXIS_SIZE_2 * (long) pos[1]);
-                return l;
-            }
-        }
-        /** 
-         * For axis of size 3.
-         */
-        static class Three implements CellKeyMaker {
-            public long generate(int[] pos) {
-                long l = pos[0];
-                l += (MAX_AXIS_SIZE_3 * (long) pos[1]);
-                l += (MAX_AXIS_SIZE_3 * MAX_AXIS_SIZE_3 * (long) pos[2]);
-                return l;
-            }
-        }
-        /** 
-         * For axis of size 4.
-         */
-        static class Four implements CellKeyMaker {
-            public long generate(int[] pos) {
-                long l = pos[0];
-                l += (MAX_AXIS_SIZE_4 * (long) pos[1]);
-                l += (MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * (long) pos[2]);
-                l += (MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * (long) pos[3]);
-                return l;
-            }
-        }
-
-        private final ObjectPool<CellInfo> cellInfoPool;
-        private final CellKeyMaker cellKeyMaker;
-        CellInfoPool(int axisLength) {
-            this.cellInfoPool = new ObjectPool<CellInfo>();
-            switch (axisLength) {
-            case 0:
-                this.cellKeyMaker = new Zero();
-                break;
-            case 1:
-                this.cellKeyMaker = new One();
-                break;
-            case 2:
-                this.cellKeyMaker = new Two();
-                break;
-            case 3:
-                this.cellKeyMaker = new Three();
-                break;
-            case 4:
-                this.cellKeyMaker = new Four();
-                break;
-            default :
-                throw new RuntimeException(
-                    "Creating CellInfoPool with axisLength=" +axisLength);
-            }
-        }
-        public int size() {
-            return this.cellInfoPool.size();
-        }
-        public void trimToSize() {
-            this.cellInfoPool.trimToSize();
-        }
-        public void clear() {
-            this.cellInfoPool.clear();
-        }
-        public CellInfo create(int[] pos) {
-            long key = this.cellKeyMaker.generate(pos);
-            return this.cellInfoPool.add(new CellInfo(key));
-        }
-        public CellInfo lookup(int[] pos) {
-            long key = this.cellKeyMaker.generate(pos);
-            return this.cellInfoPool.add(new CellInfo(key));
-        }
-    }
-
-
-
-
 
     private RolapEvaluator evaluator;
     private final CellKey point;
@@ -437,7 +70,7 @@ class RolapResult extends ResultBase {
 
         this.cellInfos = (query.axes.length > 4)
             ?  new CellInfoMap(point) : new CellInfoPool(query.axes.length);
-        
+
 
         if (!execute) {
             return;
@@ -448,9 +81,9 @@ class RolapResult extends ResultBase {
         boolean normalExecution = true;
         try {
             // Check if there are modifications to the aggregate cache
-            rcube.checkAggregateModifications();            
-            
-            // An array of lists which will hold each axis' implicit members 
+            rcube.checkAggregateModifications();
+
+            // An array of lists which will hold each axis' implicit members
             // (does not include slicer axis).
             // One might imagine that one could have an axisMembers list per
             // non-slicer axis and then keep track on a per-axis basis and
@@ -493,7 +126,7 @@ class RolapResult extends ResultBase {
                 }
 
                 evaluator.setCellReader(aggregatingReader);
-                Axis axisResult = 
+                Axis axisResult =
                     executeAxis(evaluator.push(), axis, calc, true, null);
                 evaluator.clearExpResultCache();
 
@@ -508,7 +141,7 @@ class RolapResult extends ResultBase {
                     // Getting the Position list's size and the Position
                     // at index == 0 will, in fact, cause an Iterable-base
                     // Axis Position List to become a List-base Axis
-                    // Position List (and increae memory usage), but for 
+                    // Position List (and increae memory usage), but for
                     // the slicer axis, the number of Positions is very
                     // small, so who cares.
                     switch (this.slicerAxis.getPositions().size()) {
@@ -586,8 +219,8 @@ class RolapResult extends ResultBase {
             executeBody(query);
 
             // If you are very close to running out of memory due to
-            // the number of CellInfo's in cellInfos, then calling this 
-            // may cause the out of memory one is trying to aviod. 
+            // the number of CellInfo's in cellInfos, then calling this
+            // may cause the out of memory one is trying to aviod.
             // On the other hand, calling this can reduce the size of
             // the ObjectPool's internal storage by half (but, of course,
             // it will not reduce the size of the stored objects themselves).
@@ -610,14 +243,14 @@ class RolapResult extends ResultBase {
                 axes[i] = null;
             }
             slicerAxis = null;
-            
+
             throw ex;
 
         } finally {
             if (normalExecution) {
                 // Push all modifications to the aggregate cache to the global
                 // cache so each thread can start using it
-                rcube.pushAggregateModificationsToGlobalCache();            
+                rcube.pushAggregateModificationsToGlobalCache();
 
                 evaluator.clearExpResultCache();
             }
@@ -638,10 +271,10 @@ class RolapResult extends ResultBase {
     public Axis[] getAxes() {
         return axes;
     }
-    
-    /** 
-     * Get the Cell for the given Cell position. 
-     * 
+
+    /**
+     * Get the Cell for the given Cell position.
+     *
      * @param pos Cell position.
      * @return the Cell associated with the Cell position.
      */
@@ -656,9 +289,9 @@ class RolapResult extends ResultBase {
             ci.value = Util.nullValue;
         }
 
-        return new RolapCell(this, (int[]) pos.clone(), ci);
+        return new RolapCell(this, pos.clone(), ci);
     }
-        
+
     private Axis executeAxis(
         Evaluator evaluator,
         QueryAxis axis,
@@ -681,17 +314,17 @@ class RolapResult extends ResultBase {
             evaluator.setNonEmpty(false);
             if (value != null) {
                 // List or Iterable of Member or Member[]
-                if ((value instanceof List)) {
-                    List<Object> list = (List) value; 
+                if (value instanceof List) {
+                    List<Object> list = (List) value;
                     if (construct) {
                         if (list.size() == 0) {
                             // should be???
                             axisResult = new RolapAxis.NoPosition();
                         } else if (list.get(0) instanceof Member[]) {
-                            axisResult = 
+                            axisResult =
                                 new RolapAxis.MemberArrayList((List<Member[]>)value);
                         } else {
-                            axisResult = 
+                            axisResult =
                                 new RolapAxis.MemberList((List<Member>)value);
                         }
                     } else {
@@ -709,7 +342,7 @@ class RolapResult extends ResultBase {
                     }
                 } else {
                     // Iterable
-                    Iterable<Object> iter = (Iterable) value; 
+                    Iterable<Object> iter = (Iterable) value;
                     Iterator it = iter.iterator();
                     if (construct) {
                         if (! it.hasNext()) {
@@ -754,7 +387,7 @@ class RolapResult extends ResultBase {
             while (true) {
 
                 evaluator.setCellReader(this.batchingReader);
-                executeStripe(query.axes.length - 1, 
+                executeStripe(query.axes.length - 1,
                                 (RolapEvaluator) evaluator.push());
                 evaluator.clearExpResultCache();
 
@@ -866,8 +499,8 @@ class RolapResult extends ResultBase {
                 // Object.
                 try {
                     // This code is a combination of the code found in
-                    // the old RolapResult 
-                    // <code>getCellNoDefaultFormatString</code> method and 
+                    // the old RolapResult
+                    // <code>getCellNoDefaultFormatString</code> method and
                     // the old RolapCell <code>getFormattedValue</code> method.
 
                     // Create a CellInfo object for the given position
@@ -875,17 +508,17 @@ class RolapResult extends ResultBase {
                     ci = cellInfos.create(point.getOrdinals());
 
                     String cachedFormatString = null;
-                    ValueFormatter valueFormatter = null;
+                    ValueFormatter valueFormatter;
 
                     // Determine if there is a CellFormatter registered for
                     // the current Cube's Measure's Dimension. If so,
-                    // then find or create a CellFormatterValueFormatter 
+                    // then find or create a CellFormatterValueFormatter
                     // for it. If not, then find or create a Locale based
                     // FormatValueFormatter.
                     RolapCube cube = (RolapCube) getCube();
-                    Dimension measuresDim = 
+                    Dimension measuresDim =
                             cube.getMeasuresHierarchy().getDimension();
-                    RolapMeasure m = 
+                    RolapMeasure m =
                             (RolapMeasure) revaluator.getContext(measuresDim);
                     CellFormatter cf = m.getFormatter();
                     if (cf != null) {
@@ -894,7 +527,7 @@ class RolapResult extends ResultBase {
                             valueFormatter = new CellFormatterValueFormatter(cf);
                             cellFormatters.put(cf, valueFormatter);
                         }
-                    } else {                                
+                    } else {
                         cachedFormatString = revaluator.getFormatString();
                         Locale locale = query.getConnection().getLocale();
                         valueFormatter = formatValueFormatters.get(locale);
@@ -902,7 +535,7 @@ class RolapResult extends ResultBase {
                             valueFormatter = new FormatValueFormatter(locale);
                             formatValueFormatters.put(locale, valueFormatter);
                         }
-                    } 
+                    }
 
                     ci.formatString = cachedFormatString;
                     ci.valueFormatter = valueFormatter;
@@ -913,14 +546,14 @@ class RolapResult extends ResultBase {
 
                 } catch (MondrianEvaluationException e) {
                     // ignore
-                    
+
                 } catch (Throwable e) {
                     Util.discard(e);
                 }
 
                 if (o == RolapUtil.valueNotReadyException) {
                     continue;
-                }                
+                }
 
                 ci.value = o;
             }
@@ -974,11 +607,11 @@ class RolapResult extends ResultBase {
         modulos = Modulos.Generator.create(axes);
     }
 
-    /** 
-     * Called only by RolapCell. 
-     * 
-     * @param pos 
-     * @return 
+    /**
+     * Called only by RolapCell.
+     *
+     * @param pos
+     * @return
      */
     RolapEvaluator getCellEvaluator(int[] pos) {
         final RolapEvaluator cellEvaluator = (RolapEvaluator) evaluator.push();
@@ -989,12 +622,12 @@ class RolapResult extends ResultBase {
         return cellEvaluator;
     }
 
-    /** 
+    /**
      * Called only by RolapCell. Use this when creating an Evaluator
      * (using method getCellEvaluator) is not required.
-     * 
-     * @param pos 
-     * @return 
+     *
+     * @param pos
+     * @return
      */
     Member[] getCellMembers(int[] pos) {
         Member[] members = evaluator.getMembers().clone();
@@ -1043,9 +676,9 @@ class RolapResult extends ResultBase {
     /**
      * Add each top-level member of the axis' members to the membersList if
      * the top-level member is not the 'all' member (or null or a measure).
-     * 
-     * @param axisMembers 
-     * @param axis 
+     *
+     * @param axisMembers
+     * @param axis
      */
     private void merge(List<Member> axisMembers, Axis axis) {
         for (Position position : axis.getPositions()) {
@@ -1078,13 +711,13 @@ class RolapResult extends ResultBase {
         axisMembers.add(topParent);
     }
 
-    /** 
+    /**
      * Remove each member from the axisMembers list when the member's
      * hierarchy is the same a one of the slicerMembers' hierarchy.
      * (If it is in the slicer, then remove it from the axisMembers list).
-     * 
-     * @param axisMembers 
-     * @param slicerMembers 
+     *
+     * @param axisMembers
+     * @param slicerMembers
      */
     private void purge(List<Member> axisMembers, List<Member> slicerMembers) {
         // if a member is in slicerMembers, then remove the "corresponding"
@@ -1145,12 +778,12 @@ class RolapResult extends ResultBase {
                     slicerEvaluator.root;
                 final Calc calc = root.getCompiled(exp, false);
                 Object o = result.evaluateExp(calc, slicerEvaluator.push());
-                List list = null;
+                List list;
                 if (o instanceof List) {
                     list = (List) o;
                 } else {
                     // Iterable
-                    
+
                     // TODO:
                     // Here, we have to convert the Iterable into a List,
                     // materialize it, because in the class
@@ -1219,6 +852,376 @@ class RolapResult extends ResultBase {
                 slot.getDefaultValueCalc(), slicerEvaluator.push());
             slot.setCachedDefaultValue(value);
             return value;
+        }
+    }
+
+    /**
+     * Every Cell has a value, a format string (or CellFormatter) and a
+     * formatted value string.
+     * There are a wide range of possible values (pick a Double, any
+     * Double - its a value). Because there are lots of possible values,
+     * there are also lots of possible formatted value strings. On the
+     * other hand, there are only a very small number of format strings
+     * and CellFormatter's. These formatters are to be cached
+     * in a synchronized HashMaps in order to limit how many copies
+     * need to be kept around.
+     * <p>
+     * There are two implementations of the ValueFormatter interface:
+     * the CellFormatterValueFormatter which formats using a
+     * user registered CellFormatter and the FormatValueFormatter
+     * which takes the Locale object.
+     */
+    interface ValueFormatter {
+        String format(Object value, String formatString);
+    }
+
+    /**
+     * A CellFormatterValueFormatter takes a user-defined CellFormatter
+     * as a parameter and uses the CellFormatter to format Object values.
+     */
+    class CellFormatterValueFormatter implements ValueFormatter{
+        final CellFormatter cf;
+        CellFormatterValueFormatter(CellFormatter cf) {
+            this.cf = cf;
+        }
+        public String format(Object value, String formatString) {
+            return cf.formatCell(value);
+        }
+    }
+    /**
+     * A FormatValueFormatter takes a Locale
+     * as a parameter and use it to get the mondrian.util.Format
+     * Object to be used in formatting an Object value with a
+     * given format string.
+     */
+    class FormatValueFormatter implements ValueFormatter{
+        final Locale locale;
+        FormatValueFormatter(Locale locale) {
+            this.locale = locale;
+        }
+        public String format(Object value, String formatString) {
+            if (value == Util.nullValue) {
+                Format format = getFormat(formatString);
+                return format.format(null);
+            } else if (value instanceof Throwable) {
+                return "#ERR: " + value.toString();
+            } else if (value instanceof String) {
+                return (String) value;
+            } else {
+                Format format = getFormat(formatString);
+                return format.format(value);
+            }
+        }
+        private Format getFormat(String formatString) {
+            return Format.get(formatString, locale);
+        }
+    }
+
+    /*
+     * Generate a long ordinal based upon the values of the integers
+     * stored in the cell position array. With this mechanism, the
+     * Cell information can be stored using a long key (rather than
+     * the array integer of positions) thus saving memory. The trick
+     * is to use a 'large number' per axis in order to convert from
+     * position array to long key where the 'large number' is greater
+     * than the number of members in the axis.
+     * The largest 'long' is java.lang.Long.MAX_VALUE which is
+     * 9,223,372,036,854,776,000. The product of the maximum number
+     * of members per axis must be less than this maximum 'long'
+     * value (otherwise one gets hashing collisions).
+     * <p>
+     * For a single axis, the maximum number of members is equal to
+     * the max 'long' number, 9,223,372,036,854,776,000.
+     * <p>
+     * For two axes, the maximum number of members is the square root
+     * of the max 'long' number, 9,223,372,036,854,776,000, which is
+     * slightly bigger than 2,147,483,647 (which is the maximum integer).
+     * <p>
+     * For three axes, the maximum number of members per axis is the
+     * cube root of the max 'long' which is about 2,000,000
+     * <p>
+     * For four axes the forth root is about 50,000.
+     * <p>
+     * For five or more axes, the maximum number of members per axis
+     * based upon the root of the maximum 'long' number,
+     * start getting too small to guarantee that it will be
+     * smaller than the number of members on a given axis and so
+     * we must resort to the Map-base Cell container.
+     */
+
+
+
+    /**
+     * Synchronized Map from Locale to ValueFormatter. It is expected that
+     * there will be only a small number of Locale's.
+     * Should these be a WeakHashMap?
+     */
+    protected static final Map<Locale, ValueFormatter>
+            formatValueFormatters =
+            Collections.synchronizedMap(new HashMap<Locale, ValueFormatter>());
+
+    /**
+     * Synchronized Map from CellFormatter to ValueFormatter.
+     * CellFormatter's are defined in schema files. It is expected
+     * the there will only be a small number of CellFormatter's.
+     * Should these be a WeakHashMap?
+     */
+    protected static final Map<CellFormatter, ValueFormatter>
+            cellFormatters =
+            Collections.synchronizedMap(new HashMap<CellFormatter, ValueFormatter>());
+
+    /**
+     * CellInfo's contain all of the information that a Cell requires.
+     * They are placed in the cellInfos Map during evaluation and
+     * serve as a constructor parameter for RolapCell. During the
+     * evaluation stage they are mutable but after evaluation has
+     * finished they are not changed.
+     */
+    static class CellInfo {
+        Object value;
+        String formatString;
+        ValueFormatter valueFormatter;
+        long key;
+
+        CellInfo(long key) {
+            this(key, null, null, null);
+        }
+        CellInfo(long key, Object value,
+                 String formatString,
+                 ValueFormatter valueFormatter) {
+            this.key = key;
+            this.value = value;
+            this.formatString = formatString;
+            this.valueFormatter = valueFormatter;
+        }
+        public int hashCode() {
+            return (int)(key ^ (key >>> 32));
+        }
+        public boolean equals(Object o) {
+            if (o instanceof CellInfo) {
+                CellInfo that = (CellInfo) o;
+                return that.key == this.key;
+            } else {
+                return false;
+            }
+        }
+        String getFormatValue() {
+            return valueFormatter.format(value, formatString);
+        }
+    }
+
+    /**
+     * The CellInfoContainer defines the API for the creation and
+     * lookup of CellInfo objects. There are two implementations,
+     * one that uses a Map for storage and the other uses an ObjectPool.
+     */
+    interface CellInfoContainer {
+        /**
+         * Return the number of CellInfo objects in this container.
+         * @return  the number of CellInfo objects.
+         */
+        int size();
+        /**
+         * Reduce the size of the internal data structures need to
+         * support the current entries. This should be called after
+         * all CellInfo objects have been added to container.
+         */
+        void trimToSize();
+        /**
+         * Remove all CellInfo objects from container. Does not
+         * change the size of the internal data structures.
+         */
+        void clear();
+        /**
+         * Create a new CellInfo object, add it to the container
+         * a location <code>pos</code> and return it.
+         *
+         * @param pos where to store CellInfo object.
+         * @return the newly create CellInfo object.
+         */
+        CellInfo create(int[] pos);
+        /**
+         * Get the CellInfo object at the location <code>pos</code>.
+         *
+         * @param pos where to find the CellInfo object.
+         * @return the CellInfo found or null.
+         */
+        CellInfo lookup(int[] pos);
+    }
+
+    /**
+     * The CellInfoMap uses a Map to store CellInfo Objects.
+     * Note that the CellKey point instance variable is the same
+     * Object (NOT a copy) that is used and modified during
+     * the recursive calls to executeStripe - the
+     * <code>create</code> method relies on this fact.
+     */
+    static class CellInfoMap implements CellInfoContainer {
+        private final Map<CellKey, CellInfo> cellInfoMap;
+        private final CellKey point;
+        CellInfoMap(CellKey point) {
+            this.point = point;
+            this.cellInfoMap = new HashMap<CellKey, CellInfo>();
+        }
+        public int size() {
+            return this.cellInfoMap.size();
+        }
+        public void trimToSize() {
+            // empty
+        }
+        public void clear() {
+            this.cellInfoMap.clear();
+        }
+        public CellInfo create(int[] pos) {
+            CellKey key = this.point.copy();
+            CellInfo ci = this.cellInfoMap.get(key);
+            if (ci == null) {
+                ci = new CellInfo(0);
+                this.cellInfoMap.put(key, ci);
+            }
+            return ci;
+        }
+        public CellInfo lookup(int[] pos) {
+            CellKey key = this.point.make(pos);
+            return this.cellInfoMap.get(key);
+        }
+    }
+
+    /**
+     * The CellInfoPool uses an ObjectPool to store CellInfo Objects.
+     * There is an inner interface (<code>CellKeyMaker</code>) and
+     * implementations for 0 through 4 axes that convert the Cell
+     * position integer array into a long.
+     * <p>
+     * It should be noted that there is an alternate approach.
+     * As the <code>executeStripe</code>
+     * method is recursively called, at each call it is known which
+     * axis is being iterated across and it is known whether or
+     * not the Position object for that axis is a List or just
+     * an Iterable. It it is a List, then one knows the real
+     * size of the axis. If it is an Iterable, then one has to
+     * use one of the MAX_AXIS_SIZE values. Given that this information
+     * is available when one recursives down to the next
+     * <code>executeStripe</code> call, the Cell ordinal, the position
+     * integer array could converted to an <code>long</code>, could
+     * be generated on the call stack!! Just a thought for the future.
+     */
+    static class CellInfoPool implements CellInfoContainer {
+        /**
+         * The maximum number of Members, 2,147,483,647, that can be any given
+         * Axis when the number of Axes is 2.
+         */
+        protected static final long MAX_AXIS_SIZE_2 = 2147483647;
+        /**
+         * The maximum number of Members, 2,000,000, that can be any given
+         * Axis when the number of Axes is 3.
+         */
+        protected static final long MAX_AXIS_SIZE_3 = 2000000;
+        /**
+         * The maximum number of Members, 50,000, that can be any given
+         * Axis when the number of Axes is 4.
+         */
+        protected static final long MAX_AXIS_SIZE_4 = 50000;
+
+        /**
+         * Implementations of CellKeyMaker convert the Cell
+         * position integer array to a <code>long</code>.
+         */
+        interface CellKeyMaker {
+            long generate(int[] pos);
+        }
+        /**
+         * For axis of size 0.
+         */
+        static class Zero implements CellKeyMaker {
+            public long generate(int[] pos) {
+                return 0;
+            }
+        }
+        /**
+         * For axis of size 1.
+         */
+        static class One implements CellKeyMaker {
+            public long generate(int[] pos) {
+                return pos[0];
+            }
+        }
+        /**
+         * For axis of size 2.
+         */
+        static class Two implements CellKeyMaker {
+            public long generate(int[] pos) {
+                long l = pos[0];
+                l += (MAX_AXIS_SIZE_2 * (long) pos[1]);
+                return l;
+            }
+        }
+        /**
+         * For axis of size 3.
+         */
+        static class Three implements CellKeyMaker {
+            public long generate(int[] pos) {
+                long l = pos[0];
+                l += (MAX_AXIS_SIZE_3 * (long) pos[1]);
+                l += (MAX_AXIS_SIZE_3 * MAX_AXIS_SIZE_3 * (long) pos[2]);
+                return l;
+            }
+        }
+        /**
+         * For axis of size 4.
+         */
+        static class Four implements CellKeyMaker {
+            public long generate(int[] pos) {
+                long l = pos[0];
+                l += (MAX_AXIS_SIZE_4 * (long) pos[1]);
+                l += (MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * (long) pos[2]);
+                l += (MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * (long) pos[3]);
+                return l;
+            }
+        }
+
+        private final ObjectPool<CellInfo> cellInfoPool;
+        private final CellKeyMaker cellKeyMaker;
+
+        CellInfoPool(int axisLength) {
+            this.cellInfoPool = new ObjectPool<CellInfo>();
+            switch (axisLength) {
+            case 0:
+                this.cellKeyMaker = new Zero();
+                break;
+            case 1:
+                this.cellKeyMaker = new One();
+                break;
+            case 2:
+                this.cellKeyMaker = new Two();
+                break;
+            case 3:
+                this.cellKeyMaker = new Three();
+                break;
+            case 4:
+                this.cellKeyMaker = new Four();
+                break;
+            default:
+                throw new RuntimeException(
+                    "Creating CellInfoPool with axisLength=" +axisLength);
+            }
+        }
+        public int size() {
+            return this.cellInfoPool.size();
+        }
+        public void trimToSize() {
+            this.cellInfoPool.trimToSize();
+        }
+        public void clear() {
+            this.cellInfoPool.clear();
+        }
+        public CellInfo create(int[] pos) {
+            long key = this.cellKeyMaker.generate(pos);
+            return this.cellInfoPool.add(new CellInfo(key));
+        }
+        public CellInfo lookup(int[] pos) {
+            long key = this.cellKeyMaker.generate(pos);
+            return this.cellInfoPool.add(new CellInfo(key));
         }
     }
 }

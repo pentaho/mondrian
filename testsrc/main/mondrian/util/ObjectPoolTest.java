@@ -50,7 +50,7 @@ public class ObjectPoolTest extends TestCase {
             return value.toString();
         }
     }
-    
+
     public void testString() throws Exception {
         // for reasons unknown this fails with java4
         if (Util.PreJdk15) {
@@ -69,7 +69,7 @@ public class ObjectPoolTest extends TestCase {
         for (int i = 0; i < nos; i++) {
             String s = strings.add(ss2[i]);
             assertEquals("string not equal: " +s, s, ss2[i]);
-	    assertFalse("same object", (s == ss2[i]));
+            assertFalse("same object", (s == ss2[i]));
         }
 
         strings.clear();
@@ -98,7 +98,7 @@ public class ObjectPoolTest extends TestCase {
             op.add(kv1[i]);
         }
         assertEquals("size not equal", nos, op.size());
-        
+
         // second array of KeyValues, same as the first but different objects
         KeyValue[] kv2 = genKeyValueArray(nos);
         for (int i = 0; i < nos; i++) {

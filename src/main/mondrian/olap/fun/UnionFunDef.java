@@ -61,7 +61,7 @@ class UnionFunDef extends FunDefBase {
         };
     }
 
-    List union(List list0, List list1, final boolean all) {
+    <T> List<T> union(List<T> list0, List<T> list1, final boolean all) {
         assert list0 != null;
         assert list1 != null;
         if (all) {
@@ -71,13 +71,13 @@ class UnionFunDef extends FunDefBase {
             if (list1.isEmpty()) {
                 return list0;
             }
-            List result = new ArrayList();
+            List<T> result = new ArrayList<T>();
             result.addAll(list0);
             result.addAll(list1);
             return result;
         } else {
             Set added = new HashSet();
-            List result = new ArrayList();
+            List<T> result = new ArrayList<T>();
             FunUtil.addUnique(result, list0, added);
             FunUtil.addUnique(result, list1, added);
             return result;

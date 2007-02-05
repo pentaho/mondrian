@@ -51,7 +51,7 @@ public class FunUtil extends Util {
      * has returned the MDX EMPTY value. See {@link DoubleCalc}.
      */
     public static final double DoubleEmpty = -0.000000012345;
-    
+
     /**
      * Special value which indicates that an <code>int</code> computation
      * has returned the MDX null value. See {@link mondrian.calc.IntegerCalc}.
@@ -91,11 +91,11 @@ public class FunUtil extends Util {
 
     public static final void checkIterListResultStyles(Calc calc) {
         switch (calc.getResultStyle()) {
-        case ITERABLE :
-        case LIST :
-        case MUTABLE_LIST :
+        case ITERABLE:
+        case LIST:
+        case MUTABLE_LIST:
             break;
-        default :
+        default:
             throw ResultStyleException.generateBadType(
                 new ResultStyle[] {
                     ResultStyle.ITERABLE,
@@ -105,12 +105,13 @@ public class FunUtil extends Util {
                 calc.getResultStyle());
         }
     }
+
     public static final void checkListResultStyles(Calc calc) {
         switch (calc.getResultStyle()) {
-        case LIST :
-        case MUTABLE_LIST :
+        case LIST:
+        case MUTABLE_LIST:
             break;
-        default :
+        default:
             throw ResultStyleException.generateBadType(
                 new ResultStyle[] {
                     ResultStyle.LIST,
@@ -386,7 +387,7 @@ public class FunUtil extends Util {
             if (result == null) {
                 result = Util.nullValue;
             }
-            mapMemberToValue.put(new Member.ArrayEquals(tuples), result);
+            mapMemberToValue.put(new ArrayHolder<Member>(tuples), result);
         }
         return mapMemberToValue;
     }
@@ -641,16 +642,16 @@ public class FunUtil extends Util {
             Object o = (isMember)
                     ? mapMemberToValue.get(members.get(i))
                     : mapMemberToValue.get(
-                        new Member.ArrayEquals(members.get(i)));
+                        new ArrayHolder<Member>((Member []) members.get(i)));
             if (o instanceof Number) {
                 total += ((Number) o).doubleValue();
             }
         }
         for (int i = 0; i < memberCount; i++) {
             Object mo = members.get(i);
-            Object o = (isMember)
-                    ? mapMemberToValue.get(mo)
-                    : mapMemberToValue.get(new Member.ArrayEquals(mo));
+            Object o = (isMember) ?
+                mapMemberToValue.get(mo) :
+                mapMemberToValue.get(new ArrayHolder<Member>((Member []) mo));
             if (o instanceof Number) {
                 double d = ((Number) o).doubleValue();
                 if (isMember) {
@@ -659,7 +660,7 @@ public class FunUtil extends Util {
                         d / total * (double) 100);
                 } else {
                     mapMemberToValue.put(
-                        new Member.ArrayEquals(mo),
+                        new ArrayHolder<Member>((Member []) mo),
                         d / total * (double) 100);
                 }
             }
@@ -2140,44 +2141,6 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         public int compare(Object o1, Object o2) {
             int c = comparator.compare(o1, o2);
             return -c;
-        }
-    }
-
-    /**
-     * Holds an array, so that {@link #equals} and {@link #hashCode} work.
-     */
-    protected static class ArrayHolder {
-        private Object[] a;
-
-        ArrayHolder(Object[] a) {
-            this.a = a;
-        }
-
-        public int hashCode() {
-            int h = 0;
-            for (int i = 0; i < a.length; i++) {
-                Object o = a[i];
-                int rotated = (h << 4) | ((h >> 28) & 0xf);
-                h = rotated ^ o.hashCode();
-            }
-            return h;
-        }
-
-        public boolean equals(Object o) {
-            return o instanceof ArrayHolder &&
-                    equals(a, ((ArrayHolder) o).a);
-        }
-
-        private static boolean equals(Object[] a1, Object[] a2) {
-            if (a1.length != a2.length) {
-                return false;
-            }
-            for (int i = 0; i < a1.length; i++) {
-                if (!a1[i].equals(a2[i])) {
-                    return false;
-                }
-            }
-            return true;
         }
     }
 
