@@ -479,9 +479,10 @@ public class XmlaBasicTest extends FoodMartTestCase {
 
         // Test 'schemadata' first, so that if it fails, we will be able to
         // amend the ref file with the fullest XML response.
+        final String ns = "cxmla";
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
-                responseDoc, new String[][] {{"content", "schemadata"}} )
+                responseDoc, new String[][] {{"content", "schemadata"}}, ns)
             : null;
         doTests(requestText, props, null, connectString, catalogNameUrls,
                 expectedDoc, CONTENT_SCHEMADATA);
@@ -492,7 +493,7 @@ public class XmlaBasicTest extends FoodMartTestCase {
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
-                responseDoc, new String[][] {{"content", "none"}} )
+                responseDoc, new String[][] {{"content", "none"}}, ns)
             : null;
 
         doTests(requestText, props, null, connectString, catalogNameUrls,
@@ -500,14 +501,14 @@ public class XmlaBasicTest extends FoodMartTestCase {
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
-                responseDoc, new String[][] {{"content", "data"}} )
+                responseDoc, new String[][] {{"content", "data"}}, ns)
             : null;
         doTests(requestText, props, null, connectString, catalogNameUrls,
                 expectedDoc, CONTENT_DATA);
 
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
-                responseDoc, new String[][] {{"content", "schema"}} )
+                responseDoc, new String[][] {{"content", "schema"}}, ns)
             : null;
         doTests(requestText, props, null, connectString, catalogNameUrls,
                 expectedDoc, CONTENT_SCHEMA);

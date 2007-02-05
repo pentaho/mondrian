@@ -114,14 +114,14 @@ public abstract class XmlaServlet extends HttpServlet
     }
 
     /** 
-     * Get and create if needed the XmlaHandler. 
+     * Gets (creating if needed) the XmlaHandler.
      * 
-     * @return 
+     * @return XMLA handler
      */
     protected XmlaHandler getXmlaHandler() {
         if (this.xmlaHandler == null) {
             this.xmlaHandler = 
-                new XmlaHandler(this.dataSources, this.catalogLocator);
+                new XmlaHandler(this.dataSources, this.catalogLocator, "cxmla");
         }
         return this.xmlaHandler;
     }

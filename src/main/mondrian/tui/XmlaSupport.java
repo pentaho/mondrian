@@ -15,7 +15,6 @@ import mondrian.spi.impl.CatalogLocatorImpl;
 import mondrian.xmla.DataSourcesConfig;
 import mondrian.olap.Util;
 import mondrian.xmla.XmlaConstants;
-import mondrian.xmla.XmlaUtil;
 import mondrian.xmla.XmlaHandler;
 import mondrian.xmla.XmlaRequest;
 import mondrian.xmla.XmlaResponse;
@@ -32,20 +31,17 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-import java.io.InputStream;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.StringReader;
 import java.io.BufferedReader;
-import java.io.StringBufferInputStream;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -93,7 +89,8 @@ public class XmlaSupport {
      * data of the body or none of the body
      *
      */
-    public static String XMLA_TRANSFORM =
+    public static String getXmlaTransform(String xmlaPrefix) {
+        return
         "<?xml version='1.0'?>" +
         "<xsl:stylesheet " +
         "  xmlns:xsl='http://www.w3.org/1999/XSL/Transform' " +
@@ -101,7 +98,7 @@ public class XmlaSupport {
         "  xmlns:xsd='http://www.w3.org/2001/XMLSchema'" +
         "  xmlns:ROW='urn:schemas-microsoft-com:xml-analysis:rowset'" +
         "  xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/' " +
-        "  xmlns:xmla='urn:schemas-microsoft-com:xml-analysis'" +
+        "  xmlns:" + xmlaPrefix + "='urn:schemas-microsoft-com:xml-analysis'" +
         "  version='1.0'" +
         ">" +
         "<xsl:output method='xml' " +
@@ -154,7 +151,7 @@ public class XmlaSupport {
         "  </xsl:choose> " +
         "</xsl:template> " +
         "<!-- copy 'DiscoverResponse' unless soap==none --> " +
-        "<xsl:template match='xmla:DiscoverResponse'> " +
+        "<xsl:template match='" + xmlaPrefix + ":DiscoverResponse'> " +
         "  <xsl:choose> " +
         "    <xsl:when test=\"$soap='none'\"> " +
         "      <xsl:apply-templates/> " +
@@ -167,7 +164,7 @@ public class XmlaSupport {
         "  </xsl:choose> " +
         "</xsl:template> " +
         "<!-- copy 'return' unless soap==none --> " +
-        "<xsl:template match='xmla:return'> " +
+        "<xsl:template match='" + xmlaPrefix + ":return'> " +
         "  <xsl:choose> " +
         "    <xsl:when test=\"$soap='none'\"> " +
         "      <xsl:apply-templates/> " +
@@ -231,7 +228,7 @@ public class XmlaSupport {
         "  </xsl:copy> " +
         "</xsl:template> " +
         "</xsl:stylesheet>";
-
+    }
 
     /**
      * This is the prefix used in xpath and transforms for the xmla rowset
@@ -398,7 +395,7 @@ public class XmlaSupport {
         return XmlaSupport.soapBodyXPath;
     }
 
-    public static String getSoapXmlaRootXPath() {
+    public static String getSoapXmlaRootXPath(String xmlaPrefix) {
         if (XmlaSupport.soapXmlaRootXPath == null) {
             StringBuilder buf = new StringBuilder(20);
             buf.append('/');
@@ -407,8 +404,8 @@ public class XmlaSupport {
             buf.append('/');
             buf.append(SOAP_PREFIX);
             buf.append(":Body");
-            buf.append("/xmla:DiscoverResponse");
-            buf.append("/xmla:return");
+            buf.append("/").append(xmlaPrefix).append(":DiscoverResponse");
+            buf.append("/").append(xmlaPrefix).append(":return");
             buf.append('/');
             buf.append(ROW_SET_PREFIX);
             buf.append(":root");
@@ -422,11 +419,12 @@ public class XmlaSupport {
         }
         return XmlaSupport.soapXmlaRootXPath;
     }
-    public static String getXmlaRootXPath() {
+
+    public static String getXmlaRootXPath(String xmlaPrefix) {
         if (XmlaSupport.xmlaRootXPath == null) {
             StringBuilder buf = new StringBuilder(20);
-            buf.append("/xmla:DiscoverResponse");
-            buf.append("/xmla:return");
+            buf.append("/").append(xmlaPrefix).append(":DiscoverResponse");
+            buf.append("/").append(xmlaPrefix).append(":return");
             buf.append('/');
             buf.append(ROW_SET_PREFIX);
             buf.append(":root");
@@ -448,15 +446,17 @@ public class XmlaSupport {
         Document doc = XmlUtil.parse(bytes);
         return extractNodesFromSoapXmla(doc);
     }
+
     public static Node[] extractNodesFromSoapXmla(Document doc)
             throws SAXException, IOException {
 
-        String xpath = getSoapXmlaRootXPath();
+        final String xmlaPrefix = "xmla";
+        String xpath = getSoapXmlaRootXPath(xmlaPrefix);
 
         // Note that this is SOAP 1.1 version uri
         String[][] nsArray = new String[][] {
              { SOAP_PREFIX, XmlaConstants.NS_SOAP_ENV_1_1 },
-             { "xmla", XmlaConstants.NS_XMLA },
+             { xmlaPrefix, XmlaConstants.NS_XMLA },
              { ROW_SET_PREFIX, XmlaConstants.NS_XMLA_ROWSET }
         };
 
@@ -469,13 +469,15 @@ public class XmlaSupport {
         Document doc = XmlUtil.parse(bytes);
         return extractNodesFromXmla(doc);
     }
+
     public static Node[] extractNodesFromXmla(Document doc)
             throws SAXException, IOException {
 
-        String xpath = getXmlaRootXPath();
+        final String xmlaPrefix = "xmla";
+        String xpath = getXmlaRootXPath(xmlaPrefix);
 
         String[][] nsArray = new String[][] {
-             { "xmla", XmlaConstants.NS_XMLA },
+             {xmlaPrefix, XmlaConstants.NS_XMLA },
              { ROW_SET_PREFIX, XmlaConstants.NS_XMLA_ROWSET }
         };
 
@@ -565,7 +567,8 @@ public class XmlaSupport {
      * Process the given input file as a SOAP-XMLA request.
      *
      */
-    public static byte[] processSoapXmla(File file,
+    public static byte[] processSoapXmla(
+            File file,
             String connectString,
             String[][] catalogNameUrls,
             String cbClassName)
@@ -574,7 +577,9 @@ public class XmlaSupport {
         String requestText = XmlaSupport.readFile(file);
         return processSoapXmla(requestText, connectString, catalogNameUrls, cbClassName);
     }
-    public static byte[] processSoapXmla(Document doc,
+
+    public static byte[] processSoapXmla(
+            Document doc,
             String connectString,
             String[][] catalogNameUrls,
             String cbClassName)
@@ -583,7 +588,9 @@ public class XmlaSupport {
         String requestText = XmlUtil.toString(doc, false);
         return processSoapXmla(requestText, connectString, catalogNameUrls, cbClassName);
     }
-    public static byte[] processSoapXmla(String requestText,
+
+    public static byte[] processSoapXmla(
+            String requestText,
             String connectString,
             String[][] catalogNameUrls,
             String cbClassName)
@@ -715,12 +722,12 @@ public class XmlaSupport {
     public static boolean validateSchemaSoapXmla(byte[] bytes)
             throws SAXException, IOException,
                 ParserConfigurationException,
-                TransformerException,
-                TransformerConfigurationException {
+                TransformerException {
 
-        return validateEmbeddedSchema(bytes,
-            XmlUtil.SOAP_XMLA_XDS2XS,
-            XmlUtil.SOAP_XMLA_XDS2XD);
+        return validateEmbeddedSchema(
+            bytes,
+            XmlUtil.getSoapXmlaXds2xs("xmla"),
+            XmlUtil.getSoapXmlaXds2xd("xmla"));
     }
 
 
@@ -764,7 +771,7 @@ public class XmlaSupport {
         CatalogLocator cl = getCatalogLocator();
         DataSourcesConfig.DataSources dataSources =
             getDataSources(connectString, catalogNameUrls);
-        XmlaHandler handler = new XmlaHandler(dataSources, cl);
+        XmlaHandler handler = new XmlaHandler(dataSources, cl, "xmla");
         XmlaRequest request = new DefaultXmlaRequest(requestElem, null);
 
         // make response
@@ -790,8 +797,8 @@ public class XmlaSupport {
                 TransformerConfigurationException {
 
         return validateEmbeddedSchema(bytes,
-            XmlUtil.XMLA_XDS2XS,
-            XmlUtil.XMLA_XDS2XD);
+            XmlUtil.getXmlaXds2xs("xmla"),
+            XmlUtil.getXmlaXds2xd("xmla"));
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -972,15 +979,16 @@ public class XmlaSupport {
 
         return true;
     }
-    public static Document transformSoapXmla(
-            Document doc, String[][] namevalueParameters)
-            throws SAXException, IOException,
-                ParserConfigurationException,
-                TransformerException,
-                TransformerConfigurationException {
 
-        Node node = XmlUtil.transform(doc,
-            new BufferedReader(new StringReader(XMLA_TRANSFORM)),
+    public static Document transformSoapXmla(
+        Document doc, String[][] namevalueParameters, String ns)
+        throws SAXException, IOException,
+        ParserConfigurationException,
+        TransformerException
+    {
+        Node node = XmlUtil.transform(
+            doc,
+            new BufferedReader(new StringReader(getXmlaTransform(ns))),
             namevalueParameters);
 
         return (node instanceof Document) ? (Document) node : null;

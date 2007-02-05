@@ -65,7 +65,8 @@ public class XmlUtil {
      * This is the xslt that can extract the "data" part of a SOAP
      * XMLA response.
      */
-    public static final String SOAP_XMLA_XDS2XD =
+    public static final String getSoapXmlaXds2xd(String xmlaPrefix) {
+        return
         "<?xml version='1.0'?>" + LINE_SEP +
         "<xsl:stylesheet " + LINE_SEP +
             "xmlns:xsl='http://www.w3.org/1999/XSL/Transform' " + LINE_SEP +
@@ -97,11 +98,11 @@ public class XmlUtil {
                 "<xsl:apply-templates/> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
             "<!-- consume 'DiscoverResponse' and apply --> " + LINE_SEP +
-            "<xsl:template match='xmla:DiscoverResponse'> " + LINE_SEP +
+            "<xsl:template match='" + xmlaPrefix + ":DiscoverResponse'> " + LINE_SEP +
                 "<xsl:apply-templates/> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
             "<!-- consume 'return' and apply --> " + LINE_SEP +
-            "<xsl:template match='xmla:return'> " + LINE_SEP +
+            "<xsl:template match='" + xmlaPrefix + ":return'> " + LINE_SEP +
                 "<xsl:apply-templates/> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
             "<!-- consume 'xsd:schema' --> " + LINE_SEP +
@@ -114,12 +115,14 @@ public class XmlUtil {
                 "</xsl:copy> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
         "</xsl:stylesheet>";
+    }
 
     /**
      * This is the xslt that can extract the "schema" part of a SOAP
      * XMLA response.
      */
-    public static final String SOAP_XMLA_XDS2XS =
+    public static final String getSoapXmlaXds2xs(String xmlaPrefix) {
+        return
         "<?xml version='1.0'?> " + LINE_SEP +
         "<xsl:stylesheet  " + LINE_SEP +
             "xmlns:xsl='http://www.w3.org/1999/XSL/Transform'  " + LINE_SEP +
@@ -150,11 +153,11 @@ public class XmlUtil {
                 "<xsl:apply-templates/> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
             "<!-- consume 'DiscoverResponse' and apply --> " + LINE_SEP +
-            "<xsl:template match='xmla:DiscoverResponse'> " + LINE_SEP +
+            "<xsl:template match='" + xmlaPrefix + ":DiscoverResponse'> " + LINE_SEP +
                 "<xsl:apply-templates/> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
             "<!-- consume 'return' and apply --> " + LINE_SEP +
-            "<xsl:template match='xmla:return'> " + LINE_SEP +
+            "<xsl:template match='" + xmlaPrefix + ":return'> " + LINE_SEP +
                 "<xsl:apply-templates/> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
             "<!-- consume 'root' and apply --> " + LINE_SEP +
@@ -171,11 +174,14 @@ public class XmlUtil {
                 "</xsl:copy> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
         "</xsl:stylesheet>";
+    }
 
     /**
      * This is the xslt that can extract the "data" part of a XMLA response.
      */
-    public static final String XMLA_XDS2XD =
+    public static final String getXmlaXds2xd(String ns) {
+        String xmlaPrefix = (ns == null) ? "" : (ns + ":");
+        return
         "<?xml version='1.0'?>" + LINE_SEP +
         "<xsl:stylesheet " + LINE_SEP +
             "xmlns:xsl='http://www.w3.org/1999/XSL/Transform' " + LINE_SEP +
@@ -196,11 +202,11 @@ public class XmlUtil {
                 "<xsl:apply-templates/> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
             "<!-- consume 'DiscoverResponse' and apply --> " + LINE_SEP +
-            "<xsl:template match='xmla:DiscoverResponse'> " + LINE_SEP +
+            "<xsl:template match='" + xmlaPrefix + "DiscoverResponse'> " + LINE_SEP +
                 "<xsl:apply-templates/> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
             "<!-- consume 'return' and apply --> " + LINE_SEP +
-            "<xsl:template match='xmla:return'> " + LINE_SEP +
+            "<xsl:template match='" + xmlaPrefix + "return'> " + LINE_SEP +
                 "<xsl:apply-templates/> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
             "<!-- consume 'xsd:schema' --> " + LINE_SEP +
@@ -213,11 +219,14 @@ public class XmlUtil {
                 "</xsl:copy> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
         "</xsl:stylesheet>";
+    }
 
     /**
      * This is the xslt that can extract the "schema" part of a XMLA response.
      */
-    public static final String XMLA_XDS2XS =
+    public static final String getXmlaXds2xs(String ns) {
+        String xmlaPrefix = (ns == null) ? "" : (ns + ":");
+        return
         "<?xml version='1.0'?> " + LINE_SEP +
         "<xsl:stylesheet  " + LINE_SEP +
             "xmlns:xsl='http://www.w3.org/1999/XSL/Transform'  " + LINE_SEP +
@@ -237,11 +246,11 @@ public class XmlUtil {
                 "<xsl:apply-templates/> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
             "<!-- consume 'DiscoverResponse' and apply --> " + LINE_SEP +
-            "<xsl:template match='xmla:DiscoverResponse'> " + LINE_SEP +
+            "<xsl:template match='" + xmlaPrefix + "DiscoverResponse'> " + LINE_SEP +
                 "<xsl:apply-templates/> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
             "<!-- consume 'return' and apply --> " + LINE_SEP +
-            "<xsl:template match='xmla:return'> " + LINE_SEP +
+            "<xsl:template match='" + xmlaPrefix + "return'> " + LINE_SEP +
                 "<xsl:apply-templates/> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
             "<!-- consume 'root' and apply --> " + LINE_SEP +
@@ -258,6 +267,7 @@ public class XmlUtil {
                 "</xsl:copy> " + LINE_SEP +
             "</xsl:template> " + LINE_SEP +
         "</xsl:stylesheet>";
+    }
 
     /**
      * Error handler plus helper methods.
@@ -285,14 +295,13 @@ public class XmlUtil {
                 return "";
             }
             StringBuilder buf = new StringBuilder(512);
-            List<ErrorInfo> errors = saxEH.getErrors();
-            Iterator<ErrorInfo> it = errors.iterator();
-            for (ErrorInfo error : errors) {
+            for (ErrorInfo error : saxEH.getErrors()) {
                 buf.append(formatErrorInfo(error));
                 buf.append(LINE_SEP);
             }
             return buf.toString();
         }
+
         public static String formatErrorInfo(ErrorInfo ei) {
             StringBuilder buf = new StringBuilder(128);
             buf.append("[");
@@ -427,6 +436,7 @@ public class XmlUtil {
             System.out.println("errorHandler=" +errorHandler);
         }
     }
+
     private static void checkForParseError(final DOMParser parser) {
         checkForParseError(parser, null);
     }
@@ -526,9 +536,11 @@ public class XmlUtil {
         String docStr = buf.toString();
         return parseString(docStr);
     }
+
     public static String makeSoapPath() {
         return XmlUtil.makeSoapPath(SOAP_PREFIX);
     }
+
     // '/soapX:Envelope/soapX:Body/*'
     public static String makeSoapPath(String prefix) {
         StringBuilder buf = new StringBuilder(20);
@@ -551,20 +563,23 @@ public class XmlUtil {
     }
 
     public static String makeRootPathInSoapBody() {
-        return makeRootPathInSoapBody(XSD_PREFIX);
+        return makeRootPathInSoapBody("xmla", XSD_PREFIX);
     }
 
     // '/xmla:DiscoverResponse/xmla:return/ROW/root/*'
-    public static String makeRootPathInSoapBody(String prefix) {
+    public static String makeRootPathInSoapBody(
+        String xmlaPrefix,
+        String xsdPrefix)
+    {
         StringBuilder buf = new StringBuilder(20);
-        buf.append("/xmla:DiscoverResponse");
-        buf.append("/xmla:return");
+        buf.append("/").append(xmlaPrefix).append(":DiscoverResponse");
+        buf.append("/").append(xmlaPrefix).append(":return");
         buf.append("/ROW:root");
         buf.append('/');
         buf.append('*');
 /*
-        if (prefix != null) {
-            buf.append(prefix);
+        if (xsdPrefix != null) {
+            buf.append(xsdPrefix);
             buf.append(':');
         }
         buf.append("schema");

@@ -41,7 +41,8 @@ public class XmlaHandler implements XmlaConstants {
 
     private final Map<String, DataSourcesConfig.DataSource> dataSourcesMap;
     private final List<String> drillThruColumnNames = new ArrayList<String>();
-    private CatalogLocator catalogLocator = null;
+    private final CatalogLocator catalogLocator;
+    private final String prefix;
 
     private static final int ROW_SET     = 1;
     private static final int MD_DATA_SET = 2;
@@ -76,10 +77,22 @@ public class XmlaHandler implements XmlaConstants {
         public void unparse(SaxWriter res) throws SAXException;
     }
 
+    /**
+     * Creates an <code>XmlaHandler</code>.
+     *
+     * @param dataSources Data sources
+     * @param catalogLocator Catalog locator
+     * @param prefix XML Namespace. Typical value is "xmla", but a value of
+     *   "cxmla" works around an Internet Explorer 7 bug
+     */
     public XmlaHandler(
-            DataSourcesConfig.DataSources dataSources,
-            CatalogLocator catalogLocator) {
+        DataSourcesConfig.DataSources dataSources,
+        CatalogLocator catalogLocator,
+        String prefix)
+    {
         this.catalogLocator = catalogLocator;
+        assert prefix != null;
+        this.prefix = prefix;
         Map<String, DataSourcesConfig.DataSource> map =
             new HashMap<String, DataSourcesConfig.DataSource>();
         if (dataSources != null) {
@@ -211,9 +224,9 @@ public class XmlaHandler implements XmlaConstants {
         SaxWriter writer = response.getWriter();
         writer.startDocument();
 
-        writer.startElement("xmla:ExecuteResponse", new String[] {
-            "xmlns:xmla", NS_XMLA});
-        writer.startElement("xmla:return");
+        writer.startElement(prefix + ":ExecuteResponse", new String[] {
+            "xmlns:" + prefix, NS_XMLA});
+        writer.startElement(prefix + ":return");
         boolean rowset =
             request.isDrillThrough() ||
                 Enumeration.Format.Tabular.name().equals(
@@ -951,7 +964,7 @@ public class XmlaHandler implements XmlaConstants {
             // populate header
             headers = new String[columnCount];
             for (int i = 0; i < columnCount; i++) {
-                headers[i] = md.getColumnLabel(i + 1);
+                headers[i] = md.getColumnName(i + 1);
             }
 
             // skip to first rowset specified in request
@@ -1160,7 +1173,7 @@ public class XmlaHandler implements XmlaConstants {
             return "xsd:string";
         }
     }
-    protected static String deduceValueType(Evaluator evaluator, 
+    protected static String deduceValueType(Evaluator evaluator,
                                             final Object value) {
         String datatype = (String)
                 evaluator.getProperty(Property.DATATYPE.getName(), null);
@@ -1395,16 +1408,33 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement("Tuples");
             writer.startElement("Tuple");
 
-            final QueryAxis slicerAxis = result.getQuery().getSlicerAxis();
+            Map<String, Integer> memberMap = new HashMap<String, Integer>();
+            Member positionMember = null;
+            Axis slicerAxis = result.getSlicerAxis();
+            if (slicerAxis.getPositions() != null &&
+                slicerAxis.getPositions().size() > 0) {
+                final Position pos0 = slicerAxis.getPositions().get(0);
+                int i = 0;
+                for (Member member : pos0) {
+                    memberMap.put(member.getHierarchy().getName(), i++);
+                }
+            }
 
-            Iterator<Position> it = 
-                        result.getSlicerAxis().getPositions().iterator();
-            it.hasNext();
-            final List<Member> slicerMembers = it.next();
+            final QueryAxis slicerQueryAxis = result.getQuery().getSlicerAxis();
+            final List<Member> slicerMembers =
+                result.getSlicerAxis().getPositions().get(0);
             for (Hierarchy hierarchy : hierarchies) {
                 // Find which member is on the slicer. If it's not explicitly
                 // there, use the default member.
                 Member member = hierarchy.getDefaultMember();
+                final Integer indexPosition =
+                    memberMap.get(hierarchy.getName());
+                if (indexPosition != null) {
+                    positionMember =
+                        slicerAxis.getPositions().get(0).get(indexPosition);
+                } else {
+                    positionMember = null;
+                }
                 for (Member slicerMember : slicerMembers) {
                     if (slicerMember.getHierarchy().equals(hierarchy)) {
                         member = slicerMember;
@@ -1413,7 +1443,14 @@ public class XmlaHandler implements XmlaConstants {
                 }
 
                 if (member != null) {
-                    slicerAxis(writer, member, getProps(slicerAxis));
+                    if (positionMember != null) {
+                        writeMember(
+                            writer, positionMember, null,
+                            slicerAxis.getPositions().get(0), indexPosition,
+                            getProps(slicerQueryAxis));
+                    } else {
+                        slicerAxis(writer, member, getProps(slicerQueryAxis));
+                    }
                 } else {
                     LOGGER.warn(
                         "Can not create SlicerAxis: " +
@@ -1464,33 +1501,8 @@ public class XmlaHandler implements XmlaConstants {
                 writer.startElement("Tuple");
                 int k = 0;
                 for (Member member: position) {
-                    writer.startElement("Member", new String[] {
-                        "Hierarchy", member.getHierarchy().getName()});
-                    for (String prop1 : props) {
-                        Object value;
-                        final String prop = prop1;
-                        String propLong = longPropNames.get(prop);
-                        if (propLong == null) {
-                            propLong = prop;
-                        }
-                        if (propLong.equals(Property.DISPLAY_INFO.name)) {
-                            Integer childrenCard = (Integer) member
-                              .getPropertyValue(Property.CHILDREN_CARDINALITY.name);
-                            value = calculateDisplayInfo(prevPosition,
-                                        nextPosition,
-                                        member, k, childrenCard);
-                        } else if (propLong.equals(Property.DEPTH.name)) {
-                            value = member.getDepth();
-                        } else {
-                            value = member.getPropertyValue(propLong);
-                        }
-                        if (value != null) {
-                            writer.startElement(prop); // Properties
-                            writer.characters(value.toString());
-                            writer.endElement(); // Properties
-                        }
-                    }
-                    writer.endElement(); // Member
+                    writeMember(
+                        writer, member, prevPosition, nextPosition, k, props);
                 }
                 k++;
                 writer.endElement(); // Tuple
@@ -1500,6 +1512,43 @@ public class XmlaHandler implements XmlaConstants {
             }
             writer.endElement(); // Tuples
             writer.endElement(); // Axis
+        }
+
+        private void writeMember(
+            SaxWriter writer,
+            Member member,
+            Position prevPosition,
+            Position nextPosition,
+            int k,
+            String[] props)
+        {
+            writer.startElement("Member", new String[] {
+                "Hierarchy", member.getHierarchy().getName()});
+            for (String prop1 : props) {
+                Object value;
+                final String prop = prop1;
+                String propLong = longPropNames.get(prop);
+                if (propLong == null) {
+                    propLong = prop;
+                }
+                if (propLong.equals(Property.DISPLAY_INFO.name)) {
+                    Integer childrenCard = (Integer) member
+                      .getPropertyValue(Property.CHILDREN_CARDINALITY.name);
+                    value = calculateDisplayInfo(prevPosition,
+                                nextPosition,
+                                member, k, childrenCard);
+                } else if (propLong.equals(Property.DEPTH.name)) {
+                    value = member.getDepth();
+                } else {
+                    value = member.getPropertyValue(propLong);
+                }
+                if (value != null) {
+                    writer.startElement(prop); // Properties
+                    writer.characters(value.toString());
+                    writer.endElement(); // Properties
+                }
+            }
+            writer.endElement(); // Member
         }
 
         private void slicerAxis(
@@ -1569,7 +1618,7 @@ public class XmlaHandler implements XmlaConstants {
 
             writer.endElement(); // CellData
         }
-        private void recurse(SaxWriter writer, int[] pos, 
+        private void recurse(SaxWriter writer, int[] pos,
                 int axisOrdinal, Evaluator evaluator, int[] cellOrdinal) {
             if (axisOrdinal < 0) {
                 emitCell(writer, pos, evaluator, cellOrdinal[0]++);
@@ -1586,7 +1635,7 @@ public class XmlaHandler implements XmlaConstants {
                 }
             }
         }
-        private void emitCell(SaxWriter writer, int[] pos, 
+        private void emitCell(SaxWriter writer, int[] pos,
                             Evaluator evaluator, int ordinal) {
             Cell cell = result.getCell(pos);
             if (cell.isNull()) {
@@ -1979,9 +2028,9 @@ public class XmlaHandler implements XmlaConstants {
         SaxWriter writer = response.getWriter();
         writer.startDocument();
 
-        writer.startElement("xmla:DiscoverResponse", new String[] {
-            "xmlns:xmla", NS_XMLA});
-        writer.startElement("xmla:return");
+        writer.startElement(prefix + ":DiscoverResponse", new String[] {
+            "xmlns:" + prefix, NS_XMLA});
+        writer.startElement(prefix + ":return");
         writer.startElement("root", new String[] {
             "xmlns", NS_XMLA_ROWSET,
             "xmlns:xsi", NS_XSI,

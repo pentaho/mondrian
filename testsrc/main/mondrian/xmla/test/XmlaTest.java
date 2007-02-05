@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.w3c.dom.Element;
-import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 
@@ -96,7 +95,11 @@ public class XmlaTest extends TestCase {
     private static Element executeRequest(Element requestElem) {
         ByteArrayOutputStream resBuf = new ByteArrayOutputStream();
 
-        XmlaHandler handler = new XmlaHandler(context.dataSources(), XmlaTestContext.CATALOG_LOCATOR);
+        XmlaHandler handler =
+            new XmlaHandler(
+                context.dataSources(),
+                XmlaTestContext.CATALOG_LOCATOR,
+                "xmla");
         XmlaRequest request = new DefaultXmlaRequest(requestElem, null);
         XmlaResponse response = new DefaultXmlaResponse(resBuf, "UTF-8");
         handler.process(request, response);
