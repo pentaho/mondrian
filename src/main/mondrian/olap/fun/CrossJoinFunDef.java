@@ -3,37 +3,28 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004-2002 Kana Software, Inc.
-// Copyright (C) 2004-2006 Julian Hyde and others
+// Copyright (C) 2002-2002 Kana Software, Inc.
+// Copyright (C) 2003-2006 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.TupleType;
-import mondrian.olap.type.SetType;
-import mondrian.resource.MondrianResource;
 import mondrian.calc.*;
 import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.calc.impl.AbstractIterCalc;
 import mondrian.calc.impl.AbstractListCalc;
-import mondrian.mdx.*;
-import mondrian.util.UnsupportedList;
+import mondrian.mdx.MdxVisitorImpl;
+import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
+import mondrian.olap.type.SetType;
+import mondrian.olap.type.TupleType;
+import mondrian.olap.type.Type;
+import mondrian.resource.MondrianResource;
 import mondrian.util.Bug;
+import mondrian.util.UnsupportedList;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.ListIterator;
-import java.util.Iterator;
-import java.util.RandomAccess;
-import java.util.List;
-import java.util.Set;
-import java.util.NoSuchElementException;
-import java.util.ConcurrentModificationException;
+import java.util.*;
 
 /**
  * Definition of the <code>CrossJoin</code> MDX function.
@@ -96,16 +87,16 @@ class CrossJoinFunDef extends FunDefBase {
     public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
         ResultStyle[] rs = compiler.getAcceptableResultStyles();
         // What is the desired return type?
-        for (int i = 0; i < rs.length; i++) {
-            switch (rs[i]) {
-            case ITERABLE :
-            case ANY :
+        for (ResultStyle r : rs) {
+            switch (r) {
+            case ITERABLE:
+            case ANY:
                 // Consumer wants ITERABLE or ANY
-if (! Util.PreJdk15) {
+                if (!Util.PreJdk15) {
                     // jdk14 does not use Iterable
                     return compileCallIterable(call, compiler);
-}
-            case LIST :
+                }
+            case LIST:
                 // Consumer wants (immutable) LIST
                 return compileCallImmutableList(call, compiler);
             case MUTABLE_LIST:
@@ -130,8 +121,10 @@ if (! Util.PreJdk15) {
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
     
-    protected IterCalc compileCallIterable(final ResolvedFunCall call, 
-            ExpCompiler compiler) {
+    protected IterCalc compileCallIterable(
+        final ResolvedFunCall call,
+        ExpCompiler compiler)
+    {
         final Calc calc1 = toIter(compiler, call.getArg(0));
         final Calc calc2 = toIter(compiler, call.getArg(1));
         Calc[] calcs = new Calc[] {calc1, calc2};
@@ -341,9 +334,10 @@ if (! Util.PreJdk15) {
             return list;
         }
 
-
-        protected Iterable<Member[]> makeIterableIterable(final Iterable it1,
-                final Iterable it2) {
+        protected Iterable<Member[]> makeIterableIterable(
+            final Iterable it1,
+            final Iterable it2)
+        {
             // There is no knowledge about how large either it1 ore it2 
             // are or how many null members they might have, so all
             // one can do is iterate across them:
@@ -412,9 +406,11 @@ if (! Util.PreJdk15) {
 
             return iterable;
         }
-        protected Iterable<Member[]> makeIterableList(final Iterable it1,
-                final List l2) {
 
+        protected Iterable<Member[]> makeIterableList(
+            final Iterable it1,
+            final List l2)
+        {
             Iterable<Member[]> iterable = new Iterable<Member[]>() {
                 public Iterator<Member[]> iterator() {
                     return new Iterator<Member[]>() {
@@ -478,9 +474,11 @@ if (! Util.PreJdk15) {
             };
             return iterable;
         }
-        protected Iterable<Member[]> makeListIterable(final List l1,
-                final Iterable it2) {
 
+        protected Iterable<Member[]> makeListIterable(
+            final List l1,
+            final Iterable it2)
+        {
             Iterable<Member[]> iterable = new Iterable<Member[]>() {
                 public Iterator<Member[]> iterator() {
                     return new Iterator<Member[]>() {
@@ -545,9 +543,11 @@ if (! Util.PreJdk15) {
 
             return iterable;
         }
-        protected Iterable<Member[]> makeListList(final List l1,
-                final List l2) {
 
+        protected Iterable<Member[]> makeListList(
+            final List l1,
+            final List l2)
+        {
             Iterable<Member[]> iterable = new Iterable<Member[]>() {
                 public Iterator<Member[]> iterator() {
                     return new Iterator<Member[]>() {
@@ -625,6 +625,7 @@ if (! Util.PreJdk15) {
             return new Member[] {(Member) o1, (Member) o2};
         }
     }
+
     // Member Member[]
     static abstract class BaseMemberMemberArrayIterCalc 
                     extends BaseIterCalc {
@@ -640,6 +641,7 @@ if (! Util.PreJdk15) {
             return ma;
         }
     }
+
     // Member[] Member
     static abstract class BaseMemberArrayMemberIterCalc 
                     extends BaseIterCalc {
@@ -655,6 +657,7 @@ if (! Util.PreJdk15) {
             return ma;
         }
     }
+
     // Member[] Member[]
     static abstract class BaseMemberArrayMemberArrayIterCalc 
                     extends BaseIterCalc {
@@ -1881,33 +1884,6 @@ if (! Util.PreJdk15) {
     ///////////////////////////////////////////////////////////////////////////
 
 
-    public Calc compileCallOld(final ResolvedFunCall call, ExpCompiler compiler) {
-        final ListCalc listCalc1 = toList(compiler, call.getArg(0));
-        final ListCalc listCalc2 = toList(compiler, call.getArg(1));
-        return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
-            public List evaluateList(Evaluator evaluator) {
-                SchemaReader schemaReader = evaluator.getSchemaReader();
-                NativeEvaluator nativeEvaluator =
-                        schemaReader.getNativeSetEvaluator(
-                                call.getFunDef(), call.getArgs(), evaluator, this);
-                if (nativeEvaluator != null) {
-                    return (List) nativeEvaluator.execute(
-                                ResultStyle.LIST);
-                }
-
-                Evaluator oldEval = null;
-                assert (oldEval = evaluator.push()) != null;
-                final List list1 = listCalc1.evaluateList(evaluator);
-                assert oldEval.equals(evaluator) : "listCalc1 changed context";
-                if (list1.isEmpty()) {
-                    return Collections.EMPTY_LIST;
-                }
-                final List list2 = listCalc2.evaluateList(evaluator.push());
-                assert oldEval.equals(evaluator) : "listCalc2 changed context";
-                return crossJoin(list1, list2, evaluator, call);
-            }
-        };
-    }
 
     List crossJoin(
         List list1,

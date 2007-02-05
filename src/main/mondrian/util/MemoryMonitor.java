@@ -3,11 +3,9 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2006 Julian Hyde and others
+// Copyright (C) 2007-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
 */
 package mondrian.util;
 
@@ -37,53 +35,12 @@ package mondrian.util;
  * @version $Id$
  */
 public interface MemoryMonitor {
-    
-    /** 
-     * A <code>MemoryMonitor</code> client implements the <code>Listener</code>
-     * interface and registers with the <code>MemoryMonitor</code>.
-     * When the <code>MemoryMonitor</code> detects that free memory is 
-     * low, it notifies the client by calling the client's
-     * <code>memoryUsageNotification</code> method. It is important 
-     * that the client quickly return from this call, that the
-     * <code>memoryUsageNotification</code> method does not do a lot of
-     * work. It is best if it simply sets a flag. The flag should be
-     * polled by an application thread and when it detects that the
-     * flag was set, it should take immediate memory relinquishing operations.
-     * In the case of Mondrian, the present query is aborted.
-     */
-    interface Listener {
-        
-        /** 
-         * When the <code>MemoryMonitor</code> determines that the 
-         * <code>Listener</code>'s threshold is equal to or less than
-         * the current available memory (post garbage collection),
-         * then this method is called with the current memory usage,
-         * <code>usedMemory</code>, and the maximum memory (which
-         * is a constant per JVM invocation).
-         * <p>
-         * This method is called (in the case of Java5) by a system
-         * thread associated with the garbage collection activity.
-         * When this method is called, the client should quickly do what
-         * it needs to to communicate with an application thread and
-         * then return. Generally, quickly de-referencing some big objects
-         * and setting a flag is the most that should be done by
-         * implementations of this method. If the implementor chooses to
-         * de-reference some objects, then the application code must
-         * be written so that if will not throw a NullPointerException
-         * when such de-referenced objects are accessed. If a flag
-         * is set, then the application must be written to check the
-         * flag periodically.
-         * 
-         * @param usedMemory the current memory used.
-         * @param maxMemory the maximum available memory.
-         */
-        void memoryUsageNotification(long usedMemory, long maxMemory);
-    }
 
     /** 
-     * Add a <code>Listener</code> to the <code>MemoryMonitor</code> with
+     * Adds a <code>Listener</code> to the <code>MemoryMonitor</code> with
      * a given threshold percentage.
-     * If the threshold percentage value is below the system's current 
+     *
+     * <p>If the threshold percentage value is below the system's current
      * value, then the * <code>Listener</code> will have its notification 
      * callback called * while in this method - so a client should 
      * always check if its notification method was called immediately 
@@ -96,11 +53,12 @@ public interface MemoryMonitor {
     boolean addListener(Listener listener, int thresholdPercentage);
 
     /** 
-     * Add a <code>Listener</code> to the <code>MemoryMonitor</code> and
-     * use the default threshold percentage.
-     * If the default threshold percentage value is below the system's current 
-     * value, then the * <code>Listener</code> will have its notification 
-     * callback called * while in this method - so a client should 
+     * Adds a <code>Listener</code> to the <code>MemoryMonitor</code> and
+     * uses the default threshold percentage.
+     *
+     * <p>If the default threshold percentage value is below the system's
+     * current value, then the listener's notification
+     * callback will be called while in this method - so a client should
      * always check if its notification method was called immediately 
      * after calling this method.
      * 
@@ -110,8 +68,9 @@ public interface MemoryMonitor {
     boolean addListener(final Listener listener);
 
     /** 
-     * For the given <code>Listener</code> change its threshold percentage.
-     * If the new value is below the system's current value, then the
+     * Changes the threshold percentage of a given <code>Listener</code>.
+     *
+     * <p>If the new value is below the system's current value, then the
      * <code>Listener</code> will have its notification callback called
      * while in this method - so a client should always check if its
      * notification method was called immediately after calling this
@@ -136,7 +95,7 @@ public interface MemoryMonitor {
     void updateListenerThreshold(Listener listener, int percentage);
 
     /** 
-     * Remove a <code>Listener</code> from the <code>MemoryMonitor</code>.
+     * Removes a <code>Listener</code> from the <code>MemoryMonitor</code>.
      * Returns <code>true</code> if listener was removed and
      * <code>false</code> otherwise.
      * 
@@ -145,4 +104,47 @@ public interface MemoryMonitor {
      */
     boolean removeListener(Listener listener);
 
+    /**
+     * A <code>MemoryMonitor</code> client implements the <code>Listener</code>
+     * interface and registers with the <code>MemoryMonitor</code>.
+     * When the <code>MemoryMonitor</code> detects that free memory is
+     * low, it notifies the client by calling the client's
+     * <code>memoryUsageNotification</code> method. It is important
+     * that the client quickly return from this call, that the
+     * <code>memoryUsageNotification</code> method does not do a lot of
+     * work. It is best if it simply sets a flag. The flag should be
+     * polled by an application thread and when it detects that the
+     * flag was set, it should take immediate memory relinquishing operations.
+     * In the case of Mondrian, the present query is aborted.
+     */
+    interface Listener {
+
+        /**
+         * When the <code>MemoryMonitor</code> determines that the
+         * <code>Listener</code>'s threshold is equal to or less than
+         * the current available memory (post garbage collection),
+         * then this method is called with the current memory usage,
+         * <code>usedMemory</code>, and the maximum memory (which
+         * is a constant per JVM invocation).
+         * <p>
+         * This method is called (in the case of Java5) by a system
+         * thread associated with the garbage collection activity.
+         * When this method is called, the client should quickly do what
+         * it needs to to communicate with an application thread and
+         * then return. Generally, quickly de-referencing some big objects
+         * and setting a flag is the most that should be done by
+         * implementations of this method. If the implementor chooses to
+         * de-reference some objects, then the application code must
+         * be written so that if will not throw a NullPointerException
+         * when such de-referenced objects are accessed. If a flag
+         * is set, then the application must be written to check the
+         * flag periodically.
+         *
+         * @param usedMemory the current memory used.
+         * @param maxMemory the maximum available memory.
+         */
+        void memoryUsageNotification(long usedMemory, long maxMemory);
+    }
 }
+
+// End MemoryMonitor.java

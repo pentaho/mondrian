@@ -3,8 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2006 Julian Hyde and others
+// Copyright (C) 2007-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,12 +12,11 @@ package mondrian.util;
 
 import mondrian.olap.MondrianProperties;
 import org.apache.log4j.Logger;
-import java.util.List;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
 /** 
- *  
+ *  Abstract implementation of <code>MemoryMonitor</code>.
  * 
  * @author <a>Richard M. Emberson</a>
  * @since Feb 03 2007
@@ -71,14 +69,14 @@ public abstract class AbstractMemoryMonitor implements MemoryMonitor {
     }
 
     /** 
-     * Get the <code>Logger</code>. 
+     * Returns the <code>Logger</code>.
      * 
      * @return the <code>Logger</code>.
      */
     protected abstract Logger getLogger();
 
     /** 
-     * Get the current lowest threshold of all registered 
+     * Returns the current lowest threshold of all registered
      * <code>Listener</code>s. 
      * 
      * @return the lowest threshold.
@@ -88,8 +86,10 @@ public abstract class AbstractMemoryMonitor implements MemoryMonitor {
     }
 
     /** 
-     * Get the default memory notification percentage. This is 
-     * the value of the Mondrian MemoryMonitorThreshold property.
+     * Returns the default memory notification percentage.
+     *
+     * <p>This is the value of the Mondrian
+     * {@link MondrianProperties#MemoryMonitorThreshold} property.
      * 
      * @return the default threshold percentage.
      */
@@ -98,8 +98,9 @@ public abstract class AbstractMemoryMonitor implements MemoryMonitor {
     }
 
     /** 
-     * Add a <code>Listener</code> using the default threshold percentage.
-     * If the threshold is below the Java5 memory managment system's
+     * Adds a <code>Listener</code> using the default threshold percentage.
+     *
+     * <p>If the threshold is below the Java5 memory managment system's
      * threshold, then the Listener is notified from within this
      * method.
      * 
@@ -112,8 +113,9 @@ public abstract class AbstractMemoryMonitor implements MemoryMonitor {
     }
 
     /** 
-     * Add a <code>Listener</code> with the given threshold percentage.
-     * If the threshold is below the Java5 memory managment system's
+     * Adds a <code>Listener</code> with the given threshold percentage.
+     *
+     * <p>If the threshold is below the Java5 memory managment system's
      * threshold, then the Listener is notified from within this
      * method.
      * 
@@ -173,8 +175,9 @@ public abstract class AbstractMemoryMonitor implements MemoryMonitor {
     }
 
     /** 
-     * For the given <code>Listener</code>, update its percentage threshold.
-     * If the threshold is below the Java5 memory managment system's
+     * Updates the percentage threshold of a given <code>Listener</code>.
+     *
+     * <p>If the threshold is below the Java5 memory managment system's
      * threshold, then the Listener is notified from within this
      * method.
      * 
@@ -215,7 +218,6 @@ public abstract class AbstractMemoryMonitor implements MemoryMonitor {
                         Entry ee = iter.next();
                         if (newThreshold <= ee.threshold) {
                             iter.add(e);
-                            e = null;
                             break;
                         }
                     }
@@ -236,7 +238,7 @@ public abstract class AbstractMemoryMonitor implements MemoryMonitor {
     }
     
     /** 
-     * Remove a <code>Listener</code>. 
+     * Removes a <code>Listener</code>.
      * 
      * @param listener the <code>Listener</code> to be removed.
      * @return <code>true</code> if <code>Listener</code> was remove and 
@@ -290,7 +292,7 @@ public abstract class AbstractMemoryMonitor implements MemoryMonitor {
     }
 
     /** 
-     * Get the lowest threshold from the list of <code>Listener</code>s. 
+     * Returns the lowest threshold from the list of <code>Listener</code>s.
      * If there are no <code>Listener</code>s, then return the maximum
      * memory usage.
      * 
@@ -304,7 +306,7 @@ public abstract class AbstractMemoryMonitor implements MemoryMonitor {
 
 
     /** 
-     * Notify all <code>Listener</code>s that memory is running short.
+     * Notifies all <code>Listener</code>s that memory is running short.
      * 
      * @param usedMemory the current memory used.
      * @param maxMemory the maximum memory.
@@ -332,21 +334,21 @@ public abstract class AbstractMemoryMonitor implements MemoryMonitor {
     }
 
     /** 
-     * Get the maximum memory usage. 
+     * Returns the maximum memory usage.
      * 
      * @return the maximum memory usage.
      */
     protected abstract long getMax();
 
     /** 
-     * Get the current memory used. 
+     * Returns the current memory used.
      * 
      * @return the current memory used.
      */
     protected abstract long getUsed();
 
     /** 
-     * Convert a percentage threshold to its corresponding memory value,
+     * Converts a percentage threshold to its corresponding memory value,
      * ( percentage * maximum-memory / 100 ).
      * 
      * @param percentage the threshold.
@@ -364,7 +366,7 @@ public abstract class AbstractMemoryMonitor implements MemoryMonitor {
     }
     
     /** 
-     * Convert a memory value to its percentage. 
+     * Converts a memory value to its percentage.
      * 
      * @param threshold the memory value.
      * @return the percentage.
@@ -376,7 +378,7 @@ public abstract class AbstractMemoryMonitor implements MemoryMonitor {
     }
     
     /** 
-     * How much memory is currently being used as a percentage. 
+     * Returns how much memory is currently being used as a percentage.
      * 
      * @return currently used memory as a percentage. 
      */
@@ -385,3 +387,4 @@ public abstract class AbstractMemoryMonitor implements MemoryMonitor {
     }
 }
 
+// End AbstractMemoryMonitor.java

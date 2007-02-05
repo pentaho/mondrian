@@ -1,3 +1,13 @@
+/*
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2007-2007 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
+
 //   Copyright (c) 1999 CERN - European Organization for Nuclear Research.
 //   Permission to use, copy, modify, distribute and sell this software
 //   and its documentation for any purpose is hereby granted without fee,
@@ -6,25 +16,16 @@
 //   supporting documentation. CERN makes no representations about the
 //   suitability of this software for any purpose. It is provided "as is"
 //   without expressed or implied warranty.
-//package cern.colt.map;
 
-// 
+// Created from package cern.colt.map by Richard Emberson, 2007/1/23.
 // For the source to the Colt project, go to:
 // http://dsd.lbl.gov/~hoschek/colt/
-//
 
-// $Id$
-// This software is subject to the terms of the Common Public License
-// Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2006 Julian Hyde and others
-// All Rights Reserved.
-// You must accept the terms of that agreement to use this software.
 
 package mondrian.util;
 
 import java.util.Arrays;
+import java.io.PrintWriter;
 
 /**
  * Not of interest for users; only for implementors of hashtables.
@@ -45,7 +46,7 @@ import java.util.Arrays;
  * @author wolfgang.hoschek@cern.ch
  * @version 1.0, 09/24/99
  */
-public final class PrimeFinder {
+final class PrimeFinder {
     /**
      * The largest prime this class can generate; currently equal to 
      * <tt>Integer.MAX_VALUE</tt>.
@@ -170,7 +171,9 @@ public final class PrimeFinder {
     private PrimeFinder() {}
 
     /**
-     * Returns a prime number which is <code>&gt;= desiredCapacity</code> and very close to <code>desiredCapacity</code> (within 11% if <code>desiredCapacity &gt;= 1000</code>).
+     * Returns a prime number which is <code>&gt;= desiredCapacity</code> and
+     * very close to <code>desiredCapacity</code> (within 11% if
+     * <code>desiredCapacity &gt;= 1000</code>).
      * @param desiredCapacity the capacity desired by the user.
      * @return the capacity which should be used for a hashtable.
      */
@@ -195,15 +198,18 @@ public final class PrimeFinder {
         int from = Integer.parseInt(args[0]);    
         int to = Integer.parseInt(args[1]);
         
-        statistics(from,to);
+        statistics(from,to,new PrintWriter(System.out));
     }
+
     /**
      * Tests correctness.
      */
-    protected static void statistics(int from, int to) {
+    protected static void statistics(int from, int to, PrintWriter pw) {
         // check that primes contain no accidental errors
         for (int i=0; i<primeCapacities.length-1; i++) {
-            if (primeCapacities[i] >= primeCapacities[i+1]) throw new RuntimeException("primes are unsorted or contain duplicates; detected at "+i+"@"+primeCapacities[i]);
+            if (primeCapacities[i] >= primeCapacities[i+1]) {
+                throw new RuntimeException("primes are unsorted or contain duplicates; detected at "+i+"@"+primeCapacities[i]);
+            }
         }
         
         double accDeviation = 0.0;
@@ -216,7 +222,7 @@ public final class PrimeFinder {
             
             if (deviation > maxDeviation) {
                 maxDeviation = deviation;
-                System.out.println("new maxdev @"+i+"@dev="+maxDeviation);
+                pw.println("new maxdev @"+i+"@dev="+maxDeviation);
             }
 
             accDeviation += deviation;
@@ -224,8 +230,10 @@ public final class PrimeFinder {
         long width = 1 + (long)to - (long)from;
         
         double meanDeviation = accDeviation/width;
-        System.out.println("Statistics for ["+ from + ","+to+"] are as follows");
-        System.out.println("meanDeviation = "+(float)meanDeviation*100+" %");
-        System.out.println("maxDeviation = "+(float)maxDeviation*100+" %");
+        pw.println("Statistics for ["+ from + ","+to+"] are as follows");
+        pw.println("meanDeviation = "+(float)meanDeviation*100+" %");
+        pw.println("maxDeviation = "+(float)maxDeviation*100+" %");
     }
 }
+
+// End PrimeFinder.java
