@@ -57,7 +57,7 @@ import java.util.Properties;
  * In this case, only one value is ever returned. If you have a
  * module, a client of the above code, that uses the value returned
  * by a call to the
- * <code>getInfo()</code> method, how do you write a unit test of
+ * <code>hasInfo()</code> method, how do you write a unit test of
  * your module that tests both possible return values?
  * You can not, its value is based upon a side-effect, an external
  * value that can not be controled by the unit test.
@@ -85,11 +85,11 @@ import java.util.Properties;
  * tested without having to touch a lot of the application code itself.
  * <p>
  * There is, of course, a trade-off between the use of a factory
- * and the size or simplicity of the object.
+ * and the size or simplicity of the object being created.
  * <p>
  * What are the requirements for a template ObjectFactory?
  * <p>
- * First, every implementation must support the writing of JUnit tests.
+ * First, every implementation must support the writing of unit tests.
  * What this means it that test cases can override what the factory
  * produces. The test cases can all use the same produced Object or
  * each can request an Object targeted to its particular test. All this
@@ -105,22 +105,25 @@ import java.util.Properties;
  * While a factory has a <code>default</code> behavior in an
  * application, it must be possible for every factory's behavior
  * in that application to be globally overridden. What that means is
- * if the application design has dictated a <code>default</code>, the
- * application use should be able to change the default. An example of
+ * if the application designer has dictated a <code>default</code>, the
+ * application user should be able to change the default. An example of
  * this is overriding what Object is returned based upon a
  * <code>System</code> property value.
  * <p>
- * Lastly, every factory is a singleton. This does not mean that such
- * factories always return the same value, rather that this is only
- * ever one instance of the factory itself.
+ * Lastly, every factory is a singleton - if an interface with 
+ * an implementation whose creation is mediated by a factory, then
+ * there is a single factory that does that creating.
+ * This does not mean that such a factory always return the same value, 
+ * rather that there is only one instance of the factory itself.
  * <p>
- * The following is an example derived class that generates a factory
+ * The following is an example class that generates a factory
  * singleton. In this case, the factory extends the
  * <code>ObjectFactory</code>
  * rather than the <code>ObjectFactory.Singleton</code>:
  * <pre>
  *
  *      public final class FooFactory extends ObjectFactory<Foo> {
+ *          // The single instance of the factory
  *          private static final FooFactory factory;
  *          static {
  *              factory = new FooFactory();
@@ -166,6 +169,45 @@ import java.util.Properties;
  * <code>clearThreadLocalClassName</code> method so that other
  * tests, etc. do not get an instance of the test-specific specialized
  * implementation.
+ * <p>
+ * The following is an example unit test that uses the factory's 
+ * <code>ThreadLocal</code> to override the implementation that is returned.
+ * 
+ * <pre>
+ *      interface Boo {
+ *          boolean getValue();
+ *          .......
+ *      }
+ * 
+ *      class MyTest {
+ *          private static boolean testValue;
+ *          static class BooTest implements Boo {
+ *              public boolean getValue() {
+ *                  return MyTest.testValue;
+ *              }
+ *          }
+ *          public void test() {
+ *              BooFactory bf = BooFactory.instance();
+ *              try {
+ *                  BooFactory.setThreadLocalClassName("MyTest.BooTest");
+ * 
+ *                  MyTest.testValue = true;
+ *                  Boo boo1 = bf.getObject();
+ *                  assertTrue("Value not true", boo1.getValue());
+ * 
+ *                  MyTest.testValue = false;
+ *                  Boo boo2 = bf.getObject();
+ *                  assertTrue("Value is true", ! boo2.getValue());
+ *              } finally {
+ *                  BooFactory.clearThreadLocalClassName();
+ *              }
+ *          }
+ *      }
+ *
+ * </pre>
+ * <p>
+ * While this is a very simple example, it shows how using such factories
+ * can aid in creating testable code.
  *
  * @author <a>Richard M. Emberson</a>
  * @since Feb 01 2007
@@ -185,7 +227,9 @@ public abstract class ObjectFactory<V> {
      * Creates a new factory object. The <code>interfaceClass</code> parameter
      * is used to cast the object generated to type right type.
      *
-     * @param interfaceClass
+     * @param interfaceClass the class object for the interface implemented
+     * by the objects returned by this factory
+     *
      */
     protected ObjectFactory(final Class<V> interfaceClass) {
         this.interfaceClass = interfaceClass;
@@ -196,8 +240,8 @@ public abstract class ObjectFactory<V> {
      * to look up a class name.
      * The constructor for the object takes no parameters.
      *
-     * @return
-     * @throws CreationException
+     * @return the newly created object
+     * @throws CreationException if unable to create the object
      */
     public final V getObject() throws CreationException {
         return getObject(System.getProperties());
@@ -208,9 +252,11 @@ public abstract class ObjectFactory<V> {
      * be used to look up a class name.
      * The constructor for the object takes no parameters.
      *
-     * @param props
-     * @return
-     * @throws CreationException
+     * @param props the property definitions to use to determine the
+     * implementation class
+     *
+     * @return the newly created object
+     * @throws CreationException if unable to create the object
      */
     public final V getObject(final Properties props) throws CreationException {
         return getObject(props, EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY);
@@ -221,10 +267,12 @@ public abstract class ObjectFactory<V> {
      * <code>parameterValues</code> are constructor parameters and
      * System Properties are used to look up a class name.
      *
-     * @param parameterTypes
-     * @param parameterValues
-     * @return
-     * @throws CreationException
+     * @param parameterTypes  the class parameters that define the signature
+     * of the constructor to use
+     * @param parameterValues  the values to use to construct the current
+     * instance of the object
+     * @return the newly created object
+     * @throws CreationException if unable to create the object
      */
     public final V getObject(final Class[] parameterTypes,
                              final Object[] parameterValues)
@@ -244,11 +292,13 @@ public abstract class ObjectFactory<V> {
      * which derived classes implement), if called, creates a new
      * object each time.
      *
-     * @param props
-     * @param parameterTypes
-     * @param parameterValues
-     * @return
-     * @throws CreationException
+     * @param props the property definitions to use to determine the
+     * @param parameterTypes  the class parameters that define the signature
+     * of the constructor to use
+     * @param parameterValues  the values to use to construct the current
+     * instance of the object
+     * @return the newly created object
+     * @throws CreationException if unable to create the object
      */
     public V getObject(final Properties props,
                              final Class[] parameterTypes,
@@ -276,17 +326,21 @@ public abstract class ObjectFactory<V> {
      * to create the instance typing the generated Object based upon
      * the <code>interfaceClass</code> factory instance object.
      *
-     * @param className
-     * @param parameterTypes
-     * @param parameterValues
-     * @return
-     * @throws CreationException
+     * @param className the class name used to create Object instance
+     * @param parameterTypes  the class parameters that define the signature
+     * of the constructor to use
+     * @param parameterValues  the values to use to construct the current
+     * instance of the object
+     * @return the newly created object
+     * @throws CreationException if unable to create the object
      */
     protected V getObject(final String className,
                           final Class[] parameterTypes,
                           final Object[] parameterValues)
             throws CreationException {
         try {
+            // As reference google the source for:
+            //   org.apache.cxf.BusFactoryHelper.java
             final ClassLoader loader =
                 Thread.currentThread().getContextClassLoader();
             final Class<?> genericClass =
@@ -299,8 +353,7 @@ public abstract class ObjectFactory<V> {
             return constructor.newInstance(parameterValues);
 
         } catch (Exception exc) {
-            throw new CreationException(
-                        "Error creating object of type \"" +
+            throw new CreationException("Error creating object of type \"" +
                                         getClass().getName() + "\"" ,
                                         exc);
         }
@@ -309,9 +362,13 @@ public abstract class ObjectFactory<V> {
     /**
      * This is a back port of a 1.5 version Class method.
      *
-     * @param clazz
-     * @param genericClass
-     * @return
+     * @param clazz the base class which the genericClass will be case
+     * @param genericClass the class to be cast to the base clazz
+     * @return this <tt>Class</tt> object, cast to represent a subclass of
+     * the specified class object.
+     * @throws ClassCastException if this <tt>Class</tt> object does
+     * not represent a subclass of the specified class (here "subclass" 
+     * includes the class itself).
      */
     private static <V> Class<? extends V> asSubclass(final Class<V> clazz,
                                               final Class<?> genericClass) {
@@ -332,7 +389,7 @@ public abstract class ObjectFactory<V> {
      * the value of a <code>ThreadLocal</code>. For testing it
      * return a class name while for normal use it returns <code>null</code>.
      *
-     * @return
+     * @return <code>null</code> or a class name
      */
     protected String getClassName() {
         return null;
@@ -344,23 +401,23 @@ public abstract class ObjectFactory<V> {
      * with key equal to the class name of the <code>interfaceClass</code>.
      * This method is allowed to return null.
      *
-     * @return
+     * @return <code>null</code> or a class name
      */
     protected String getClassName(final Properties props) {
         return (props == null)
             ? null : props.getProperty(this.interfaceClass.getName());
     }
 
-    // REVIEW: jhyde, 2007/2/4: These empty '@param' and '@return' javadoc
-    // comments are useless.
     /**
      * For most uses (other than testing) this is the method that derived
      * classes implement that return the desired object.
      *
-     * @param parameterTypes
-     * @param parameterValues
-     * @return
-     * @throws CreationException
+     * @param parameterTypes  the class parameters that define the signature
+     * of the constructor to use
+     * @param parameterValues  the values to use to construct the current
+     * instance of the object
+     * @return the newly created object
+     * @throws CreationException if unable to create the object
      */
     protected abstract V getDefault(Class[] parameterTypes,
                                     Object[] parameterValues)
@@ -385,6 +442,10 @@ public abstract class ObjectFactory<V> {
      * that returns only a single instance of the Object.
      */
     public abstract static class Singleton<T> extends ObjectFactory<T> {
+
+        /** 
+         * The single instance of the object created by the factory. 
+         */
         protected T singleInstance;
 
         /**
@@ -392,7 +453,8 @@ public abstract class ObjectFactory<V> {
          * <code>interfaceClass</code> parameter
          * is used to cast the object generated to type right type.
          *
-         * @param interfaceClass
+         * @param interfaceClass the class object for the interface implemented
+         * by the objects returned by this factory
          */
         protected Singleton(final Class<T> interfaceClass) {
             super(interfaceClass);
@@ -410,11 +472,13 @@ public abstract class ObjectFactory<V> {
          * returns a non-null class name which should only
          * happen as needed for unit testing.
          *
-         * @param props
-         * @param parameterTypes
-         * @param parameterValues
-         * @return
-         * @throws CreationException
+         * @param props the property definitions to use to determine the
+         * @param parameterTypes  the class parameters that define the signature
+         * of the constructor to use
+         * @param parameterValues  the values to use to construct the current
+         * instance of the object
+         * @return the newly created object
+         * @throws CreationException if unable to create the object
          */
         public T getObject(final Properties props,
                                  final Class[] parameterTypes,
