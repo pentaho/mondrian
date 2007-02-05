@@ -377,7 +377,7 @@ public class RolapConnection extends ConnectionBase {
                 this.query = query;
             }
             public void memoryUsageNotification(long used, long max) {
-                StringBuffer buf = new StringBuffer(200);
+                StringBuilder buf = new StringBuilder(200);
                 buf.append("OutOfMemory used=");
                 buf.append(used);
                 buf.append(", max=");
