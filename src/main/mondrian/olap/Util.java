@@ -28,13 +28,12 @@ import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
 
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.mdx.*;
+import mondrian.util.UtilCompatible;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.
@@ -79,6 +78,27 @@ public class Util extends XOMUtil {
      */
     public static final boolean PreJdk15 =
         System.getProperty("java.version").startsWith("1.4");
+
+    private static final UtilCompatible compatible;
+    static {
+        String className;
+        if (PreJdk15) {
+            className = "mondrian.util.UtilCompatibleJdk14";
+        } else {
+            className = "mondrian.util.UtilCompatibleJdk15";
+        }
+        try {
+            Class<UtilCompatible> clazz =
+                (Class<UtilCompatible>) Class.forName(className);
+            compatible = clazz.newInstance();
+        } catch (ClassNotFoundException e) {
+            throw Util.newInternal(e, "Could not load '" + className + "'");
+        } catch (InstantiationException e) {
+            throw Util.newInternal(e, "Could not load '" + className + "'");
+        } catch (IllegalAccessException e) {
+            throw Util.newInternal(e, "Could not load '" + className + "'");
+        }
+    }
 
     public static boolean isNull(Object o) {
         return o == null || o == nullValue;
@@ -1767,55 +1787,18 @@ public class Util extends XOMUtil {
      * @return an enum set initially containing the specified elements
      */
     public static <E extends Enum<E>> Set<E> enumSetOf(E first, E... rest) {
-        if (PreJdk15) {
-            HashSet<E> set = new HashSet<E>();
-            set.add(first);
-            for (E e : rest) {
-                set.add(e);
-            }
-            return set;
-        } else {
-            try {
-                Class clazz = Class.forName("java.util.EnumSet");
-                Method method = clazz.getMethod("of", Enum.class, Enum[].class);
-                return (Set<E>) method.invoke(null, first, rest);
-            } catch (ClassNotFoundException e) {
-                throw Util.newError(e, "while invoking EnumSet.of()");
-            } catch (NoSuchMethodException e) {
-                throw Util.newError(e, "while invoking EnumSet.of()");
-            } catch (IllegalAccessException e) {
-                throw Util.newError(e, "while invoking EnumSet.of()");
-            } catch (InvocationTargetException e) {
-                throw Util.newError(e, "while invoking EnumSet.of()");
-            }
-        }
+        return compatible.enumSetOf(first, rest);
     }
 
     /**
      * Equivalent to {@link java.util.EnumSet#noneOf(Class)} on JDK 1.5 or later.
      * Otherwise, returns an ordinary set.
-
+     *
      * @param elementType the class object of the element type for this enum
      *     set
      */
     public static <E extends Enum<E>> Set<E> enumSetNoneOf(Class<E> elementType) {
-        if (PreJdk15) {
-            return new HashSet<E>();
-        } else {
-            try {
-                Class classEnumSet = Class.forName("java.util.EnumSet");
-                Method method = classEnumSet.getMethod("noneOf", Class.class);
-                return (Set<E>) method.invoke(null, elementType);
-            } catch (ClassNotFoundException e) {
-                throw Util.newError(e, "while invoking EnumSet.noneOf()");
-            } catch (NoSuchMethodException e) {
-                throw Util.newError(e, "while invoking EnumSet.noneOf()");
-            } catch (IllegalAccessException e) {
-                throw Util.newError(e, "while invoking EnumSet.noneOf()");
-            } catch (InvocationTargetException e) {
-                throw Util.newError(e, "while invoking EnumSet.noneOf()");
-            }
-        }
+        return compatible.enumSetNoneOf(elementType);
     }
 
     /**
@@ -1826,23 +1809,7 @@ public class Util extends XOMUtil {
      *     set
      */
     public static <E extends Enum<E>> Set<E> enumSetAllOf(Class<E> elementType) {
-        if (PreJdk15) {
-            return new HashSet<E>(Arrays.asList(elementType.getEnumConstants()));
-        } else {
-            try {
-                Class classEnumSet = Class.forName("java.util.EnumSet");
-                Method method = classEnumSet.getMethod("allOf", Class.class);
-                return (Set<E>) method.invoke(null, elementType);
-            } catch (ClassNotFoundException e) {
-                throw Util.newError(e, "while invoking EnumSet.noneOf()");
-            } catch (NoSuchMethodException e) {
-                throw Util.newError(e, "while invoking EnumSet.noneOf()");
-            } catch (IllegalAccessException e) {
-                throw Util.newError(e, "while invoking EnumSet.noneOf()");
-            } catch (InvocationTargetException e) {
-                throw Util.newError(e, "while invoking EnumSet.noneOf()");
-            }
-        }
+        return compatible.enumSetAllOf(elementType);
     }
 }
 
