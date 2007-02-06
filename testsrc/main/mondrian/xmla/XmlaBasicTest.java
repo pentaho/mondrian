@@ -444,6 +444,43 @@ public class XmlaBasicTest extends FoodMartTestCase {
        doTest(requestType, reqFileName, "${response}", props);
    }
 
+    // Testcase for bug 1653587.
+    public void _testExecuteCrossjoin() throws Exception {
+       String requestType = "EXECUTE";
+        String query = "SELECT CrossJoin({[Product].[All Products].children}, {[Customers].[All Customers].children}) ON columns FROM Sales";
+        String request = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+           "<soapenv:Envelope\n" +
+           "    xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"\n" +
+           "    xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"\n" +
+           "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+           "    <soapenv:Body>\n" +
+           "        <Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\">\n" +
+           "        <Command>\n" +
+           "        <Statement>\n" +
+           query + "\n" +
+           "         </Statement>\n" +
+           "        </Command>\n" +
+           "        <Properties>\n" +
+           "          <PropertyList>\n" +
+           "            <Catalog>${catalog}</Catalog>\n" +
+           "            <DataSourceInfo>${data.source.info}</DataSourceInfo>\n" +
+           "            <Format>${format}</Format>\n" +
+           "            <AxisFormat>TupleFormat</AxisFormat>\n" +
+           "          </PropertyList>\n" +
+           "        </Properties>\n" +
+           "</Execute>\n" +
+           "</soapenv:Body>\n" +
+           "</soapenv:Envelope>";
+       Properties props = new Properties();
+       props.setProperty(REQUEST_TYPE_PROP, requestType);
+       props.setProperty(CATALOG_PROP, CATALOG);
+       props.setProperty(CATALOG_NAME_PROP, CATALOG);
+       props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
+       props.setProperty(FORMAT_PROP, FORMAT_MULTI_DIMENSIONAL);
+       props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+       doTestInline(requestType, request, "${response}", props);
+   }
+
     /*
      * NOT IMPLEMENTED MDSCHEMA_SETS_out.xml
      */
@@ -461,6 +498,15 @@ public class XmlaBasicTest extends FoodMartTestCase {
 
     }
 
+    /**
+     * Executes an XMLA request, reading the text of the request from a file
+     * and the response from a file or from {@link #getDiffRepos()}.
+     *
+     * @param requestType Request type: "DISCOVER_DATASOURCES", "EXECUTE", etc.
+     * @param reqFileName Name of file containing the XML request
+     * @param respFileName Name of file containing expected XML response
+     * @param props Properties for request
+     */
     public void doTest(
             String requestType,
             String reqFileName,
@@ -468,6 +514,15 @@ public class XmlaBasicTest extends FoodMartTestCase {
             Properties props) throws Exception {
 
         String requestText = fileToString(reqFileName);
+        doTestInline(requestType, requestText, respFileName, props);
+    }
+
+    public void doTestInline(
+        String requestType,
+        String requestText,
+        String respFileName,
+        Properties props) throws Exception
+    {
         Document responseDoc = (respFileName != null)
             ? fileToDocument(respFileName)
             : null;
@@ -512,7 +567,6 @@ public class XmlaBasicTest extends FoodMartTestCase {
             : null;
         doTests(requestText, props, null, connectString, catalogNameUrls,
                 expectedDoc, CONTENT_SCHEMA);
-
     }
 
     protected void doTests(
@@ -609,6 +663,10 @@ System.out.println("XXXXXXX");
 		parentNode.removeChild(node);
 	}
 
+    private enum RequestType {
+        EXECUTE,
+        DISCOVER
+    }
 }
 
 // End XmlaBasicTest.java
