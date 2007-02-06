@@ -16,6 +16,7 @@ import mondrian.olap.Connection;
 import mondrian.olap.Query;
 import mondrian.olap.Result;
 import mondrian.olap.Util;
+import mondrian.olap.MondrianProperties;
 import mondrian.rolap.cache.CachePool;
 import mondrian.rolap.cache.HardSmartCache;
 import mondrian.test.FoodMartTestCase;
@@ -53,6 +54,11 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
      * to read the hierarchy and aggregates again.
      */
     public void testDataSourceChangeListenerPlugin() {
+        final MondrianProperties properties = MondrianProperties.instance();
+        boolean do_caching_orig = properties.DisableCaching.get();
+
+        // turn on caching
+        properties.DisableCaching.setString("false");
         
         CachePool.instance().flush();
         
@@ -147,6 +153,12 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             star.setChangeListener(null);
             
             RolapUtil.threadHooks.set(null);
+            
+            if (do_caching_orig) {
+                properties.DisableCaching.setString("true");
+            } else {
+                properties.DisableCaching.setString("false");
+            }            
         }        
     }    
     /**
