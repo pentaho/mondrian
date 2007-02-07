@@ -80,7 +80,12 @@ class RolapResult extends ResultBase {
         Util.discard(Bug.Checkin7634DoOld);
         boolean normalExecution = true;
         try {
-            // Check if there are modifications to the aggregate cache
+            // This call to clear the cube's cache only has an
+            // effect if caching has been disabled, otherwise
+            // nothing happens.
+            // Clear the local cache before a query has run
+            rcube.clearCachedAggregations();
+            // Check if there are modifications to the global aggregate cache
             rcube.checkAggregateModifications();
 
             // An array of lists which will hold each axis' implicit members
@@ -417,11 +422,7 @@ class RolapResult extends ResultBase {
                 cellInfos.clear();
             }
         } finally {
-            // This call to clear the cube's cache only has an
-            // effect if caching has been disabled, otherwise
-            // nothing happens.
-            RolapCube cube = (RolapCube) query.getCube();
-            cube.clearCachedAggregations();
+
         }
     }
 
