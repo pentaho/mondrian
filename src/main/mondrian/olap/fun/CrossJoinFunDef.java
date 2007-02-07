@@ -2262,7 +2262,7 @@ class CrossJoinFunDef extends FunDefBase {
                 // the other axes.
                 measureSet = visitor.measureSet;
 
-            } else if (axes.length >  1) {
+            } else if (axes.length > 0) {
                 for (int i = 0; i < axes.length; i++) {
                     if (axes[i] != null) {
                         axes[i].accept(visitor);

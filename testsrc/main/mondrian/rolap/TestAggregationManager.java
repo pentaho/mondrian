@@ -280,6 +280,31 @@ public class TestAggregationManager extends FoodMartTestCase {
     }
 
     /**
+     * Tests that a NonEmptyCrossJoin uses the measure referenced by the query
+     * (Store Sales) instead of the default measure (Unit Sales) in the case
+     * where the query only has one result axis.  The setup here is necessarily
+     * elaborate because the original bug was quite arbitrary.
+     */
+    public void testNonEmptyCrossJoinLoneAxis() {
+        
+        String mdxQuery =
+"With Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Store],[*BASE_MEMBERS_Product])' Set [*BASE_MEMBERS_Store] as '{[Store].[All Stores].[USA]}' Set [*GENERATED_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Food],[Product].[All Products].[Drink]}' Set [*GENERATED_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' Member [Store].[*FILTER_MEMBER] as 'Aggregate ([*GENERATED_MEMBERS_Store])' Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*GENERATED_MEMBERS_Product])' Select {[Measures].[Store Sales]} on columns From [Sales] Where ([Store].[*FILTER_MEMBER], [Product].[*FILTER_MEMBER])";
+
+        String sql = "select \"store\".\"store_country\" as \"c0\", \"time_by_day\".\"the_year\" as \"c1\", \"product_class\".\"product_family\" as \"c2\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" from \"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", \"time_by_day\" as \"time_by_day\", \"product_class\" as \"product_class\", \"product\" as \"product\" where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"store\".\"store_country\" = 'USA' and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" group by \"store\".\"store_country\", \"time_by_day\".\"the_year\", \"product_class\".\"product_family\"";
+        
+        SqlPattern[] patterns = {
+            new SqlPattern(
+                SqlPattern.DERBY_DIALECT,
+                sql,
+                sql
+            )
+        };
+        assertNoQuerySql(
+                mdxQuery,
+                patterns);
+    }
+
+    /**
      * If a hierarchy lives in the fact table, we should not generate a join.
      */
     public void testHierarchyInFactTable() {
@@ -673,6 +698,31 @@ public class TestAggregationManager extends FoodMartTestCase {
      * @param patterns Set of patterns, one for each dialect.
      */
     private void assertQuerySql(String mdxQuery, SqlPattern[] patterns) {
+        assertQuerySqlOrNot(mdxQuery, patterns, false);
+    }
+    
+    /**
+     * Checks that a given MDX query does not result in a particular SQL
+     * statement being generated.
+     *
+     * @param mdxQuery MDX query
+     * @param patterns Set of patterns, one for each dialect.
+     */
+    private void assertNoQuerySql(String mdxQuery, SqlPattern[] patterns) {
+        assertQuerySqlOrNot(mdxQuery, patterns, true);
+    }
+    
+    /**
+     * Checks that a given MDX query results (or does not result) in a
+     * particular SQL statement being generated.
+     *
+     * @param mdxQuery MDX query
+     * @param patterns Set of patterns, one for each dialect.
+     * @param negative false to assert if SQL is generated;
+     * true to assert if SQL is NOT generated
+     */
+    private void assertQuerySqlOrNot(
+        String mdxQuery, SqlPattern[] patterns, boolean negative) {
         final TestContext testContext = getTestContext();
         final Connection connection = testContext.getConnection();
         final Query query = connection.parseQuery(mdxQuery);
@@ -719,10 +769,16 @@ public class TestAggregationManager extends FoodMartTestCase {
         } finally {
             RolapUtil.threadHooks.set(null);
         }
-        if (bomb == null) {
-            fail("expected query [" + sql + "] did not occur");
+        if (negative) {
+            if (bomb != null) {
+                fail("forbidden query [" + sql + "] detected");
+            }
+        } else {
+            if (bomb == null) {
+                fail("expected query [" + sql + "] did not occur");
+            }
+            assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
         }
-        assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
     }
 
     private static String replaceQuotes(String s) {
