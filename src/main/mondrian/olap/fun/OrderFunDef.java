@@ -204,6 +204,9 @@ class OrderFunDef extends FunDefBase {
             }
             return calc.dependsOn(dimension);
         }
+        public ExpCompiler.ResultStyle getResultStyle() {
+            return calc.getResultStyle();
+        }
     }
 }
 
