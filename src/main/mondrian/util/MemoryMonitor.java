@@ -104,6 +104,27 @@ public interface MemoryMonitor {
      */
     boolean removeListener(Listener listener);
 
+    /** 
+     * Clear out all <code>Listener</code>s and turnoff JVM 
+     * memory notification.
+     */
+    void removeAllListener();
+
+    /** 
+     * Returns the maximum memory usage.
+     * 
+     * @return the maximum memory usage.
+     */
+    long getMaxMemory();
+
+    /** 
+     * Returns the current memory used.
+     * 
+     * @return the current memory used.
+     */
+    long getUsedMemory();
+
+
     /**
      * A <code>MemoryMonitor</code> client implements the <code>Listener</code>
      * interface and registers with the <code>MemoryMonitor</code>.
@@ -144,6 +165,33 @@ public interface MemoryMonitor {
          * @param maxMemory the maximum available memory.
          */
         void memoryUsageNotification(long usedMemory, long maxMemory);
+    }
+
+    /** 
+     * This is an interface that a <code>MemoryMonitor</code> may optionally 
+     * implement. These methods give the tester access to some of the
+     * internal, white-box data.
+     * <p>
+     * During testing Mondrian has a default
+     * <code>MemoryMonitor</code> which might be replaced with a test
+     * <code>MemoryMonitor</code>s using the <code>ThreadLocal</code> 
+     * mechanism. After the test using the test 
+     * <code>MemoryMonitor</code> finishes, a call to the
+     * <code>resetFromTest</code> method allows
+     * the default <code>MemoryMonitor</code> reset itself.
+     * This is hook that should only be called as part of testing.
+     */
+    interface Test {
+
+        /** 
+         * This should only be called when one is switching from a
+         * test <code>MemoryMonitor</code> back to the default system 
+         * <code>MemoryMonitor</code>. In particular, look at
+         * the <code>MemoryMonitorFactory</code>'s 
+         * <code>clearThreadLocalClassName()</code> method for its
+         * usage.
+         */
+        void resetFromTest();
     }
 }
 

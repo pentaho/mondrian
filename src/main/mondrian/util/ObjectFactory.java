@@ -373,8 +373,7 @@ public abstract class ObjectFactory<V> {
 
         } catch (Exception exc) {
             throw new CreationException("Error creating object of type \"" +
-                                        getClass().getName() + "\"" ,
-                                        exc);
+                        this.interfaceClass.getName() + "\"" , exc);
         }
     }
 
@@ -453,7 +452,7 @@ public abstract class ObjectFactory<V> {
     // error using Util.newError, just like elsewhere in mondrian.
     protected CreationException defaultCreationException() {
         return new CreationException("Error creating object of type \"" +
-                                            getClass().getName() + "\"");
+                        this.interfaceClass.getName() + "\"");
     }
 
     /**
@@ -467,6 +466,13 @@ public abstract class ObjectFactory<V> {
          */
         protected T singleInstance;
 
+        /** 
+         * The test single instance of the object created by the factory. 
+         * Creating this <code>testSingleInstance</code> does not change the
+         * current value of the <code>singleInstance</code> variable.
+         */
+        protected T testSingleInstance;
+        
         /**
          * Creates a new singleton factory object. The
          * <code>interfaceClass</code> parameter
@@ -507,7 +513,12 @@ public abstract class ObjectFactory<V> {
             // Unit test override, do not use application instance.
             final String className = getClassName();
             if (className != null) {
-                return getObject(className, parameterTypes, parameterValues);
+                if (this.testSingleInstance == null) {
+                    this.testSingleInstance = getTestObject(className, 
+                                                    parameterTypes, 
+                                                    parameterValues);
+                }
+                return this.testSingleInstance;
             }
 
             // NOTE: Should we distinguish between any Properties Object
@@ -529,6 +540,24 @@ public abstract class ObjectFactory<V> {
 
             }
             return this.singleInstance;
+        }
+
+        /** 
+         * Create an instance for test purposes.  
+         * 
+         * @param className the class name used to create Object instance
+         * @param parameterTypes  the class parameters that define the signature
+         * of the constructor to use
+         * @param parameterValues  the values to use to construct the current
+         * instance of the object
+         * @return the newly created object
+         * @throws CreationException if unable to create the object
+         */
+        protected T getTestObject(final String className,
+                                  final Class[] parameterTypes,
+                                  final Object[] parameterValues)
+                throws CreationException {
+            return getObject(className, parameterTypes, parameterValues);
         }
     }
 }

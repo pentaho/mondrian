@@ -121,7 +121,12 @@ public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
      * @param newLowThreshold the new threshold.
      */
     protected void notifyNewLowThreshold(final long newLowThreshold) {
-        TENURED_POOL.setUsageThreshold(newLowThreshold);
+
+        if (newLowThreshold == Long.MAX_VALUE) {
+            TENURED_POOL.setUsageThreshold(0);
+        } else {
+            TENURED_POOL.setUsageThreshold(newLowThreshold);
+        }
     }
 
     /** 
@@ -129,7 +134,7 @@ public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
      * 
      * @return maximum memory that can be used.
      */
-    protected long getMax() {
+    public long getMaxMemory() {
         return TENURED_POOL.getUsage().getMax();
     }
     /** 
@@ -137,7 +142,7 @@ public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
      * 
      * @return current memory used.
      */
-    protected long getUsed() {
+    public long getUsedMemory() {
         return TENURED_POOL.getUsage().getUsed();
     }
 }

@@ -97,6 +97,13 @@ public final class MemoryMonitorFactory
      */
     public static void clearThreadLocalClassName() {
         ClassName.set(null);
+        if (factory.testSingleInstance != null) {
+            factory.testSingleInstance.removeAllListener();
+            factory.testSingleInstance = null;
+        }
+        if (factory.singleInstance instanceof MemoryMonitor.Test) {
+            ((MemoryMonitor.Test) factory.singleInstance).resetFromTest();
+        }
     }
 
     /**

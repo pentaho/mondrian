@@ -36,6 +36,15 @@ public class FauxMemoryMonitor implements MemoryMonitor {
     public boolean removeListener(Listener listener) {
         return true;
     }
+    public void removeAllListener() {
+        // empty
+    }
+    public long getMaxMemory() {
+        return Runtime.getRuntime().maxMemory();
+    }
+    public long getUsedMemory() {
+        return Runtime.getRuntime().freeMemory();
+    }
 }
 
 // End FauxMemoryMonitor.java
