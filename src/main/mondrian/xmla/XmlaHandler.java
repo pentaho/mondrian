@@ -8,6 +8,7 @@
 */
 package mondrian.xmla;
 
+import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.olap.*;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
@@ -822,6 +823,7 @@ public class XmlaHandler implements XmlaConstants {
 
         final String statement = request.getStatement();
         final Query query = connection.parseQuery(statement);
+        query.setResultStyle(ResultStyle.LIST);
         final Result result = connection.execute(query);
         Cell dtCell = result.getCell(new int[] {0, 0});
 
@@ -1105,6 +1107,7 @@ public class XmlaHandler implements XmlaConstants {
             final Query query;
             try {
                 query = connection.parseQuery(statement);
+                query.setResultStyle(ResultStyle.LIST);
             } catch (XmlaException ex) {
                 throw ex;
             } catch (Exception ex) {
@@ -2277,6 +2280,7 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
         final Connection connection = getConnection(dsCatalog, role);
         final String statement = request.getStatement();
         final Query query = connection.parseQuery(statement);
+        query.setResultStyle(ResultStyle.LIST);
         final Result result = connection.execute(query);
         Cell dtCell = result.getCell(new int[] {0, 0});
 
