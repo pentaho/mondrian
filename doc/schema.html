@@ -384,6 +384,15 @@ names of the all level and all member.</p>
 level is suppressed. The default member of that dimension will now be the first member of the first level; for example, 
 in a Time hierarchy, it will be the first year in the hierarchy. Changing the default member can be confusing, so you 
 should generally use <code> hasAll="true"</code>.</p>
+<p>The <code>&lt;Hierarchy&gt;</code> element also has a <code>defaultMember</code> 
+attribute, to override the default member of the hierarchy:</p>
+<blockquote>
+    <p><code>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Time&quot; 
+    type=&quot;TimeDimension&quot; foreignKey=&quot;time_id&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;false&quot; 
+    primaryKey=&quot;time_id&quot; defaultMember=&quot;[Time].[1997].[Q1].[1]&quot;/&gt;<br>
+&nbsp; ...</code></p>
+</blockquote>
 <!-- 
 ###############################
 ##  3.3.3 Time dimensions #####
