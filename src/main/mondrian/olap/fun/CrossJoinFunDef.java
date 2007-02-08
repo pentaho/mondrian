@@ -92,10 +92,7 @@ class CrossJoinFunDef extends FunDefBase {
             case ITERABLE:
             case ANY:
                 // Consumer wants ITERABLE or ANY
-                if (!Util.PreJdk15) {
-                    // jdk14 does not use Iterable
                     return compileCallIterable(call, compiler);
-                }
             case LIST:
                 // Consumer wants (immutable) LIST
                 return compileCallImmutableList(call, compiler);

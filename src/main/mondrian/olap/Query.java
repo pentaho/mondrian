@@ -165,8 +165,10 @@ public class Query extends QueryPart {
      *    ResultStyle.ITERABLE
      *    ResultStyle.LIST
      *    ResultStyle.MUTABLE_LIST
+     * For java4, use LIST
      */
-    private ResultStyle resultStyle = ResultStyle.ITERABLE;
+    private ResultStyle resultStyle = (Util.PreJdk15)
+                ? ResultStyle.LIST : ResultStyle.ITERABLE;
 
     /**
      * Creates a Query.
@@ -421,6 +423,10 @@ public class Query extends QueryPart {
     public void setResultStyle(ResultStyle resultStyle) {
         switch (resultStyle) {
         case ITERABLE :
+            // For java4, use LIST
+            resultStyle = (Util.PreJdk15)
+                ? ResultStyle.LIST : ResultStyle.ITERABLE;
+            break;
         case LIST :
         case MUTABLE_LIST:
             this.resultStyle = resultStyle;

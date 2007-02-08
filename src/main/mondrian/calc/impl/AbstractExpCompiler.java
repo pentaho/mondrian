@@ -16,6 +16,7 @@ import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
 import mondrian.calc.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,6 +66,18 @@ public class AbstractExpCompiler implements ExpCompiler {
      */
     public Calc compile(Exp exp, ResultStyle[] preferredResultTypes) {
         assert preferredResultTypes != null;
+        if (Util.PreJdk15) {
+            // Copy and replace ITERABLE
+            // A number of functions declare that they can accept
+            // ITERABLEs so here is where that those are
+            // converted to innocent, for jdk1.4,  LISTs
+            ResultStyle[] tmp = new ResultStyle[preferredResultTypes.length];
+            for (int i = 0; i < preferredResultTypes.length; i++) {
+                tmp[i] = (preferredResultTypes[i] == ResultStyle.ITERABLE)
+                    ? ResultStyle.LIST : preferredResultTypes[i];
+            }
+            preferredResultTypes = tmp;
+        }
         ResultStyle[] save = this.resultStyles;
         try {
             this.resultStyles = preferredResultTypes;
