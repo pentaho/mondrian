@@ -355,6 +355,11 @@ public class SqlQuery
             addSelect(expression, nextColumnAlias());
         }
     }
+    
+    public int getCurrentSelectListSize()
+    {
+        return select.size();
+    }
 
     public String nextColumnAlias() {
         return "c" + select.size();

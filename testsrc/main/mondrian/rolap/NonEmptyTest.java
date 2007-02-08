@@ -1602,7 +1602,19 @@ public class NonEmptyTest extends FoodMartTestCase {
             "{[Measures].[Store Sales]} on rows from " +
             "[Warehouse and Sales]");
     }
-
+    
+    public void testVCOrdinalExpression() {
+        // [Customers].[Name] is an ordinal expression.  Make sure ordering
+        // is done on the column corresponding to that expression.
+        checkNative(67, 67,
+                "select {[Measures].[Store Sales]} on columns,"
+                + "  NON EMPTY Crossjoin([Customers].[Name].Members,"
+                + "    [Product].[Product Name].Members) ON rows " +
+                " from [Warehouse and Sales] where ("
+                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+                + "  [Time].[1997].[Q1].[1])");
+    }
+    
     /**
      * make sure the following is not run natively
      */

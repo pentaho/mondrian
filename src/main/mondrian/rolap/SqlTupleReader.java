@@ -645,23 +645,53 @@ public class SqlTupleReader implements TupleReader {
         SqlQuery sqlQuery = newQuery(jdbcConnection, s);
 
         // add the selects for all levels to fetch
-        int orderByColNo = 1;
+        List<String> ordinalColumns = new ArrayList<String>();
+        List<Integer> orderByColnos = new ArrayList<Integer>();
         for (Target target : targets) {
             // if we're going to be enumerating the values for this target,
             // then we don't need to generate sql for it
             if (target.srcMembers == null) {
-                orderByColNo =
-                    addLevelMemberSql(
-                        sqlQuery,
-                        target.getLevel(),
-                        levelToColumnMap,
-                        finalSelect,
-                        orderByColNo);
+                addLevelMemberSql(
+                    sqlQuery,
+                    target.getLevel(),
+                    levelToColumnMap,
+                    finalSelect,
+                    orderByColnos,
+                    ordinalColumns);
             }
         }
-
+        
+        // Additional work required for virtual cubes.
+        //
+        // Add ordinal columns we need to order on to the projection list.
+        // We add them to the end of the projection list to avoid shifting
+        // the position of the non-ordinal columns.  Subsequent selects
+        // depend on this.
+        //
+        // If this is the final select, add on the orderby column numbers.
+        // Adjust any placeholders reflecting ordinal columns with their
+        // actual position in the projection list, now that we know how big
+        // the total projection list is.
+        if (levelToColumnMap != null) {
+            int numNonOrdinalCols = sqlQuery.getCurrentSelectListSize();
+            for (String col : ordinalColumns) {
+                sqlQuery.addSelect(col);
+            }
+            if (finalSelect) {
+                for (int oByColno : orderByColnos) {
+                    String ostr;
+                    if (oByColno < 0) {
+                        ostr = String.valueOf(++numNonOrdinalCols);
+                    } else {
+                        ostr = String.valueOf(oByColno);
+                    }
+                    sqlQuery.addOrderBy(ostr, true, false, true);
+                }
+            }
+        }
+            
         // additional constraints
-        constraint.addConstraint(sqlQuery);
+        constraint.addConstraint(sqlQuery);       
 
         return sqlQuery.toString();
     }
@@ -688,17 +718,18 @@ public class SqlTupleReader implements TupleReader {
      * provides the appropriate mapping for the base cube being processed
      * @param finalSelect true if this is the final sub-select in a larger
      * select containing unions or this is a non-union select
-     * @param orderByColNo current order by column number; used for virtual
+     * @param orderByColnos list of order by column numbers; used for virtual
      * cubes
-     *
-     * @return new current order by column number
+     * @param ordinalColumns list of ordinal columns referenced in the query;
+     * used for virtual cubes
      */
-    private int addLevelMemberSql(
+    private void addLevelMemberSql(
         SqlQuery sqlQuery,
         RolapLevel level,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
         boolean finalSelect,
-        int orderByColNo)
+        List<Integer> orderByColnos,
+        List<String> ordinalColumns)
     {
         RolapHierarchy hierarchy = (RolapHierarchy) level.getHierarchy();
 
@@ -728,21 +759,32 @@ public class SqlTupleReader implements TupleReader {
 
             String ordinalSql = level2.getOrdinalExp().getExpression(sqlQuery);
             sqlQuery.addGroupBy(ordinalSql);
+            if (levelToColumnMap != null) {
+                // Keep track of ordinal columns so we can add them to the
+                // end of the projection list later
+                if (!ordinalSql.equals(keySql)) {
+                    ordinalColumns.add(ordinalSql);
+                }
+            }
             if (finalSelect) {
                 // If this is a select on a virtual cube, the query will be
                 // a union, so the order by columns need to be numbers,
-                // not column name strings.  If the level contains an
-                // ordinal column, the ordering needs to be done on that
-                // column, so add it to the projection so we can order on it.
+                // not column name strings.  Don't add these to the order by.
+                // Just keep track of the numbers, for now.  Also, if the
+                // level contains an ordinal column, the ordinal column will
+                // appear at the end of the projection list.  Since we don't
+                // yet know how big the total projection list will be,
+                // use -1 as a placeholder for those columns.
                 if (levelToColumnMap != null) {
-                    if (!ordinalSql.equals(keySql)) {
-                        sqlQuery.addSelect(ordinalSql);
-                        orderByColNo++;
+                    if (ordinalSql.equals(keySql)) {
+                        orderByColnos.add(
+                            sqlQuery.getCurrentSelectListSize());                       
+                    } else {
+                        orderByColnos.add(-1);
                     }
-                    ordinalSql = String.valueOf(orderByColNo);
-                    orderByColNo++;
+                } else {
+                    sqlQuery.addOrderBy(ordinalSql, true, false, true);
                 }
-                sqlQuery.addOrderBy(ordinalSql, true, false, true);
             }
             RolapProperty[] properties = level2.getRolapProperties();
             for (RolapProperty property : properties) {
@@ -751,8 +793,6 @@ public class SqlTupleReader implements TupleReader {
                 sqlQuery.addGroupBy(propSql);
             }
         }
-        
-        return orderByColNo;
     }
 
     static SqlQuery newQuery(Connection jdbcConnection, String err) {
