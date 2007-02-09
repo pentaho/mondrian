@@ -530,6 +530,7 @@ public class SqlConstraintUtils {
             boolean firstLevel = true;
             do {
                 if (m.isAll()) {
+                    m = (RolapMember) m.getParentMember();
                     continue;
                 }
                 RolapLevel level = m.getRolapLevel();

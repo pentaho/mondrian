@@ -1429,6 +1429,19 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}) " +
             "on rows from Sales");
     }
+    
+    public void testCrossJoinMultiInExprAllMember()
+    {
+        checkNative(
+            10,
+            10,
+            "select " +
+            "{[Measures].[Unit Sales]} on columns, " +
+            "NonEmptyCrossJoin([Education Level].[Education Level].Members, " +
+            "{[Product].[All Products].[Drink].[Alcoholic Beverages], " +
+            "[Product].[All Products].[Food].[Breakfast Foods]}) " +
+            "on rows from Sales");                      
+    }
 
     public void testCrossJoinEvaluatorContext1()
     {
