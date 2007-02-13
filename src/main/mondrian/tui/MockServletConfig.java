@@ -17,14 +17,14 @@ import java.util.Collections;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
-/** 
+/**
  * This is a partial implementation of the ServletConfig where just
  * enough is present to allow for communication between Mondrian's
  * XMLA code and other code in the same JVM.
  * Currently it is used in both the CmdRunner and in XMLA JUnit tests.
  * <p>
  * If you need to add to this implementation, please do so.
- * 
+ *
  * @author <a>Richard M. Emberson</a>
  * @version $Id$
  */
@@ -41,37 +41,37 @@ public class MockServletConfig implements ServletConfig {
         this.servletContext = servletContext;
     }
 
-    /** 
+    /**
      * Returns the name of this servlet instance.
-     * 
+     *
      */
     public String getServletName() {
         return servletName;
     }
 
-    /** 
+    /**
      * Returns a reference to the ServletContext in which the servlet is
      * executing.
-     * 
+     *
      */
     public ServletContext getServletContext() {
         return servletContext;
     }
 
-    /** 
+    /**
      * Returns a String containing the value of the named initialization
      * parameter, or null if the parameter does not exist.
-     * 
+     *
      */
     public String getInitParameter(String key) {
         return initParams.get(key);
     }
 
-    /** 
+    /**
      *  Returns the names of the servlet's initialization parameters as an
      *  Enumeration of String objects, or an empty Enumeration if the servlet
      *  has no initialization parameters.
-     * 
+     *
      */
     public Enumeration getInitParameterNames() {
         return Collections.enumeration(initParams.keySet());

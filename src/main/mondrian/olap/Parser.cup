@@ -724,7 +724,7 @@ term3 ::=
         :}
     |   term3:x NOT MATCHES term2:y {:
             RESULT = new UnresolvedFunCall(
-                "NOT", Syntax.Prefix, new Exp[] 
+                "NOT", Syntax.Prefix, new Exp[]
                 {new UnresolvedFunCall("MATCHES", Syntax.Infix, new Exp[] {x, y})});
         :}
     |   term3:x IN term2:y {:
@@ -732,7 +732,7 @@ term3 ::=
         :}
     |   term3:x NOT IN term2:y {:
             RESULT = new UnresolvedFunCall(
-                "NOT", Syntax.Prefix, new Exp[] 
+                "NOT", Syntax.Prefix, new Exp[]
                 {new UnresolvedFunCall("IN", Syntax.Infix, new Exp[] {x, y})});
         :}
     ;

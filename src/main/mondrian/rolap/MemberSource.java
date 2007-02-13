@@ -45,8 +45,8 @@ import java.util.List;
  * @version $Id$
  */
 public interface MemberSource {
-    /** 
-     * Returns the hierarchy that this source is reading for. 
+    /**
+     * Returns the hierarchy that this source is reading for.
      */
     RolapHierarchy getHierarchy();
     /**

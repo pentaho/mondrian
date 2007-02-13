@@ -20,7 +20,7 @@ package mondrian.olap;
  */
 public class NativeEvaluationUnsupportedException
     extends ResultLimitExceededException {
-    
+
     /**
      * Creates a NativeEvaluationUnsupportedException.
      *

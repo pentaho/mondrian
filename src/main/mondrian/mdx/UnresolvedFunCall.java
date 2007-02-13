@@ -88,7 +88,7 @@ public class UnresolvedFunCall extends ExpBase implements FunCall {
 
     public Exp accept(Validator validator) {
         Exp[] newArgs = new Exp[args.length];
-        FunDef funDef = 
+        FunDef funDef =
             FunUtil.resolveFunArgs(validator, args, newArgs, name, syntax);
         return funDef.createCall(validator, newArgs);
     }

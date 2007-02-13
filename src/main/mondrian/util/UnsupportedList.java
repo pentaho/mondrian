@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -20,10 +20,10 @@ import java.util.NoSuchElementException;
  * an UnsupportedOperationException exception except for the
  * <code>isEmpty</code> method. The <code>iterator</code> and
  * <code>listIterator</code> methods can be easily implemented in
- * derived classes by using the helper inner classes: 
+ * derived classes by using the helper inner classes:
  * <code>Itr</code> and <code>ListItr</code>.
  * These iterators are all read only,
- * their <code>remove</code>, <code>add</code> and <code>set</code> 
+ * their <code>remove</code>, <code>add</code> and <code>set</code>
  * methods throw the
  * UnsupportedOperationException exception.
  * <p>
@@ -109,7 +109,7 @@ public abstract class UnsupportedList<T> implements List<T> {
     public ListIterator<T> listIterator() {
         throw new UnsupportedOperationException(getClass().getName()+".listIterator");
     }
-    public ListIterator<T> listIterator(int index) { 
+    public ListIterator<T> listIterator(int index) {
         throw new UnsupportedOperationException(getClass().getName()+".listIterator");
     }
     public Iterator<T> iterator() {

@@ -38,7 +38,7 @@ import mondrian.xmla.XmlaUtil;
 import mondrian.olap.Util;
 import mondrian.xmla.XmlaRequestCallback;
 import mondrian.xmla.XmlaException;
- 
+
 import org.apache.log4j.Logger;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -75,7 +75,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
     protected void unmarshallSoapMessage(
             HttpServletRequest request,
-            Element[] requestSoapParts) 
+            Element[] requestSoapParts)
             throws XmlaException {
 
         try {
@@ -85,7 +85,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
             } catch (IllegalStateException ex) {
                 throw new XmlaException(
                     SERVER_FAULT_FC,
-                    USM_REQUEST_STATE_CODE, 
+                    USM_REQUEST_STATE_CODE,
                     USM_REQUEST_STATE_FAULT_FS,
                     ex);
             } catch (IOException ex) {
@@ -157,7 +157,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
                     new SAXException(msg));
             }
 
-            Element[] childs = 
+            Element[] childs =
                 XmlaUtil.filterChildElements(envElem, NS_SOAP_ENV_1_1, "Header");
             if (childs.length > 1) {
                 String msg = "Invalid SOAP message: " +
@@ -193,22 +193,22 @@ public class DefaultXmlaServlet extends XmlaServlet {
         }
     }
 
-    /** 
+    /**
      * See if there is a "mustUnderstand" header element.
      * If there is a BeginSession element, then generate a session id and
      * add to context Map.
      * <p>
      * Excel 2000 and Excel XP generate both a BeginSession, Session and
      * EndSession mustUnderstand==1
-     * in the "urn:schemas-microsoft-com:xml-analysis" namespace 
+     * in the "urn:schemas-microsoft-com:xml-analysis" namespace
      * Header elements and a NamespaceCompatibility mustUnderstand==0
      * in the "http://schemas.microsoft.com/analysisservices/2003/xmla"
      * namespace. Here we handle only the session Header elements
-     * 
+     *
      */
     protected void handleSoapHeader(
             HttpServletResponse response,
-            Element[] requestSoapParts, 
+            Element[] requestSoapParts,
             byte[][] responseSoapParts,
             Map<String, String> context) throws XmlaException {
 
@@ -235,7 +235,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
                     }
                     // Is its value "1"
                     String mustUnderstandValue = attr.getValue();
-                    if ((mustUnderstandValue == null) || 
+                    if ((mustUnderstandValue == null) ||
                             (! mustUnderstandValue.equals("1"))) {
                         continue;
                     }
@@ -261,7 +261,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
                         sessionIdStr = generateSessionId(context);
 
                         context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
-                        context.put(CONTEXT_XMLA_SESSION_STATE, 
+                        context.put(CONTEXT_XMLA_SESSION_STATE,
                                     CONTEXT_XMLA_SESSION_STATE_BEGIN);
 
                     } else if (localName.equals(XMLA_SESSION)) {
@@ -269,7 +269,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
                         sessionIdStr = getSessionId(e, context);
 
                         context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
-                        context.put(CONTEXT_XMLA_SESSION_STATE, 
+                        context.put(CONTEXT_XMLA_SESSION_STATE,
                                     CONTEXT_XMLA_SESSION_STATE_WITHIN);
 
                     } else if (localName.equals(XMLA_END_SESSION)) {
@@ -277,7 +277,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
                         sessionIdStr = getSessionId(e, context);
 
                         context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
-                        context.put(CONTEXT_XMLA_SESSION_STATE, 
+                        context.put(CONTEXT_XMLA_SESSION_STATE,
                                     CONTEXT_XMLA_SESSION_STATE_END);
 
                     } else {
@@ -325,10 +325,10 @@ public class DefaultXmlaServlet extends XmlaServlet {
         if (callbacks.size() > 0) {
             // get only the first callback if it exists
             XmlaRequestCallback callback = callbacks.get(0);
-            return callback.generateSessionId(context); 
+            return callback.generateSessionId(context);
         } else {
             // what to do here, should Mondrian generate a Session Id?
-            // TODO: Maybe Mondrian ought to generate all Session Ids and 
+            // TODO: Maybe Mondrian ought to generate all Session Ids and
             // not the callback.
             return "";
         }
@@ -423,12 +423,12 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
     protected void marshallSoapMessage(
             HttpServletResponse response,
-            byte[][] responseSoapParts) 
+            byte[][] responseSoapParts)
             throws XmlaException {
 
         try {
             // If CharacterEncoding was set in web.xml, use this value
-            String encoding = (charEncoding != null) 
+            String encoding = (charEncoding != null)
                     ? charEncoding : response.getCharacterEncoding();
 
             /*
@@ -441,15 +441,15 @@ public class DefaultXmlaServlet extends XmlaServlet {
             response.setContentType("text/xml");
 
             /*
-             * The setCharacterEncoding, setContentType, or setLocale method 
-             * must be called BEFORE getWriter or getOutputStream and before 
+             * The setCharacterEncoding, setContentType, or setLocale method
+             * must be called BEFORE getWriter or getOutputStream and before
              * committing the response for the character encoding to be used.
              * http://tomcat.apache.org/tomcat-5.5-doc/servletapi/javax/servlet/ServletResponse.html
              */
             OutputStream outputStream = response.getOutputStream();
 
 
-            byte[] soapHeader = responseSoapParts[0]; 
+            byte[] soapHeader = responseSoapParts[0];
             byte[] soapBody = responseSoapParts[1];
 
             Object[] byteChunks = new Object[5];
@@ -572,9 +572,9 @@ public class DefaultXmlaServlet extends XmlaServlet {
         }
     }
 
-    /** 
-     * This produces a SOAP 1.1 version Fault element - not a 1.2 version. 
-     * 
+    /**
+     * This produces a SOAP 1.1 version Fault element - not a 1.2 version.
+     *
      */
     protected void handleFault(
                     HttpServletResponse response,
@@ -613,7 +613,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
             faultString = xex.getFaultString();
             faultCode = XmlaException.formatFaultCode(xex);
             detail = XmlaException.formatDetail(xex.getDetail());
-            
+
         } else {
             // some unexpected Throwable
             t = XmlaException.getRootCause(t);

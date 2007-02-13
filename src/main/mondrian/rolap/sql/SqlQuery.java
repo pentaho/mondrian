@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2006 Julian Hyde and others
+// Copyright (C) 2002-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -355,7 +355,7 @@ public class SqlQuery
             addSelect(expression, nextColumnAlias());
         }
     }
-    
+
     public int getCurrentSelectListSize()
     {
         return select.size();
@@ -1342,13 +1342,13 @@ public class SqlQuery
         public boolean requiresOrderByAlias() {
             return isMySQL() || isDB2() || isIngres();
         }
-        
+
         /**
          * Returns true if this dialect supports multi-value IN expressions.
          * E.g.,
-         * 
+         *
          * <code>WHERE (col1, col2) IN ((val1a, val2a), (val1b, val2b))</code>
-         * 
+         *
          * @return true if the dialect supports multi-value IN expressions
          */
         public boolean supportsMultiValueInExpr() {

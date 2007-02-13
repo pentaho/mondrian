@@ -353,7 +353,7 @@ public class Formula extends QueryPart {
             // for an example).
             return null;
         }
-        
+
         // Burrow into the expression. If we find a member, use its format
         // string.
         try {

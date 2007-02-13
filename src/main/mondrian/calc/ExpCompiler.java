@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -186,51 +186,51 @@ public interface ExpCompiler {
         VALUE
     }
 
-    ResultStyle[] ANY_RESULT_STYLE_ARRAY = 
-        new ResultStyle[] { 
-            ResultStyle.ANY 
+    ResultStyle[] ANY_RESULT_STYLE_ARRAY =
+        new ResultStyle[] {
+            ResultStyle.ANY
         };
-    ResultStyle[] ITERABLE_RESULT_STYLE_ARRAY = 
-        new ResultStyle[] { 
-            ResultStyle.ITERABLE 
+    ResultStyle[] ITERABLE_RESULT_STYLE_ARRAY =
+        new ResultStyle[] {
+            ResultStyle.ITERABLE
         };
-    ResultStyle[] MUTABLE_LIST_RESULT_STYLE_ARRAY = 
-        new ResultStyle[] { 
-            ResultStyle.MUTABLE_LIST 
+    ResultStyle[] MUTABLE_LIST_RESULT_STYLE_ARRAY =
+        new ResultStyle[] {
+            ResultStyle.MUTABLE_LIST
         };
-    ResultStyle[] LIST_RESULT_STYLE_ARRAY = 
-        new ResultStyle[] { 
-            ResultStyle.LIST 
+    ResultStyle[] LIST_RESULT_STYLE_ARRAY =
+        new ResultStyle[] {
+            ResultStyle.LIST
         };
 
-    ResultStyle[] ITERABLE_ANY_RESULT_STYLE_ARRAY = 
-        new ResultStyle[] { 
+    ResultStyle[] ITERABLE_ANY_RESULT_STYLE_ARRAY =
+        new ResultStyle[] {
             ResultStyle.ITERABLE,
             ResultStyle.ANY
         };
-    ResultStyle[] ITERABLE_LIST_RESULT_STYLE_ARRAY = 
-        new ResultStyle[] { 
+    ResultStyle[] ITERABLE_LIST_RESULT_STYLE_ARRAY =
+        new ResultStyle[] {
             ResultStyle.ITERABLE,
             ResultStyle.LIST
         };
-    ResultStyle[] ITERABLE_MUTABLE_LIST_RESULT_STYLE_ARRAY = 
-        new ResultStyle[] { 
+    ResultStyle[] ITERABLE_MUTABLE_LIST_RESULT_STYLE_ARRAY =
+        new ResultStyle[] {
             ResultStyle.ITERABLE,
             ResultStyle.MUTABLE_LIST
         };
-    ResultStyle[] ITERABLE_LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY = 
-        new ResultStyle[] { 
+    ResultStyle[] ITERABLE_LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY =
+        new ResultStyle[] {
             ResultStyle.ITERABLE,
             ResultStyle.LIST,
             ResultStyle.MUTABLE_LIST
         };
-    ResultStyle[] LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY = 
-        new ResultStyle[] { 
+    ResultStyle[] LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY =
+        new ResultStyle[] {
             ResultStyle.LIST,
             ResultStyle.MUTABLE_LIST
         };
-    ResultStyle[] MUTABLE_LIST_LIST_RESULT_STYLE_ARRAY = 
-        new ResultStyle[] { 
+    ResultStyle[] MUTABLE_LIST_LIST_RESULT_STYLE_ARRAY =
+        new ResultStyle[] {
             ResultStyle.MUTABLE_LIST,
             ResultStyle.LIST
         };

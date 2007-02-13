@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2006 Julian Hyde and others
+// Copyright (C) 2005-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -90,7 +90,7 @@ public class CaptionTest extends TestCase {
             "  == Agreement, available at the following URL:\n" +
             "  == http://www.opensource.org/licenses/cpl.html.\n" +
             "  == Copyright (C) 2000-2002 Kana Software, Inc.\n" +
-            "  == Copyright (C) 2001-2005 Julian Hyde and others\n" +
+            "  == Copyright (C) 2001-2007 Julian Hyde and others\n" +
             "  == All Rights Reserved.\n" +
             "  == You must accept the terms of that agreement to use this software.\n" +
             "  -->\n" +

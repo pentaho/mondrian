@@ -138,7 +138,7 @@ public class ResolvedFunCall extends ExpBase implements FunCall {
         Exp[] newArgs = new Exp[args.length];
         FunUtil.resolveFunArgs(
             validator, args, newArgs, getFunName(), getSyntax());
-        
+
         return this;
     }
 

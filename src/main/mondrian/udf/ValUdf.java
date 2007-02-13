@@ -17,14 +17,14 @@ import mondrian.spi.UserDefinedFunction;
 
 /**
  * VB function <code>Val</code>
- * 
+ *
  * @author Gang Chen
  */
 public class ValUdf implements UserDefinedFunction {
 
     public Object execute(Evaluator evaluator, Argument[] arguments) {
         Object arg = arguments[0].evaluateScalar(evaluator);
-        
+
         if (arg instanceof Number) {
             return new Double(((Number) arg).doubleValue());
         } else {

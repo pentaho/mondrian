@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2006 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -778,7 +778,7 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public final StringProperty AlertNativeEvaluationUnsupported =
         new StringProperty(this, "mondrian.native.unsupported.alert", "OFF");
-    
+
     /**
      * If enabled, first row in the result of an XML/A drill-through request
      * will be filled with the total count of rows in underlying database.
@@ -836,14 +836,14 @@ public class MondrianProperties extends TriggerableProperties {
     public final IntegerProperty QueryTimeout = new IntegerProperty(
         this, "mondrian.rolap.queryTimeout", 0);
 
-    
+
     /**
      * Whether non-existent member errors should be ignored during schema
      * load
      */
     public final BooleanProperty IgnoreInvalidMembers = new BooleanProperty(
         this, "mondrian.rolap.ignoreInvalidMembers", false);
-    
+
     /**
      * Iteration limit when computing an aggregate; 0 indicates unlimited
      */

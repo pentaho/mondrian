@@ -44,7 +44,7 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
     public void addLevelConstraint(
         SqlQuery query,
         AggStar aggStar,
-        RolapLevel level, 
+        RolapLevel level,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap)
     {
         super.addLevelConstraint(query, aggStar, level, levelToColumnMap);

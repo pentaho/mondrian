@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -71,18 +71,18 @@ class FilterFunDef extends FunDefBase {
     }
 
 
-    /** 
-     * Returns an IterCalc. 
+    /**
+     * Returns an IterCalc.
      * Here we would like to get either a IterCalc or ListCalc (mutable)
      * from the inner expression. For the IterCalc, its Iterator
      * can be wrapped with another Iterator that filters each element.
      * For the mutable list, remove all members that are filtered.
-     * 
-     * @param call 
-     * @param compiler 
-     * @return 
+     *
+     * @param call
+     * @param compiler
+     * @return
      */
-    protected Calc compileCallIterable(final ResolvedFunCall call, 
+    protected Calc compileCallIterable(final ResolvedFunCall call,
             ExpCompiler compiler) {
         // want iterable, mutable list or immutable list in that order
         Calc imlcalc = compiler.compile(call.getArg(0),
@@ -199,9 +199,9 @@ class FilterFunDef extends FunDefBase {
             final BooleanCalc bcalc = (BooleanCalc) calcs[1];
 
             final Evaluator evaluator2 = evaluator.push();
-            // This does dynamics, just in time, 
+            // This does dynamics, just in time,
             // as needed filtering
-            final Iterable<Member> iter = (Iterable<Member>) 
+            final Iterable<Member> iter = (Iterable<Member>)
                     icalc.evaluateIterable(evaluator);
 
             Iterable result = new Iterable<Member>() {
@@ -215,13 +215,13 @@ class FilterFunDef extends FunDefBase {
                             }
                             if (! it.hasNext()) {
                                 return false;
-                            } 
+                            }
                             this.m = it.next();
                             evaluator2.setContext(this.m);
                             while (! bcalc.evaluateBoolean(evaluator2)) {
                                 if (! it.hasNext()) {
                                     return false;
-                                } 
+                                }
                                 this.m = it.next();
                                 evaluator2.setContext(this.m);
                             }
@@ -305,9 +305,9 @@ class FilterFunDef extends FunDefBase {
 
             final Evaluator evaluator2 = evaluator.push();
 
-            // This does dynamics, just in time, 
+            // This does dynamics, just in time,
             // as needed filtering
-            final Iterable<Member[]> iter = (Iterable<Member[]>) 
+            final Iterable<Member[]> iter = (Iterable<Member[]>)
                     icalc.evaluateIterable(evaluator);
             Iterable result = new Iterable<Member[]>() {
                 public Iterator<Member[]> iterator() {
@@ -320,13 +320,13 @@ class FilterFunDef extends FunDefBase {
                             }
                             if (! it.hasNext()) {
                                 return false;
-                            } 
+                            }
                             this.m = it.next();
                             evaluator2.setContext(this.m);
                             while (! bcalc.evaluateBoolean(evaluator2)) {
                                 if (! it.hasNext()) {
                                     return false;
-                                } 
+                                }
                                 this.m = it.next();
                                 evaluator2.setContext(this.m);
                             }
@@ -350,14 +350,14 @@ class FilterFunDef extends FunDefBase {
     }
 
 
-    /** 
-     * Returns an ListCalc. 
-     * 
-     * @param call 
-     * @param compiler 
-     * @return 
+    /**
+     * Returns an ListCalc.
+     *
+     * @param call
+     * @param compiler
+     * @return
      */
-    protected Calc compileCallList(final ResolvedFunCall call, 
+    protected Calc compileCallList(final ResolvedFunCall call,
             ExpCompiler compiler) {
         Calc ilcalc = compiler.compile(call.getArg(0),
                 ExpCompiler.MUTABLE_LIST_LIST_RESULT_STYLE_ARRAY

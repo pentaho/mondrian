@@ -28,14 +28,14 @@ public class Base64Test extends TestCase
 {
     private static final long SEED = 12345678;
     private static Random s_random = new Random(SEED);
-    
+
     private byte[] createData(int length) throws Exception
     {
         byte[] bytes = new byte[length];
         s_random.nextBytes(bytes);
         return bytes;
     }
-    
+
     private void runStreamTest(int length) throws Exception
     {
         byte[] data = createData(length);
@@ -46,7 +46,7 @@ public class Base64Test extends TestCase
         byte[] encoded = out_bytes.toByteArray();
         byte[] decoded = Base64.decode(encoded, 0, encoded.length);
         assertTrue(Arrays.equals(data, decoded));
-        
+
         Base64.InputStream in = new Base64.InputStream(new ByteArrayInputStream(encoded));
         out_bytes = new ByteArrayOutputStream();
         byte[] buffer = new byte[3];
@@ -58,7 +58,7 @@ public class Base64Test extends TestCase
         decoded = out_bytes.toByteArray();
         assertTrue(Arrays.equals(data, decoded));
     }
-    
+
     public void testStreams() throws Exception
     {
         for (int i = 0; i < 100; ++i) {

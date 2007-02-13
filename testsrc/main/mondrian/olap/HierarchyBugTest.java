@@ -27,7 +27,7 @@ public class HierarchyBugTest extends FoodMartTestCase {
         JPivot with the current version of Mondrian. With the previous
         version of Mondrian (and JPivot), pre compilation Mondrian,
         this was not a bug (or at least Mondrian did not have a null
-        hierarchy). 
+        hierarchy).
         Here the Time dimension is not returned in axis == 0, rather
         null is returned. This causes a NullPointer exception in JPivot
         when it tries to access the (null) hierarchy's name.
@@ -35,7 +35,7 @@ public class HierarchyBugTest extends FoodMartTestCase {
         the parse ought to pick it up.
      */
     public void testNoHierarchy() {
-        String queryString = 
+        String queryString =
             "select NON EMPTY " +
             "Crossjoin(Hierarchize(Union({[Time].LastSibling}, " +
             "[Time].LastSibling.Children)), " +
@@ -63,7 +63,7 @@ public class HierarchyBugTest extends FoodMartTestCase {
                     }
                 }
             }
-        }       
+        }
         if (failStr != null) {
             fail (failStr);
         }

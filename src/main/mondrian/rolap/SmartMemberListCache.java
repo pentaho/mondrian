@@ -30,7 +30,7 @@ import mondrian.rolap.sql.SqlConstraint;
  *   ...
  *   WHERE ([Store#14], [Product].[Product#1])
  * </pre>
- * 
+ *
  * The first set, <em>all</em> customers are computed, in the second only those, who
  * have bought Product#1 in Store#14. We want to put both results into the cache. Then the
  * key for the cache entry is the Level that the members belong to <em>plus</em> the
@@ -38,7 +38,7 @@ import mondrian.rolap.sql.SqlConstraint;
  * consists of the Level and the cacheKey of the {@link mondrian.rolap.sql.SqlConstraint}
  *
  * @see mondrian.rolap.sql.SqlConstraint#getCacheKey
- * 
+ *
  * @author av
  * @since Nov 21, 2005
  * @version $Id$

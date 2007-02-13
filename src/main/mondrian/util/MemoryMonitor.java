@@ -9,65 +9,65 @@
 */
 package mondrian.util;
 
-/** 
+/**
  * The <code>MemoryMonitor</code> interface defines the API for
  * Mondrian's memory monitors. For Java4, the available monitors
  * do nothing since there is no reliable way of detecting that
  * memory is running low using such a JVM (you are welcome to
  * try to create one, but I believe you will fail - some such candidates
- * only make it more likely that an OutOfMemory condition will occur). 
+ * only make it more likely that an OutOfMemory condition will occur).
  * For Java5 one
  * can optionally enable a monitor which is based upon the Java5
  * memory classes locate in java.lang.management.
  * <p>
- * Clients implement the <code>MemoryMonitor.Listener</code> interface and 
+ * Clients implement the <code>MemoryMonitor.Listener</code> interface and
  * register with the <code>MemoryMonitor</code>.
  * <p>
- * The <code>MemoryMonitor</code> supports having multiple 
- * <code>Listener</code> clients. The clients can have the same 
+ * The <code>MemoryMonitor</code> supports having multiple
+ * <code>Listener</code> clients. The clients can have the same
  * threshold percentage or different values. The threshold percentage value
  * is used by the <code>MemoryMonitor</code> to determine when to
  * notify a client. It is the percentage of the total memory,
- * 100 * free-memory / total-memory (0 $lt;= free-memory $lt;= total-memory). 
- * 
+ * 100 * free-memory / total-memory (0 $lt;= free-memory $lt;= total-memory).
+ *
  * @author <a>Richard M. Emberson</a>
  * @since Feb 01 2007
  * @version $Id$
  */
 public interface MemoryMonitor {
 
-    /** 
+    /**
      * Adds a <code>Listener</code> to the <code>MemoryMonitor</code> with
      * a given threshold percentage.
      *
      * <p>If the threshold percentage value is below the system's current
-     * value, then the * <code>Listener</code> will have its notification 
-     * callback called * while in this method - so a client should 
-     * always check if its notification method was called immediately 
+     * value, then the * <code>Listener</code> will have its notification
+     * callback called * while in this method - so a client should
+     * always check if its notification method was called immediately
      * after calling this method.
-     * 
+     *
      * @param listener the <code>Listener</code> being added.
      * @param thresholdPercentage the notification threshold percentage.
-     * @return 
+     * @return
      */
     boolean addListener(Listener listener, int thresholdPercentage);
 
-    /** 
+    /**
      * Adds a <code>Listener</code> to the <code>MemoryMonitor</code> and
      * uses the default threshold percentage.
      *
      * <p>If the default threshold percentage value is below the system's
      * current value, then the listener's notification
      * callback will be called while in this method - so a client should
-     * always check if its notification method was called immediately 
+     * always check if its notification method was called immediately
      * after calling this method.
-     * 
+     *
      * @param listener the <code>Listener</code> being added.
-     * @return 
+     * @return
      */
     boolean addListener(final Listener listener);
 
-    /** 
+    /**
      * Changes the threshold percentage of a given <code>Listener</code>.
      *
      * <p>If the new value is below the system's current value, then the
@@ -76,8 +76,8 @@ public interface MemoryMonitor {
      * notification method was called immediately after calling this
      * method.
      * <p>
-     * This method can be used if, for example, an algorithm has 
-     * different approaches that result in different memory 
+     * This method can be used if, for example, an algorithm has
+     * different approaches that result in different memory
      * usage profiles; one, large memory but fast and
      * a second which is low-memory but slow. The algorithm starts
      * with the large memory approach, receives a low memory
@@ -88,38 +88,38 @@ public interface MemoryMonitor {
      * approach, possibly a file based algorithm, has smaller memory
      * requirements and uses memory less quickly thus one can
      * live with a higher notification threshold percentage.
-     * 
-     * @param listener 
-     * @param percentage 
+     *
+     * @param listener
+     * @param percentage
      */
     void updateListenerThreshold(Listener listener, int percentage);
 
-    /** 
+    /**
      * Removes a <code>Listener</code> from the <code>MemoryMonitor</code>.
      * Returns <code>true</code> if listener was removed and
      * <code>false</code> otherwise.
-     * 
+     *
      * @param listener the listener to be removed
      * @return <code>true</code> if listener was removed.
      */
     boolean removeListener(Listener listener);
 
-    /** 
-     * Clear out all <code>Listener</code>s and turnoff JVM 
+    /**
+     * Clear out all <code>Listener</code>s and turnoff JVM
      * memory notification.
      */
     void removeAllListener();
 
-    /** 
+    /**
      * Returns the maximum memory usage.
-     * 
+     *
      * @return the maximum memory usage.
      */
     long getMaxMemory();
 
-    /** 
+    /**
      * Returns the current memory used.
-     * 
+     *
      * @return the current memory used.
      */
     long getUsedMemory();
@@ -167,15 +167,15 @@ public interface MemoryMonitor {
         void memoryUsageNotification(long usedMemory, long maxMemory);
     }
 
-    /** 
-     * This is an interface that a <code>MemoryMonitor</code> may optionally 
+    /**
+     * This is an interface that a <code>MemoryMonitor</code> may optionally
      * implement. These methods give the tester access to some of the
      * internal, white-box data.
      * <p>
      * During testing Mondrian has a default
      * <code>MemoryMonitor</code> which might be replaced with a test
-     * <code>MemoryMonitor</code>s using the <code>ThreadLocal</code> 
-     * mechanism. After the test using the test 
+     * <code>MemoryMonitor</code>s using the <code>ThreadLocal</code>
+     * mechanism. After the test using the test
      * <code>MemoryMonitor</code> finishes, a call to the
      * <code>resetFromTest</code> method allows
      * the default <code>MemoryMonitor</code> reset itself.
@@ -183,11 +183,11 @@ public interface MemoryMonitor {
      */
     interface Test {
 
-        /** 
+        /**
          * This should only be called when one is switching from a
-         * test <code>MemoryMonitor</code> back to the default system 
+         * test <code>MemoryMonitor</code> back to the default system
          * <code>MemoryMonitor</code>. In particular, look at
-         * the <code>MemoryMonitorFactory</code>'s 
+         * the <code>MemoryMonitorFactory</code>'s
          * <code>clearThreadLocalClassName()</code> method for its
          * usage.
          */

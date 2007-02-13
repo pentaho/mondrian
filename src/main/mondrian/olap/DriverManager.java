@@ -39,9 +39,9 @@ public class DriverManager {
      *   See {@link Util#parseConnectString} for more details of the format.
      *   See {@link mondrian.rolap.RolapConnectionProperties} for a list of
      *   allowed properties.
-     * @param locator Use to locate real catalog url by a customized 
-     *   configuration value. If <code>null</code>, leave the catalog url 
-     *   unchanged. 
+     * @param locator Use to locate real catalog url by a customized
+     *   configuration value. If <code>null</code>, leave the catalog url
+     *   unchanged.
      * @param fresh If <code>true</code>, a new connection is created;
      *   if <code>false</code>, the connection may come from a connection pool.
      * @return A {@link Connection}
@@ -72,8 +72,8 @@ public class DriverManager {
      * @param properties Collection of properties which define the location
      *   of the connection.
      *   See {@link RolapConnection} for a list of allowed properties.
-     * @param locator Use to locate real catalog url by a customized 
-     *   configuration value. If <code>null</code>, leave the catalog url 
+     * @param locator Use to locate real catalog url by a customized
+     *   configuration value. If <code>null</code>, leave the catalog url
      *   unchanged.
      * @param fresh If <code>true</code>, a new connection is created;
      *   if <code>false</code>, the connection may come from a connection pool.
@@ -86,15 +86,15 @@ public class DriverManager {
             boolean fresh) {
         return getConnection(properties, locator, null, fresh);
     }
-    
+
     /**
      * Creates a connection to a Mondrian OLAP Server.
      *
      * @param properties Collection of properties which define the location
      *   of the connection.
      *   See {@link RolapConnection} for a list of allowed properties.
-     * @param locator Use to locate real catalog url by a customized 
-     *   configuration value. If <code>null</code>, leave the catalog url 
+     * @param locator Use to locate real catalog url by a customized
+     *   configuration value. If <code>null</code>, leave the catalog url
      *   unchanged.
      * @param dataSource - if not null an external DataSource to be used
      *        by Mondrian

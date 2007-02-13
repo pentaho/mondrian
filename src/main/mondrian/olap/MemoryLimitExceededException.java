@@ -19,7 +19,7 @@ package mondrian.olap;
  *
  * @version $Id$
  */
-public class MemoryLimitExceededException 
+public class MemoryLimitExceededException
         extends ResultLimitExceededException {
 
     public MemoryLimitExceededException(String message) {

@@ -11,11 +11,11 @@ package mondrian.xmla;
 
 import mondrian.olap.MondrianException;
 
-/** 
+/**
  * An exception thrown while processing an XMLA request. The faultcode
  * corresponds to the SOAP Fault faultcode and the faultstring
  * to the SOAP Fault faultstring.
- * 
+ *
  * @author <a>Richard M. Emberson</a>
  * @version $Id$
  */
@@ -25,15 +25,15 @@ public class XmlaException extends MondrianException {
         return formatFaultCode(xex.getFaultCode(), xex.getCode());
     }
     public static String formatFaultCode(String faultCode, String code) {
-        return formatFaultCode(XmlaConstants.SOAP_PREFIX, 
+        return formatFaultCode(XmlaConstants.SOAP_PREFIX,
                 faultCode, code);
     }
-    public static String formatFaultCode(String nsPrefix, 
+    public static String formatFaultCode(String nsPrefix,
                 String faultCode, String code) {
-        return nsPrefix + 
-            ':' + 
+        return nsPrefix +
+            ':' +
             faultCode +
-            '.' + 
+            '.' +
             code;
     }
     public static String formatDetail(String msg) {
@@ -48,13 +48,13 @@ public class XmlaException extends MondrianException {
         return t;
     }
 
-    private final String faultCode; 
-    private final String code; 
-    private final String faultString; 
+    private final String faultCode;
+    private final String code;
+    private final String faultString;
 
     public XmlaException(
-            String faultCode, 
-            String code, 
+            String faultCode,
+            String code,
             String faultString,
             Throwable cause) {
         super(faultString, cause);

@@ -56,7 +56,7 @@ class RolapConnectionPool {
      *   JDBC connect string or DataSource
      * @return a pooling DataSource object
      */
-    public synchronized DataSource getPoolingDataSource(Object key, 
+    public synchronized DataSource getPoolingDataSource(Object key,
                                        ConnectionFactory connectionFactory) {
         ObjectPool connectionPool = getPool(key, connectionFactory);
         // create pooling datasource
@@ -98,32 +98,32 @@ class RolapConnectionPool {
             // create a PoolableConnectionFactory
             AbandonedConfig abandonedConfig = new AbandonedConfig();
             // flag to remove abandoned connections from pool
-            abandonedConfig.setRemoveAbandoned(true); 
+            abandonedConfig.setRemoveAbandoned(true);
             // timeout (seconds) before removing abandoned connections
-            abandonedConfig.setRemoveAbandonedTimeout(300); 
+            abandonedConfig.setRemoveAbandonedTimeout(300);
             // Flag to log stack traces for application code which abandoned a
             // Statement or Connection
-            abandonedConfig.setLogAbandoned(true); 
-            PoolableConnectionFactory poolableConnectionFactory 
+            abandonedConfig.setLogAbandoned(true);
+            PoolableConnectionFactory poolableConnectionFactory
                 = new PoolableConnectionFactory(
                     // the connection factory
-                    connectionFactory, 
+                    connectionFactory,
                     // the object pool
-                    connectionPool, 
+                    connectionPool,
                     // statement pool factory for pooling prepared statements,
                     // or null for no pooling
-                    null, 
+                    null,
                     // validation query (must return at least 1 row e.g. Oracle:
                     // select count(*) from dual) to test connection, can be
                     // null
-                    null, 
+                    null,
                     // default "read only" setting for borrowed connections
-                    false, 
+                    false,
                     // default "auto commit" setting for returned connections
-                    true, 
+                    true,
                     // AbandonedConfig object configures how to handle abandoned
                     // connections
-                    abandonedConfig 
+                    abandonedConfig
             );
             // "poolableConnectionFactory" has registered itself with
             // "connectionPool", somehow, so we don't need the value any more.

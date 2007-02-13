@@ -133,7 +133,7 @@ public interface Calc {
      * whether the compiled expression is returning a mutable list. If a mutable
      * list is required, the compiler can create a mutable copy.
      *
-     * @see ExpCompiler#compileList(mondrian.olap.Exp, boolean) 
+     * @see ExpCompiler#compileList(mondrian.olap.Exp, boolean)
      */
     ExpCompiler.ResultStyle getResultStyle();
 }

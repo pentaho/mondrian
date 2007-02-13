@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2003-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -122,11 +122,11 @@ public enum RolapConnectionProperties {
      * default will be used, as per {@link java.util.Locale#getDefault()}.
      */
     Locale,
-    
+
     /**
      * The name of a class implementing the
      * {@link mondrian.spi.DataSourceChangeListener} interface.
-     * A data source change listener is used to flush the cache of 
+     * A data source change listener is used to flush the cache of
      * mondrian every time the datasource is changed.
      */
     DataSourceChangeListener;

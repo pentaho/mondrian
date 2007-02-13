@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -45,7 +45,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
         }
         return super.validateArg(validator, args, i, category);
     }
-    
+
     /**
      * Evaluates the list of members used in computing the aggregate.
      * Keeps track of the number of iterations that will be required to
@@ -53,10 +53,10 @@ public class AbstractAggregateFunDef extends FunDefBase {
      * current context.  In doing so, also determines if the cross product
      * of all iterations across all parent evaluation contexts will exceed the
      * limit set in the properties file.
-     * 
+     *
      * @param listCalc calculator used to evaluate the member list
      * @param evaluator current evalutor
-     * 
+     *
      * @return list of evaluated members
      */
     protected List evaluateCurrentList(ListCalc listCalc, Evaluator evaluator) {
@@ -67,7 +67,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
 
         return memberList;
     }
-    protected Iterable evaluateCurrentIterable(IterCalc iterCalc, 
+    protected Iterable evaluateCurrentIterable(IterCalc iterCalc,
                 Evaluator evaluator) {
         Iterable iter = iterCalc.evaluateIterable(evaluator);
 
@@ -93,7 +93,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
         }
         evaluator.setIterationLength(currLen);
     }
-    
+
 }
 
 // End AbstractAggregateFunDef.java

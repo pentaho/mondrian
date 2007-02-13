@@ -10,7 +10,7 @@ package mondrian.rolap.cache;
 
 /**
  * Defines a cache API. Implementations exist for hard and soft references.
- * 
+ *
  * @author av
  * @since Nov 21, 2005
  * @version $Id$

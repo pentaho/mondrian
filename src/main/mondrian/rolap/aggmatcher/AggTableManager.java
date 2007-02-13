@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2006 Julian Hyde and others
+// Copyright (C) 2005-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -58,13 +58,13 @@ public class AggTableManager {
     public AggTableManager(final RolapSchema schema) {
         this.schema = schema;
     }
-    
-    /** 
+
+    /**
      * This should ONLY be called if the AggTableManager is no longer going
-     * to be used. In fact, it should only be called indirectly by its 
+     * to be used. In fact, it should only be called indirectly by its
      * associated RolapSchema object.
      */
-    public void finalCleanUp() { 
+    public void finalCleanUp() {
         removeJdbcSchema();
         deregisterTriggers(MondrianProperties.instance());
 
@@ -385,7 +385,7 @@ public class AggTableManager {
             }
         };
 
-        // Note that for each AggTableManager theses triggers are 
+        // Note that for each AggTableManager theses triggers are
         // added to the properties object. Each trigger has just
         // been created and "knows" its AggTableManager instance.
         // The triggers' hashCode and equals methods (those provided

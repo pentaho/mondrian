@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2006 Julian Hyde
+// Copyright (C) 2003-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,7 +12,7 @@
 package mondrian.test;
 
 /**
- * <code>ClearViewTest</code> is a test case which tests complex 
+ * <code>ClearViewTest</code> is a test case which tests complex
  * queries against the FoodMart database.
  *
  * @author Richard Emberson

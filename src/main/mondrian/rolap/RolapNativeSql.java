@@ -32,12 +32,12 @@ public class RolapNativeSql {
     CompositeSqlCompiler booleanCompiler;
 
     RolapStoredMeasure storedMeasure;
-    
+
     /**
-     * We remember one of the measures so we can generate 
-     * the constraints from RolapAggregationManager. Also 
+     * We remember one of the measures so we can generate
+     * the constraints from RolapAggregationManager. Also
      * make sure all measures live in the same star.
-     * 
+     *
      * @see RolapAggregationManager#makeRequest(Member[], boolean, boolean)
      */
     private boolean saveStoredMeasure(RolapStoredMeasure m) {
@@ -54,7 +54,7 @@ public class RolapNativeSql {
     private RolapStar getStar(RolapStoredMeasure m) {
         return ((RolapStar.Measure )m.getStarMeasure()).getStar();
     }
-    
+
     /**
      * Translates an expression into SQL
      *

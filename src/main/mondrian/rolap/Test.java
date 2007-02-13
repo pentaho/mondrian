@@ -101,7 +101,7 @@ public class Test {
     void run()
     {
         RolapCube salesCube = (RolapCube) connection.getSchema().lookupCube("Sales", true);
-        RolapHierarchy measuresHierarchy = 
+        RolapHierarchy measuresHierarchy =
                 (RolapHierarchy) salesCube.getMeasuresHierarchy();
         testMemberReader(measuresHierarchy.getMemberReader());
 

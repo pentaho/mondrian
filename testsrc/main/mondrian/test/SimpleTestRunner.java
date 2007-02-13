@@ -52,7 +52,7 @@ public class SimpleTestRunner {
 
         return (TestCase) cls.newInstance();
     }
-    protected static TestCase makeTestCase(String classname, String methodname) 
+    protected static TestCase makeTestCase(String classname, String methodname)
             throws Exception {
 
         Class cls = Class.forName(classname);

@@ -64,14 +64,14 @@ public class CurrentDateMemberUdf implements UserDefinedFunction {
         if (retDate != null) {
             return retDate;
         }
-        
+
         // if there is no matching member, return the null member for
         // the specified dimension/hierarchy
         Object arg0 = arguments[0].evaluate(evaluator);
         if (arg0 instanceof Hierarchy) {
             return ((Hierarchy) arg0).getNullMember();
         } else {
-            return ((Dimension) arg0).getHierarchy().getNullMember();  
+            return ((Dimension) arg0).getHierarchy().getNullMember();
         }
     }
 

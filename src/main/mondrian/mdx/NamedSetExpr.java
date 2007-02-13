@@ -88,8 +88,8 @@ public class NamedSetExpr extends ExpBase implements Exp {
     }
 
     public Object accept(MdxVisitor visitor) {
-        Object o = visitor.visit(this);        
-        namedSet.getExp().accept(visitor);        
+        Object o = visitor.visit(this);
+        namedSet.getExp().accept(visitor);
         return o;
     }
 

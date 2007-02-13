@@ -64,14 +64,14 @@ public class RolapNativeRegistry extends RolapNative {
             rn.setListener(listener);
         }
     }
-    
+
     /** for testing */
     void useHardCache(boolean hard) {
         for (RolapNative rn : natives) {
             rn.useHardCache(hard);
         }
     }
-    
+
 }
 
 // End RolapNativeRegistry.java

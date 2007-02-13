@@ -12,13 +12,13 @@ package mondrian.rolap.aggmatcher;
 import mondrian.test.loader.CsvDBTestCase;
 import mondrian.olap.MondrianProperties;
 
-/** 
+/**
  * This abstract class can be used as the basis for writing aggregate table
  * test in the "testsrc/main/mondrian/rolap/aggmatcher" directory. Taken care
  * of is the setting of the Caching and Aggregate Read/Use properties and
  * the reloading of the aggregate tables after the CSV tables are loaded.
  * The particular cube definition and CSV file to use are abstract methods.
- * 
+ *
  * @author <a>Richard M. Emberson</a>
  * @version  $Id$
  */
@@ -26,7 +26,7 @@ public abstract class AggTableTestCase extends CsvDBTestCase {
 
     private static final String DIRECTORY =
                             "testsrc/main/mondrian/rolap/aggmatcher";
-    
+
     private boolean currentUse;
     private boolean currentRead;
     private boolean do_caching_orig;
@@ -51,7 +51,7 @@ public abstract class AggTableTestCase extends CsvDBTestCase {
         props.DisableCaching.setString("true");
 
 
-        
+
         // re-read aggregates
         props.UseAggregates.setString("true");
         props.ReadAggregates.setString("false");

@@ -15,7 +15,7 @@ import mondrian.util.Bug;
  * Depending upon whether the 7641 code is used or not (its use
  * depends upon the existance of a System property) one gets different
  * answers when the mdx is evaluated.
- * 
+ *
  * @author Richard M. Emberson
  * @version $Id$
  */

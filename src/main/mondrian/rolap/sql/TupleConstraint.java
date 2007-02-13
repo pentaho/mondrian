@@ -34,7 +34,7 @@ public interface TupleConstraint extends SqlConstraint {
      *
      * @param sqlQuery the query to modify
      * @param levelToColumnMap maps a level to the column which holds its key
-     *   in the current RolapStar 
+     *   in the current RolapStar
      */
     public void addConstraint(
         SqlQuery sqlQuery,

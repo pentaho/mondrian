@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2006 Julian Hyde and others
+// Copyright (C) 2005-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -164,31 +164,31 @@ public class AggStar {
 
     private final RolapStar star;
     private final AggStar.FactTable aggTable;
-    
-    /** 
+
+    /**
      * This BitKey is for all of the columns in the AggStar (levels and
-     * measures). 
+     * measures).
      */
     private final BitKey bitKey;
-    
-    /** 
-     * BitKey of the levels (levels and foreign keys) of this AggStar. 
+
+    /**
+     * BitKey of the levels (levels and foreign keys) of this AggStar.
      */
     private final BitKey levelBitKey;
 
-    /** 
-     * BitKey of the measures of this AggStar. 
+    /**
+     * BitKey of the measures of this AggStar.
      */
     private final BitKey measureBitKey;
 
-    /** 
-     * BitKey of the foreign keys of this AggStar. 
+    /**
+     * BitKey of the foreign keys of this AggStar.
      */
     private final BitKey foreignKeyBitKey;
 
-    /** 
+    /**
      * BitKey of those measures of this AggStar that are distinct count
-     * aggregates. 
+     * aggregates.
      */
     private final BitKey distinctMeasureBitKey;
     private final AggStar.Table.Column[] columns;
@@ -746,11 +746,11 @@ public class AggStar {
                     getLogger().warn(msg);
                 }
             }
-            // Explicitly set which columns are foreign keys in the 
+            // Explicitly set which columns are foreign keys in the
             // AggStar. This lets us later determine if a measure is
             // based upon a foreign key (see AggregationManager findAgg
             // method).
-            mondrian.rolap.RolapStar.Column col = 
+            mondrian.rolap.RolapStar.Column col =
                 getAggStar().getStar().getFactTable().lookupColumn(left.name);
             if (col != null) {
                 getAggStar().setForeignKey(col.getBitPosition());
@@ -907,7 +907,7 @@ public class AggStar {
             public String generateRollupString(SqlQuery query) {
                 String expr = generateExprString(query);
                 // final Aggregator rollup = getAggregator().getRollup();
-                Aggregator rollup = (getAggregator().isDistinct()) 
+                Aggregator rollup = (getAggregator().isDistinct())
                     ? getAggregator().getNonDistinctAggregator()
                     : getAggregator().getRollup();
 
@@ -921,10 +921,10 @@ public class AggStar {
 
                 BitKey fkbk = AggStar.this.getForeignKeyBitKey();
                 // When rolling up and the aggregator is distinct and
-                // the measure is based upon a foreign key, then 
+                // the measure is based upon a foreign key, then
                 // one must use "count" rather than "sum"
                 if (fkbk.get(getBitPosition())) {
-                    rollup = (getAggregator().isDistinct()) 
+                    rollup = (getAggregator().isDistinct())
                         ? getAggregator().getNonDistinctAggregator()
                         : getAggregator().getRollup();
                 } else {

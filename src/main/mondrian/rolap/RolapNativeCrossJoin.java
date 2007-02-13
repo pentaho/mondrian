@@ -69,7 +69,7 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             return null;
         }
         RolapCube cube = (RolapCube) evaluator.getCube();
-        
+
         CrossJoinArg[] cargs = checkCrossJoin(fun, args);
         if (cargs == null) {
             // Something in the arguments to the crossjoin prevented

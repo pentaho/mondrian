@@ -12,16 +12,16 @@ import mondrian.util.Bug;
  * when the combined lists sizes are greater than 1000. I create a
  * property here which, if set, can be used to change that size from
  * 1000 to, in this case, 2. Also, there is a property that disables the
- * use of the optimization altogether and another that permits the 
+ * use of the optimization altogether and another that permits the
  * use of the old optimization, currently the nonEmptyListOld method in
- * the CrossJoinFunDef class, and the new, checkin 7634, version of the 
- * method called nonEmptyList. 
+ * the CrossJoinFunDef class, and the new, checkin 7634, version of the
+ * method called nonEmptyList.
  * The old optimization only looked at the default measure while the
  * new version looks at all measures appearing in the query.
  * The example Cube and data for the junit is such that there is no
  * data for the default measure. Thus the old optimization fails
  * to produce the correct result.
- * 
+ *
  * @author Richard M. Emberson
  * @version $Id$
  */
@@ -67,7 +67,7 @@ public class Checkin_7634 extends CsvDBTestCase {
 //System.out.println(resultString1);
         Bug.Checkin7634UseOptimizer = false;
 
-        // Execute query using the new version of the CrossJoin 
+        // Execute query using the new version of the CrossJoin
         // nonEmptyList optimization
 //System.out.println("OP NEW");
         Result result2 = getCubeTestContext().executeQuery(mdx);
@@ -78,7 +78,7 @@ public class Checkin_7634 extends CsvDBTestCase {
         assertEquals(resultString1, resultString2);
 
 //System.out.println("OP OLD");
-        // Execute query using the old version of the CrossJoin 
+        // Execute query using the old version of the CrossJoin
         // nonEmptyList optimization
         Bug.Checkin7634DoOld = true;
         Result result3 = getCubeTestContext().executeQuery(mdx);

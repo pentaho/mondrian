@@ -35,7 +35,7 @@ public class ParallelTest extends FoodMartTestCase {
     /**
      * Tests several threads, each of which is creating connections and
      * periodically flushing the schema cache.
-     * 
+     *
      * @param count
      * @param cycleCount
      * @param flushInverseFrequency

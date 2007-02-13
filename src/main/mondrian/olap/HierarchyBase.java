@@ -112,7 +112,7 @@ public abstract class HierarchyBase
     public OlapElement lookupChild(SchemaReader schemaReader, String s) {
         return lookupChild(schemaReader, s, MatchType.EXACT);
     }
-    
+
     public OlapElement lookupChild(
         SchemaReader schemaReader, String s, MatchType matchType)
     {

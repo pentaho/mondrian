@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2006 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -346,7 +346,7 @@ public class RolapCube extends CubeBase {
 
         // Must init the dimensions before dealing with calculated members
         init(xmlVirtualCube.dimensions);
-        
+
         // Loop through the base cubes containing calculated members
         // referenced by this virtual cube.  Resolve those members relative
         // to their base cubes first, then resolve them relative to this
@@ -368,7 +368,7 @@ public class RolapCube extends CubeBase {
             queryExp.accept(measureFinder);
             modifiedMeasureList.addAll(measureFinder.getMeasuresFound());
         }
-        
+
         // Add the original calculated members from the base cubes to our
         // list of calculated members
         List<MondrianDef.CalculatedMember> calculatedMemberList = new ArrayList<MondrianDef.CalculatedMember>();
@@ -378,8 +378,8 @@ public class RolapCube extends CubeBase {
                 calculatedMembersMap.get(baseCube));
         }
         calculatedMemberList.addAll(
-            Arrays.asList(xmlVirtualCube.calculatedMembers));         
-        
+            Arrays.asList(xmlVirtualCube.calculatedMembers));
+
         // Resolve all calculated members relative to this virtual cube,
         // whose measureHierarchy member reader now contains all base
         // measures referenced in those calculated members
@@ -398,7 +398,7 @@ public class RolapCube extends CubeBase {
                 new ArrayList<Formula>(),
                 this,
                 false);
-        
+
         // reset the measureHierarchy member reader back to the list of
         // measures that are only defined on this virtual cube
         measures =
@@ -407,7 +407,7 @@ public class RolapCube extends CubeBase {
         this.measuresHierarchy.setMemberReader(
             new CacheMemberReader(
                 new MeasureMemberSource(this.measuresHierarchy, measures)));
-        
+
         // remove from the calculated members array those members that weren't
         // originally defined on this virtual cube
         List<Formula> finalCalcMemberList = new ArrayList<Formula>();
@@ -429,7 +429,7 @@ public class RolapCube extends CubeBase {
 
         // Note: virtual cubes do not get aggregate
     }
-    
+
     private boolean findOriginalMembers(
         Formula formula,
         List<MondrianDef.CalculatedMember> calcMemberList,
@@ -681,7 +681,7 @@ return dim;
             List<Formula> formulaList,
             RolapCube cube,
             boolean errOnDups) {
-        
+
         final Query queryExp =
             resolveCalcMembers(
                 xmlCalcMembers,
@@ -702,7 +702,7 @@ return dim;
             postNamedSet(xmlNamedSets, xmlCalcMembers.length, i, queryExp, formulaList);
         }
     }
-    
+
     private Query resolveCalcMembers(
         MondrianDef.CalculatedMember[] xmlCalcMembers,
         MondrianDef.NamedSet[] xmlNamedSets,
@@ -1097,7 +1097,7 @@ assert is not true.
             star.clearCachedAggregations(false);
         }
     }
-    
+
     /**
      * Check if there are modifications in the aggregations cache
      */
@@ -1110,7 +1110,7 @@ assert is not true.
             schema.checkAggregateModifications();
         } else {
             star.checkAggregateModifications();
-        }        
+        }
     }
     /**
      * Push all modifications of the aggregations to global cache,
@@ -1125,9 +1125,9 @@ assert is not true.
             schema.pushAggregateModificationsToGlobalCache();
         } else {
             star.pushAggregateModificationsToGlobalCache();
-        }                
+        }
     }
-    
+
 
 
     /**
@@ -2384,7 +2384,7 @@ assert is not true.
             return RolapCube.this;
         }
     }
-    
+
     /**
      * Visitor that walks an MDX parse tree containing formulas
      * associated with calculated members defined in a base cube but
@@ -2401,27 +2401,27 @@ assert is not true.
          * referenced from
          */
         private RolapCube virtualCube;
-        
+
         /**
          * The base cube where the original calculated member is defined
          */
         private RolapCube baseCube;
-        
+
         /**
          * The measures level corresponding to the virtual cube
          */
         private RolapLevel measuresLevel;
-        
+
         /**
          * List of measures found
          */
         private List<RolapVirtualCubeMeasure> measuresFound;
-        
+
         /**
          * List of calculated members found
          */
         private List<RolapCalculatedMember> calcMembersSeen;
-        
+
         public MeasureFinder(
             RolapCube virtualCube,
             RolapCube baseCube,
@@ -2433,7 +2433,7 @@ assert is not true.
             this.measuresFound = new ArrayList<RolapVirtualCubeMeasure>();
             this.calcMembersSeen = new ArrayList<RolapCalculatedMember>();
         }
-        
+
         public Object visit(MemberExpr memberExpr)
         {
             Member member = memberExpr.getMember();
@@ -2448,7 +2448,7 @@ assert is not true.
                 Formula formula = calcMember.getFormula();
                 formula.accept(this);
                 calcMembersSeen.add(calcMember);
-                
+
                 // now that we've located all measures referenced in the
                 // calculated member's formula, resolve the calculated
                 // member relative to the virtual cube
@@ -2471,7 +2471,7 @@ assert is not true.
                     virtualCube,
                     false);
                 return null;
-                
+
             } else if (member instanceof RolapBaseCubeMeasure) {
                 RolapBaseCubeMeasure baseMeasure =
                     (RolapBaseCubeMeasure) member;
@@ -2484,7 +2484,7 @@ assert is not true.
                     measuresFound.add(virtualCubeMeasure);
                 }
             }
-            
+
             return null;
         }
 
@@ -2493,7 +2493,7 @@ assert is not true.
             return measuresFound;
         }
     }
-    
+
     private class CubeComparator implements Comparator<RolapCube>
     {
         public int compare(RolapCube c1, RolapCube c2)

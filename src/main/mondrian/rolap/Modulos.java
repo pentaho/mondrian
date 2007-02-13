@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,29 +11,29 @@ package mondrian.rolap;
 
 import mondrian.olap.Axis;
 
-/** 
- * Modulos implementations encapsulate algorithms to map between integral 
+/**
+ * Modulos implementations encapsulate algorithms to map between integral
  * ordinals and position arrays. There are particular implementations for
  * the most likely cases where the number of axes is 1, 2 and 3
  * as well as a general implementation.
- * <p> 
+ * <p>
  * Suppose the result is 4 x 3 x 2, then modulo = {1, 4, 12, 24}.
  *
- * <p> 
+ * <p>
  * Then the ordinal of cell (3, 2, 1)
  * <p><blockquote><pre>
  *  = (modulo[0] * 3) + (modulo[1] * 2) + (modulo[2] * 1)
  *  = (1 * 3) + (4 * 2) + (12 * 1)
  *  = 23
  * </pre></blockquote><p>
- * <p> 
+ * <p>
  * Reverse calculation:
  * <p><blockquote><pre>
  * p[0] = (23 % modulo[1]) / modulo[0] = (23 % 4) / 1 = 3
  * p[1] = (23 % modulo[2]) / modulo[1] = (23 % 12) / 4 = 2
  * p[2] = (23 % modulo[3]) / modulo[2] = (23 % 24) / 12 = 1
  * </pre></blockquote><p>
- * 
+ *
  * @author jhyde
  * @version $Id$
  */
@@ -106,8 +106,8 @@ public interface Modulos {
             this.modulos[1] = axes[0].getPositions().size();
         }
         public final int[] getCellPos(final int cellOrdinal) {
-            return new int[] { 
-                (cellOrdinal % this.modulos[1]) 
+            return new int[] {
+                (cellOrdinal % this.modulos[1])
             };
         }
         public final int getCellOrdinal(final int[] pos) {

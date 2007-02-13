@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde
+// Copyright (C) 2006-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -51,7 +51,7 @@ class SumFunDef extends AbstractAggregateFunDef {
                 //return compileCallIterable(call, compiler);
                 return compileCall(call, compiler, ResultStyle.ITERABLE);
             case MUTABLE_LIST:
-                // Consumer wants MUTABLE_LIST 
+                // Consumer wants MUTABLE_LIST
                 return compileCall(call, compiler, ResultStyle.MUTABLE_LIST);
             case LIST :
                 // Consumer wants LIST to be used
@@ -69,7 +69,7 @@ class SumFunDef extends AbstractAggregateFunDef {
             rs
         );
     }
-    protected Calc compileCall(final ResolvedFunCall call, 
+    protected Calc compileCall(final ResolvedFunCall call,
             ExpCompiler compiler, ResultStyle resultStyle) {
         final Calc ncalc = compiler.compile(call.getArg(0),
                     new ResultStyle[] { resultStyle});
@@ -83,12 +83,12 @@ class SumFunDef extends AbstractAggregateFunDef {
             return genIterCalc(call, ncalc, calc);
         }
     }
-    protected Calc genIterCalc(final ResolvedFunCall call, 
+    protected Calc genIterCalc(final ResolvedFunCall call,
             final Calc ncalc, final Calc calc) {
         return new AbstractDoubleCalc(call, new Calc[] {ncalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
-                IterCalc iterCalc = (IterCalc) ncalc; 
-                Iterable iterable = 
+                IterCalc iterCalc = (IterCalc) ncalc;
+                Iterable iterable =
                     evaluateCurrentIterable(iterCalc, evaluator);
                 return sumDouble(evaluator.push(), iterable, calc);
             }
@@ -103,7 +103,7 @@ class SumFunDef extends AbstractAggregateFunDef {
         };
     }
 
-    protected Calc genListCalc(final ResolvedFunCall call, 
+    protected Calc genListCalc(final ResolvedFunCall call,
             final Calc ncalc, final Calc calc) {
         return new AbstractDoubleCalc(call, new Calc[] {ncalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {

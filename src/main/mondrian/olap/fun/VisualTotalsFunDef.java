@@ -231,7 +231,7 @@ public class VisualTotalsFunDef extends FunDefBase {
         public OlapElement lookupChild(SchemaReader schemaReader, String s) {
             throw new UnsupportedOperationException();
         }
-        
+
         public OlapElement lookupChild(
             SchemaReader schemaReader, String s, MatchType matchType) {
             throw new UnsupportedOperationException();

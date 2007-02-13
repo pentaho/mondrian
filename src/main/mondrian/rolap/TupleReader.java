@@ -17,7 +17,7 @@ import javax.sql.DataSource;
 
 /**
  * Describes the public methods of {@link mondrian.rolap.SqlTupleReader}.
- * 
+ *
  * @author av
  * @since Nov 21, 2005
  * @version $Id$
@@ -49,7 +49,7 @@ public interface TupleReader {
 
     /**
      * Adds a hierarchy to retrieve members from.
-     * 
+     *
      * @param level level that the members correspond to
      * @param memberBuilder used to build new members for this level
      * @param srcMembers if set, array of enumerated members that make up

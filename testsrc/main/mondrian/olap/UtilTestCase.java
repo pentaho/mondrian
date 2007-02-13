@@ -101,7 +101,7 @@ public class UtilTestCase extends TestCase {
         // successfully connect.
         p("Driver={SQL Server};Server={localhost};Trusted_Connection={yes};db={Northwind};", "Provider", "MSDASQL");
         }
-        
+
         // Specifying a Keyword
         //
         // To identify a keyword used after the Provider keyword, use the

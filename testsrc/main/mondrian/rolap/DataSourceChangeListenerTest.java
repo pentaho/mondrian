@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2007 Bart Pappyn
+// Copyright (C) 2007-2007 Bart Pappyn
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -39,8 +39,8 @@ import junit.framework.TestCase;
 public class DataSourceChangeListenerTest extends FoodMartTestCase {
     private static Logger logger = Logger.getLogger(DataSourceChangeListenerTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
-    
-          
+
+
     public DataSourceChangeListenerTest() {
         super();
     }
@@ -59,11 +59,11 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
 
         // turn on caching
         properties.DisableCaching.setString("false");
-        
+
         CachePool.instance().flush();
-        
+
         /* Use hard caching for testing. When using soft references, we can not test caching
-        * because things may be garbage collected during the tests. */        
+        * because things may be garbage collected during the tests. */
         SmartMemberReader smr = getSmartMemberReader("Store");
         smr.mapLevelToMembers.setCache(
             new HardSmartCache<
@@ -74,44 +74,44 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                 SmartMemberListCache.Key2<RolapMember, Object>,
                 List<RolapMember>>());
         smr.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
-        
+
         // Create a dummy DataSource which will throw a 'bomb' if it is asked
         // to execute a particular SQL statement, but will otherwise behave
         // exactly the same as the current DataSource.
         SqlLogger sqlLogger = new SqlLogger();
         RolapUtil.threadHooks.set(sqlLogger);
-                
+
         try {
             String s1, s2, s3, s4, s5, s6;
-            
-            // Flush the cache, to ensure that the query gets executed.            
+
+            // Flush the cache, to ensure that the query gets executed.
             RolapResult r1 = (RolapResult) executeQuery(
             "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
             Util.discard(r1);
             s1 = sqlLogger.getSqlQueries().toString();
-            sqlLogger.clear();            
+            sqlLogger.clear();
             // s1 should not be empty
             assertNotSame("[]", s1);
-            
+
             // Run query again, to make sure only cache is used
             RolapResult r2 = (RolapResult) executeQuery(
             "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
             Util.discard(r2);
             s2 = sqlLogger.getSqlQueries().toString();
-            sqlLogger.clear();                            
+            sqlLogger.clear();
             assertEquals("[]", s2);
-            
-            // Attach dummy change listener that tells mondrian the datasource is never changed            
+
+            // Attach dummy change listener that tells mondrian the datasource is never changed
             smr.changeListener = new DataSourceChangeListenerImpl();
-            
+
             // Run query again, to make sure only cache is used
             RolapResult r3 = (RolapResult) executeQuery(
             "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
             Util.discard(r3);
             s3 = sqlLogger.getSqlQueries().toString();
-            sqlLogger.clear();                            
+            sqlLogger.clear();
             assertEquals("[]",s3);
-            
+
             // Manually clear the cache to make compare sql result later on
             smr.mapKeyToMember.clear();
             smr.mapLevelToMembers.clear();
@@ -121,20 +121,20 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
             Util.discard(r4);
             s4 = sqlLogger.getSqlQueries().toString();
-            sqlLogger.clear();                            
-            assertNotSame("[]",s4);                                                           
-            
-            // Attach dummy change listener that tells mondrian the datasource is always changed            
+            sqlLogger.clear();
+            assertNotSame("[]",s4);
+
+            // Attach dummy change listener that tells mondrian the datasource is always changed
             smr.changeListener = new DataSourceChangeListenerImpl2();
-            
+
             // Run query again, to make sure only cache is used
             RolapResult r5 = (RolapResult) executeQuery(
             "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
             Util.discard(r5);
             s5 = sqlLogger.getSqlQueries().toString();
-            sqlLogger.clear();                            
+            sqlLogger.clear();
             assertEquals(s4,s5);
-            
+
             // Attach dummy change listener that tells mondrian the datasource is always changed
             // and tells that aggregate cache is always cached
             smr.changeListener = new DataSourceChangeListenerImpl3();
@@ -145,47 +145,47 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]");
             Util.discard(r6);
             s6 = sqlLogger.getSqlQueries().toString();
-            sqlLogger.clear();                            
-            assertEquals(s1,s6);                           
+            sqlLogger.clear();
+            assertEquals(s1,s6);
         } finally {
             smr.changeListener = null;
             RolapStar star = getStar("Sales");
             star.setChangeListener(null);
-            
+
             RolapUtil.threadHooks.set(null);
-            
+
             if (do_caching_orig) {
                 properties.DisableCaching.setString("true");
             } else {
                 properties.DisableCaching.setString("false");
-            }            
-        }        
-    }    
+            }
+        }
+    }
     /**
-     * Test to see whether the flushing of the cache is thread safe.        
+     * Test to see whether the flushing of the cache is thread safe.
      */
     public void testParallelDataSourceChangeListenerPlugin() {
         // 5 threads, 8 cycles each
         checkCacheFlushing(5, 8);
     }
-    
+
     /**
      * Tests several threads, each of which is creating connections and
      * periodically flushing the schema cache.
-     * 
+     *
      * @param count
      * @param cycleCount
      * @param flushInverseFrequency
      */
     private void checkCacheFlushing(
         final int count,
-        final int cycleCount)     
+        final int cycleCount)
     {
         final Random random = new Random(123456);
         Worker[] workers = new Worker[count];
         Thread[] threads = new Thread[count];
-        
-        
+
+
         final String[] queries = {
             "with member [Store Type].[All Store Types].[All Types] as 'Aggregate({[Store Type].[All Store Types].[Deluxe Supermarket],  "
             + "[Store Type].[All Store Types].[Gourmet Supermarket],  "
@@ -197,7 +197,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             + "NON EMPTY [Store].[All Stores].[USA].[CA].Children ON ROWS   "
             + "from [Sales] "
             + "where ([Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink])  ",
-            
+
             "with member [Measures].[Shipped per Ordered] as ' [Measures].[Units Shipped] / [Measures].[Unit Sales] ', format_string='#.00%'\n" +
             " member [Measures].[Profit per Unit Shipped] as ' [Measures].[Profit] / [Measures].[Units Shipped] '\n" +
             "select\n" +
@@ -207,30 +207,30 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             "  [Measures].[Profit per Unit Shipped]} on 0,\n" +
             " NON EMPTY Crossjoin([Product].Children, [Time].[1997].Children) on 1\n" +
             "from [Warehouse and Sales]",
-            
+
             "select {[Measures].[Profit Per Unit Shipped]} ON COLUMNS, " +
             "{[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR], [Store].[All Stores].[USA].[WA]} ON ROWS " +
             "from [Warehouse and Sales Format Expression Cube No Cache] " +
             "where [Time].[1997]",
-            
+
             "select {[Store].[All Stores].[USA].[CA].[San Francisco]} on columns from [Sales]"
             };
         final String[] results = {
             fold(
                 "Axis #0:\n" +
                 "{[Store Type].[All Store Types].[All Types], [Measures].[Unit Sales], [Customers].[All Customers].[USA], [Product].[All Products].[Drink]}\n" +
-                "Axis #1:\n" + 
-                "{[Time].[1997]}\n" + 
+                "Axis #1:\n" +
+                "{[Time].[1997]}\n" +
                 "Axis #2:\n" +
                 "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n" +
                 "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n" +
                 "{[Store].[All Stores].[USA].[CA].[San Diego]}\n" +
-                "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" + 
+                "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" +
                 "Row #0: 1,945\n" +
-                "Row #1: 2,422\n" + 
-                "Row #2: 2,560\n" + 
+                "Row #1: 2,422\n" +
+                "Row #2: 2,560\n" +
                 "Row #3: 175\n"),
-                
+
             fold("Axis #0:\n" +
                     "{}\n" +
                     "Axis #1:\n" +
@@ -299,7 +299,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                     "Row #11: 9291.0\n" +
                     "Row #11: 68.84%\n" +
                     "Row #11: $1.86\n"),
-                    
+
             fold(
                     "Axis #0:\n" +
                         "{[Time].[1997]}\n" +
@@ -307,12 +307,12 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                         "{[Measures].[Profit Per Unit Shipped]}\n" +
                         "Axis #2:\n" +
                         "{[Store].[All Stores].[USA].[CA]}\n" +
-                        "{[Store].[All Stores].[USA].[OR]}\n" + 
+                        "{[Store].[All Stores].[USA].[OR]}\n" +
                         "{[Store].[All Stores].[USA].[WA]}\n" +
                         "Row #0: |1.6|style=red\n" +
                         "Row #1: |2.1|style=green\n" +
                         "Row #2: |1.5|style=red\n"),
-                        
+
             fold("Axis #0:\n" +
                  "{}\n" +
                  "Axis #1:\n" +
@@ -343,21 +343,21 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                     "  </CalculatedMember>\n" +
                     "</VirtualCube>",
                 null, null);
-        
+
         SmartMemberReader smrStore = getSmartMemberReader(testContext.getConnection(), "Store");
         SmartMemberReader smrProduct = getSmartMemberReader(testContext.getConnection(), "Product");
         // 1/500 of the time, the hierarchies are flushed
         // 1/50 of the time, the aggregates are flushed
         smrStore.changeListener = new DataSourceChangeListenerImpl4(500,50);
         smrProduct.changeListener = smrStore.changeListener;
-        
+
         RolapStar star = getStar(testContext.getConnection(), "Sales");
         star.setChangeListener(smrStore.changeListener);
-                
-        star = getStar(testContext.getConnection(), "Warehouse No Cache");                
-        star.setChangeListener(smrStore.changeListener);        
-        
-            
+
+        star = getStar(testContext.getConnection(), "Warehouse No Cache");
+        star.setChangeListener(smrStore.changeListener);
+
+
         for (int i = 0; i < count; i++) {
             workers[i] = new Worker() {
                 public void runSafe() {
@@ -393,11 +393,11 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         }
         String messages = null;
         int failures = 0;
-        for (int i = 0; i < count; i++) {            
+        for (int i = 0; i < count; i++) {
             if (workers[i].failures.size() > 0) {
-                
+
                 for (int j = 0; j < workers[i].failures.size(); j++) {
-                    Throwable throwable = workers[i].failures.get(j);                    
+                    Throwable throwable = workers[i].failures.get(j);
                     String message = throwable.toString() + throwable.getMessage();
                     if (message != null) {
                         failures++;
@@ -408,7 +408,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                             messages += "\n" + message;
                         }
                     }
-                }                                                                
+                }
             }
         }
         if ((failures != 0) && (messages != null)) {
@@ -429,19 +429,19 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             }
         }
         public abstract void runSafe();
-    }            
-    
+    }
+
     private static class SqlLogger implements RolapUtil.ExecuteQueryHook {
         private final List<String> sqlQueries;
 
         public SqlLogger() {
-            this.sqlQueries = new ArrayList<String>();                       
+            this.sqlQueries = new ArrayList<String>();
         }
-        
+
         public void clear() {
             sqlQueries.clear();
         }
-            
+
         public List<String> getSqlQueries() {
             return sqlQueries;
         }
@@ -450,7 +450,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             sqlQueries.add(sql);
         }
     }
-    
+
     Result executeQuery(String mdx, Connection connection) {
         Query query = connection.parseQuery(mdx);
         return connection.execute(query);
@@ -472,11 +472,11 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
     RolapStar getStar(String starName) {
         Connection con = super.getConnection(false);
         return getStar(con, starName);
-    }    
+    }
     RolapStar getStar(Connection con, String starName) {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube(starName, true);
         return cube.getStar();
-    }        
+    }
 }
 
 // End NonEmptyTest.java

@@ -36,20 +36,20 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpServletRequest;
 
-/** 
+/**
  * This is a partial implementation of the HttpServletRequest where just
  * enough is present to allow for communication between Mondrian's
  * XMLA code and other code in the same JVM.
  * Currently it is used in both the CmdRunner and in XMLA JUnit tests.
  * <p>
  * If you need to add to this implementation, please do so.
- * 
+ *
  * @author <a>Richard M. Emberson</a>
  * @version $Id$
  */
 public class MockHttpServletRequest implements HttpServletRequest {
     public static String AUTHORIZATION = "Authorization";
-    public final static String DATE_FORMAT_HEADER = "EEE, d MMM yyyy HH:mm:ss Z";   
+    public final static String DATE_FORMAT_HEADER = "EEE, d MMM yyyy HH:mm:ss Z";
 
     public class MockRequestDispatcher implements RequestDispatcher {
         private ServletRequest forwardedRequest;
@@ -66,12 +66,12 @@ public class MockHttpServletRequest implements HttpServletRequest {
         public String getPath() {
             return this.path;
         }
-        public void forward(ServletRequest request, ServletResponse response) 
+        public void forward(ServletRequest request, ServletResponse response)
             throws ServletException, IOException {
             this.forwardedRequest = request;
             this.forwardedResponse = response;
         }
-        public void include(ServletRequest request, ServletResponse response) 
+        public void include(ServletRequest request, ServletResponse response)
                 throws ServletException, IOException {
             this.includedRequest = request;
             this.includedResponse = response;
@@ -84,18 +84,18 @@ public class MockHttpServletRequest implements HttpServletRequest {
         public ServletResponse getForwardedResponse() {
             return this.forwardedResponse;
         }
-        public ServletRequest getIncludedRequest() {   
+        public ServletRequest getIncludedRequest() {
             return this.includedRequest;
         }
 
-        public ServletResponse getIncludedResponse() {   
+        public ServletResponse getIncludedResponse() {
             return this.includedResponse;
         }
     }
-    static class MockServletInputStream extends ServletInputStream {   
+    static class MockServletInputStream extends ServletInputStream {
         private ByteArrayInputStream stream;
-        
-        public MockServletInputStream(byte[] data) {   
+
+        public MockServletInputStream(byte[] data) {
             stream = new ByteArrayInputStream(data);
         }
 
@@ -176,73 +176,73 @@ public class MockHttpServletRequest implements HttpServletRequest {
     }
 
 
-    /** 
+    /**
      *  Returns the value of the named attribute as an Object, or null if no
      *  attribute of the given name exists.
-     * 
+     *
      */
     public Object getAttribute(String name) {
         return this.attributes.get(name);
     }
 
-    /** 
+    /**
      * to this request.
-     * 
+     *
      */
     public Enumeration getAttributeNames() {
         return Collections.enumeration(attributes.keySet());
     }
 
-    /** 
+    /**
      * Returns the name of the character encoding used in the body of this
      * request.
-     * 
+     *
      */
     public String getCharacterEncoding() {
         return charEncoding;
     }
 
-    /** 
-     *  
-     * 
+    /**
+     *
+     *
      */
-    public void setCharacterEncoding(String charEncoding) 
+    public void setCharacterEncoding(String charEncoding)
             throws UnsupportedEncodingException {
         this.charEncoding = charEncoding;
     }
 
-    /** 
+    /**
      *  Returns the length, in bytes, of the request body and made available by
      *  the input stream, or -1 if the length is not known.
-     * 
+     *
      */
     public int getContentLength() {
         return getIntHeader("Content-Length");
     }
 
-    /** 
+    /**
      * Returns the MIME type of the body of the request, or null if the type is
      * not known.
-     * 
+     *
      */
     public String getContentType() {
         return getHeader("Content-Type");
     }
 
-    /** 
+    /**
      * Retrieves the body of the request as binary data using a
      * ServletInputStream.
-     * 
-     * @throws IOException 
+     *
+     * @throws IOException
      */
     public ServletInputStream getInputStream() throws IOException {
         return new MockServletInputStream(bodyContent.getBytes());
     }
 
-    /** 
+    /**
      * Returns the value of a request parameter as a String, or null if the
      * parameter does not exist.
-     * 
+     *
      */
     public String getParameter(String name) {
         String[] values = getParameterValues(name);
@@ -250,92 +250,92 @@ public class MockHttpServletRequest implements HttpServletRequest {
             ? values[0] : null;
     }
 
-    /** 
+    /**
      * Returns an Enumeration of String objects containing the names of the
      * parameters contained in this request.
-     * 
+     *
      */
     public Enumeration getParameterNames() {
         return Collections.enumeration(parameters.keySet());
     }
 
-    /** 
+    /**
      * Returns an array of String objects containing all of the values the given
      * request parameter has, or null if the parameter does not exist.
-     * 
+     *
      */
     public String[] getParameterValues(String name) {
         return parameters.get(name);
     }
 
 
-    /** 
+    /**
      * Returns the name and version of the protocol the request uses in the form
      * protocol/majorVersion.minorVersion, for example, HTTP/1.1.
-     * 
+     *
      */
     public String getProtocol() {
         return protocol;
     }
 
-    /** 
+    /**
      * Returns the name of the scheme used to make this request, for example,
      * http, https, or ftp.
-     * 
+     *
      */
     public String getScheme() {
         return schema;
     }
 
-    /** 
+    /**
      * Returns the host name of the server that received the request.
-     * 
+     *
      */
     public String getServerName() {
         return serverName;
     }
 
-    /** 
+    /**
      * Returns the port number on which this request was received.
-     * 
+     *
      */
     public int getServerPort() {
         return serverPort;
     }
 
-    /** 
+    /**
      * Retrieves the body of the request as character data using a
      * BufferedReader.
-     * 
-     * @throws IOException 
+     *
+     * @throws IOException
      */
     public BufferedReader getReader() throws IOException {
-        return (bodyContent == null) 
+        return (bodyContent == null)
             ? null
             : new BufferedReader(new StringReader(bodyContent));
     }
 
-    /** 
+    /**
      * Returns the Internet Protocol (IP) address of the client that sent the
      * request.
-     * 
+     *
      */
     public String getRemoteAddr() {
         return remoteAddr;
     }
 
-    /** 
+    /**
      * Returns the fully qualified name of the client that sent the request, or
      * the IP address of the client if the name cannot be determined.
-     * 
+     *
      */
     public String getRemoteHost() {
         return remoteHost;
     }
 
-    /** 
+    /**
      *  Stores an attribute in this request.
-     * 
+     *
      */
     public void setAttribute(String name, Object obj) {
         if (attributes == Collections.EMPTY_MAP) {
@@ -344,51 +344,51 @@ public class MockHttpServletRequest implements HttpServletRequest {
         this.attributes.put(name, obj);
     }
 
-    /** 
+    /**
      *  Removes an attribute from this request.
-     * 
+     *
      */
     public void removeAttribute(String name) {
         this.attributes.remove(name);
     }
 
-    /** 
+    /**
      * Returns the preferred Locale that the client will accept content in,
      * based on the Accept-Language header.
-     * 
+     *
      */
     public Locale getLocale() {
-        return (locales.size() < 1) 
+        return (locales.size() < 1)
             ? Locale.getDefault()
             : locales.get(0);
     }
 
-    /** 
+    /**
      * Returns an Enumeration of Locale objects indicating, in decreasing order
      * starting with the preferred locale, the locales that are acceptable to
      * the client based on the Accept-Language header.
-     * 
+     *
      */
     public Enumeration getLocales() {
         return Collections.enumeration(locales);
     }
 
-    /** 
+    /**
      *  Returns a boolean indicating whether this request was made using a
      *  secure channel, such as HTTPS.
-     * 
+     *
      */
     public boolean isSecure() {
         String scheme = getScheme();
-        return (scheme == null) 
+        return (scheme == null)
             ? false
             : scheme.equals("https");
     }
 
-    /** 
+    /**
      * Returns a RequestDispatcher object that acts as a wrapper for the
      * resource located at the given path.
-     * 
+     *
      */
     public RequestDispatcher getRequestDispatcher(String path) {
         RequestDispatcher dispatcher =
@@ -404,71 +404,71 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * Deprecated. As of Version 2.1 of the Java Servlet API, use
      * ServletContext.getRealPath(java.lang.String) instead.
      * @deprecated Method getRealPath is deprecated
-     * 
+     *
      */
     public String getRealPath(String path) {
         HttpSession session = getSession();
-        return (session == null) 
+        return (session == null)
             ? null
             : session.getServletContext().getRealPath(path);
 
     }
 
-    /** 
-     *  
-     * 
+    /**
+     *
+     *
      */
     public int getRemotePort() {
         return remotePort;
     }
 
-    /** 
-     *  
-     * 
+    /**
+     *
+     *
      */
     public String getLocalName() {
         return localName;
     }
 
-    /** 
-     *  
-     * 
+    /**
+     *
+     *
      */
     public String getLocalAddr() {
         return localAddr;
     }
 
-    /** 
-     *  
-     * 
+    /**
+     *
+     *
      */
     public int getLocalPort() {
         return localPort;
     }
 
-    /** 
+    /**
      * Returns the name of the authentication scheme used to protect the
      * servlet, for example, "BASIC" or "SSL," or null if the servlet was not
      * protected.
-     * 
+     *
      */
     public String getAuthType() {
         return authType;
     }
 
-    /** 
+    /**
      * Returns an array containing all of the Cookie objects the client sent
      * with this request.
-     * 
+     *
      */
     public Cookie[] getCookies() {
         return cookies.toArray(new Cookie[cookies.size()]);
     }
 
-    /** 
+    /**
      * Returns the value of the specified request header as a long value that
      * represents a Date object.
-     * 
+     *
      */
     public long getDateHeader(String name) {
         String header = getHeader(name);
@@ -483,9 +483,9 @@ public class MockHttpServletRequest implements HttpServletRequest {
         }
     }
 
-    /** 
+    /**
      * Returns the value of the specified request header as a String.
-     * 
+     *
      */
     public String getHeader(String name) {
 
@@ -496,149 +496,149 @@ public class MockHttpServletRequest implements HttpServletRequest {
             : headerList.get(0);
     }
 
-    /** 
+    /**
      *  Returns all the values of the specified request header as an Enumeration
      *  of String objects.
-     * 
+     *
      */
     public Enumeration getHeaders(String name) {
         List<String> headerList = headers.get(name);
-        return (headerList == null) 
+        return (headerList == null)
             ? null
             : Collections.enumeration(headerList);
     }
 
-    /** 
+    /**
      * Returns an enumeration of all the header names this request contains.
-     * 
+     *
      */
     public Enumeration getHeaderNames() {
         return Collections.enumeration(headers.keySet());
     }
 
-    /** 
+    /**
      * Returns the value of the specified request header as an int.
-     * 
+     *
      */
     public int getIntHeader(String name) {
         String header = getHeader(name);
-        return (header == null) 
+        return (header == null)
             ? -1
             : Integer.parseInt(header);
     }
 
-    /** 
+    /**
      * Returns the name of the HTTP method with which this request was made, for
      * example, GET, POST, or PUT.
-     * 
+     *
      */
     public String getMethod() {
         return this.method;
     }
 
-    /** 
+    /**
      * Returns any extra path information associated with the URL the client
      * sent when it made this request.
-     * 
+     *
      */
     public String getPathInfo() {
         return pathInfo;
     }
 
-    /** 
+    /**
      * Returns any extra path information after the servlet name but before the
      * query string, and translates it to a real path.
-     * 
+     *
      */
     public String getPathTranslated() {
         return pathTranslated;
     }
 
-    /** 
+    /**
      * Returns the portion of the request URI that indicates the context of the
      * request.
-     * 
+     *
      */
     public String getContextPath() {
         return contextPath;
     }
 
-    /** 
+    /**
      * Returns the query string that is contained in the request URL after the
      * path.
-     * 
+     *
      */
     public String getQueryString() {
         return queryString;
     }
 
-    /** 
+    /**
      * Returns the login of the user making this request, if the user has been
      * authenticated, or null if the user has not been authenticated.
-     * 
+     *
      */
     public String getRemoteUser() {
         return remoteUser;
     }
 
-    /** 
+    /**
      *  Returns a boolean indicating whether the authenticated user is included
      *  in the specified logical "role".
-     * 
+     *
      */
     public boolean isUserInRole(String role) {
         return roles.get(role);
     }
 
-    /** 
+    /**
      *  Returns a java.security.Principal object containing the name of the
      *  current authenticated user.
-     * 
+     *
      */
     public Principal getUserPrincipal() {
         return principal;
     }
 
-    /** 
+    /**
      * Returns the session ID specified by the client.
-     * 
+     *
      */
     public String getRequestedSessionId() {
         HttpSession session = getSession();
-        return (session == null) 
+        return (session == null)
             ? null
             : session.getId();
     }
 
-    /** 
+    /**
      * Returns the part of this request's URL from the protocol name up to the
      * query string in the first line of the HTTP request.
-     * 
+     *
      */
     public String getRequestURI() {
         return requestedURI;
     }
 
-    /** 
-     *  
-     * 
+    /**
+     *
+     *
      */
     public StringBuffer getRequestURL() {
         return requestUrl;
     }
 
-    /** 
+    /**
      * Returns the part of this request's URL that calls the servlet.
-     * 
+     *
      */
     public String getServletPath() {
         return servletPath;
     }
 
-    /** 
+    /**
      * Returns the current HttpSession associated with this request or, if if
      * there is no current session and create is true, returns a new session.
-     * 
+     *
      */
     public HttpSession getSession(boolean create) {
         if (! create && ! sessionCreated) {
@@ -647,37 +647,37 @@ public class MockHttpServletRequest implements HttpServletRequest {
         return getSession();
     }
 
-    /** 
+    /**
      *  Returns the current session associated with this request, or if the
      *  request does not have a session, creates one.
-     * 
+     *
      */
     public HttpSession getSession() {
         sessionCreated = true;
         return session;
     }
 
-    /** 
+    /**
      * Checks whether the requested session ID is still valid.
-     * 
+     *
      */
     public boolean isRequestedSessionIdValid() {
         HttpSession session = getSession();
         return (session != null);
     }
 
-    /** 
+    /**
      * Checks whether the requested session ID came in as a cookie.
-     * 
+     *
      */
     public boolean isRequestedSessionIdFromCookie() {
         return requestedSessionIdIsFromCookie;
     }
 
-    /** 
+    /**
      *  Checks whether the requested session ID came in as part of the request
      *  URL.
-     * 
+     *
      */
     public boolean isRequestedSessionIdFromURL() {
         return !requestedSessionIdIsFromCookie;
@@ -687,8 +687,8 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * Deprecated. As of Version 2.1 of the Java Servlet API, use
      * isRequestedSessionIdFromURL() instead.
      * @deprecated Method isRequestedSessionIdFromUrl is deprecated
-     * 
-     * @return  
+     *
+     * @return
      */
     public boolean isRequestedSessionIdFromUrl() {
         return isRequestedSessionIdFromURL();
@@ -704,9 +704,9 @@ public class MockHttpServletRequest implements HttpServletRequest {
         this.bin = new ByteArrayInputStream(bytes);
     }
 */
-    /** 
-     *  
-     * 
+    /**
+     *
+     *
      */
     public Map getParameterMap() {
         return Collections.unmodifiableMap(parameters);
@@ -791,7 +791,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
     //
     /////////////////////////////////////////////////////////////////////////
 
-    public void clearParameters() {   
+    public void clearParameters() {
         parameters.clear();
     }
 
@@ -812,7 +812,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
     public Map<String, RequestDispatcher> getRequestDispatcherMap() {
         return Collections.unmodifiableMap(requestDispatchers);
-    }   
+    }
 
     public void setRequestDispatcher(String path, RequestDispatcher dispatcher) {
         if(dispatcher instanceof MockRequestDispatcher) {
@@ -824,7 +824,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
     public void addLocale(Locale locale) {
         locales.add(locale);
     }
-    
+
     public void addLocales(List<Locale> localeList) {
         locales.addAll(localeList);
     }

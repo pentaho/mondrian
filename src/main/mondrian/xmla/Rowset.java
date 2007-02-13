@@ -86,7 +86,7 @@ abstract class Rowset implements XmlaConstants {
             list.add(column);
         }
         list = pruneRestrictions(list);
-        this.restrictedColumns = 
+        this.restrictedColumns =
             list.toArray(
                 new RowsetDefinition.Column[list.size()]);
         for (Map.Entry<String, String> propertyEntry : properties.entrySet()) {
@@ -275,7 +275,7 @@ abstract class Rowset implements XmlaConstants {
      * Emits all of the values in an enumeration.
      */
     protected <E extends Enum<E>> void emit(
-        Class<E> clazz, 
+        Class<E> clazz,
         XmlaResponse response)
         throws XmlaException
     {
@@ -309,9 +309,9 @@ abstract class Rowset implements XmlaConstants {
     }
      */
 
-    /** 
+    /**
      * Extensions to this abstract class implement a restriction test
-     * for each Rowset's discovery request. If there is no restriction 
+     * for each Rowset's discovery request. If there is no restriction
      * then the passes method always returns true.
      * Since whether the restriction is not specified (null), a single
      * value (String) or an array of values (String[]) is known at
@@ -348,30 +348,30 @@ System.out.println("Rowset.getRestrictionTest: requiredValue=" +requiredValue);
         }
     }
 
-    /** 
+    /**
      * Returns the list of restriction values in the XMLA request.
-     * 
+     *
      */
     private List<String> getRestrictionValue(RowsetDefinition.Column column) {
         return restrictions.get(column.name);
     }
-    
-    /** 
+
+    /**
      * This returns the restriction if its a String or null. This does not
      * attempt two determine if the restriction is an array of Strings
      * if all members of the array have the same value (in which case
      * one could return, again, simply a single String).
-     * 
+     *
      */
     String getRestrictionValueAsString(RowsetDefinition.Column column) {
         List<String> rval = getRestrictionValue(column);
         return rval != null && rval.size() == 1 ? rval.get(0) : null;
     }
-    
-    /** 
+
+    /**
      * This returns the restriction as an integer (not an Integer) if it
      * exists and returns -1 otherwise.
-     * 
+     *
      */
     int getRestrictionValueAsInt(RowsetDefinition.Column column) {
         List<String> rval = getRestrictionValue(column);
@@ -392,10 +392,10 @@ System.out.println("Rowset.getRestrictionTest: requiredValue=" +requiredValue);
 
 
 
-    /** 
-     * Returns true if there is a restriction for the given column 
+    /**
+     * Returns true if there is a restriction for the given column
      * definition.
-     * 
+     *
      */
     protected boolean isRestricted(RowsetDefinition.Column column) {
         return (restrictions.get(column.name) != null);

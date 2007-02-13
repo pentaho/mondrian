@@ -20,12 +20,12 @@ import javax.management.NotificationEmitter;
 import javax.management.NotificationListener;
 import org.apache.log4j.Logger;
 
-/** 
+/**
  * The <code>NotificationMemoryMonitor</code> class uses the Java5
  * memory management system to detect system low memory events.
  * <p>
- * This code is loosely based on the code taken from The Java 
- * Specialists' Newsletter, 
+ * This code is loosely based on the code taken from The Java
+ * Specialists' Newsletter,
  * <a href="http://www.javaspecialists.co.za/archive/newsletter.do?issue=092"
  *  >issue 92</a> authored by Dr. Heinz M. Kabutz.
  * As a note, his on-line newletters are a good source of Java information,
@@ -34,13 +34,13 @@ import org.apache.log4j.Logger;
  *  For more information one should review the Java5 classes in
  *  java.lang.management.
  *
- * 
+ *
  * @author <a>Richard M. Emberson</a>
  * @since Feb 03 2007
  * @version $Id$
  */
 public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
-    private static final Logger LOGGER =        
+    private static final Logger LOGGER =
                 Logger.getLogger(NotificationMemoryMonitor.class);
 
 
@@ -62,22 +62,22 @@ public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
         throw new AssertionError("Could not find tenured space");
     }
 
-    /** 
-     * The <code>NotificationHandler</code> implements the Java memory 
-     * notification listener, <code>NotificationListener</code>, 
+    /**
+     * The <code>NotificationHandler</code> implements the Java memory
+     * notification listener, <code>NotificationListener</code>,
      * and is used to take notifications from Java and pass them on
-     * to the <code>NotificationMemoryMonitor</code>'s 
+     * to the <code>NotificationMemoryMonitor</code>'s
      * <code>Listerner</code>s.
      */
     private class NotificationHandler implements NotificationListener {
 
-        /** 
+        /**
          * This method is called by the Java5 code to notify clients
          * registered with the JVM that the JVM memory threshold
          * has been exceeded.
-         * 
-         * @param notification 
-         * @param unused 
+         *
+         * @param notification
+         * @param unused
          */
         public void handleNotification(final Notification notification,
                                        final Object unused) {
@@ -92,8 +92,8 @@ public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
     }
 
 
-    /** 
-     * Construct a <code>NotificationMemoryMonitor</code> instance and 
+    /**
+     * Construct a <code>NotificationMemoryMonitor</code> instance and
      * register it with the Java5 memory management system.
      */
     NotificationMemoryMonitor() {
@@ -105,19 +105,19 @@ public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
         emitter.addNotificationListener(new NotificationHandler(), null, null);
     }
 
-    /** 
-     * Get the <code>Logger</code>. 
-     * 
+    /**
+     * Get the <code>Logger</code>.
+     *
      * @return the <code>Logger</code>.
      */
     protected Logger getLogger() {
         return LOGGER;
     }
 
-    /** 
+    /**
      * Notify the Java5 memory management system that there is a new
-     * low threshold. 
-     * 
+     * low threshold.
+     *
      * @param newLowThreshold the new threshold.
      */
     protected void notifyNewLowThreshold(final long newLowThreshold) {
@@ -129,17 +129,17 @@ public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
         }
     }
 
-    /** 
+    /**
      * Get the maximum possible memory usage for this JVM instance.
-     * 
+     *
      * @return maximum memory that can be used.
      */
     public long getMaxMemory() {
         return TENURED_POOL.getUsage().getMax();
     }
-    /** 
+    /**
      * Get the current memory usage for this JVM instance.
-     * 
+     *
      * @return current memory used.
      */
     public long getUsedMemory() {

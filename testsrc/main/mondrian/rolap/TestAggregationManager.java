@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2006 Julian Hyde and others
+// Copyright (C) 2002-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -287,12 +287,12 @@ public class TestAggregationManager extends FoodMartTestCase {
      * elaborate because the original bug was quite arbitrary.
      */
     public void testNonEmptyCrossJoinLoneAxis() {
-        
+
         String mdxQuery =
 "With Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Store],[*BASE_MEMBERS_Product])' Set [*BASE_MEMBERS_Store] as '{[Store].[All Stores].[USA]}' Set [*GENERATED_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Food],[Product].[All Products].[Drink]}' Set [*GENERATED_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' Member [Store].[*FILTER_MEMBER] as 'Aggregate ([*GENERATED_MEMBERS_Store])' Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*GENERATED_MEMBERS_Product])' Select {[Measures].[Store Sales]} on columns From [Sales] Where ([Store].[*FILTER_MEMBER], [Product].[*FILTER_MEMBER])";
 
         String sql = "select \"store\".\"store_country\" as \"c0\", \"time_by_day\".\"the_year\" as \"c1\", \"product_class\".\"product_family\" as \"c2\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" from \"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", \"time_by_day\" as \"time_by_day\", \"product_class\" as \"product_class\", \"product\" as \"product\" where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"store\".\"store_country\" = 'USA' and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" group by \"store\".\"store_country\", \"time_by_day\".\"the_year\", \"product_class\".\"product_family\"";
-        
+
         SqlPattern[] patterns = {
             new SqlPattern(
                 SqlPattern.DERBY_DIALECT,
@@ -701,7 +701,7 @@ public class TestAggregationManager extends FoodMartTestCase {
     private void assertQuerySql(String mdxQuery, SqlPattern[] patterns) {
         assertQuerySqlOrNot(mdxQuery, patterns, false);
     }
-    
+
     /**
      * Checks that a given MDX query does not result in a particular SQL
      * statement being generated.
@@ -712,7 +712,7 @@ public class TestAggregationManager extends FoodMartTestCase {
     private void assertNoQuerySql(String mdxQuery, SqlPattern[] patterns) {
         assertQuerySqlOrNot(mdxQuery, patterns, true);
     }
-    
+
     /**
      * Checks that a given MDX query results (or does not result) in a
      * particular SQL statement being generated.

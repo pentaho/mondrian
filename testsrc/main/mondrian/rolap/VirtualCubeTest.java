@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2005 Julian Hyde
+// (C) Copyright 2003-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -230,7 +230,7 @@ public class VirtualCubeTest extends FoodMartTestCase {
      * <p>Since evaluation of the format_string used to happen after the
      * aggregate cache was cleared, this used to fail, this should be solved
      * with the caching of the format string.
-     * 
+     *
      * <p>Without caching of format string, the query returns green for all
      * styles.
      */
@@ -272,13 +272,13 @@ public class VirtualCubeTest extends FoodMartTestCase {
                     "{[Measures].[Profit Per Unit Shipped]}\n" +
                     "Axis #2:\n" +
                     "{[Store].[All Stores].[USA].[CA]}\n" +
-                    "{[Store].[All Stores].[USA].[OR]}\n" + 
+                    "{[Store].[All Stores].[USA].[OR]}\n" +
                     "{[Store].[All Stores].[USA].[WA]}\n" +
                     "Row #0: |1.6|style=red\n" +
                     "Row #1: |2.1|style=green\n" +
                     "Row #2: |1.5|style=red\n"));
     }
-    
+
     public void testCalculatedMeasure()
     {
         // calculated measures reference measures defined in the base cube
@@ -447,7 +447,7 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "Row #11: 13,497\n" +
                 "Row #11: 68.8%\n"));
     }
-    
+
     public void testAllMeasureMembers()
     {
         // result should exclude measures that are not explicitly defined
@@ -469,9 +469,9 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "{[Measures].[Units Shipped]}\n" +
                 "{[Measures].[Warehouse Cost]}\n" +
                 "{[Measures].[Warehouse Profit]}\n" +
-                "{[Measures].[Warehouse Sales]}\n" +                
+                "{[Measures].[Warehouse Sales]}\n" +
                 "{[Measures].[Profit]}\n" +
-                "{[Measures].[Profit Growth]}\n" + 
+                "{[Measures].[Profit Growth]}\n" +
                 "{[Measures].[Average Warehouse Sale]}\n" +
                 "{[Measures].[Profit Per Unit Shipped]}\n" +
                 "Row #0: 86,837\n" +
@@ -484,13 +484,13 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "Row #0: 207726.0\n" +
                 "Row #0: 89,043.253\n" +
                 "Row #0: 107,727.635\n" +
-                "Row #0: 196,770.888\n" +               
+                "Row #0: 196,770.888\n" +
                 "Row #0: $339,610.90\n" +
-                "Row #0: 0.0%\n" +    
+                "Row #0: 0.0%\n" +
                 "Row #0: $2.21\n" +
                 "Row #0: $1.63\n"));
     }
-    
+
     /**
      * Test a virtual cube where one of the dimensions contains an
      * ordinalColumn property

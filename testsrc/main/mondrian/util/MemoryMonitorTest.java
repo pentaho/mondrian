@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2006 Julian Hyde and others
+// Copyright (C) 2006-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -38,10 +38,10 @@ public class MemoryMonitorTest extends FoodMartTestCase {
     }
 
 
-    /** 
+    /**
      * Get the difference between the maximum memory and the used memory
      * and divide that by 1000. This is the size of allocation chunks.
-     * Keep allocating chunks until an <code>OutOfMemoryError</code> is 
+     * Keep allocating chunks until an <code>OutOfMemoryError</code> is
      * created.
      */
     public boolean causeGC(MemoryMonitor mm) {
@@ -53,7 +53,7 @@ public class MemoryMonitorTest extends FoodMartTestCase {
             // delta has to be greater than zero so pick 1k
             delta = 1024;
         } else if (delta > Integer.MAX_VALUE) {
-            // otherwise we could get a negative value after 
+            // otherwise we could get a negative value after
             // the cast to int
             delta = Integer.MAX_VALUE;
         }
@@ -95,7 +95,7 @@ public class MemoryMonitorTest extends FoodMartTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
-    
+
 /*
 Does not work without the notify on add feature.
     public void testZeroUsage() throws Exception {
@@ -192,7 +192,7 @@ Does not work without the notify on add feature.
             if (listener.wasNotified) {
 	        fail("Listener callback was called");
             }
-            mm.updateListenerThreshold(listener, 
+            mm.updateListenerThreshold(listener,
                         percentage + currentPercentage);
             if (! listener.wasNotified) {
 	        fail("Listener callback was not called");
@@ -218,14 +218,14 @@ Does not work without the notify on add feature.
             return 98;
         }
     }
-    
-    /** 
+
+    /**
      * Run this by itself and it works across 2 orders of magnitude.
      * Run it with other tests and its hard to pick the right
      * values for the percentage and how much to allocate for it
      * to always work.
-     * 
-     * @throws Exception 
+     *
+     * @throws Exception
      */
     public void _testQuery() throws Exception {
         if (Util.PreJdk15 || !enabled) {
@@ -241,7 +241,7 @@ Does not work without the notify on add feature.
             }
         }
         Listener listener = new Listener();
-        final String queryString = 
+        final String queryString =
             "select \n" +
             "{ \n" +
 /*
@@ -259,7 +259,7 @@ Does not work without the notify on add feature.
             ") \n" +
             "ON ROWS \n" +
             "from [Sales]";
-        
+
         List<Result> list = new ArrayList<Result>();
         MemoryMonitor mm = null;
         try {
@@ -291,7 +291,7 @@ Does not work without the notify on add feature.
                 buf = 0;
                 double dp = (100.0 * (maxMemory - usedMemory)) / maxMemory;
                 THRESHOLD_PERCENTAGE = 100 - (int) Math.ceil(dp);
-                
+
             }
 //System.out.println("buf       ="+buf);
 //System.out.println("THRESHOLD_PERCENTAGE="+THRESHOLD_PERCENTAGE);

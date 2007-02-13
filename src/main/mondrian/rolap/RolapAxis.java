@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,25 +25,25 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
-/** 
+/**
  * Derived classes of RolapAxis implements the Axis interface which are
  * specializations based upon the number of Positions, how each Position's
  * Members are orgainized and whether the Members/Member[]s are in a List
  * or an Iterable.
- * 
+ *
  * @author <a>Richard M. Emberson</a>
  * @version $Id$
  */
 public abstract class RolapAxis implements Axis {
     private static final Logger LOGGER = Logger.getLogger(RolapAxis.class);
-    /** 
+    /**
      * A Wrapper has many uses. In particular, if one is using Java 5 or
      * above, one can create a Wrapper that is also a memory usage listener.
      * Then one can place an Axis implementation into a Wrapper where the
-     * initial implementation is in-memory, large-memory-usage and 
+     * initial implementation is in-memory, large-memory-usage and
      * cpu fast. The on the first memory notification it can be migrated
      * to an in-memory, small-memory-usage and cpu slower. On a subsequent
-     * memory notification it can be migrated to an on-disk, low-memory and 
+     * memory notification it can be migrated to an on-disk, low-memory and
      * cpu slow implementation.
      */
     public static class Wrapper extends RolapAxis {
@@ -57,9 +57,9 @@ public abstract class RolapAxis implements Axis {
         }
     }
 
-    /** 
+    /**
      * The NoPosition Axis implementation is an Axis that has no Positions,
-     * the size of the list of positions is zero.  
+     * the size of the list of positions is zero.
      */
     public static class NoPosition extends RolapAxis {
         public NoPosition() {
@@ -70,7 +70,7 @@ public abstract class RolapAxis implements Axis {
         }
     }
 
-    /** 
+    /**
      * The PositionList Axis implementation takes a List of positions.
      */
     public static class PositionList extends RolapAxis {
@@ -84,7 +84,7 @@ public abstract class RolapAxis implements Axis {
         }
     }
 
-    /** 
+    /**
      * A SingleEmptyPosition has a single Position and the Position has
      * no Members.
      */
@@ -107,7 +107,7 @@ public abstract class RolapAxis implements Axis {
         }
     }
 
-    /** 
+    /**
      * A MemberIterable takes an Iterable&lt;Member&gt; where each Position has
      * a single Member from the corresponding location in the iterator.
      * If the client request any of the List, non-Iterable, API, then
@@ -121,7 +121,7 @@ public abstract class RolapAxis implements Axis {
             this.list = null;
         }
         public synchronized List<Position> getPositions() {
-            return (list == null) 
+            return (list == null)
                 ? new PositionWrapper()
                 : new PositionList();
         }
@@ -137,9 +137,9 @@ public abstract class RolapAxis implements Axis {
             }
         }
 
-        
-        /** 
-         * This List&lt;Position&gt; starts life with a List&lt;Position&gt; 
+
+        /**
+         * This List&lt;Position&gt; starts life with a List&lt;Position&gt;
          * implementation
          * that is based upon an non-List (Iterable). If all accesses
          * are simply through iteration, then the initial implementation
@@ -183,7 +183,7 @@ public abstract class RolapAxis implements Axis {
             }
         }
 
-        /** 
+        /**
          * PositionIter is a List&lt;Position&gt; that only support the
          * 'iterator' method. This assumes that one iterates over Positions
          * and for each Postion one iterates over Members. In this case,
@@ -208,8 +208,8 @@ public abstract class RolapAxis implements Axis {
                 };
             }
         }
-        
-        /** 
+
+        /**
          * A List&lt;Member&gt; which only implements the 'iterator' method.
          * Each Iterator&lt;Member&gt; has only one Member.
          */
@@ -238,7 +238,7 @@ public abstract class RolapAxis implements Axis {
             }
         }
 
-        /** 
+        /**
          *  Each Position has a single Member.
          */
         class PositionList extends PositionListBase {
@@ -252,7 +252,7 @@ public abstract class RolapAxis implements Axis {
             }
         }
 
-        /** 
+        /**
          *  Allows access only the the Member at the given offset.
          */
         class MLPosition extends PositionBase {
@@ -275,7 +275,7 @@ public abstract class RolapAxis implements Axis {
 
 
 
-    /** 
+    /**
      * A MemberList takes a List&lt;Member&gt; where each Position has
      * a single Member from the corresponding location in the list.
      */
@@ -287,7 +287,7 @@ public abstract class RolapAxis implements Axis {
         public List<Position> getPositions() {
             return new PositionList();
         }
-        /** 
+        /**
          *  Each Position has a single Member.
          */
         class PositionList extends PositionListBase {
@@ -301,7 +301,7 @@ public abstract class RolapAxis implements Axis {
             }
         }
 
-        /** 
+        /**
          *  Allows access only the the Member at the given offset.
          */
         class MLPosition extends PositionBase {
@@ -322,8 +322,8 @@ public abstract class RolapAxis implements Axis {
         }
     }
 
-    /** 
-     * A MemberArrayIterable takes an Iterable&lt;Member[]&gt; where 
+    /**
+     * A MemberArrayIterable takes an Iterable&lt;Member[]&gt; where
      * each Position has
      * an array of Members from the corresponding location in the iterator.
      * If the client request any of the List, non-Iterable, API, then
@@ -339,7 +339,7 @@ public abstract class RolapAxis implements Axis {
             this.len = 0;
         }
         public synchronized List<Position> getPositions() {
-            return (list == null) 
+            return (list == null)
                 ? new PositionWrapper()
                 : new PositionList();
         }
@@ -357,8 +357,8 @@ public abstract class RolapAxis implements Axis {
             }
         }
 
-        /** 
-         * This List&lt;Position&gt; starts life with a List&lt;Position&gt; 
+        /**
+         * This List&lt;Position&gt; starts life with a List&lt;Position&gt;
          * implementation
          * that is based upon an non-List (Iterable). If all accesses
          * are simply through iteration, then the initial implementation
@@ -402,7 +402,7 @@ public abstract class RolapAxis implements Axis {
             }
         }
 
-        /** 
+        /**
          * PositionIter is a List&lt;Position&gt; that only support the
          * 'iterator' method. This assumes that one iterates over Positions
          * and for each Postion one iterates over Members. Each Position
@@ -429,7 +429,7 @@ public abstract class RolapAxis implements Axis {
                 };
             }
         }
-        /** 
+        /**
          * A List&lt;Member&gt; which only implements the 'iterator' method.
          * Each Iterator&lt;Member&gt; two or more Members.
          */
@@ -455,7 +455,7 @@ public abstract class RolapAxis implements Axis {
             }
         }
 
-        /** 
+        /**
          *  Each Position has two or more Members.
          */
         class PositionList extends PositionListBase {
@@ -469,7 +469,7 @@ public abstract class RolapAxis implements Axis {
             }
         }
 
-        /** 
+        /**
          *  Allows access only the the Member at the given offset.
          */
         class MALPosition extends PositionBase {
@@ -495,7 +495,7 @@ public abstract class RolapAxis implements Axis {
 
 
 
-    /** 
+    /**
      * A MemberArrayList takes a List&lt;Member[]&gt; where each Position has
      * the Member's from the corresponding location in the list.
      * It is assumed that each element of the list has an array of Members of
@@ -511,7 +511,7 @@ public abstract class RolapAxis implements Axis {
         public List<Position> getPositions() {
             return new PositionList();
         }
-        /** 
+        /**
          *  Each Position has an array of Member.
          */
         class PositionList extends PositionListBase {
@@ -524,7 +524,7 @@ public abstract class RolapAxis implements Axis {
                 return new MALPosition(index);
             }
         }
-        /** 
+        /**
          *  Allows access only the the Member at the given offset plus index.
          */
         class MALPosition extends PositionBase {
@@ -548,20 +548,20 @@ public abstract class RolapAxis implements Axis {
         }
     }
 
-    /** 
+    /**
      * A List&lt;Member&gt; for which all methods throw the
      * UnsupportedOperationException exception when invoked. Derived classes
      * can implement those methods that they require.
      */
-    protected static abstract class PositionUnsupported 
+    protected static abstract class PositionUnsupported
                         extends UnsupportedList<Member>
                         implements Position {
         protected PositionUnsupported() {
         }
     }
-    /** 
-     * The PositionBase is an abstract implementation of the Position 
-     * interface and provides both Iterator&lt;Member&gt; and 
+    /**
+     * The PositionBase is an abstract implementation of the Position
+     * interface and provides both Iterator&lt;Member&gt; and
      * ListIterator&lt;Member&gt; implementations.
      */
     protected static abstract class PositionBase extends PositionUnsupported {
@@ -578,13 +578,13 @@ public abstract class RolapAxis implements Axis {
         }
     }
 
-    protected static abstract class PositionListUnsupported 
+    protected static abstract class PositionListUnsupported
                         extends UnsupportedList<Position> {
         protected PositionListUnsupported() {
         }
     }
 
-    protected static abstract class PositionIterBase 
+    protected static abstract class PositionIterBase
                                 extends PositionListUnsupported {
         protected PositionIterBase() {
             super();
@@ -592,13 +592,13 @@ public abstract class RolapAxis implements Axis {
         public abstract Iterator<Position> iterator();
     }
 
-    /** 
-     * The PositionListBase is an abstract implementation of the 
+    /**
+     * The PositionListBase is an abstract implementation of the
      * List&lt;Position&gt
-     * interface and provides both Iterator&lt;Position&gt; and 
+     * interface and provides both Iterator&lt;Position&gt; and
      * ListIterator&lt;Position&gt; implementations.
      */
-    protected static abstract class PositionListBase 
+    protected static abstract class PositionListBase
                                 extends PositionListUnsupported {
         protected PositionListBase() {
             super();
@@ -606,7 +606,7 @@ public abstract class RolapAxis implements Axis {
         public abstract int size();
         public abstract Position get(int index);
 
-        // Collection 
+        // Collection
         public boolean isEmpty() {
             return (size() == 0);
         }

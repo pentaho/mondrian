@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -81,7 +81,7 @@ public interface Evaluator {
      * Calculates and returns the value of the cell at the current context.
      */
     Object evaluateCurrent();
-    
+
     /**
      * Returns the format string for this cell. This is computed by evaluating
      * the format expression in the current context, and therefore different
@@ -94,7 +94,7 @@ public interface Evaluator {
      * format.
      */
     String format(Object o);
-    
+
     /**
      * Formats a value as a string according to the current context's
      * format, using a given format string.
@@ -113,10 +113,10 @@ public interface Evaluator {
      * Returns parent evaluator.
      */
     Evaluator getParent();
-    
+
     /**
      * Returns the connection's locale.
-     */   
+     */
     Locale getConnectionLocale();
 
     /**
@@ -191,27 +191,27 @@ public interface Evaluator {
      * not set.
      */
     Object getParameterValue(ParameterSlot slot);
-    
+
     /**
      * @return the iteration length of the current context
      */
     int getIterationLength();
-    
+
     /**
      * Sets the iteration length for the current evaluator context
-     * 
+     *
      * @param length length to be set
      */
     void setIterationLength(int length);
-    
+
     /**
      * @return true if evaluating axes
      */
     boolean isEvalAxes();
-    
+
     /**
      * Indicate whether the evaluator is evaluating the axes
-     * 
+     *
      * @param evalAxes true if evaluating axes
      */
     void setEvalAxes(boolean evalAxes);

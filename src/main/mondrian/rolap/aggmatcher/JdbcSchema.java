@@ -75,8 +75,8 @@ public class JdbcSchema {
     private static final Map<DataSource, SoftReference<JdbcSchema>> dbMap =
         new HashMap<DataSource, SoftReference<JdbcSchema>>();
 
-    /** 
-     * How often between sweeping through the dbMap looking for nulls. 
+    /**
+     * How often between sweeping through the dbMap looking for nulls.
      */
     private static final int SWEEP_COUNT = 10;
     private static int sweepDBCount = 0;
@@ -118,13 +118,13 @@ public class JdbcSchema {
             }
         }
     }
-    
-    /** 
+
+    /**
      * Create or retrieve an instance of the JdbcSchema for the given
      * DataSource.
-     * 
-     * @param dataSource 
-     * @return 
+     *
+     * @param dataSource
+     * @return
      */
     public static synchronized JdbcSchema makeDB(DataSource dataSource) {
         makeFactory();
@@ -143,10 +143,10 @@ public class JdbcSchema {
 
         return db;
     }
-    /** 
-     * Clear information in a JdbcSchema associated with a DataSource. 
-     * 
-     * @param dataSource 
+    /**
+     * Clear information in a JdbcSchema associated with a DataSource.
+     *
+     * @param dataSource
      */
     public static synchronized void clearDB(DataSource dataSource) {
         makeFactory();
@@ -163,11 +163,11 @@ public class JdbcSchema {
         }
         sweepDB();
     }
-    
-    /** 
-     * Remove a JdbcSchema associated with a DataSource. 
-     * 
-     * @param dataSource 
+
+    /**
+     * Remove a JdbcSchema associated with a DataSource.
+     *
+     * @param dataSource
      */
     public static synchronized void removeDB(DataSource dataSource) {
         makeFactory();
@@ -182,8 +182,8 @@ public class JdbcSchema {
         }
         sweepDB();
     }
-    
-    /** 
+
+    /**
      * Every SWEEP_COUNT calls to this method, go through all elements of
      * the dbMap removing all that either have null values (null SoftReference)
      * or those with SoftReference with null content.
@@ -1304,7 +1304,7 @@ public class JdbcSchema {
     private Map<String, Table> getTablesMap() {
         return tables;
     }
-    
+
     public static synchronized void clearAllDBs() {
         factory = null;
         makeFactory();

@@ -110,10 +110,10 @@ import java.util.Properties;
  * this is overriding what Object is returned based upon a
  * <code>System</code> property value.
  * <p>
- * Lastly, every factory is a singleton - if an interface with 
+ * Lastly, every factory is a singleton - if an interface with
  * an implementation whose creation is mediated by a factory, then
  * there is a single factory that does that creating.
- * This does not mean that such a factory always return the same value, 
+ * This does not mean that such a factory always return the same value,
  * rather that there is only one instance of the factory itself.
  * <p>
  * The following is an example class that generates a factory
@@ -170,9 +170,9 @@ import java.util.Properties;
  * tests, etc. do not get an instance of the test-specific specialized
  * implementation.
  * <p>
- * The following is an example unit test that uses the factory's 
+ * The following is an example unit test that uses the factory's
  * <code>ThreadLocal</code> to override the implementation that is returned.
- * 
+ *
  * <pre>
  *      interface Boo {
  *          boolean getValue();
@@ -190,10 +190,10 @@ import java.util.Properties;
  *              } else {
  *                  return 0;
  *              }
- *              
+ *
  *          }
  *      }
- * 
+ *
  *      class MyCodeTest {
  *          private static boolean testValue;
  *          static class BooTest implements Boo {
@@ -209,7 +209,7 @@ import java.util.Properties;
  *                  MyCode myCode = new MyCode();
  *                  int value = myCode.getValue();
  *                  assertTrue("Value not 1", (value == 1));
- * 
+ *
  *                  MyTest.testValue = false;
  *                  myCode = new MyCode();
  *                  value = myCode.getValue();
@@ -385,7 +385,7 @@ public abstract class ObjectFactory<V> {
      * @return this <tt>Class</tt> object, cast to represent a subclass of
      * the specified class object.
      * @throws ClassCastException if this <tt>Class</tt> object does
-     * not represent a subclass of the specified class (here "subclass" 
+     * not represent a subclass of the specified class (here "subclass"
      * includes the class itself).
      */
     private static <V> Class<? extends V> asSubclass(final Class<V> clazz,
@@ -461,18 +461,18 @@ public abstract class ObjectFactory<V> {
      */
     public abstract static class Singleton<T> extends ObjectFactory<T> {
 
-        /** 
-         * The single instance of the object created by the factory. 
+        /**
+         * The single instance of the object created by the factory.
          */
         protected T singleInstance;
 
-        /** 
-         * The test single instance of the object created by the factory. 
+        /**
+         * The test single instance of the object created by the factory.
          * Creating this <code>testSingleInstance</code> does not change the
          * current value of the <code>singleInstance</code> variable.
          */
         protected T testSingleInstance;
-        
+
         /**
          * Creates a new singleton factory object. The
          * <code>interfaceClass</code> parameter
@@ -514,8 +514,8 @@ public abstract class ObjectFactory<V> {
             final String className = getClassName();
             if (className != null) {
                 if (this.testSingleInstance == null) {
-                    this.testSingleInstance = getTestObject(className, 
-                                                    parameterTypes, 
+                    this.testSingleInstance = getTestObject(className,
+                                                    parameterTypes,
                                                     parameterValues);
                 }
                 return this.testSingleInstance;
@@ -542,9 +542,9 @@ public abstract class ObjectFactory<V> {
             return this.singleInstance;
         }
 
-        /** 
-         * Create an instance for test purposes.  
-         * 
+        /**
+         * Create an instance for test purposes.
+         *
          * @param className the class name used to create Object instance
          * @param parameterTypes  the class parameters that define the signature
          * of the constructor to use

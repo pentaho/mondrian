@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2006 Julian Hyde
+// Copyright (C) 2003-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -5282,7 +5282,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         TestContext.checkThrowable(
             throwable, "Query timeout of 2 seconds reached");
     }
-    
+
     public void testQueryIterationLimit()
     {
         // Query will need to iterate 4*3 times to compute aggregates,
@@ -5319,7 +5319,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
         TestContext.checkThrowable(
             throwable, "Number of iterations exceeded limit of 11");
-        
+
         // make sure the query runs without the limit set
         executeQuery(queryString);
     }

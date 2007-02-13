@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -33,19 +33,19 @@ class RolapCell implements Cell {
     public Object getValue() {
         return ci.value;
     }
-    
+
     public String getCachedFormatString() {
         return ci.formatString;
     }
-    
+
     public String getFormattedValue() {
         return ci.getFormatValue();
     }
-    
+
     public boolean isNull() {
         return (ci.value == Util.nullValue);
     }
-    
+
     public boolean isError() {
         return (ci.value instanceof Throwable);
     }
@@ -124,7 +124,7 @@ class RolapCell implements Cell {
         // Cannot drill through query based on virtual cube.
         if (((RolapCube) result.getCube()).isVirtual()) {
             return false;
-        } 
+        }
         // get current members
         final Member[] currentMembers = getMembers();
         // First member is the measure, test if it is stored measure, return

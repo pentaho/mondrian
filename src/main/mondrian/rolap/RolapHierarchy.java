@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2006 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -59,7 +59,7 @@ public class RolapHierarchy extends HierarchyBase {
      *
      * <p> Suppose this hierarchy is "Weekly" in the dimension "Order Date" of
      * cube "Sales", and that "Order Date" is a usage of the "Time"
-     * dimension. Then <code>sharedHierarchyName</code> will be 
+     * dimension. Then <code>sharedHierarchyName</code> will be
      * "[Time].[Weekly]".
      */
     private String sharedHierarchyName;
@@ -643,7 +643,7 @@ public class RolapHierarchy extends HierarchyBase {
             "Closure",
             keyExp, null, null, null,
             null, null,  // no longer a parent-child hierarchy
-            null, 
+            null,
             RolapProperty.emptyArray,
             flags,
             src.getDatatype(),

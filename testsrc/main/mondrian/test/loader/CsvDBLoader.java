@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-/** 
+/**
  * Implementation of {@link DBLoader} which gets its Tables by reading CSV files
  * using the {@link CsvLoader} class and is the loader use for CSV junit tests.
  *
@@ -42,10 +42,10 @@ import java.util.regex.Pattern;
  * file_name:'##' FileName: relative_filename ?
  * nos_of_rows:'##' NosOfRows: number
  * column_types: type ( ':' null )
- * type: "INTEGER" "DECIMAL(*,*)" "SMALLINT" 
+ * type: "INTEGER" "DECIMAL(*,*)" "SMALLINT"
  *       "VARCHAR(*)" "REAL" "BOOLEAN"
  *       "BIGINT" "DATE" "TIMESTAMP"
- *  rows: (row)* 
+ *  rows: (row)*
  *  row: value ( ',' value )*
  *
  *  if FileName is given, then
@@ -65,7 +65,7 @@ import java.util.regex.Pattern;
  * See the testsrc/main/mondrian/rolap/aggmatcher/BUG_1541077.csv file
  * for an example.
  *
- * 
+ *
  * @author Richard M. Emberson
  * @version $Id$
  */
@@ -196,14 +196,14 @@ public class CsvDBLoader extends DBLoader {
             return new Iterator<Row>() {
                 public boolean hasNext() {
                     try {
-                        boolean hasNext = 
+                        boolean hasNext =
                             CsvLoaderRowStream.this.csvloader.hasNextLine();
                         if (! hasNext) {
                             CsvLoaderRowStream.this.csvloader.close();
                         }
                         return hasNext;
                     } catch (IOException ex) {
-                        // 
+                        //
                     }
                     return false;
                 }
@@ -430,13 +430,13 @@ public class CsvDBLoader extends DBLoader {
                     } else {
 //System.out.println("CsvLoader.loadTables: else");
                         csvloader.putBack(values);
-                        RowStream rowStream = 
+                        RowStream rowStream =
                             new CsvLoaderRowStream(csvloader);
                         controller.setRowStream(rowStream);
                         csvloader = null;
                         break;
                     }
-                    
+
                 }
             }
         } finally {

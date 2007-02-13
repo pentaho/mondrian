@@ -89,7 +89,7 @@ public abstract class DimensionBase
     {
         return lookupChild(schemaReader, s, MatchType.EXACT);
     }
-    
+
     public OlapElement lookupChild(
         SchemaReader schemaReader, String s, MatchType matchType)
     {

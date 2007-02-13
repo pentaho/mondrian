@@ -58,7 +58,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
         this(xmlaRoot, null);
     }
 
-    public DefaultXmlaRequest(Element xmlaRoot, String role) 
+    public DefaultXmlaRequest(Element xmlaRoot, String role)
             throws XmlaException {
         init(xmlaRoot);
         this.role = role;
@@ -132,7 +132,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 initExecute(xmlaRoot);
             } else {
                 // Note that is code will never be reached because
-                // the error will be caught in 
+                // the error will be caught in
                 // DefaultXmlaServlet.handleSoapBody first
                 StringBuilder buf = new StringBuilder(100);
                 buf.append(MSG_INVALID_XMLA);
@@ -141,13 +141,13 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 buf.append("\"");
                 throw new XmlaException(
                     CLIENT_FAULT_FC,
-                    HSB_BAD_METHOD_CODE, 
+                    HSB_BAD_METHOD_CODE,
                     HSB_BAD_METHOD_FAULT_FS,
                     Util.newError(buf.toString()));
             }
         } else {
             // Note that is code will never be reached because
-            // the error will be caught in 
+            // the error will be caught in
             // DefaultXmlaServlet.handleSoapBody first
             StringBuilder buf = new StringBuilder(100);
             buf.append(MSG_INVALID_XMLA);
@@ -156,7 +156,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
             buf.append("\"");
             throw new XmlaException(
                 CLIENT_FAULT_FC,
-                HSB_BAD_METHOD_NS_CODE, 
+                HSB_BAD_METHOD_NS_CODE,
                 HSB_BAD_METHOD_NS_FAULT_FS,
                 Util.newError(buf.toString()));
         }
@@ -173,7 +173,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
             buf.append(childElems.length);
             throw new XmlaException(
                 CLIENT_FAULT_FC,
-                HSB_BAD_REQUEST_TYPE_CODE, 
+                HSB_BAD_REQUEST_TYPE_CODE,
                 HSB_BAD_REQUEST_TYPE_FAULT_FS,
                 Util.newError(buf.toString()));
         }
@@ -189,7 +189,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
             buf.append(childElems.length);
             throw new XmlaException(
                 CLIENT_FAULT_FC,
-                HSB_BAD_RESTRICTIONS_CODE, 
+                HSB_BAD_RESTRICTIONS_CODE,
                 HSB_BAD_RESTRICTIONS_FAULT_FS,
                 Util.newError(buf.toString()));
         }
@@ -205,7 +205,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
             buf.append(childElems.length);
             throw new XmlaException(
                 CLIENT_FAULT_FC,
-                HSB_BAD_PROPERTIES_CODE, 
+                HSB_BAD_PROPERTIES_CODE,
                 HSB_BAD_PROPERTIES_FAULT_FS,
                 Util.newError(buf.toString()));
         }
@@ -223,7 +223,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
             buf.append(childElems.length);
             throw new XmlaException(
                 CLIENT_FAULT_FC,
-                HSB_BAD_COMMAND_CODE, 
+                HSB_BAD_COMMAND_CODE,
                 HSB_BAD_COMMAND_FAULT_FS,
                 Util.newError(buf.toString()));
         }
@@ -239,7 +239,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
             buf.append(childElems.length);
             throw new XmlaException(
                 CLIENT_FAULT_FC,
-                HSB_BAD_PROPERTIES_CODE, 
+                HSB_BAD_PROPERTIES_CODE,
                 HSB_BAD_PROPERTIES_FAULT_FS,
                 Util.newError(buf.toString()));
         }
@@ -293,7 +293,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
             buf.append(childElems.length);
             throw new XmlaException(
                 CLIENT_FAULT_FC,
-                HSB_BAD_RESTRICTION_LIST_CODE, 
+                HSB_BAD_RESTRICTION_LIST_CODE,
                 HSB_BAD_RESTRICTION_LIST_FAULT_FS,
                 Util.newError(buf.toString()));
         } else {
@@ -339,7 +339,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
             buf.append(childElems.length);
             throw new XmlaException(
                 CLIENT_FAULT_FC,
-                HSB_BAD_PROPERTIES_LIST_CODE, 
+                HSB_BAD_PROPERTIES_LIST_CODE,
                 HSB_BAD_PROPERTIES_LIST_FAULT_FS,
                 Util.newError(buf.toString()));
         } else {
@@ -359,7 +359,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
             buf.append(childElems.length);
             throw new XmlaException(
                 CLIENT_FAULT_FC,
-                HSB_BAD_STATEMENT_CODE, 
+                HSB_BAD_STATEMENT_CODE,
                 HSB_BAD_STATEMENT_FAULT_FS,
                 Util.newError(buf.toString()));
         }
@@ -379,7 +379,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
              *     [<Max_Rows>] [<First_Rowset>] <MDX select> [<Return_Columns>]
              * <Max_Rows> := MAXROWS <positive number>
              * <First_Rowset> := FIRSTROWSET <positive number>
-             * <Return_Columns> := RETURN <member or attribute> 
+             * <Return_Columns> := RETURN <member or attribute>
              *     [, <member or attribute>]
              */
             if (dtOffset < slOffset) {
@@ -394,7 +394,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                             buf.append(maxRows);
                             throw new XmlaException(
                                 CLIENT_FAULT_FC,
-                                HSB_DRILLDOWN_BAD_MAXROWS_CODE, 
+                                HSB_DRILLDOWN_BAD_MAXROWS_CODE,
                                 HSB_DRILLDOWN_BAD_MAXROWS_FAULT_FS,
                                 Util.newError(buf.toString()));
                         }
@@ -408,7 +408,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                             buf.append(firstRowset);
                             throw new XmlaException(
                                 CLIENT_FAULT_FC,
-                                HSB_DRILLDOWN_BAD_FIRST_ROWSET_CODE, 
+                                HSB_DRILLDOWN_BAD_FIRST_ROWSET_CODE,
                                 HSB_DRILLDOWN_BAD_FIRST_ROWSET_FAULT_FS,
                                 Util.newError(buf.toString()));
                         }
@@ -418,7 +418,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 } catch (Exception e) {
                     throw new XmlaException(
                         CLIENT_FAULT_FC,
-                        HSB_DRILLDOWN_ERROR_CODE, 
+                        HSB_DRILLDOWN_ERROR_CODE,
                         HSB_DRILLDOWN_ERROR_FAULT_FS,
                         Util.newError(e, MSG_INVALID_DRILLTHROUGH));
                 }
@@ -427,7 +427,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
                 if (configMaxRows > 0 && maxRows > configMaxRows) {
                     maxRows = configMaxRows;
                 }
-                
+
                 StringBuilder dtStmtBuf = new StringBuilder();
                 dtStmtBuf.append(statement.substring(0, dtOffset)); // formulas
                 dtStmtBuf.append(statement.substring(slOffset)); // select to end
@@ -437,7 +437,7 @@ public class DefaultXmlaRequest implements XmlaRequest,
             } else {
                 throw new XmlaException(
                     CLIENT_FAULT_FC,
-                    HSB_DRILLDOWN_ERROR_CODE, 
+                    HSB_DRILLDOWN_ERROR_CODE,
                     HSB_DRILLDOWN_ERROR_FAULT_FS,
                     Util.newError(MSG_INVALID_DRILLTHROUGH));
             }

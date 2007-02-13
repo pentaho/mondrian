@@ -26,7 +26,7 @@ public class RolapCubeTest extends FoodMartTestCase {
     public void testProcessFormatStringAttributeToIgnoreNullFormatString(){
         RolapCube cube = (RolapCube) getConnection().getSchema().lookupCube("Sales", false);
         StringBuilder builder = new StringBuilder();
-        cube.processFormatStringAttribute(new MondrianDef.CalculatedMember(), builder);        
+        cube.processFormatStringAttribute(new MondrianDef.CalculatedMember(), builder);
         assertEquals(0, builder.length());
     }
 

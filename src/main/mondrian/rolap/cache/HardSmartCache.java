@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public class HardSmartCache <K, V> implements SmartCache <K, V> {
     Map<K, V> cache = new HashMap<K, V>();
-    
+
     public V put(K key, V value) {
         return cache.put(key, value);
     }

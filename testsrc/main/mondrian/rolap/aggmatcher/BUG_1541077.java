@@ -12,18 +12,18 @@ package mondrian.rolap.aggmatcher;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Result;
 
-/** 
+/**
  * Testcase for
  * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1541077&group_id=35302&atid=414613">bug 1541077</a>
  * and a couple of other aggregate table ExplicitRecognizer conditions.
- * 
+ *
  * @author Richard M. Emberson
  * @version $Id$
  */
 public class BUG_1541077 extends AggTableTestCase {
 
     private static final String BUG_1541077 = "BUG_1541077.csv";
-    
+
     public BUG_1541077() {
         super();
     }
@@ -111,7 +111,7 @@ public class BUG_1541077 extends AggTableTestCase {
 
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getFormattedValue();
-        
+
         // get value with aggregates
         props.UseAggregates.setString("true");
 

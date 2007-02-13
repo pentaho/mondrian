@@ -27,39 +27,39 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Cookie;
 
-/** 
+/**
  * This is a partial implementation of the HttpServletResponse where just
  * enough is present to allow for communication between Mondrian's
  * XMLA code and other code in the same JVM.
  * Currently it is used in both the CmdRunner and in XMLA JUnit tests.
  * <p>
  * If you need to add to this implementation, please do so.
- * 
+ *
  * @author <a>Richard M. Emberson</a>
  * @version $Id$
  */
 public class MockHttpServletResponse implements HttpServletResponse {
 
-    public final static String DATE_FORMAT_HEADER = "EEE, d MMM yyyy HH:mm:ss Z";   
+    public final static String DATE_FORMAT_HEADER = "EEE, d MMM yyyy HH:mm:ss Z";
 
 
-    static class MockServletOutputStream extends ServletOutputStream {       
+    static class MockServletOutputStream extends ServletOutputStream {
         private ByteArrayOutputStream buffer;
         private String encoding;
-        
+
         public MockServletOutputStream(int size) {
             this(size, "ISO-8859-1");
         }
-        
-        public MockServletOutputStream(int size, String encoding) {       
+
+        public MockServletOutputStream(int size, String encoding) {
             buffer = new ByteArrayOutputStream(size);
             this.encoding = encoding;
-        }   
-        
-        public void setEncoding(String encoding) {   
+        }
+
+        public void setEncoding(String encoding) {
             this.encoding = encoding;
         }
-    
+
         public void write(int value) throws IOException {
             buffer.write(value);
         }
@@ -84,8 +84,8 @@ public class MockHttpServletResponse implements HttpServletResponse {
 
         public void clearContent() {
             buffer = new ByteArrayOutputStream();
-        }   
-    }   
+        }
+    }
 
 
     private PrintWriter writer;
@@ -112,30 +112,30 @@ public class MockHttpServletResponse implements HttpServletResponse {
         this.headers = new HashMap<String, List<String>>();
         this.outputStream = new MockServletOutputStream(bufferSize);
     }
-    
-    /** 
+
+    /**
      * Returns the name of the charset used for the MIME body sent in this
-     * response. 
-     * 
+     * response.
+     *
      */
     public String getCharacterEncoding() {
         return charEncoding;
     }
-    
-    /** 
+
+    /**
      * Returns a ServletOutputStream suitable for writing binary data in the
-     * response. 
-     * 
-     * @throws IOException 
+     * response.
+     *
+     * @throws IOException
      */
     public ServletOutputStream getOutputStream() throws IOException {
         return outputStream;
     }
-    
-    /** 
-     * Returns a PrintWriter object that can send character text to the client. 
-     * 
-     * @throws IOException 
+
+    /**
+     * Returns a PrintWriter object that can send character text to the client.
+     *
+     * @throws IOException
      */
     public PrintWriter getWriter() throws IOException {
         if (writer == null) {
@@ -145,49 +145,49 @@ public class MockHttpServletResponse implements HttpServletResponse {
 
         return writer;
     }
-    
+
     public void setCharacterEncoding(String charEncoding) {
         this.charEncoding = charEncoding;
         this.outputStream.setEncoding(charEncoding);
     }
 
-    /** 
+    /**
      * Sets the length of the content body in the response In HTTP servlets,
-     * this method sets the HTTP Content-Length header. 
-     * 
+     * this method sets the HTTP Content-Length header.
+     *
      */
     public void setContentLength(int len) {
         setIntHeader("Content-Length", len);
     }
 
-    /** 
-     * Sets the content type of the response being sent to the client. 
-     * 
+    /**
+     * Sets the content type of the response being sent to the client.
+     *
      */
     public void setContentType(String contentType) {
         setHeader("Content-Type", contentType);
     }
 
-    /** 
-     * Sets the preferred buffer size for the body of the response. 
-     * 
+    /**
+     * Sets the preferred buffer size for the body of the response.
+     *
      */
     public void setBufferSize(int size) {
         this.bufferSize = size;
     }
 
-    /** 
-     * Returns the actual buffer size used for the response. 
-     * 
+    /**
+     * Returns the actual buffer size used for the response.
+     *
      */
     public int getBufferSize() {
         return this.bufferSize;
     }
 
-    /** 
+    /**
      * Forces any content in the buffer to be written to the client.
-     * 
-     * @throws IOException 
+     *
+     * @throws IOException
      */
     public void flushBuffer() throws IOException {
         if (writer != null) {
@@ -200,15 +200,15 @@ public class MockHttpServletResponse implements HttpServletResponse {
         outputStream.clearContent();
     }
 
-    /** 
-     * Returns a boolean indicating if the response has been committed. 
-     * 
+    /**
+     * Returns a boolean indicating if the response has been committed.
+     *
      */
     public boolean isCommitted() {
         return isCommited;
     }
 
-    /** 
+    /**
      * Clears any data that exists in the buffer as well as the status code and
      * headers.
      */
@@ -217,26 +217,26 @@ public class MockHttpServletResponse implements HttpServletResponse {
         resetBuffer();
     }
 
-    /** 
+    /**
      *  Sets the locale of the response, setting the headers (including the
-     *  Content-Type's charset) as appropriate. 
-     * 
+     *  Content-Type's charset) as appropriate.
+     *
      */
     public void setLocale(Locale locale) {
         this.locale = locale;
     }
 
-    /** 
-     * Returns the locale assigned to the response. 
-     * 
+    /**
+     * Returns the locale assigned to the response.
+     *
      */
     public Locale getLocale() {
         return locale;
     }
 
-    /** 
-     * Adds the specified cookie to the response. 
-     * 
+    /**
+     * Adds the specified cookie to the response.
+     *
      */
     public void addCookie(Cookie cookie) {
         if (cookies.isEmpty()) {
@@ -245,28 +245,28 @@ public class MockHttpServletResponse implements HttpServletResponse {
         cookies.add(cookie);
     }
 
-    /** 
+    /**
      * Returns a boolean indicating whether the named response header has
-     * already been set. 
-     * 
+     * already been set.
+     *
      */
     public boolean containsHeader(String name) {
         return headers.containsKey(name);
     }
 
-    /** 
+    /**
      * Encodes the specified URL by including the session ID in it, or, if
-     * encoding is not needed, returns the URL unchanged. 
-     * 
+     * encoding is not needed, returns the URL unchanged.
+     *
      */
     public String encodeURL(String url) {
         return encode(url);
     }
 
-    /** 
+    /**
      * Encodes the specified URL for use in the sendRedirect method or, if
-     * encoding is not needed, returns the URL unchanged. 
-     * 
+     * encoding is not needed, returns the URL unchanged.
+     *
      */
     public String encodeRedirectURL(String url) {
         return encode(url);
@@ -288,10 +288,10 @@ public class MockHttpServletResponse implements HttpServletResponse {
         return encodeRedirectURL(s);
     }
 
-    /** 
+    /**
      *  Sends an error response to the client using the specified status code
-     *  and descriptive message. 
-     * 
+     *  and descriptive message.
+     *
      */
     public void sendError(int code, String msg) throws IOException {
         this.errorCode = code;
@@ -299,28 +299,28 @@ public class MockHttpServletResponse implements HttpServletResponse {
         this.errorMsg = msg;
     }
 
-    /** 
-     * Sends an error response to the client using the specified status. 
-     * 
+    /**
+     * Sends an error response to the client using the specified status.
+     *
      */
     public void sendError(int code) throws IOException {
         this.errorCode = code;
         this.wasErrorSent = true;
     }
 
-    /** 
+    /**
      * Sends a temporary redirect response to the client using the specified
-     * redirect location URL. 
-     * 
+     * redirect location URL.
+     *
      */
     public void sendRedirect(String location) throws IOException {
         setHeader("Location", location);
         wasRedirectSent = true;
     }
 
-    /** 
-     * Sets a response header with the given name and date-value. 
-     * 
+    /**
+     * Sets a response header with the given name and date-value.
+     *
      */
     public void setDateHeader(String name, long date) {
         Date dateValue = new Date(date);
@@ -328,9 +328,9 @@ public class MockHttpServletResponse implements HttpServletResponse {
         setHeader(name, dateString);
     }
 
-    /** 
-     * Adds a response header with the given name and date-value. 
-     * 
+    /**
+     * Adds a response header with the given name and date-value.
+     *
      */
     public void addDateHeader(String name, long date) {
         Date dateValue = new Date(date);
@@ -338,9 +338,9 @@ public class MockHttpServletResponse implements HttpServletResponse {
         addHeader(name, dateString);
     }
 
-    /** 
-     * Sets a response header with the given name and value. 
-     * 
+    /**
+     * Sets a response header with the given name and value.
+     *
      */
     public void setHeader(String name, String value) {
         List<String> valueList = headers.get(name);
@@ -352,9 +352,9 @@ public class MockHttpServletResponse implements HttpServletResponse {
 
     }
 
-    /** 
-     * Adds a response header with the given name and value. 
-     * 
+    /**
+     * Adds a response header with the given name and value.
+     *
      */
     public void addHeader(String name, String value) {
         List<String> valueList = headers.get(name);
@@ -365,32 +365,32 @@ public class MockHttpServletResponse implements HttpServletResponse {
         valueList.add(value);
     }
 
-    /** 
-     *  Sets a response header with the given name and integer value. 
-     * 
+    /**
+     *  Sets a response header with the given name and integer value.
+     *
      */
     public void setIntHeader(String name, int value) {
         String stringValue = Integer.toString(value);
         addHeader(name, stringValue);
     }
 
-    /** 
-     * Adds a response header with the given name and integer value. 
-     * 
+    /**
+     * Adds a response header with the given name and integer value.
+     *
      */
     public void addIntHeader(String name, int value) {
         String stringValue = Integer.toString(value);
         addHeader(name, stringValue);
     }
 
-    /** 
-     *  Sets the status code for this response. 
-     * 
+    /**
+     *  Sets the status code for this response.
+     *
      */
     public void setStatus(int status) {
         this.statusCode = status;
     }
-    
+
     /**
      * @deprecated Method setStatus is deprecated
      * Deprecated. As of version 2.1, due to ambiguous meaning of the message
@@ -423,7 +423,7 @@ public class MockHttpServletResponse implements HttpServletResponse {
     public String getContentType() {
         return getHeader("Content-Type");
     }
-    
+
 
     /////////////////////////////////////////////////////////////////////////
     //

@@ -33,7 +33,7 @@ import java.sql.Timestamp;
 import java.sql.DatabaseMetaData;
 import org.apache.log4j.*;
 
-/** 
+/**
  * This is an abstract base class for the creation and load of one or more
  * database tables with data. Optionally, if a table already exists it can be
  * dropped or its rows deleted.
@@ -65,7 +65,7 @@ import org.apache.log4j.*;
  * <li>
  * Output Directory: If specified, then rather than creating and loading the
  * tables in the database, files containing database specific SQL statements are
- * generated. The names of the files are based upon the table name plus 
+ * generated. The names of the files are based upon the table name plus
  * a suffix.
  * Each table has four files for the different SQL operations: drop the table,
  * drop the rows in the table, create the table and load the rows in the table.
@@ -161,9 +161,9 @@ import org.apache.log4j.*;
  * </li>
  * </ul>
  * <p>
- * NOTE: Much of the code appearing in this class came from the 
+ * NOTE: Much of the code appearing in this class came from the
  * MondrianFoodMartLoader class.
- * 
+ *
  * @author <a>Richard M. Emberson</a>
  * @version $Id$
  */
@@ -172,44 +172,44 @@ public abstract class DBLoader {
     public static final String nl = System.getProperty("line.separator");
     private static final int DEFAULT_BATCH_SIZE = 50;
 
-    public static final String BATCH_SIZE_PROP = 
+    public static final String BATCH_SIZE_PROP =
             "mondrian.test.loader.batch.size";
-    public static final String JDBC_DRIVER_PROP = 
+    public static final String JDBC_DRIVER_PROP =
             "mondrian.test.loader.jdbc.driver";
-    public static final String JDBC_URL_PROP = 
+    public static final String JDBC_URL_PROP =
             "mondrian.test.loader.jdbc.url";
-    public static final String JDBC_USER_PROP = 
+    public static final String JDBC_USER_PROP =
             "mondrian.test.loader.jdbc.user";
-    public static final String JDBC_PASSWORD_PROP = 
+    public static final String JDBC_PASSWORD_PROP =
             "mondrian.test.loader.jdbc.password";
-    public static final String OUTPUT_DIRECTORY_PROP = 
+    public static final String OUTPUT_DIRECTORY_PROP =
             "mondrian.test.loader.output.directory";
-    public static final String FORCE_PROP = 
+    public static final String FORCE_PROP =
             "mondrian.test.loader.force";
 
     // suffixes of output files
-    public static final String DROP_TABLE_PROP = 
+    public static final String DROP_TABLE_PROP =
             "mondrian.test.loader.drop.table.suffix";
     public static final String DROP_TABLE_SUFFIX_DEFAULT = "drop.sql";
-    public static final String DROP_TABLE_ROWS_PROP = 
+    public static final String DROP_TABLE_ROWS_PROP =
             "mondrian.test.loader.drop.table.rows.suffix";
     public static final String DROP_TABLE_ROWS_SUFFIX_DEFAULT = "droprows.sql";
-    public static final String CREATE_TABLE_PROP = 
+    public static final String CREATE_TABLE_PROP =
             "mondrian.test.loader.create.table.suffix";
     public static final String CREATE_TABLE_SUFFIX_DEFAULT = "create.sql";
-    public static final String LOAD_TABLE_ROWS_PROP = 
+    public static final String LOAD_TABLE_ROWS_PROP =
             "mondrian.test.loader.load.table.rows.suffix";
     public static final String LOAD_TABLE_ROWS_SUFFIX_DEFAULT = "loadrows.sql";
 
-    final static Pattern decimalDataTypeRegex = 
+    final static Pattern decimalDataTypeRegex =
             Pattern.compile("DECIMAL\\((.*),(.*)\\)");
-    final static Pattern varcharDataTypeRegex = 
+    final static Pattern varcharDataTypeRegex =
             Pattern.compile("VARCHAR\\((.*)\\)");
-    final static DecimalFormat integerFormatter = 
+    final static DecimalFormat integerFormatter =
             new DecimalFormat(decimalFormat(15, 0));
     final static String dateFormatString = "yyyy-MM-dd";
     final static String oracleDateFormatString = "YYYY-MM-DD";
-    final static DateFormat dateFormatter = 
+    final static DateFormat dateFormatter =
             new SimpleDateFormat(dateFormatString);
 
     /**
@@ -252,8 +252,8 @@ public abstract class DBLoader {
         return buf.toString();
     }
 
-        
-    /** 
+
+    /**
      * The RowStream interface allows one to load large sets of
      * rows by streaming them in, one does not have to have all
      * of the row data in memory.
@@ -362,7 +362,7 @@ public abstract class DBLoader {
         }
 
         public void executeStatements() throws Exception {
-            DBLoader.this.executeStatements(this); 
+            DBLoader.this.executeStatements(this);
         }
     }
 
@@ -654,7 +654,7 @@ public abstract class DBLoader {
             if (this.userName == null) {
                 this.connection = DriverManager.getConnection(this.jdbcURL);
             } else {
-                this.connection = DriverManager.getConnection(this.jdbcURL, 
+                this.connection = DriverManager.getConnection(this.jdbcURL,
                                         this.userName, this.password);
             }
         }
@@ -744,7 +744,7 @@ public abstract class DBLoader {
         executeLoadTableRows(table);
     }
 
-    protected boolean makeFileWriter(Table table, String suffix) 
+    protected boolean makeFileWriter(Table table, String suffix)
             throws Exception {
         if (this.outputDirectory != null) {
             String fileName = table.getName()+suffix;
@@ -778,21 +778,21 @@ public abstract class DBLoader {
             LOGGER.debug("Could not close file writer: " + ex);
         }
     }
-    
-    /** 
+
+    /**
      * This method undoes all of the database table creations performed
      * when the load method was called.
-     * 
-     * @throws Exception 
+     *
+     * @throws Exception
      */
     public void clear() throws Exception {
     }
 
-    /** 
+    /**
      * This method should be called when the is no longer going to be
      * used.
-     * 
-     * @throws Exception 
+     *
+     * @throws Exception
      */
     public void close() throws Exception {
     }
@@ -819,7 +819,7 @@ public abstract class DBLoader {
         try {
             Table.Controller controller = table.getController();
             if (controller.shouldDropTableRows()) {
-                String suffix = System.getProperty(DROP_TABLE_ROWS_PROP, 
+                String suffix = System.getProperty(DROP_TABLE_ROWS_PROP,
                             DROP_TABLE_ROWS_SUFFIX_DEFAULT);
                 String dropTableRowsStmt = table.getDropTableRowsStmt();
                 if (makeFileWriter(table, "." + suffix )) {
@@ -830,7 +830,7 @@ public abstract class DBLoader {
             }
             return true;
         } catch (SQLException e) {
-            LOGGER.debug("Drop Table row of " + table.getName() + 
+            LOGGER.debug("Drop Table row of " + table.getName() +
                     " failed. Ignored");
         } finally {
             closeFileWriter();
@@ -842,7 +842,7 @@ public abstract class DBLoader {
         try {
             Table.Controller controller = table.getController();
             if (controller.shouldDropTable()) {
-                String suffix = System.getProperty(DROP_TABLE_PROP, 
+                String suffix = System.getProperty(DROP_TABLE_PROP,
                                 DROP_TABLE_SUFFIX_DEFAULT);
                 String dropTableStmt = table.getDropTableStmt();
                 if (makeFileWriter(table, "." + suffix )) {
@@ -863,7 +863,7 @@ public abstract class DBLoader {
         try {
             Table.Controller controller = table.getController();
             if (controller.createTable()) {
-                String suffix = System.getProperty(CREATE_TABLE_PROP, 
+                String suffix = System.getProperty(CREATE_TABLE_PROP,
                                 CREATE_TABLE_SUFFIX_DEFAULT);
                 String ddl = table.getCreateTableStmt();
                 if (makeFileWriter(table, "." + suffix )) {
@@ -883,7 +883,7 @@ public abstract class DBLoader {
     protected int executeLoadTableRows(Table table) {
         int rowsAdded = 0;
         try {
-            String suffix = System.getProperty(LOAD_TABLE_ROWS_PROP, 
+            String suffix = System.getProperty(LOAD_TABLE_ROWS_PROP,
                             LOAD_TABLE_ROWS_SUFFIX_DEFAULT);
             makeFileWriter(table, "." + suffix );
 
@@ -897,10 +897,10 @@ public abstract class DBLoader {
                 while (it.hasNext()) {
                     Row row = (Row) it.next();
                     Object[] values = row.values();
-                    String insertStatement = 
+                    String insertStatement =
                         createInsertStatement(table, values);
                     if (!displayedInsert && LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Example Insert statement: " + 
+                        LOGGER.debug("Example Insert statement: " +
                             insertStatement);
                         displayedInsert = true;
                     }
@@ -922,7 +922,7 @@ public abstract class DBLoader {
         }
         return rowsAdded;
     }
-    protected String createInsertStatement(Table table, Object[] values) 
+    protected String createInsertStatement(Table table, Object[] values)
             throws Exception {
 
         Column[] columns = table.getColumns();
@@ -971,15 +971,15 @@ public abstract class DBLoader {
     protected String quoteId(String name) {
         return this.dialect.quoteIdentifier(name);
     }
-    
-    /** 
-     * Convert the columns value to a string based upon its column type. 
-     * 
-     * @param column 
-     * @param value 
-     * @return 
+
+    /**
+     * Convert the columns value to a string based upon its column type.
+     *
+     * @param column
+     * @param value
+     * @return
      */
-    protected String columnValue(Column column, Object value) 
+    protected String columnValue(Column column, Object value)
             throws Exception {
 
         Type type = column.getType();
@@ -987,7 +987,7 @@ public abstract class DBLoader {
 
         if (value == null) {
             return "NULL";
-        } else if ((value instanceof String) && 
+        } else if ((value instanceof String) &&
                 (((String)value).length() == 0)) {
             return "NULL";
         }
@@ -1086,7 +1086,7 @@ public abstract class DBLoader {
                 } else {
                     return "'" + dateFormatter.format(dt) + "'";
                 }
-            } 
+            }
 
         /*
          * Output for a FLOAT
@@ -1166,7 +1166,7 @@ public abstract class DBLoader {
             }
          */
         }
-        throw new Exception("Unknown column type: " + typeName + 
+        throw new Exception("Unknown column type: " + typeName +
             " for column: " + column.getName());
     }
 
@@ -1210,7 +1210,7 @@ public abstract class DBLoader {
      * @throws IOException
      * @throws SQLException
      */
-    protected int writeBatch(String[] batch, int batchSize) 
+    protected int writeBatch(String[] batch, int batchSize)
             throws IOException, SQLException {
         if (this.fileWriter != null) {
             for (int i = 0; i < batchSize; i++) {

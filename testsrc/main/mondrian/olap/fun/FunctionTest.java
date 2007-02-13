@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2006 Julian Hyde and others
+// Copyright (C) 2003-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -305,7 +305,7 @@ public class FunctionTest extends FoodMartTestCase {
             "Row #0: 11\n" +
             "Row #0: 5\n" +
             "Row #0: 4\n");
-        
+
         assertQueryReturns(
             "WITH MEMBER [Measures].[Foo] AS 'Iif(IsEmpty([Measures].[Unit Sales]), 5, [Measures].[Unit Sales])'\n" +
             "SELECT {[Store].[USA].[WA].children} on columns\n" +
@@ -6026,7 +6026,7 @@ public class FunctionTest extends FoodMartTestCase {
                 "{[Measures].[Y]}\n" +
                 "Row #0: 1\n"));
     }
-    
+
     /**
      * Tests a RANK function which is so large that we need to use caching
      * in order to execute it efficiently.
@@ -6781,14 +6781,14 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         assertExprReturns("1=1 AND Cast(1 = 1 AND 1 = 2 AS Boolean)", "false");
 
         // From null : should not throw exceptions since RolapResult.executeBody can receive NULL
-        // values when the cell value is not loaded yet, so should return null instead.        
+        // values when the cell value is not loaded yet, so should return null instead.
         // To Integer : Expect to return NULL
         assertExprReturns("0 * Cast(NULL AS Integer)", "");  // Expect to return NULL
         // To Numeric : Expect to return NULL
         assertExprReturns("0 * Cast(NULL AS Numeric)", "");  // Expect to return NULL
         // To String : Expect to return "null"
         assertExprReturns("'' || Cast(NULL AS String)", "null");
-        // To Boolean : Expect to return NULL, but since FunUtil.BooleanNull does not 
+        // To Boolean : Expect to return NULL, but since FunUtil.BooleanNull does not
         // implement three-valued boolean logic yet, this will return false
         assertExprReturns("1=1 AND Cast(NULL AS Boolean)", "false");
 
@@ -6857,7 +6857,7 @@ assertExprReturns("LinRegR2([Time].[Month].members," +
         pw.println("</table>");
         pw.close();
     }
-    
+
     public void testComplexOrExpr()
     {
         // make sure all aggregates referenced in the OR expression are

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2006 Julian Hyde
+// Copyright (C) 2003-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -43,7 +43,7 @@ public abstract class XmlaServlet extends HttpServlet
     private static final Logger LOGGER = Logger.getLogger(XmlaServlet.class);
 
     public static final String PARAM_DATASOURCES_CONFIG = "DataSourcesConfig";
-    public static final String PARAM_OPTIONAL_DATASOURCE_CONFIG = 
+    public static final String PARAM_OPTIONAL_DATASOURCE_CONFIG =
             "OptionalDataSourceConfig";
     public static final String PARAM_CHAR_ENCODING = "CharacterEncoding";
     public static final String PARAM_CALLBACKS = "Callbacks";
@@ -61,9 +61,9 @@ public abstract class XmlaServlet extends HttpServlet
         SEND_ERROR
     }
 
-    /** 
-     * If paramName's value is not null and 'true', then return true. 
-     * 
+    /**
+     * If paramName's value is not null and 'true', then return true.
+     *
      */
     public static boolean getBooleanInitParameter(
             ServletConfig servletConfig,
@@ -73,7 +73,7 @@ public abstract class XmlaServlet extends HttpServlet
     }
 
     public static boolean getParameter(
-            HttpServletRequest req, 
+            HttpServletRequest req,
             String paramName) {
         String paramValue = req.getParameter(paramName);
         return paramValue != null && Boolean.valueOf(paramValue);
@@ -108,19 +108,19 @@ public abstract class XmlaServlet extends HttpServlet
         // created.
         this.catalogLocator = makeCatalogLocator(servletConfig);
 
-        DataSourcesConfig.DataSources dataSources = 
+        DataSourcesConfig.DataSources dataSources =
                 makeDataSources(servletConfig);
         addToDataSources(dataSources);
     }
 
-    /** 
+    /**
      * Gets (creating if needed) the XmlaHandler.
-     * 
+     *
      * @return XMLA handler
      */
     protected XmlaHandler getXmlaHandler() {
         if (this.xmlaHandler == null) {
-            this.xmlaHandler = 
+            this.xmlaHandler =
                 new XmlaHandler(this.dataSources, this.catalogLocator, "cxmla");
         }
         return this.xmlaHandler;
@@ -133,10 +133,10 @@ public abstract class XmlaServlet extends HttpServlet
         callbackList.add(callback);
     }
 
-    /** 
-     * Return an unmodifiable list of callbacks. 
-     * 
-     * @return 
+    /**
+     * Return an unmodifiable list of callbacks.
+     *
+     * @return
      */
     protected final List<XmlaRequestCallback> getCallbacks() {
         return Collections.unmodifiableList(callbackList);
@@ -172,8 +172,8 @@ public abstract class XmlaServlet extends HttpServlet
                     response.setCharacterEncoding(charEncoding);
                 } catch (UnsupportedEncodingException uee) {
                     charEncoding = null;
-                    String msg = "Unsupported character encoding '" + 
-                        charEncoding + 
+                    String msg = "Unsupported character encoding '" +
+                        charEncoding +
                         "': " +
                         "Use default character encoding from HTTP client for now";
                     LOGGER.warn(msg);
@@ -206,10 +206,10 @@ public abstract class XmlaServlet extends HttpServlet
 
             } catch (Exception ex) {
                 LOGGER.error("Errors when invoking callbacks validateHttpHeader", ex);
-                handleFault(response, responseSoapParts, 
+                handleFault(response, responseSoapParts,
                         phase, new XmlaException(
                                 SERVER_FAULT_FC,
-                                CHH_CODE, 
+                                CHH_CODE,
                                 CHH_FAULT_FS,
                                 ex));
                 phase = Phase.SEND_ERROR;
@@ -227,7 +227,7 @@ public abstract class XmlaServlet extends HttpServlet
 
                 // check request's content type
                 String contentType = request.getContentType();
-                if (contentType == null || 
+                if (contentType == null ||
                     contentType.indexOf("text/xml") == -1) {
                     throw new IllegalArgumentException("Only accepts content type 'text/xml', not '" + contentType + "'");
                 }
@@ -282,10 +282,10 @@ public abstract class XmlaServlet extends HttpServlet
 
             } catch (Exception ex) {
                 LOGGER.error("Errors when invoking callbacks preaction", ex);
-                handleFault(response, responseSoapParts, 
+                handleFault(response, responseSoapParts,
                         phase, new XmlaException(
                                 SERVER_FAULT_FC,
-                                CPREA_CODE, 
+                                CPREA_CODE,
                                 CPREA_FAULT_FS,
                                 ex));
                 phase = Phase.SEND_ERROR;
@@ -335,10 +335,10 @@ public abstract class XmlaServlet extends HttpServlet
 
             } catch (Exception ex) {
                 LOGGER.error("Errors when invoking callbacks postaction", ex);
-                handleFault(response, responseSoapParts, 
+                handleFault(response, responseSoapParts,
                         phase, new XmlaException(
                                 SERVER_FAULT_FC,
-                                CPOSTA_CODE, 
+                                CPOSTA_CODE,
                                 CPOSTA_FAULT_FS,
                                 ex));
                 phase = Phase.SEND_ERROR;
@@ -433,7 +433,7 @@ public abstract class XmlaServlet extends HttpServlet
      * If there is an initParameter called "DataSourcesConfig"
      * get its value, replace any "${key}" content with "value" where
      * "key/value" are System properties, and try to create a URL
-     * instance out of it. If that fails, then assume its a 
+     * instance out of it. If that fails, then assume its a
      * real filepath and if the file exists then create a URL from it
      * (but only if the file exists).
      * If there is no initParameter with that name, then attempt to
@@ -443,11 +443,11 @@ public abstract class XmlaServlet extends HttpServlet
     protected DataSourcesConfig.DataSources makeDataSources(
                 ServletConfig servletConfig) {
 
-        String paramValue = 
+        String paramValue =
                 servletConfig.getInitParameter(PARAM_DATASOURCES_CONFIG);
         // if false, then do not throw exception if the file/url
         // can not be found
-        boolean optional = 
+        boolean optional =
             getBooleanInitParameter(servletConfig, PARAM_OPTIONAL_DATASOURCE_CONFIG);
 
         URL dataSourcesConfigUrl = null;
@@ -485,7 +485,7 @@ public abstract class XmlaServlet extends HttpServlet
                         // yes, a real file path
                         dataSourcesConfigUrl = f.toURL();
                     } else if (mue != null) {
-                        // neither url or file, 
+                        // neither url or file,
                         // is it not optional
                         if (! optional) {
                             throw mue;
@@ -502,8 +502,8 @@ public abstract class XmlaServlet extends HttpServlet
                     "dataSourcesConfigUrl="+dataSourcesConfigUrl;
             LOGGER.debug(msg);
         }
-        // don't try to parse a null 
-        return (dataSourcesConfigUrl == null) 
+        // don't try to parse a null
+        return (dataSourcesConfigUrl == null)
             ? null : parseDataSourcesUrl(dataSourcesConfigUrl);
     }
 
@@ -516,7 +516,7 @@ public abstract class XmlaServlet extends HttpServlet
             DataSourcesConfig.DataSource[] ds2 = dataSources.dataSources;
             int len2 = ds2.length;
 
-            DataSourcesConfig.DataSource[] tmp = 
+            DataSourcesConfig.DataSource[] tmp =
                 new DataSourcesConfig.DataSource[len1+len2];
 
             System.arraycopy(ds1, 0, tmp, 0, len1);
@@ -532,7 +532,7 @@ public abstract class XmlaServlet extends HttpServlet
                 URL dataSourcesConfigUrl) {
 
         try {
-            String dataSourcesConfigString = 
+            String dataSourcesConfigString =
                 Util.readURL(
                     dataSourcesConfigUrl,
                     Util.toMap(System.getProperties()));
@@ -551,7 +551,7 @@ public abstract class XmlaServlet extends HttpServlet
                 LOGGER.warn("XmlaServlet.parseDataSources: null input");
                 return null;
             }
-            dataSourcesConfigString = 
+            dataSourcesConfigString =
                 Util.replaceProperties(
                     dataSourcesConfigString,
                     Util.toMap(System.getProperties()));

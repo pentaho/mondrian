@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2002-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -103,7 +103,7 @@ public class SetFunDef extends FunDefBase {
             return voidCalcs;
         }
 
-        private VoidCalc[] compileSelf(Exp[] args, 
+        private VoidCalc[] compileSelf(Exp[] args,
                 ExpCompiler compiler,
                 ResultStyle[] resultStyles) {
             VoidCalc[] voidCalcs = new VoidCalc[args.length];
@@ -113,7 +113,7 @@ public class SetFunDef extends FunDefBase {
             return voidCalcs;
         }
 
-        private VoidCalc createCalc(Exp arg, 
+        private VoidCalc createCalc(Exp arg,
                 ExpCompiler compiler,
                 ResultStyle[] resultStyles) {
             final Type type = arg.getType();
@@ -216,7 +216,7 @@ public class SetFunDef extends FunDefBase {
             return iterCalcs;
         }
 
-        private IterCalc[] compileSelf(Exp[] args, 
+        private IterCalc[] compileSelf(Exp[] args,
                 ExpCompiler compiler,
                 ResultStyle[] resultStyles) {
             IterCalc[] iterCalcs = new IterCalc[args.length];
@@ -226,7 +226,7 @@ public class SetFunDef extends FunDefBase {
             return iterCalcs;
         }
 
-        private IterCalc createCalc(Exp arg, 
+        private IterCalc createCalc(Exp arg,
                 ExpCompiler compiler,
                 ResultStyle[] resultStyles) {
 
@@ -240,7 +240,7 @@ public class SetFunDef extends FunDefBase {
                     return new AbstractIterCalc(arg, new Calc[] {calc}) {
                         private final IterCalc iterCalc = (IterCalc) calc;
                         public Iterable evaluateIterable(Evaluator evaluator) {
-                            Iterable iterable = 
+                            Iterable iterable =
                                 iterCalc.evaluateIterable(evaluator);
                             return iterable;
                         }
@@ -282,7 +282,7 @@ public class SetFunDef extends FunDefBase {
                     return new AbstractIterCalc(arg, new Calc[] {calc}) {
                         private final IterCalc iterCalc = (IterCalc) calc;
                         public Iterable evaluateIterable(Evaluator evaluator) {
-                            Iterable iterable = 
+                            Iterable iterable =
                                 iterCalc.evaluateIterable(evaluator);
                             return iterable;
                         }
@@ -331,10 +331,10 @@ public class SetFunDef extends FunDefBase {
                 final MemberCalc memberCalc = compiler.compileMember(arg);
                 return new AbstractIterCalc(arg, new Calc[] {memberCalc}) {
                     public Iterable evaluateIterable(Evaluator evaluator) {
-                        final Member member = 
+                        final Member member =
                             memberCalc.evaluateMember(evaluator);
                         Iterable<Member> iterable = new Iterable<Member>() {
-                            public Iterator<Member> iterator() { 
+                            public Iterator<Member> iterator() {
                                 return new Iterator<Member>() {
                                     private Member m = member;
                                     public boolean hasNext() {
@@ -366,7 +366,7 @@ public class SetFunDef extends FunDefBase {
                     public Iterable evaluateIterable(Evaluator evaluator) {
                         final Member[] members = tupleCalc.evaluateTuple(evaluator);
                         Iterable<Member[]> iterable = new Iterable<Member[]>() {
-                            public Iterator<Member[]> iterator() { 
+                            public Iterator<Member[]> iterator() {
                                 return new Iterator<Member[]>() {
                                     private Member[] m = members;
                                     public boolean hasNext() {
@@ -410,7 +410,7 @@ public class SetFunDef extends FunDefBase {
                                     return false;
                                 }
                                 IterCalc iterCalc = iterCalcs[index++];
-                                Iterable iter = 
+                                Iterable iter =
                                     iterCalc.evaluateIterable(evaluator);
                                 currentIterator = iter.iterator();
                             }
@@ -421,7 +421,7 @@ public class SetFunDef extends FunDefBase {
                                         return false;
                                     }
                                     IterCalc iterCalc = iterCalcs[index++];
-                                    Iterable iter = 
+                                    Iterable iter =
                                         iterCalc.evaluateIterable(evaluator);
                                     currentIterator = iter.iterator();
                                     b = currentIterator.hasNext();

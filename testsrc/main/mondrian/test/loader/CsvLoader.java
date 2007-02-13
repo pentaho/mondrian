@@ -24,10 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.*;
 
-/** 
+/**
  * This is a basic Comma-separated-value (CSV, Csv) reader. As input it
  * ultimately takes a <code>java.io.Reader</code> but has helper support for
- * <code>java.io.InputStream, file</code> names and 
+ * <code>java.io.InputStream, file</code> names and
  * <code>java.io.File</code>.
  * One can also specify a separator character other than the default
  * comma, ',', character and, also, that the input's first line contains the
@@ -75,8 +75,8 @@ import org.apache.log4j.*;
  *
  * <p>
  * Its certainly not the penultimate such parser but its hoped that its
- * adequate. 
- * 
+ * adequate.
+ *
  * @author <a>Richard M. Emberson</a>
  * @version $Id$
  */
@@ -107,11 +107,11 @@ public class CsvLoader {
     private int numberColumns;
     private String[] columns;
 
-    public CsvLoader(InputStream in, String charset) 
+    public CsvLoader(InputStream in, String charset)
             throws UnsupportedEncodingException{
         this(new InputStreamReader(in, charset));
     }
-    public CsvLoader(InputStream in, char separator, 
+    public CsvLoader(InputStream in, char separator,
                 boolean includesHeader, String charset)
             throws UnsupportedEncodingException{
         this(new InputStreamReader(in, charset), separator, includesHeader);
@@ -126,7 +126,7 @@ public class CsvLoader {
     public CsvLoader(String filename) throws FileNotFoundException {
         this(new FileReader(filename));
     }
-    public CsvLoader(String filename, char separator, boolean includesHeader) 
+    public CsvLoader(String filename, char separator, boolean includesHeader)
                 throws FileNotFoundException {
         this(new FileReader(filename), separator, includesHeader);
     }
@@ -297,8 +297,8 @@ public class CsvLoader {
                     inBraces = true;
                 } else if (c == CHEVRON_START) {
                     inChevrons = true;
-                } 
-                if (inDoubleQuote || inSingleQuote || 
+                }
+                if (inDoubleQuote || inSingleQuote ||
                         inParen || inBracket || inBraces || inChevrons) {
                     buf.append(c);
                 } else if (c == this.separator) {

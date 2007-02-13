@@ -51,7 +51,7 @@ abstract class ArrayMemberSource implements MemberSource {
     public List<RolapMember> getRootMembers() {
         return Collections.emptyList();
     }
-    
+
     public void getMemberChildren(RolapMember parentMember, List<RolapMember> children) {
         // there are no children
     }

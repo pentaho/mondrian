@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2006-2006 Julian Hyde and others
-// Copyright (C) 2005, Thomson Medstat, Inc, Ann Arbor, MI.
+// Copyright (C) 2005-2006 Thomson Medstat, Inc, Ann Arbor, MI.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */

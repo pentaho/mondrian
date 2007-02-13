@@ -60,10 +60,10 @@ public interface XmlaRequestCallback {
 
     void init(ServletConfig servletConfig) throws ServletException;
 
-    /** 
+    /**
      * Process the request header items. Specifically if present the
      * Authorization and Expect headers. If the Authorization header is
-     * present, then the callback can validate the user/password. If 
+     * present, then the callback can validate the user/password. If
      * authentication fails, the callback should throw an XmlaException
      * with the correct XmlaConstants values. The XmlaRequestCallback.Helper
      * class contains the authorizationException method that can be used
@@ -77,7 +77,7 @@ public interface XmlaRequestCallback {
      * <p>
      * Note that it is upto the XMLA client to determine whether or not
      * there is an Expect header entry (ADOMD.NET seems to like to do this).
-     * 
+     *
      * @return true if XmlaServlet handling is to continue and false if
      *         there was an Expect header "100-continue".
      */
@@ -86,28 +86,28 @@ public interface XmlaRequestCallback {
         HttpServletResponse response,
         Map<String, String> context) throws Exception;
 
-    /** 
+    /**
      * This is called after the headers have been process but before the
      * body (DISCOVER/EXECUTE) has been processed.
-     * 
+     *
      */
     void preAction(
         HttpServletRequest request,
         Element[] requestSoapParts,
         Map<String, String> context) throws Exception;
 
-    /** 
+    /**
      * The Callback is requested to generate a sequence id string. This
-     * sequence id was requested by the XMLA client and will be used 
+     * sequence id was requested by the XMLA client and will be used
      * for all subsequent communications in the Soap Header block.
-     * 
+     *
      */
     String generateSessionId(Map<String, String> context);
 
-    /** 
+    /**
      * This is called after all Mondrian processing (DISCOVER/EXECUTE) has
      * occurred.
-     * 
+     *
      */
     void postAction(HttpServletRequest request,
                 HttpServletResponse response,

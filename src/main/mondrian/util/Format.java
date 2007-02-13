@@ -134,7 +134,7 @@ public class Format {
      * Maps strings representing locales (for example, "en_US_Boston", "en_US",
      * "en", or "" for the default) to a {@link Format.FormatLocale}.
      */
-    private static final Map<String, FormatLocale> mapLocaleToFormatLocale = 
+    private static final Map<String, FormatLocale> mapLocaleToFormatLocale =
         new HashMap<String, FormatLocale>();
 
     /**

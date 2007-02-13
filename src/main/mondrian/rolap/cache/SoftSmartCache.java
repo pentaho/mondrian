@@ -14,13 +14,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A map with soft references that is cleaned up in regular intervals. 
+ * A map with soft references that is cleaned up in regular intervals.
  * <p>
- * There is no contains(key) method because it makes no sense - after 
- * contains() returns true, the garbage collector may remove 
+ * There is no contains(key) method because it makes no sense - after
+ * contains() returns true, the garbage collector may remove
  * the value that was contained. Instead the code should call get() and
  * keep a reference to the value to prevent garbage collection.
- * 
+ *
  * @author av
  * @since Nov 3, 2005
  * @version $Id$
@@ -34,7 +34,7 @@ public class SoftSmartCache <K, V> implements SmartCache <K, V> {
      * an entry in the cache that contains the key for
      * the cache map to remove the entry when its value
      * has been garbage collected
-     * 
+     *
      * @author rk
      * @since Nov 7, 2005
      */
@@ -45,7 +45,7 @@ public class SoftSmartCache <K, V> implements SmartCache <K, V> {
             super(value, queue);
             this.key = key;
         }
-        
+
         public String toString() {
             return String.valueOf(get());
         }
@@ -91,7 +91,7 @@ public class SoftSmartCache <K, V> implements SmartCache <K, V> {
     public void clear() {
         cache.clear();
     }
-    
+
     /* (non-Javadoc)
      * @see mondrian.rolap.cache.SmartCache#size()
      */

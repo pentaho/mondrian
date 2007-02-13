@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2006 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -116,9 +116,9 @@ public class Query extends QueryPart {
      * If true, cancel this query
      */
     private boolean isCanceled;
-    
+
     /**
-     * If not <code>null</code>, this query was notified that it 
+     * If not <code>null</code>, this query was notified that it
      * might cause an OutOfMemoryError.
      */
     private String outOfMemoryMsg;
@@ -134,34 +134,34 @@ public class Query extends QueryPart {
      * for virtual cubes.
      */
     private Set<Member> measuresMembers;
-    
+
     /**
      * If true, virtual cubes can be processed using native cross joins.
      * It defaults to true, unless functions are applied on measures.
      */
     private boolean nativeCrossJoinVirtualCube;
-    
+
     /**
      * Used for virtual cubes.  Contains the set of maps used to map the
      * levels referenced in a virtual cube to the columns in the underlying
      * base cubes.
      */
     private Set<Map<RolapLevel, RolapStar.Column>> virtualCubeBaseCubeMaps;
-    
+
     /**
      * Maps one of the level-to-column maps stored in
      * virtualCubeBaseCubeMaps to a measure corresponding to the underlying
      * cube that the level-to-column map corrsponds to
      */
     private Map<Map<RolapLevel, RolapStar.Column>, RolapMember> levelMapToMeasureMap;
-    
+
     /**
      * If true, loading schema
      */
     private boolean load;
 
     /**
-     * How should the query be returned? Valid values are: 
+     * How should the query be returned? Valid values are:
      *    ResultStyle.ITERABLE
      *    ResultStyle.LIST
      *    ResultStyle.MUTABLE_LIST
@@ -346,7 +346,7 @@ public class Query extends QueryPart {
         startTime = System.currentTimeMillis();
         isExecuting = true;
     }
-    
+
     /**
      * Called when query execution has completed.  Once query execution has
      * ended, it is not possible to cancel or timeout the query until it
@@ -412,13 +412,13 @@ public class Query extends QueryPart {
             MondrianProperties.instance().IgnoreInvalidMembers.get();
     }
 
-    /** 
-     * A Query's ResultStyle can only be one of the following: 
+    /**
+     * A Query's ResultStyle can only be one of the following:
      *   ResultStyle.ITERABLE
      *   ResultStyle.LIST
      *   ResultStyle.MUTABLE_LIST
-     * 
-     * @param resultStyle 
+     *
+     * @param resultStyle
      */
     public void setResultStyle(ResultStyle resultStyle) {
         switch (resultStyle) {
@@ -461,12 +461,12 @@ public class Query extends QueryPart {
         if (axes != null) {
             axisCalcs = new Calc[axes.length];
             for (int i = 0; i < axes.length; i++) {
-                axisCalcs[i] = axes[i].compile(compiler, 
+                axisCalcs[i] = axes[i].compile(compiler,
                                     new ResultStyle[] { resultStyle });
             }
         }
         if (slicerAxis != null) {
-            slicerCalc = slicerAxis.compile(compiler, 
+            slicerCalc = slicerAxis.compile(compiler,
                                 new ResultStyle[] { resultStyle });
         }
     }
@@ -992,10 +992,10 @@ public class Query extends QueryPart {
         }
         return compiler;
     }
-    
+
     /**
      * Keeps track of references to members of the measures dimension
-     * 
+     *
      * @param olapElement potential measure member
      */
     public void addMeasuresMembers(OlapElement olapElement)
@@ -1007,7 +1007,7 @@ public class Query extends QueryPart {
             }
         }
     }
-    
+
     /**
      * @return set of members from the measures dimension referenced within
      * this query
@@ -1016,7 +1016,7 @@ public class Query extends QueryPart {
     {
         return measuresMembers;
     }
-    
+
     /**
      * Indicates that the query cannot use native cross joins to process
      * this virtual cube
@@ -1024,8 +1024,8 @@ public class Query extends QueryPart {
     public void setVirtualCubeNonNativeCrossJoin()
     {
         nativeCrossJoinVirtualCube = false;
-    }  
-    
+    }
+
     /**
      * @return true if the query can use native cross joins on a virtual
      * cube
@@ -1034,18 +1034,18 @@ public class Query extends QueryPart {
     {
         return nativeCrossJoinVirtualCube;
     }
-    
+
     /**
      * Saves away the level to column maps for the underlying cubes that make
      * up the virtual cube referenced in this query
-     * 
+     *
      * @param maps the set of maps to be saved
      */
     public void setVirtualCubeBaseCubeMaps(Set<Map<RolapLevel, RolapStar.Column>> maps)
     {
         virtualCubeBaseCubeMaps = maps;
     }
-    
+
     /**
      * @return the set of level to column maps associated with the virtual
      * cube this query references
@@ -1054,10 +1054,10 @@ public class Query extends QueryPart {
     {
         return virtualCubeBaseCubeMaps;
     }
-    
+
     /**
      * Saves away the map that maps a level-to-column map to a measure
-     * 
+     *
      * @param map map to be saved
      */
     public void setLevelMapToMeasureMap(
@@ -1065,7 +1065,7 @@ public class Query extends QueryPart {
     {
         levelMapToMeasureMap = map;
     }
-    
+
     /**
      * @return the level-to-column-to-measure map
      */
@@ -1073,7 +1073,7 @@ public class Query extends QueryPart {
     {
         return levelMapToMeasureMap;
     }
-    
+
     public Object accept(MdxVisitor visitor) {
         Object o = visitor.visit(this);
 

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2006 Julian Hyde and others
+// Copyright (C) 2001-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -292,9 +292,9 @@ public class RolapEvaluator implements Evaluator {
         return Arrays.equals(this.currentMembers, that.currentMembers);
     }
 
-/** 
+/**
  * RME remove before checkin
- * This is for debugging only 
+ * This is for debugging only
  * For use in debugging Checkin_7634
  */
 void printCurrentMemberNames() {
@@ -308,7 +308,7 @@ void printCurrentMemberNames() {
     }
 }
 
-    /**             
+    /**
      * Replace the current member of a given hierarchy with member parameter
      * if the current member is the null, all, or default member.
      * The parameter member will never attempt to replace a current member
@@ -318,8 +318,8 @@ void printCurrentMemberNames() {
      * Currently, replacement only takes place when the current member is
      * the default member of its hierarchy (so the checks for null, measure and
      * all may not be needed).
-     * 
-     * @param member 
+     *
+     * @param member
      * @return Previous member
      */
     Member setContextConditional(Member member) {
@@ -576,7 +576,7 @@ void printCurrentMemberNames() {
         String formatString = getFormatString();
         return getFormat(formatString);
     }
-    
+
     private Format getFormat(String formatString) {
         return Format.get(formatString, root.connection.getLocale());
     }
@@ -606,7 +606,7 @@ void printCurrentMemberNames() {
             return format.format(o);
         }
     }
-    
+
     public String format(Object o, String formatString) {
         if (o == Util.nullValue) {
             Format format = getFormat(formatString);
@@ -620,7 +620,7 @@ void printCurrentMemberNames() {
             return format.format(o);
         }
     }
-    
+
     /**
      * Creates a key which uniquely identifes an expression and its
      * context. The context includes members of dimensions which the
@@ -745,19 +745,19 @@ void printCurrentMemberNames() {
             }
         }
     }
-    
+
     public int getIterationLength() {
         return iterationLength;
     }
-    
+
     public void setIterationLength(int length) {
         iterationLength = length;
     }
-    
+
     public boolean isEvalAxes() {
         return evalAxes;
     }
-    
+
     public void setEvalAxes(boolean evalAxes) {
         this.evalAxes = evalAxes;
     }

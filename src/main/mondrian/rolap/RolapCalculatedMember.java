@@ -67,7 +67,7 @@ class RolapCalculatedMember extends RolapMember {
     public Exp getExpression() {
         return formula.getExpression();
     }
-    
+
     public Formula getFormula() {
         return formula;
     }
