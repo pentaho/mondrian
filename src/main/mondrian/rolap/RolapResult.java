@@ -807,6 +807,10 @@ class RolapResult extends ResultBase {
             return value;
         }
 
+        protected void clearNamedSets() {
+            namedSetValues.clear();
+        }
+
         public Object getParameterValue(ParameterSlot slot) {
             Object value = slot.getParameterValue();
             if (value != null) {

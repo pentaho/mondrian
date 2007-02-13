@@ -162,6 +162,40 @@ public class ClearViewTest extends FoodMartTestCase {
                 "{[Gender].[All Gender], [Marital Status].[All Marital Status].[S]}\n" +
                 "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status]}"));
     }
+
+    /**
+     * Tests a bug with incorrect reuse of a named set which can't be
+     * computed directly against a cold cache.
+     */
+    public void testLer4260() {
+        assertQueryReturns(
+            "With Set [*BMEL] as \n" +
+            "'[Education Level].[Education Level].Members' \n" +
+            "Member [Measures].[*TBM] as \n" +
+            "'Rank([Education Level].CurrentMember, \n" +
+            "Order([*BMEL],([Measures].[Unit Sales]),BDESC))' \n" +
+            "Set [*SM_RSUM_SET_0] as \n" +
+            "'Filter([*BMEL],[Measures].[*TBM] <= 3)'\n" +
+            "select [*SM_RSUM_SET_0] on rows, \n" +
+            "{[Measures].[*TBM], [Measures].[Unit Sales]} on columns \n" +
+            "From [Sales]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[*TBM]}\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Education Level].[All Education Levels].[Bachelors Degree]}\n" +
+                "{[Education Level].[All Education Levels].[High School Degree]}\n" +
+                "{[Education Level].[All Education Levels].[Partial High School]}\n" +
+                "Row #0: 3\n" +
+                "Row #0: 68,839\n" +
+                "Row #1: 2\n" +
+                "Row #1: 78,664\n" +
+                "Row #2: 1\n" +
+                "Row #2: 79,155\n"));
+    }
 }
 
 // End ClearViewTest.java

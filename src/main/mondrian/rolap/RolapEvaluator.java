@@ -184,6 +184,12 @@ public class RolapEvaluator implements Evaluator {
         }
 
         /**
+         * Clears cached values for all named sets.
+         */
+        protected void clearNamedSets() {
+        }
+
+        /**
          * First evaluator calls this method on construction.
          */
         protected void init(Evaluator evaluator) {
@@ -657,6 +663,14 @@ void printCurrentMemberNames() {
 
     public void clearExpResultCache() {
         root.expResultCache.clear();
+
+        // Clear cached named sets at the same time we clear other cached
+        // expressions.  This may be overconservative in some cases, but
+        // without this, there can be bugs when incorrect results get cached
+        // for named sets which depend on measures which haven't been loaded
+        // yet.  See mondrian.test.ClearViewTest.testLer4260 for an
+        // example.
+        root.clearNamedSets();
     }
 
     public boolean isNonEmpty() {
