@@ -191,6 +191,11 @@ public class RolapLevel extends LevelBase {
         this.hideMemberCondition = hideMemberCondition;
     }
 
+
+    public RolapHierarchy getHierarchy() {
+        return (RolapHierarchy) hierarchy;
+    }
+
     private int loadApproxRowCount(String approxRowCount) {
         boolean notNullAndNumeric = approxRowCount != null && approxRowCount.matches("^\\d+$");
         if(notNullAndNumeric){
@@ -253,10 +258,6 @@ public class RolapLevel extends LevelBase {
         return datatype;
     }
 
-    RolapProperty[] getRolapProperties() {
-        return properties;
-    }
-
     String getNullParentValue() {
         return nullParentValue;
     }
@@ -293,7 +294,7 @@ public class RolapLevel extends LevelBase {
             xmlLevel.closure, createProperties(xmlLevel),
             (xmlLevel.uniqueMembers ? UNIQUE : 0),
             xmlLevel.getDatatype(),
-            HideMemberCondition.valueOf(xmlLevel.hideMemberIf), 
+            HideMemberCondition.valueOf(xmlLevel.hideMemberIf),
             LevelType.valueOf(xmlLevel.levelType), xmlLevel.approxRowCount);
 
         if (!Util.isEmpty(xmlLevel.caption)) {
@@ -394,7 +395,7 @@ public class RolapLevel extends LevelBase {
         return keyExp.getTableAlias();
     }
 
-    public Property[] getProperties() {
+    public RolapProperty[] getProperties() {
         return properties;
     }
 
@@ -405,7 +406,7 @@ public class RolapLevel extends LevelBase {
     public int getApproxRowCount() {
         return approxRowCount;
     }
-    
+
     /**
      * Conditions under which a level's members may be hidden (thereby creating
      * a <dfn>ragged hierarchy</dfn>).
@@ -420,7 +421,7 @@ public class RolapLevel extends LevelBase {
         /** A member appears unless its name matches its parent's. */
         IfParentsName
     }
-    
+
     public OlapElement lookupChild(SchemaReader schemaReader, String name) {
         return lookupChild(schemaReader, name, MatchType.EXACT);
     }
@@ -433,8 +434,8 @@ public class RolapLevel extends LevelBase {
             Member parent = levelMembers[0].getParentMember();
             return
                 RolapUtil.findBestMemberMatch(
-                    levelMembers,
-                    (RolapMember) parent, 
+                    Arrays.asList(levelMembers),
+                    (RolapMember) parent,
                     this,
                     name,
                     matchType,
@@ -456,16 +457,27 @@ public class RolapLevel extends LevelBase {
         /**
          * Adds constraints to a cell request for a member of this level.
          *
-         * @param member
-         * @param mapLevelToColumn
-         * @param request
-         * @return true if request is unsatisfiable (e.g. if the member is the
-         *   null member)
+         * @param member Member to be constrained
+         * @param levelToColumnMap
+          *@param request Request to be constrained @return true if request is
+         *   unsatisfiable (e.g. if the member is the null member)
          */
         boolean constrainRequest(
             RolapMember member,
-            Map<RolapLevel, RolapStar.Column> mapLevelToColumn,
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
             CellRequest request);
+
+        /**
+         * Adds constraints to a cache region for a member of this level.
+         *
+         * @param predicate Predicate
+         * @param levelToColumnMap
+         * @param cacheRegion Cache region to be constrained
+         */
+        void constrainRegion(
+            StarColumnPredicate predicate,
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+            RolapCacheRegion cacheRegion);
     }
 
     /**
@@ -474,7 +486,7 @@ public class RolapLevel extends LevelBase {
     class RegularLevelReader implements LevelReader {
         public boolean constrainRequest(
                 RolapMember member,
-                Map<RolapLevel, RolapStar.Column> mapLevelToColumn,
+                Map<RolapLevel, RolapStar.Column> levelToColumnMap,
                 CellRequest request) {
             assert member.getLevel() == RolapLevel.this;
             if (member.getKey() == null) {
@@ -486,30 +498,27 @@ public class RolapLevel extends LevelBase {
                 }
             }
 
-            RolapStar.Column column = mapLevelToColumn.get(RolapLevel.this);
-
+            RolapStar.Column column = levelToColumnMap.get(RolapLevel.this);
             if (column == null) {
                 // This hierarchy is not one which qualifies the starMeasure
                 // (this happens in virtual cubes). The starMeasure only has
                 // a value for the 'all' member of the hierarchy (or for the
                 // default member if the hierarchy has no 'all' member)
-                if (member == hierarchy.getDefaultMember() &&
-                    !hierarchy.hasAll()) {
-                    return false;
-                }
-                return true;
+                return member != hierarchy.getDefaultMember() ||
+                    hierarchy.hasAll();
             }
 
-            final MemberColumnConstraint constraint;
+            final StarColumnPredicate predicate;
             if (member.isCalculated()) {
-                constraint = null;
+                predicate = null;
             } else {
-                constraint = new MemberColumnConstraint(member);
+                predicate = false ? new MemberColumnPredicate(column, member) :
+                    new ValueColumnPredicate(column, member.getSqlKey());
             }
 
             // use the member as constraint, this will give us some
             //  optimization potential
-            request.addConstrainedColumn(column, constraint);
+            request.addConstrainedColumn(column, predicate);
             if (request.extendedContext &&
                     getNameExp() != null) {
                 RolapStar.Column nameColumn = column.getNameColumn();
@@ -529,26 +538,101 @@ public class RolapLevel extends LevelBase {
             }
 
             // Constrain the parent member, if any.
-            RolapMember parent = (RolapMember) member.getParentMember();
+            RolapMember parent = member.getParentMember();
             while (true) {
                 if (parent == null) {
                     return false;
                 }
-                RolapLevel level = (RolapLevel) parent.getLevel();
+                RolapLevel level = parent.getLevel();
                 final LevelReader levelReader = level.levelReader;
                 if (levelReader == this) {
                     // We are looking at a parent in a parent-child hierarchy,
                     // for example, we have moved from Fred to Fred's boss,
                     // Wilma. We don't want to include Wilma's key in the
                     // request.
-                    parent = (RolapMember) parent.getParentMember();
+                    parent = parent.getParentMember();
                     continue;
                 }
                 return levelReader.constrainRequest(
-                        parent, mapLevelToColumn, request);
+                        parent, levelToColumnMap, request);
             }
         }
 
+        public void constrainRegion(
+            StarColumnPredicate predicate,
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+            RolapCacheRegion cacheRegion)
+        {
+            RolapStar.Column column = levelToColumnMap.get(RolapLevel.this);
+            if (column == null) {
+                // This hierarchy is not one which qualifies the starMeasure
+                // (this happens in virtual cubes). The starMeasure only has
+                // a value for the 'all' member of the hierarchy (or for the
+                // default member if the hierarchy has no 'all' member)
+                return;
+            }
+
+            if (predicate instanceof MemberColumnPredicate) {
+                MemberColumnPredicate memberColumnPredicate =
+                    (MemberColumnPredicate) predicate;
+                RolapMember member = memberColumnPredicate.getMember();
+                assert member.getLevel() == RolapLevel.this;
+                assert !member.isCalculated();
+                assert memberColumnPredicate.getMember().getKey() != null;
+                assert !member.isNull();
+
+                MemberTuplePredicate predicate2 =
+                    new MemberTuplePredicate(
+                        levelToColumnMap,
+                        member);
+
+                // use the member as constraint, this will give us some
+                //  optimization potential
+                cacheRegion.addPredicate(column, predicate);
+                return;
+            } else if (predicate instanceof RangeColumnPredicate) {
+                RangeColumnPredicate rangeColumnPredicate =
+                    (RangeColumnPredicate) predicate;
+                final ValueColumnPredicate lowerBound =
+                    rangeColumnPredicate.getLowerBound();
+                RolapMember lowerMember;
+                if (lowerBound == null) {
+                    lowerMember = null;
+                } else if (lowerBound instanceof MemberColumnPredicate) {
+                    MemberColumnPredicate memberColumnPredicate =
+                        (MemberColumnPredicate) lowerBound;
+                    lowerMember = memberColumnPredicate.getMember();
+                } else {
+                    throw new UnsupportedOperationException();
+                }
+                final ValueColumnPredicate upperBound =
+                    rangeColumnPredicate.getUpperBound();
+                RolapMember upperMember;
+                if (upperBound == null) {
+                    upperMember = null;
+                } else if (upperBound instanceof MemberColumnPredicate) {
+                    MemberColumnPredicate memberColumnPredicate =
+                        (MemberColumnPredicate) upperBound;
+                    upperMember = memberColumnPredicate.getMember();
+                } else {
+                    throw new UnsupportedOperationException();
+                }
+                MemberTuplePredicate predicate2 =
+                    new MemberTuplePredicate(
+                        levelToColumnMap,
+                        lowerMember,
+                        !rangeColumnPredicate.getLowerInclusive(),
+                        upperMember,
+                        !rangeColumnPredicate.getUpperInclusive());
+                // use the member as constraint, this will give us some
+                //  optimization potential
+                cacheRegion.addPredicate(predicate2);
+                return;
+            }
+
+            // Unknown type of constraint.
+            throw new UnsupportedOperationException();
+        }
     }
 
     /**
@@ -567,7 +651,7 @@ public class RolapLevel extends LevelBase {
 
         public boolean constrainRequest(
                 RolapMember member,
-                Map<RolapLevel, RolapStar.Column> mapLevelToColumn,
+                Map<RolapLevel, RolapStar.Column> levelToColumnMap,
                 CellRequest request) {
 
             // Replace a parent/child level by its closed equivalent, when
@@ -578,11 +662,11 @@ public class RolapLevel extends LevelBase {
                 // member of a parent-child hierarchy member. Leave
                 // it be. We don't want to aggregate.
                 return super.constrainRequest(
-                        member, mapLevelToColumn, request);
+                        member, levelToColumnMap, request);
             } else if (request.drillThrough) {
                 member = (RolapMember) member.getDataMember();
                 return super.constrainRequest(
-                        member, mapLevelToColumn, request);
+                        member, levelToColumnMap, request);
             } else {
                 RolapLevel level = closedPeer;
                 final RolapMember allMember = (RolapMember)
@@ -591,10 +675,17 @@ public class RolapLevel extends LevelBase {
                 member = new RolapMember(allMember, level,
                         member.getKey());
                 return level.getLevelReader().constrainRequest(
-                        member, mapLevelToColumn, request);
+                        member, levelToColumnMap, request);
             }
         }
 
+        public void constrainRegion(
+            StarColumnPredicate predicate,
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+            RolapCacheRegion cacheRegion)
+        {
+            throw new UnsupportedOperationException();
+        }
     }
 
     /**
@@ -603,12 +694,19 @@ public class RolapLevel extends LevelBase {
     class AllLevelReaderImpl implements LevelReader {
         public boolean constrainRequest(
                 RolapMember member,
-                Map<RolapLevel, RolapStar.Column> mapLevelToColumn,
+                Map<RolapLevel, RolapStar.Column> levelToColumnMap,
                 CellRequest request) {
             // We don't need to apply any constraints.
             return false;
         }
 
+        public void constrainRegion(
+            StarColumnPredicate predicate,
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+            RolapCacheRegion cacheRegion)
+        {
+            // We don't need to apply any constraints.
+        }
     }
 
     /**
@@ -617,11 +715,17 @@ public class RolapLevel extends LevelBase {
     class NullLevelReader implements LevelReader {
         public boolean constrainRequest(
                 RolapMember member,
-                Map<RolapLevel, RolapStar.Column> mapLevelToColumn,
+                Map<RolapLevel, RolapStar.Column> levelToColumnMap,
                 CellRequest request) {
             return true;
         }
 
+        public void constrainRegion(
+            StarColumnPredicate predicate,
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+            RolapCacheRegion cacheRegion)
+        {
+        }
     }
 }
 

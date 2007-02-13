@@ -4,85 +4,108 @@
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2006 Julian Hyde and others
+// Copyright (C) 2006-2007 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.agg;
 
-import mondrian.rolap.RolapMember;
+import mondrian.rolap.StarColumnPredicate;
+import mondrian.rolap.RolapStar;
+import mondrian.rolap.StarPredicate;
+
+import java.util.List;
+import java.util.Collections;
 
 /**
- * A <code>ColumnConstraint</code> is an Object to constraining a
- * column (WHERE-Clause) when a segment is loaded.
+ * A <code>AbstractColumnPredicate</code> is an abstract implementation for
+ * {@link mondrian.rolap.StarColumnPredicate}.
  *
  * @version $Id$
  */
-public class ColumnConstraint implements Comparable {
-
-    private final Object value;
+public abstract class AbstractColumnPredicate implements StarColumnPredicate {
+    private final RolapStar.Column constrainedColumn;
 
     /**
-     * Creates a column constraint.
+     * Creates an AbstractColumnPredicate.
      *
-     * @param value Value to constraint the column to. (We require that it is
-     *   {@link Comparable} because we will sort the values in order to
-     *   generate deterministic SQL.)
+     * @param constrainedColumn Constrained column
      */
-    public ColumnConstraint(Object value) {
-        assert value != null;
-        this.value = value;
+    protected AbstractColumnPredicate(RolapStar.Column constrainedColumn) {
+        this.constrainedColumn = constrainedColumn;
     }
 
-    public Object getValue() {
-        return value;
+    public RolapStar.Column getConstrainedColumn() {
+        return constrainedColumn;
     }
 
-    public RolapMember getMember() {
-        return null;
+    public List<RolapStar.Column> getConstrainedColumnList() {
+        return Collections.singletonList(constrainedColumn);
     }
 
-    public int compareTo(Object o) {
-        ColumnConstraint that = (ColumnConstraint) o;
-        if (this.value instanceof Comparable &&
-                that.value instanceof Comparable &&
-                this.value.getClass() == that.value.getClass()) {
-            return ((Comparable) this.value).compareTo(that.value);
-        } else {
-            String thisComp = String.valueOf(this.value);
-            String thatComp = String.valueOf(that.value);
-            return thisComp.compareTo(thatComp);
+    public boolean evaluate(List<Object> valueList) {
+        assert valueList.size() == 1;
+        return evaluate(valueList.get(0));
+    }
+
+    public boolean equalConstraint(StarPredicate that) {
+        return false;
+    }
+
+
+    public static class Factory {
+        /**
+         * Returns a predicate which tests whether the column's
+         * value is equal to a given constant.
+         *
+         * @param column Constrained column
+         * @param value Value
+         * @return Predicate which tests whether the column's value is equal
+         *   to a column constraint's value
+         */
+        public static StarColumnPredicate equal(
+            RolapStar.Column column,
+            Object value)
+        {
+            return new ValueColumnPredicate(column, value);
         }
-    }
 
-    /**
-     * Returns whether this constraint has the same constraining effect as the
-     * other constraint. This is weaker than {@link #equals(Object)} -- it is
-     * possible for two different members to constraint the same column in the
-     * same way.
-     */
-    public boolean equalConstraint(ColumnConstraint that) {
-        return this.value.equals(that.value);
-    }
+        /**
+         * Returns predicate which is the OR of a list of predicates.
+         *
+         * @param list List of predicates
+         * @return Predicate which is an OR of the list of predicates
+         */
+        public static StarColumnPredicate or(
+            RolapStar.Column column,
+            List<StarColumnPredicate> list)
+        {
+            return new ListColumnPredicate(column, list);
+        }
 
-    public boolean equals(Object other) {
-        if (!(other instanceof ColumnConstraint)) {
-            return false;
+        /**
+         * Returns a predicate which always evaluates to TRUE or FALSE.
+         * @param b Truth value
+         * @return Predicate which always evaluates to truth value
+         */
+        public static LiteralStarPredicate bool(boolean b) {
+            return b ? LiteralStarPredicate.TRUE : LiteralStarPredicate.FALSE;
         }
-        final ColumnConstraint that = (ColumnConstraint) other;
-        if (value != null) {
-            return value.equals(that.getValue());
-        } else {
-            return null == that.getValue();
-        }
-    }
 
-    public int hashCode() {
-        if (value != null) {
-            return value.hashCode();
+        /**
+         * Returns a predicate which tests whether the column's
+         * value is equal to column predicate's value.
+         *
+         * @param predicate Column predicate
+         * @return Predicate which tests whether the column's value is equal
+         *   to a column predicate's value
+         */
+        public static StarColumnPredicate equal(ValueColumnPredicate predicate) {
+            return equal(
+                predicate.getConstrainedColumn(),
+                predicate.getValue());
         }
-        return 0;
     }
 }
 
-// End ColumnConstraint.java
+// End AbstractColumnPredicate.java

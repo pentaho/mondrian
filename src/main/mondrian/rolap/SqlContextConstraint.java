@@ -65,7 +65,7 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
             return false;
         }
         RolapCube cube = (RolapCube) context.getCube();
-        if (disallowVirtualCube) {           
+        if (disallowVirtualCube) {
             if (cube.isVirtual()) {
                 return false;
             }
@@ -99,17 +99,17 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         }
         return true;
     }
-    
+
     /**
      * Locates joins required with the underlying fact tables that make up a
      * virtual cube by validating the measures referenced in the query.
-     * 
+     *
      * @param query query referencing the virtual cube
      * @param baseCubesLevelToColumnMaps level to column maps corresponding
      * to the base cubes referenced from the virtual cube
      * @param measureMap mapping between a measure and the level to column
      * maps
-     * 
+     *
      * @return true if valid measures exist
      */
     private static boolean findVirtualCubeJoinLevels(
@@ -145,13 +145,13 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         if (measureMap.isEmpty()) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     /**
      * Adds information regarding a stored measure to maps
-     * 
+     *
      * @param measure the stored measure
      * @param baseCubesLevelToColumnMaps level to column maps for the
      * underlying cubes that make up the virtual cube referenced in a query
@@ -167,15 +167,15 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
         RolapStar star = starMeasure.getStar();
         RolapCube baseCube = measure.getCube();
         Map<RolapLevel, RolapStar.Column> levelToColumnMap =
-            star.getMapLevelToColumn(baseCube);
+            star.getLevelToColumnMap(baseCube);
         if (baseCubesLevelToColumnMaps.add(levelToColumnMap)) {
             measureMap.put(levelToColumnMap, (RolapMember) measure);
         }
     }
-    
+
     /**
      * Extracts the stored measures referenced in an expression
-     * 
+     *
      * @param exp expression
      * @param baseCubesLevelToColumnMaps
      * @param baseCubesLevelToColumnMaps level to column maps for the
@@ -235,30 +235,38 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      * context and restricts the SQL resultset to that new context.
      */
     public void addMemberConstraint(
-        SqlQuery sqlQuery, AggStar aggStar, RolapMember parent)
+        SqlQuery sqlQuery,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        AggStar aggStar,
+        RolapMember parent)
     {
         if (parent.isCalculated()) {
             throw Util.newInternal("cannot restrict SQL to calculated member");
         }
         Evaluator e = evaluator.push(parent);
         SqlConstraintUtils.addContextConstraint(sqlQuery, aggStar, e, strict);
-        SqlConstraintUtils.addMemberConstraint(sqlQuery, aggStar, parent, true);
+        SqlConstraintUtils.addMemberConstraint(
+            sqlQuery, levelToColumnMap, aggStar, parent, true);
     }
 
     public void addMemberConstraint(
-        SqlQuery sqlQuery, AggStar aggStar, List<RolapMember> parents)
+        SqlQuery sqlQuery,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        AggStar aggStar,
+        List<RolapMember> parents)
     {
         SqlConstraintUtils.addContextConstraint(
             sqlQuery, aggStar, evaluator, strict);
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, aggStar, parents, true, false);
+            sqlQuery, levelToColumnMap, aggStar, parents, true, false);
     }
 
     /**
      * Called from LevelMembers: restricts the SQL resultset to the current
      * context.
      */
-    public void addConstraint(SqlQuery sqlQuery) {
+    public void addConstraint(
+        SqlQuery sqlQuery, Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
         SqlConstraintUtils.addContextConstraint(
             sqlQuery, null, evaluator, strict);
     }

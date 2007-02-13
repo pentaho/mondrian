@@ -18,21 +18,21 @@ import mondrian.rolap.sql.TupleConstraint;
 
 /**
  * Creates the right constraint for common tasks.
- * 
+ *
  * @author av
  * @since Nov 21, 2005
  */
 public class SqlConstraintFactory {
 
     boolean enabled = MondrianProperties.instance().EnableNativeNonEmpty.get();
-    
+
     private static final SqlConstraintFactory instance = new SqlConstraintFactory();
 
     /** singleton */
     private SqlConstraintFactory() {
     }
 
-    public static final SqlConstraintFactory instance() {
+    public static SqlConstraintFactory instance() {
         return instance;
     }
 
@@ -45,7 +45,7 @@ public class SqlConstraintFactory {
     public TupleConstraint getLevelMembersConstraint(Evaluator context) {
         return getLevelMembersConstraint(context, null);
     }
-    
+
     public TupleConstraint getLevelMembersConstraint(
         Evaluator context,
         Level [] levels) {
@@ -57,23 +57,28 @@ public class SqlConstraintFactory {
         return new SqlContextConstraint((RolapEvaluator) context, false);
     }
 
-    public MemberChildrenConstraint getChildByNameConstraint(RolapMember parent,
-            String childName) {
+    public MemberChildrenConstraint getChildByNameConstraint(
+        RolapMember parent,
+        String childName)
+    {
         // ragged hierarchies span multiple levels, so SQL WHERE does not work there
-        if (!enabled || parent.getRolapHierarchy().isRagged())
+        if (!enabled || parent.getHierarchy().isRagged()) {
             return DefaultMemberChildrenConstraint.instance();
+        }
         return new ChildByNameConstraint(childName);
     }
 
     /**
-     * returns a constraint that allows to read all children of multiple parents at once
-     * using a LevelMember query style. This does not work for parent/child hierarchies.
+     * Returns a constraint that allows to read all children of multiple parents
+     * at once using a LevelMember query style. This does not work
+     * for parent/child hierarchies.
      */
-    public TupleConstraint getDescendantsConstraint(List parentMembers,
-            MemberChildrenConstraint mcc) {
+    public TupleConstraint getDescendantsConstraint(
+        List<RolapMember> parentMembers,
+        MemberChildrenConstraint mcc)
+    {
         return new DescendantsConstraint(parentMembers, mcc);
     }
-
 }
 
 // End SqlConstraintFactory.java

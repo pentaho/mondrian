@@ -37,7 +37,7 @@ import java.util.BitSet;
  * @author Richard M. Emberson
  * @version $Id$
  */
-public interface BitKey {
+public interface BitKey extends Comparable<BitKey> {
 
     /**
      * Sets the bit at the specified index to the specified value.
@@ -126,8 +126,6 @@ public interface BitKey {
      * Returns a {@link BitSet} with the same contents as this BitKey.
      */
     BitSet toBitSet();
-
-
 
     public abstract class Factory {
 
@@ -456,6 +454,11 @@ public interface BitKey {
             return (int)(bits ^ (bits >>> 32));
         }
 
+        // implement Comparable (in lazy, expensive fashion)
+        public int compareTo(BitKey bitKey) {
+            return toString().compareTo(bitKey.toString());
+        }
+
         public String toString() {
             StringBuilder buf = new StringBuilder(64);
             buf.append("0x");
@@ -722,6 +725,11 @@ public interface BitKey {
         public boolean isEmpty() {
             return bits0 == 0 &&
                     bits1 == 0;
+        }
+
+        // implement Comparable (in lazy, expensive fashion)
+        public int compareTo(BitKey bitKey) {
+            return toString().compareTo(bitKey.toString());
         }
     }
 
@@ -1012,7 +1020,7 @@ public interface BitKey {
             }
             return buf.toString();
         }
-        
+
         public BitKey copy() {
             return new Big(this);
         }
@@ -1022,12 +1030,17 @@ public interface BitKey {
         }
 
         public boolean isEmpty() {
-            for (int i = 0; i < bits.length; i++) {
-                if (bits[i] != 0) {
+            for (long bit : bits) {
+                if (bit != 0) {
                     return false;
                 }
             }
             return true;
+        }
+
+        // implement Comparable (in lazy, expensive fashion)
+        public int compareTo(BitKey bitKey) {
+            return toString().compareTo(bitKey.toString());
         }
     }
 }

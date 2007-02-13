@@ -9,24 +9,24 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.Axis;
-import mondrian.olap.Position;
 import junit.framework.TestCase;
 
-/** 
+/**
  * Test that the implementations of the CellKey interface are correct.
- * 
+ *
  * @author <a>Richard M. Emberson</a>
  * @version $Id$
  */
 public class CellKeyTest extends TestCase {
     public CellKeyTest() {
     }
+
     public CellKeyTest(String name) {
         super(name);
     }
+
     public void testMany() {
-        CellKey key = CellKey.Generator.createMany(5);
+        CellKey key = CellKey.Generator.newManyCellKey(5);
 
         assertTrue("CellKey size" , (key.size() == 5));
 
@@ -34,7 +34,7 @@ public class CellKeyTest extends TestCase {
         assertTrue("CellKey equals" , (key.equals(copy)));
 
         int[] ordinals = key.getOrdinals();
-        copy = key.makeCopy(ordinals);
+        copy = CellKey.Generator.newCellKey(ordinals);
         assertTrue("CellKey equals" , (key.equals(copy)));
 
         boolean gotException = false;
@@ -72,12 +72,13 @@ public class CellKeyTest extends TestCase {
         assertTrue("CellKey equals" , (key.equals(copy)));
 
         ordinals = key.getOrdinals();
-        copy = key.makeCopy(ordinals);
+        copy = CellKey.Generator.newCellKey(ordinals);
         assertTrue("CellKey equals" , (key.equals(copy)));
     }
+
     public void testOne() {
-        CellKey keyMany = CellKey.Generator.createMany(1);
-        CellKey key = CellKey.Generator.create(1);
+        CellKey keyMany = CellKey.Generator.newManyCellKey(1);
+        CellKey key = CellKey.Generator.newCellKey(1);
 
         assertTrue("CellKey size" , (key.size() == 1));
         assertTrue("CellKey size" , (keyMany.size() == 1));
@@ -87,7 +88,7 @@ public class CellKeyTest extends TestCase {
         assertTrue("CellKey equals" , (key.equals(copy)));
 
         int[] ordinals = key.getOrdinals();
-        copy = key.makeCopy(ordinals);
+        copy = CellKey.Generator.newCellKey(ordinals);
         assertTrue("CellKey equals" , (key.equals(copy)));
 
         boolean gotException = false;
@@ -124,12 +125,12 @@ public class CellKeyTest extends TestCase {
         assertTrue("CellKey equals" , (key.equals(copy)));
 
         ordinals = key.getOrdinals();
-        copy = key.makeCopy(ordinals);
+        copy = CellKey.Generator.newCellKey(ordinals);
         assertTrue("CellKey equals" , (key.equals(copy)));
     }
     public void testTwo() {
-        CellKey keyMany = CellKey.Generator.createMany(2);
-        CellKey key = CellKey.Generator.create(2);
+        CellKey keyMany = CellKey.Generator.newManyCellKey(2);
+        CellKey key = CellKey.Generator.newCellKey(2);
 
         assertTrue("CellKey size" , (key.size() == 2));
         assertTrue("CellKey size" , (keyMany.size() == 2));
@@ -139,7 +140,7 @@ public class CellKeyTest extends TestCase {
         assertTrue("CellKey equals" , (key.equals(copy)));
 
         int[] ordinals = key.getOrdinals();
-        copy = key.makeCopy(ordinals);
+        copy = CellKey.Generator.newCellKey(ordinals);
         assertTrue("CellKey equals" , (key.equals(copy)));
 
         boolean gotException = false;
@@ -178,12 +179,12 @@ public class CellKeyTest extends TestCase {
         assertTrue("CellKey equals" , (key.equals(copy)));
 
         ordinals = key.getOrdinals();
-        copy = key.makeCopy(ordinals);
+        copy = CellKey.Generator.newCellKey(ordinals);
         assertTrue("CellKey equals" , (key.equals(copy)));
     }
     public void testThree() {
-        CellKey keyMany = CellKey.Generator.createMany(3);
-        CellKey key = CellKey.Generator.create(3);
+        CellKey keyMany = CellKey.Generator.newManyCellKey(3);
+        CellKey key = CellKey.Generator.newCellKey(3);
 
         assertTrue("CellKey size" , (key.size() == 3));
         assertTrue("CellKey size" , (keyMany.size() == 3));
@@ -193,7 +194,7 @@ public class CellKeyTest extends TestCase {
         assertTrue("CellKey equals" , (key.equals(copy)));
 
         int[] ordinals = key.getOrdinals();
-        copy = key.makeCopy(ordinals);
+        copy = CellKey.Generator.newCellKey(ordinals);
         assertTrue("CellKey equals" , (key.equals(copy)));
 
         boolean gotException = false;
@@ -234,7 +235,7 @@ public class CellKeyTest extends TestCase {
         assertTrue("CellKey equals" , (key.equals(copy)));
 
         ordinals = key.getOrdinals();
-        copy = key.makeCopy(ordinals);
+        copy = CellKey.Generator.newCellKey(ordinals);
         assertTrue("CellKey equals" , (key.equals(copy)));
     }
 }

@@ -13,6 +13,7 @@ package mondrian.rolap.agg;
 import mondrian.olap.Util;
 import mondrian.olap.MondrianDef;
 import mondrian.rolap.RolapStar;
+import mondrian.rolap.StarColumnPredicate;
 import mondrian.rolap.sql.SqlQuery;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ import java.util.Set;
 /**
  * Provides the information necessary to generate SQL for a drill-through
  * request.
- * 
+ *
  * @author jhyde
  * @author Richard M. Emberson
  * @version $Id$
@@ -57,7 +58,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     }
 
     private void addColumnName(
-        final RolapStar.Column column, 
+        final RolapStar.Column column,
         final List<String> columnNames,
         final Set<String> columnNameSet)
     {
@@ -101,12 +102,11 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         return columnNames[i];
     }
 
-    public ColumnConstraint[] getConstraints(final int i) {
-        final ColumnConstraint constr = 
-            (ColumnConstraint) request.getValueList().get(i);
+    public StarColumnPredicate getColumnPredicate(final int i) {
+        final StarColumnPredicate constr = request.getValueList().get(i);
         return (constr == null)
-            ? null
-            : new ColumnConstraint[] {constr};
+            ? LiteralStarPredicate.TRUE
+            : constr;
     }
 
     public String generateSqlQuery() {

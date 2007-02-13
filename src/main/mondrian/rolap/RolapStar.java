@@ -30,7 +30,7 @@ import java.sql.*;
 import java.util.*;
 
 /**
- * A <code>RolapStar</code> is a star schema. It is the means to read cell
+ * A <code>RolapStar</code> is a star schema. It is the means to Read cell
  * values.
  *
  * <p>todo: put this in package which specicializes in relational aggregation,
@@ -83,35 +83,35 @@ public class RolapStar {
      * necessary because in different cubes, a shared hierarchy might be joined
      * onto the fact table at different levels.
      */
-    private final Map<RolapCube, Map<RolapLevel, Column>> mapCubeToMapLevelToColumn;
+    private final Map<RolapCube, Map<RolapLevel, Column>> cubeToLevelToColumnMapMap;
 
     /** holds all global aggregations of this star */
     private Map<BitKey,Aggregation> aggregations;
-    
+
     /** holds all thread local aggregations of this star */
-    private ThreadLocal<Map<BitKey,Aggregation>> 
-        localAggregations = 
+    private ThreadLocal<Map<BitKey,Aggregation>>
+        localAggregations =
             new ThreadLocal<Map<BitKey,Aggregation>>() {
-        
+
             protected Map<BitKey,Aggregation> initialValue() {
                 return new HashMap<BitKey, Aggregation>();
-            }            
+            }
         };
-        
+
     /** holds all pending aggregations of this star that are waiting to
      * be pushed into the global cache.  They cannot be pushed yet, because
      * the aggregates in question are currently in use by other threads */
-    private Map<BitKey,Aggregation> pendingAggregations;        
-    
+    private Map<BitKey,Aggregation> pendingAggregations;
+
     /** holds all requests of aggregations */
     private List<BitKey> aggregationRequests;
-    
+
     /** holds all requests of aggregations per thread*/
     private ThreadLocal<List<BitKey>> localAggregationRequests =
         new ThreadLocal<List<BitKey>>() {
             protected List<BitKey> initialValue() {
                 return new ArrayList<BitKey>();
-            }                                
+            }
         };
 
     /** how many columns (column and columnName) there are */
@@ -130,7 +130,7 @@ public class RolapStar {
      * table
      */
     private List<AggStar> aggStars;
-           
+
     private DataSourceChangeListener changeListener;
 
     /**
@@ -147,16 +147,16 @@ public class RolapStar {
         this.dataSource = dataSource;
         this.factTable = new RolapStar.Table(this, fact, null, null);
 
-        this.mapCubeToMapLevelToColumn =
+        this.cubeToLevelToColumnMapMap =
             new HashMap<RolapCube, Map<RolapLevel, Column>>();
         this.aggregations = new HashMap<BitKey, Aggregation>();
         this.pendingAggregations = new HashMap<BitKey, Aggregation>();
-        
+
         this.aggregationRequests = new ArrayList<BitKey>();
-        
+
         clearAggStarList();
 
-        sqlQueryDialect = schema.getDialect();        
+        sqlQueryDialect = schema.getDialect();
 
         changeListener = schema.getDataSourceChangeListener();
     }
@@ -278,14 +278,14 @@ public class RolapStar {
      *
      * @param cube Cube
      */
-    Map<RolapLevel, Column> getMapLevelToColumn(RolapCube cube) {
-        Map<RolapLevel, Column> mapLevelToColumn =
-            this.mapCubeToMapLevelToColumn.get(cube);
-        if (mapLevelToColumn == null) {
-            mapLevelToColumn = new HashMap<RolapLevel, Column>();
-            this.mapCubeToMapLevelToColumn.put(cube, mapLevelToColumn);
+    Map<RolapLevel, Column> getLevelToColumnMap(RolapCube cube) {
+        Map<RolapLevel, Column> levelToColumnMap =
+            this.cubeToLevelToColumnMapMap.get(cube);
+        if (levelToColumnMap == null) {
+            levelToColumnMap = new HashMap<RolapLevel, Column>();
+            this.cubeToLevelToColumnMapMap.put(cube, levelToColumnMap);
         }
-        return mapLevelToColumn;
+        return levelToColumnMap;
     }
 
 
@@ -318,7 +318,7 @@ public class RolapStar {
      * regardless of any other settings.  When set to false, only cache
      * from the current thread context is cleared.
      */
-    void clearCachedAggregations(boolean forced) {        
+    void clearCachedAggregations(boolean forced) {
         if (forced || (! this.cacheAggregations) || RolapStar.disableCaching) {
 
             if (LOGGER.isDebugEnabled()) {
@@ -329,12 +329,12 @@ public class RolapStar {
                 buf.append(getFactTable().getAlias());
                 LOGGER.debug(buf.toString());
             }
-            
-            if (forced) { 
-                synchronized(aggregations) {
+
+            if (forced) {
+                synchronized (aggregations) {
                     aggregations.clear();
                 }
-                localAggregations.get().clear(); 
+                localAggregations.get().clear();
             }
             else {
                 /* Only clear aggregation cache for the currect thread context */
@@ -346,22 +346,22 @@ public class RolapStar {
     /**
      * Looks up an aggregation or creates one if it does not exist in an
      * atomic (synchronized) operation.
-     * 
+     *
      * When a new aggregation is created, it is marked as thread local.
-     * 
+     *
      * @param bitKey this is the contrained column bitkey
      */
     public Aggregation lookupOrCreateAggregation(
             final BitKey bitKey) {
-    
+
         Aggregation aggregation = lookupAggregation(bitKey);
-                
+
         if (aggregation == null) {
             aggregation = new Aggregation(this, bitKey);
-                
-            this.localAggregations.get().put(bitKey, aggregation);          
-            
-            // Let the change listener get the opportunity to register the 
+
+            this.localAggregations.get().put(bitKey, aggregation);
+
+            // Let the change listener get the opportunity to register the
             // first time the aggregation is used
             if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {
                 if (changeListener != null) {
@@ -369,106 +369,106 @@ public class RolapStar {
                 }
             }
         }
-        return aggregation;        
+        return aggregation;
     }
-    
+
 
     /**
      * Looks for an existing aggregation over a given set of columns, or
      * returns <code>null</code> if there is none.
-     * 
+     *
      * Thread local cache is taken first.
      *
      * <p>Must be called from synchronized context.
      */
     public Aggregation lookupAggregation(BitKey bitKey) {
-        
+
         Aggregation aggregation = null;
-        
-        // First try thread local cache 
+
+        // First try thread local cache
         aggregation = localAggregations.get().get(bitKey);
         if (aggregation != null) {
             return aggregation;
         }
 
-        if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {            
+        if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {
             // Look in global cache
-            synchronized(aggregations) {
+            synchronized (aggregations) {
                 aggregation = aggregations.get(bitKey);
                 if (aggregation != null) {
                     // Keep track of global aggregates that a query is using
                     recordAggregationRequest(bitKey);
                 }
-            }            
+            }
         }
-        
+
         return aggregation;
     }
-    
+
     /**
      * Checks whether an aggregation has changed since the last the time
      * loaded.
-     * 
+     *
      * If so, a new thread local aggregation will be made and added after
      * the query has finished.
-     * 
+     *
      * This function should be called before a query is executed and afterwards
      * the function pushAggregateModificationsToGlobalCache() should
      * be called.
-     * 
+     *
      */
-    public void checkAggregateModifications() {                    
+    public void checkAggregateModifications() {
         if (changeListener != null) {
             if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {
-                synchronized(aggregations) {
-                                        
-                    Iterator<Map.Entry<BitKey, Aggregation>> 
+                synchronized (aggregations) {
+
+                    Iterator<Map.Entry<BitKey, Aggregation>>
                             it = aggregations.entrySet().iterator();
                     while (it.hasNext()) {
-                        Map.Entry<BitKey, Aggregation> e = 
+                        Map.Entry<BitKey, Aggregation> e =
                             it.next();
                         BitKey bitKey = e.getKey();
-                        
-                        Aggregation aggregation = e.getValue(); 
+
+                        Aggregation aggregation = e.getValue();
                         if (changeListener.isAggregationChanged(aggregation)) {
                             // Create new thread local aggregation
                             // This thread will renew aggregations
                             // And these will be checked in if all queries
                             // that are currently using these aggregates
                             // are finished
-                            aggregation = new Aggregation(this, bitKey);                            
-                                                    
-                            localAggregations.get().put(bitKey, aggregation);                                                               
-                        }                                                    
+                            aggregation = new Aggregation(this, bitKey);
+
+                            localAggregations.get().put(bitKey, aggregation);
+                        }
                     }
                 }
-            }    
-        }            
+            }
+        }
     }
-    
+
     /**
-     * 
+     *
      * Checks if changed modifications may be pushed into global cache.
-     * 
+     *
      * It will check whether there are other running queries that are
      * using the requested modifications.  If this is the case, modifications
      * are not pushed yet.
-     * 
+     *
      */
     public void pushAggregateModificationsToGlobalCache() {
         // Need synchronized access to both aggregationRequests as to
         // aggregations, synchronize this instead
-        synchronized(this) {        
+        synchronized (this) {
             if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {
-                
+
                 // Push pending modifications other thread could not push
                 // to global cache, because it was in use
-                Iterator<Map.Entry<BitKey, Aggregation>> 
+                Iterator<Map.Entry<BitKey, Aggregation>>
                     it = pendingAggregations.entrySet().iterator();
                 while (it.hasNext()) {
-                    Map.Entry<BitKey, Aggregation> e = 
+                    Map.Entry<BitKey, Aggregation> e =
                         it.next();
-                    BitKey bitKey = e.getKey();                    
+                    BitKey bitKey = e.getKey();
                     Aggregation aggregation = e.getValue();
                     // In case this aggregation is not requested by anyone
                     // this aggregation may be pushed into global cache
@@ -478,14 +478,14 @@ public class RolapStar {
                         pushAggregateModification(bitKey, aggregation,
                                 aggregations);
                         it.remove();
-                    }                                           
+                    }
                 }
-                // Push thread local modifications                 
+                // Push thread local modifications
                 it = localAggregations.get().entrySet().iterator();
                 while (it.hasNext()) {
-                    Map.Entry<BitKey, Aggregation> e = 
+                    Map.Entry<BitKey, Aggregation> e =
                         it.next();
-                    BitKey bitKey = e.getKey();                    
+                    BitKey bitKey = e.getKey();
                     Aggregation aggregation = e.getValue();
                     // In case this aggregation is not requested by anyone
                     // this aggregation may be pushed into global cache
@@ -493,93 +493,94 @@ public class RolapStar {
                     // when another query finishes
                     if (!isAggregationRequested(bitKey)) {
                         pushAggregateModification(bitKey, aggregation,
-                                aggregations);                        
-                    } 
+                                aggregations);
+                    }
                     else {
                         pushAggregateModification(bitKey, aggregation,
                                 pendingAggregations);
-                    }                                            
+                    }
                 }
                 localAggregations.get().clear();
             }
             // Clear own aggregation requests
             clearAggregationRequests();
-        }                    
-    }    
-    /* Push aggregations in destination aggregations, replacing older
+        }
+    }
+
+    /**
+     * Pushes aggregations in destination aggregations, replacing older
      * entries.
      */
     private void pushAggregateModification(
-            BitKey localBitKey, 
+            BitKey localBitKey,
             Aggregation localAggregation,
-            Map<BitKey,Aggregation> destAggregations) {                    
+            Map<BitKey,Aggregation> destAggregations) {
         if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {
-            synchronized(destAggregations) {
-                
+            synchronized (destAggregations) {
+
                 boolean found = false;
-                Iterator<Map.Entry<BitKey, Aggregation>> 
+                Iterator<Map.Entry<BitKey, Aggregation>>
                         it = destAggregations.entrySet().iterator();
                 while (it.hasNext()) {
-                    Map.Entry<BitKey, Aggregation> e = 
+                    Map.Entry<BitKey, Aggregation> e =
                         it.next();
                     BitKey bitKey = e.getKey();
                     Aggregation aggregation = e.getValue();
-                    
+
                     if (localBitKey.equals(bitKey)) {
-                        
-                        if (localAggregation.getCreationTimestamp()
-                                .after(aggregation.getCreationTimestamp())) {    
-                            
+
+                        if (localAggregation.getCreationTimestamp().after(
+                            aggregation.getCreationTimestamp())) {
                             it.remove();
                         } else {
                             // Entry is newer, do not replace
                             found = true;
                         }
                         break;
-                    }                                                    
+                    }
                 }
                 if (!found) {
                     destAggregations.put(localBitKey, localAggregation);
                 }
             }
-        }                
-    }      
-    
+        }
+    }
+
     /* Record global cache requests per thread */
     private void recordAggregationRequest(BitKey bitKey) {
-        
-        synchronized(aggregationRequests) {
+
+        synchronized (aggregationRequests) {
             aggregationRequests.add(bitKey);
-        }     
+        }
         // Store own request for cleanup afterwards
         localAggregationRequests.get().add(bitKey);
     }
-    
+
     /* Checks whether an aggregation is requested by another thread */
     private boolean isAggregationRequested(BitKey bitKey) {
-        
-        synchronized(aggregationRequests) {                 
-            return aggregationRequests.contains(bitKey);      
+
+        synchronized (aggregationRequests) {
+            return aggregationRequests.contains(bitKey);
         }
-    }    
-    
+    }
+
     /**
      * Clear the aggregation requests from the current thread
      *
      */
     private void clearAggregationRequests() {
-        synchronized(aggregationRequests) {
-            
-            for (BitKey bitKey : 
+        synchronized (aggregationRequests) {
+
+            for (BitKey bitKey :
                 localAggregationRequests.get()) {
-                
+
                 // Remove first occurence
                 aggregationRequests.remove(bitKey);
-            }            
+            }
             localAggregationRequests.get().clear();
-        }                
+        }
     }
-        
+
     /**
      * Allocates a connection to the underlying RDBMS.
      *
@@ -753,8 +754,7 @@ public class RolapStar {
             final DatabaseMetaData metaData = jdbcConnection.getMetaData();
             final ResultSet columns =
                 metaData.getColumns(null, null, tableName, columnName);
-            final boolean hasNext = columns.next();
-            return hasNext;
+            return columns.next();
         } catch (SQLException e) {
             throw Util.newInternal("Error while retrieving metadata for table '" +
                             tableName + "', column '" + columnName + "'");
@@ -796,6 +796,34 @@ public class RolapStar {
             for (AggStar aggStar : getAggStars()) {
                 aggStar.print(pw, subprefix);
             }
+        }
+
+        List<Aggregation> aggregationList =
+            new ArrayList<Aggregation>(aggregations.values());
+        Collections.sort(
+            aggregationList,
+            new Comparator<Aggregation>() {
+                public int compare(Aggregation o1, Aggregation o2) {
+                    return o1.getConstrainedColumnsBitKey().compareTo(
+                        o2.getConstrainedColumnsBitKey());
+                }
+            }
+        );
+
+        for (Aggregation aggregation : aggregationList) {
+            aggregation.print(pw);
+        }
+    }
+
+    public void flush(
+        CacheControl cacheControl,
+        CacheControl.CellRegion region)
+    {
+        // Translate the region into a set of (column, value) constraints.
+        final RolapCacheRegion cacheRegion =
+            RolapAggregationManager.makeCacheRegion(this, region);
+        for (Aggregation aggregation : aggregations.values()) {
+            aggregation.flush(cacheControl, cacheRegion);
         }
     }
 
@@ -1014,73 +1042,97 @@ public class RolapStar {
          */
         public static String createInExpr(
             String expr,
-            ColumnConstraint[] constraints,
+            StarColumnPredicate predicate,
             SqlQuery.Datatype datatype,
             SqlQuery.Dialect dialect)
         {
-            if (constraints.length == 1) {
-                final ColumnConstraint constraint = constraints[0];
-                Object key = constraint.getValue();
-                if (key != RolapUtil.sqlNullValue) {
+            if (predicate instanceof ValueColumnPredicate) {
+                final ValueColumnPredicate valuePredicate =
+                    (ValueColumnPredicate) predicate;
+                Object key = valuePredicate.getValue();
+                if (key == RolapUtil.sqlNullValue) {
+                    return expr + " is null";
+                } else {
                     StringBuilder buf = new StringBuilder(64);
                     buf.append(expr);
                     buf.append(" = ");
                     dialect.quote(buf, key, datatype);
                     return buf.toString();
                 }
-            }
-            int notNullCount = 0;
-            StringBuilder buf = new StringBuilder(expr);
-            buf.append(" in (");
-            Object lastNotNull = null;
-            for (int i = 0; i < constraints.length; i++) {
-                final ColumnConstraint constraint = constraints[i];
-                Object key = constraint.getValue();
-                if (key == RolapUtil.sqlNullValue) {
-                    continue;
+            } else if (predicate instanceof ListColumnPredicate) {
+                ListColumnPredicate valueListColumnPredicate =
+                    (ListColumnPredicate) predicate;
+                List<StarColumnPredicate> predicates =
+                    valueListColumnPredicate.getPredicates();
+                if (predicates.size() == 1) {
+                    return createInExpr(
+                        expr, predicates.get(0), datatype, dialect);
                 }
-                lastNotNull = key;
-                if (notNullCount > 0) {
-                    buf.append(", ");
+
+                int notNullCount = 0;
+                StringBuilder sb = new StringBuilder(expr);
+                ValueColumnPredicate firstNotNull = null;
+                sb.append(" in (");
+                for (StarColumnPredicate predicate1 : predicates) {
+                    final ValueColumnPredicate predicate2 =
+                        (ValueColumnPredicate) predicate1;
+                    Object key = predicate2.getValue();
+                    if (key == RolapUtil.sqlNullValue) {
+                        continue;
+                    }
+                    if (notNullCount > 0) {
+                        sb.append(", ");
+                    } else {
+                        firstNotNull = predicate2;
+                    }
+                    ++notNullCount;
+                    dialect.quote(sb, key, datatype);
                 }
-                ++notNullCount;
-                dialect.quote(buf, key, datatype);
-            }
-            buf.append(')');
-            if (notNullCount < constraints.length) {
-                // There was at least one null.
-                switch (notNullCount) {
-                case 0:
-                    // Special case -- there were no values besides null.
-                    // Return, for example, "x is null".
-                    return expr + " is null";
-                case 1:
-                    // Special case -- one not-null value, and null, for
-                    // example "(x = 1 or x is null)".
-                    buf.setLength(0);
-                    buf.append('(');
-                    buf.append(expr);
-                    buf.append(" = ");
-                    dialect.quote(buf, lastNotNull, datatype);
-                    buf.append(" or ");
-                    buf.append(expr);
-                    buf.append(" is null)");
-                    return buf.toString();
-                default:
-                    // Nulls and values, for example,
-                    // "(x in (1, 2) or x IS NULL)".
-                    final String str = buf.toString();
-                    buf.setLength(0);
-                    buf.append('(');
-                    buf.append(str);
-                    buf.append(" or ");
-                    buf.append(expr);
-                    buf.append(" is null)");
-                    return buf.toString();
+                sb.append(')');
+                if (notNullCount < predicates.size()) {
+                    // There was at least one null.
+                    StringBuilder buf;
+                    switch (notNullCount) {
+                    case 0:
+                        // Special case -- there were no values besides null.
+                        // Return, for example, "x is null".
+                        return expr + " is null";
+                    case 1:
+                        // Special case -- one not-null value, and null, for
+                        // example "(x = 1 or x is null)".
+                        assert firstNotNull != null;
+                        buf = new StringBuilder(64);
+                        buf.append('(');
+                        buf.append(expr);
+                        buf.append(" = ");
+                        dialect.quote(
+                            buf,
+                            firstNotNull.getValue(),
+                            datatype);
+                        buf.append(" or ");
+                        buf.append(expr);
+                        buf.append(" is null)");
+                        return buf.toString();
+                    default:
+                        // Nulls and values, for example,
+                        // "(x in (1, 2) or x IS NULL)".
+                        buf = new StringBuilder(64);
+                        buf.append('(');
+                        buf.append(sb.toString());
+                        buf.append(" or ");
+                        buf.append(expr);
+                        buf.append(" is null)");
+                        return buf.toString();
+                    }
+                } else {
+                    // No nulls. Return, for example, "x in (1, 2, 3)".
+                    return sb.toString();
                 }
+            } else if (predicate instanceof LiteralStarPredicate) {
+                return predicate.toString();
             } else {
-                // No nulls. Return, for example, "x in (1, 2, 3)".
-                return buf.toString();
+                throw Util.newInternal(
+                    "Unexpected constraint type: " + predicate);
             }
         }
 
@@ -1423,7 +1475,7 @@ public class RolapStar {
                 usagePrefix);
 
             if (column != null) {
-                Map<RolapLevel, Column> map = star.getMapLevelToColumn(cube);
+                Map<RolapLevel, Column> map = star.getLevelToColumnMap(cube);
                 map.put(level, column);
             }
 

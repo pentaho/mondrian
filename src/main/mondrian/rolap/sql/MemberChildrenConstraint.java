@@ -33,12 +33,15 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      * of <code>parent</code> will be returned in the result set.
      *
      * @param sqlQuery the query to modify
+     * @param levelToColumnMap where to find each level's key
      * @param aggStar Aggregate star, if we are reading from an aggregate table,
      * @param parent the parent member that restricts the returned children
      */
     public void addMemberConstraint(
         SqlQuery sqlQuery,
-        AggStar aggStar, RolapMember parent);
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        AggStar aggStar,
+        RolapMember parent);
 
     /**
      * Modifies a <code>Member.Children</code> query so that (all or some)
@@ -46,11 +49,15 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      * will be returned in the result set.
      *
      * @param sqlQuery the query to modify
+     * @param levelToColumnMap where to find each level's key
      * @param aggStar Aggregate table, or null if query is against fact table
      * @param parents list of parent members that restrict the returned children.
      */
     public void addMemberConstraint(
-        SqlQuery sqlQuery, AggStar aggStar, List<RolapMember> parents);
+        SqlQuery sqlQuery,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        AggStar aggStar,
+        List<RolapMember> parents);
 
     /**
      * Will be called once for the level that contains the

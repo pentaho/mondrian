@@ -209,10 +209,11 @@ public class TestAggregationManager extends FoodMartTestCase {
                 RolapStar.getStarMeasure(storeSqftMeasure);
         CellRequest request = new CellRequest(starMeasure, false, false);
         final RolapStar star = starMeasure.getStar();
-        final RolapStar.Column storeTypeColumn = star.lookupColumn(
-                table, column);
+        final RolapStar.Column storeTypeColumn =
+            star.lookupColumn(table, column);
         request.addConstrainedColumn(
-                storeTypeColumn, new ColumnConstraint(value));
+            storeTypeColumn,
+            new ValueColumnPredicate(storeTypeColumn, value));
         return request;
     }
 
@@ -676,8 +677,8 @@ public class TestAggregationManager extends FoodMartTestCase {
         try {
             FastBatchingCellReader fbcr =
                 new FastBatchingCellReader(getCube("Sales"));
-            for (int i = 0; i < requests.length; i++) {
-                fbcr.recordCellRequest(requests[i]);
+            for (CellRequest request : requests) {
+                fbcr.recordCellRequest(request);
             }
             fbcr.loadAggregations();
             bomb = null;
@@ -758,7 +759,7 @@ public class TestAggregationManager extends FoodMartTestCase {
         Bomb bomb;
         try {
             // Flush the cache, to ensure that the query gets executed.
-            star.clearCachedAggregations(true); 
+            star.clearCachedAggregations(true);
             CachePool.instance().flush();
 
             final Result result = connection.execute(query);
@@ -804,7 +805,8 @@ public class TestAggregationManager extends FoodMartTestCase {
         final RolapStar.Column storeTypeColumn = star.lookupColumn(
                 table, column);
         request.addConstrainedColumn(
-                storeTypeColumn, new ColumnConstraint(value));
+            storeTypeColumn,
+            new ValueColumnPredicate(storeTypeColumn, value));
         return request;
     }
 
@@ -825,10 +827,11 @@ public class TestAggregationManager extends FoodMartTestCase {
             String table = tables[i];
             String column = columns[i];
             String value = values[i];
-            final RolapStar.Column storeTypeColumn = star.lookupColumn(
-                    table, column);
+            final RolapStar.Column storeTypeColumn =
+                star.lookupColumn(table, column);
             request.addConstrainedColumn(
-                    storeTypeColumn, new ColumnConstraint(value));
+                storeTypeColumn,
+                new ValueColumnPredicate(storeTypeColumn, value));
         }
         return request;
     }
@@ -895,8 +898,7 @@ public class TestAggregationManager extends FoodMartTestCase {
             if (d == UNKNOWN_DIALECT) {
                 return null;
             }
-            for (int i = 0; i < patterns.length; i++) {
-                SqlPattern pattern = patterns[i];
+            for (SqlPattern pattern : patterns) {
                 if (pattern.hasDialect(d)) {
                     return pattern;
                 }

@@ -17,6 +17,7 @@ import mondrian.rolap.CellKey;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * A <code>SparseSegmentDataset</code> is a means of storing segment values
@@ -44,8 +45,12 @@ class SparseSegmentDataset implements SegmentDataset {
         return values.get(pos);
     }
 
-    void put(CellKey key, Object value) {
+    public void put(CellKey key, Object value) {
         values.put(key, value);
+    }
+
+    public Iterator<Map.Entry<CellKey, Object>> iterator() {
+        return values.entrySet().iterator();
     }
 
     public double getBytes() {

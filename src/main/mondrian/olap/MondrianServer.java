@@ -39,6 +39,8 @@ public abstract class MondrianServer {
      *
      * <p>This cache is referenced only when creating a new connection, so
      * existing connections will continue to use the same schema definition.
+     *
+     * @deprecated Use {@link CacheControl#flushSchemaCache()}.
      */
     public abstract void flushSchemaCache();
 
@@ -51,6 +53,8 @@ public abstract class MondrianServer {
      * <p>Note that flushing the data cache may have serious performance
      * implications for all connections to this Mondrian server. Aggregate data
      * for all cubes in all schemas will be flushed.
+     *
+     * @deprecated Use {@link CacheControl#flush(CacheControl.CellRegion)}.
      */
     public abstract void flushDataCache();
 

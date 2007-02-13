@@ -15,6 +15,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.util.MemoryMonitor;
 import mondrian.util.MemoryMonitorFactory;
+import mondrian.rolap.agg.AggregationManager;
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DataSourceConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
@@ -52,7 +53,7 @@ public class RolapConnection extends ConnectionBase {
      * usually use a connection pool.
      */
     private final DataSource dataSource;
-    private final String catalogName;
+    private final String catalogUrl;
     private final RolapSchema schema;
     private SchemaReader schemaReader;
     protected Role role;
@@ -122,7 +123,7 @@ public class RolapConnection extends ConnectionBase {
             RolapConnectionProperties.Provider.name(), "mondrian");
         Util.assertTrue(provider.equalsIgnoreCase("mondrian"));
         this.connectInfo = connectInfo;
-        this.catalogName =
+        this.catalogUrl =
             connectInfo.get(RolapConnectionProperties.Catalog.name());
         this.dataSource = (dataSource != null)
             ? dataSource
@@ -145,16 +146,16 @@ public class RolapConnection extends ConnectionBase {
                 getJDBCProperties(connectInfo).toString();
 
                 schema = RolapSchema.Pool.instance().get(
-                            catalogName,
-                            connectionKey,
-                            jdbcUser,
-                            strDataSource,
-                            connectInfo);
+                    catalogUrl,
+                    connectionKey,
+                    jdbcUser,
+                    strDataSource,
+                    connectInfo);
             } else {
                 schema = RolapSchema.Pool.instance().get(
-                            catalogName,
-                            dataSource,
-                            connectInfo);
+                    catalogUrl,
+                    dataSource,
+                    connectInfo);
             }
             String roleName =
                 connectInfo.get(RolapConnectionProperties.Role.name());
@@ -337,8 +338,9 @@ public class RolapConnection extends ConnectionBase {
     public String getConnectString() {
         return connectInfo.toString();
     }
+
     public String getCatalogName() {
-        return catalogName;
+        return catalogUrl;
     }
 
     public Locale getLocale() {
@@ -362,11 +364,16 @@ public class RolapConnection extends ConnectionBase {
         return connectInfo.get(name);
     }
 
+    public CacheControl getCacheControl(PrintWriter pw) {
+        return AggregationManager.instance().getCacheControl(pw);
+    }
+
     /**
+     * Executes a Query.
+     *
      * @throws ResourceLimitExceededException if some resource limit specified in the
      * property file was exceeded
-     * @throws QueryCanceledException if query was canceled in the middle of
-     * execution
+     * @throws QueryCanceledException if query was canceled during execution
      * @throws QueryTimeoutException if query exceeded timeout specified in
      * the property file
      */

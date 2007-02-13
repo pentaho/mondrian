@@ -64,7 +64,7 @@ public class SmartMemberReader implements MemberReader, MemberCache {
     DataSourceChangeListener changeListener;
 
     private List<RolapMember> rootMembers;
-    
+
     SmartMemberReader(MemberReader source) {
         this.source = source;
         if (!source.setCache(this)) {
@@ -97,16 +97,16 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         // own cache
         return false;
     }
-    
+
     private synchronized void checkCacheStatus() {
-        
+
         if (changeListener != null) {
             if (changeListener.isHierarchyChanged(getHierarchy())) {
                 /* Flush the cache */
                 mapMemberToChildren.clear();
-                mapKeyToMember.clear();            
-                mapLevelToMembers.clear();               
-            }            
+                mapKeyToMember.clear();
+                mapLevelToMembers.clear();
+            }
         }
     }
 
@@ -120,18 +120,18 @@ public class SmartMemberReader implements MemberReader, MemberCache {
     public synchronized RolapMember getMember(Object key) {
         return getMember(key, true);
     }
-    
+
     // implement MemberCache
     // synchronization: Must synchronize, because uses mapKeyToMember
     public synchronized RolapMember getMember(Object key, boolean mustCheckCacheStatus) {
-                
-        if (mustCheckCacheStatus == true) {
+
+        if (mustCheckCacheStatus) {
             checkCacheStatus();
-        }        
-        
+        }
+
         return mapKeyToMember.get(key);
     }
-    
+
 
     // implement MemberCache
     // synchronization: Must synchronize, because modifies mapKeyToMember
@@ -178,16 +178,16 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         int endOrdinal,
         TupleConstraint constraint)
     {
-        List<RolapMember> members = null;
-        
         checkCacheStatus();
-        
-        members = mapLevelToMembers.get(level, constraint);
+
+        List<RolapMember> members = mapLevelToMembers.get(level, constraint);
         if (members != null) {
             return members;
         }
 
-        members = source.getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
+        members =
+            source.getMembersInLevel(
+                level, startOrdinal, endOrdinal, constraint);
         mapLevelToMembers.put(level, constraint, members);
         return members;
     }
@@ -223,9 +223,9 @@ public class SmartMemberReader implements MemberReader, MemberCache {
             List<RolapMember> parentMembers,
             List<RolapMember> children,
             MemberChildrenConstraint constraint) {
-        
+
         checkCacheStatus();
-        
+
         List<RolapMember> missed = new ArrayList<RolapMember>();
         for (RolapMember parentMember : parentMembers) {
             List<RolapMember> list =
@@ -294,8 +294,7 @@ public class SmartMemberReader implements MemberReader, MemberCache {
             RolapMember child = children.get(i);
             assert child != null : "child";
             assert tempMap != null : "tempMap";
-            final RolapMember parentMember =
-                (RolapMember) child.getParentMember();
+            final RolapMember parentMember = child.getParentMember();
             List<RolapMember> list = tempMap.get(parentMember);
             if (list == null) {
                 // The list is null if, due to dropped constraints, we now
@@ -469,7 +468,7 @@ public class SmartMemberReader implements MemberReader, MemberCache {
                 return pos1 < pos2 ? -1 : 1;
             } else {
                 List<RolapMember> children = new ArrayList<RolapMember>();
-                getMemberChildren((RolapMember) m1.getParentMember(), children);
+                getMemberChildren(m1.getParentMember(), children);
                 int pos1 = -1, pos2 = -1;
                 for (int i = 0, n = children.size(); i < n; i++) {
                     RolapMember child = children.get(i);
@@ -493,15 +492,15 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         int levelDepth1 = m1.getLevel().getDepth();
         int levelDepth2 = m2.getLevel().getDepth();
         if (levelDepth1 < levelDepth2) {
-            final int c = compare(m1, (RolapMember) m2.getParentMember(), false);
+            final int c = compare(m1, m2.getParentMember(), false);
             return (c == 0) ? -1 : c;
 
         } else if (levelDepth1 > levelDepth2) {
-            final int c = compare((RolapMember) m1.getParentMember(), m2, false);
+            final int c = compare(m1.getParentMember(), m2, false);
             return (c == 0) ? 1 : c;
 
         } else {
-            return compare((RolapMember) m1.getParentMember(), (RolapMember) m2.getParentMember(), false);
+            return compare(m1.getParentMember(), m2.getParentMember(), false);
         }
     }
 
@@ -519,7 +518,7 @@ public class SmartMemberReader implements MemberReader, MemberCache {
 
         SiblingIterator(MemberReader reader, RolapMember member) {
             this.reader = reader;
-            RolapMember parent = (RolapMember) member.getParentMember();
+            RolapMember parent = member.getParentMember();
             List<RolapMember> siblingList;
             if (parent == null) {
                 siblingList = reader.getRootMembers();

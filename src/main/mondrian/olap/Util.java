@@ -57,7 +57,7 @@ public class Util extends XOMUtil {
      * Placeholder which indicates an EMPTY value.
      */
     public static final Object EmptyValue = new Double(FunUtil.DoubleEmpty);
-    
+
     /**
      * Cumulative time spent accessing the database.
      */
@@ -104,6 +104,23 @@ public class Util extends XOMUtil {
         return o == null || o == nullValue;
     }
 
+    /**
+     * Returns whether a list is strictly sorted.
+     *
+     * @param list List
+     * @return whether list is sorted
+     */
+    public static <T> boolean isSorted(List<T> list) {
+        T prev = null;
+        for (T t : list) {
+            if (prev != null &&
+                ((Comparable<T>) prev).compareTo(t) >= 0) {
+                return false;
+            }
+            prev = t;
+        }
+        return true;
+    }
 
     /**
      * Encodes string for MDX (escapes ] as ]] inside a name).
@@ -218,7 +235,7 @@ public class Util extends XOMUtil {
     public static boolean equal(String s, String t, boolean matchCase) {
         return matchCase ? s.equals(t) : s.equalsIgnoreCase(t);
     }
-    
+
     /**
      * Compares two names.
      * Takes into account the {@link MondrianProperties#CaseSensitive case
@@ -678,13 +695,13 @@ public class Util extends XOMUtil {
                     throw MondrianResource.instance().MdxChildObjectNotFound.ex(
                         fullName, q.getCube().getQualifiedName());
                 }
-            } else {    
+            } else {
                 throw MondrianResource.instance().MdxChildObjectNotFound.ex(
                     fullName, q.getCube().getQualifiedName());
             }
         }
         // keep track of any measure members referenced; these will be used
-        // later to determine if cross joins on virtual cubes can be 
+        // later to determine if cross joins on virtual cubes can be
         // processed natively
         q.addMeasuresMembers(olapElement);
         return createExpr(olapElement);
@@ -738,7 +755,7 @@ public class Util extends XOMUtil {
     {
         // Lookup member at first level.
         Member[] rootMembers = reader.getHierarchyRootMembers(hierarchy);
-        
+
         // if doing an inexact search on a non-all hieararchy, create
         // a member corresponding to the name we're searching for so
         // we can use it in a hierarchical search
@@ -753,7 +770,7 @@ public class Util extends XOMUtil {
                     memberName,
                     null);
         }
-        
+
         int bestMatch = -1;
         for (int i = 0; i < rootMembers.length; i++) {
             int rc;
@@ -773,7 +790,7 @@ public class Util extends XOMUtil {
                     if (rc < 0 &&
                         (bestMatch == -1 ||
                         FunUtil.compareSiblingMembers(
-                            rootMembers[i], 
+                            rootMembers[i],
                             rootMembers[bestMatch]) > 0))
                     {
                         bestMatch = i;
@@ -787,7 +804,7 @@ public class Util extends XOMUtil {
                     {
                         bestMatch = i;
                     }
-                }           
+                }
             }
         }
         if (matchType != MatchType.EXACT && bestMatch != -1) {
@@ -1748,7 +1765,7 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Returns whether an enumeration value is a valid not-null value of a given 
+     * Returns whether an enumeration value is a valid not-null value of a given
      * enumeration class.
      *
      * @param clazz Enumeration class

@@ -54,10 +54,21 @@ import org.apache.log4j.Logger;
  */
 public class Main extends TestSuite {
     private static final Logger logger = Logger.getLogger(Main.class);
-    static public void main(String[] args) {
+
+    /**
+     * Entry point to run test suite from the command line.
+     *
+     * @param args Command-line parameters.
+     */
+    public static void main(String[] args) {
         new Main().runSafe(args);
     }
 
+    /**
+     * Runs the suite, catching any exceptions and printing their stack trace.
+     *
+     * @param args Command-line arguments
+     */
     private void runSafe(String[] args) {
         try {
             run(args);
@@ -146,7 +157,7 @@ public class Main extends TestSuite {
                 } else {
                     target = clazz.newInstance();
                 }
-                Object o = method.invoke(target, new Object[0]);
+                Object o = method.invoke(target);
                 suite.addTest((Test) o);
             }
         } else {
@@ -157,6 +168,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(DrillThroughTest.class);
             suite.addTestSuite(BasicQueryTest.class);
             suite.addTestSuite(ClearViewTest.class);
+            suite.addTestSuite(CacheControlTest.class);
             suite.addTestSuite(FunctionTest.class);
             suite.addTestSuite(HierarchyBugTest.class);
             suite.addTestSuite(ScheduleTest.class);
@@ -260,8 +272,8 @@ public class Main extends TestSuite {
      */
     static void addSuite(TestSuite suite, String className) throws Exception {
         Class clazz = Class.forName(className);
-        Method method = clazz.getMethod("suite", new Class[0]);
-        Object o = method.invoke(null, new Object[0]);
+        Method method = clazz.getMethod("suite");
+        Object o = method.invoke(null);
         suite.addTest((Test) o);
     }
 }

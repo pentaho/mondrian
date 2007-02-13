@@ -42,15 +42,16 @@ public class SqlConstraintUtils {
      * @param aggStar Aggregate table, or null if query is against fact table
      * @param strict defines the behavior if the current context contains
      *   calculated members.
-     *   If true, an exception is thrown,
+     *   If true, an exception is thrown.
+     * @param evaluator Evaluator
      */
     public static void addContextConstraint(
         SqlQuery sqlQuery,
         AggStar aggStar,
-        Evaluator e,
+        Evaluator evaluator,
         boolean strict) {
 
-        Member[] members = e.getMembers();
+        Member[] members = evaluator.getMembers();
         if (strict) {
             if (containsCalculatedMember(members)) {
                 throw Util.newInternal("can not restrict SQL to calculated Members");
@@ -114,8 +115,10 @@ public class SqlConstraintUtils {
     }
 
     /**
-     * removes the default members. This is required only if the default member
-     * is not the ALL member. The time dimension for example, has 1997 as default
+     * Removes the default members from an array.
+     *
+     * <p>This is required only if the default member is
+     * not the ALL member. The time dimension for example, has 1997 as default
      * member. When we evaluate the query
      * <pre>
      *   select NON EMPTY crossjoin(
@@ -125,12 +128,12 @@ public class SqlConstraintUtils {
      * </pre>
      * the <code>[Customer].[All].children</code> is evaluated with the default
      * member <code>[Time].[1997]</code> in the evaluator context. This is wrong
-     * because the NON EMPTY must filter out Customres with no rows in the fact table
-     * for 1998 not 1997. So we do not restrict the time dimension and fetch
-     * all children.
+     * because the NON EMPTY must filter out Customres with no rows in the fact
+     * table for 1998 not 1997. So we do not restrict the time dimension and
+     * fetch all children.
      *
-     * @param members
-     * @return
+     * @param members Array of members
+     * @return Array of members with default members removed
      */
     private static Member[] removeDefaultMembers(Member[] members) {
         List<Member> result = new ArrayList<Member>();
@@ -172,21 +175,21 @@ public class SqlConstraintUtils {
      * @param aggStar
      * @param e evaluator corresponding to query
      * @param level level to be added to query
-     * @param mapLevelToColumn maps level to star columns; set only in the
+     * @param levelToColumnMap maps level to star columns; set only in the
      */
     public static void joinLevelTableToFactTable(
         SqlQuery sqlQuery,
         AggStar aggStar,
         Evaluator e,
         RolapLevel level,
-        Map<RolapLevel, RolapStar.Column> mapLevelToColumn)
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap)
     {
         RolapCube cube = (RolapCube) e.getCube();
         if (!cube.isVirtual()) {
             RolapStar star = cube.getStar();
-            mapLevelToColumn = star.getMapLevelToColumn(cube);
+            levelToColumnMap = star.getLevelToColumnMap(cube);
         }
-        RolapStar.Column starColumn = mapLevelToColumn.get(level);
+        RolapStar.Column starColumn = levelToColumnMap.get(level);
         assert starColumn != null;
         if (aggStar != null) {
             int bitPos = starColumn.getBitPosition();
@@ -202,24 +205,30 @@ public class SqlConstraintUtils {
 
     /**
      * Creates a "WHERE parent = value" constraint.
-     * 
+     *
      * @param sqlQuery the query to modify
-     * @param aggStar Definition of the aggregate table, or null if query is
+     * @param levelToColumnMap where to find each level's key
+     * @param aggStar Definition of the aggregate table, or null
      * @param parent the list of parent members
      * @param strict defines the behavior if <code>parent</code>
      * is a calculated member. If true, an exception is thrown
      */
     public static void addMemberConstraint(
-        SqlQuery sqlQuery, AggStar aggStar, RolapMember parent, boolean strict)
+        SqlQuery sqlQuery,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        AggStar aggStar,
+        RolapMember parent,
+        boolean strict)
     {
         List<RolapMember> list = Collections.singletonList(parent);
-        addMemberConstraint(sqlQuery, aggStar, list, strict, false);
+        addMemberConstraint(
+            sqlQuery, levelToColumnMap, aggStar, list, strict, false);
     }
 
     /**
      * Creates a "WHERE exp IN (...)" condition containing the values
      * of all parents.  All parents must belong to the same level.
-     * 
+     *
      * <p>If this constraint is part of a native cross join, there are
      * multiple constraining members, and the members comprise the cross
      * product of all unique member keys referenced at each level, then
@@ -229,16 +238,18 @@ public class SqlConstraintUtils {
      * instead.
      *
      * @param sqlQuery the query to modify
-     * @param aggStar
+     * @param levelToColumnMap where to find each level's key
+     * @param aggStar (not used)
      * @param parents the list of parent members
      * @param strict defines the behavior if <code>parents</code>
      *   contains calculated members.
-     *   If true, an exception is thrown.
+     *   If true, and one of the members is calculated, an exception is thrown.
      * @param crossJoin true if constraint is being generated as part of
-     * a native crossjoin
+     *   a native crossjoin
      */
     public static void addMemberConstraint(
         SqlQuery sqlQuery,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
         AggStar aggStar,
         List<RolapMember> parents,
         boolean strict,
@@ -247,13 +258,13 @@ public class SqlConstraintUtils {
         if (parents.size() == 0) {
             return;
         }
-        
+
         // If this constraint is part of a native cross join and there
         // are multiple values for the parent members, then we can't
         // use IN clauses
         if (crossJoin) {
-            RolapLevel level = ((RolapMember) parents.get(0)).getRolapLevel();
-            if (!level.isUnique() && !membersAreCrossProduct(parents)) {               
+            RolapLevel level = parents.get(0).getLevel();
+            if (!level.isUnique() && !membersAreCrossProduct(parents)) {
                 constrainMultiLevelMembers(sqlQuery, parents, strict);
                 return;
             }
@@ -274,14 +285,17 @@ public class SqlConstraintUtils {
                 }
                 continue;
             }
-            RolapLevel level = m.getRolapLevel();          
-            RolapHierarchy hierarchy = (RolapHierarchy) level.getHierarchy();
+            RolapLevel level = m.getLevel();
+            RolapHierarchy hierarchy = level.getHierarchy();
             hierarchy.addToFrom(sqlQuery, level.getKeyExp());
             String q = level.getKeyExp().getExpression(sqlQuery);
-            ColumnConstraint[] cc = getColumnConstraints(c);
-            
+            RolapStar.Column column = levelToColumnMap.get(level);
+            StarColumnPredicate cc = getColumnPredicates(column, c);
+
             if (!strict &&
-                cc.length >= MondrianProperties.instance().MaxConstraints.get())
+                cc instanceof ListColumnPredicate &&
+                ((ListColumnPredicate) cc).getPredicates().size() >=
+                    MondrianProperties.instance().MaxConstraints.get())
             {
                 // Simply get them all, do not create where-clause.
                 // Below are two alternative approaches (and code). They
@@ -299,14 +313,23 @@ public class SqlConstraintUtils {
         }
     }
 
-    private static ColumnConstraint[] getColumnConstraints(Collection members) {
-        ColumnConstraint[] constraints = new ColumnConstraint[members.size()];
-        Iterator it = members.iterator();
-        for (int i = 0; i < constraints.length; i++) {
-            RolapMember m = (RolapMember) it.next();
-            constraints[i] = new MemberColumnConstraint(m);
+    private static StarColumnPredicate getColumnPredicates(
+        RolapStar.Column column,
+        Collection<RolapMember> members)
+    {
+        switch (members.size()) {
+        case 0:
+            return new LiteralStarPredicate(column, false);
+        case 1:
+            return new MemberColumnPredicate(column, members.iterator().next());
+        default:
+            List<StarColumnPredicate> predicateList =
+                new ArrayList<StarColumnPredicate>();
+            for (RolapMember member : members) {
+                predicateList.add(new MemberColumnPredicate(column, member));
+            }
+            return new ListColumnPredicate(column, predicateList);
         }
-        return constraints;
     }
 
     private static LinkedHashSet<RolapMember> getUniqueParentMembers(
@@ -314,18 +337,18 @@ public class SqlConstraintUtils {
     {
         LinkedHashSet<RolapMember> set = new LinkedHashSet<RolapMember>();
         for (RolapMember m : members) {
-            m = (RolapMember) m.getParentMember();
+            m = m.getParentMember();
             if (m != null) {
                 set.add(m);
             }
         }
         return set;
     }
-    
+
     /**
      * Adds to the where clause of a query expression matching a specified
      * list of members
-     * 
+     *
      * @param sqlQuery query containing the where clause
      * @param members list of constraining members
      * @param strict defines the behavior when calculated members are present
@@ -340,12 +363,12 @@ public class SqlConstraintUtils {
                 return;
             }
         }
-        
+
         // iterate through each level in each member generating
         // AND's across the levels and OR's across the members
         String condition = "(";
         boolean firstMember = true;
-        for (RolapMember m : members) {           
+        for (RolapMember m : members) {
             if (m.isCalculated()) {
                 if (strict) {
                     throw Util.newInternal("addMemberConstraint: cannot " +
@@ -360,7 +383,7 @@ public class SqlConstraintUtils {
             boolean firstLevel = true;
             do {
                 if (!m.isAll()) {
-                    RolapLevel level = m.getRolapLevel();
+                    RolapLevel level = m.getLevel();
                     // add the level to the FROM clause if this is the
                     // first member we're generating sql for
                     if (firstMember) {
@@ -372,17 +395,17 @@ public class SqlConstraintUtils {
                         condition += " and ";
                     } else {
                         firstLevel = false;
-                    }               
+                    }
                     condition += constrainLevel(
                         level,
                         sqlQuery,
                         getColumnValue(
-                            m.getSqlKey(),                       
+                            m.getSqlKey(),
                             sqlQuery.getDialect(),
                             level.getDatatype()),
                             false);
                 }
-                m = (RolapMember) m.getParentMember();              
+                m = m.getParentMember();
             } while (m != null);
             condition += ")";
             firstMember = false;
@@ -390,10 +413,10 @@ public class SqlConstraintUtils {
         condition += ")";
         sqlQuery.addWhere(condition);
     }
-    
+
     /**
      * @param members list of members
-     * 
+     *
      * @return true if the members comprise the cross product of all unique
      * member keys referenced at each level
      */
@@ -407,10 +430,10 @@ public class SqlConstraintUtils {
         }
         return (crossProdSize == members.size());
     }
-    
+
     /**
      * @param members list of members
-     * 
+     *
      * @return number of unique member keys in a list of members
      */
     private static int getNumUniqueMemberKeys(List<RolapMember> members)
@@ -421,12 +444,12 @@ public class SqlConstraintUtils {
         }
         return set.size();
     }
-    
+
     /**
      * @param key key corresponding to a member
      * @param dialect sql dialect being used
      * @param datatype data type of the member
-     * 
+     *
      * @return string value corresponding to the member
      */
     private static String getColumnValue(
@@ -440,16 +463,16 @@ public class SqlConstraintUtils {
             return RolapUtil.mdxNullLiteral;
         }
     }
-    
+
     /**
      * Generates a sql expression constraining a level by some value
-     * 
+     *
      * @param level the level
      * @param query the query that the sql expression will be added to
      * @param columnValue value constraining the level
      * @param caseSensitive if true, need to handle case sensitivity of the
      * member value
-     * 
+     *
      * @return generated string corresponding to the expression
      */
     public static String constrainLevel(
@@ -468,7 +491,7 @@ public class SqlConstraintUtils {
             // we presume that it is a string.
             datatype = SqlQuery.Datatype.String;
         }
-        String column = exp.getExpression(query);        
+        String column = exp.getExpression(query);
         String constraint;
         if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(columnValue)) {
             constraint = column + " is " + RolapUtil.sqlNullLiteral;
@@ -493,20 +516,20 @@ public class SqlConstraintUtils {
 
             constraint = column + " = " + value;
         }
-        
+
         return constraint;
     }
-    
+
     /**
      * Generates a multi-value IN expression corresponding to a list of
      * member expressions, and adds the expression to the WHERE clause
      * of a query, provided the member values are all non-null
-     * 
+     *
      * @param sqlQuery query containing the where clause
      * @param members list of constraining members
      * @param strict defines the behavior when calculated members are present
-     * 
-     * @returns true if possible to generate a multi-value IN expression
+     *
+     * @return Whether it was possible to generate a multi-value IN expression
      */
     private static boolean generateMultiValueInExpr(
         SqlQuery sqlQuery,
@@ -517,9 +540,9 @@ public class SqlConstraintUtils {
         columnBuf.append("(");
         final StringBuilder valueBuf = new StringBuilder();
         valueBuf.append("(");
-        
+
         boolean firstMember = true;
-        for (RolapMember m : members) {           
+        for (RolapMember m : members) {
             if (m.isCalculated()) {
                 if (strict) {
                     throw Util.newInternal("addMemberConstraint: cannot " +
@@ -533,13 +556,13 @@ public class SqlConstraintUtils {
                     m = (RolapMember) m.getParentMember();
                     continue;
                 }
-                RolapLevel level = m.getRolapLevel();
+                RolapLevel level = m.getLevel();
                 // generate the left-hand side of the IN expression, if we're
                 // iterating over the first member
                 if (firstMember) {
                     RolapHierarchy hierarchy =
                         (RolapHierarchy) level.getHierarchy();
-                    hierarchy.addToFrom(sqlQuery, level.getKeyExp());                      
+                    hierarchy.addToFrom(sqlQuery, level.getKeyExp());
                     if (!firstLevel) {
                         columnBuf.append(",");
                     }
@@ -549,7 +572,7 @@ public class SqlConstraintUtils {
                     }
                     columnBuf.append(exp.getExpression(sqlQuery));
                 }
-                
+
                 if (firstLevel) {
                     if (!firstMember) {
                         valueBuf.append("), ");
@@ -559,9 +582,9 @@ public class SqlConstraintUtils {
                 } else {
                     valueBuf.append(",");
                 }
-                
+
                 String value = getColumnValue(
-                    m.getSqlKey(),                       
+                    m.getSqlKey(),
                     sqlQuery.getDialect(),
                     level.getDatatype());
                 if (RolapUtil.mdxNullLiteral.equalsIgnoreCase(value)) {
@@ -570,18 +593,18 @@ public class SqlConstraintUtils {
                 final StringBuilder buf = new StringBuilder();
                 sqlQuery.getDialect().quote(buf, value, level.getDatatype());
                 valueBuf.append(buf.toString());
-                
-                m = (RolapMember) m.getParentMember();              
-            } while (m != null);            
+
+                m = m.getParentMember();
+            } while (m != null);
             firstMember = false;
         }
-        
+
         columnBuf.append(")");
         valueBuf.append("))");
-        
+
         sqlQuery.addWhere(
             columnBuf.toString() + " in " + valueBuf.toString());
-        
+
         return true;
     }
 }

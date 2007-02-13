@@ -20,7 +20,7 @@ import org.eigenbase.util.property.Property;
 import java.util.*;
 
 /**
- * A <code>FastBatchingCellReader</code> doesn't really read cells: when asked
+ * A <code>FastBatchingCellReader</code> doesn't really Read cells: when asked
  * to look up the values of stored measures, it lies, and records the fact
  * that the value was asked for.  Later, we can look over the values which
  * are required, fetch them in an efficient way, and re-run the evaluation
@@ -56,11 +56,14 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     private final RolapCube cube;
-    private final Set pinnedSegments;
     private final Map<BatchKey, Batch> batches;
     private int requestCount;
 
-    RolapAggregationManager aggMgr = AggregationManager.instance();
+    final AggregationManager aggMgr = AggregationManager.instance();
+
+    private final RolapAggregationManager.PinSet pinnedSegments =
+        aggMgr.createPinSet();
+
     /**
      * Indicates that the reader given incorrect results.
      */
@@ -68,7 +71,6 @@ public class FastBatchingCellReader implements CellReader {
 
     public FastBatchingCellReader(RolapCube cube) {
         this.cube = cube;
-        this.pinnedSegments = new HashSet();
         this.batches = new HashMap<BatchKey, Batch>();
     }
 
@@ -146,10 +148,10 @@ public class FastBatchingCellReader implements CellReader {
     {
         return loadAggregations(null);
     }
-    
+
     /**
      * Loads pending aggregations, if any.
-     * 
+     *
      * @param query the parent query object that initiated this
      * call
      *
@@ -200,19 +202,19 @@ public class FastBatchingCellReader implements CellReader {
         // this is the CellRequest's constrained column BitKey
         final BitKey constrainedColumnsBitKey;
         final List<RolapStar.Measure> measuresList = new ArrayList<RolapStar.Measure>();
-        final Set<ColumnConstraint>[] valueSets;
+        final Set<StarColumnPredicate>[] valueSets;
 
         public Batch(CellRequest request) {
             columns = request.getConstrainedColumns();
             constrainedColumnsBitKey = request.getConstrainedColumnsBitKey();
             valueSets = new HashSet[columns.length];
             for (int i = 0; i < valueSets.length; i++) {
-                valueSets[i] = new HashSet<ColumnConstraint>();
+                valueSets[i] = new HashSet<StarColumnPredicate>();
             }
         }
 
         public void add(CellRequest request) {
-            List<ColumnConstraint> values = request.getValueList();
+            List<StarColumnPredicate> values = request.getValueList();
             for (int j = 0; j < columns.length; j++) {
                 valueSets[j].add(values.get(j));
             }
@@ -225,10 +227,10 @@ public class FastBatchingCellReader implements CellReader {
                 measuresList.add(measure);
             }
         }
-        
-        /** 
-         * This can only be called after the add method has been called. 
-         * 
+
+        /**
+         * This can only be called after the add method has been called.
+         *
          * @return the RolapStar associated with the Batch's first Measure.
          */
         private RolapStar getStar() {
@@ -268,22 +270,30 @@ public class FastBatchingCellReader implements CellReader {
             long t1 = System.currentTimeMillis();
 
             AggregationManager aggmgr = AggregationManager.instance();
-            ColumnConstraint[][] constraintses =
-                    new ColumnConstraint[columns.length][];
+            StarColumnPredicate[] predicates =
+                    new StarColumnPredicate[columns.length];
             for (int j = 0; j < columns.length; j++) {
-                Set valueSet = valueSets[j];
+                Set<StarColumnPredicate> valueSet = valueSets[j];
 
-                ColumnConstraint[] constraints;
-                if ((valueSet == null)) {
-                    constraints = null;
+                StarColumnPredicate predicate;
+                if (valueSet == null) {
+                    predicate = LiteralStarPredicate.FALSE;
                 } else {
-                    constraints = new ColumnConstraint[valueSet.size()];
-                    valueSet.toArray(constraints);
+                    ValueColumnPredicate[] values =
+                        valueSet.toArray(
+                            new ValueColumnPredicate[valueSet.size()]);
                     // Sort array to achieve determinism in generated SQL.
-                    Arrays.sort(constraints);
+                    Arrays.sort(
+                        values,
+                        ValueColumnConstraintComparator.instance);
+
+                    predicate =
+                        new ListColumnPredicate(
+                            columns[j],
+                            Arrays.asList((StarColumnPredicate[]) values));
                 }
 
-                constraintses[j] = constraints;
+                predicates[j] = predicate;
             }
             // TODO: optimize key sets; drop a constraint if more than x% of
             // the members are requested; whether we should get just the cells
@@ -299,9 +309,10 @@ public class FastBatchingCellReader implements CellReader {
                     if (distinctMeasure == null) {
                         break;
                     }
-                    final String expr = distinctMeasure.getExpression().
-                            getGenericExpression();
-                    final List<RolapStar.Measure> distinctMeasuresList = new ArrayList<RolapStar.Measure>();
+                    final String expr =
+                        distinctMeasure.getExpression().getGenericExpression();
+                    final List<RolapStar.Measure> distinctMeasuresList =
+                        new ArrayList<RolapStar.Measure>();
                     for (int i = 0; i < measuresList.size();) {
                         RolapStar.Measure measure =
                             measuresList.get(i);
@@ -318,9 +329,11 @@ public class FastBatchingCellReader implements CellReader {
                     RolapStar.Measure[] measures =
                         distinctMeasuresList.toArray(
                             new RolapStar.Measure[distinctMeasuresList.size()]);
-                    aggmgr.loadAggregation(measures, columns,
-                            constrainedColumnsBitKey,
-                            constraintses, pinnedSegments);
+                    aggmgr.loadAggregation(
+                        measures, columns,
+                        constrainedColumnsBitKey,
+                        predicates,
+                        pinnedSegments);
                 }
             }
 
@@ -331,7 +344,7 @@ public class FastBatchingCellReader implements CellReader {
                 aggmgr.loadAggregation(
                     measures, columns,
                     constrainedColumnsBitKey,
-                    constraintses, pinnedSegments);
+                    predicates, pinnedSegments);
             }
 
             if (BATCH_LOGGER.isDebugEnabled()) {
@@ -345,8 +358,7 @@ public class FastBatchingCellReader implements CellReader {
          * there is none.
          */
         RolapStar.Measure getFirstDistinctMeasure(List<RolapStar.Measure> measuresList) {
-            for (int i = 0; i < measuresList.size(); i++) {
-                RolapStar.Measure measure = measuresList.get(i);
+            for (RolapStar.Measure measure : measuresList) {
                 if (measure.getAggregator().isDistinct()) {
                     return measure;
                 }
@@ -426,6 +438,29 @@ public class FastBatchingCellReader implements CellReader {
                 }
             }
             return 0;
+        }
+    }
+
+    private static class ValueColumnConstraintComparator
+        implements Comparator<ValueColumnPredicate>
+    {
+        static final ValueColumnConstraintComparator instance =
+            new ValueColumnConstraintComparator();
+
+        private ValueColumnConstraintComparator() {}
+
+        public int compare(
+            ValueColumnPredicate o1,
+            ValueColumnPredicate o2)
+        {
+            Object v1 = o1.getValue();
+            Object v2 = o2.getValue();
+            if (v1.getClass() == v2.getClass() &&
+                v1 instanceof Comparable) {
+                return ((Comparable) v1).compareTo(v2);
+            } else {
+                return v1.toString().compareTo(v2.toString());
+            }
         }
     }
 }

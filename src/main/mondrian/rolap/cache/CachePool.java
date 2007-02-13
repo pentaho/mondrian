@@ -30,6 +30,13 @@ public class CachePool {
     private CachePool() {
     }
 
+    /**
+     * Deprecated.
+     *
+     * @deprecated Superseded by
+     *  {@link mondrian.olap.CacheControl#flushSchemaCache()},
+     *  {@link mondrian.olap.CacheControl#flush(mondrian.olap.CacheControl.CellRegion)}.
+     */
     public void flush() {
         RolapSchema.clearCache();
     }

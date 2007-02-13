@@ -89,9 +89,11 @@ public abstract class RolapSchemaReader implements SchemaReader {
     }
 
     public int compareMembersHierarchically(Member m1, Member m2) {
-        final RolapHierarchy hierarchy = (RolapHierarchy) m1.getHierarchy();
+        RolapMember member1 = (RolapMember) m1;
+        RolapMember member2 = (RolapMember) m2;
+        final RolapHierarchy hierarchy = member1.getHierarchy();
         Util.assertPrecondition(hierarchy == m2.getHierarchy());
-        return getMemberReader(hierarchy).compare((RolapMember) m1, (RolapMember) m2, true);
+        return getMemberReader(hierarchy).compare(member1, member2, true);
     }
 
     public Member getMemberParent(Member member) {
@@ -142,17 +144,19 @@ public abstract class RolapSchemaReader implements SchemaReader {
     public Member[] getMemberChildren(Member member, Evaluator context) {
         MemberChildrenConstraint constraint =
                 sqlConstraintFactory.getMemberChildrenConstraint(context);
-        return internalGetMemberChildren(member, constraint);
+        List<RolapMember> memberList =
+            internalGetMemberChildren(member, constraint);
+        return memberList.toArray(new Member[memberList.size()]);
     }
 
-    private Member[] internalGetMemberChildren(
+    private List<RolapMember> internalGetMemberChildren(
             Member member, MemberChildrenConstraint constraint) {
         List<RolapMember> children = new ArrayList<RolapMember>();
         final Hierarchy hierarchy = member.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
         memberReader.getMemberChildren(
                 (RolapMember) member, children, constraint);
-        return RolapUtil.toArray(children);
+        return children;
     }
 
     /**
@@ -302,13 +306,13 @@ public abstract class RolapSchemaReader implements SchemaReader {
                     sqlConstraintFactory.getChildByNameConstraint(
                         (RolapMember)parent, childName) :
                     sqlConstraintFactory.getMemberChildrenConstraint(null);
-            Member[] children = internalGetMemberChildren(parent, constraint);
-            if (children.length > 0) {
+            List<RolapMember> children = internalGetMemberChildren(parent, constraint);
+            if (children.size() > 0) {
                 return
                     RolapUtil.findBestMemberMatch(
                         children,
                         (RolapMember) parent,
-                        ((RolapMember) children[0]).getRolapLevel(),
+                        children.get(0).getLevel(),
                         childName,
                         matchType,
                         true);
@@ -362,7 +366,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
     }
 
     public Level[] getHierarchyLevels(Hierarchy hierarchy) {
-        Util.assertPrecondition(hierarchy != null, "hierarchy != null");
+        assert hierarchy != null;
         final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(hierarchy);
         final Level[] levels = hierarchy.getLevels();
         if (hierarchyAccess == null) {
@@ -387,7 +391,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
     }
 
     public Member getHierarchyDefaultMember(Hierarchy hierarchy) {
-        Util.assertPrecondition(hierarchy != null, "hierarchy != null");
+        assert hierarchy != null;
         Member defaultMember = hierarchy.getDefaultMember();
         // If the whole hierarchy is inaccessible, return the intrinsic default member.
         // This is important to construct a evaluator.

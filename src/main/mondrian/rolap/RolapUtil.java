@@ -56,12 +56,13 @@ public class RolapUtil {
     /**
      * Hook to run when a query is executed.
      */
-    static final ThreadLocal threadHooks = new ThreadLocal();
+    static final ThreadLocal<ExecuteQueryHook> threadHooks =
+        new ThreadLocal<ExecuteQueryHook>();
 
     /**
      * Special value represents a null key.
      */
-    public static final Object sqlNullValue = new Object() {
+    public static final Comparable sqlNullValue = new Comparable() {
         public boolean equals(Object o) {
             return o == this;
         }
@@ -71,7 +72,12 @@ public class RolapUtil {
         public String toString() {
             return "#null";
         }
+
+        public int compareTo(Object o) {
+            return o == this ? 0 : -1;
+        }
     };
+
     public static final String mdxNullLiteral = "#null";
     public static final String sqlNullLiteral = "null";
 
@@ -91,7 +97,9 @@ public class RolapUtil {
             MemberReader reader,
             String[] uniqueNameParts,
             boolean failIfNotFound) {
-        RolapMember member = xxx(uniqueNameParts, null, reader, failIfNotFound);
+        RolapMember member =
+            lookupMemberInternal(
+                uniqueNameParts, null, reader, failIfNotFound);
         if (member != null) {
             return member;
         }
@@ -103,16 +111,20 @@ public class RolapUtil {
         if (rootMembers.size() == 1) {
             final RolapMember rootMember = rootMembers.get(0);
             if (rootMember.isAll()) {
-                member = xxx(
-                    uniqueNameParts, rootMember, reader, failIfNotFound);
+                member =
+                    lookupMemberInternal(
+                        uniqueNameParts, rootMember, reader, failIfNotFound);
             }
         }
         return member;
     }
 
-    private static RolapMember xxx(
-        String[] uniqueNameParts, RolapMember member,
-        MemberReader reader, boolean failIfNotFound) {
+    private static RolapMember lookupMemberInternal(
+        String[] uniqueNameParts,
+        RolapMember member,
+        MemberReader reader,
+        boolean failIfNotFound)
+    {
         for (String name : uniqueNameParts) {
             List<RolapMember> children;
             if (member == null) {
@@ -122,8 +134,7 @@ public class RolapUtil {
                 reader.getMemberChildren(member, children);
                 member = null;
             }
-            for (int j = 0, n = children.size(); j < n; j++) {
-                RolapMember child = children.get(j);
+            for (RolapMember child : children) {
                 if (child.getName().equals(name)) {
                     member = child;
                     break;
@@ -134,7 +145,8 @@ public class RolapUtil {
             }
         }
         if (member == null && failIfNotFound) {
-            throw MondrianResource.instance().MdxCantFindMember.ex(Util.implode(uniqueNameParts));
+            throw MondrianResource.instance().MdxCantFindMember.ex(
+                Util.implode(uniqueNameParts));
         }
         return member;
     }
@@ -193,8 +205,8 @@ public class RolapUtil {
     }
 
     /**
-     * redirect debug output to another PrintWriter
-     * @param pw
+     * Redirects debug output to another PrintWriter.
+     * @param pw A PrintWriter
      */
     static public void setDebugOut(PrintWriter pw) {
         debugOut = pw;
@@ -246,7 +258,7 @@ public class RolapUtil {
                 component + ": executing sql [" + sql + "]");
             RolapUtil.debugOut.flush();
         }
-        ExecuteQueryHook hook = (ExecuteQueryHook) threadHooks.get();
+        ExecuteQueryHook hook = threadHooks.get();
         if (hook != null) {
             hook.onExecuteQuery(sql);
         }
@@ -306,14 +318,14 @@ public class RolapUtil {
         throws NativeEvaluationUnsupportedException {
 
         // No i18n for log message, but yes for excn
-        String alertMsg = 
+        String alertMsg =
             "Unable to use native SQL evaluation for '" + functionName
             + "'; reason:  " + reason;
-        
+
         StringProperty alertProperty =
             MondrianProperties.instance().AlertNativeEvaluationUnsupported;
         String alertValue = alertProperty.get();
-        
+
         if (alertValue.equalsIgnoreCase(
                 org.apache.log4j.Level.WARN.toString())) {
             LOGGER.warn(alertMsg);
@@ -359,12 +371,12 @@ public class RolapUtil {
             ExpCompiler compiler) {
         return new RolapDependencyTestingEvaluator.DteCompiler(compiler);
     }
-    
+
     /**
-     * Locates a member specified by its member name, from an array of 
+     * Locates a member specified by its member name, from an array of
      * members.  If an exact match isn't found, but a matchType of BEFORE
      * or AFTER is specified, then the closest matching member is returned.
-     * 
+     *
      * @param members array of members to search from
      * @param parent parent member corresponding to the member being searched
      * for
@@ -378,7 +390,7 @@ public class RolapUtil {
      * in the case of a BEFORE or AFTER search
      */
     public static Member findBestMemberMatch(
-        Member[] members,
+        List<? extends Member> members,
         RolapMember parent,
         RolapLevel level,
         String searchName,
@@ -389,13 +401,12 @@ public class RolapUtil {
         // to locate so we can use it to hierarchically compare against
         // the members array
         RolapMember searchMember = new RolapMember(parent, level, searchName);
-        int bestMatch = -1;
-        for (int i = 0; i < members.length; i++){
+        Member bestMatch = null;
+        for (Member member : members) {
             int rc;
-            final Member member = members[i];
             if (matchType == MatchType.EXACT) {
                 if (caseInsensitive) {
-                    rc = Util.compareName(member.getName(), searchName);                   
+                    rc = Util.compareName(member.getName(), searchName);
                 } else {
                     rc = member.getName().compareTo(searchName);
                 }
@@ -410,26 +421,22 @@ public class RolapUtil {
             }
             if (matchType == MatchType.BEFORE) {
                 if (rc < 0 &&
-                    (bestMatch == -1 ||
-                    FunUtil.compareSiblingMembers(
-                        member, members[bestMatch]) > 0))
-                {
-                    bestMatch = i;
+                    (bestMatch == null ||
+                        FunUtil.compareSiblingMembers(member, bestMatch) > 0)) {
+                    bestMatch = member;
                 }
             } else if (matchType == MatchType.AFTER) {
                 if (rc > 0 &&
-                    (bestMatch == -1 ||
-                    FunUtil.compareSiblingMembers(
-                        member, members[bestMatch]) < 0))
-                {
-                    bestMatch = i;
+                    (bestMatch == null ||
+                        FunUtil.compareSiblingMembers(member, bestMatch) < 0)) {
+                    bestMatch = member;
                 }
             }
         }
-        if (matchType != MatchType.EXACT && bestMatch != -1) {
-            return members[bestMatch];
+        if (matchType == MatchType.EXACT) {
+            return null;
         }
-        return null;
+        return bestMatch;
     }
 
     /**

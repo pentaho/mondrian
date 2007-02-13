@@ -8,11 +8,7 @@
 */
 package mondrian.rolap;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Iterator;
+import java.util.*;
 import java.sql.*;
 
 import mondrian.calc.ExpCompiler.ResultStyle;
@@ -76,8 +72,10 @@ public abstract class RolapNativeSet extends RolapNative {
             return args.length > 1 || super.isJoinRequired();
         }
 
-        public void addConstraint(SqlQuery sqlQuery) {
-            super.addConstraint(sqlQuery);
+        public void addConstraint(
+            SqlQuery sqlQuery,
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
+            super.addConstraint(sqlQuery, levelToColumnMap);
             for (CrossJoinArg arg : args) {
                 // if the cross join argument has calculated members in its
                 // enumerated set, ignore the constraint since we won't
@@ -85,7 +83,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 // will simply enumerate through the members in the set
                 if (!(arg instanceof MemberListCrossJoinArg) ||
                     !((MemberListCrossJoinArg) arg).hasCalcMembers()) {
-                    arg.addConstraint(sqlQuery);
+                    arg.addConstraint(sqlQuery, levelToColumnMap);
                 }
             }
         }
@@ -143,8 +141,8 @@ public abstract class RolapNativeSet extends RolapNative {
             }
             throw ResultStyleException.generate(
                 new ResultStyle[] {
-                    ResultStyle.ITERABLE, 
-                    ResultStyle.MUTABLE_LIST, 
+                    ResultStyle.ITERABLE,
+                    ResultStyle.MUTABLE_LIST,
                     ResultStyle.LIST
                 },
                 new ResultStyle[] {
@@ -170,7 +168,7 @@ public abstract class RolapNativeSet extends RolapNative {
                             }
                         };
                     }
-                }; 
+                };
             } else {
                 return new Iterable<Member[]>() {
                     public Iterator<Member[]> iterator() {
@@ -187,7 +185,7 @@ public abstract class RolapNativeSet extends RolapNative {
                             }
                         };
                     }
-                }; 
+                };
             }
         }
         protected List executeList() {
@@ -218,7 +216,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 TupleEvent e = new TupleEvent(this, tr);
                 listener.excutingSql(e);
             }
-            
+
             // if we don't have a cached result in the case where we have
             // enumerated targets, then retrieve and cache that partial result
             List<List<RolapMember>> partialResult = result;
@@ -260,21 +258,19 @@ public abstract class RolapNativeSet extends RolapNative {
         /**
          * returns a copy of the result because its modified
          */
-        private List copy(List list) {
-            List copy = new ArrayList();
-            copy.addAll(list);
-            return copy;
+        private <T> List<T> copy(List<T> list) {
+            return new ArrayList<T>(list);
         }
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {
             RolapLevel level = arg.getLevel();
-            RolapHierarchy hierarchy = (RolapHierarchy) level.getHierarchy();
+            RolapHierarchy hierarchy = level.getHierarchy();
             MemberReader mr = hierarchy.getMemberReader(schemaReader.getRole());
             MemberBuilder mb = mr.getMemberBuilder();
             Util.assertTrue(mb != null, "MemberBuilder not found");
-            
+
             if (arg instanceof MemberListCrossJoinArg &&
-                ((MemberListCrossJoinArg) arg).hasCalcMembers()) 
+                ((MemberListCrossJoinArg) arg).hasCalcMembers())
             {
                 // only need to keep track of the members in the case
                 // where there are calculated members since in that case,
@@ -304,10 +300,12 @@ public abstract class RolapNativeSet extends RolapNative {
      */
     protected interface CrossJoinArg {
         RolapLevel getLevel();
-        
+
         RolapMember[] getMembers();
 
-        void addConstraint(SqlQuery sqlQuery);
+        void addConstraint(
+            SqlQuery sqlQuery,
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap);
 
         boolean isPreferInterpreter();
     }
@@ -335,13 +333,12 @@ public abstract class RolapNativeSet extends RolapNative {
         public RolapLevel getLevel() {
             return level;
         }
-        
+
         public RolapMember[] getMembers() {
             if (member == null) {
                 return null;
             }
-            RolapMember[] members = new RolapMember[] { member };
-            return members;
+            return new RolapMember[] { member };
         }
 
         public boolean isPreferInterpreter() {
@@ -365,17 +362,21 @@ public abstract class RolapNativeSet extends RolapNative {
 
         public int hashCode() {
             int c = 1;
-            if (level != null)
+            if (level != null) {
                 c = level.hashCode();
-            if (member != null)
+            }
+            if (member != null) {
                 c = 31 * c + member.hashCode();
+            }
             return c;
         }
 
-        public void addConstraint(SqlQuery sqlQuery) {
+        public void addConstraint(
+            SqlQuery sqlQuery,
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
             if (member != null) {
                 SqlConstraintUtils.addMemberConstraint(
-                    sqlQuery, null, member, true);
+                    sqlQuery, levelToColumnMap, null, member, true);
             }
         }
     }
@@ -427,7 +428,7 @@ public abstract class RolapNativeSet extends RolapNative {
                     hasCalcMembers = true;
                 }
                 if (i == 0) {
-                    level = m.getRolapLevel();
+                    level = m.getLevel();
                 } else if (!level.equals(m.getLevel())) {
                     return null;
                 }
@@ -446,7 +447,7 @@ public abstract class RolapNativeSet extends RolapNative {
         public RolapLevel getLevel() {
             return level;
         }
-        
+
         public RolapMember[] getMembers() {
             return members;
         }
@@ -454,17 +455,19 @@ public abstract class RolapNativeSet extends RolapNative {
         public boolean isPreferInterpreter() {
             return true;
         }
-        
+
         public boolean hasCalcMembers() {
             return hasCalcMembers;
         }
 
         public int hashCode() {
             int c = 12;
-            for (int i = 0; i < members.length; i++)
-                c = 31 * c + members[i].hashCode();
-            if (strict)
+            for (RolapMember member : members) {
+                c = 31 * c + member.hashCode();
+            }
+            if (strict) {
                 c += 1;
+            }
             return c;
         }
 
@@ -484,9 +487,12 @@ public abstract class RolapNativeSet extends RolapNative {
             return true;
         }
 
-        public void addConstraint(SqlQuery sqlQuery) {
+        public void addConstraint(
+            SqlQuery sqlQuery,
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
             SqlConstraintUtils.addMemberConstraint(
-                sqlQuery, null, Arrays.asList(members), strict, true);
+                sqlQuery, levelToColumnMap, null, Arrays.asList(members),
+                strict, true);
         }
     }
 
@@ -563,7 +569,7 @@ public abstract class RolapNativeSet extends RolapNative {
         if (member.isCalculated()) {
             return null;
         }
-        RolapLevel level = member.getRolapLevel();
+        RolapLevel level = member.getLevel();
         level = (RolapLevel) level.getChildLevel();
         if (level == null || !isSimpleLevel(level)) {
             // no child level
@@ -596,15 +602,20 @@ public abstract class RolapNativeSet extends RolapNative {
         // is this "CrossJoin([A].children, [B].children)"
         if (!"Crossjoin".equalsIgnoreCase(fun.getName()) &&
             !"NonEmptyCrossJoin".equalsIgnoreCase(fun.getName()))
+        {
             return null;
-        if (args.length != 2)
+        }
+        if (args.length != 2) {
             return null;
+        }
         CrossJoinArg[] arg0 = checkCrossJoinArg(args[0]);
-        if (arg0 == null)
+        if (arg0 == null) {
             return null;
+        }
         CrossJoinArg[] arg1 = checkCrossJoinArg(args[1]);
-        if (arg1 == null)
+        if (arg1 == null) {
             return null;
+        }
         CrossJoinArg[] ret = new CrossJoinArg[arg0.length + arg1.length];
         System.arraycopy(arg0, 0, ret, 0, arg0.length);
         System.arraycopy(arg1, 0, ret, arg0.length, arg1.length);
@@ -650,7 +661,7 @@ public abstract class RolapNativeSet extends RolapNative {
      * Ensures that level is not ragged and not a parent/child level.
      */
     protected static boolean isSimpleLevel(RolapLevel level) {
-        RolapHierarchy hier = (RolapHierarchy) level.getHierarchy();
+        RolapHierarchy hier = level.getHierarchy();
         // does not work with ragged hierarchies
         if (hier.isRagged()) {
             return false;
@@ -673,8 +684,8 @@ public abstract class RolapNativeSet extends RolapNative {
      * @return true if <em>all</em> args are prefer the interpreter
      */
     protected boolean isPreferInterpreter(CrossJoinArg[] args) {
-        for (int i = 0; i < args.length; i++) {
-            if (!args[i].isPreferInterpreter()) {
+        for (CrossJoinArg arg : args) {
+            if (!arg.isPreferInterpreter()) {
                 return false;
             }
         }
@@ -692,21 +703,25 @@ public abstract class RolapNativeSet extends RolapNative {
 
     /**
      * Override current members in position by default members in
-     * hierarchies which are involved in this filter/topcount. 
+     * hierarchies which are involved in this filter/topcount.
      * Stores the RolapStoredMeasure into the context because that is needed to
      * generate a cell request to constraint the sql.
-     * 
+     *
      * The current context may contain a calculated measure, this measure
      * was translated into an sql condition (filter/topcount). The measure
      * is not used to constrain the result but only to access the star.
-     * 
+     *
      * @see RolapAggregationManager#makeRequest(Member[], boolean, boolean)
-     */ 
-    protected RolapEvaluator overrideContext(RolapEvaluator evaluator, CrossJoinArg[] cargs, RolapStoredMeasure storedMeasure) {
+     */
+    protected RolapEvaluator overrideContext(
+        RolapEvaluator evaluator,
+        CrossJoinArg[] cargs,
+        RolapStoredMeasure storedMeasure)
+    {
         SchemaReader schemaReader = evaluator.getSchemaReader();
         RolapEvaluator newEvaluator = (RolapEvaluator) evaluator.push();
-        for (int i = 0; i < cargs.length; i++) {
-            Hierarchy hierarchy = cargs[i].getLevel().getHierarchy();
+        for (CrossJoinArg carg : cargs) {
+            Hierarchy hierarchy = carg.getLevel().getHierarchy();
             Member defaultMember =
                 schemaReader.getHierarchyDefaultMember(hierarchy);
             newEvaluator.setContext(defaultMember);

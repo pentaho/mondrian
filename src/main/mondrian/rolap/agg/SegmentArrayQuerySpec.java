@@ -12,6 +12,7 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
 import mondrian.rolap.RolapStar;
+import mondrian.rolap.StarColumnPredicate;
 import mondrian.rolap.sql.SqlQuery;
 
 /**
@@ -47,8 +48,11 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
                 // We only require that the two arrays have the same
                 // contents, we but happen to know they are the same array,
                 // because we constructed them at the same time.
-                Util.assertTrue(segment.axes[j].getConstraints() ==
-                    segments[0].axes[j].getConstraints());
+                if (segment.axes[j].getPredicate() !=
+                    segments[0].axes[j].getPredicate()) {
+                    assert!fail;
+                    return false;
+                }
             }
         }
         return true;
@@ -79,8 +83,8 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         return "c" + Integer.toString(i);
     }
 
-    public ColumnConstraint[] getConstraints(final int i) {
-        return segments[0].axes[i].getConstraints();
+    public StarColumnPredicate getColumnPredicate(final int i) {
+        return segments[0].axes[i].getPredicate();
     }
 
     public String generateSqlQuery() {
@@ -147,14 +151,14 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
             }
             table.addToFrom(innerSqlQuery, false, true);
             String expr = column.generateExprString(innerSqlQuery);
-            ColumnConstraint[] constraints = getConstraints(i);
-            if (constraints != null) {
-                innerSqlQuery.addWhere(
-                    RolapStar.Column.createInExpr(
-                        expr,
-                        constraints,
-                        column.getDatatype(),
-                        innerSqlQuery.getDialect()));
+            StarColumnPredicate predicate = getColumnPredicate(i);
+            final String where = RolapStar.Column.createInExpr(
+                expr,
+                predicate,
+                column.getDatatype(),
+                innerSqlQuery.getDialect());
+            if (!where.equals("true")) {
+                innerSqlQuery.addWhere(where);
             }
             final String alias = "d" + i;
             innerSqlQuery.addSelect(expr, alias);

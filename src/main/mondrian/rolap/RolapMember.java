@@ -30,21 +30,21 @@ public class RolapMember extends MemberBase {
 
     private static final Logger LOGGER = Logger.getLogger(RolapMember.class);
 
-    /** 
+    /**
      * This returns an array of member arrays where the first member
      * array are the root members while the last member array are the
      * leaf members.
      * <p>
      * If you know that you will need to get all or most of the members of
-     * a hierarchy, then calling this which gets all of the hierarchy's 
+     * a hierarchy, then calling this which gets all of the hierarchy's
      * members all at once is much faster than getting members one at
-     * a time. 
-     * 
+     * a time.
+     *
      * @param schemaReader Schema reader
      * @param hierarchy  Hierarchy
      * @return Array of arrays of members
      */
-    public static Member[][] getAllMembers(SchemaReader schemaReader, 
+    public static Member[][] getAllMembers(SchemaReader schemaReader,
             Hierarchy hierarchy) {
 
         long start = System.currentTimeMillis();
@@ -321,12 +321,16 @@ public class RolapMember extends MemberBase {
         return LOGGER;
     }
 
-    RolapLevel getRolapLevel() {
+    public RolapLevel getLevel() {
         return (RolapLevel) level;
     }
 
-    RolapHierarchy getRolapHierarchy() {
-        return (RolapHierarchy) getHierarchy();
+    public RolapHierarchy getHierarchy() {
+        return getLevel().getHierarchy();
+    }
+
+    public RolapMember getParentMember() {
+        return (RolapMember) super.getParentMember();
     }
 
     public boolean equals(Object o) {
@@ -439,7 +443,7 @@ public class RolapMember extends MemberBase {
 
             case Property.CONTRIBUTING_CHILDREN_ORDINAL:
                 list = new ArrayList<RolapMember>();
-                getRolapHierarchy().getMemberReader().getMemberChildren(this, list);
+                getHierarchy().getMemberReader().getMemberChildren(this, list);
                 return list;
 
             case Property.CATALOG_NAME_ORDINAL:
@@ -492,7 +496,7 @@ public class RolapMember extends MemberBase {
                     cardinality = getLevel().getChildLevel().getApproxRowCount();
                 } else {
                     list = new ArrayList<RolapMember>();
-                    getRolapHierarchy().getMemberReader().getMemberChildren(this, list);
+                    getHierarchy().getMemberReader().getMemberChildren(this, list);
                     cardinality = list.size();
                 }
                 return cardinality;
@@ -563,7 +567,7 @@ public class RolapMember extends MemberBase {
         this.ordinal = -1;
     }
 
-    Object getKey() {
+    public Object getKey() {
         return this.key;
     }
 
@@ -616,7 +620,7 @@ public class RolapMember extends MemberBase {
     }
 
     public boolean isHidden() {
-        final RolapLevel rolapLevel = getRolapLevel();
+        final RolapLevel rolapLevel = getLevel();
         switch (rolapLevel.getHideMemberCondition()) {
         case Never:
             return false;

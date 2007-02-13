@@ -14,6 +14,9 @@ package mondrian.rolap.agg;
 
 import mondrian.rolap.CellKey;
 
+import java.util.Map;
+import java.util.Iterator;
+
 /**
  * A <code>DenseSegmentDataset</code> is a means of storing segment values
  * which is suitable when most of the combinations of keys have a value
@@ -34,25 +37,40 @@ class DenseSegmentDataset implements SegmentDataset {
         this.segment = segment;
         this.values = values;
     }
-    public Object get(CellKey keys) {
-        int offset = getOffset(keys.getOrdinals());
+
+    public Object get(CellKey key) {
+        int offset = getOffset(key.getOrdinals());
         return values[offset];
     }
+
     public double getBytes() {
         // assume a slot, key, and value are each 4 bytes
         return values.length * 12;
     }
-    boolean contains(Object[] keys) {
-        return (getOffset(keys) >= 0);
+
+    public void put(CellKey key, Object value) {
+        int offset = getOffset(key.getOrdinals());
+        values[offset] = value;
     }
+
+    public Iterator<Map.Entry<CellKey, Object>> iterator() {
+        return new Itr();
+    }
+
+    boolean contains(Object[] keys) {
+        return getOffset(keys) >= 0;
+    }
+
     Object get(Object[] keys) {
         int offset = getOffset(keys);
         return keys[offset];
     }
+
     void put(Object[] keys, Object value) {
         int offset = getOffset(keys);
         keys[offset] = value;
     }
+
     private int getOffset(int[] keys) {
         int offset = 0;
         for (int i = 0; i < keys.length; i++) {
@@ -63,6 +81,7 @@ class DenseSegmentDataset implements SegmentDataset {
         }
         return offset;
     }
+
     private int getOffset(Object[] keys) {
         int offset = 0;
 outer:
@@ -84,6 +103,68 @@ outer:
 
     void set(int k, Object o) {
         values[k] = o;
+    }
+
+    /**
+     * Iterator over a DenseSegmentDataset.
+     *
+     * <p>This is a 'cheap' implementation
+     * which doesn't allocate a new Entry every step: it just returns itself.
+     * The Entry must therefore be used immediately, before calling
+     * {@link #next()} again.
+     */
+    private class Itr implements
+        Iterator<Map.Entry<CellKey, Object>>,
+        Map.Entry<CellKey, Object>
+    {
+        private int i = -1;
+        private final int[] ordinals;
+        private final CellKey key;
+
+        Itr() {
+            ordinals = new int[segment.axes.length];
+            ordinals[ordinals.length - 1] = -1;
+            key = CellKey.Generator.newRefCellKey(ordinals);
+        }
+
+        public boolean hasNext() {
+            return i < values.length - 1;
+        }
+
+        public Map.Entry<CellKey, Object> next() {
+            ++i;
+            int k = ordinals.length - 1;
+            while (k >= 0) {
+                if (ordinals[k] < segment.axes[k].getKeys().length - 1) {
+                    ++ordinals[k];
+                    break;
+                } else {
+                    ordinals[k] = 0;
+                    --k;
+                }
+            }
+            return this;
+        }
+
+        // implement Iterator
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        // implement Entry
+        public CellKey getKey() {
+            return key;
+        }
+
+        // implement Entry
+        public Object getValue() {
+            return values[i];
+        }
+
+        // implement Entry
+        public Object setValue(Object value) {
+            throw new UnsupportedOperationException();
+        }
     }
 }
 

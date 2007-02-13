@@ -35,17 +35,24 @@ public class DefaultMemberChildrenConstraint
     }
 
     public void addMemberConstraint(
-        SqlQuery sqlQuery, AggStar aggStar, RolapMember parent)
+        SqlQuery sqlQuery,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        AggStar aggStar,
+        RolapMember parent)
     {
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, aggStar, parent, true);
+            sqlQuery, levelToColumnMap, aggStar, parent, true);
     }
 
     public void addMemberConstraint(
-        SqlQuery sqlQuery, AggStar aggStar, List<RolapMember> parents)
+        SqlQuery sqlQuery,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        AggStar aggStar,
+        List<RolapMember> parents)
     {
         SqlConstraintUtils.addMemberConstraint(
             sqlQuery,
+            levelToColumnMap,
             aggStar,
             parents,
             true,

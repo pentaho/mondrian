@@ -32,8 +32,8 @@ public abstract class MemberBase
     protected final Level level;
     protected String uniqueName;
 
-    /** 
-     * Combines member type and whether is hidden. 
+    /**
+     * Combines member type and whether is hidden.
      *
      * <p>The lowest 3 bits are member type;
      * bit 4 is set if the member is hidden.
@@ -85,11 +85,11 @@ public abstract class MemberBase
         return level.getDimension();
     }
 
-    public final Hierarchy getHierarchy() {
+    public Hierarchy getHierarchy() {
         return level.getHierarchy();
     }
 
-    public final Level getLevel() {
+    public Level getLevel() {
         return level;
     }
 
@@ -116,7 +116,7 @@ public abstract class MemberBase
     public OlapElement lookupChild(SchemaReader schemaReader, String s) {
         return lookupChild(schemaReader, s, MatchType.EXACT);
     }
-    
+
     public OlapElement lookupChild(
         SchemaReader schemaReader, String s, MatchType matchType)
     {

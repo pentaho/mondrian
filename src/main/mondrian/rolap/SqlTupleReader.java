@@ -53,7 +53,7 @@ import java.util.*;
  * then we can not store the parent/child pairs in the MemberCache and
  * {@link TupleConstraint#getMemberChildrenConstraint(RolapMember)}
  * must return null. Also
- * {@link TupleConstraint#addConstraint(mondrian.rolap.sql.SqlQuery)}
+ * {@link TupleConstraint#addConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map)}
  * is required to join the fact table for the levels table.</li>
  * </ul>
  *
@@ -132,7 +132,7 @@ public class SqlTupleReader implements TupleReader {
                 for (int i = 0; i <= levelDepth; i++) {
                     RolapLevel childLevel = levels[i];
                     if (childLevel.isAll()) {
-                        member = ((RolapHierarchy) level.getHierarchy()).getAllMember();
+                        member = level.getHierarchy().getAllMember();
                         continue;
                     }
                     Object value = resultSet.getObject(++column);
@@ -187,7 +187,7 @@ public class SqlTupleReader implements TupleReader {
                                 siblings[i].add(member);
                             }
                         }
-                    }   
+                    }
                 }
                 currMember = member;
             }
@@ -202,7 +202,10 @@ public class SqlTupleReader implements TupleReader {
         }
 
         /**
-         * clean up after all rows have been processed and return the list of members.
+         * Cleans up after all rows have been processed, and returns the list of
+         * members.
+         *
+         * @return list of members
          */
         public List<RolapMember> internalClose() {
             for (int i = 0; i < members.length; i++) {
@@ -269,7 +272,7 @@ public class SqlTupleReader implements TupleReader {
         }
         return key;
     }
-    
+
     /**
      * @return number of targets that contain enumerated sets with calculated
      * members
@@ -462,7 +465,7 @@ public class SqlTupleReader implements TupleReader {
     /**
      * Sets the current member for those targets that retrieve their column
      * values from native sql
-     * 
+     *
      * @param partialRow if set, previously cached result set
      */
     private void resetCurrMembers(List<RolapMember> partialRow) {
@@ -481,7 +484,7 @@ public class SqlTupleReader implements TupleReader {
             }
         }
     }
-    
+
     /**
      * Recursively forms the cross product of a row retrieved through sql
      * with each of the targets that contains an enumerated set of members.
@@ -545,11 +548,11 @@ public class SqlTupleReader implements TupleReader {
             }
         }
     }
-    
+
     /**
      * Retrieves the current members fetched from the targets executed
      * through sql and form tuples, adding them to partialResult
-     * 
+     *
      * @param partialResult list containing the columns and rows corresponding
      * to data fetched through sql
      */
@@ -574,13 +577,14 @@ public class SqlTupleReader implements TupleReader {
         // through the list of measures referenced in the query.  And then
         // we generate one sub-select per fact table, joining against each
         // underlying fact table, unioning the sub-selects.
+        RolapCube cube = null;
         boolean virtualCube = false;
         if (constraint instanceof SqlContextConstraint) {
             SqlContextConstraint sqlConstraint =
                 (SqlContextConstraint) constraint;
             if (sqlConstraint.isJoinRequired()) {
                 Query query = constraint.getEvaluator().getQuery();
-                RolapCube cube = (RolapCube) query.getCube();
+                cube = (RolapCube) query.getCube();
                 virtualCube = cube.isVirtual();
             }
         }
@@ -610,9 +614,12 @@ public class SqlTupleReader implements TupleReader {
                 Evaluator evaluator = constraint.getEvaluator();
                 evaluator.push();
                 evaluator.setContext(measure);
+                WhichSelect whichSelect =
+                    finalSelect ? WhichSelect.LAST :
+                        WhichSelect.NOT_LAST;
                 selectString +=
                     generateSelectForLevels(
-                        jdbcConnection, map, finalSelect);
+                        jdbcConnection, map, whichSelect);
                 evaluator = evaluator.pop();
                 if (!finalSelect) {
                     selectString += " union ";
@@ -620,7 +627,11 @@ public class SqlTupleReader implements TupleReader {
             }
             return selectString;
         } else {
-            return generateSelectForLevels(jdbcConnection, null, true);
+            Map<RolapLevel, RolapStar.Column> map =
+                cube == null ?
+                    null :
+                    cube.getStar().getLevelToColumnMap(cube);
+            return generateSelectForLevels(jdbcConnection, map, WhichSelect.ONLY);
         }
     }
 
@@ -631,15 +642,13 @@ public class SqlTupleReader implements TupleReader {
      * against
      * @param levelToColumnMap set only in the case of virtual cubes;
      * provides the appropriate mapping for the base cube being processed
-     * @param finalSelect true if this is the final sub-select in a larger
-     * select containing unions or this is a non-union select
-     *
+     * @param whichSelect Position of this select statement in a union
      * @return SQL statement string
      */
     private String generateSelectForLevels(
         Connection jdbcConnection,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        boolean finalSelect) {
+        WhichSelect whichSelect) {
 
         String s = "while generating query to retrieve members of level(s) " + targets;
         SqlQuery sqlQuery = newQuery(jdbcConnection, s);
@@ -655,12 +664,12 @@ public class SqlTupleReader implements TupleReader {
                     sqlQuery,
                     target.getLevel(),
                     levelToColumnMap,
-                    finalSelect,
+                    whichSelect,
                     orderByColnos,
                     ordinalColumns);
             }
         }
-        
+
         // Additional work required for virtual cubes.
         //
         // Add ordinal columns we need to order on to the projection list.
@@ -672,26 +681,26 @@ public class SqlTupleReader implements TupleReader {
         // Adjust any placeholders reflecting ordinal columns with their
         // actual position in the projection list, now that we know how big
         // the total projection list is.
-        if (levelToColumnMap != null) {
+        if (whichSelect != WhichSelect.ONLY) {
             int numNonOrdinalCols = sqlQuery.getCurrentSelectListSize();
             for (String col : ordinalColumns) {
                 sqlQuery.addSelect(col);
             }
-            if (finalSelect) {
+            if (whichSelect == WhichSelect.LAST) {
                 for (int oByColno : orderByColnos) {
                     String ostr;
                     if (oByColno < 0) {
-                        ostr = String.valueOf(++numNonOrdinalCols);
+                        ostr = Integer.toString(++numNonOrdinalCols);
                     } else {
-                        ostr = String.valueOf(oByColno);
+                        ostr = Integer.toString(oByColno);
                     }
                     sqlQuery.addOrderBy(ostr, true, false, true);
                 }
             }
         }
-            
+
         // additional constraints
-        constraint.addConstraint(sqlQuery);       
+        constraint.addConstraint(sqlQuery, levelToColumnMap);
 
         return sqlQuery.toString();
     }
@@ -701,7 +710,8 @@ public class SqlTupleReader implements TupleReader {
      * example, <blockquote>
      * <pre>SELECT "country", "state_province", "city"
      * FROM "customer"
-     * GROUP BY "country", "state_province", "city", "init", "bar"</pre>
+     * GROUP BY "country", "state_province", "city", "init", "bar"
+     * ORDER BY "country", "state_province", "city"</pre>
      * </blockquote> accesses the "City" level of the "Customers"
      * hierarchy. Note that:<ul>
      *
@@ -716,7 +726,7 @@ public class SqlTupleReader implements TupleReader {
      * @param level level to be added to the sql query
      * @param levelToColumnMap set only in the case of virtual cubes;
      * provides the appropriate mapping for the base cube being processed
-     * @param finalSelect true if this is the final sub-select in a larger
+     * @param whichSelect describes whether this select belongs to a larger
      * select containing unions or this is a non-union select
      * @param orderByColnos list of order by column numbers; used for virtual
      * cubes
@@ -727,11 +737,11 @@ public class SqlTupleReader implements TupleReader {
         SqlQuery sqlQuery,
         RolapLevel level,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        boolean finalSelect,
+        WhichSelect whichSelect,
         List<Integer> orderByColnos,
         List<String> ordinalColumns)
     {
-        RolapHierarchy hierarchy = (RolapHierarchy) level.getHierarchy();
+        RolapHierarchy hierarchy = level.getHierarchy();
 
         RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
         int levelDepth = level.getDepth();
@@ -759,34 +769,36 @@ public class SqlTupleReader implements TupleReader {
 
             String ordinalSql = level2.getOrdinalExp().getExpression(sqlQuery);
             sqlQuery.addGroupBy(ordinalSql);
-            if (levelToColumnMap != null) {
+            if (whichSelect != WhichSelect.ONLY) {
                 // Keep track of ordinal columns so we can add them to the
                 // end of the projection list later
                 if (!ordinalSql.equals(keySql)) {
                     ordinalColumns.add(ordinalSql);
                 }
             }
-            if (finalSelect) {
-                // If this is a select on a virtual cube, the query will be
-                // a union, so the order by columns need to be numbers,
-                // not column name strings.  Don't add these to the order by.
-                // Just keep track of the numbers, for now.  Also, if the
-                // level contains an ordinal column, the ordinal column will
-                // appear at the end of the projection list.  Since we don't
-                // yet know how big the total projection list will be,
-                // use -1 as a placeholder for those columns.
-                if (levelToColumnMap != null) {
-                    if (ordinalSql.equals(keySql)) {
-                        orderByColnos.add(
-                            sqlQuery.getCurrentSelectListSize());                       
-                    } else {
-                        orderByColnos.add(-1);
-                    }
+
+            // If this is a select on a virtual cube, the query will be
+            // a union, so the order by columns need to be numbers,
+            // not column name strings.  Don't add these to the order by.
+            // Just keep track of the numbers, for now.  Also, if the
+            // level contains an ordinal column, the ordinal column will
+            // appear at the end of the projection list.  Since we don't
+            // yet know how big the total projection list will be,
+            // use -1 as a placeholder for those columns.
+            switch (whichSelect) {
+            case LAST:
+                if (ordinalSql.equals(keySql)) {
+                    orderByColnos.add(
+                        sqlQuery.getCurrentSelectListSize());
                 } else {
-                    sqlQuery.addOrderBy(ordinalSql, true, false, true);
+                    orderByColnos.add(-1);
                 }
+                break;
+            case ONLY:
+                sqlQuery.addOrderBy(ordinalSql, true, false, true);
+                break;
             }
-            RolapProperty[] properties = level2.getRolapProperties();
+            RolapProperty[] properties = level2.getProperties();
             for (RolapProperty property : properties) {
                 String propSql = property.getExp().getExpression(sqlQuery);
                 sqlQuery.addSelect(propSql);
@@ -811,6 +823,27 @@ public class SqlTupleReader implements TupleReader {
 
     void setMaxRows(int maxRows) {
         this.maxRows = maxRows;
+    }
+
+    /**
+     * Description of the position of a SELECT statement in a UNION. Queries
+     * on virtual cubes tend to generate unions.
+     */
+    enum WhichSelect {
+        /**
+         * Select statement does not belong to a union.
+         */
+        ONLY,
+        /**
+         * Select statement belongs to a UNION, but is not the last. Typically
+         * this occurs when querying a virtual cube.
+         */
+        NOT_LAST,
+        /**
+         * Select statement is the last in a UNION. Typically
+         * this occurs when querying a virtual cube.
+         */
+        LAST
     }
 }
 

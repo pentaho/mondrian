@@ -13,6 +13,7 @@
 package mondrian.rolap.agg;
 
 import mondrian.rolap.RolapStar;
+import mondrian.rolap.StarColumnPredicate;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 
@@ -85,8 +86,17 @@ class AggQuerySpec {
         return "c" + Integer.toString(i);
     }
 
-    public ColumnConstraint[] getConstraints(final int i) {
-        return segments[0].axes[i].getConstraints();
+    /**
+     * Returns the predicate on the <code>i</code>th column.
+     *
+     * <p>If the column is unconstrained, returns
+     * {@link LiteralStarPredicate}(true).
+     *
+     * @param i Column ordinal
+     * @return Constraint on column
+     */
+    public StarColumnPredicate getPredicate(int i) {
+        return segments[0].axes[i].getPredicate();
     }
 
     public String generateSqlQuery() {
@@ -121,14 +131,14 @@ class AggQuerySpec {
 
             String expr = column.generateExprString(sqlQuery);
 
-            ColumnConstraint[] constraints = getConstraints(i);
-            if (constraints != null) {
-                sqlQuery.addWhere(
-                    RolapStar.Column.createInExpr(
-                        expr,
-                        constraints,
-                        column.getDatatype(),
-                        sqlQuery.getDialect()));
+            StarColumnPredicate predicate = getPredicate(i);
+            final String where = RolapStar.Column.createInExpr(
+                expr,
+                predicate,
+                column.getDatatype(),
+                sqlQuery.getDialect());
+            if (!where.equals("true")) {
+                sqlQuery.addWhere(where);
             }
 
             // some DB2 (AS400) versions throw an error, if a column alias is

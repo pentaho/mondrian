@@ -13,59 +13,428 @@
 
 package mondrian.rolap;
 
-import mondrian.olap.Util;
+import java.util.Arrays;
 
 /**
- * CellKey's are used as keys in Map's mapping from the key (a cell) to 
- * a value. As such, both the hashCode and equals method are called a lot.
- * There are particular implementations for the most likely cases where 
- * the number of axes is 1, 2 and 3 as well as a general implementation.
+ * CellKey's are used as keys in maps mapping from the key (a cell) to
+ * a value.
+ *
+ * <p>CellKey is also used within
+ * {@link mondrian.rolap.agg.SparseSegmentDataset}.
+ *
+ * <p>It is important that the {@link #hashCode} and {@link #equals} are
+ * extremely efficient. There are particular implementations for the most likely
+ * cases where the number of axes is 1, 2 and 3 as well as a general
+ * implementation.
  *
  * @author jhyde
  * @since 10 August, 2001
  * @version $Id$
  */
 public interface CellKey {
+    /**
+     * Returns the number of axes.
+     *
+     * @return number of axes
+     */
+    int size();
+
+    /**
+     * Returns the axis keys as an array.
+     *
+     * <p>Note: caller should treat the array as immutable. If the contents of
+     * the array are modified, behavior is unspecified.
+     *
+     * @return Array of axis keys
+     */
+    int[] getOrdinals();
+
+    /**
+     * This method make a copy of the int array parameter.
+     * Throws a RuntimeException if the int array size is not the
+     * size of the CellKey.
+     *
+     * @param pos Array of axis keys
+     */
+    void setOrdinals(int[] pos);
+
+    /**
+     * Returns the <code>axis</code>th axis value.
+     *
+     * @param axis Axis ordinal
+     * @return Value of the <code>axis</code>th axis
+     * @throws ArrayIndexOutOfBoundsException if axis is out of range
+     */
+    int getAxis(int axis);
+
+    /**
+     * Sets a given axis.
+     *
+     * @param axis Axis ordinal
+     * @param value Value
+     * @throws RuntimeException if axis parameter is larger than {@link #size()}
+     */
+    void setAxis(int axis, int value);
+
+    /**
+     * Returns a mutable copy of this CellKey.
+     *
+     * @return Mutable copy
+     */
+    CellKey copy();
+
     public class Generator {
-        public static CellKey create(int size) {
+        /**
+         * Creates a CellKey with a given number of axes.
+         *
+         * @param size Number of axes
+         * @return new CellKey
+         */
+        public static CellKey newCellKey(int size) {
             switch (size) {
             case 0:
-                return new CellKey.Zero();
+                return new Zero();
             case 1:
-                return new CellKey.One();
+                return new One(0);
             case 2:
-                return new CellKey.Two();
+                return new Two(0, 0);
             case 3:
-                return new CellKey.Three();
+                return new Three(0, 0, 0);
             default:
-                return new CellKey.Many(size);
+                return new Many(new int[size]);
             }
         }
-        public static CellKey create(int[] pos) {
-            CellKey key = create(pos.length);
-            return key.makeCopy(pos);
+
+        /**
+         * Creates a CellKey populated with the given coordinates.
+         *
+         * @param pos Coordinate array
+         * @return CellKey
+         */
+        public static CellKey newCellKey(int[] pos) {
+            switch (pos.length) {
+            case 0:
+                return new Zero();
+            case 1:
+                return new One(pos[0]);
+            case 2:
+                return new Two(pos[0], pos[1]);
+            case 3:
+                return new Three(pos[0], pos[1], pos[2]);
+            default:
+                return new Many(pos.clone());
+            }
         }
+
+        /**
+         * Creates a CellKey based on a reference to the given coordinate
+         * array. Whenever the contents of the coordinate array change, the
+         * CellKey will also.
+         *
+         * @param pos Coordinate array
+         * @return CellKey
+         */
+        public static CellKey newRefCellKey(int[] pos) {
+            // don't clone pos!
+            return new Many(pos);
+        }
+
         // used for testing only
-        public static CellKey createMany(int size) {
-            return new CellKey.Many(size);
+        public static CellKey newManyCellKey(int size) {
+            return new Many(new int[size]);
         }
     }
-    public abstract class Base implements CellKey {
-        protected final int[] ordinals;
-        protected Base(int size) {
-            this.ordinals = new int[size];
+
+    public class Zero implements CellKey {
+        private static final int[] EMPTY_INT_ARRAY = new int[0];
+
+        private Zero() {
         }
-        protected Base(int[] ordinals) {
+        public Zero copy() {
+            // no need to make copy since there is no state
+            return this;
+        }
+
+        public boolean equals(Object o) {
+            return o instanceof Zero;
+        }
+
+
+        public int size() {
+            return 0;
+        }
+
+        public int[] getOrdinals() {
+            return EMPTY_INT_ARRAY;
+        }
+
+        public void setOrdinals(int[] pos) {
+            if (pos.length != 0) {
+                throw new IllegalArgumentException();
+            }
+        }
+
+        public int getAxis(int axis) {
+            throw new ArrayIndexOutOfBoundsException(axis);
+        }
+
+        public void setAxis(int axis, int value) {
+            throw new ArrayIndexOutOfBoundsException(axis);
+        }
+    }
+
+    public class One implements CellKey {
+        private int ordinal0;
+
+        private One(int ordinal0) {
+            this.ordinal0 = ordinal0;
+        }
+
+        public int size() {
+            return 1;
+        }
+
+        public int[] getOrdinals() {
+            return new int[] {ordinal0};
+        }
+
+        public void setOrdinals(int[] pos) {
+            if (pos.length != 1) {
+                throw new IllegalArgumentException();
+            }
+            ordinal0 = pos[0];
+        }
+
+        public int getAxis(int axis) {
+            switch (axis) {
+            case 0:
+                return ordinal0;
+            default:
+                throw new ArrayIndexOutOfBoundsException(axis);
+            }
+        }
+
+        public void setAxis(int axis, int value) {
+            switch (axis) {
+            case 0:
+                ordinal0 = value;
+                break;
+            default:
+                throw new ArrayIndexOutOfBoundsException(axis);
+            }
+        }
+
+        public One copy() {
+            return new One(ordinal0);
+        }
+
+        public boolean equals(Object o) {
+            // here we cheat, we know that all CellKey's will be the same size
+            if (o instanceof One) {
+                One other = (One) o;
+                return (this.ordinal0 == other.ordinal0);
+            } else if (o instanceof Many) {
+                Many many = (Many) o;
+                return many.ordinals.length == 1 &&
+                    many.ordinals[0] == this.ordinal0;
+            } else {
+                return false;
+            }
+        }
+
+        public String toString() {
+            return "(" + ordinal0 + ")";
+        }
+
+        public int hashCode() {
+            return 17 + ordinal0;
+        }
+    }
+
+    public class Two implements CellKey {
+        private int ordinal0;
+        private int ordinal1;
+
+        private Two(int ordinal0, int ordinal1) {
+            this.ordinal0 = ordinal0;
+            this.ordinal1 = ordinal1;
+        }
+
+        public String toString() {
+            return "(" + ordinal0 + ", " + ordinal1 + ")";
+        }
+
+        public Two copy() {
+            return new Two(ordinal0, ordinal1);
+        }
+
+        public boolean equals(Object o) {
+            if (o instanceof Two) {
+                Two other = (Two) o;
+                return (other.ordinal0 == this.ordinal0) &&
+                       (other.ordinal1 == this.ordinal1);
+            } else if (o instanceof Many) {
+                Many many = (Many) o;
+                return many.ordinals.length == 2 &&
+                    many.ordinals[0] == this.ordinal0 &&
+                    many.ordinals[1] == this.ordinal1;
+            } else {
+                return false;
+            }
+        }
+
+        public int hashCode() {
+            int h0 = 17 + ordinal0;
+            return h0 * 37 + ordinal1;
+        }
+
+        public int size() {
+            return 2;
+        }
+
+        public int[] getOrdinals() {
+            return new int[] {ordinal0, ordinal1};
+        }
+
+        public void setOrdinals(int[] pos) {
+            if (pos.length != 2) {
+                throw new IllegalArgumentException();
+            }
+            ordinal0 = pos[0];
+            ordinal1 = pos[1];
+        }
+
+        public int getAxis(int axis) {
+            switch (axis) {
+            case 0:
+                return ordinal0;
+            case 1:
+                return ordinal1;
+            default:
+                throw new ArrayIndexOutOfBoundsException(axis);
+            }
+        }
+
+        public void setAxis(int axis, int value) {
+            switch (axis) {
+            case 0:
+                ordinal0 = value;
+                break;
+            case 1:
+                ordinal1 = value;
+                break;
+            default:
+                throw new ArrayIndexOutOfBoundsException(axis);
+            }
+        }
+    }
+
+    class Three implements CellKey {
+        private int ordinal0;
+        private int ordinal1;
+        private int ordinal2;
+
+        private Three(int ordinal0, int ordinal1, int ordinal2) {
+            this.ordinal0 = ordinal0;
+            this.ordinal1 = ordinal1;
+            this.ordinal2 = ordinal2;
+        }
+
+        public String toString() {
+            return "(" + ordinal0 + ", " + ordinal1 + ", " + ordinal2 + ")";
+        }
+
+        public Three copy() {
+            return new Three(ordinal0, ordinal1, ordinal2);
+        }
+
+        public boolean equals(Object o) {
+            // here we cheat, we know that all CellKey's will be the same size
+            if (o instanceof Three) {
+                Three other = (Three) o;
+                return (other.ordinal0 == this.ordinal0) &&
+                       (other.ordinal1 == this.ordinal1) &&
+                       (other.ordinal2 == this.ordinal2);
+            } else if (o instanceof Many) {
+                Many many = (Many) o;
+                return many.ordinals.length == 3 &&
+                    many.ordinals[0] == this.ordinal0 &&
+                    many.ordinals[1] == this.ordinal1 &&
+                    many.ordinals[2] == this.ordinal2;
+            } else {
+                return false;
+            }
+        }
+
+        public int hashCode() {
+            int h0 = 17 + ordinal0;
+            int h1 = h0 * 37 + ordinal1;
+            return h1 * 37 + ordinal2;
+        }
+
+        public int getAxis(int axis) {
+            switch (axis) {
+            case 0:
+                return ordinal0;
+            case 1:
+                return ordinal1;
+            case 2:
+                return ordinal2;
+            default:
+                throw new ArrayIndexOutOfBoundsException(axis);
+            }
+        }
+
+        public void setAxis(int axis, int value) {
+            switch (axis) {
+            case 0:
+                ordinal0 = value;
+                break;
+            case 1:
+                ordinal1 = value;
+                break;
+            case 2:
+                ordinal2 = value;
+                break;
+            default:
+                throw new ArrayIndexOutOfBoundsException(axis);
+            }
+        }
+
+        public int size() {
+            return 3;
+        }
+
+        public int[] getOrdinals() {
+            return new int[] {ordinal0, ordinal1, ordinal2};
+        }
+
+        public void setOrdinals(int[] pos) {
+            if (pos.length != 3) {
+                throw new IllegalArgumentException();
+            }
+            ordinal0 = pos[0];
+            ordinal1 = pos[1];
+            ordinal2 = pos[2];
+        }
+    }
+
+    public class Many implements CellKey {
+        private final int[] ordinals;
+
+        protected Many(int[] ordinals) {
             this.ordinals = ordinals;
         }
+
         public final int size() {
             return this.ordinals.length;
         }
+
         public final void setOrdinals(int[] pos) {
-            check(pos);
-            for (int i = 0; i < size(); i++) {
-                this.ordinals[i] = pos[i];
+            if (ordinals.length != pos.length) {
+                throw new IllegalArgumentException();
             }
+            System.arraycopy(pos, 0, this.ordinals, 0, ordinals.length);
         }
         public final int[] getOrdinals() {
             return this.ordinals;
@@ -74,39 +443,13 @@ public interface CellKey {
         public void setAxis(int axis, int value) {
             this.ordinals[axis] = value;
         }
+
         public int getAxis(int axis) {
             return this.ordinals[axis];
         }
-        public abstract CellKey copy();
 
-        public boolean equals(Object o) {
-            if (o instanceof CellKey) {
-                CellKey other = (CellKey) o;
-                if (other.size() != size()) {
-                    return false;
-                }
-                for (int i = 0; i < size(); i++) {
-                    if (other.getAxis(i) != getAxis(i)) {
-                        return false;
-                    }
-                }
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        public final void check(int[] pos) {
-            if (pos.length != ordinals.length) {
-                throw Util.newError(
-                        "coordinates should have dimension " + ordinals.length);
-            }
-        }
-        public final CellKey makeCopy(int[] pos) {
-            return make((int[]) pos.clone());
-        }
         public String toString() {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append('(');
             for (int i = 0; i < ordinals.length; i++) {
                 if (i > 0) {
@@ -117,183 +460,29 @@ public interface CellKey {
             buf.append(')');
             return buf.toString();
         }
-    }
-    public class Zero extends Base {
-        private Zero() {
-            super(0);
+
+        public Many copy() {
+            return new Many(this.ordinals.clone());
         }
-        public CellKey copy() {
-            // no need to make copy since there is no state
-            return this;
-        }
-        public CellKey make(int[] pos) {
-            check(pos);
-            // no need to make copy since there is no state
-            return this;
-        }
-    }
-    public class One extends Base {
-        private One() {
-            super(1);
-        }
-        private One(int[] ordinals) {
-            super(ordinals);
-        }
-        public CellKey copy() {
-            // no need to make copy since there is no state
-            return new CellKey.One((int[]) this.ordinals.clone());
-        }
-        public CellKey make(int[] pos) {
-            check(pos);
-            return new CellKey.One(pos);
-        }
-        public boolean equals(Object o) {
-            // here we cheat, we know that all CellKey's will be the same size
-            if (o instanceof CellKey.One) {
-                CellKey.One other = (CellKey.One) o;
-                return (other.ordinals[0] == this.ordinals[0]);
-            } else {
-                return super.equals(o);
-            }
-        }
-        public int hashCode() {
-            int h = 17 + ordinals[0];
-            return h;
-        }
-    }
-    public class Two extends Base {
-        private Two() {
-            super(2);
-        }
-        private Two(int[] ordinals) {
-            super(ordinals);
-        }
-        public CellKey copy() {
-            // no need to make copy since there is no state
-            return new CellKey.Two((int[]) this.ordinals.clone());
-        }
-        public CellKey make(int[] pos) {
-            check(pos);
-            return new CellKey.Two(pos);
-        }
-        public boolean equals(Object o) {
-            if (o instanceof CellKey.Two) {
-                CellKey.Two other = (CellKey.Two) o;
-                return (other.ordinals[0] == this.ordinals[0]) &&
-                       (other.ordinals[1] == this.ordinals[1]);
-            } else {
-                return super.equals(o);
-            }
-        }
-        public int hashCode() {
-            return ((17 + ordinals[0]) * 37) + ordinals[1];
-        }
-    }
-    public class Three extends Base {
-        private Three() {
-            super(3);
-        }
-        private Three(int[] ordinals) {
-            super(ordinals);
-        }
-        public CellKey copy() {
-            // no need to make copy since there is no state
-            return new CellKey.Three((int[]) this.ordinals.clone());
-        }
-        public CellKey make(int[] pos) {
-            check(pos);
-            return new CellKey.Three(pos);
-        }
-        public boolean equals(Object o) {
-            // here we cheat, we know that all CellKey's will be the same size
-            if (o instanceof CellKey.Three) {
-                CellKey.Three other = (CellKey.Three) o;
-                return (other.ordinals[0] == this.ordinals[0]) &&
-                       (other.ordinals[1] == this.ordinals[1]) &&
-                       (other.ordinals[2] == this.ordinals[2]);
-            } else {
-                return super.equals(o);
-            }
-        }
-        public int hashCode() {
-            return (((17 + ordinals[0]) * 37) + ordinals[1]) * 37 + ordinals[2];
-        }
-    }
-    public class Many extends Base {
-        private Many(int size) {
-            super(size);
-        }
-        private Many(int[] ordinals) {
-            super(ordinals);
-        }
-        public CellKey copy() {
-            // no need to make copy since there is no state
-            return new CellKey.Many((int[]) this.ordinals.clone());
-        }
-        public CellKey make(int[] pos) {
-            check(pos);
-            return new CellKey.Many(pos);
-        }
+
         public int hashCode() {
             int h = 17;
-            for (int i = 0; i < ordinals.length; i++) {
-                h = (h * 37) + ordinals[i];
+            for (int ordinal : ordinals) {
+                h = (h * 37) + ordinal;
             }
             return h;
         }
+
+        public boolean equals(Object o) {
+            if (o instanceof Many) {
+                Many that = (Many) o;
+                return Arrays.equals(this.ordinals, that.ordinals);
+            } else {
+                // Use symmetric logic in One, Two, Three.
+                return o.equals(this);
+            }
+        }
     }
-
-    int size();
-    int[] getOrdinals();
-    
-    /** 
-     * This method make a copy of the int array parameter. 
-     * Throws a RuntimeException if the int array size is not the
-     * size of the CellKey.
-     * 
-     * @param pos 
-     */
-    void setOrdinals(int[] pos);
-
-    int getAxis(int axis);
-
-    /** 
-     *  
-     * Throws a RuntimeException if axis parameter is larger than the size 
-     * of the CellKey.
-     * 
-     * @param axis 
-     * @param value 
-     */
-    void setAxis(int axis, int value);
-    
-    /** 
-     * This basically clones the current CellKey. 
-     * 
-     * @return 
-     */
-    CellKey copy();
-    
-    /** 
-     * The int array parameter 'pos' is NOT copied. If you simply want to create
-     * a new CellKey and you are sure that during its lifetime the int array
-     * will not be modified, then use this method, otherwise use the makeCopy
-     * method.
-     * 
-     * @param pos 
-     * @return 
-     */
-    CellKey make(int[] pos);
-    
-    /** 
-     * The int array parameter 'pos' is copied.
-     * 
-     * @param pos 
-     * @return 
-     */
-    CellKey makeCopy(int[] pos);
 }
-
-
 
 // End CellKey.java

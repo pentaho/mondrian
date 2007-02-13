@@ -78,7 +78,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
     public RolapMember getMember(Object key) {
         return mapKeyToMember.get(key);
     }
-    public RolapMember getMember(Object key, boolean mustCheckCacheStatus) {        
+    public RolapMember getMember(Object key, boolean mustCheckCacheStatus) {
         return mapKeyToMember.get(key);
     }
 
@@ -177,7 +177,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
         List<RolapMember> parentMembers,
         List<RolapMember> children) {
         for (RolapMember member : members) {
-            if (parentMembers.contains((RolapMember) member.getParentMember())) {
+            if (parentMembers.contains(member.getParentMember())) {
                 children.add(member);
             }
         }

@@ -52,34 +52,33 @@ public class AggregationManager extends RolapAggregationManager {
         return LOGGER;
     }
 
-    /** 
+    /**
      * Called by FastBatchingCellReader.loadAggregation where the
      * RolapStar creates an Aggregation if needed.
-     * 
+     *
      * @param measures Measures to load
      * @param columns this is the CellRequest's constrained columns
      * @param constrainedColumnsBitKey this is the CellRequest's constrained column BitKey
-     * @param constraints Array of constraints on each column
+     * @param predicates Array of constraints on each column
      * @param pinnedSegments Set of pinned segments
      */
     public void loadAggregation(
             RolapStar.Measure[] measures,
             RolapStar.Column[] columns,
             BitKey constrainedColumnsBitKey,
-            ColumnConstraint[][] constraintses,
-            Collection pinnedSegments) {
+            StarColumnPredicate[] predicates,
+            PinSet pinnedSegments) {
         RolapStar star = measures[0].getStar();
-        Aggregation aggregation = 
+        Aggregation aggregation =
                 star.lookupOrCreateAggregation(constrainedColumnsBitKey);
 
         // synchronized access
         synchronized (aggregation) {
             // try to eliminate unneccessary constraints
             // for Oracle: prevent an IN-clause with more than 1000 elements
-            constraintses =
-                aggregation.optimizeConstraints(columns, constraintses);
+            predicates = aggregation.optimizePredicates(columns, predicates);
 
-            aggregation.load(columns, measures, constraintses, pinnedSegments);
+            aggregation.load(columns, measures, predicates, pinnedSegments);
         }
     }
 
@@ -93,17 +92,17 @@ public class AggregationManager extends RolapAggregationManager {
             return null;
         }
         // synchronized access
-        synchronized(aggregation) {
+        synchronized (aggregation) {
             Object o = aggregation.get(
                     measure, request.getSingleValues(), null);
             if (o != null) {
                 return o;
-            }            
+            }
         }
         throw Util.newInternal("not found");
     }
 
-    public Object getCellFromCache(CellRequest request, Set pinSet) {
+    public Object getCellFromCache(CellRequest request, PinSet pinSet) {
         Util.assertPrecondition(pinSet != null);
 
         RolapStar.Measure measure = request.getMeasure();
@@ -115,7 +114,7 @@ public class AggregationManager extends RolapAggregationManager {
             return null;
         } else {
             // synchronized access
-            synchronized(aggregation) {
+            synchronized (aggregation) {
                 return aggregation.get(measure, request.getSingleValues(), pinSet);
             }
         }
@@ -176,11 +175,8 @@ public class AggregationManager extends RolapAggregationManager {
                     buf.append("AggStar=");
                     buf.append(aggStar.getFactTable().getName());
                     buf.append(Util.nl);
-                    for (Iterator columnIter =
-                            aggStar.getFactTable().getColumns().iterator();
-                         columnIter.hasNext(); ) {
-                        AggStar.Table.Column column =
-                                (AggStar.Table.Column) columnIter.next();
+                    for (AggStar.Table.Column column : aggStar.getFactTable()
+                        .getColumns()) {
                         buf.append("   ");
                         buf.append(column);
                         buf.append(Util.nl);
@@ -266,7 +262,7 @@ public class AggregationManager extends RolapAggregationManager {
             boolean isDistinct = measureBitKey.intersects(
                 aggStar.getDistinctMeasureBitKey());
 
-            // The AggStar has no "distinct count" measures so 
+            // The AggStar has no "distinct count" measures so
             // we can use it without looking any further.
             if (!isDistinct) {
                 rollup[0] = !aggStar.getLevelBitKey().equals(levelBitKey);
@@ -341,23 +337,22 @@ System.out.println(buf.toString());
                 // 'count(distinct customer_id)' and one of the foreign keys is
                 // 'customer_id' then it is OK to roll up.
 
-                // Some of the measures in this query are distinct count. 
+                // Some of the measures in this query are distinct count.
                 // Get all of the foreign key columns.
                 // For each such measure, is it based upon a foreign key.
                 // Are there any foreign keys left over. No, can use AggStar.
-                Iterator mit = aggStar.getFactTable().getMeasures().iterator();
                 BitKey fkBitKey = aggStar.getForeignKeyBitKey().copy();
-                while (mit.hasNext()) {
-                    AggStar.FactTable.Measure m =
-                        (AggStar.FactTable.Measure) mit.next();
-                    if (m.isDistinct()) {
-                        if (measureBitKey.get(m.getBitPosition())) {
-                            fkBitKey.clear(m.getBitPosition());
+                Iterator mit = aggStar.getFactTable().getMeasures().iterator();
+                for (AggStar.FactTable.Measure measure : aggStar.getFactTable()
+                    .getMeasures()) {
+                    if (measure.isDistinct()) {
+                        if (measureBitKey.get(measure.getBitPosition())) {
+                            fkBitKey.clear(measure.getBitPosition());
                         }
                     }
                 }
                 if (!fkBitKey.isEmpty()) {
-                    // there are foreign keys left so we can not use this 
+                    // there are foreign keys left so we can not use this
                     // AggStar.
                     continue;
                 }
@@ -372,6 +367,16 @@ System.out.println(buf.toString());
             return aggStar;
         }
         return null;
+    }
+
+    public PinSet createPinSet() {
+        return new PinSetImpl();
+    }
+
+    /**
+     * Implementation of {@link PinSet} using a {@link HashSet}.
+     */
+    public static class PinSetImpl extends HashSet<Segment> implements PinSet {
     }
 }
 

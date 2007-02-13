@@ -31,11 +31,16 @@ public class DefaultTupleConstraint implements TupleConstraint {
     protected DefaultTupleConstraint() {
     }
 
-    public void addConstraint(SqlQuery sqlQuery) {
+    public void addConstraint(
+        SqlQuery sqlQuery,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
     }
 
     public void addLevelConstraint(
-        SqlQuery query, AggStar aggStar, RolapLevel level, Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
+        SqlQuery query,
+        AggStar aggStar,
+        RolapLevel level,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(RolapMember parent) {
@@ -43,7 +48,7 @@ public class DefaultTupleConstraint implements TupleConstraint {
     }
 
     public String toString() {
-        return "DefaultTupelConstraint";
+        return "DefaultTupleConstraint";
     }
 
     public Object getCacheKey() {
@@ -53,7 +58,7 @@ public class DefaultTupleConstraint implements TupleConstraint {
     public static TupleConstraint instance() {
         return instance;
     }
-    
+
     public Evaluator getEvaluator() {
         return null;
     }

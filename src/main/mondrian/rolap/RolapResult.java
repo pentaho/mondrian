@@ -56,7 +56,7 @@ class RolapResult extends ResultBase {
     RolapResult(Query query, boolean execute) {
         super(query, new Axis[query.axes.length]);
 
-        this.point = CellKey.Generator.create(query.axes.length);
+        this.point = CellKey.Generator.newCellKey(query.axes.length);
         final int expDeps = MondrianProperties.instance().TestExpDependencies.get();
         if (expDeps > 0) {
             this.evaluator = new RolapDependencyTestingEvaluator(this, expDeps);
@@ -576,7 +576,7 @@ class RolapResult extends ResultBase {
      * Converts a cell ordinal to a set of cell coordinates. Converse of
      * {@link #getCellOrdinal}. For example, if this result is 10 x 10 x 10,
      * then cell ordinal 537 has coordinates (5, 3, 7).
-     * <p
+     * <p>
      * This method is no longer used.
      */
     int[] getCellPos(int cellOrdinal) {
@@ -589,8 +589,9 @@ class RolapResult extends ResultBase {
     /**
      * Converts a set of cell coordinates to a cell ordinal. Converse of
      * {@link #getCellPos}.
-     * <p
-     * This method is no longer used.
+     * <p>
+     * This method can be expensive, because the ordinal is computed from the
+     * length of the axes, and therefore the axes need to be instantiated.
      */
     int getCellOrdinal(int[] pos) {
         if (modulos == null) {
@@ -600,11 +601,13 @@ class RolapResult extends ResultBase {
     }
 
     /*
-     * This method is no longer used.
+     * Instantiates the calculator to convert cell coordinates to a cell ordinal
+     * and vice versa.
+     *
+     * <p>To create the calculator, any axis that is based upon an Iterable is
+     * converted into a List - thus increasing memory usage.
      */
     protected void makeModulos() {
-        // Any axis that's based upon an Iterable is converted into
-        // a List - thus increasing memory usage.
         modulos = Modulos.Generator.create(axes);
     }
 
@@ -1087,7 +1090,7 @@ class RolapResult extends ResultBase {
             return ci;
         }
         public CellInfo lookup(int[] pos) {
-            CellKey key = this.point.make(pos);
+            CellKey key = CellKey.Generator.newCellKey(pos);
             return this.cellInfoMap.get(key);
         }
     }

@@ -52,7 +52,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     private static Logger logger = Logger.getLogger(NonEmptyTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
 
-    
+
     public NonEmptyTest() {
         super();
     }
@@ -65,16 +65,16 @@ public class NonEmptyTest extends FoodMartTestCase {
       TestContext ctx = TestContext.create(
               null,
               "<Cube name=\"StrMeasure\"> \n" +
-              "  <Table name=\"promotion\"/> \n" + 
-              "  <Dimension name=\"Promotions\"> \n" + 
-              "    <Hierarchy hasAll=\"true\" > \n" + 
-              "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/> \n" + 
-              "    </Hierarchy> \n" + 
-              "  </Dimension> \n" + 
-              "  <Measure name=\"Media\" column=\"media_type\" aggregator=\"max\" datatype=\"String\"/> \n" + 
+              "  <Table name=\"promotion\"/> \n" +
+              "  <Dimension name=\"Promotions\"> \n" +
+              "    <Hierarchy hasAll=\"true\" > \n" +
+              "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/> \n" +
+              "    </Hierarchy> \n" +
+              "  </Dimension> \n" +
+              "  <Measure name=\"Media\" column=\"media_type\" aggregator=\"max\" datatype=\"String\"/> \n" +
               "</Cube> \n",
               null,null,null);
-      
+
       ctx.assertQueryReturns(
               "select {[Measures].[Media]} on columns " +
               "from [StrMeasure]",
@@ -86,31 +86,31 @@ public class NonEmptyTest extends FoodMartTestCase {
 
       );
   }
-    
+
     public void testBug1515302() {
         TestContext ctx = TestContext.create(
                 null,
                 "<Cube name=\"Bug1515302\"> \n" +
-                "  <Table name=\"sales_fact_1997\"/> \n" + 
-                "  <Dimension name=\"Promotions\" foreignKey=\"promotion_id\"> \n" + 
-                "    <Hierarchy hasAll=\"false\" primaryKey=\"promotion_id\"> \n" + 
-                "      <Table name=\"promotion\"/> \n" + 
-                "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/> \n" + 
-                "    </Hierarchy> \n" + 
-                "  </Dimension> \n" + 
-                "  <Dimension name=\"Customers\" foreignKey=\"customer_id\"> \n" + 
-                "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"customer_id\"> \n" + 
-                "      <Table name=\"customer\"/> \n" + 
-                "      <Level name=\"Country\" column=\"country\" uniqueMembers=\"true\"/> \n" + 
-                "      <Level name=\"State Province\" column=\"state_province\" uniqueMembers=\"true\"/> \n" + 
-                "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/> \n" + 
-                "      <Level name=\"Name\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/> \n" + 
-                "    </Hierarchy> \n" + 
-                "  </Dimension> \n" + 
-                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"/> \n" + 
+                "  <Table name=\"sales_fact_1997\"/> \n" +
+                "  <Dimension name=\"Promotions\" foreignKey=\"promotion_id\"> \n" +
+                "    <Hierarchy hasAll=\"false\" primaryKey=\"promotion_id\"> \n" +
+                "      <Table name=\"promotion\"/> \n" +
+                "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/> \n" +
+                "    </Hierarchy> \n" +
+                "  </Dimension> \n" +
+                "  <Dimension name=\"Customers\" foreignKey=\"customer_id\"> \n" +
+                "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"customer_id\"> \n" +
+                "      <Table name=\"customer\"/> \n" +
+                "      <Level name=\"Country\" column=\"country\" uniqueMembers=\"true\"/> \n" +
+                "      <Level name=\"State Province\" column=\"state_province\" uniqueMembers=\"true\"/> \n" +
+                "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/> \n" +
+                "      <Level name=\"Name\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/> \n" +
+                "    </Hierarchy> \n" +
+                "  </Dimension> \n" +
+                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"/> \n" +
                 "</Cube> \n",
                 null,null,null);
-        
+
         ctx.assertQueryReturns(
                 "select {[Measures].[Unit Sales]} on columns, " +
                 "non empty crossjoin({[Promotions].[Big Promo]}, " +
@@ -177,7 +177,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                 "from [Warehouse and Sales]");
         c.run();
     }
-    
+
     public void testVirtualCubeMembers() throws Exception {
         // ok to use native sql optimization for members on a virtual cube
         TestCase c = new TestCase(6, 3,
@@ -186,7 +186,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                 "from [Warehouse and Sales]");
         c.run();
     }
-    
+
     public void testVirtualCubeMembersNonConformingDim() throws Exception {
         // native sql optimization should not be used when you have a
         // non-conforming dimensions because it will result in a cartesian
@@ -594,7 +594,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         assertTrue("no additional members should be read:" + smr.mapKeyToMember.size(),
                 smr.mapKeyToMember.size() <= 5);
         RolapMember sf = (RolapMember) result.getAxes()[0].getPositions().get(0).get(0);
-        RolapMember ca = (RolapMember) sf.getParentMember();
+        RolapMember ca = sf.getParentMember();
 
         List list = smr.mapMemberToChildren.get(ca, scf.getMemberChildrenConstraint(null));
         assertNull("children of [CA] are not in cache", list);
@@ -922,7 +922,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         Result result = c.run();
         // [Customers].[All Customers].[USA].[CA].[Burlingame].[Peggy Justice]
         RolapMember peggy = (RolapMember) result.getAxes()[1].getPositions().get(1).get(0);
-        RolapMember burlingame = (RolapMember) peggy.getParentMember();
+        RolapMember burlingame = peggy.getParentMember();
         // all children of burlingame are not in cache
         MemberChildrenConstraint mcc = scf.getMemberChildrenConstraint(null);
         assertNull(smr.mapMemberToChildren.get(burlingame, mcc));
@@ -981,7 +981,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Store].[All Stores].children) on rows " +
             "from [Warehouse and Sales]");
     }
-    
+
     public void testVirtualCubeNonEmptyCrossJoin()
     {
         checkNative(18, 3,
@@ -991,7 +991,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Store].[All Stores].children) on rows " +
             "from [Warehouse and Sales]");
     }
-    
+
     public void testVirtualCubeNonEmptyCrossJoin3Args()
     {
         checkNative(3, 3,
@@ -1014,7 +1014,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         alertProperty.set("ERROR");
 
         try {
-        
+
             // cross join involves non-conforming dimensions should not use
             // native cross joins because it will result in a cartesian
             // product join
@@ -1072,7 +1072,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             // are supposed to be raised.
             return;
         }
-        
+
         String mdx =
             "select " +
             "{[Measures].AllMembers} on columns, " +
@@ -1081,7 +1081,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "from [Warehouse and Sales]";
 
         final List<LoggingEvent> events = new ArrayList<LoggingEvent>();
-        
+
         // set up log4j listener to detect alerts
         Appender alertListener = new AppenderSkeleton() {
                 protected void append(LoggingEvent event) {
@@ -1097,7 +1097,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         rolapUtilLogger.addAppender(alertListener);
         String expectedMessage =
             "Unable to use native SQL evaluation for 'NonEmptyCrossJoin'";
-        
+
         // verify that exception is thrown if alerting is set to ERROR
         StringProperty alertProperty =
             MondrianProperties.instance().AlertNativeEvaluationUnsupported;
@@ -1157,7 +1157,7 @@ public class NonEmptyTest extends FoodMartTestCase {
         events.clear();
 
         // no biggie if we don't get here for some reason; just being
-        // half-heartedly clean 
+        // half-heartedly clean
         rolapUtilLogger.removeAppender(alertListener);
     }
 
@@ -1344,7 +1344,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                 "Row #0: 3\n" +
                 "Row #1: 21\n"));
     }
-    
+
     public void testCrossJoinNamedSets1()
     {
         checkNative(
@@ -1357,7 +1357,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "non empty crossjoin([ProductChildren], [StoreMembers]) " +
             "on rows from [Sales]");
     }
-    
+
     public void testCrossJoinNamedSets2()
     {
         checkNative(
@@ -1373,7 +1373,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Sales]");
 
     }
-    
+
     public void testCrossJoinSetWithDifferentParents()
     {
         // Verify that only the members explicitly referenced in the set
@@ -1387,7 +1387,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "NonEmptyCrossJoin([Education Level].[Education Level].Members, " +
             "{[Time].[1997].[Q1], [Time].[1998].[Q2]}) on rows from Sales");
     }
-    
+
     public void testCrossJoinSetWithCrossProdMembers()
     {
         // members in set are a cross product of (1997, 1998) and (Q1, Q2, Q3)
@@ -1401,7 +1401,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Time].[1998].[Q1], [Time].[1998].[Q2], [Time].[1998].[Q3]})" +
             "on rows from Sales");
     }
-    
+
     public void testCrossJoinSetWithSameParent()
     {
         // members in set have the same parent
@@ -1415,7 +1415,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Store].[All Stores].[USA].[CA].[San Francisco]}) " +
             "on rows from Sales");
     }
-    
+
     public void testCrossJoinSetWithUniqueLevel()
     {
         // members in set have different parents but there is a unique level
@@ -1429,7 +1429,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}) " +
             "on rows from Sales");
     }
-    
+
     public void testCrossJoinMultiInExprAllMember()
     {
         checkNative(
@@ -1440,7 +1440,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "NonEmptyCrossJoin([Education Level].[Education Level].Members, " +
             "{[Product].[All Products].[Drink].[Alcoholic Beverages], " +
             "[Product].[All Products].[Food].[Breakfast Foods]}) " +
-            "on rows from Sales");                      
+            "on rows from Sales");
     }
 
     public void testCrossJoinEvaluatorContext1()
@@ -1474,7 +1474,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "Select {[Measures].[Store Cost]} on columns, " +
             "Non Empty Filter(Generate([*NATIVE_CJ_SET], {([Store].CurrentMember)}), " +
             "[Measures].[*TOP_BOTTOM_MEMBER] <= 10) on rows From [Sales]",
-            
+
             fold(
                 "Axis #0:\n" +
                 "{}\n" +
@@ -1491,7 +1491,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                 "{[Store].[All Stores].[USA].[WA]}\n" +
                 "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n" +
                 "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}\n" +
-                "Row #0: 225,627.23\n" +               
+                "Row #0: 225,627.23\n" +
                 "Row #1: 225,627.23\n" +
                 "Row #2: 63,530.43\n" +
                 "Row #3: 56,772.50\n" +
@@ -1568,10 +1568,10 @@ public class NonEmptyTest extends FoodMartTestCase {
                 "Row #2: 50.28%\n" +
                 "Row #2: 100.00%\n"));
     }
-    
+
     public void testVCNativeCJWithIsEmptyOnMeasure()
     {
-        // Don't use checkNative method here because in the case where 
+        // Don't use checkNative method here because in the case where
         // native cross join isn't used, the query causes a stack overflow.
         //
         // A measures member is referenced in the IsEmpty() function.  This
@@ -1602,7 +1602,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                 "{[Product].[All Products].[Drink]}\n" +
                 "Row #0: 12,395\n"));
     }
-    
+
     public void testVCNativeCJWithTopPercent()
     {
         // The reference to [Store Sales] inside the topPercent function
@@ -1615,7 +1615,7 @@ public class NonEmptyTest extends FoodMartTestCase {
             "{[Measures].[Store Sales]} on rows from " +
             "[Warehouse and Sales]");
     }
-    
+
     public void testVCOrdinalExpression() {
         // [Customers].[Name] is an ordinal expression.  Make sure ordering
         // is done on the column corresponding to that expression.
@@ -1627,7 +1627,7 @@ public class NonEmptyTest extends FoodMartTestCase {
                 + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
                 + "  [Time].[1997].[Q1].[1])");
     }
-    
+
     /**
      * make sure the following is not run natively
      */
@@ -1657,7 +1657,7 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     /**
-     * runs a query twice, with native crossjoin optimization enabled and
+     * Runs a query twice, with native crossjoin optimization enabled and
      * disabled. If both results are equal, its considered correct.
      */
     private void checkNative(
@@ -1679,8 +1679,8 @@ public class NonEmptyTest extends FoodMartTestCase {
             reg.setListener(listener);
             reg.setEnabled(true);
             TestCase c = new TestCase(con, resultLimit, rowCount, mdx);
-            Result r1 = c.run();
-            String s1 = toString(r1);
+            Result result = c.run();
+            String nativeResult = toString(result);
             if (!listener.isFoundEvaluator()) {
                 fail("expected native execution of " + mdx);
             }
@@ -1703,21 +1703,16 @@ public class NonEmptyTest extends FoodMartTestCase {
             reg.setListener(listener);
             // disable RolapNativeSet
             reg.setEnabled(false);
-            Result r2 = executeQuery(mdx, con);
-            String s2 = toString(r2);
+            result = executeQuery(mdx, con);
+            String interpretedResult = toString(result);
             if (listener.isFoundEvaluator()) {
                 fail("did not expect native executions of " + mdx);
             }
 
-            if (!s1.equals(s2)) {
-                StringBuilder buf = new StringBuilder();
-                buf.append("Result differs");
-                buf.append("\n\nMDX:\n").append(mdx);
-                buf.append("\n\nNative Implementation returned:\n");
-                buf.append(s1);
-                buf.append("\n\nInterpreter returned:\n");
-                buf.append(s2);
-                fail(buf.toString());
+            if (!nativeResult.equals(interpretedResult)) {
+                TestContext.assertEqualsVerbose(
+                    nativeResult, interpretedResult, false,
+                    "Native implementation returned different result than interpreter; MDX=" + mdx);
             }
 
         } finally {

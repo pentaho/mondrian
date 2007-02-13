@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -50,9 +51,11 @@ public class RolapNativeFilter extends RolapNativeSet {
             return true;
         }
 
-        public void addConstraint(SqlQuery sqlQuery) {
+        public void addConstraint(
+            SqlQuery sqlQuery,
+            Map<RolapLevel, RolapStar.Column> levelToColumnMap) {
             sqlQuery.addHaving(filterExpr);
-            super.addConstraint(sqlQuery);
+            super.addConstraint(sqlQuery, levelToColumnMap);
         }
 
         public Object getCacheKey() {

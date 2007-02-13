@@ -14,7 +14,7 @@
 package mondrian.rolap.agg;
 
 import mondrian.rolap.RolapStar;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.StarColumnPredicate;
 
 /**
  * Contains the information necessary to generate a SQL statement to
@@ -31,7 +31,17 @@ public interface QuerySpec {
     String getMeasureAlias(int i);
     RolapStar.Column[] getColumns();
     String getColumnAlias(int i);
-    ColumnConstraint[] getConstraints(int i);
+
+    /**
+     * Returns the predicate on the <code>i</code>th column.
+     *
+     * <p>If the column is unconstrained, returns
+     * {@link LiteralStarPredicate}(true).
+     *
+     * @param i Column ordinal
+     * @return Constraint on column
+     */
+    StarColumnPredicate getColumnPredicate(int i);
 
     String generateSqlQuery();
 }

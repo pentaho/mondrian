@@ -169,7 +169,7 @@ enum PropertyDefinition {
         RowsetDefinition.Type.Enumeration,
         Util.enumSetAllOf(Enumeration.VisualMode.class),
         Enumeration.Access.Write,
-        String.valueOf(Enumeration.VisualMode.Visual.ordinal()),
+        Integer.toString(Enumeration.VisualMode.Visual.ordinal()),
         Enumeration.Methods.discoverAndExecute,
         "This property is equivalent to the OLE DB property, MDPROP_VISUALMODE.\n" +
             "The default value for this property is zero (0), equivalent to DBPROPVAL_VISUAL_MODE_DEFAULT."),

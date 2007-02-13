@@ -20,26 +20,35 @@ import mondrian.rolap.aggmatcher.AggStar;
 /**
  * TupleConstaint which restricts the result of a tuple sqlQuery to a
  * set of parents.  All parents must belong to the same level.
- * 
+ *
  * @author av
  * @since Nov 10, 2005
  * @version $Id$
  */
 class DescendantsConstraint implements TupleConstraint {
-    List parentMembers;
+    List<RolapMember> parentMembers;
     MemberChildrenConstraint mcc;
 
     /**
+     * Creates a DescendantsConstraint.
+     *
      * @param parentMembers list of parents all from the same level
      * @param mcc the constraint that would return the children for each single parent
      */
-    public DescendantsConstraint(List parentMembers, MemberChildrenConstraint mcc) {
+    public DescendantsConstraint(
+        List<RolapMember> parentMembers,
+        MemberChildrenConstraint mcc)
+    {
         this.parentMembers = parentMembers;
         this.mcc = mcc;
     }
 
-    public void addConstraint(SqlQuery sqlQuery) {
-        mcc.addMemberConstraint(sqlQuery, null, parentMembers);
+    public void addConstraint(
+        SqlQuery sqlQuery,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap)
+    {
+        mcc.addMemberConstraint(
+            sqlQuery, levelToColumnMap, null, parentMembers);
     }
 
     public void addLevelConstraint(
@@ -54,7 +63,9 @@ class DescendantsConstraint implements TupleConstraint {
     }
 
     /**
-     * returns null, because descendants is not cached.
+     * {@inheritDoc}
+     *
+     * <p>This implementation returns null, because descendants is not cached.
      */
     public Object getCacheKey() {
         return null;

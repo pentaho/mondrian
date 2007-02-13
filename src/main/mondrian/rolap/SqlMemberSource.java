@@ -302,7 +302,8 @@ class SqlMemberSource implements MemberReader, SqlTupleReader.MemberBuilder {
             resultSet = RolapUtil.executeQuery(
                 jdbcConnection, sql, "SqlMemberSource.getMembers");
             List<RolapMember> list = new ArrayList<RolapMember>();
-            Map<MemberKey, RolapMember> map = new HashMap<MemberKey, RolapMember>();
+            Map<MemberKey, RolapMember> map =
+                new HashMap<MemberKey, RolapMember>();
             RolapMember root = null;
             if (hierarchy.hasAll()) {
                 root = hierarchy.getAllMember();
@@ -410,7 +411,7 @@ RME is this right
             sqlQuery.addOrderBy(expString, true, false, true);
             sqlQuery.addGroupBy(expString);
 
-            RolapProperty[] properties = level.getRolapProperties();
+            RolapProperty[] properties = level.getProperties();
             for (RolapProperty property : properties) {
                 exp = property.getExp();
                 hierarchy.addToFrom(sqlQuery, exp);
@@ -516,7 +517,19 @@ RME is this right
 
         // Create the condition, which is either the parent member or
         // the full context (non empty).
-        constraint.addMemberConstraint(sqlQuery, aggStar, member);
+        final Map<RolapLevel, RolapStar.Column> levelToColumnMap;
+        if (constraint instanceof SqlContextConstraint) {
+            SqlContextConstraint contextConstraint =
+                (SqlContextConstraint) constraint;
+            Evaluator evaluator = contextConstraint.getEvaluator();
+            RolapCube cube = (RolapCube) evaluator.getCube();
+            RolapStar star = cube.getStar();
+            levelToColumnMap = star.getLevelToColumnMap(cube);
+        } else {
+            levelToColumnMap = Collections.emptyMap();
+        }
+        constraint.addMemberConstraint(
+            sqlQuery, levelToColumnMap, aggStar, member);
 
         RolapLevel level = (RolapLevel) member.getLevel().getChildLevel();
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
@@ -542,7 +555,7 @@ RME is this right
             sqlQuery.addGroupBy(orderBy);
         }
 
-        RolapProperty[] properties = level.getRolapProperties();
+        RolapProperty[] properties = level.getProperties();
         for (RolapProperty property : properties) {
             final MondrianDef.Expression exp = property.getExp();
             hierarchy.addToFrom(sqlQuery, exp);
@@ -578,9 +591,9 @@ RME is this right
 
         // get the level using the current depth
         RolapLevel childLevel = (RolapLevel) member.getLevel().getChildLevel();
-        final Map<RolapLevel, RolapStar.Column> mapLevelToColumn =
-            star.getMapLevelToColumn(cube);
-        RolapStar.Column column = mapLevelToColumn.get(childLevel);
+        final Map<RolapLevel, RolapStar.Column> levelToColumnMap =
+            star.getLevelToColumnMap(cube);
+        RolapStar.Column column = levelToColumnMap.get(childLevel);
 
         // set a bit for each level which is constrained in the context
         CellRequest request =
@@ -611,12 +624,20 @@ RME is this right
         getMemberChildren(parentMembers, children, constraint);
     }
 
-    public void getMemberChildren(List<RolapMember> parentMembers, List<RolapMember> children, MemberChildrenConstraint mcc) {
+    public void getMemberChildren(
+        List<RolapMember> parentMembers,
+        List<RolapMember> children,
+        MemberChildrenConstraint mcc)
+    {
         // try to fetch all children at once
-        RolapLevel childLevel = getCommonChildLevelForDescendants(parentMembers);
+        RolapLevel childLevel =
+            getCommonChildLevelForDescendants(parentMembers);
         if (childLevel != null) {
-            TupleConstraint lmc = sqlConstraintFactory.getDescendantsConstraint(parentMembers, mcc);
-            List<RolapMember> list = getMembersInLevel(childLevel, 0, Integer.MAX_VALUE, lmc);
+            TupleConstraint lmc =
+                sqlConstraintFactory.getDescendantsConstraint(
+                    parentMembers, mcc);
+            List<RolapMember> list =
+                getMembersInLevel(childLevel, 0, Integer.MAX_VALUE, lmc);
             children.addAll(list);
             return;
         }
@@ -627,12 +648,20 @@ RME is this right
         }
     }
 
-    public void getMemberChildren(RolapMember parentMember, List<RolapMember> children) {
-        MemberChildrenConstraint constraint = sqlConstraintFactory.getMemberChildrenConstraint(null);
+    public void getMemberChildren(
+        RolapMember parentMember,
+        List<RolapMember> children)
+    {
+        MemberChildrenConstraint constraint =
+            sqlConstraintFactory.getMemberChildrenConstraint(null);
         getMemberChildren(parentMember, children, constraint);
     }
 
-    public void getMemberChildren(RolapMember parentMember, List<RolapMember> children, MemberChildrenConstraint constraint) {
+    public void getMemberChildren(
+        RolapMember parentMember,
+        List<RolapMember> children,
+        MemberChildrenConstraint constraint)
+    {
         if (!parentMember.isAll() && parentMember.isCalculated()) {
             return;
         }
@@ -659,7 +688,9 @@ RME is this right
      * returns that level; this indicates that all member children can be
      * fetched at once. Otherwise returns null.
      */
-    private RolapLevel getCommonChildLevelForDescendants(List<RolapMember> parents) {
+    private RolapLevel getCommonChildLevelForDescendants(
+        List<RolapMember> parents)
+    {
         // at least two members required
         if (parents.size() < 2) {
             return null;
@@ -673,7 +704,7 @@ RME is this right
             }
             // first round?
             if (parentLevel == null) {
-                parentLevel = (RolapLevel) member.getLevel();
+                parentLevel = member.getLevel();
                 // check for parent/child
                 if (parentLevel.isParentChild()) {
                     return null;
@@ -700,7 +731,7 @@ RME is this right
     {
         String sql;
         boolean parentChild;
-        final RolapLevel parentLevel = (RolapLevel) parentMember.getLevel();
+        final RolapLevel parentLevel = parentMember.getLevel();
         RolapLevel childLevel;
         if (parentLevel.isParentChild()) {
             sql = makeChildMemberSqlPC(parentMember, jdbcConnection);
@@ -876,7 +907,7 @@ RME is this right
             sqlQuery.addGroupBy(orderBy);
         }
 
-        RolapProperty[] properties = level.getRolapProperties();
+        RolapProperty[] properties = level.getProperties();
         for (RolapProperty property : properties) {
             final MondrianDef.Expression exp = property.getExp();
             hierarchy.addToFrom(sqlQuery, exp);
@@ -905,7 +936,7 @@ RME is this right
             Connection jdbcConnection) {
         SqlQuery sqlQuery = newQuery(jdbcConnection,
             "while generating query to retrieve children of parent/child hierarchy member " + member);
-        RolapLevel level = (RolapLevel) member.getLevel();
+        RolapLevel level = member.getLevel();
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
         Util.assertTrue(level.isUnique(), "parent-child level '"
@@ -929,7 +960,7 @@ RME is this right
             sqlQuery.addGroupBy(orderBy);
         }
 
-        RolapProperty[] properties = level.getRolapProperties();
+        RolapProperty[] properties = level.getProperties();
         for (RolapProperty property : properties) {
             final MondrianDef.Expression exp = property.getExp();
             hierarchy.addToFrom(sqlQuery, exp);
@@ -987,7 +1018,7 @@ RME is this right
             if (Util.equal(propertyName, Property.CONTRIBUTING_CHILDREN.name, matchCase)) {
                 List<RolapMember> list = new ArrayList<RolapMember>();
                 list.add(dataMember);
-                RolapHierarchy hierarchy = (RolapHierarchy) getHierarchy();
+                RolapHierarchy hierarchy = getHierarchy();
                 hierarchy.getMemberReader().getMemberChildren(dataMember, list);
                 return list;
             } else {
@@ -1030,8 +1061,7 @@ RME is this right
         }
 
         public Exp getExpression() {
-            final RolapHierarchy hierarchy = (RolapHierarchy) getHierarchy();
-            return hierarchy.getAggregateChildrenExpression();
+            return getHierarchy().getAggregateChildrenExpression();
         }
     }
 

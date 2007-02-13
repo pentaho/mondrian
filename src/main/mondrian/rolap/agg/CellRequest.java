@@ -39,26 +39,29 @@ public class CellRequest {
      * put into the same batch.
      */
     private final List constrainedColumnList = new ArrayList();
-    private final List<ColumnConstraint> valueList =
-        new ArrayList<ColumnConstraint>();
-    
-    /** 
+    private final List<StarColumnPredicate> valueList =
+        new ArrayList<StarColumnPredicate>();
+
+    /**
      * After all of the columns are loaded into the constrainedColumnList instance
      * variable, this columnsCache is created the first time the getColumns
-     * method is called. 
+     * method is called.
      * <p>
-     * It is assumed that the call to all additional columns, addConstrainedColumn,
-     * will not be called after the first call to getColumns method.
+     * It is assumed that the call to all additional columns,
+     * {@link #addConstrainedColumn}, will not be called after the first call to
+     * the {@link #getConstrainedColumns()} method.
      */
     private RolapStar.Column[] columnsCache = null;
+
     /**
      * A bit is set for each column in the column list. Allows us to rapidly
      * figure out whether two requests are for the same column set.
-     * These are all of the columns that are involved with a query, that is, all 
+     * These are all of the columns that are involved with a query, that is, all
      * required to be present in an aggregate table for the table be used to
      * fulfill the query.
      */
     private final BitKey constrainedColumnsBitKey;
+
     /**
      * Whether the request is impossible to satisfy. This is set to 'true' if
      * contradictory constraints are applied to the same column. For example,
@@ -87,12 +90,12 @@ public class CellRequest {
      * Adds a constraint to this request.
      *
      * @param column Column to constraint
-     * @param constraint Constraint to apply, or null to add column to the
+     * @param predicate Constraint to apply, or null to add column to the
      *   output without applying constraint
      */
     public void addConstrainedColumn(
             RolapStar.Column column,
-            ColumnConstraint constraint) {
+            StarColumnPredicate predicate) {
 
         assert columnsCache == null;
 
@@ -104,27 +107,27 @@ public class CellRequest {
             int index = constrainedColumnList.indexOf(column);
             Util.assertTrue(index >= 0);
             // column list has RolapStar as its first element
-            --index; 
-            final ColumnConstraint prevValue = valueList.get(index);
+            --index;
+            final StarColumnPredicate prevValue = valueList.get(index);
             if (prevValue == null) {
                 // Previous column was unconstrained. Constrain on new value.
-            } else if (constraint == null) {
+            } else if (predicate == null) {
                 // Previous column was constrained. Nothing to do.
                 return;
-            } else if (constraint.equalConstraint(prevValue)) {
+            } else if (predicate.equalConstraint(prevValue)) {
                 // Same constraint again. Nothing to do.
                 return;
             } else {
                 // Different constraint. Request is impossible to satisfy.
-                constraint = null;
+                predicate = null;
                 unsatisfiable = true;
             }
-            valueList.set(index, constraint);
+            valueList.set(index, predicate);
 
         } else {
             this.constrainedColumnList.add(column);
             this.constrainedColumnsBitKey.set(bitPosition);
-            this.valueList.add(constraint);
+            this.valueList.add(predicate);
         }
     }
 
@@ -156,7 +159,7 @@ public class CellRequest {
         return constrainedColumnsBitKey;
     }
 
-    public List<ColumnConstraint> getValueList() {
+    public List<StarColumnPredicate> getValueList() {
         return valueList;
     }
 
@@ -165,7 +168,8 @@ public class CellRequest {
         // so there is no need to cache the value.
         Object[] a = new Object[valueList.size()];
         for (int i = 0, n = valueList.size(); i < n; i++) {
-            ColumnConstraint constr = (ColumnConstraint) valueList.get(i);
+            ValueColumnPredicate constr =
+                (ValueColumnPredicate) valueList.get(i);
             a[i] = constr.getValue();
         }
         return a;

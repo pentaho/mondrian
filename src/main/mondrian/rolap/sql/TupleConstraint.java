@@ -30,10 +30,15 @@ import java.util.Map;
  */
 public interface TupleConstraint extends SqlConstraint {
     /**
-     * modifies a Level.Members query
+     * Modifies a Level.Members query.
+     *
      * @param sqlQuery the query to modify
+     * @param levelToColumnMap maps a level to the column which holds its key
+     *   in the current RolapStar 
      */
-    public void addConstraint(SqlQuery sqlQuery);
+    public void addConstraint(
+        SqlQuery sqlQuery,
+        Map<RolapLevel, RolapStar.Column> levelToColumnMap);
 
     /**
      * Will be called multiple times for every "group by" level in

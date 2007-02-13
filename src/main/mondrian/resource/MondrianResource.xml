@@ -671,7 +671,7 @@
 
 <exception id="7000520" name="CacheFlushCrossjoinDimensionsInCommon">
     <text>
-        Cannot crossjoin cell regions which have dimensions in common. (Dimensionalities are ''{0}'', ''{1}''.)
+        Cannot crossjoin cell regions which have dimensions in common. (Dimensionalities are {0}.)
     </text>
 </exception>
 

@@ -106,6 +106,14 @@ public interface Connection {
      * @return Value of property, or null if property is not defined.
      */
     Object getProperty(String name);
+
+    /**
+     * Returns an object with which to explicitly control the contents of the
+     * cache.
+     *
+     * @param pw Writer to which to write logging information; may be null
+     */
+    CacheControl getCacheControl(PrintWriter pw);
 }
 
 // End Connection.java

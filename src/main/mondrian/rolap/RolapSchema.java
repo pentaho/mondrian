@@ -150,7 +150,7 @@ public class RolapSchema implements Schema {
         new ArrayList<RolapSchemaParameter >();
 
     private Date schemaLoadDate;
-    
+
     private DataSourceChangeListener dataSourceChangeListener;
 
     /**
@@ -1035,6 +1035,9 @@ public class RolapSchema implements Schema {
         }
     }
 
+    /**
+     * @deprecated Use {@link mondrian.olap.CacheControl#flushSchema(String, String, String, String)}.
+     */
     public static void flushSchema(
         final String catalogUrl,
         final String connectionKey,
@@ -1048,6 +1051,9 @@ public class RolapSchema implements Schema {
             dataSourceStr);
     }
 
+    /**
+     * @deprecated Use {@link mondrian.olap.CacheControl#flushSchema(String, javax.sql.DataSource)}.
+     */
     public static void flushSchema(
         final String catalogUrl,
         final DataSource dataSource)
@@ -1055,6 +1061,9 @@ public class RolapSchema implements Schema {
         Pool.instance().remove(catalogUrl, dataSource);
     }
 
+    /**
+     * @deprecated Use {@link mondrian.olap.CacheControl#flushSchemaCache()}.
+     */
     public static void clearCache() {
         Pool.instance().clear();
     }
@@ -1433,13 +1442,13 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             }
         };
     }
-    
+
     /**
      * Creates a {@link DataSourceChangeListener} with which to detect changes to datasources.
      */
     private DataSourceChangeListener createDataSourceChangeListener(
             Util.PropertyList connectInfo) {
-        
+
         DataSourceChangeListener changeListener = null;
 
         // If CatalogContent is specified in the connect string, ignore
@@ -1450,11 +1459,11 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
 
         if ( ! Util.isEmpty(dataSourceChangeListenerStr)) {
             try {
-                
+
                 Class<?> clazz = Class.forName(dataSourceChangeListenerStr);
                 Constructor<?> constructor = clazz.getConstructor();
                 changeListener = (DataSourceChangeListener)constructor.newInstance();
-                
+
 /*                final Class<DataSourceChangeListener> clazz =
                     (Class<DataSourceChangeListener>) Class.forName(dataSourceChangeListenerStr);
                 final Constructor<DataSourceChangeListener> ctor =
@@ -1475,7 +1484,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         }
         return changeListener;
     }
-    
+
 
     /**
      * Connection for purposes of parsing and validation. Careful! It won't
@@ -1572,6 +1581,9 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
       return getRolapStarRegistry().getStars();
     }
 
+    /**
+     * @deprecated Use {@link mondrian.olap.CacheControl#flush(mondrian.olap.CacheControl.CellRegion)}
+     */
     public void flushRolapStarCaches(boolean forced) {
         for (RolapStar star : getStars()) {
             // this will only flush the star's aggregate cache if
@@ -1583,10 +1595,10 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     /**
      * Check if there are modifications in the aggregations cache
      */
-    public void checkAggregateModifications() {        
+    public void checkAggregateModifications() {
         for (RolapStar star : getStars()) {
             star.checkAggregateModifications();
-        }        
+        }
     }
     /**
      * Push all modifications of the aggregations to global cache,
@@ -1595,9 +1607,12 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     public void pushAggregateModificationsToGlobalCache() {
         for (RolapStar star : getStars()) {
             star.pushAggregateModificationsToGlobalCache();
-        }                
-    }    
+        }
+    }
 
+    /**
+     * @deprecated Use {@link mondrian.olap.CacheControl#flush(mondrian.olap.CacheControl.CellRegion)}
+     */
     public static void flushAllRolapStarCachedAggregations() {
         for (Iterator<RolapSchema> itSchemas = RolapSchema.getRolapSchemas();
                 itSchemas.hasNext(); ) {
