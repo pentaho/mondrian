@@ -166,6 +166,10 @@ public class ParameterImpl
 
     public Calc compile(ExpCompiler compiler) {
         final ParameterSlot slot = compiler.registerParameter(this);
+        if (this.slot != null) {
+            // save previous value
+            slot.setParameterValue(this.slot.getParameterValue());
+        }
         this.slot = slot;
         return new ParameterCalc(slot);
     }
@@ -188,7 +192,12 @@ public class ParameterImpl
         }
 
         public Object evaluate(Evaluator evaluator) {
-            return evaluator.getParameterValue(slot);
+            Object value = evaluator.getParameterValue(slot);
+            if (slot.getParameterValue() == null) {
+                // save value if not set (setting the default value)
+                slot.setParameterValue(value);
+            }
+            return value;
         }
     }
 }
