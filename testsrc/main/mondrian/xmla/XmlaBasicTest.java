@@ -445,7 +445,7 @@ public class XmlaBasicTest extends FoodMartTestCase {
    }
 
     // Testcase for bug 1653587.
-    public void _testExecuteCrossjoin() throws Exception {
+    public void testExecuteCrossjoin() throws Exception {
        String requestType = "EXECUTE";
         String query = "SELECT CrossJoin({[Product].[All Products].children}, {[Customers].[All Customers].children}) ON columns FROM Sales";
         String request = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +

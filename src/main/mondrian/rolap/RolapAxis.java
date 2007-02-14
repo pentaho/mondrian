@@ -122,8 +122,8 @@ public abstract class RolapAxis implements Axis {
         }
         public synchronized List<Position> getPositions() {
             return (list == null)
-                ? new PositionWrapper()
-                : new PositionList();
+                ? new MemberIterable.PositionWrapper()
+                : new MemberIterable.PositionList();
         }
         protected synchronized void materialize() {
             if (list == null) {
@@ -152,15 +152,13 @@ public abstract class RolapAxis implements Axis {
                 positionList = new PositionIter();
             }
             protected synchronized void materialize() {
-//System.out.println("materialize Member");
-//new Exception().printStackTrace();
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
                        "PositionWrapper.materialize: Member iter.class="
                              + iter.getClass().getName());
                 }
                 RolapAxis.MemberIterable.this.materialize();
-                positionList = new PositionList();
+                positionList = new MemberIterable.PositionList();
             }
             public int size() {
                 try {
@@ -200,7 +198,7 @@ public abstract class RolapAxis implements Axis {
                         return it.hasNext();
                     }
                     public Position next() {
-                        return new MIPosition(it.next());
+                        return new MemberIterable.MIPosition(it.next());
                     }
                     public void remove() {
                         throw new UnsupportedOperationException("remove");
@@ -213,10 +211,20 @@ public abstract class RolapAxis implements Axis {
          * A List&lt;Member&gt; which only implements the 'iterator' method.
          * Each Iterator&lt;Member&gt; has only one Member.
          */
-        class MIPosition extends PositionUnsupported {
+        class MIPosition extends PositionBase {
             Member member;
             MIPosition(Member member) {
                 this.member = member;
+            }
+            public int size() {
+                return 1;
+            }
+            public Member get(int index) {
+                if (index != 0) {
+                    throw new IndexOutOfBoundsException(
+                        "Index: "+index+", Size: 1");
+                }
+                return member;
             }
 
             public Iterator<Member> iterator() {
@@ -248,7 +256,7 @@ public abstract class RolapAxis implements Axis {
                 return list.size();
             }
             public Position get(int index) {
-                return new MLPosition(index);
+                return new MemberIterable.MLPosition(index);
             }
         }
 
@@ -285,7 +293,7 @@ public abstract class RolapAxis implements Axis {
             this.list = list;
         }
         public List<Position> getPositions() {
-            return new PositionList();
+            return new MemberList.PositionList();
         }
         /**
          *  Each Position has a single Member.
@@ -297,7 +305,7 @@ public abstract class RolapAxis implements Axis {
                 return list.size();
             }
             public Position get(int index) {
-                return new MLPosition(index);
+                return new MemberList.MLPosition(index);
             }
         }
 
@@ -340,8 +348,8 @@ public abstract class RolapAxis implements Axis {
         }
         public synchronized List<Position> getPositions() {
             return (list == null)
-                ? new PositionWrapper()
-                : new PositionList();
+                ? new MemberArrayIterable.PositionWrapper()
+                : new MemberArrayIterable.PositionList();
         }
         protected synchronized void materialize() {
             if (list == null) {
@@ -371,15 +379,13 @@ public abstract class RolapAxis implements Axis {
                 positionList = new PositionIter();
             }
             protected synchronized void materialize() {
-//System.out.println("materialize Member[]");
-//new Exception().printStackTrace();
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
                        "PositionWrapper.materialize: Member[] iter.class="
                              + iter.getClass().getName());
                 }
                 RolapAxis.MemberArrayIterable.this.materialize();
-                positionList = new PositionList();
+                positionList = new MemberArrayIterable.PositionList();
             }
             public int size() {
                 try {
@@ -421,7 +427,7 @@ public abstract class RolapAxis implements Axis {
                     }
                     public Position next() {
                         nextCnt++;
-                        return new MIPosition(it.next());
+                        return new MemberArrayIterable.MIPosition(it.next());
                     }
                     public void remove() {
                         throw new UnsupportedOperationException("remove");
@@ -433,12 +439,17 @@ public abstract class RolapAxis implements Axis {
          * A List&lt;Member&gt; which only implements the 'iterator' method.
          * Each Iterator&lt;Member&gt; two or more Members.
          */
-        class MIPosition extends PositionUnsupported {
+        class MIPosition extends PositionBase  {
             Member[] members;
             MIPosition(Member[] members) {
                 this.members = members;
             }
-
+            public int size() {
+                return members.length;
+            }
+            public Member get(int index) {
+                return members[index];
+            }
             public Iterator<Member> iterator() {
                 return new Iterator<Member>() {
                     int index = 0;
@@ -465,7 +476,7 @@ public abstract class RolapAxis implements Axis {
                 return list.size();
             }
             public Position get(int index) {
-                return new MALPosition(index);
+                return new MemberArrayIterable.MALPosition(index);
             }
         }
 
@@ -509,7 +520,7 @@ public abstract class RolapAxis implements Axis {
             this.len = (list.size() == 0) ? 0 : list.get(0).length;
         }
         public List<Position> getPositions() {
-            return new PositionList();
+            return new MemberArrayList.PositionList();
         }
         /**
          *  Each Position has an array of Member.
@@ -521,7 +532,7 @@ public abstract class RolapAxis implements Axis {
                 return list.size();
             }
             public Position get(int index) {
-                return new MALPosition(index);
+                return new MemberArrayList.MALPosition(index);
             }
         }
         /**
