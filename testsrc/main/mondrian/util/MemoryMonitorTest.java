@@ -111,7 +111,7 @@ Does not work without the notify on add feature.
             }
         }
         Listener listener = new Listener();
-        MemoryMonitor mm = MemoryMonitorFactory.instance().getObject();
+        MemoryMonitor mm = MemoryMonitorFactory.getMemoryMonitor();
         try {
             // We use a percentage of '0' because we know that value is
             // less than or equal to the lowest JVM memory usage.
@@ -137,7 +137,7 @@ Does not work without the notify on add feature.
             }
         }
         Listener listener = new Listener();
-        MemoryMonitor mm = MemoryMonitorFactory.instance().getObject();
+        MemoryMonitor mm = MemoryMonitorFactory.getMemoryMonitor();
         // we will set a percentage slightly above the current
         // used level, and then allocate some objects that will
         // force a notification.
@@ -264,7 +264,7 @@ Does not work without the notify on add feature.
         MemoryMonitor mm = null;
         try {
             MemoryMonitorFactory.setThreadLocalClassName(TestMM.class.getName());
-            mm = MemoryMonitorFactory.instance().getObject();
+            mm = MemoryMonitorFactory.getMemoryMonitor();
             boolean b = causeGC(mm);
 //System.out.println("causeGC="+b);
             long neededMemory = 5000000;

@@ -10,11 +10,14 @@
 package mondrian.util;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.util.Properties;
 
 /**
  * Concrete derived classes of the generic <code>ObjectFactory</code> class
- * are used to produce an implementation of an interface. In general, a
+ * are used to produce an implementation of an interface (a
+ * normal interface implementation or a Proxy). In general, a
  * factory should produce a default implementation for general application
  * use as well as particular implementations used during testing.
  * During testing of application code and during normal execution,
@@ -178,6 +181,10 @@ import java.util.Properties;
  *          boolean getValue();
  *          .......
  *      }
+ *      class NormalBooImpl implements Boo {
+ *          public boolean getValue() { ... }
+ *          .......
+ *      }
  *      class MyCode {
  *          private Boo boo;
  *          MyCode() {
@@ -196,14 +203,52 @@ import java.util.Properties;
  *
  *      class MyCodeTest {
  *          private static boolean testValue;
- *          static class BooTest implements Boo {
+ *          static class BooTest1 implements Boo {
  *              public boolean getValue() {
  *                  return MyTest.testValue;
  *              }
+ *              .....
  *          }
- *          public void test() {
+ *          static class BooTest2 implements 
+ *                      java.lang.reflect.InvocationHandler {
+ *              private final Boo boo;
+ *              public BooTest2() {
+ *                  // remove test class name
+ *                  BooFactory.clearThreadLocalClassName();
+ *                  // get default Boo implementation
+ *                  this.boo = BooFactory.instance().getObject();
+ *              }
+ *              public Object invoke(Object proxy, Method method, Object[] args)
+ *                  throws Throwable {
+ *                  if (method.getName().equals("getValue")) [
+ *                      return new Boolean(MyTest.testValue);
+ *                  } else {
+ *                      return method.invoke(this.boo, args);
+ *                  }
+ *              }
+ *          }
+ *          public void test1() {
  *              try {
- *                  BooFactory.setThreadLocalClassName("MyTest.BooTest");
+ *                  // Factory will creates test class
+ *                  BooFactory.setThreadLocalClassName("MyTest.BooTest1");
+ *
+ *                  MyTest.testValue = true;
+ *                  MyCode myCode = new MyCode();
+ *                  int value = myCode.getValue();
+ *                  assertTrue("Value not 1", (value == 1));
+ * 
+ *                  MyTest.testValue = false;
+ *                  myCode = new MyCode();
+ *                  value = myCode.getValue();
+ *                  assertTrue("Value not 0", (value == 0));
+ *              } finally {
+ *                  BooFactory.clearThreadLocalClassName();
+ *              }
+ *          }
+ *          public void test2() {
+ *              try {
+ *                  // Use InvocationHandler and Factory Proxy capability
+ *                  BooFactory.setThreadLocalClassName("MyTest.BooTest2");
  *
  *                  MyTest.testValue = true;
  *                  MyCode myCode = new MyCode();
@@ -262,7 +307,7 @@ public abstract class ObjectFactory<V> {
      * @return the newly created object
      * @throws CreationException if unable to create the object
      */
-    public final V getObject() throws CreationException {
+    protected final V getObject() throws CreationException {
         return getObject(System.getProperties());
     }
 
@@ -277,7 +322,7 @@ public abstract class ObjectFactory<V> {
      * @return the newly created object
      * @throws CreationException if unable to create the object
      */
-    public final V getObject(final Properties props) throws CreationException {
+    protected final V getObject(final Properties props) throws CreationException {
         return getObject(props, EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY);
     }
 
@@ -293,8 +338,8 @@ public abstract class ObjectFactory<V> {
      * @return the newly created object
      * @throws CreationException if unable to create the object
      */
-    public final V getObject(final Class[] parameterTypes,
-                             final Object[] parameterValues)
+    protected final V getObject(final Class[] parameterTypes,
+                                final Object[] parameterValues)
             throws CreationException {
         return getObject(System.getProperties(),
                          parameterTypes,
@@ -319,9 +364,9 @@ public abstract class ObjectFactory<V> {
      * @return the newly created object
      * @throws CreationException if unable to create the object
      */
-    public V getObject(final Properties props,
-                             final Class[] parameterTypes,
-                             final Object[] parameterValues)
+    protected V getObject(final Properties props,
+                          final Class[] parameterTypes,
+                          final Object[] parameterValues)
             throws CreationException {
 
         // Unit test override
@@ -341,9 +386,14 @@ public abstract class ObjectFactory<V> {
     /**
      * Creates an instance with the given <code>className</code>,
      * <code>parameterTypes</code> and <code>parameterValues</code> or
-     * throw a <code>CreationException</code>. This uses reflection
+     * throw a <code>CreationException</code>. There are two different
+     * mechanims available. The first is to uses reflection
      * to create the instance typing the generated Object based upon
      * the <code>interfaceClass</code> factory instance object.
+     * With the second the <code>className</code> is an class that implements
+     * the <code>InvocationHandler</code> interface and in this case
+     * the <code>java.lang.reflect.Proxy</code> class is used to 
+     * generate a proxy.
      *
      * @param className the class name used to create Object instance
      * @param parameterTypes  the class parameters that define the signature
@@ -358,18 +408,31 @@ public abstract class ObjectFactory<V> {
                           final Object[] parameterValues)
             throws CreationException {
         try {
-            // As reference google the source for:
+            // As a place to begin google: 
             //   org.apache.cxf.BusFactoryHelper.java
             final ClassLoader loader =
                 Thread.currentThread().getContextClassLoader();
             final Class<?> genericClass =
                 Class.forName(className, true, loader);
-            final Class<? extends V> specificClass =
-                asSubclass(this.interfaceClass, genericClass);
-            final Constructor<? extends V> constructor =
-                specificClass.getConstructor(parameterTypes);
 
-            return constructor.newInstance(parameterValues);
+            // Are we creating a Proxy or an instance?
+            if (InvocationHandler.class.isAssignableFrom(genericClass)) {
+                final Constructor constructor =
+                    genericClass.getConstructor(parameterTypes);
+                InvocationHandler handler = (InvocationHandler) 
+                        constructor.newInstance(parameterValues);
+                return (V) Proxy.newProxyInstance(
+                            loader,
+                            new Class[] { this.interfaceClass },
+                            handler);
+            } else {
+                final Class<? extends V> specificClass =
+                    asSubclass(this.interfaceClass, genericClass);
+                final Constructor<? extends V> constructor =
+                    specificClass.getConstructor(parameterTypes);
+
+                return constructor.newInstance(parameterValues);
+            }
 
         } catch (Exception exc) {
             throw new CreationException("Error creating object of type \"" +
@@ -389,7 +452,7 @@ public abstract class ObjectFactory<V> {
      * includes the class itself).
      */
     private static <V> Class<? extends V> asSubclass(final Class<V> clazz,
-                                              final Class<?> genericClass) {
+                                                     final Class<?> genericClass) {
         if (clazz.isAssignableFrom(genericClass)) {
             return (Class<? extends V>) genericClass;
         } else {
@@ -455,6 +518,30 @@ public abstract class ObjectFactory<V> {
                         this.interfaceClass.getName() + "\"");
     }
 
+    /** 
+     * Get the current override values in the opaque context object and 
+     * clear those values within the Factory.
+     * <p>
+     * This is used in testing.
+     * 
+     * @return the test <code>Context</code> object.
+     */
+    public Object removeContext() {
+        return null;
+    }
+
+    /** 
+     * Restore the context object resetting override values. 
+     * <p>
+     * This is used in testing.
+     * 
+     * @param context the context object to be restored.
+     */
+    public void restoreContext(final Object context) {
+        // empty
+    }
+
+
     /**
      * Implementation of ObjectFactory
      * that returns only a single instance of the Object.
@@ -505,9 +592,9 @@ public abstract class ObjectFactory<V> {
          * @return the newly created object
          * @throws CreationException if unable to create the object
          */
-        public T getObject(final Properties props,
-                                 final Class[] parameterTypes,
-                                 final Object[] parameterValues)
+        protected T getObject(final Properties props,
+                              final Class[] parameterTypes,
+                              final Object[] parameterValues)
                 throws CreationException {
 
             // Unit test override, do not use application instance.
@@ -559,6 +646,28 @@ public abstract class ObjectFactory<V> {
                 throws CreationException {
             return getObject(className, parameterTypes, parameterValues);
         }
+    }
+
+    /** 
+     * This is for testing only.
+     * <p>
+     * <code>Context</code> contain the Factory implementation specific 
+     * non-default values and mechanism for overriding the default
+     * instance type returned by the Factory.
+     * Factory implementation can extend the <code>Context</code> interface 
+     * to capture its specific override values.
+     * If, for example, a Factory implementation uses a <code>ThreadLocal</code>
+     * to override the default instance type for unit tests, then the 
+     * <code>Context</code>
+     * will hold the current value of the <code>ThreadLocal</code>.
+     * Getting the Context, clears the <code>ThreadLocal</code> value.
+     * This allows the tester who wishes to create code that will provide
+     * a wrapper around the default instance type to register their 
+     * wrapper class name with the <code>ThreadLocal</code>, and, within
+     * the wrapper constructor, get the <code>Context</code>, get
+     * a default instance, and then restore the <code>Context</code>.
+     */
+    public interface Context {
     }
 }
 

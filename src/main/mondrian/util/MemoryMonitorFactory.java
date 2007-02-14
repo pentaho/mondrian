@@ -53,10 +53,10 @@ public final class MemoryMonitorFactory
     /**
      * Access the <code>MemoryMonitorFactory</code> instance.
      *
-     * @return the <code>MemoryMonitorFactory</code>.
+     * @return the <code>MemoryMonitor</code>.
      */
-    public static MemoryMonitorFactory instance() {
-        return factory;
+    public static MemoryMonitor getMemoryMonitor() {
+        return factory.getObject();
     }
 
     /**
@@ -79,7 +79,7 @@ public final class MemoryMonitorFactory
     /**
      * Sets the class name of a  <code>MemoryMonitor</code> implementation.
      * This should be called (obviously) before calling the
-     * <code>MemoryMonitorFactory</code> <code>getObject</code>
+     * <code>MemoryMonitorFactory</code> <code>getMemoryMonitor</code>
      * method to get the <code>MemoryMonitor</code> implementation.
      * Generally, this is only used for testing.
      *

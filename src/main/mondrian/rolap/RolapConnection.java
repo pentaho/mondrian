@@ -397,7 +397,7 @@ public class RolapConnection extends ConnectionBase {
             }
         }
         Listener listener = new Listener(query);
-        MemoryMonitor mm = MemoryMonitorFactory.instance().getObject();
+        MemoryMonitor mm = MemoryMonitorFactory.getMemoryMonitor();
         try {
             mm.addListener(listener);
             // Check to see if we must punt

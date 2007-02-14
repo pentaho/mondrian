@@ -9,8 +9,11 @@
 */
 package mondrian.util;
 
-public class CreationException extends RuntimeException {
+import mondrian.olap.MondrianException;
+
+public class CreationException extends MondrianException {
     public CreationException() {
+        super();
     }
     public CreationException(String s) {
         super(s);
