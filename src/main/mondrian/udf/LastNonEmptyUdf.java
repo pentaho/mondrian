@@ -57,10 +57,6 @@ public class LastNonEmptyUdf implements UserDefinedFunction {
     }
 
     public Object execute(Evaluator evaluator, Argument[] arguments) {
-//System.out.println("LastNonEmpty.execute: TOP");
-boolean b = evaluator.isNonEmpty();
-try {
-evaluator.setNonEmpty(false);
         final Argument memberListExp = arguments[0];
         final List memberList = (List) memberListExp.evaluate(evaluator);
         final Argument exp = arguments[1];
@@ -68,7 +64,6 @@ evaluator.setNonEmpty(false);
         int missCount = 0;
         for (int i = memberList.size() - 1; i >= 0; --i) {
             Member member = (Member) memberList.get(i);
-//System.out.println("LastNonEmpty.execute: member="+member);
             // Create an evaluator with the member as its context.
             Evaluator subEvaluator = evaluator.push(member);
             int missCountBefore = subEvaluator.getMissCount();
@@ -93,7 +88,6 @@ evaluator.setNonEmpty(false);
                 if (missCount < 2*nullCount+1) {
                     continue;
                 }
-//System.out.println("LastNonEmpty.execute: AFTER missCountBefore="+missCountBefore + ", missCountAfter=" +missCountAfter +", nullCount="+nullCount);
             }
             if (o == RolapUtil.valueNotReadyException) {
                 // Value is not in the cache yet, so we don't know whether
@@ -109,7 +103,6 @@ evaluator.setNonEmpty(false);
                 }
                 return runtimeException;
             }
-//System.out.println("LastNonEmpty.execute: RETURN member="+member);
             return member;
         }
         // Not found. Return the hierarchy's 'null member'.
@@ -121,9 +114,6 @@ evaluator.setNonEmpty(false);
             ? memberListExp.getType().getDimension().
                 getHierarchies()[0].getNullMember()
             : hierarchy.getNullMember();
-} finally {
-evaluator.setNonEmpty(b);
-}
     }
 
     public String[] getReservedWords() {
