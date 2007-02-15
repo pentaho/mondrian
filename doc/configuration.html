@@ -40,7 +40,7 @@
     	</ol>
     	</ol>
     <li><a href="#Memory_management">Memory_management</a><ol>
-			<li><a href="#Out_of_memory">Out_of_memory</a></li>
+			<li><a href="#Out_of_memory">Out of memory</a></li>
     	</ol>
     </li>
 </ol>
@@ -132,7 +132,23 @@ suite of regression tests.</p>
       <td>int</td>
       <td>0</td>
       <td>If set to a value greater than zero, limits the maximum size of a
-      result set.</td>
+      result set.<p>If a query exceeds the limit, you will get an error such as:</p>
+
+      <blockquote>
+          <p><code>Mondrian result limit exceeded: Mondrian Error: Size of CrossJoin 
+          result (53,463) exceeded limit (50,000)</code></p>
+
+      </blockquote>
+      or
+      <blockquote>
+          <p><code>Number of members to be read exceeded limit 50,000</code></p>
+
+      </blockquote></p>
+      
+      <p>and Mondrian throws a
+      <a href="api/mondrian/olap/ResourceLimitExceededException.html">
+      mondrian.olap.ResourceLimitExceededException</a>. See also
+      <a href="#limit_properties">limit properties</a>.</p></td>
     </tr>
     <tr>
       <td>
@@ -261,7 +277,18 @@ suite of regression tests.</p>
       <td>int</td>
       <td>0</td>
       <td>If set to a value greater than zero, limits the number of seconds
-      a query executes before it is aborted.</td>
+      a query executes before it is aborted.<p>If a query exceeds the limit, 
+      mondrian throws a <a href="api/mondrian/olap/QueryTimeoutException.html">mondrian.olap.QueryTimeoutException</a>y, 
+      resulting in an error such as:</p>
+
+      <blockquote>
+          <p><code>Query timeout of 10 seconds reached</code></p>
+
+      </blockquote>
+      </p>
+      
+      <p>See also
+      <a href="#limit_properties">limit properties</a>.</p></td>
     </tr>
     <tr>
       <td><code>
@@ -287,7 +314,18 @@ suite of regression tests.</p>
       <td>int</td>
       <td>0</td>
       <td>If > 0, the maximum number of iterations allowed when evaluating an
-        aggregate.  If 0, there is no limit.</td>
+        aggregate.  If 0, there is no limit.<p>If a query exceeds the limit, 
+      mondrian throws a
+      <a href="api/mondrian/olap/ResourceLimitExceededException.html">mondrian.olap.ResourceLimitExceededException</a>, 
+      resulting in an error such as:</p>
+
+      <blockquote>
+          <p><code>Number of iterations exceeded limit of 100</code></p>
+
+      </blockquote>
+      
+      <p>See also
+      <a href="#limit_properties">limit properties</a>.</p></td>
     </tr>
     <tr>
       <td colspan="4">
@@ -774,6 +812,15 @@ suite of regression tests.</p>
     </tr>
 
 </table>
+
+<h3>Limit properties<a name="Limit_properties">&nbsp;</a></h3>
+
+<p>Properties <code>mondrian.result.limit</code>, <code>mondrian.rolap.iterationLimit</code> 
+and <code>mondrian.rolap.queryTimeout</code> enforce runtime limits on the 
+time or space required to execute a query. If any of these limits are exceeded, 
+mondrian throws an exception which extends
+<a href="api/mondrian/olap/ResultLimitExceededException.html">
+mondrian.olap.ResultLimitExceededException</a>.</p>
 
 <h2>Connect strings<a name="Connect_strings">&nbsp;</a></h2>
 
