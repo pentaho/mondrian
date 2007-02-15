@@ -982,10 +982,13 @@ public class Query extends QueryPart {
     }
 
     private ExpCompiler createCompiler(
-            Evaluator evaluator, final Validator validator) {
-        ExpCompiler compiler = new BetterExpCompiler(evaluator, validator);
-        ((BetterExpCompiler) compiler).setAcceptableResultStyles(
-            new ResultStyle[] { resultStyle });
+            final Evaluator evaluator, final Validator validator) {
+
+        ExpCompiler compiler = ExpCompiler.Factory.getExpCompiler(
+                                    evaluator, 
+                                    validator, 
+                                    new ResultStyle[] { resultStyle });
+
         final int expDeps = MondrianProperties.instance().TestExpDependencies.get();
         if (expDeps > 0) {
             compiler = RolapUtil.createDependencyTestingCompiler(compiler);

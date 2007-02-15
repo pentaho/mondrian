@@ -32,11 +32,17 @@ public class AbstractExpCompiler implements ExpCompiler {
     private final Validator validator;
     private final Map<Parameter, ParameterSlotImpl> parameterSlots =
         new HashMap<Parameter, ParameterSlotImpl>();
-    private ResultStyle[] resultStyles = ANY_RESULT_STYLE_ARRAY;
+    private ResultStyle[] resultStyles;
 
     public AbstractExpCompiler(Evaluator evaluator, Validator validator) {
+        this(evaluator, validator, ANY_RESULT_STYLE_ARRAY);
+    }
+    public AbstractExpCompiler(Evaluator evaluator, Validator validator,
+            ResultStyle[] resultStyles) {
         this.evaluator = evaluator;
         this.validator = validator;
+        this.resultStyles = (resultStyles == null)
+            ? ANY_RESULT_STYLE_ARRAY : resultStyles;
     }
 
     public Evaluator getEvaluator() {
@@ -81,7 +87,7 @@ public class AbstractExpCompiler implements ExpCompiler {
         ResultStyle[] save = this.resultStyles;
         try {
             this.resultStyles = preferredResultTypes;
-            return exp.accept(this);
+            return compile(exp);
         } finally {
             this.resultStyles = save;
         }
@@ -267,9 +273,6 @@ public class AbstractExpCompiler implements ExpCompiler {
 
     public ResultStyle[] getAcceptableResultStyles() {
         return resultStyles;
-    }
-    public void setAcceptableResultStyles(ResultStyle[] resultStyles) {
-        this.resultStyles = resultStyles;
     }
 
     /**
