@@ -94,7 +94,7 @@ suite of regression tests.</p>
   </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#FoodmartJdbcURL">
-      mondrian.foodmart .jdbcURL</a></code></td>
+      mondrian.foodmart.jdbcURL</a></code></td>
       <td>string</td>
       <td>&quot;jdbc:odbc:Mondrian FoodMart&quot;</td>
       <td>Property containing the JDBC URL of the FoodMart database. The default
@@ -102,7 +102,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#QueryLimit">
-      mondrian.query. limit</a></code></td>
+      mondrian.query.limit</a></code></td>
       <td>int</td>
       <td>40</td>
       <td>Maximum number of simultaneous queries the system will allow.<p>Oracle
@@ -113,21 +113,21 @@ suite of regression tests.</p>
     <tr>
 
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#JdbcDrivers">
-      mondrian. jdbcDrivers</a></code></td>
+      mondrian.jdbcDrivers</a></code></td>
       <td>string</td>
       <td>mondrian.jdbcDrivers,<br>
-      sun.jdbc.odbc .JdbcOdbcDriver,<br>
+      sun.jdbc.odbc.JdbcOdbcDriver,<br>
       org.hsqldb.jdbcDriver,<br>
 
       oracle.jdbc.Oracle Driver,<br>
-      com.mysql.jdbc .Driver</td>
+      com.mysql.jdbc.Driver</td>
       <td>A list of JDBC drivers to load automatically. Must be a
       comma-separated list of class names, and the classes must be on the class
       path.</td>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#ResultLimit">
-      mondrian.result .limit</a></code></td>
+      mondrian.result.limit</a></code></td>
 
       <td>int</td>
       <td>0</td>
@@ -153,7 +153,7 @@ suite of regression tests.</p>
     <tr>
       <td>
       <code><a href="api/mondrian/olap/MondrianProperties.html#CachePoolCostLimit">
-      mondrian.rolap. CachePool.costLimit</a></code></td>
+      mondrian.rolap.CachePool.costLimit</a></code></td>
       <td>int</td>
       <td>10,000</td>
       <td>Obsolete.</td>
@@ -161,7 +161,7 @@ suite of regression tests.</p>
     <tr>
       <td>
       <code><a href="api/mondrian/olap/MondrianProperties.html#MaxEvalDepth">mondrian.rolap.
-      evaluate. MaxEvalDepth</a></code></td>
+      evaluate.MaxEvalDepth</a></code></td>
       <td>int</td>
       <td>10</td>
       <td>Maximum number of passes allowable while evaluating an MDX expression.
@@ -171,7 +171,7 @@ suite of regression tests.</p>
     <tr>
       <td>
       <code><a href="api/mondrian/olap/MondrianProperties.html#LargeDimensionThreshold">
-      mondrian.rolap. LargeDimension Threshold</a></code></td>
+      mondrian.rolap.LargeDimension Threshold</a></code></td>
       <td>int</td>
       <td>100</td>
       <td>Determines when a dimension is considered &quot;large&quot;. If a dimension has
@@ -182,7 +182,7 @@ suite of regression tests.</p>
     <tr>
       <td>
       <code><a href="api/mondrian/olap/MondrianProperties.html#SparseSegmentCountThreshold">
-      mondrian.rolap. SparseSegment ValueThreshold</a></code></td>
+      mondrian.rolap.SparseSegmentValueThreshold</a></code></td>
       <td>int</td>
       <td>1,000</td>
 
@@ -223,16 +223,16 @@ suite of regression tests.</p>
     <tr>
       <td>
       <code><a href="api/mondrian/olap/MondrianProperties.html#SparseSegmentDensityThreshold">
-      mondrian.rolap. SparseSegment DensityThreshold</a></code></td>
+      mondrian.rolap.SparseSegmentDensityThreshold</a></code></td>
       <td>double</td>
       <td>0.5</td>
-      <td>See <code>mondrian.rolap. SparseSegment ValueThreshold</code>.</td>
+      <td>See <code>mondrian.rolap.SparseSegmentValueThreshold</code>.</td>
     </tr>
 
     <tr>
       <td><code>
       <a href="api/mondrian/olap/MondrianProperties.html#EnableTriggers">
-      mondrian.olap. triggers.enable</a></code></td>
+      mondrian.olap.triggers.enable</a></code></td>
       <td>boolean</td>
       <td>true</td>
       <td>Whether to notify the Mondrian system when a property value changes.<p>
@@ -241,18 +241,18 @@ suite of regression tests.</p>
       reload), when a given property changes via, say,</p>
 
 
-        <p>&nbsp;<code>MondrianProperties .instance() .populate(null)</code>;</p>
+        <p>&nbsp;<code>MondrianProperties.instance().populate(null)</code>;</p>
 
         <p>or</p>
 
 
-        <p><code>MondrianProperties .instance() .QueryLimit.set(50);</code></p>
+        <p><code>MondrianProperties.instance().QueryLimit.set(50);</code></p>
             </td>
     </tr>
     <tr>
       <td><code>
       <a href="api/mondrian/olap/MondrianProperties.html#CaseSensitive">
-      mondrian.olap. case.sensitive</a></code></td>
+      mondrian.olap.case.sensitive</a></code></td>
       <td>boolean</td>
       <td>false</td>
       <td>Controls whether the MDX parser resolves uses case-sensitive matching
@@ -262,7 +262,7 @@ suite of regression tests.</p>
 
       <td style="vertical-align: top;"><code>
       <a href="api/mondrian/olap/MondrianProperties.html#LocalePropFile">
-      mondrian.rolap. localePropFile</a></code></td>
+      mondrian.rolap.localePropFile</a></code></td>
       <td style="vertical-align: top;">string</td>
       <td style="vertical-align: top;">null<br>
       </td>
@@ -300,8 +300,7 @@ suite of regression tests.</p>
 		fact there is no way to display empty cells).</td>
     </tr>
     <tr>
-      <td><a href="api/mondrian/olap/MondrianProperties.html#IgnoreInvalidMembers">
-      <code>mondrian.rolap.ignoreInvalidMembers</code></a></td>
+      <td><code><a href="api/mondrian/olap/MondrianProperties.html#IgnoreInvalidMembers">mondrian.rolap.ignoreInvalidMembers</a></code></td>
       <td>boolean</td>
       <td>false</td>
       <td>If set to true, during schema load, invalid members are ignored
@@ -309,8 +308,7 @@ suite of regression tests.</p>
         a query.</td>
     </tr>
     <tr> 
-      <td><a href="api/mondrian/olap/MondrianProperties.html#IterationLimit">
-      <code>mondrian.rolap.IterationLimit</code></a></td>
+      <td><code><a href="api/mondrian/olap/MondrianProperties.html#IterationLimit">mondrian.rolap.IterationLimit</a></code></td>
       <td>int</td>
       <td>0</td>
       <td>If > 0, the maximum number of iterations allowed when evaluating an
@@ -327,6 +325,44 @@ suite of regression tests.</p>
       <p>See also
       <a href="#limit_properties">limit properties</a>.</p></td>
     </tr>
+    <tr> 
+      <td>
+        <code>
+        <a href="api/mondrian/olap/MondrianProperties.html#CrossJoinOptimizerSize">mondrian.olap.fun.crossjoin.optimizer.size</a></code></td>
+      <td>int</td>
+      <td>0</td>
+      <td>
+         If a crossjoin input list's size is larger than this property's
+         value and the axis has the "NON EMPTY" qualifier, then
+         the crossjoin non-empty optimizer is applied.
+         Setting this value to '0' means that for all crossjoin
+         input lists in non-empty axes will have the optimizer applied.
+         On the other hand, if the value is set larger than any possible
+         list, say <code>Integer.MAX_VALUE</code>, then the optimizer 
+         will never be applied.
+      </td>
+    </tr>
+    <tr> 
+      <td>
+        <code>
+        <a href="api/mondrian/olap/MondrianProperties.html#UseImplicitMembers">mondrian.rolap.RolapResult.useImplicitMembers</a></code></td>
+      <td>boolean</td>
+      <td>true</td>
+      <td>
+         The crossjoin optimizer is flawed. It evaluates potential cells
+         using default members when a member is not explicitly set in
+         the particular axis. This works unless another axis, normal or
+         slicer, uses a member other than the default.
+         Setting this property to <code>true</code> will enable the
+         RolapResult to collect these implied members and if any are
+         found, then re-evaluate using the discovered members.
+         <p>
+         If you do not enable this property, then the crossjoin optimizer,
+         if used, can produce errors. Bad results are produced for some
+         queries and some data sets - its a combination of both so the 
+         error does not manifest itself all the time.
+      </td>
+    </tr>
     <tr>
       <td colspan="4">
 
@@ -337,7 +373,7 @@ suite of regression tests.</p>
     <tr>
 
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#TraceLevel">
-      mondrian.trace. level</a></code></td>
+      mondrian.trace.level</a></code></td>
       <td>int</td>
       <td>-</td>
       <td>The amount of tracing displayed.<p>If trace level is above 0, SQL
@@ -347,7 +383,7 @@ suite of regression tests.</p>
 
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#DebugOutFile">
-      mondrian.debug. out.file</a></code></td>
+      mondrian.debug.out.file</a></code></td>
       <td>string</td>
       <td>System.out</td>
       <td>The name of the file to which tracing is to be written.</td>
@@ -356,7 +392,7 @@ suite of regression tests.</p>
     <tr>
       <td><code>
       <a href="api/mondrian/olap/MondrianProperties.html#PrintCacheablesAfterQuery">
-      mondrian.rolap. RolapResult. printCacheables</a></code></td>
+      mondrian.rolap.RolapResult.printCacheables</a></code></td>
       <td>boolean</td>
       <td>false</td>
       <td>Obsolete.</td>
@@ -372,7 +408,7 @@ suite of regression tests.</p>
     <tr>
 
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#TestName">
-      mondrian.test. Name</a></code></td>
+      mondrian.test.Name</a></code></td>
       <td>string</td>
       <td>null</td>
       <td>Property which determines which tests are run. This is a
@@ -383,19 +419,19 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#TestClass">
-      mondrian.test. Class</a></code></td>
+      mondrian.test.Class</a></code></td>
       <td>string</td>
       <td>-</td>
       <td>Property which determines which test class to run. This is the name of
       the class which either implements interface&nbsp; <code>
 
       <a href="http://junit.sourceforge.net/javadoc/junit/framework/Test.html">
-      junit .framework.Test</a></code> or has a method <code>public static
+      junit.framework.Test</a></code> or has a method <code>public static
       junit.framework.Test suite()</code>.</td>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#TestConnectString">
-      mondrian.test .connectString</a></code></td>
+      mondrian.test.connectString</a></code></td>
 
       <td>string</td>
       <td>-</td>
@@ -406,7 +442,7 @@ suite of regression tests.</p>
 
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#QueryFilePattern">
-      mondrian.test .QueryFilePattern</a></code></td>
+      mondrian.test.QueryFilePattern</a></code></td>
       <td>string</td>
       <td>-</td>
       <td>(not documented)</td>
@@ -415,7 +451,7 @@ suite of regression tests.</p>
     <tr>
       <td><code>
       <a href="api/mondrian/olap/MondrianProperties.html#QueryFileDirectory">
-      mondrian.test .QueryFileDirectory</a></code></td>
+      mondrian.test.QueryFileDirectory</a></code></td>
       <td>string</td>
       <td>-</td>
       <td>(not documented)</td>
@@ -423,7 +459,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#Iterations">
-      mondrian.test .Iterations</a></code></td>
+      mondrian.test.Iterations</a></code></td>
       <td>int</td>
       <td>1</td>
       <td>(not documented)</td>
@@ -431,7 +467,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#VUsers">
-      mondrian.test .VUsers</a></code></td>
+      mondrian.test.VUsers</a></code></td>
       <td>int</td>
       <td>1</td>
       <td>(not documented)</td>
@@ -439,7 +475,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#TimeLimit">
-      mondrian.test .TimeLimit</a></code></td>
+      mondrian.test.TimeLimit</a></code></td>
       <td>int</td>
       <td>0</td>
       <td>The time limit for the test run in seconds. If the test is running
@@ -448,7 +484,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#Warmup">
-      mondrian.test .Warmup</a></code></td>
+      mondrian.test.Warmup</a></code></td>
       <td>boolean</td>
       <td>false</td>
       <td>Whether this is a &quot;warmup test&quot;.</td>
@@ -456,7 +492,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#CatalogURL">
-      mondrian. catalogURL</a></code></td>
+      mondrian.catalogURL</a></code></td>
       <td>string</td>
       <td>-</td>
       <td>The URL of the catalog to be used by
@@ -465,7 +501,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#TestExpDependencies">
-      mondrian.test .ExpDependencies</a></code></td>
+      mondrian.test.ExpDependencies</a></code></td>
       <td>int</td>
       <td>0</td>
       <td>Whether to test operators' dependencies, and how much time to spend
@@ -479,7 +515,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#TestSeed">
-      mondrian.test .random.seed</a></code></td>
+      mondrian.test.random.seed</a></code></td>
       <td>int</td>
 
       <td>1234</td>
@@ -501,7 +537,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#TestJdbcURL">
-      mondrian.test. jdbcURL</a></code></td>
+      mondrian.test.jdbcURL</a></code></td>
       <td>string</td>
       <td>-</td>
 
@@ -510,7 +546,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#TestJdbcUser">
-      mondrian.test .jdbcUser</a></code></td>
+      mondrian.test.jdbcUser</a></code></td>
       <td>string</td>
       <td>-</td>
 
@@ -519,7 +555,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#TestJdbcPassword">
-      mondrian.test .jdbcPassword</a></code></td>
+      mondrian.test.jdbcPassword</a></code></td>
       <td>string</td>
       <td>-</td>
 
@@ -536,7 +572,7 @@ suite of regression tests.</p>
   </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#UseAggregates">
-      mondrian.rolap .aggregates.Use</a></code></td>
+      mondrian.rolap.aggregates.Use</a></code></td>
       <td>boolean</td>
       <td>false</td>
       <td>Whether to use aggregate tables.<p>If
@@ -550,7 +586,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#ReadAggregates">
-      mondrian.rolap .aggregates.Read</a></code></td>
+      mondrian.rolap.aggregates.Read</a></code></td>
       <td>boolean</td>
 
       <td>false</td>
@@ -563,7 +599,7 @@ suite of regression tests.</p>
 
       <td><code>
       <a href="api/mondrian/olap/MondrianProperties.html#ChooseAggregateByVolume">
-      mondrian.rolap. aggregates. ChooseByVolume</a></code></td>
+      mondrian.rolap.aggregates.ChooseByVolume</a></code></td>
       <td>boolean</td>
       <td>false</td>
       <td>Whether to choose an aggregate tables based volume or row
@@ -575,11 +611,11 @@ suite of regression tests.</p>
     <tr>
       <td><code>
       <a href="api/mondrian/olap/MondrianProperties.html#AggregateRules">
-      mondrian.rolap. aggregates.rules</a></code></td>
+      mondrian.rolap.aggregates.rules</a></code></td>
       <td>string</td>
       <td>&quot;/DefaultRules.xml&quot;<br>
 
-      (which is in the <code>mondrian.rolap .aggmatcher</code>
+      (which is in the <code>mondrian.rolap.aggmatcher</code>
       package in <code>mondrian.jar</code>)</td>
       <td>Name of the file which defines the rules for recognizing an aggregate
       table.<p>Can be either a resource in the Mondrian jar or a URL. See
@@ -590,7 +626,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#AggregateRuleTag">
-      mondrian.rolap. aggregates.rule.tag</a></code></td>
+      mondrian.rolap.aggregates.rule.tag</a></code></td>
       <td>string</td>
       <td>default</td>
 
@@ -600,7 +636,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="api/mondrian/olap/MondrianProperties.html#GenerateAggregateSql">mondrian.rolap. aggregates. generateSql</a></code></td>
+      <a href="api/mondrian/olap/MondrianProperties.html#GenerateAggregateSql">mondrian.rolap.aggregates.generateSql</a></code></td>
 
       <td>boolean</td>
       <td>false</td>
@@ -621,7 +657,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="api/mondrian/olap/MondrianProperties.html#DisableCaching">mondrian.rolap. star.disable Caching</a></code></td>
+      <a href="api/mondrian/olap/MondrianProperties.html#DisableCaching">mondrian.rolap.star.disableCaching</a></code></td>
 
       <td>boolean</td>
       <td>false</td>
@@ -632,7 +668,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code>
-      <a href="api/mondrian/olap/MondrianProperties.html#EnableExpCache">mondrian.expCache .enable</a></code></td>
+      <a href="api/mondrian/olap/MondrianProperties.html#EnableExpCache">mondrian.expCache.enable</a></code></td>
 
       <td>boolean</td>
       <td>true</td>
@@ -644,13 +680,13 @@ suite of regression tests.</p>
       <code>Rank([Product]. CurrentMember,<br>
       &nbsp;&nbsp;&nbsp;&nbsp;
 
-      Order([Product] .MEMBERS, [Measures].[Unit Sales]))<br>
+      Order([Product].MEMBERS, [Measures].[Unit Sales]))<br>
       </code><br>
       would perform many redundant sorts.</p></td>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#FlushAfterQuery">
-      mondrian.rolap. RolapResult. flushAfter EachQuery</a></code></td>
+      mondrian.rolap.RolapResult.flushAfterEachQuery</a></code></td>
 
       <td>boolean</td>
       <td>false</td>
@@ -666,7 +702,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td style="vertical-align: top;"><code>
-      <a href="api/mondrian/olap/MondrianProperties.html#EnableNativeCrossJoin">mondrian.native .crossjoin.enable</a></code></td>
+      <a href="api/mondrian/olap/MondrianProperties.html#EnableNativeCrossJoin">mondrian.native.crossjoin.enable</a></code></td>
       <td style="vertical-align: top;">boolean</td>
 
       <td style="vertical-align: top;">true<br>
@@ -677,7 +713,7 @@ suite of regression tests.</p>
     <tr>
       <td style="vertical-align: top;"><code>
 
-      <a href="api/mondrian/olap/MondrianProperties.html#EnableNativeTopCount">mondrian.native .topcount.enable</a></code></td>
+      <a href="api/mondrian/olap/MondrianProperties.html#EnableNativeTopCount">mondrian.native.topcount.enable</a></code></td>
       <td style="vertical-align: top;">boolean</td>
       <td style="vertical-align: top;">false<br>
       </td>
@@ -687,7 +723,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td style="vertical-align: top;"><code>
-      <a href="api/mondrian/olap/MondrianProperties.html#EnableNativeFilter">mondrian.native .filter.enable</a></code></td>
+      <a href="api/mondrian/olap/MondrianProperties.html#EnableNativeFilter">mondrian.native.filter.enable</a></code></td>
       <td style="vertical-align: top;">boolean</td>
       <td style="vertical-align: top;">false<br>
       </td>
@@ -698,7 +734,7 @@ suite of regression tests.</p>
     <tr>
       <td style="vertical-align: top;"><code>
       <a href="api/mondrian/olap/MondrianProperties.html#EnableNativeNonEmpty">
-      mondrian.native .nonempty.enable</a></code></td>
+      mondrian.native.nonempty.enable</a></code></td>
 
       <td style="vertical-align: top;">boolean</td>
       <td style="vertical-align: top;">true<br>
@@ -710,8 +746,8 @@ suite of regression tests.</p>
 
     </tr>
     <tr>
-      <td><a href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported">
-      <code>mondrian.native.unsupported.alert</code></a></td>
+      <td><code><a
+href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported">mondrian.native.unsupported.alert</a></code></td>
       <td>string</td>
       <td>OFF</td>
       <td>Alerting action {OFF, WARN, ERROR} to take in case 
@@ -724,7 +760,7 @@ suite of regression tests.</p>
     <tr>
       <td><code>
       <a href="api/mondrian/olap/MondrianProperties.html#GenerateFormattedSql">
-      mondrian.rolap. generate.formatted .sql</a></code></td>
+      mondrian.rolap.generate.formatted.sql</a></code></td>
       <td>boolean</td>
       <td>false</td>
 
@@ -735,7 +771,7 @@ suite of regression tests.</p>
     <tr>
       <td style="vertical-align: top;"><code>
       <a href="api/mondrian/olap/MondrianProperties.html#MaxConstraints">
-      mondrian.rolap. maxConstraints</a></code></td>
+      mondrian.rolap.maxConstraints</a></code></td>
       <td style="vertical-align: top;">int</td>
 
       <td style="vertical-align: top;">1,000</td>
@@ -763,7 +799,7 @@ suite of regression tests.</p>
     <tr>
       <td><code>
       <a href="api/mondrian/olap/MondrianProperties.html#EnableTotalCount">
-      mondrian.xmla. drillthrough TotalCount.enable</a></code></td>
+      mondrian.xmla.drillthrough TotalCount.enable</a></code></td>
 
       <td>boolean</td>
       <td>true</td>
@@ -772,7 +808,7 @@ suite of regression tests.</p>
     </tr>
     <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#MaxRows">
-      mondrian.xmla. drillthrough MaxRows</a></code></td>
+      mondrian.xmla.drillthrough MaxRows</a></code></td>
 
       <td>int</td>
       <td>1,000</td>
@@ -809,6 +845,42 @@ suite of regression tests.</p>
       <td>90</td>
       <td>At what level of memory usage should Mondrian be notified that
       memory is running low.</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;" colspan="4">
+
+      <b><br>Factories</b>
+      </td>
+  </tr>
+    <tr>
+      <td><code>
+      <a href="api/mondrian/olap/MondrianProperties.html#MemoryMonitorClass">
+      mondrian.util.MemoryMonitor.class
+      </a></code></td>
+
+      <td>string</td>
+      <td>-</td>
+      <td>
+      By default this property does not have a value. 
+      If set, then it is the class name of an implementation of
+      the MemoryMonitor class and is used by the
+      MemoryMonitorFactory to create the single instance.
+      </td>
+    </tr>
+    <tr>
+      <td><code>
+      <a href="api/mondrian/olap/MondrianProperties.html#ExpCompilerClass">
+      mondrian.calc.ExpCompiler.class
+      </a></code></td>
+
+      <td>string</td>
+      <td>-</td>
+      <td>
+      By default this property does not have a value. 
+      If set, then it is the class name of an implementation of
+      the ExpCompiler class and is used by the
+      ExpCompiler.Factory to create each instance.
+      </td>
     </tr>
 
 </table>

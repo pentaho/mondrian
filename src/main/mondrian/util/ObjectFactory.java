@@ -9,6 +9,7 @@
 */
 package mondrian.util;
 
+import org.eigenbase.util.property.StringProperty;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
@@ -478,16 +479,29 @@ public abstract class ObjectFactory<V> {
 
     /**
      * Returns the name of a class to use to create an object.
-     * By default the name returned is the value of a property
-     * with key equal to the class name of the <code>interfaceClass</code>.
+     * The factory's <code>StringProperty</code> is gotten and
+     * if it has a non-null value, then that is returned. Otherwise,
+     * the <code>StringProperty</code>'s name (path) is used as the
+     * name to probe the <code>Properties</code> object for a value.
      * This method is allowed to return null.
      *
      * @return <code>null</code> or a class name
      */
     protected String getClassName(final Properties props) {
-        return (props == null)
-            ? null : props.getProperty(this.interfaceClass.getName());
+        final StringProperty stringProp = getStringProperty();
+        final String className = stringProp.get();
+        return (className != null) 
+                ? className
+                : (props == null)
+                    ? null : props.getProperty(stringProp.getPath());
     }
+
+    /** 
+     * Return the <code>StringProperty</code> associated with this factory. 
+     * 
+     * @return the  <code>StringProperty</code> 
+     */
+    protected abstract StringProperty getStringProperty();
 
     /**
      * For most uses (other than testing) this is the method that derived

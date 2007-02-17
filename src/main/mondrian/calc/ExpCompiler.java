@@ -9,6 +9,7 @@
 */
 package mondrian.calc;
 
+import org.eigenbase.util.property.StringProperty;
 import mondrian.olap.*;
 import mondrian.util.ObjectFactory;
 import mondrian.util.CreationException;
@@ -349,6 +350,15 @@ public interface ExpCompiler {
          */
         protected String getClassName() {
             return getThreadLocalClassName();
+        }
+
+        /** 
+         * Return the <code>ExpCompiler.Factory</code property name. 
+         * 
+         * @return <code>ExpCompiler.Factory</code> property name
+         */
+        protected StringProperty getStringProperty() {
+            return MondrianProperties.instance().ExpCompilerClass;
         }
         /**
          * The <code>ExpCompiler.Factory</code>'s implementation of the

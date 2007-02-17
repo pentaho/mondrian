@@ -455,10 +455,6 @@ in {mondrian.foodmart.jdbcURL}.">
     <echo>Connecting to ${mondrian.foodmart.jdbcURL}</echo>
     <echo>Connect String: ${mondrian.test.connectString}</echo>
 
-    <propertyset id="properties-starting-with-mondrian">
-        <propertyref prefix="mondrian"/>
-    </propertyset>
-
     <java
         classpathref="project.test.classpath"
         classname="mondrian.test.Main"
@@ -481,11 +477,6 @@ in {mondrian.foodmart.jdbcURL}.">
       <!-- tests require en_US locale -->
       <sysproperty key="user.language" value="en"/>
       <sysproperty key="user.region" value="US"/>
-
-      <!-- include all properties starting with "mondrian" -->
-      <syspropertyset>
-        <propertyset refid="properties-starting-with-mondrian"/>
-      </syspropertyset>
 
     </java>
   </target>

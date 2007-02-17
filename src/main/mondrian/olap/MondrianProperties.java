@@ -855,13 +855,59 @@ public class MondrianProperties extends TriggerableProperties {
      * default for Java5 and above it is not enabled.
      */
     public final BooleanProperty MemoryMonitor = new BooleanProperty(
-        this, "mondrian.util.memoryMonitor.enable", false);
+        this, "mondrian.util.memoryMonitor.enable", true);
 
     /**
      * The default <code>MemoryMonitor</code> percentage threshold.
      */
     public final IntegerProperty MemoryMonitorThreshold = new IntegerProperty(
         this, "mondrian.util.memoryMonitor.percentage.threshold", 90);
+
+    /**
+     * The <code>MemoryMonitor</code> class property. If the value is 
+     * non-null, it is used by the <code>MemoryMonitorFactory</code> 
+     * to create the implementation.
+     */
+    public final StringProperty MemoryMonitorClass = new StringProperty(
+            this, "mondrian.util.MemoryMonitor.class", null);
+
+    /**
+     * The <code>ExpCompiler</code> class property. If the value is 
+     * non-null, it is used by the <code>ExpCompiler.Factory</code> 
+     * to create the implementation.
+     */
+    public final StringProperty ExpCompilerClass = new StringProperty(
+            this, "mondrian.calc.ExpCompiler.class", null);
+
+    /**
+     * If a crossjoin input list's size is larger than this property's
+     * value and the axis has the "NON EMPTY" qualifier, then
+     * the crossjoin non-empty optimizer is applied.
+     * Setting this value to '0' means that for all crossjoin
+     * input lists in non-empty axes will have the optimizer applied.
+     * On the other hand, if the value is set larger than any possible
+     * list, say <code>Integer.MAX_VALUE</code>, then the optimizer 
+     * will never be applied.
+     */
+    public final IntegerProperty CrossJoinOptimizerSize = new IntegerProperty(
+            this, "mondrian.olap.fun.crossjoin.optimizer.size", 0);
+
+    /**
+     * The crossjoin optimizer is flawed. It evaluates potential cells
+     * using default members when a member is not explicitly set in
+     * the particular axis. This works unless another axis, normal or
+     * slicer, uses a member other than the default.
+     * Setting this property to <code>true</code> will enable the
+     * RolapResult to collect these implied members and if any are
+     * found, then re-evaluate using the discovered members.
+     * <p>
+     * If you do not enable this property, then the crossjoin optimizer,
+     * if used, can produce errors. Bad results are produced for some
+     * queries and some data sets - its a combination of both so the 
+     * error does not manifest itself all the time.
+     */
+    public final BooleanProperty UseImplicitMembers = new BooleanProperty(
+            this, "mondrian.rolap.RolapResult.useImplicitMembers", true);
 }
 
 // End MondrianProperties.java

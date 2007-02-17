@@ -12,6 +12,7 @@
 */
 package mondrian.util;
 
+import org.eigenbase.util.property.StringProperty;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 
@@ -131,6 +132,15 @@ public final class MemoryMonitorFactory
      */
     protected String getClassName() {
         return getThreadLocalClassName();
+    }
+
+    /** 
+     * Return the <code>MemoryMonitorFactory</code property name. 
+     * 
+     * @return <code>MemoryMonitorFactory</code> property name
+     */
+    protected StringProperty getStringProperty() {
+        return MondrianProperties.instance().MemoryMonitorClass;
     }
 
     /**
