@@ -30,9 +30,8 @@ public class Bug {
     // Properties relating to checkin 7634.
     // (What's the bug associated with this??)
 
-    public static boolean Checkin7634UseOptimizer = false;
-    public static boolean Checkin7634DoOld = false;
-    public static int Checkin7634Size = 0;
+    //public static boolean Checkin7634UseCrossJoinFunOptimizer = true;
+    //public static int Checkin7634CrossJoinFunSize = 0;
 
     // Properties relating to checkin 7641.
     // This is part of the junit test Checkin_7641 that
@@ -42,7 +41,7 @@ public class Bug {
     // boolean should go away.
     // (What's the bug associated with this??)
 
-    public static boolean Checkin7641UseOptimizer = false;
+    //public static boolean Checkin7641UseImplicitMembers = true;
 
     /**
      * Whether

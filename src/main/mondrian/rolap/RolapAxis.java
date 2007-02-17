@@ -36,6 +36,28 @@ import java.util.NoSuchElementException;
  */
 public abstract class RolapAxis implements Axis {
     private static final Logger LOGGER = Logger.getLogger(RolapAxis.class);
+
+    public static String toString(Axis axis) {
+        List<Position> pl = axis.getPositions();
+        return toString(pl);
+    }
+    public static String toString(List<Position> pl) {
+        StringBuilder buf = new StringBuilder();
+        for (Position p: pl) {
+            buf.append('{');
+            boolean firstTime = true;
+            for (Member m: p) {
+                if (! firstTime) {
+                    buf.append(", ");
+                }
+                buf.append(m.getUniqueName());
+                firstTime = false;
+            }
+            buf.append('}');
+            buf.append('\n');
+        }
+        return buf.toString();
+    }
     /**
      * A Wrapper has many uses. In particular, if one is using Java 5 or
      * above, one can create a Wrapper that is also a memory usage listener.
@@ -126,6 +148,7 @@ public abstract class RolapAxis implements Axis {
                 : new MemberIterable.PositionList();
         }
         protected synchronized void materialize() {
+//System.out.println("RolapAxis.materialize: 1");
             if (list == null) {
                 Iterator<Member> it = iter.iterator();
                 list = new ArrayList<Member>();
@@ -152,6 +175,7 @@ public abstract class RolapAxis implements Axis {
                 positionList = new PositionIter();
             }
             protected synchronized void materialize() {
+//System.out.println("RolapAxis.materialize: 2");
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
                        "PositionWrapper.materialize: Member iter.class="
@@ -352,6 +376,7 @@ public abstract class RolapAxis implements Axis {
                 : new MemberArrayIterable.PositionList();
         }
         protected synchronized void materialize() {
+//System.out.println("RolapAxis.materialize: 3");
             if (list == null) {
                 Iterator<Member[]> it = iter.iterator();
                 list = new ArrayList<Member[]>();
@@ -379,6 +404,7 @@ public abstract class RolapAxis implements Axis {
                 positionList = new PositionIter();
             }
             protected synchronized void materialize() {
+//System.out.println("RolapAxis.materialize: 4");
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
                        "PositionWrapper.materialize: Member[] iter.class="

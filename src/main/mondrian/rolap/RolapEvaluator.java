@@ -297,7 +297,7 @@ public class RolapEvaluator implements Evaluator {
  * This is for debugging only
  * For use in debugging Checkin_7634
  */
-void printCurrentMemberNames() {
+public void printCurrentMemberNames() {
     for (int i = 0; i < currentMembers.length; i++) {
         Member m = currentMembers[i];
         if (m == null) {

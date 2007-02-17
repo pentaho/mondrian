@@ -76,8 +76,6 @@ class RolapResult extends ResultBase {
             return;
         }
 
-        // for use in debugging Checkin_7634
-        Util.discard(Bug.Checkin7634DoOld);
         boolean normalExecution = true;
         try {
             // This call to clear the cube's cache only has an
@@ -134,6 +132,8 @@ class RolapResult extends ResultBase {
                 Axis axisResult =
                     executeAxis(evaluator.push(), axis, calc, true, null);
                 evaluator.clearExpResultCache();
+//System.out.println("RolapResult<init>: i="+i);
+//evaluator.printCurrentMemberNames();
 
                 if (i == -1) {
                     this.slicerAxis = axisResult;
@@ -167,38 +167,10 @@ class RolapResult extends ResultBase {
                 }
             }
 
-            if (Bug.Checkin7641UseOptimizer) {
+            if (MondrianProperties.instance().UseImplicitMembers.get()) {
                 purge(axisMembers, slicerMembers);
-
-                boolean didEvaluatorReplacementMember = false;
-                RolapEvaluator rolapEval = evaluator;
-                for (Member m : axisMembers) {
-                    if (rolapEval.setContextConditional(m) != null) {
-                        // Do not break out of loops but set change flag.
-                        // There may be more than one Member that has to be
-                        // replaced.
-                        didEvaluatorReplacementMember = true;
-                    }
-                }
-
-                if (didEvaluatorReplacementMember) {
-                    // Must re-evaluate axes because one of the evaluator's
-                    // members has changed. Do not have to re-evaluate the
-                    // slicer axis or any axis whose members used during evaluation
-                    // were not over-ridden by members from the evaluation of
-                    // different axes (if you just have rows and columns, then
-                    // if rows contributed a member to axisMembers, then columns must
-                    // be re-evaluated and if columns contributed, then rows must
-                    // be re-evaluated).
-                    for (int i = 0; i < axes.length; i++) {
-                        QueryAxis axis = query.axes[i];
-                        final Calc calc = query.axisCalcs[i];
-                        evaluator.setCellReader(aggregatingReader);
-                        Axis axisResult =
-                            executeAxis(evaluator.push(), axis, calc, true, null);
-                        evaluator.clearExpResultCache();
-                        this.axes[i] = axisResult;
-                    }
+                if (axisMembers.size() > 0) {
+                    reExecuteWithImpliedMembers(axisMembers);
                 }
             }
 
@@ -261,6 +233,97 @@ class RolapResult extends ResultBase {
             }
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("RolapResult<init>: " + Util.printMemory());
+            }
+        }
+    }
+
+    /** 
+     * An implicit Member usage was detected - one axis used the
+     * default Member for some hierarchy, but another used a Member
+     * that was present in the MDX; the first axis should have used
+     * this other Member.
+     * 
+     * @param axisMembers list of Members used in query. 
+     */
+    protected void reExecuteWithImpliedMembers(List<Member> axisMembers) {
+//System.out.println("RolapResult.reExecuteWithImpliedMembers: TOP");
+        boolean didEvaluatorReplacementMember = false;
+        RolapEvaluator rolapEval = evaluator;
+        int cnt = 0;
+        // Iterate through the implied members.
+        boolean foundTimeMember = false;
+        for (Member m : axisMembers) {
+            if (rolapEval.setContextConditional(m) != null) {
+//System.out.println("RolapResult.reExecuteWithImpliedMembers: m="+m.getUniqueName());
+                // Do not break out of loops but set change flag.
+                // There may be more than one Member that has to be
+                // replaced.
+                cnt++;
+                if (m.getHierarchy().getDimension().getDimensionType() == DimensionType.TimeDimension) {
+                    foundTimeMember = true;
+                }
+                didEvaluatorReplacementMember = true;
+            }
+        }
+
+        if (didEvaluatorReplacementMember) {
+            if (cnt > 1) {
+                // NOTE: If this prints out then there was more than one
+                // implied Member in the query. This is a problem
+                // because I do not know how to merge axes so that
+                // positions/members are in the MDX-query order (the
+                // order implied by the MDX query).
+                String msg = "Evaluation Error: there were " +cnt+
+                    " implied Members during MDX evaluation of ["+
+                    query.getQueryString()+"]";
+                getLogger().warn(msg);
+            }
+            // Must re-evaluate axes because one of the evaluator's
+            // members has changed. Do not have to re-evaluate the
+            // slicer axis or any axis whose members used during evaluation
+            // were not over-ridden by members from the evaluation of
+            // different axes (if you just have rows and columns, then
+            // if rows contributed a member to axisMembers, then columns must
+            // be re-evaluated and if columns contributed, then rows must
+            // be re-evaluated).
+            for (int i = 0; i < axes.length; i++) {
+                QueryAxis axis = query.axes[i];
+                final Calc calc = query.axisCalcs[i];
+
+                int attempt = 0;
+                while (true) {
+                    evaluator.setCellReader(batchingReader);
+                    Axis axisResult =
+                        executeAxis(evaluator.push(), axis, calc, false, null);
+                    Util.discard(axisResult);
+                    evaluator.clearExpResultCache();
+                    if (!batchingReader.loadAggregations(query)) {
+                        break;
+                    }
+                    if (attempt++ > maxEvalDepth) {
+                        throw Util.newInternal("Failed to load all aggregations after " +
+                                maxEvalDepth +
+                                "passes; there's probably a cycle");
+                    }
+                }
+
+                evaluator.setCellReader(aggregatingReader);
+                Axis axisResult =
+                    executeAxis(evaluator.push(), axis, calc, true, null);
+                evaluator.clearExpResultCache();
+
+                if (foundTimeMember) {
+//System.out.println("RolapResult.reExecuteWithImpliedMembers: TIME");
+                    // must add the two times together
+                    this.axes[i] = mergeAxes(this.axes[i], axisResult);
+                } else {
+//System.out.println("RolapResult.reExecuteWithImpliedMembers: IMPLIED");
+                    // The previous Axis was calculated with
+                    // a default Member and there was an implied
+                    // Member in another Axis, so we use the
+                    // Axis generated with the implied Member.
+                    this.axes[i] = axisResult;
+                }
             }
         }
     }
@@ -332,7 +395,7 @@ class RolapResult extends ResultBase {
                             axisResult =
                                 new RolapAxis.MemberList((List<Member>)value);
                         }
-                    } else {
+                    } else if (axisMembers != null) {
                         if (list.size() != 0) {
                             if (list.get(0) instanceof Member[]) {
                                 for (Member[] o : (List<Member[]>) value) {
@@ -359,7 +422,7 @@ class RolapResult extends ResultBase {
                             axisResult = new RolapAxis.MemberIterable(
                                             (Iterable<Member>)value);
                         }
-                    } else {
+                    } else if (axisMembers != null) {
                         if (it.hasNext()) {
                             Object o = it.next();
                             if (o instanceof Member[]) {
@@ -1232,6 +1295,107 @@ class RolapResult extends ResultBase {
             return this.cellInfoPool.add(new CellInfo(key));
         }
     }
+
+    static Axis mergeAxes(Axis axis1, Axis axis2) {
+//System.out.println("RolapResult.mergeAxes: axis1=\n"+RolapAxis.toString(axis1));
+//System.out.println("RolapResult.mergeAxes: axis2=\n"+RolapAxis.toString(axis2));
+        List<Position> pl1 = axis1.getPositions();
+        List<Position> pl2 = axis2.getPositions();
+        int arrayLen = -1;
+        if (pl1 instanceof RolapAxis.PositionListBase) {
+            if (pl1.size() == 0) {
+                return axis2;
+            }
+            arrayLen = pl1.get(0).size();
+//System.out.println("RolapResult.mergeAxes: a arrayLen="+arrayLen);
+        }
+        if (axis1 instanceof RolapAxis.SingleEmptyPosition) {
+//System.out.println("RolapResult.mergeAxes: AAA");
+            return axis2;
+        }
+        if (axis1 instanceof RolapAxis.NoPosition) {
+//System.out.println("RolapResult.mergeAxes: BBB");
+            return axis2;
+        }
+        if (pl2 instanceof RolapAxis.PositionListBase) {
+            if (pl2.size() == 0) {
+                return axis1;
+            }
+            arrayLen = pl2.get(0).size();
+//System.out.println("RolapResult.mergeAxes: b arrayLen="+arrayLen);
+        }
+        if (axis2 instanceof RolapAxis.SingleEmptyPosition) {
+//System.out.println("RolapResult.mergeAxes: CCCC");
+            return axis1;
+        }
+        if (axis2 instanceof RolapAxis.NoPosition) {
+//System.out.println("RolapResult.mergeAxes: DDD");
+            return axis1;
+        }
+//System.out.println("RolapResult.mergeAxes: axis1.class=" +axis1.getClass().getName());
+//System.out.println("RolapResult.mergeAxes: axis2.class=" +axis2.getClass().getName());
+        if (arrayLen == -1) {
+            arrayLen = 0;
+            for (Position p1: pl1) {
+                for (Member m1: p1) {
+                    arrayLen++; 
+                }
+                break;
+            }
+//System.out.println("RolapResult.mergeAxes: c arrayLen="+arrayLen);
+        }
+        if (arrayLen == 1) {
+            // single Member per position
+            List<Member> list = new ArrayList<Member>();
+            for (Position p1: pl1) {
+                for (Member m1: p1) {
+                    list.add(m1);
+                }
+            }
+            for (Position p2: pl2) {
+                for (Member m2: p2) {
+                    if (! list.contains(m2)) {
+                        list.add(m2);
+                    }
+                }
+            }
+            return new RolapAxis.MemberList(list);
+        } else {
+            // array of Members per position
+            List<Member[]> list = new ArrayList<Member[]>();
+            for (Position p1: pl1) {
+                Member[] members = new Member[arrayLen];
+                int i = 0;
+                for (Member m1: p1) {
+                    members[i++] = m1;
+                }
+                list.add(members);
+            }
+            List<Member[]> extras = new ArrayList<Member[]>();
+            for (Position p2: pl2) {
+                int i = 0;
+                Member[] members = new Member[arrayLen];
+                for (Member m2: p2) {
+                    members[i++] = m2;
+                }
+                Iterator<Member[]> it1 = list.iterator();
+                boolean found = false;
+                while (it1.hasNext()) {
+                    Member[] m1 = it1.next();
+                    if (java.util.Arrays.equals(members, m1)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (! found) {
+                    extras.add(members);
+                }
+            }
+            list.addAll(extras);
+            return new RolapAxis.MemberArrayList(list);
+        }
+    }
+
 }
 
 // End RolapResult.java
