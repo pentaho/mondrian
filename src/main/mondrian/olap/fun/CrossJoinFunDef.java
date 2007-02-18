@@ -1068,10 +1068,10 @@ class CrossJoinFunDef extends FunDefBase {
             MondrianProperties.instance().CrossJoinOptimizerSize.get();
         int size = list.size();
         if (size <= opSize) {
-System.out.println("NO USE OPTIMIZER " +opSize);
+//System.out.println("NO USE OPTIMIZER " +opSize);
             return list;
         }
-System.out.println("USE OPTIMIZER " +opSize);
+//System.out.println("USE OPTIMIZER " +opSize);
         
         // If there are misses during the optimization evaluation
         // and the list size is greater than this size, then
