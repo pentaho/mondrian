@@ -34,8 +34,8 @@ public abstract class OlapElementBase
     protected abstract Logger getLogger();
 
     public boolean equals(Object o) {
-        return (o instanceof OlapElement) &&
-                equals((OlapElement) o);
+        return (o == this) ||
+            ((o instanceof OlapElement) && equals((OlapElement) o));
     }
 
     public boolean equals(OlapElement mdxElement) {

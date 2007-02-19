@@ -334,8 +334,8 @@ public class RolapMember extends MemberBase {
     }
 
     public boolean equals(Object o) {
-        return (o instanceof RolapMember) &&
-                equals((RolapMember) o);
+        return (o == this) || 
+                ((o instanceof RolapMember) && equals((RolapMember) o));
     }
 
     public boolean equals(OlapElement o) {

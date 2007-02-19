@@ -241,11 +241,11 @@ public class RolapHierarchy extends HierarchyBase {
     }
 
     public boolean equals(Object o) {
-        if (!(o instanceof RolapHierarchy)) {
-            return false;
-        }
         if (this == o) {
             return true;
+        }
+        if (!(o instanceof RolapHierarchy)) {
+            return false;
         }
 
         RolapHierarchy that = (RolapHierarchy)o;
