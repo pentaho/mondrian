@@ -782,6 +782,7 @@ public class CmdRunner {
                 printResults(resultString);
                 printQueryTime();
                 resultString = null;
+                buf.setLength(0);
             } else if (interactive && (error != null)) {
                 printResults(error);
                 printQueryTime();
