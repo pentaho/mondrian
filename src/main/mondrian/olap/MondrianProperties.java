@@ -855,7 +855,7 @@ public class MondrianProperties extends TriggerableProperties {
      * default for Java5 and above it is not enabled.
      */
     public final BooleanProperty MemoryMonitor = new BooleanProperty(
-        this, "mondrian.util.memoryMonitor.enable", true);
+        this, "mondrian.util.memoryMonitor.enable", false);
 
     /**
      * The default <code>MemoryMonitor</code> percentage threshold.
