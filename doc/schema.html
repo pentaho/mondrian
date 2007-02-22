@@ -471,6 +471,16 @@ and month_name (January, February, ...) columns. The column value that will be u
 month column, so valid member specifications will be of the form: 
 <code>[Time].[2005].[Q1].[<b><i>1</i></b>]</code>. Members of the <code>[Month]</code> 
 level will displayed in the order January, February, etc.</p>
+
+<p>Ordinal columns may be of any datatype which can legally be used in
+an ORDER BY clause.  Scope of ordering is per-parent, so in the
+example above, the day_in_month column should cycle for each month.
+Values returned by the JDBC driver should be non-null instances of <a
+href="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Comparable.html">
+java.lang.Comparable</a>
+which yield the desired ordering when their
+<code>Comparable.compareTo</code> method is called.</p>
+
 <p>Levels contain a <code>type</code> attribute, which can have values &quot;<code>String</code>", "<code>Integer</code>", &quot;<code>Numeric</code>", &quot;<code>Boolean</code>&quot;, 
 &quot;<code>Date</code>&quot;, &quot;<code>Time</code>&quot;, and &quot;<code>Timestamp</code>&quot;. 
 The default value is <code>&quot;Numeric&quot;</code> because key columns generally have a numeric type. If it is a 

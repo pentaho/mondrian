@@ -117,6 +117,10 @@ public class TestMember implements Member {
         throw new UnsupportedOperationException();
     }
 
+    public Comparable getOrderKey() {
+        throw new UnsupportedOperationException();
+    }
+
     public boolean isHidden() {
         throw new UnsupportedOperationException();
     }

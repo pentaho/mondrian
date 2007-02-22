@@ -154,7 +154,13 @@ public class SqlTupleReader implements TupleReader {
                             parentMember, childLevel, value, captionValue,
                             parentChild, resultSet, key, column);
                     }
+
+                    // Skip over the columns consumed by makeMember
+                    if (!childLevel.getOrdinalExp().equals(childLevel.getKeyExp())) {
+                        ++column;
+                    }
                     column += childLevel.getProperties().length;
+                    
                     if (member != members[i]) {
                         // Flush list we've been building.
                         List<RolapMember> children = siblings[i + 1];
@@ -654,8 +660,6 @@ public class SqlTupleReader implements TupleReader {
         SqlQuery sqlQuery = newQuery(jdbcConnection, s);
 
         // add the selects for all levels to fetch
-        List<String> ordinalColumns = new ArrayList<String>();
-        List<Integer> orderByColnos = new ArrayList<Integer>();
         for (Target target : targets) {
             // if we're going to be enumerating the values for this target,
             // then we don't need to generate sql for it
@@ -664,38 +668,7 @@ public class SqlTupleReader implements TupleReader {
                     sqlQuery,
                     target.getLevel(),
                     levelToColumnMap,
-                    whichSelect,
-                    orderByColnos,
-                    ordinalColumns);
-            }
-        }
-
-        // Additional work required for virtual cubes.
-        //
-        // Add ordinal columns we need to order on to the projection list.
-        // We add them to the end of the projection list to avoid shifting
-        // the position of the non-ordinal columns.  Subsequent selects
-        // depend on this.
-        //
-        // If this is the final select, add on the orderby column numbers.
-        // Adjust any placeholders reflecting ordinal columns with their
-        // actual position in the projection list, now that we know how big
-        // the total projection list is.
-        if (whichSelect != WhichSelect.ONLY) {
-            int numNonOrdinalCols = sqlQuery.getCurrentSelectListSize();
-            for (String col : ordinalColumns) {
-                sqlQuery.addSelect(col);
-            }
-            if (whichSelect == WhichSelect.LAST) {
-                for (int oByColno : orderByColnos) {
-                    String ostr;
-                    if (oByColno < 0) {
-                        ostr = Integer.toString(++numNonOrdinalCols);
-                    } else {
-                        ostr = Integer.toString(oByColno);
-                    }
-                    sqlQuery.addOrderBy(ostr, true, false, true);
-                }
+                    whichSelect);
             }
         }
 
@@ -728,18 +701,12 @@ public class SqlTupleReader implements TupleReader {
      * provides the appropriate mapping for the base cube being processed
      * @param whichSelect describes whether this select belongs to a larger
      * select containing unions or this is a non-union select
-     * @param orderByColnos list of order by column numbers; used for virtual
-     * cubes
-     * @param ordinalColumns list of ordinal columns referenced in the query;
-     * used for virtual cubes
      */
     private void addLevelMemberSql(
         SqlQuery sqlQuery,
         RolapLevel level,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        WhichSelect whichSelect,
-        List<Integer> orderByColnos,
-        List<String> ordinalColumns)
+        WhichSelect whichSelect)
     {
         RolapHierarchy hierarchy = level.getHierarchy();
 
@@ -769,30 +736,19 @@ public class SqlTupleReader implements TupleReader {
 
             String ordinalSql = level2.getOrdinalExp().getExpression(sqlQuery);
             sqlQuery.addGroupBy(ordinalSql);
-            if (whichSelect != WhichSelect.ONLY) {
-                // Keep track of ordinal columns so we can add them to the
-                // end of the projection list later
-                if (!ordinalSql.equals(keySql)) {
-                    ordinalColumns.add(ordinalSql);
-                }
+            if (!ordinalSql.equals(keySql)) {
+                sqlQuery.addSelect(ordinalSql);
             }
 
             // If this is a select on a virtual cube, the query will be
             // a union, so the order by columns need to be numbers,
-            // not column name strings.  Don't add these to the order by.
-            // Just keep track of the numbers, for now.  Also, if the
-            // level contains an ordinal column, the ordinal column will
-            // appear at the end of the projection list.  Since we don't
-            // yet know how big the total projection list will be,
-            // use -1 as a placeholder for those columns.
+            // not column name strings or expressions.
             switch (whichSelect) {
             case LAST:
-                if (ordinalSql.equals(keySql)) {
-                    orderByColnos.add(
-                        sqlQuery.getCurrentSelectListSize());
-                } else {
-                    orderByColnos.add(-1);
-                }
+                sqlQuery.addOrderBy(
+                    Integer.toString(
+                        sqlQuery.getCurrentSelectListSize()),
+                    true, false, true);
                 break;
             case ONLY:
                 sqlQuery.addOrderBy(ordinalSql, true, false, true);

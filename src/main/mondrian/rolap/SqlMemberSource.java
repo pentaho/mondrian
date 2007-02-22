@@ -39,11 +39,14 @@ class SqlMemberSource implements MemberReader, SqlTupleReader.MemberBuilder {
     private final DataSource dataSource;
     private MemberCache cache;
     private int lastOrdinal = 0;
+    private boolean assignOrderKeys;
 
     SqlMemberSource(RolapHierarchy hierarchy) {
         this.hierarchy = hierarchy;
         this.dataSource =
             hierarchy.getRolapSchema().getInternalConnection().getDataSource();
+        assignOrderKeys =
+            MondrianProperties.instance().CompareSiblingsByOrderKey.get();
     }
 
     // implement MemberSource
@@ -352,6 +355,16 @@ RME is this right
                     }
                     column++;
 
+                    // REVIEW jvs 20-Feb-2007:  What about caption?
+
+                    if (!level.getOrdinalExp().equals(level.getKeyExp())) {
+                        if (assignOrderKeys) {
+                            Object orderKey = resultSet.getObject(column + 1);
+                            setOrderKey(member, orderKey);
+                        }
+                        column++;
+                    }
+                    
                     Property[] properties = level.getProperties();
                     for (Property property : properties) {
                         member.setProperty(property.getName(),
@@ -375,6 +388,13 @@ RME is this right
                 // ignore
             }
         }
+    }
+
+    private void setOrderKey(RolapMember member, Object orderKey) {
+        if ((orderKey != null) && !(orderKey instanceof Comparable)) {
+            orderKey = orderKey.toString();
+        }
+        member.setOrderKey((Comparable) orderKey);
     }
 
     /**
@@ -410,6 +430,9 @@ RME is this right
             expString = exp.getExpression(sqlQuery);
             sqlQuery.addOrderBy(expString, true, false, true);
             sqlQuery.addGroupBy(expString);
+            if (!exp.equals(level.getKeyExp())) {
+                sqlQuery.addSelect(expString);
+            }
 
             RolapProperty[] properties = level.getProperties();
             for (RolapProperty property : properties) {
@@ -553,6 +576,7 @@ RME is this right
         sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(q)) {
             sqlQuery.addGroupBy(orderBy);
+            sqlQuery.addSelect(orderBy);
         }
 
         RolapProperty[] properties = level.getProperties();
@@ -782,6 +806,8 @@ RME is this right
                 RolapMember member = cache.getMember(key, checkCacheStatus);
                 checkCacheStatus = false; /* Only check the first time */
                 if (member == null) {
+                    // REVIEW jvs 20-Feb-2007:  Shouldn't "1" be "2"
+                    // if there was a caption?
                     member = makeMember(
                             parentMember, childLevel, value, captionValue,
                             parentChild, resultSet, key, 1);
@@ -819,7 +845,7 @@ RME is this right
             throws SQLException {
 
         RolapMember member = new RolapMember(parentMember, childLevel, value);
-        if (childLevel.getOrdinalExp() != childLevel.getKeyExp()) {
+        if (!childLevel.getOrdinalExp().equals(childLevel.getKeyExp())) {
             member.setOrdinal(lastOrdinal++);
         }
         if (captionValue != null) {
@@ -841,6 +867,13 @@ RME is this right
             member = parentChildMember;
         }
         Property[] properties = childLevel.getProperties();
+        if (!childLevel.getOrdinalExp().equals(childLevel.getKeyExp())) {
+            if (assignOrderKeys) {
+                Object orderKey = resultSet.getObject(columnOffset + 1);
+                setOrderKey(member, orderKey);
+            }
+            ++columnOffset;
+        }
         for (int j = 0; j < properties.length; j++) {
             Property property = properties[j];
             member.setProperty(
@@ -905,6 +938,7 @@ RME is this right
         sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(childId)) {
             sqlQuery.addGroupBy(orderBy);
+            sqlQuery.addSelect(orderBy);
         }
 
         RolapProperty[] properties = level.getProperties();
@@ -958,6 +992,7 @@ RME is this right
         sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(childId)) {
             sqlQuery.addGroupBy(orderBy);
+            sqlQuery.addSelect(orderBy);
         }
 
         RolapProperty[] properties = level.getProperties();

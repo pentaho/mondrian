@@ -131,6 +131,10 @@ public class MemberHelperTest extends TestCase {
             return 0;
         }
 
+        public Comparable getOrderKey() {
+            return null;
+        }
+
         public Member getParentMember() {
             return null;
         }

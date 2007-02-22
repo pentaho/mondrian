@@ -259,6 +259,23 @@ suite of regression tests.</p>
       when looking up identifiers.</td>
     </tr>
     <tr>
+      <td><code>
+      <a href="api/mondrian/olap/MondrianProperties.html#CompareSiblingsByOrderKey">
+      mondrian.rolap.compareSiblingsByOrderKey</a></code></td>
+      <td>boolean</td>
+      <td>false</td>
+      <td>Controls whether sibling members are compared according to
+      the order key value fetched from their ordinal expression.  The
+      default value of false means ordinal expressions are only used
+      for ORDER BY, and the actual values produced are ignored inside 
+      of Mondrian.  Changing this to true allows Mondrian to correctly
+      order members when native filtering is used, but requires that
+      the values produced by the DBMS are non-null instances of
+      <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Comparable.html">java.lang.Comparable</a> which yield the desired ordering
+      when their <code>Comparable.compareTo</code> method is called.
+      </td>
+    </tr>
+    <tr>
 
       <td style="vertical-align: top;"><code>
       <a href="api/mondrian/olap/MondrianProperties.html#LocalePropFile">

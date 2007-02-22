@@ -673,6 +673,16 @@ public class MondrianProperties extends TriggerableProperties {
             this, "mondrian.rolap.nonempty", false);
 
     /**
+     * Boolean property which controls whether sibling members are
+     * compared according to order key value fetched from their ordinal
+     * expression.  The default is false (only database ORDER BY is used).
+     */
+    public final BooleanProperty CompareSiblingsByOrderKey =
+        new BooleanProperty(
+            this, "mondrian.rolap.compareSiblingsByOrderKey",
+            false);
+
+    /**
      * Boolean property which controls whether to use a cache for frequently
      * evaluated expressions. With the cache disabled, an expression like
      * <code>Rank([Product].CurrentMember,

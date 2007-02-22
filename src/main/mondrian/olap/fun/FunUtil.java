@@ -1556,13 +1556,19 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
                 return -1;
             }
         }
-        final int ordinal1 = m1.getOrdinal();
-        final int ordinal2 = m2.getOrdinal();
-        return (ordinal1 == ordinal2) ?
+        final Comparable k1 = m1.getOrderKey();
+        final Comparable k2 = m2.getOrderKey();
+        if ((k1 != null) && (k2 != null)) {
+            return k1.compareTo(k2);
+        } else {
+            final int ordinal1 = m1.getOrdinal();
+            final int ordinal2 = m2.getOrdinal();
+            return (ordinal1 == ordinal2) ?
                 m1.compareTo(m2) :
                 (ordinal1 < ordinal2) ?
                 -1 :
                 1;
+        }
     }
 
     /**
@@ -2269,6 +2275,10 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         }
 
         public int getOrdinal() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Comparable getOrderKey() {
             throw new UnsupportedOperationException();
         }
 

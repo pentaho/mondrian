@@ -210,6 +210,14 @@ public abstract class MemberBase
         return -1;
     }
 
+    /**
+     * Returns the order key of this member among its siblings.
+     * The default implementation returns null.
+     */
+    public Comparable getOrderKey() {
+        return null;
+    }
+    
     public boolean isHidden() {
         return false;
     }

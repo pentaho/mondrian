@@ -5190,6 +5190,79 @@ public class BasicQueryTest extends FoodMartTestCase {
         schema.removeCube(cubeName);
     }
 
+    public void testMemberOrdinalCaching() {
+        final MondrianProperties properties = MondrianProperties.instance();
+
+        boolean saved = properties.CompareSiblingsByOrderKey.get();
+        properties.CompareSiblingsByOrderKey.set(true);
+        try {
+            tryMemberOrdinalCaching();
+        } finally {
+            properties.CompareSiblingsByOrderKey.set(saved);
+        }
+    }
+
+    private void tryMemberOrdinalCaching() {
+        // NOTE jvs 20-Feb-2007: If you change the calculated measure
+        // definition below from zero to
+        // [Customers].[Name].currentmember.Properties(\"MEMBER_ORDINAL\"), you
+        // can see that the absolute ordinals returned are incorrect due to bug
+        // 1660383 (http://tinyurl.com/3xb56f).  For now, this test just
+        // verifies that the member sorting is correct when using relative
+        // order key rather than absolute ordinal value.  If absolute ordinals
+        // get fixed, replace zero with the MEMBER_ORDINAL property.
+        
+        assertQueryReturns(
+            "with member [Measures].[o] as 0\n" +
+            "set necj as nonemptycrossjoin(\n" +
+            "[Store].[Store State].members, [Customers].[Name].members)\n" +
+            "select tail(necj,5) on rows,\n" +
+            "{[Measures].[o]} on columns\n" +
+            "from [Sales]\n",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[o]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA].[WA], [Customers].[All Customers].[USA].[WA].[Yakima].[Tracy Meyer]}\n" +
+                "{[Store].[All Stores].[USA].[WA], [Customers].[All Customers].[USA].[WA].[Yakima].[Vanessa Thompson]}\n" +
+                "{[Store].[All Stores].[USA].[WA], [Customers].[All Customers].[USA].[WA].[Yakima].[Velma Lykes]}\n" +
+                "{[Store].[All Stores].[USA].[WA], [Customers].[All Customers].[USA].[WA].[Yakima].[William Battaglia]}\n" +
+                "{[Store].[All Stores].[USA].[WA], [Customers].[All Customers].[USA].[WA].[Yakima].[Wilma Fink]}\n" +
+                "Row #0: 0\n" +
+                "Row #1: 0\n" +
+                "Row #2: 0\n" +
+                "Row #3: 0\n" +
+                "Row #4: 0\n"));
+
+        // The query above primed the cache with bad absolute ordinals;
+        // verify that this doesn't interfere with subsequent queries.
+        
+        assertQueryReturns(
+            "with member [Measures].[o] as 0\n" +
+            "select tail([Customers].[Name].members, 5)\n" +
+            "on rows,\n" +
+            "{[Measures].[o]} on columns\n" +
+            "from [Sales]",
+            fold(
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[o]}\n" +
+                "Axis #2:\n" +
+                "{[Customers].[All Customers].[USA].[WA].[Yakima].[Tracy Meyer]}\n" +
+                "{[Customers].[All Customers].[USA].[WA].[Yakima].[Vanessa Thompson]}\n" +
+                "{[Customers].[All Customers].[USA].[WA].[Yakima].[Velma Lykes]}\n" +
+                "{[Customers].[All Customers].[USA].[WA].[Yakima].[William Battaglia]}\n" +
+                "{[Customers].[All Customers].[USA].[WA].[Yakima].[Wilma Fink]}\n" +
+                "Row #0: 0\n" +
+                "Row #1: 0\n" +
+                "Row #2: 0\n" +
+                "Row #3: 0\n" +
+                "Row #4: 0\n"));
+    }
+
     public void testCancel()
     {
         // the cancel is issued after 2 seconds so the test query needs to

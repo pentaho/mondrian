@@ -144,6 +144,12 @@ public interface Member extends OlapElement, Comparable {
     int getOrdinal();
 
     /**
+     * Returns the order key of the member (relative to its siblings);
+     * null if undefined or unavailable.
+     */
+    Comparable getOrderKey();
+
+    /**
      * Returns whether this member is 'hidden', as per the rules which define
      * a ragged hierarchy.
      */

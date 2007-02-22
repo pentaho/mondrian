@@ -31,6 +31,13 @@ public class RolapMember extends MemberBase {
     private static final Logger LOGGER = Logger.getLogger(RolapMember.class);
 
     /**
+     * For members of a level with an ordinal expression defined, the
+     * value of that expression for this member as retrieved via JDBC;
+     * otherwise null.
+     */
+    private Comparable orderKey;
+
+    /**
      * This returns an array of member arrays where the first member
      * array are the root members while the last member array are the
      * leaf members.
@@ -558,11 +565,20 @@ public class RolapMember extends MemberBase {
         return ordinal;
     }
 
+    public Comparable getOrderKey() {
+        return orderKey;
+    }
+    
     void setOrdinal(int ordinal) {
         if (this.ordinal == -1) {
             this.ordinal = ordinal;
         }
     }
+
+    void setOrderKey(Comparable orderKey) {
+        this.orderKey = orderKey;
+    }
+    
     private void resetOrdinal() {
         this.ordinal = -1;
     }
