@@ -244,7 +244,7 @@ the default schema, you can provide an explicit schema using the "schema" attrib
 	</code>
 </blockquote>
 <p>Each measure (see <code><a href="#XML_Measure">&lt;Measure&gt;</a></code>) has a name, a column in the fact table, and an 
-<code>aggregator</code>. The aggregator is usually "sum", but "count", "mix", "max", "avg", and 
+<code>aggregator</code>. The aggregator is usually "sum", but "count", "min", "max", "avg", and 
 "distinct count" are also allowed; "distinct count" has some limitations if your cube contains a 
 <a href="#Parent_child_hierarchies">parent-child hierarchy</a>.</p>
 
@@ -1236,7 +1236,7 @@ name="Management Role" column="management_role"/&gt;<br>
 </blockquote>
 
 <p>This table allows totals to be evaluated in pure SQL. Even though this introduces an extra 
-able into the query, database optimizers are very good at handling joins. I recommend that 
+table into the query, database optimizers are very good at handling joins. I recommend that 
 you declare both <code>supervisor_id</code> and <code>employee_id</code> NOT NULL, and index 
 them as follows:</p>
 
