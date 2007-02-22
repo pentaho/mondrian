@@ -208,6 +208,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(RolapAxisTest.class);
             suite.addTestSuite(MemberHelperTest.class);
             suite.addTestSuite(CrossJoinTest.class);
+            suite.addTestSuite(RolapResultTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get())
