@@ -91,6 +91,9 @@ public class RolapResultTest extends AggTableTestCase {
         if (!isApplicable()) {
             return;
         }
+        if (getTestContext().getDialect().isOracle()) {
+            return;
+        }
 
         String mdx = "select " +
                      " filter({[D1].[a],[D1].[b],[D1].[c]}, " +
@@ -109,6 +112,9 @@ public class RolapResultTest extends AggTableTestCase {
 
     public void _testD1() throws Exception {
         if (!isApplicable()) {
+            return;
+        }
+        if (getTestContext().getDialect().isOracle()) {
             return;
         }
 
@@ -138,6 +144,9 @@ Axis #2:
 
     public void testD2() throws Exception {
         if (!isApplicable()) {
+            return;
+        }
+        if (getTestContext().getDialect().isOracle()) {
             return;
         }
 

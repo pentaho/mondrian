@@ -539,6 +539,8 @@ public abstract class DBLoader {
             if (this == Timestamp) {
                 if (dialect.isMSSQL() || dialect.isMySQL()) {
                     return "DATETIME";
+                } else if (dialect.isIngres()) {
+                    return "DATE";
                 } else {
                     return name;
                 }
@@ -1054,14 +1056,14 @@ public abstract class DBLoader {
         } else if (type == Type.Timestamp) {
             if (value instanceof String) {
                 Timestamp ts = Timestamp.valueOf((String) value);
-                if (dialect.isOracle()) {
+                if (dialect.isOracle() || dialect.isLucidDB()) {
                     return "TIMESTAMP '" + ts + "'";
                 } else {
                     return "'" + ts + "'";
                 }
             } else if (value instanceof Timestamp) {
                 Timestamp ts = (Timestamp) value;
-                if (dialect.isOracle()) {
+                if (dialect.isOracle() || dialect.isLucidDB()) {
                     return "TIMESTAMP '" + ts + "'";
                 } else {
                     return "'" + ts + "'";
@@ -1074,14 +1076,14 @@ public abstract class DBLoader {
         } else if (type == Type.Date) {
             if (value instanceof String) {
                 Date dt = Date.valueOf((String) value);
-                if (dialect.isOracle()) {
+                if (dialect.isOracle() || dialect.isLucidDB()) {
                     return "DATE '" + dateFormatter.format(dt) + "'";
                 } else {
                     return "'" + dateFormatter.format(dt) + "'";
                 }
             } else if (value instanceof Date) {
                 Date dt = (Date) value;
-                if (dialect.isOracle()) {
+                if (dialect.isOracle() || dialect.isLucidDB()) {
                     return "DATE '" + dateFormatter.format(dt) + "'";
                 } else {
                     return "'" + dateFormatter.format(dt) + "'";
@@ -1133,7 +1135,8 @@ public abstract class DBLoader {
                         !dialect.isDB2() &&
                         !dialect.isFirebird() &&
                         !dialect.isMSSQL() &&
-                        !dialect.isDerby()) {
+                        !dialect.isDerby() &&
+                        !dialect.isIngres()) {
                     if (trimmedValue.equals("1")) {
                         return "true";
                     } else if (trimmedValue.equals("0")) {
