@@ -5195,14 +5195,22 @@ public class BasicQueryTest extends FoodMartTestCase {
 
         boolean saved = properties.CompareSiblingsByOrderKey.get();
         properties.CompareSiblingsByOrderKey.set(true);
+        Connection conn = null;
         try {
-            tryMemberOrdinalCaching();
+            // Use a fresh connection to make sure bad member ordinals haven't
+            // been assigned by previous tests.
+            conn = getConnection(true);
+            TestContext context = getTestContext(conn);
+            tryMemberOrdinalCaching(context);
         } finally {
             properties.CompareSiblingsByOrderKey.set(saved);
+            if (conn != null) {
+                conn.close();
+            }
         }
     }
 
-    private void tryMemberOrdinalCaching() {
+    private void tryMemberOrdinalCaching(TestContext context) {
         // NOTE jvs 20-Feb-2007: If you change the calculated measure
         // definition below from zero to
         // [Customers].[Name].currentmember.Properties(\"MEMBER_ORDINAL\"), you
@@ -5211,8 +5219,8 @@ public class BasicQueryTest extends FoodMartTestCase {
         // verifies that the member sorting is correct when using relative
         // order key rather than absolute ordinal value.  If absolute ordinals
         // get fixed, replace zero with the MEMBER_ORDINAL property.
-        
-        assertQueryReturns(
+
+        context.assertQueryReturns(
             "with member [Measures].[o] as 0\n" +
             "set necj as nonemptycrossjoin(\n" +
             "[Store].[Store State].members, [Customers].[Name].members)\n" +
@@ -5239,7 +5247,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         // The query above primed the cache with bad absolute ordinals;
         // verify that this doesn't interfere with subsequent queries.
         
-        assertQueryReturns(
+        context.assertQueryReturns(
             "with member [Measures].[o] as 0\n" +
             "select tail([Customers].[Name].members, 5)\n" +
             "on rows,\n" +
