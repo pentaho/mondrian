@@ -373,6 +373,74 @@ public class SchemaTest extends FoodMartTestCase {
                 "Row #0: 75,281\n" +
                 "Row #0: 193,480\n"));
     }
+
+    /**
+     * Tests that the deprecated "distinct count" value for the
+     * Measure@aggregator attribute still works. The preferred value these days
+     * is "distinct-count".
+     */
+    public void testDeprecatedDistinctCountAggregator() {
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales", null,
+                "  <Measure name=\"Customer Count2\" column=\"customer_id\"\n" +
+                "      aggregator=\"distinct count\" formatString=\"#,###\"/>\n" +
+                "  <CalculatedMember\n" +
+                "      name=\"Half Customer Count\"\n" +
+                "      dimension=\"Measures\"\n" +
+                "      visible=\"false\"\n" +
+                "      formula=\"[Measures].[Customer Count2] / 2\">\n" +
+                "  </CalculatedMember>");
+        testContext.assertQueryReturns(
+            "select {[Measures].[Unit Sales]," +
+                "    [Measures].[Customer Count], " +
+                "    [Measures].[Customer Count2], " +
+                "    [Measures].[Half Customer Count]} on 0,\n" +
+                " {[Store].[USA].Children} ON 1\n" +
+                "FROM [Sales]\n" +
+                "WHERE ([Gender].[M])",
+            fold("Axis #0:\n" +
+                "{[Gender].[All Gender].[M]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "{[Measures].[Customer Count2]}\n" +
+                "{[Measures].[Half Customer Count]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[All Stores].[USA].[CA]}\n" +
+                "{[Store].[All Stores].[USA].[OR]}\n" +
+                "{[Store].[All Stores].[USA].[WA]}\n" +
+                "Row #0: 37,989\n" +
+                "Row #0: 1,389\n" +
+                "Row #0: 1,389\n" +
+                "Row #0: 694\n" +
+                "Row #1: 34,623\n" +
+                "Row #1: 536\n" +
+                "Row #1: 536\n" +
+                "Row #1: 268\n" +
+                "Row #2: 62,603\n" +
+                "Row #2: 901\n" +
+                "Row #2: 901\n" +
+                "Row #2: 450\n"));
+    }
+
+    /**
+     * Tests that an invalid aggregator causes an error.
+     */
+    public void testInvalidAggregator() {
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales", null,
+                "  <Measure name=\"Customer Count3\" column=\"customer_id\"\n" +
+                "      aggregator=\"invalidAggregator\" formatString=\"#,###\"/>\n" +
+                "  <CalculatedMember\n" +
+                "      name=\"Half Customer Count\"\n" +
+                "      dimension=\"Measures\"\n" +
+                "      visible=\"false\"\n" +
+                "      formula=\"[Measures].[Customer Count2] / 2\">\n" +
+                "  </CalculatedMember>");
+        testContext.assertThrows(
+            "select from [Sales]",
+            "Unknown aggregator 'invalidAggregator'; valid aggregators are: 'sum', 'count', 'min', 'max', 'avg', 'distinct-count'");
+    }
 }
 
 // End SchemaTest.java

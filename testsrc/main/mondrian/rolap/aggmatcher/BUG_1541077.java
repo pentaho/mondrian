@@ -191,7 +191,7 @@ public class BUG_1541077 extends AggTableTestCase {
             "    column='prod_id' aggregator='count'\n" +
             "   formatString='#,###'/>\n" +
             "<Measure name='Store Count' \n" +
-            "    column='store_id' aggregator='distinct count'\n" +
+            "    column='store_id' aggregator='distinct-count'\n" +
             "   formatString='#,###'/>\n" +
             "<Measure name='Total Amount' \n" +
             "    column='amount' aggregator='sum'\n" +

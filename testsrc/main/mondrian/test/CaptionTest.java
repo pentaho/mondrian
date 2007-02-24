@@ -270,7 +270,7 @@ public class CaptionTest extends TestCase {
             "  <Measure name=\"Sales Count\" column=\"product_id\" aggregator=\"count\"\n" +
             "      formatString=\"#,###\"/>\n" +
             "  <Measure name=\"Customer Count\" column=\"customer_id\"\n" +
-            "      aggregator=\"distinct count\" formatString=\"#,###\"/>\n" +
+            "      aggregator=\"distinct-count\" formatString=\"#,###\"/>\n" +
             "  <CalculatedMember\n" +
             "      name=\"Profit\"\n" +
             "      dimension=\"Measures\"\n" +
@@ -458,7 +458,7 @@ public class CaptionTest extends TestCase {
             "  <Measure name=\"Count\" column=\"employee_id\" aggregator=\"count\"\n" +
             "      formatString=\"#,#\"/>\n" +
             "  <Measure name=\"Number of Employees\" column=\"employee_id\"\n" +
-            "      aggregator=\"distinct count\" formatString=\"#,#\"/>\n" +
+            "      aggregator=\"distinct-count\" formatString=\"#,#\"/>\n" +
             "  <CalculatedMember name=\"Employee Salary\" dimension=\"Measures\"\n" +
             "      formatString=\"Currency\"\n" +
             "      formula=\"([Employees].currentmember.datamember, [Measures].[Org Salary])\"/>\n" +
@@ -575,7 +575,7 @@ public class CaptionTest extends TestCase {
             "      formatString=\"#,###.00\"/>\n" +
             "  <Measure name=\"Sales Count\" column=\"product_id\" aggregator=\"count\"\n" +
             "      formatString=\"#,###\"/>\n" +
-            "  <Measure name=\"Customer Count\" column=\"customer_id\" aggregator=\"distinct count\"\n" +
+            "  <Measure name=\"Customer Count\" column=\"customer_id\" aggregator=\"distinct-count\"\n" +
             "      formatString=\"#,###\"/>\n" +
             "</Cube>\n" +
             "<VirtualCube name=\"Warehouse and Sales\">\n" +

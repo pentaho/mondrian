@@ -16,6 +16,8 @@ import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 import mondrian.olap.*;
 
+import java.sql.Time;
+
 /**
  * Tests the expressions used for calculated members. Please keep in sync
  * with the actual code used by the wizard.
@@ -30,8 +32,22 @@ public class TestCalculatedMembers extends FoodMartTestCase {
     }
 
     public void testCalculatedMemberInCube() {
-        String s = executeExpr("[Measures].[Profit]");
-        Assert.assertEquals("$339,610.90", s);
+        assertExprReturns("[Measures].[Profit]", "$339,610.90");
+
+        // Testcase for bug 829012.
+        assertQueryReturns("select {[Measures].[Avg Salary], [Measures].[Org Salary]} ON columns,\n" +
+            "{([Time].[1997], [Store].[All Stores], [Employees].[All Employees])} ON rows\n" +
+            "from [HR]\n" +
+            "where [Pay Type].[Hourly]",
+            fold("Axis #0:\n" +
+                "{[Pay Type].[All Pay Types].[Hourly]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Avg Salary]}\n" +
+                "{[Measures].[Org Salary]}\n" +
+                "Axis #2:\n" +
+                "{[Time].[1997], [Store].[All Stores], [Employees].[All Employees]}\n" +
+                "Row #0: $40.31\n" +
+                "Row #0: $11,406.75\n"));
     }
 
     public void testCalculatedMemberInCubeViaApi() {

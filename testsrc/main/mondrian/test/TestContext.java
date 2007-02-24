@@ -338,7 +338,7 @@ public class TestContext {
 
         // Add calculated member definitions, if specified.
         if (memberDefs != null) {
-            int i = s.indexOf("<CalculatedMember ", h);
+            int i = s.indexOf("<CalculatedMember", h);
             if (i < 0 || i > end) {
                 i = end;
             }
@@ -576,6 +576,17 @@ public class TestContext {
         if (desiredResult != null) {
             assertEqualsVerbose(desiredResult, resultString);
         }
+    }
+
+    /**
+     * Executes a very simple query.
+     *
+     * <p>This forces the schema to be loaded and performs a basic sanity check.
+     * If this is a negative schema test, causes schema validation errors to be
+     * thrown.
+     */
+    public void assertSimpleQuery() {
+        assertQueryReturns("select from [Sales]", "");
     }
 
     /**

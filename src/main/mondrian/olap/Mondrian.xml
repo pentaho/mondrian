@@ -162,10 +162,10 @@ Revision is $Id$
                 the data.
             </Doc>
         </Attribute>
-        <Attribute name="enabled" type="Boolean"  
+        <Attribute name="enabled" type="Boolean"
                     required="false" default="true">
             <Doc>
-                Whether element is enabled - if true, then the Cube is 
+                Whether element is enabled - if true, then the Cube is
                 realized otherwise it is ignored.
             </Doc>
         </Attribute>
@@ -211,7 +211,7 @@ Revision is $Id$
             A <code>VirtualCube</code> is a set of dimensions and
             measures gleaned from other cubes.
         </Doc>
-        <Attribute name="enabled" type="Boolean"  
+        <Attribute name="enabled" type="Boolean"
                     required="false" default="true">
             <Doc>
                 Whether this element is enabled - if true, then the Virtual
@@ -478,7 +478,7 @@ Revision is $Id$
         <Attribute name="approxRowCount" required="false">
             <Doc>
                 The estimated number of members in this level.
-                Setting this property improves the performance of 
+                Setting this property improves the performance of
                 MDSCHEMA_LEVELS, MDSCHEMA_HIERARCHIES and
                 MDSCHEMA_DIMENSIONS XMLA requests
             </Doc>
@@ -504,7 +504,7 @@ Revision is $Id$
                 this level.
             </Doc>
         </Attribute>
-        
+
         <Attribute name="ordinalColumn" required="false">
             <Doc>
                 The name of the column which holds member
@@ -596,7 +596,7 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
-        
+
         <Attribute name="captionColumn" required="false">
             <Doc>
                 The name of the column which holds the caption for
@@ -767,13 +767,12 @@ Revision is $Id$
             </Doc>
         </Attribute>
         <Attribute name="aggregator" required="true">
-            <Doc>Aggregation function.</Doc>
-            <Value>sum</Value>
-            <Value>count</Value>
-            <Value>min</Value>
-            <Value>max</Value>
-            <Value>avg</Value>
-            <Value>distinct count</Value>
+            <Doc>
+                Aggregation function. Allowed values are "sum", "count", "min",
+                "max", "avg", and "distinct-count". ("distinct count" is allowed
+                for backwards compatibility, but is deprecated because XML
+                enumerated attributes in a DTD cannot legally contain spaces.)
+            </Doc>
         </Attribute>
         <Attribute name="formatter" required="false">
             <Doc>
@@ -895,7 +894,7 @@ Revision is $Id$
         <Doc><![CDATA[
             <p>Defines a named set which can be used in queries in the
             same way as a set defined using a WITH SET clause.</p>
-            
+
             <p>A named set can be defined against a particular cube,
             or can be global to a schema. If it is defined against a
             cube, it is only available to queries which use that cube.</p>
@@ -1044,7 +1043,7 @@ Revision is $Id$
         <Object name="right" type="Relation" required="true"/>
         <Code>
             /** Convenience constructor. */
-            public Join(String leftAlias, String leftKey, Relation left, 
+            public Join(String leftAlias, String leftKey, Relation left,
                 String rightAlias, String rightKey, Relation right) {
                 this.leftAlias = leftAlias;
                 this.leftKey = leftKey;
@@ -1145,7 +1144,7 @@ Revision is $Id$
             }
             public Relation find(String seekAlias) {
                 return seekAlias.equals(name) ? this :
-                    (alias != null) && seekAlias.equals(alias) ? this : 
+                    (alias != null) && seekAlias.equals(alias) ? this :
                     null;
             }
             public boolean equals(Object o) {
@@ -1272,7 +1271,7 @@ Revision is $Id$
             This aggregate table must be in the same schema as the
             base fact table.
         </Doc>
-        <Attribute name="ignorecase" type="Boolean" required="false" 
+        <Attribute name="ignorecase" type="Boolean" required="false"
                 default="true" >
             <Doc>
                 Whether or not the match should ignore case.
@@ -1348,7 +1347,7 @@ Revision is $Id$
                 The Table name not to be matched.
             </Doc>
         </Attribute>
-        <Attribute name="ignorecase" type="Boolean" required="false" 
+        <Attribute name="ignorecase" type="Boolean" required="false"
                 default="true" >
             <Doc>
                 Whether or not the match should ignore case.

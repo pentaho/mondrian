@@ -353,6 +353,10 @@
     <text>Duplicate table alias ''{0}'' in cube ''{1}''</text>
 </exception>
 
+<exception id="40290" name="UnknownAggregator">
+    <text>Unknown aggregator ''{0}''; valid aggregators are: {1}</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Loader -->
 
@@ -677,7 +681,7 @@
 
 <!-- ====================================================================== -->
 <!-- Optimizer -->
-<exception id="8000000" name="NativeEvaluationUnsupported" 
+<exception id="8000000" name="NativeEvaluationUnsupported"
     className="mondrian.olap.NativeEvaluationUnsupportedException">
     <text>
         Native evaluation not supported for this usage of function ''{0}''

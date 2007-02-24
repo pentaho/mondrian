@@ -49,7 +49,7 @@ public class RolapCube extends CubeBase {
      * Mapping such that
      * <code>localDimensionOrdinals[dimension.globalOrdinal]</code> is equal to
      * the ordinal of the dimension in this cube. See
-     * {@link RolapDimension#topic_ordinals}
+     * <a href="RolapDimension.html#topic_ordinals">dimension ordinals</a>.
      */
     private int[] localDimensionOrdinals;
 
@@ -200,10 +200,17 @@ public class RolapCube extends CubeBase {
                 BadMeasureSource.ex(
                         xmlCube.name, xmlMeasure.name);
             }
+
+            // Validate aggregator name. Substitute deprecated "distinct count"
+            // with modern "distinct-count".
+            String aggregator = xmlMeasure.aggregator;
+            if (aggregator.equals("distinct count")) {
+                aggregator = RolapAggregator.DistinctCount.getName();
+            }
             final RolapBaseCubeMeasure measure = new RolapBaseCubeMeasure(
                     this, null, measuresLevel, xmlMeasure.name,
                     xmlMeasure.formatString, measureExp,
-                    xmlMeasure.aggregator, xmlMeasure.datatype);
+                aggregator, xmlMeasure.datatype);
             measures[i] = measure;
 
             if (!Util.isEmpty(xmlMeasure.formatter)) {

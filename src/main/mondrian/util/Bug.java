@@ -9,6 +9,9 @@
 */
 package mondrian.util;
 
+import mondrian.rolap.sql.SqlQuery;
+import mondrian.olap.MondrianProperties;
+
 /**
  * Holder for constants which indicate whether particular issues have been
  * fixed. Reference one of those constants in your code, and it is clear which
@@ -49,6 +52,18 @@ public class Bug {
      * is fixed.
      */
     public static final boolean Bug1530543Fixed = false;
+
+    /**
+     * Returns whether to avoid a test because the memory monitor may cause it
+     * to fail.
+     *
+     * <p>Some tests fail if memory monitor is switched on, and Access and
+     * Derby tend to use a lot of memory because they are embedded.
+     */
+    public static boolean avoidMemoryOverflow(SqlQuery.Dialect dialect) {
+        return dialect.isAccess() &&
+            MondrianProperties.instance().MemoryMonitor.get();
+    }
 }
 
 // End Bug.java

@@ -4,11 +4,9 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2001-2005 Kana Software, Inc. and others.
+  == (C) Copyright 2005-2007 Julian Hyde and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
-  ==
-  == This file defines an MMM schema for an Olap schema.
   -->
 <Model
  name="aggregates"
@@ -99,7 +97,7 @@ Revision is $Id$
                     msgRecorder.popContextName();
                 }
             }
-            private void validate(final Base[] bases, 
+            private void validate(final Base[] bases,
                                   final mondrian.recorder.MessageRecorder msgRecorder) {
                 for (int i = 0; i < bases.length; i++) {
                     Base base = bases[i];
@@ -199,7 +197,7 @@ Revision is $Id$
             All elements can be enabled or not, have a tag, and
             can be validated.
         </Doc>
-        <Attribute name="enabled" type="Boolean"  
+        <Attribute name="enabled" type="Boolean"
                     required="false" default="true">
             <Doc>
                 Is this element enabled - if true, then Mondrian can consider
@@ -211,7 +209,7 @@ Revision is $Id$
                 return enabled.booleanValue();
             }
             protected abstract String getTag();
-            public abstract void validate(final AggRules rules, 
+            public abstract void validate(final AggRules rules,
                                           final mondrian.recorder.MessageRecorder msgRecorder);
         </Code>
     </Class>
@@ -244,7 +242,7 @@ Revision is $Id$
             <Value>lower</Value>
         </Attribute>
         <Code>
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 // empty
             }
@@ -284,11 +282,11 @@ Revision is $Id$
         </Attribute>
         <Attribute name="basename" required="false">
             <Doc>
-                The regular expression used to extract the fact table's 
+                The regular expression used to extract the fact table's
                 base name from its full name. For instance, if the DBA
                 allways prepends "RF_" before each fact table name, i.e.,
                 "RF_SHIPPING", but you want only the base part ("SHIPPING")
-                to be used in recognizing aggregates, then one defines a 
+                to be used in recognizing aggregates, then one defines a
                 regular expression with ONE and ONLY one group, in this
                 case "RF_(.*)" with which the base name can be extracted
                 from the full fact table name.
@@ -301,14 +299,14 @@ Revision is $Id$
         </Attribute>
         <Code><![CDATA[
             java.util.regex.Pattern baseNamePattern = null;
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     super.validate(rules, msgRecorder);
 
                     if (basename != null) {
-                        baseNamePattern = 
+                        baseNamePattern =
                             java.util.regex.Pattern.compile(basename);
                     }
                 } finally {
@@ -316,29 +314,29 @@ Revision is $Id$
                 }
             }
 
-            /** 
+            /**
              * Generates a regular expression string by prepending and
              * appending regular expression to the parameter tableName.
-             * 
+             *
              * @param name Table name
              * @return regular expression
              */
             public String getRegex(final String name) {
-                StringBuffer buf = new StringBuffer();
+                StringBuilder buf = new StringBuilder();
                 if (pretemplate != null) {
                     buf.append(pretemplate);
                 }
                 if (name != null) {
                     String n = name;
                     if (baseNamePattern != null) {
-                        java.util.regex.Matcher matcher = 
+                        java.util.regex.Matcher matcher =
                             baseNamePattern.matcher(name);
                         if (matcher.matches() && matcher.groupCount() > 0) {
                             n = matcher.group(1);
 
                         } else {
                             if (AggRules.getLogger().isDebugEnabled()) {
-                                StringBuffer bf = new StringBuffer(64);
+                                StringBuilder bf = new StringBuilder(64);
                                 bf.append(getName());
                                 bf.append(".getRegex: for name \"");
                                 bf.append(name);
@@ -363,7 +361,7 @@ Revision is $Id$
                 String regex = buf.toString();
 
                 if (AggRules.getLogger().isDebugEnabled()) {
-                    StringBuffer bf = new StringBuffer(64);
+                    StringBuilder bf = new StringBuilder(64);
                     bf.append(getName());
                     bf.append(".getRegex: for name \"");
                     bf.append(name);
@@ -414,7 +412,7 @@ Revision is $Id$
                     };
                 }
 
-                final java.util.regex.Pattern pattern = 
+                final java.util.regex.Pattern pattern =
                         java.util.regex.Pattern.compile(regex, flag);
 
                 return new Recognizer.Matcher() {
@@ -426,17 +424,17 @@ Revision is $Id$
                         return b;
                     }
                     private void debug(String name) {
-                        StringBuffer bf = new StringBuffer(64);
+                        StringBuilder bf = new StringBuilder(64);
                         bf.append(NameMatcher.this.getName());
                         bf.append(".Matcher.matches:");
-                        bf.append(" name \""); 
+                        bf.append(" name \"");
                         bf.append(name);
                         bf.append("\" pattern \"");
                         bf.append(pattern.pattern());
                         bf.append("\"");
                         if ((pattern.flags() &
                             java.util.regex.Pattern.CASE_INSENSITIVE) != 0) {
-                            bf.append(" case_insensitive"); 
+                            bf.append(" case_insensitive");
                         }
 
                         String msg = bf.toString();
@@ -461,7 +459,7 @@ Revision is $Id$
             </Doc>
         </Attribute>
         <Code><![CDATA[
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
@@ -486,7 +484,7 @@ Revision is $Id$
             match the base fact table's foreign key column name.
         </Doc>
         <Code><![CDATA[
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
@@ -515,7 +513,7 @@ Revision is $Id$
             would match - which is surely not allowed).
         </Doc>
         <Code><![CDATA[
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
@@ -537,9 +535,9 @@ Revision is $Id$
     <!-- Mapper ===================================================== -->
     <Class class="Mapper" superclass="CaseMatcher" >
         <Doc>
-            This allows one to create an element that matches against a 
+            This allows one to create an element that matches against a
             single template, where the template is an attribute.
-            While much loved, this is currently not used. 
+            While much loved, this is currently not used.
         </Doc>
         <Attribute name="template" required="true">
             <Doc>
@@ -549,16 +547,16 @@ Revision is $Id$
         <Attribute name="space" required="false" default="_" >
             <Doc>
                 How to translate the space character.
-                For example, if the space=='_' and 
-                the source string is "Product Family", 
+                For example, if the space=='_' and
+                the source string is "Product Family",
                 then the target string is "Product_Family".
             </Doc>
         </Attribute>
         <Attribute name="dot" required="false" default="_" >
             <Doc>
                 How to translate the dot character.
-                For example, if the dot=='_' and 
-                the source string is "Time.Time Weekly", 
+                For example, if the dot=='_' and
+                the source string is "Time.Time Weekly",
                 then the target string is "Time_Time Weekly".
             </Doc>
         </Attribute>
@@ -577,13 +575,13 @@ Revision is $Id$
             protected String[] templateParts;
             protected int[] templateNamePos;
 
-            /** 
+            /**
              * It is hoped that no one will need to match more than 50 names
              * in a template. Currently, this implementation, requires only 3.
              */
             private static final int MAX_SIZE = 50;
 
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
@@ -601,19 +599,19 @@ Revision is $Id$
                     while (count < MAX_SIZE) {
                         if (start == -1) {
                             if (count == 0) {
-                                // there are no ${} in template which 
+                                // there are no ${} in template which
                                 // is an error
                                 String msg = "Bad template \"" +
                                     template +
                                     "\", no ${} entries";
                                 msgRecorder.reportError(msg);
                                 return;
-                            } 
+                            }
                             // its OK, there are "count" ${}
                             templateNamePos = new int[count];
                             System.arraycopy(poss, 0, templateNamePos, 0, count);
 
-                            ss[count++] = 
+                            ss[count++] =
                                 template.substring(end, template.length());
                             templateParts = new String[count];
                             System.arraycopy(ss, 0, templateParts, 0, count);
@@ -624,7 +622,7 @@ Revision is $Id$
                         previousEnd = end;
                         end = template.indexOf('}', start);
                         if (end == -1) {
-                            // there was a "${" but not '}' in template 
+                            // there was a "${" but not '}' in template
                             String msg = "Bad template \"" +
                                 template +
                                 "\", it had a \"${\", but no '}'";
@@ -655,7 +653,7 @@ Revision is $Id$
 
             protected abstract String[] getTemplateNames();
 
-            private int convertNameToID(final String name, 
+            private int convertNameToID(final String name,
                                         final mondrian.recorder.MessageRecorder msgRecorder) {
 
                 if (name == null) {
@@ -682,8 +680,8 @@ Revision is $Id$
                 final String space = getSpace();
                 final String dot = getDot();
 
-                final StringBuffer buf = new StringBuffer();
- 
+                final StringBuilder buf = new StringBuilder();
+
                 //
                 // Remember that:
                 //      templateParts.length == templateNamePos.length+1
@@ -706,10 +704,10 @@ Revision is $Id$
                 String regex = buf.toString();
 
                 if (AggRules.getLogger().isDebugEnabled()) {
-                    StringBuffer bf = new StringBuffer(64);
+                    StringBuilder bf = new StringBuilder(64);
                     bf.append(getName());
                     bf.append(".getRegex:");
-                    bf.append(" for names "); 
+                    bf.append(" for names ");
                     for (int i = 0; i < names.length; i++) {
                         bf.append('"');
                         bf.append(names[i]);
@@ -778,17 +776,17 @@ Revision is $Id$
                         return b;
                     }
                     private void debug(String name) {
-                        StringBuffer bf = new StringBuffer(64);
+                        StringBuilder bf = new StringBuilder(64);
                         bf.append(Mapper.this.getName());
                         bf.append(".Matcher.matches:");
-                        bf.append(" name \""); 
+                        bf.append(" name \"");
                         bf.append(name);
                         bf.append("\" pattern \"");
                         bf.append(pattern.pattern());
                         bf.append("\"");
                         if ((pattern.flags() &
                             java.util.regex.Pattern.CASE_INSENSITIVE) != 0) {
-                            bf.append(" case_insensitive"); 
+                            bf.append(" case_insensitive");
                         }
 
                         String msg = bf.toString();
@@ -810,9 +808,9 @@ Revision is $Id$
             passing in an array of template names.
             The cdata content is a regular expression with embedded
             template names. Each name must be surrounded by "${" and "}".
-            Each time this is used for a new set of names, the names 
+            Each time this is used for a new set of names, the names
             replace the template names in the regular expression.
-            For example, if the charcase="lower", the attribute 
+            For example, if the charcase="lower", the attribute
             dot="-" (the default dot value is "_"), the template names are:
                 "city", "state", and "country"
             and the cdata is:
@@ -823,23 +821,23 @@ Revision is $Id$
                 .*_u-s-a_.*_san_francisco
 
             Note that a given template name can only appear ONCE in the
-            template content, the cdata content. As an example, the 
+            template content, the cdata content. As an example, the
             following cdata template is not supported:
                 .*_${country}_.*_${city}_${country}
         </Doc>
         <Attribute name="space" required="false" default="_" >
             <Doc>
                 How to translate the space character.
-                For example, if the space=='_' and 
-                the source string is "Product Family", 
+                For example, if the space=='_' and
+                the source string is "Product Family",
                 then the target string is "Product_Family".
             </Doc>
         </Attribute>
         <Attribute name="dot" required="false" default="_" >
             <Doc>
                 How to translate the dot character.
-                For example, if the dot=='_' and 
-                the source string is "Time.Time Weekly", 
+                For example, if the dot=='_' and
+                the source string is "Time.Time Weekly",
                 then the target string is "Time_Time Weekly".
             </Doc>
         </Attribute>
@@ -859,19 +857,19 @@ Revision is $Id$
 
             protected String[] templateParts;
 
-            /** 
+            /**
              * This is a one-to-one mapping, each template name can appear
              * at most once.
              */
             protected int[] templateNamePos;
 
-            /** 
+            /**
              * It is hoped that no one will need to match more than 50 names
              * in a template. Currently, this implementation, requires only 3.
              */
             private static final int MAX_SIZE = 50;
 
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final String[] templateNames,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
@@ -907,19 +905,19 @@ Revision is $Id$
                     while (count < MAX_SIZE) {
                         if (start == -1) {
                             if (count == 0) {
-                                // there are no ${} in template which 
+                                // there are no ${} in template which
                                 // is an error
                                 String msg = "Bad template \"" +
                                     template +
                                     "\", no ${} entries";
                                 msgRecorder.reportError(msg);
                                 return;
-                            } 
+                            }
                             // its OK, there are "count" ${}
                             templateNamePos = new int[count];
                             System.arraycopy(poss, 0, templateNamePos, 0, count);
 
-                            ss[count++] = 
+                            ss[count++] =
                                 template.substring(end, template.length());
                             templateParts = new String[count];
                             System.arraycopy(ss, 0, templateParts, 0, count);
@@ -930,7 +928,7 @@ Revision is $Id$
                         previousEnd = end;
                         end = template.indexOf('}', start);
                         if (end == -1) {
-                            // there was a "${" but not '}' in template 
+                            // there was a "${" but not '}' in template
                             String msg = "Bad template \"" +
                                 template +
                                 "\", it had a \"${\", but no '}'";
@@ -939,8 +937,8 @@ Revision is $Id$
                         }
 
                         String name = template.substring(start+2, end);
-                        int pos = convertNameToID(name, 
-                                                  templateNames, 
+                        int pos = convertNameToID(name,
+                                                  templateNames,
                                                   msgRecorder);
                         if (pos == BAD_ID) {
                             return;
@@ -959,7 +957,7 @@ Revision is $Id$
                     msgRecorder.popContextName();
                 }
             }
-            private int convertNameToID(final String name, 
+            private int convertNameToID(final String name,
                                         final String[] templateNames,
                                         final mondrian.recorder.MessageRecorder msgRecorder) {
 
@@ -985,8 +983,8 @@ Revision is $Id$
                 final String space = getSpace();
                 final String dot = getDot();
 
-                final StringBuffer buf = new StringBuffer();
- 
+                final StringBuilder buf = new StringBuilder();
+
                 //
                 // Remember that:
                 //      templateParts.length == templateNamePos.length+1
@@ -1014,10 +1012,10 @@ Revision is $Id$
                 String regex = buf.toString();
 
                 if (AggRules.getLogger().isDebugEnabled()) {
-                    StringBuffer bf = new StringBuffer(64);
+                    StringBuilder bf = new StringBuilder(64);
                     bf.append(getName());
                     bf.append(".getRegex:");
-                    bf.append(" for names "); 
+                    bf.append(" for names ");
                     for (int i = 0; i < names.length; i++) {
                         bf.append('"');
                         bf.append(names[i]);
@@ -1048,8 +1046,8 @@ Revision is $Id$
                         return null;
                     }
 
-                    final java.util.regex.Pattern pattern = 
-                        java.util.regex.Pattern.compile(regex, 
+                    final java.util.regex.Pattern pattern =
+                        java.util.regex.Pattern.compile(regex,
                             java.util.regex.Pattern.CASE_INSENSITIVE);
 
                     return pattern;
@@ -1062,7 +1060,7 @@ Revision is $Id$
                         return null;
                     }
 
-                    final java.util.regex.Pattern pattern = 
+                    final java.util.regex.Pattern pattern =
                         java.util.regex.Pattern.compile(regex);
 
                     return pattern;
@@ -1072,7 +1070,7 @@ Revision is $Id$
                     String[] ucNames = new String[names.length];
                     for (int i = 0; i < names.length; i++) {
                         String name = names[i];
-                        ucNames[i] = (name == null) 
+                        ucNames[i] = (name == null)
                             ? null: name.toUpperCase();
                     }
 
@@ -1081,7 +1079,7 @@ Revision is $Id$
                         return null;
                     }
 
-                    final java.util.regex.Pattern pattern = 
+                    final java.util.regex.Pattern pattern =
                         java.util.regex.Pattern.compile(regex);
 
                     return pattern;
@@ -1092,7 +1090,7 @@ Revision is $Id$
                     String[] lcNames = new String[names.length];
                     for (int i = 0; i < names.length; i++) {
                         String name = names[i];
-                        lcNames[i] = (name == null) 
+                        lcNames[i] = (name == null)
                             ? null: name.toLowerCase();
                     }
 
@@ -1101,7 +1099,7 @@ Revision is $Id$
                         return null;
                     }
 
-                    final java.util.regex.Pattern pattern = 
+                    final java.util.regex.Pattern pattern =
                         java.util.regex.Pattern.compile(regex);
 
                     return pattern;
@@ -1131,7 +1129,7 @@ Revision is $Id$
                 return id;
             }
 
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
@@ -1149,7 +1147,7 @@ Revision is $Id$
             }
 
 
-            /** 
+            /**
              * This must be defined in derived classes. It returns an array of
              * symbolic names that are the symbolic names allowed to appear
              * in the regular expression templates.
@@ -1160,7 +1158,7 @@ Revision is $Id$
 
             protected Recognizer.Matcher getMatcher(final String[] names) {
 
-                final java.util.regex.Pattern[] patterns = 
+                final java.util.regex.Pattern[] patterns =
                     new java.util.regex.Pattern[regexs.length];
 
                 for (int i = 0; i < regexs.length; i++) {
@@ -1172,7 +1170,7 @@ Revision is $Id$
                     public boolean matches(String name) {
                         for (int i = 0; i < patterns.length; i++) {
                             java.util.regex.Pattern pattern = patterns[i];
-                            if ((pattern != null) && 
+                            if ((pattern != null) &&
                                     pattern.matcher(name).matches()) {
 
                                 if (AggRules.getLogger().isDebugEnabled()) {
@@ -1185,17 +1183,17 @@ Revision is $Id$
                         return false;
                     }
                     private void debug(String name, java.util.regex.Pattern p) {
-                        StringBuffer bf = new StringBuffer(64);
+                        StringBuilder bf = new StringBuilder(64);
                         bf.append("DefaultDef.RegexMapper");
                         bf.append(".Matcher.matches:");
-                        bf.append(" name \""); 
+                        bf.append(" name \"");
                         bf.append(name);
                         bf.append("\" matches regex \"");
                         bf.append(p.pattern());
                         bf.append("\"");
                         if ((p.flags() &
                             java.util.regex.Pattern.CASE_INSENSITIVE) != 0) {
-                            bf.append(" case_insensitive"); 
+                            bf.append(" case_insensitive");
                         }
 
                         String msg = bf.toString();
@@ -1225,7 +1223,7 @@ Revision is $Id$
     <!-- LevelMapRef ===================================================== -->
     <Element type="LevelMapRef" class="Ref" >
         <Code>
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
@@ -1245,7 +1243,7 @@ Revision is $Id$
     <!-- MeasureMapRef ================================================== -->
     <Element type="MeasureMapRef" class="Ref" >
         <Code>
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
@@ -1265,7 +1263,7 @@ Revision is $Id$
     <!-- IgnoreMapRef ================================================== -->
     <Element type="IgnoreMapRef" class="Ref" >
         <Code>
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
@@ -1285,7 +1283,7 @@ Revision is $Id$
     <!-- FactCountMatchRef =============================================== -->
     <Element type="FactCountMatchRef" class="Ref" >
         <Code>
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
@@ -1305,7 +1303,7 @@ Revision is $Id$
     <!-- ForeignKeyMatchRef =============================================== -->
     <Element type="ForeignKeyMatchRef" class="Ref" >
         <Code>
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
@@ -1325,7 +1323,7 @@ Revision is $Id$
     <!-- TableMatchRef ================================================== -->
     <Element type="TableMatchRef" class="Ref" >
         <Code>
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
@@ -1352,9 +1350,9 @@ Revision is $Id$
         </Doc>
         <Code><![CDATA[
             private static final String[] TEMPLATE_NAMES = new String[] {
-                "usage_prefix", 
-                "hierarchy_name", 
-                "level_name", 
+                "usage_prefix",
+                "hierarchy_name",
+                "level_name",
                 "level_column_name"
             };
             protected String[] getTemplateNames() {
@@ -1362,13 +1360,13 @@ Revision is $Id$
             }
 
             protected Recognizer.Matcher getMatcher(
-                                            final String usagePrefix, 
-                                            final String hierarchyName, 
+                                            final String usagePrefix,
+                                            final String hierarchyName,
                                             final String levelName,
                                             final String levelColumnName) {
                 return getMatcher(new String[] {
-                    usagePrefix, 
-                    hierarchyName, 
+                    usagePrefix,
+                    hierarchyName,
                     levelName,
                     levelColumnName
                 });
@@ -1380,25 +1378,26 @@ Revision is $Id$
     <Element type="MeasureMap" class="RegexMapper" >
         <Doc>
             This is the template that maps from a combination of measure
-                measure_name
-                measure_column_name
-                aggregate_name (count, sum, avg, min, max, distinct count)
+                measure_name,
+                measure_column_name, and
+                aggregate_name ("count", "sum", "avg", "min", "max",
+                "distinct-count").
         </Doc>
         <Code><![CDATA[
             private static final String[] TEMPLATE_NAMES = new String[] {
-                "measure_name", 
-                "measure_column_name", 
+                "measure_name",
+                "measure_column_name",
                 "aggregate_name"
             };
             protected String[] getTemplateNames() {
                 return TEMPLATE_NAMES;
             }
             protected Recognizer.Matcher getMatcher(
-                                            final String measureName, 
+                                            final String measureName,
                                             final String measuerColumnName,
                                             final String aggregateName) {
                 return getMatcher(new String[] {
-                    measureName, 
+                    measureName,
                     measuerColumnName,
                     aggregateName
                 });
@@ -1430,7 +1429,7 @@ Revision is $Id$
             the AggRule which is marked as default==true is used (validation
             fails if one and only one AggRule is not marked as the default).
             An AggRule has manditory child elements for matching the
-            aggregate table names, aggregate table fact count column, 
+            aggregate table names, aggregate table fact count column,
             foreign key columns, the measure columns, and the hierarchy level
             columns. These child elements can be specified as direct children
             of an AggRule element or by reference to elements defined as a
@@ -1466,12 +1465,12 @@ Revision is $Id$
             </Doc>
         </Object>
 
-        <Object name="foreignKeyMatch" type="ForeignKeyMatch" 
+        <Object name="foreignKeyMatch" type="ForeignKeyMatch"
                     required="false">
             <Doc>
             </Doc>
         </Object>
-        <Object name="foreignKeyMatchRef" type="ForeignKeyMatchRef" 
+        <Object name="foreignKeyMatchRef" type="ForeignKeyMatchRef"
                     required="false">
             <Doc>
             </Doc>
@@ -1508,9 +1507,9 @@ Revision is $Id$
             private boolean isOk(final Base base) {
                 return ((base != null) && base.isEnabled());
             }
-            private boolean isRef(final AggRules rules, 
+            private boolean isRef(final AggRules rules,
                                   final mondrian.recorder.MessageRecorder msgRecorder,
-                                  final Base base, 
+                                  final Base base,
                                   final Base baseRef,
                                   final String baseName) {
                 if (! isOk(base)) {
@@ -1540,7 +1539,7 @@ Revision is $Id$
                 }
             }
             // called after a constructor is called
-            public void validate(final AggRules rules, 
+            public void validate(final AggRules rules,
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
@@ -1549,7 +1548,7 @@ Revision is $Id$
                         ignoreMap.validate(rules, msgRecorder);
                     } else if (ignoreMapRef != null) {
                         ignoreMapRef.validate(rules, msgRecorder);
-                        ignoreMap = 
+                        ignoreMap =
                             rules.lookupIgnoreMap(ignoreMapRef.getRefId());
                     }
                     if (isRef(rules, msgRecorder, factCountMatch,
@@ -1562,18 +1561,18 @@ Revision is $Id$
                         foreignKeyMatch = rules.lookupForeignKeyMatch(
                             foreignKeyMatchRef.getRefId());
                     }
-                    if (isRef(rules, msgRecorder, tableMatch, 
+                    if (isRef(rules, msgRecorder, tableMatch,
                             tableMatchRef, "TableMatch")) {
-                        tableMatch = 
+                        tableMatch =
                             rules.lookupTableMatch(tableMatchRef.getRefId());
                     }
-                    if (isRef(rules, msgRecorder, levelMap, 
+                    if (isRef(rules, msgRecorder, levelMap,
                             levelMapRef, "LevelMap")) {
                         levelMap = rules.lookupLevelMap(levelMapRef.getRefId());
                     }
-                    if (isRef(rules, msgRecorder, measureMap, 
+                    if (isRef(rules, msgRecorder, measureMap,
                             measureMapRef, "MeasureMap")) {
-                        measureMap = 
+                        measureMap =
                             rules.lookupMeasureMap(measureMapRef.getRefId());
                     }
                 } finally {

@@ -25,6 +25,7 @@ import mondrian.spi.impl.DataSourceChangeListenerImpl;
 import mondrian.spi.impl.DataSourceChangeListenerImpl2;
 import mondrian.spi.impl.DataSourceChangeListenerImpl3;
 import mondrian.spi.impl.DataSourceChangeListenerImpl4;
+import mondrian.util.Bug;
 import org.apache.log4j.Logger;
 
 import junit.framework.TestCase;
@@ -37,7 +38,8 @@ import junit.framework.TestCase;
  * @version $Id$
  */
 public class DataSourceChangeListenerTest extends FoodMartTestCase {
-    private static Logger logger = Logger.getLogger(DataSourceChangeListenerTest.class);
+    private static Logger logger =
+        Logger.getLogger(DataSourceChangeListenerTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
 
 
@@ -173,17 +175,16 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
      * Tests several threads, each of which is creating connections and
      * periodically flushing the schema cache.
      *
-     * @param count
-     * @param cycleCount
-     * @param flushInverseFrequency
+     * @param workerCount Number of worker threads
+     * @param cycleCount Number of cycles each thread should perform
      */
     private void checkCacheFlushing(
-        final int count,
+        final int workerCount,
         final int cycleCount)
     {
         final Random random = new Random(123456);
-        Worker[] workers = new Worker[count];
-        Thread[] threads = new Thread[count];
+        Worker[] workers = new Worker[workerCount];
+        Thread[] threads = new Thread[workerCount];
 
 
         final String[] queries = {
@@ -358,7 +359,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         star.setChangeListener(smrStore.changeListener);
 
 
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < workerCount; i++) {
             workers[i] = new Worker() {
                 public void runSafe() {
                     for (int i = 0; i < cycleCount; ++i) {
@@ -381,10 +382,10 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             };
             threads[i] = new Thread(workers[i]);
         }
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < workerCount; i++) {
             threads[i].start();
         }
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < workerCount; i++) {
             try {
                 threads[i].join();
             } catch (InterruptedException e) {
@@ -393,18 +394,16 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         }
         String messages = null;
         int failures = 0;
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < workerCount; i++) {
             if (workers[i].failures.size() > 0) {
-
-                for (int j = 0; j < workers[i].failures.size(); j++) {
-                    Throwable throwable = workers[i].failures.get(j);
-                    String message = throwable.toString() + throwable.getMessage();
+                for (Throwable throwable : workers[i].failures) {
+                    String message =
+                        throwable.toString() + throwable.getMessage();
                     if (message != null) {
                         failures++;
                         if (messages == null) {
                             messages = message;
-                        }
-                        else {
+                        } else {
                             messages += "\n" + message;
                         }
                     }
@@ -417,13 +416,13 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
     }
 
     private static abstract class Worker implements Runnable {
-        List<Throwable> failures = new ArrayList<Throwable>();
+        final List<Throwable> failures = new ArrayList<Throwable>();
 
         public void run() {
             try {
                 runSafe();
             } catch (Throwable e) {
-                synchronized(failures) {
+                synchronized (failures) {
                     failures.add(e);
                 }
             }

@@ -16,6 +16,7 @@ import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
 import mondrian.rolap.cache.CachePool;
 import mondrian.spi.UserDefinedFunction;
+import mondrian.util.Bug;
 
 import java.util.regex.Pattern;
 import java.util.List;
@@ -3104,6 +3105,12 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testMembersOfLargeDimensionTheHardWay() {
         final MondrianProperties properties = MondrianProperties.instance();
+
+        // Avoid this test if memory is scarce.
+        if (Bug.avoidMemoryOverflow(TestContext.instance().getDialect())) {
+            return;
+        }
+
         int old = properties.LargeDimensionThreshold.get();
         try {
             // prevent a CacheMemberReader from kicking in
@@ -4788,7 +4795,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "  <Measure name=\"Sales Count\" column=\"product_id\" aggregator=\"count\"\n" +
                 "      formatString=\"#,###\"/>\n" +
                 "  <Measure name=\"Customer Count\" column=\"customer_id\"\n" +
-                "      aggregator=\"distinct count\" formatString=\"#,###\"/>\n" +
+                "      aggregator=\"distinct-count\" formatString=\"#,###\"/>\n" +
                 "  <CalculatedMember\n" +
                 "      name=\"Profit\"\n" +
                 "      dimension=\"Measures\"\n" +

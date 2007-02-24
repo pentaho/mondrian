@@ -117,14 +117,14 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
 <!-- Sales -->
 <Cube name="Sales">
   <Table name="sales_fact_1997">
-<!-- 
+<!--
     <AggExclude name="agg_l_03_sales_fact_1997" />
     <AggExclude name="agg_ll_01_sales_fact_1997" />
     <AggExclude name="agg_pl_01_sales_fact_1997" />
     <AggExclude name="agg_l_05_sales_fact_1997" />
 -->
     <AggExclude name="agg_c_special_sales_fact_1997" />
-<!-- 
+<!--
     <AggExclude name="agg_c_14_sales_fact_1997" />
 -->
     <AggExclude name="agg_lc_100_sales_fact_1997" />
@@ -138,9 +138,9 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
         <AggForeignKey factColumn="customer_id" aggColumn="CUSTOMER_ID" />
         <AggForeignKey factColumn="promotion_id" aggColumn="PROMOTION_ID" />
         <AggForeignKey factColumn="store_id" aggColumn="STORE_ID" />
-<!-- 
+<!--
         <AggMeasure name="[Measures].[Avg Unit Sales]" column="UNIT_SALES_AVG"/>
--->     
+-->
         <AggMeasure name="[Measures].[Unit Sales]" column="UNIT_SALES_SUM" />
         <AggMeasure name="[Measures].[Store Cost]" column="STORE_COST_SUM" />
         <AggMeasure name="[Measures].[Store Sales]" column="STORE_SALES_SUM" />
@@ -274,7 +274,7 @@ fullname
   <Measure name="Sales Count" column="product_id" aggregator="count"
       formatString="#,###"/>
   <Measure name="Customer Count" column="customer_id"
-      aggregator="distinct count" formatString="#,###"/>
+      aggregator="distinct-count" formatString="#,###"/>
   <Measure name="Promotion Sales" aggregator="sum" formatString="#,###.00">
     <MeasureExpression>
       <SQL dialect="access">
@@ -375,7 +375,7 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
 
   <Dimension name="Has coffee bar">
     <Hierarchy hasAll="true">
-      <Level name="Has coffee bar" column="coffee_bar" uniqueMembers="true" 
+      <Level name="Has coffee bar" column="coffee_bar" uniqueMembers="true"
           type="Boolean"/>
     </Hierarchy>
   </Dimension>
@@ -499,7 +499,7 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
   <Measure name="Count" column="employee_id" aggregator="count"
       formatString="#,#"/>
   <Measure name="Number of Employees" column="employee_id"
-      aggregator="distinct count" formatString="#,#"/>
+      aggregator="distinct-count" formatString="#,#"/>
   <CalculatedMember name="Employee Salary" dimension="Measures"
       formatString="Currency"
       formula="([Employees].currentmember.datamember, [Measures].[Org Salary])"/>
@@ -642,7 +642,7 @@ fullname
       formatString="#,###.00"/>
   <Measure name="Sales Count" column="product_id" aggregator="count"
       formatString="#,###"/>
-  <Measure name="Customer Count" column="customer_id" aggregator="distinct count"
+  <Measure name="Customer Count" column="customer_id" aggregator="distinct-count"
       formatString="#,###"/>
 </Cube>
 
@@ -663,20 +663,20 @@ fullname
    <Measure name="Sales Count" column="product_id" aggregator="count" formatString="#,###">
      <CalculatedMemberProperty name="MEMBER_ORDINAL" value="1"/>
    </Measure>
-   
+
    <Measure name="Unit Sales" column="unit_sales" aggregator="sum"    formatString="Standard">
      <CalculatedMemberProperty name="MEMBER_ORDINAL" value="2"/>
    </Measure>
-   
+
    <Measure name="Store Sales" column="store_sales" aggregator="sum"  formatString="#,###.00">
       <CalculatedMemberProperty name="MEMBER_ORDINAL" value="3"/>
     </Measure>
-   
+
    <Measure name="Store Cost" column="store_cost" aggregator="sum"    formatString="#,###.00">
       <CalculatedMemberProperty name="MEMBER_ORDINAL" value="6"/>
     </Measure>
- 
-   <Measure name="Customer Count" column="customer_id" aggregator="distinct count" formatString="#,###">
+
+   <Measure name="Customer Count" column="customer_id" aggregator="distinct-count" formatString="#,###">
       <CalculatedMemberProperty name="MEMBER_ORDINAL" value="7"/>
     </Measure>
 
@@ -685,7 +685,7 @@ fullname
        dimension="Measures">
      <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>
      <CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
-     <CalculatedMemberProperty name="MEMBER_ORDINAL" value="4"/>      
+     <CalculatedMemberProperty name="MEMBER_ORDINAL" value="4"/>
    </CalculatedMember>
 
    <CalculatedMember
@@ -695,7 +695,7 @@ fullname
        visible="false">
       <CalculatedMemberProperty name="MEMBER_ORDINAL" value="5"/>
    </CalculatedMember>
-</Cube>   
+</Cube>
 
 <VirtualCube name="Warehouse and Sales">
   <VirtualCubeDimension cubeName="Sales" name="Customers"/>

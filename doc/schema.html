@@ -245,7 +245,7 @@ the default schema, you can provide an explicit schema using the "schema" attrib
 </blockquote>
 <p>Each measure (see <code><a href="#XML_Measure">&lt;Measure&gt;</a></code>) has a name, a column in the fact table, and an 
 <code>aggregator</code>. The aggregator is usually "sum", but "count", "min", "max", "avg", and 
-"distinct count" are also allowed; "distinct count" has some limitations if your cube contains a 
+"distinct-count" are also allowed; "distinct-count" has some limitations if your cube contains a 
 <a href="#Parent_child_hierarchies">parent-child hierarchy</a>.</p>
 
 <p>The optional <code>datatype</code> attribute specifies how cell values are represented in Mondrian's 
@@ -1091,7 +1091,8 @@ supervisor's direct reports.</p>
 
 <p>This approach has a couple of drawbacks. First, the performance is not very good if a 
 hierarchy contains more than a hundred members. Second, because Mondrian implements the 
-"distinct count" aggregator by generating SQL, you cannot define a "distinct count" member in 
+distinct-count aggregator by generating SQL, you cannot define a distinct-count 
+measure in 
 any cube which contains a parent-child hierarchy.</p>
 
 <p>How can we solve these problems? The answer is to enhance the data so that Mondrian is 

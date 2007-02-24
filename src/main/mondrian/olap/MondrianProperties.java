@@ -75,6 +75,8 @@ public class MondrianProperties extends TriggerableProperties {
 
     /**
      * Returns the singleton.
+     *
+     * @return Singleton instance
      */
     public static synchronized MondrianProperties instance() {
         if (instance == null) {
@@ -98,16 +100,26 @@ public class MondrianProperties extends TriggerableProperties {
     public interface PropertySource {
         /**
          * Opens an input stream from the source.
-         * Also updates
+         *
+         * <p>Also checks the 'last modified' time, which will determine whether
+         * {@link #isStale()} returns true.
+         *
+         * @return input stream
          */
         InputStream openStream();
 
         /**
          * Returns true if the source exists and has been modified since last
          * time we called {@link #openStream()}.
+         *
+         * @return whether source has changed since it was last read
          */
         boolean isStale();
 
+        /**
+         * Returns the description of this source, such as a filename or URL.
+         * @return description of this PropertySource
+         */
         String getDescription();
     }
 
@@ -202,9 +214,10 @@ public class MondrianProperties extends TriggerableProperties {
         URL url = null;
         File file = new File(mondrianDotProperties);
         if (file.exists() && file.isFile()) {
-            // Read properties file "mondrian.properties" from PWD, if it exists.
+            // Read properties file "mondrian.properties" from PWD, if it
+            // exists.
             try {
-                url = file.toURL();
+                url = file.toURI().toURL();
             } catch (MalformedURLException e) {
                 LOGGER.warn("Mondrian: file '"
                     + file.getAbsolutePath()
@@ -212,7 +225,9 @@ public class MondrianProperties extends TriggerableProperties {
             }
         } else {
             // Then try load it from classloader
-            url = MondrianProperties.class.getClassLoader().getResource(mondrianDotProperties);
+            url =
+                MondrianProperties.class.getClassLoader().getResource(
+                    mondrianDotProperties);
         }
 
         if (url != null) {
@@ -264,6 +279,8 @@ public class MondrianProperties extends TriggerableProperties {
     /**
      * Tries to load properties from a URL. Does not fail, just prints success
      * or failure to log.
+     *
+     * @param source Source to read properties from
      */
     private void load(final PropertySource source) {
         try {
@@ -288,6 +305,8 @@ public class MondrianProperties extends TriggerableProperties {
      *
      * <p>todo: Move to base class, {@link TriggerableProperties}, and rename
      * base method {@link TriggerableProperties#getProperties()}}.
+     *
+     * @return List of properties
      */
     public List<Property> getPropertyList() {
         Field[] fields = getClass().getFields();
@@ -315,12 +334,12 @@ public class MondrianProperties extends TriggerableProperties {
      * <p>todo: Move to base class, {@link TriggerableProperties}.
      *
      * @param path Name of the property
+     * @return Definition of property, or null if there is no property with this
+     *   name
      */
     public Property getPropertyDefinition(String path) {
-        final List propertyList = getPropertyList();
-        for (int i = 0; i < propertyList.size(); i++) {
-            org.eigenbase.util.property.Property property =
-                (Property) propertyList.get(i);
+        final List<Property> propertyList = getPropertyList();
+        for (Property property : propertyList) {
             if (property.getPath().equals(path)) {
                 return property;
             }
@@ -874,16 +893,16 @@ public class MondrianProperties extends TriggerableProperties {
         this, "mondrian.util.memoryMonitor.percentage.threshold", 90);
 
     /**
-     * The <code>MemoryMonitor</code> class property. If the value is 
-     * non-null, it is used by the <code>MemoryMonitorFactory</code> 
+     * The <code>MemoryMonitor</code> class property. If the value is
+     * non-null, it is used by the <code>MemoryMonitorFactory</code>
      * to create the implementation.
      */
     public final StringProperty MemoryMonitorClass = new StringProperty(
             this, "mondrian.util.MemoryMonitor.class", null);
 
     /**
-     * The <code>ExpCompiler</code> class property. If the value is 
-     * non-null, it is used by the <code>ExpCompiler.Factory</code> 
+     * The <code>ExpCompiler</code> class property. If the value is
+     * non-null, it is used by the <code>ExpCompiler.Factory</code>
      * to create the implementation.
      */
     public final StringProperty ExpCompilerClass = new StringProperty(
@@ -896,7 +915,7 @@ public class MondrianProperties extends TriggerableProperties {
      * Setting this value to '0' means that for all crossjoin
      * input lists in non-empty axes will have the optimizer applied.
      * On the other hand, if the value is set larger than any possible
-     * list, say <code>Integer.MAX_VALUE</code>, then the optimizer 
+     * list, say <code>Integer.MAX_VALUE</code>, then the optimizer
      * will never be applied.
      */
     public final IntegerProperty CrossJoinOptimizerSize = new IntegerProperty(
@@ -913,7 +932,7 @@ public class MondrianProperties extends TriggerableProperties {
      * <p>
      * If you do not enable this property, then the crossjoin optimizer,
      * if used, can produce errors. Bad results are produced for some
-     * queries and some data sets - its a combination of both so the 
+     * queries and some data sets - its a combination of both so the
      * error does not manifest itself all the time.
      */
     public final BooleanProperty UseImplicitMembers = new BooleanProperty(

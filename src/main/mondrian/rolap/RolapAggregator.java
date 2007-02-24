@@ -70,7 +70,7 @@ public abstract class RolapAggregator
             };
 
     public static final RolapAggregator DistinctCount =
-            new RolapAggregator("distinct count", index++, true) {
+            new RolapAggregator("distinct-count", index++, true) {
                 public Aggregator getRollup() {
                     // Distinct counts cannot always be rolled up, when they can,
                     // it's using Sum.

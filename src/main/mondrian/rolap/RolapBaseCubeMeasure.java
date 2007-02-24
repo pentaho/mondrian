@@ -11,6 +11,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.resource.MondrianResource;
 
 import java.util.List;
 import java.util.Arrays;
@@ -27,8 +28,8 @@ import java.util.Arrays;
  */
 class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeasure {
 
-    private static final List<String> datatypeList = Arrays.asList(
-            new String[] {"Integer", "Numeric", "String"});
+    private static final List<String> datatypeList =
+        Arrays.asList("Integer", "Numeric", "String");
 
     /**
      * For SQL generator. Column which holds the value of the measure.
@@ -69,11 +70,25 @@ class RolapBaseCubeMeasure extends RolapMember implements RolapStoredMeasure {
         setProperty(
                 Property.FORMAT_EXP.name,
                 Literal.createString(formatString));
+
+        // Validate aggregator.
         this.aggregator =
-            RolapAggregator.enumeration.getValue(aggregatorName, true);
+            RolapAggregator.enumeration.getValue(aggregatorName, false);
         if (this.aggregator == null) {
-            throw Util.newError("Unknown aggregator '" + aggregatorName + "'");
+            StringBuilder buf = new StringBuilder();
+            for (String aggName : RolapAggregator.enumeration.getNames()) {
+                if (buf.length() > 0) {
+                    buf.append(", ");
+                }
+                buf.append('\'');
+                buf.append(aggName);
+                buf.append('\'');
+            }
+            throw MondrianResource.instance().UnknownAggregator.ex(
+                aggregatorName,
+                buf.toString());
         }
+
         setProperty(Property.AGGREGATION_TYPE.name, aggregator);
         if (datatype == null) {
             if (aggregator == RolapAggregator.Count ||
