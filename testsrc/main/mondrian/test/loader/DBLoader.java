@@ -500,6 +500,9 @@ public abstract class DBLoader {
         /**
          * Returns the physical type which a given RDBMS (dialect) uses to
          * represent this logical type.
+         *
+         * @param dialect Dialect
+         * @return Physical type the dialect uses to represent this type
          */
         public String toPhysical(SqlQuery.Dialect dialect) {
             if (this == Integer ||
@@ -782,21 +785,19 @@ public abstract class DBLoader {
     }
 
     /**
-     * This method undoes all of the database table creations performed
+     * Undoes all of the database table creations performed
      * when the load method was called.
-     *
-     * @throws Exception
      */
-    public void clear() throws Exception {
+    public void clear() {
     }
 
     /**
-     * This method should be called when the is no longer going to be
-     * used.
+     * Releases resources.
      *
-     * @throws Exception
+     * <p>Call this method when the load process is finished and the connection
+     * is no longer going to be used.
      */
-    public void close() throws Exception {
+    public void close() {
     }
 
     protected void check() throws Exception {
@@ -967,8 +968,8 @@ public abstract class DBLoader {
     /**
      * Quote the given SQL identifier suitable for the output DBMS.
      *
-     * @param name
-     * @return
+     * @param name Identifier
+     * @return Quoted identifier
      */
     protected String quoteId(String name) {
         return this.dialect.quoteIdentifier(name);
@@ -977,13 +978,11 @@ public abstract class DBLoader {
     /**
      * Convert the columns value to a string based upon its column type.
      *
-     * @param column
-     * @param value
-     * @return
+     * @param column Column
+     * @param value Column value
+     * @return Column value as a SQL string
      */
-    protected String columnValue(Column column, Object value)
-            throws Exception {
-
+    protected String columnValue(Column column, Object value) {
         Type type = column.getType();
         String typeName = type.getName();
 
@@ -1110,7 +1109,7 @@ public abstract class DBLoader {
             } else {
                 Matcher matcher = decimalDataTypeRegex.matcher(typeName);
                 if (!matcher.matches()) {
-                    throw new Exception(
+                    throw new RuntimeException(
                         "Bad DECIMAL column type for " + typeName);
                  }
                 DecimalFormat formatter = new DecimalFormat(
@@ -1169,7 +1168,8 @@ public abstract class DBLoader {
             }
          */
         }
-        throw new Exception("Unknown column type: " + typeName +
+        throw new RuntimeException(
+            "Unknown column type: " + typeName +
             " for column: " + column.getName());
     }
 
@@ -1210,8 +1210,6 @@ public abstract class DBLoader {
      * @param batch         SQL statements to execute
      * @param batchSize     # SQL statements to execute
      * @return              # SQL statements executed
-     * @throws IOException
-     * @throws SQLException
      */
     protected int writeBatch(String[] batch, int batchSize)
             throws IOException, SQLException {
