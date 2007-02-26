@@ -341,6 +341,7 @@ public class RolapStar {
                 localAggregations.get().clear();
             }
         }
+        
     }
 
     /**
@@ -418,6 +419,12 @@ public class RolapStar {
      *
      */
     public void checkAggregateModifications() {
+        
+        // Clear own aggregation requests at the beginning of a query
+        // made by request to materialize results after RolapResult constructor
+        // is finished
+        clearAggregationRequests();        
+        
         if (changeListener != null) {
             if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {
                 synchronized (aggregations) {
@@ -548,12 +555,14 @@ public class RolapStar {
 
     /* Record global cache requests per thread */
     private void recordAggregationRequest(BitKey bitKey) {
-
-        synchronized (aggregationRequests) {
-            aggregationRequests.add(bitKey);
+        
+        if (!localAggregationRequests.get().contains(bitKey)) {            
+            synchronized(aggregationRequests) {
+                aggregationRequests.add(bitKey);
+            }     
+            // Store own request for cleanup afterwards
+            localAggregationRequests.get().add(bitKey);
         }
-        // Store own request for cleanup afterwards
-        localAggregationRequests.get().add(bitKey);
     }
 
     /* Checks whether an aggregation is requested by another thread */
