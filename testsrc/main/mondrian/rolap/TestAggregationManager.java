@@ -302,7 +302,7 @@ public class TestAggregationManager extends FoodMartTestCase {
         };
         // For derby, the TestAggregationManager.testNonEmptyCrossJoinLoneAxis
         // test fails if the non-empty crossjoin optimizer is used.
-        // With it on one gets a recursive call coming through the 
+        // With it on one gets a recursive call coming through the
         //  RolapEvaluator.getCachedResult.
         SqlQuery.Dialect d = TestContext.instance().getDialect();
         int opSize = 0;
@@ -351,9 +351,9 @@ public class TestAggregationManager extends FoodMartTestCase {
             new SqlPattern(
                 SqlPattern.ACCESS_DIALECT,
                 "select" +
-                " d0 as `c0`," +
-                " d1 as `c1`," +
-                " count(m0) as `c2` " +
+                " `d0` as `c0`," +
+                " `d1` as `c1`," +
+                " count(`m0`) as `c2` " +
                 "from (" +
                 "select distinct `time_by_day`.`the_year` as `d0`, " +
                 "`time_by_day`.`quarter` as `d1`, " +
@@ -366,7 +366,7 @@ public class TestAggregationManager extends FoodMartTestCase {
                 "`time_by_day`.`the_year` = 1997 and " +
                 "`time_by_day`.`quarter` = 'Q1'" +
                 ") as `dummyname` " +
-                "group by d0, d1",
+                "group by `d0`, `d1`",
                 26
             ),
             new SqlPattern(
@@ -455,10 +455,10 @@ public class TestAggregationManager extends FoodMartTestCase {
             new SqlPattern(
                 SqlPattern.ACCESS_DIALECT,
                 "select" +
-                " d0 as `c0`," +
-                " d1 as `c1`," +
-                " d2 as `c2`," +
-                " count(m0) as `c3` " +
+                " `d0` as `c0`," +
+                " `d1` as `c1`," +
+                " `d2` as `c2`," +
+                " count(`m0`) as `c3` " +
                 "from (" +
                 "select distinct `time_by_day`.`the_year` as `d0`," +
                 " `time_by_day`.`quarter` as `d1`," +
@@ -474,7 +474,7 @@ public class TestAggregationManager extends FoodMartTestCase {
                 " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
                 " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
                 " and `product_class`.`product_family` = 'Food') as `dummyname` " +
-                "group by d0, d1, d2",
+                "group by `d0`, `d1`, `d2`",
                 23)
         };
 
