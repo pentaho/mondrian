@@ -836,6 +836,10 @@ public class TestContext {
             expectedSql = expectedSql.replaceAll(
                     search,
                     "`customer`.`fullname`");
+        } else if (dialect.isIngres()) {
+            expectedSql = expectedSql.replaceAll(
+                    search,
+                    "fullname");
         } else if (dialect.isDB2()) {
             expectedSql = expectedSql.replaceAll(
                     search,

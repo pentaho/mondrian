@@ -77,28 +77,27 @@ import org.eigenbase.util.property.Trigger;
  * @author jhyde
  * @version $Id$
  */
-public class SqlQuery
-{
-    /** This static variable controls the formatting of the sql string. */
+public class SqlQuery {
+    /** Controls the formatting of the sql string. */
     private static boolean generateFormattedSql =
-             MondrianProperties.instance().GenerateFormattedSql.get();
+        MondrianProperties.instance().GenerateFormattedSql.get();
 
     static {
         // Trigger is used to lookup and change the value of the
         // variable that controls formatting.
         // Using a trigger means we don't have to look up the property eveytime.
         MondrianProperties.instance().GenerateFormattedSql.addTrigger(
-                new Trigger() {
-                    public boolean isPersistent() {
-                        return true;
-                    }
-                    public int phase() {
-                        return Trigger.PRIMARY_PHASE;
-                    }
-                    public void execute(Property property, String value) {
-                        generateFormattedSql = property.booleanValue();
-                    }
+            new Trigger() {
+                public boolean isPersistent() {
+                    return true;
                 }
+                public int phase() {
+                    return Trigger.PRIMARY_PHASE;
+                }
+                public void execute(Property property, String value) {
+                    generateFormattedSql = property.booleanValue();
+                }
+            }
         );
     }
 
@@ -1125,15 +1124,15 @@ public class SqlQuery
                 List<String[]> valueList) {
             if (isOracle()) {
                 return generateInlineGeneric(
-                        columnNames, columnTypes, valueList,
-                        "from dual");
+                    columnNames, columnTypes, valueList,
+                    "from dual");
             } else if (isAccess()) {
                 // Fall back to using the FoodMart 'days' table, because
                 // Access SQL has no way to generate values not from a table.
                 return generateInlineGeneric(
-                        columnNames, columnTypes, valueList,
-                        "from [days] where [day] = 1");
-            } else if (isMySQL()) {
+                    columnNames, columnTypes, valueList,
+                    "from [days] where [day] = 1");
+            } else if (isMySQL() || isIngres()) {
                 return generateInlineGeneric(
                         columnNames, columnTypes, valueList, null);
             } else if (isLucidDB()) {
@@ -1141,10 +1140,11 @@ public class SqlQuery
                 // can support applying column names to a VALUES clause
                 // (needed by generateInlineForAnsi).
                 return generateInlineGeneric(
-                        columnNames, columnTypes, valueList,
-                        " from (values(0))");
+                    columnNames, columnTypes, valueList,
+                    " from (values(0))");
             } else {
-                return generateInlineForAnsi("t", columnNames, columnTypes, valueList);
+                return generateInlineForAnsi(
+                    "t", columnNames, columnTypes, valueList);
             }
         }
 

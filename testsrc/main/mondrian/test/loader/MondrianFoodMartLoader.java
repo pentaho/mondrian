@@ -2034,6 +2034,8 @@ public class MondrianFoodMartLoader {
             if (this == Date) {
                 if (dialect.isMSSQL()) {
                     return "DATETIME";
+                } else if (dialect.isIngres()) {
+                    return "INGRESDATE";
                 } else {
                     return name;
                 }
@@ -2043,7 +2045,7 @@ public class MondrianFoodMartLoader {
                         dialect.isMySQL()) {
                     return "DATETIME";
                 } else if (dialect.isIngres()) {
-                    return "DATE";
+                    return "INGRESDATE";
                 } else {
                     return name;
                 }
