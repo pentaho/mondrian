@@ -787,6 +787,47 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "Row #4: 565,238\n" +
                 "Row #4: 339,611\n"));
     }
+
+    /**
+     * Testcase for <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1669104&group_id=35302&atid=414613">
+     * bug 1669104, Negative Solve Orders broken</a>.
+     */
+    public void testNegativeSolveOrder() {
+        // Negative solve orders are OK.
+        assertQueryReturns(
+            "with member measures.blah as 'measures.[unit sales]', SOLVE_ORDER = -6 select {measures.[unit sales], measures.blah} on 0 from sales",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "{[Measures].[blah]}\n" +
+                "Row #0: 266,773\n" +
+                "Row #0: 266,773\n"));
+
+        // Member with a negative solve order is trumped by a stored measure
+        // (which has solve order 0), which in turn is trumped by a calc member
+        // with a positive solve order.
+        assertQueryReturns(
+            "with member [Product].[Foo] as ' 1 ', SOLVE_ORDER = -6\n" +
+                " member [Gender].[Bar] as ' 2 ', SOLVE_ORDER = 3\n" +
+                "select {[Measures].[Unit Sales]} on 0,\n" +
+                " {[Product].[Foo], [Product].[Drink]} *\n" +
+                " {[Gender].[M], [Gender].[Bar]} on 1\n" +
+                "from [Sales]",
+            fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[Foo], [Gender].[All Gender].[M]}\n" +
+                "{[Product].[Foo], [Gender].[Bar]}\n" +
+                "{[Product].[All Products].[Drink], [Gender].[All Gender].[M]}\n" +
+                "{[Product].[All Products].[Drink], [Gender].[Bar]}\n" +
+                "Row #0: 1\n" +
+                "Row #1: 2\n" +
+                "Row #2: 12,395\n" +
+                "Row #3: 2\n"));
+    }
 }
 
 // End CalculatedMembersTestCase.java

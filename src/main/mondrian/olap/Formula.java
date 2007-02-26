@@ -302,17 +302,62 @@ public class Formula extends QueryPart {
      * Returns the solve order. (Not valid if this formula defines a set.)
      *
      * @pre isMember()
-     * @post return != null
+     * @return Solve order, or null if SOLVE_ORDER property is not specified
+     *   or is not a number or is not constant
      */
-    public int getSolveOrder() {
-        Exp exp = getMemberProperty(Property.SOLVE_ORDER.name);
-        if (exp != null) {
-            final Type type = exp.getType();
-            if (type instanceof NumericType) {
-                return ((Literal) exp).getIntValue();
+    public Number getSolveOrder() {
+        return getIntegerMemberProperty(Property.SOLVE_ORDER.name);
+    }
+
+    /**
+     * Returns the integer value of a given constant.
+     * If the property is not set, or its
+     * value is not an integer, or its value is not a constant,
+     * returns null.
+     *
+     * @param name Property name
+     * @return Value of the property, or null if the property is not set, or its
+     *   value is not an integer, or its value is not a constant.
+     */
+    private Number getIntegerMemberProperty(String name) {
+        Exp exp = getMemberProperty(name);
+        if (exp != null && exp.getType() instanceof NumericType) {
+            return quickEval(exp);
+        }
+        return null;
+    }
+
+    /**
+     * Evaluates a constant numeric expression.
+     * @param exp Expression
+     * @return Result as a number, or null if the expression is not a constant
+     *   or not a number.
+     */
+    private static Number quickEval(Exp exp) {
+        if (exp instanceof Literal) {
+            Literal literal = (Literal) exp;
+            final Object value = literal.getValue();
+            if (value instanceof Number) {
+                return (Number) value;
+            } else {
+                return null;
             }
         }
-        return 0;
+        if (exp instanceof FunCall) {
+            FunCall call = (FunCall) exp;
+            if (call.getFunName().equals("=") &&
+                call.getSyntax() == Syntax.Prefix) {
+                final Number number = quickEval(call.getArg(0));
+                if (number == null) {
+                    return null;
+                } else if (number instanceof Integer) {
+                    return -number.intValue();
+                } else {
+                    return -number.doubleValue();
+                }
+            }
+        }
+        return null;
     }
 
     /**
