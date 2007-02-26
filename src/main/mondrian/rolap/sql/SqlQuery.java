@@ -185,17 +185,19 @@ public class SqlQuery
      * <code>failIfExists</code>, throws an exception or does not add the query
      * and returns false.
      *
-     * @param query
+     * @param query Subquery
      * @param alias (if not null, must not be zero length).
      * @param failIfExists if true, throws exception if alias already exists
      * @return true if query *was* added
      *
      * @pre alias != null
      */
-    public boolean addFromQuery(final String query,
-                                final String alias,
-                                final boolean failIfExists) {
-        Util.assertPrecondition(alias != null);
+    public boolean addFromQuery(
+        final String query,
+        final String alias,
+        final boolean failIfExists)
+    {
+        assert alias != null;
 
         if (fromAliases.contains(alias)) {
             if (failIfExists) {
@@ -234,16 +236,19 @@ public class SqlQuery
      * @param table table name
      * @param alias table alias, may not be null
      *              (if not null, must not be zero length).
-     * @param failIfExists
+     * @param failIfExists Whether to throw a RuntimeException if from clause
+     *   already contains this alias
      *
      * @pre alias != null
-     * @return true if table *was* added
+     * @return true if table was added
      */
-    private boolean addFromTable(final String schema,
-                                 final String table,
-                                 final String alias,
-                                 final String filter,
-                                 final boolean failIfExists) {
+    private boolean addFromTable(
+        final String schema,
+        final String table,
+        final String alias,
+        final String filter,
+        final boolean failIfExists)
+    {
         if (fromAliases.contains(alias)) {
             if (failIfExists) {
                 throw Util.newInternal(
@@ -462,6 +467,7 @@ public class SqlQuery
             return buf.toString();
         }
     }
+
     public void print(PrintWriter pw, String prefix) {
         // This <CR> is added to the front because the part of the code
         // that prints out the sql (if the trace level is non-zero),
@@ -490,10 +496,12 @@ public class SqlQuery
 
 
         /**
-         * Parameter element is added if either duplicates are allowed or if
-         * it has not already been added.
+         * Adds an element to this ClauseList if either duplicates are allowed
+         * or if it has not already been added.
          *
-         * @param element
+         * @param element Element to add
+         * @return whether element was added, per
+         * {@link java.util.Collection#add(Object)}
          */
         public boolean add(final String element) {
             if (allowDups || !contains(element)) {
@@ -505,21 +513,18 @@ public class SqlQuery
         void toBuffer(final StringBuilder buf,
                       final String first,
                       final String sep) {
-            Iterator it = iterator();
             boolean firstTime = true;
-            while (it.hasNext()) {
-                String s = (String) it.next();
-
+            for (String s : this) {
                 if (firstTime) {
                     buf.append(first);
                     firstTime = false;
                 } else {
                     buf.append(sep);
                 }
-
                 buf.append(s);
             }
         }
+
         void print(final PrintWriter pw,
                    final String prefix,
                    final String first,
@@ -1036,10 +1041,37 @@ public class SqlQuery
         }
 
         /**
-         * Whether "select count(distinct x) from t" is OK.
+         * Returns whether this Dialect supports distinct aggregations.
+         *
+         * <p>For example, Access does not allow
+         * <blockquote>
+         * <code>select count(distinct x) from t</code>
+         * </blockquote>
          */
         public boolean allowsCountDistinct() {
             return !isAccess();
+        }
+
+        /**
+         * Returns whether this Dialect supports more than one distinct
+         * aggregation in the same query.
+         *
+         * <p>In Derby 10.1,
+         * <blockquote>
+         *   <code>select couunt(distinct x) from t</code>
+         * </blockquote>
+         * is OK, but
+         * <blockquote>
+         *   <code>select couunt(distinct x), count(distinct y) from t</code>
+         * </blockquote>
+         * gives "Multiple DISTINCT aggregates are not supported at this time."
+         *
+         * @return whether this Dialect supports more than one distinct
+         * aggregation in the same query
+         */
+        public boolean allowsMultipleCountDistinct() {
+            return allowsCountDistinct() &&
+                !isDerby();
         }
 
         /**

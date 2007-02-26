@@ -26,12 +26,24 @@ import mondrian.rolap.sql.SqlQuery;
 class SegmentArrayQuerySpec extends AbstractQuerySpec {
     private final Segment[] segments;
 
+    /**
+     * Creates a SegmentArrayQuerySpec.
+     *
+     * @param segments Array of segments (must be at least one)
+     */
     SegmentArrayQuerySpec(final Segment[] segments) {
         super(segments[0].aggregation.getStar());
         this.segments = segments;
         assert isValid(true);
     }
 
+    /**
+     * Returns whether this query specification is valid, or throws if invalid
+     * and <code>fail</code> is true.
+     *
+     * @param fail Whether to throw if invalid
+     * @return Whether this query specification is valid
+     */
     private boolean isValid(boolean fail) {
         assert segments.length > 0;
         for (Segment segment : segments) {
@@ -90,7 +102,10 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     public String generateSqlQuery() {
         SqlQuery sqlQuery = newSqlQuery();
 
-        if (!sqlQuery.getDialect().allowsCountDistinct() && hasDistinct()) {
+        int k = getDistinctMeasureCount();
+        final SqlQuery.Dialect dialect = sqlQuery.getDialect();
+        if (!dialect.allowsCountDistinct() && k > 0 ||
+            !dialect.allowsMultipleCountDistinct() && k > 1) {
             distinctGenerateSql(sqlQuery);
         } else {
             nonDistinctGenerateSql(sqlQuery, false, false);
@@ -100,18 +115,19 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     }
 
     /**
-     * Returns whether one or more of the measures is a distinct measure.
+     * Returns the number of measures which are distinct.
      *
-     * @return whether one or more of the measures is a distinct measure
+     * @return the number of measures which are distinct
      */
-    protected boolean hasDistinct() {
+    protected int getDistinctMeasureCount() {
+        int k = 0;
         for (int i = 0, count = getMeasureCount(); i < count; i++) {
             RolapStar.Measure measure = getMeasure(i);
             if (measure.getAggregator().isDistinct()) {
-                return true;
+                ++k;
             }
         }
-        return false;
+        return k;
     }
 
     protected void addMeasure(final int i, final SqlQuery sqlQuery) {
@@ -128,7 +144,15 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         return true;
     }
 
+    /**
+     * Generates a SQL query to retrieve the values in this segment using
+     * an algorithm which converts distinct-aggregates to non-distinct
+     * aggregates over subqueries.
+     *
+     * @param outerSqlQuery Query to modify
+     */
     protected void distinctGenerateSql(final SqlQuery outerSqlQuery) {
+        final SqlQuery.Dialect dialect = outerSqlQuery.getDialect();
         // Generate something like
         //  select d0, d1, count(m0)
         //  from (
@@ -162,8 +186,9 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
             }
             final String alias = "d" + i;
             innerSqlQuery.addSelect(expr, alias);
-            outerSqlQuery.addSelect(alias);
-            outerSqlQuery.addGroupBy(alias);
+            final String quotedAlias = dialect.quoteIdentifier(alias);
+            outerSqlQuery.addSelect(quotedAlias);
+            outerSqlQuery.addGroupBy(quotedAlias);
         }
         for (int i = 0, count = getMeasureCount(); i < count; i++) {
             RolapStar.Measure measure = getMeasure(i);
@@ -177,7 +202,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
 
             outerSqlQuery.addSelect(
                 measure.getAggregator().getNonDistinctAggregator().getExpression(
-                        alias));
+                    dialect.quoteIdentifier(alias)));
         }
         outerSqlQuery.addFrom(innerSqlQuery, "dummyname", true);
     }

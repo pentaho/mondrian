@@ -12,6 +12,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggGen;
+import mondrian.rolap.sql.SqlQuery;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.*;
@@ -301,7 +302,14 @@ public class FastBatchingCellReader implements CellReader {
 
             // If the database cannot execute "count(distinct ...)", split the
             // distinct aggregations out.
-            if (!getStar().getSqlQueryDialect().allowsCountDistinct()) {
+            SqlQuery.Dialect dialect = getStar().getSqlQueryDialect();
+            int distinctMeasureCount = getDistinctMeasureCount(measuresList);
+            boolean tooManyDistinctMeasures =
+                distinctMeasureCount > 0 &&
+                    !dialect.allowsCountDistinct() ||
+                    distinctMeasureCount > 1 &&
+                        !dialect.allowsMultipleCountDistinct();
+            if (tooManyDistinctMeasures) {
                 while (true) {
                     // Scan for a measure based upon a distinct aggregation.
                     RolapStar.Measure distinctMeasure =
@@ -354,16 +362,31 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         /**
-         * Returns the first measure based upon a distinct aggregation, or null if
-         * there is none.
+         * Returns the first measure based upon a distinct aggregation, or null
+         * if there is none.
          */
-        RolapStar.Measure getFirstDistinctMeasure(List<RolapStar.Measure> measuresList) {
+        RolapStar.Measure getFirstDistinctMeasure(
+            List<RolapStar.Measure> measuresList)
+        {
             for (RolapStar.Measure measure : measuresList) {
                 if (measure.getAggregator().isDistinct()) {
                     return measure;
                 }
             }
             return null;
+        }
+
+        /**
+         * Returns the number of the measures based upon a distinct aggregation.
+         */
+        int getDistinctMeasureCount(List<RolapStar.Measure> measuresList) {
+            int count = 0;
+            for (RolapStar.Measure measure : measuresList) {
+                if (measure.getAggregator().isDistinct()) {
+                    ++count;
+                }
+            }
+            return count;
         }
     }
 

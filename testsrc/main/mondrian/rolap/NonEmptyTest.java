@@ -179,6 +179,9 @@ public class NonEmptyTest extends FoodMartTestCase {
     }
 
     public void testVirtualCubeMembers() throws Exception {
+        if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
+            return;
+        }
         // ok to use native sql optimization for members on a virtual cube
         TestCase c = new TestCase(6, 3,
                 "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Warehouse Sales]} ON COLUMNS, " +
@@ -857,10 +860,16 @@ public class NonEmptyTest extends FoodMartTestCase {
         c.run();
     }
 
+    /**
+     * Testcase for bug 1379068, which causes no children of [Time].[1997].[Q2]
+     * to be found, because it incorrectly constrains on the level's key column
+     * rather than name column.
+     */
     public void testMemberChildrenNameCol() {
-        // Bug 1379068 causes no children of [Time].[1997].[Q2] to be
-        // found, because it incorrectly constrains on the level's key column
-        // rather than name column.
+        // Expression dependency testing casues false negatives.
+        if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
+            return;
+        }
         TestCase c = new TestCase(3, 1,
                 "select " +
                 " {[Measures].[Count]} ON columns," +
