@@ -65,7 +65,7 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
                 List result = crossJoin(list1, list2, evaluator, call);
 
                 // remove any remaining empty crossings from the result
-                result = nonEmptyOptimizeList(evaluator, result, call);
+                result = nonEmptyList(evaluator, result, call);
                 return result;
             }
 

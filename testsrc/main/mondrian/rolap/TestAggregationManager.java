@@ -305,17 +305,9 @@ public class TestAggregationManager extends FoodMartTestCase {
         // With it on one gets a recursive call coming through the
         //  RolapEvaluator.getCachedResult.
         SqlQuery.Dialect d = TestContext.instance().getDialect();
-        int opSize = 0;
-        if (d.isDerby()) {
-            opSize = MondrianProperties.instance().CrossJoinOptimizerSize.get();
-            MondrianProperties.instance().CrossJoinOptimizerSize.set(Integer.MAX_VALUE);
-        }
         assertNoQuerySql(
                 mdxQuery,
                 patterns);
-        if (d.isDerby()) {
-            MondrianProperties.instance().CrossJoinOptimizerSize.set(opSize);
-        }
     }
 
     /**

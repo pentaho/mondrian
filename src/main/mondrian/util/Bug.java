@@ -11,7 +11,6 @@ package mondrian.util;
 
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.MondrianProperties;
-
 /**
  * Holder for constants which indicate whether particular issues have been
  * fixed. Reference one of those constants in your code, and it is clear which
@@ -30,12 +29,6 @@ public class Bug {
      */
     public static final boolean Bug1574942Fixed = false;
 
-    // Properties relating to checkin 7634.
-    // (What's the bug associated with this??)
-
-    //public static boolean Checkin7634UseCrossJoinFunOptimizer = true;
-    //public static int Checkin7634CrossJoinFunSize = 0;
-
     // Properties relating to checkin 7641.
     // This is part of the junit test Checkin_7641 that
     // shows that there is a difference when the default
@@ -44,7 +37,7 @@ public class Bug {
     // boolean should go away.
     // (What's the bug associated with this??)
 
-    //public static boolean Checkin7641UseImplicitMembers = true;
+    public static boolean Checkin7641UseOptimizer = false;
 
     /**
      * Whether

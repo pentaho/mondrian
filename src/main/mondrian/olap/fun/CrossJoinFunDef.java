@@ -19,9 +19,9 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.SetType;
 import mondrian.olap.type.TupleType;
-import mondrian.olap.type.MemberType;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
+import mondrian.util.Bug;
 import mondrian.util.UnsupportedList;
 
 import java.util.*;
@@ -225,7 +225,6 @@ class CrossJoinFunDef extends FunDefBase {
             super(call, calcs);
         }
         public Iterable evaluateIterable(Evaluator evaluator) {
-//System.out.println("BaseIterCalc.evaluateIterable");
             ResolvedFunCall call = (ResolvedFunCall) exp;
             // Use a native evaluator, if more efficient.
             // TODO: Figure this out at compile time.
@@ -250,6 +249,7 @@ class CrossJoinFunDef extends FunDefBase {
 
             if (o1 instanceof List) {
                 List l1 = (List) o1;
+                //l1 = checkList(evaluator, l1);
                 l1 = nonEmptyOptimizeList(evaluator, l1, call);
                 if (l1.isEmpty()) {
                     return Collections.EMPTY_LIST;
@@ -262,6 +262,7 @@ class CrossJoinFunDef extends FunDefBase {
 
             if (o2 instanceof List) {
                 List l2 = (List) o2;
+                //l2 = checkList(evaluator, l2);
                 l2 = nonEmptyOptimizeList(evaluator, l2, call);
                 if (l2.isEmpty()) {
                     return Collections.EMPTY_LIST;
@@ -1043,64 +1044,6 @@ class CrossJoinFunDef extends FunDefBase {
                     );
         }
     }
-    
-    /** 
-     * Attempts an optimization if the evalution is non-empty.
-     * 
-     * @param evaluator the Evaluator
-     * @param list  the list to be optimized
-     * @param call the crossjoin function
-     * @return the optimized list
-     */
-    protected static List nonEmptyOptimizeList(
-            Evaluator evaluator, 
-            List list,
-            ResolvedFunCall call) {
-
-        // Just return list if we are not doing a non-empty evaluation
-        if (! evaluator.isNonEmpty()) {
-            return list;
-        }
-
-        // If the size of the list is smaller than the size for
-        // attempting the optimization, then just return list.
-        final int opSize = 
-            MondrianProperties.instance().CrossJoinOptimizerSize.get();
-        int size = list.size();
-        if (size <= opSize) {
-//System.out.println("NO USE OPTIMIZER " +opSize);
-            return list;
-        }
-//System.out.println("USE OPTIMIZER " +opSize);
-        
-        // If there are misses during the optimization evaluation
-        // and the list size is greater than this size, then
-        // return the empty list. 
-        // TODO: Why is 1000 a good number?
-        final int puntMissCountListSize = 1000;
-
-        // instead of overflow exception try to further
-        // optimize nonempty(crossjoin(a,b)) ==
-        // nonempty(crossjoin(nonempty(a),nonempty(b))
-        final int missCount = evaluator.getMissCount();
-
-        list = optimizeNonEmptyList(evaluator, list, call);
-        size = list.size();
-        // list may be empty after nonEmpty optimization
-        if (size == 0) {
-            return Collections.EMPTY_LIST;
-        }
-        final int missCount2 = evaluator.getMissCount();
-        if ((missCount2 > missCount) && (size > puntMissCountListSize)) {
-            // We've hit some cells which are not in the cache. They
-            // registered as non-empty, but we won't really know until
-            // we've populated the cache. The cartesian product is still
-            // huge, so let's quit now, and try again after the cache
-            // has been loaded.
-            return Collections.EMPTY_LIST;
-        }
-        return list;
-    }
 
     static abstract class BaseListCalc extends AbstractListCalc {
         protected BaseListCalc(ResolvedFunCall call,
@@ -1134,10 +1077,12 @@ class CrossJoinFunDef extends FunDefBase {
             List l2 = listCalc2.evaluateList(evaluator);
             assert oldEval.equals(evaluator) : "listCalc2 changed context";
 
+            //l1 = checkList(evaluator, l1);
             l1 = nonEmptyOptimizeList(evaluator, l1, call);
             if (l1.isEmpty()) {
                 return Collections.EMPTY_LIST;
             }
+            //l2 = checkList(evaluator, l2);
             l2 = nonEmptyOptimizeList(evaluator, l2, call);
             if (l2.isEmpty()) {
                 return Collections.EMPTY_LIST;
@@ -1857,22 +1802,52 @@ class CrossJoinFunDef extends FunDefBase {
     }
 
 
-    // This is used by NonEmptyCrossJoinFunDef.java
+    protected static List nonEmptyOptimizeList(
+            Evaluator evaluator, 
+            List list,
+            ResolvedFunCall call) {
+
+        int opSize = MondrianProperties.instance().CrossJoinOptimizerSize.get();
+
+        int size = list.size();
+        if (size > opSize && evaluator.isNonEmpty()) {
+            // instead of overflow exception try to further
+            // optimize nonempty(crossjoin(a,b)) ==
+            // nonempty(crossjoin(nonempty(a),nonempty(b))
+            final int missCount = evaluator.getMissCount();
+
+            list = nonEmptyList(evaluator, list, call);
+            size = list.size();
+            // list may be empty after nonEmpty optimization
+            if (size == 0) {
+                return Collections.EMPTY_LIST;
+            }
+            final int missCount2 = evaluator.getMissCount();
+            final int puntMissCountListSize = 1000;
+            if (missCount2 > missCount && size > puntMissCountListSize) {
+                // We've hit some cells which are not in the cache. They
+                // registered as non-empty, but we won't really know until
+                // we've populated the cache. The cartesian product is still
+                // huge, so let's quit now, and try again after the cache
+                // has been loaded.
+                // Return an empty list short circuits higher level
+                // evaluation poping one all the way to the top.
+                return Collections.EMPTY_LIST;
+            }
+        }
+        return list;
+    }
     List crossJoin(
         List list1,
         List list2,
         Evaluator evaluator,
         ResolvedFunCall call)
     {
-        list1 = nonEmptyOptimizeList(evaluator, list1, call);
-        if (list1.isEmpty()) {
+        if (list1.isEmpty() || list2.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
-        list2 = nonEmptyOptimizeList(evaluator, list2, call);
-        if (list2.isEmpty()) {
-            return Collections.EMPTY_LIST;
-        }
-
+        // Optimize nonempty(crossjoin(a,b)) ==
+        //  nonempty(crossjoin(nonempty(a),nonempty(b))
         long size = (long)list1.size() * (long)list2.size();
         int resultLimit = MondrianProperties.instance().ResultLimit.get();
 
@@ -1968,8 +1943,9 @@ class CrossJoinFunDef extends FunDefBase {
         ResolvedFunCall crossJoinCall;
 
         MeasureVisitor(
-                Set<Member> queryMeasureSet,
-                ResolvedFunCall crossJoinCall) {
+            Set<Member> queryMeasureSet,
+            ResolvedFunCall crossJoinCall)
+        {
             this.queryMeasureSet = queryMeasureSet;
             this.crossJoinCall = crossJoinCall;
         }
@@ -1988,7 +1964,7 @@ class CrossJoinFunDef extends FunDefBase {
             return null;
         }
         public Object visit(mondrian.mdx.MemberExpr memberExpr) {
-            final Member member = memberExpr.getMember();
+            Member member = memberExpr.getMember();
             process(member);
             return null;
         }
@@ -2019,7 +1995,8 @@ class CrossJoinFunDef extends FunDefBase {
          *
          * @return true if the measure should be added
          */
-        private boolean validMeasure(Member measure) {
+        private boolean validMeasure(Member measure)
+        {
             if (measure.isCalculated()) {
                 // check if the measure references the crossjoin
                 Exp measureExp = measure.getExpression();
@@ -2055,16 +2032,20 @@ class CrossJoinFunDef extends FunDefBase {
      * Visitor class used to locate a resolved function call within an
      * expression
      */
-    private static class ResolvedFunCallFinder extends MdxVisitorImpl {
+    private static class ResolvedFunCallFinder
+        extends MdxVisitorImpl
+    {
         private ResolvedFunCall call;
         public boolean found;
 
-        public ResolvedFunCallFinder(ResolvedFunCall call) {
+        public ResolvedFunCallFinder(ResolvedFunCall call)
+        {
             this.call = call;
             found = false;
         }
 
-        public Object visit(ResolvedFunCall funCall) {
+        public Object visit(ResolvedFunCall funCall)
+        {
             if (funCall == call) {
                 found = true;
             }
@@ -2072,9 +2053,9 @@ class CrossJoinFunDef extends FunDefBase {
         }
 
         public Object visit(mondrian.mdx.MemberExpr memberExpr) {
-            final Member member = memberExpr.getMember();
+            Member member = memberExpr.getMember();
             if (member.isCalculated()) {
-                final Exp memberExp = member.getExpression();
+                Exp memberExp = member.getExpression();
                 memberExp.accept(this);
             }
             return null;
@@ -2098,11 +2079,11 @@ class CrossJoinFunDef extends FunDefBase {
      * @param list list of members being checked for non-emptiness
      * @param call the cross join function call
      */
-    protected static List optimizeNonEmptyList(
-            Evaluator evaluator,
-            List list,
-            ResolvedFunCall call) {
-
+    protected static List nonEmptyList(
+        Evaluator evaluator,
+        List list,
+        ResolvedFunCall call)
+    {
         if (list.isEmpty()) {
             return list;
         }
@@ -2236,6 +2217,8 @@ class CrossJoinFunDef extends FunDefBase {
             return new CrossJoinFunDef(dummyFunDef);
         }
     }
+
+
 }
 
 // End CrossJoinFunDef.java

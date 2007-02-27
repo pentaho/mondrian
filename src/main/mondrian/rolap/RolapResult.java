@@ -132,8 +132,6 @@ class RolapResult extends ResultBase {
                 Axis axisResult =
                     executeAxis(evaluator.push(), axis, calc, true, null);
                 evaluator.clearExpResultCache();
-//System.out.println("RolapResult<init>: i="+i);
-//evaluator.printCurrentMemberNames();
 
                 if (i == -1) {
                     this.slicerAxis = axisResult;
@@ -173,7 +171,6 @@ class RolapResult extends ResultBase {
                     reExecuteWithImpliedMembers(axisMembers);
                 }
             }
-
 
             // Now that the axes are evaluated, make sure that the number of
             // cells does not exceed the result limit.
@@ -246,7 +243,6 @@ class RolapResult extends ResultBase {
      * @param axisMembers list of Members used in query. 
      */
     protected void reExecuteWithImpliedMembers(List<Member> axisMembers) {
-//System.out.println("RolapResult.reExecuteWithImpliedMembers: TOP");
         boolean didEvaluatorReplacementMember = false;
         RolapEvaluator rolapEval = evaluator;
         int cnt = 0;
@@ -254,7 +250,6 @@ class RolapResult extends ResultBase {
         boolean foundTimeMember = false;
         for (Member m : axisMembers) {
             if (rolapEval.setContextConditional(m) != null) {
-//System.out.println("RolapResult.reExecuteWithImpliedMembers: m="+m.getUniqueName());
                 // Do not break out of loops but set change flag.
                 // There may be more than one Member that has to be
                 // replaced.
@@ -313,11 +308,9 @@ class RolapResult extends ResultBase {
                 evaluator.clearExpResultCache();
 
                 if (foundTimeMember) {
-//System.out.println("RolapResult.reExecuteWithImpliedMembers: TIME");
                     // must add the two times together
                     this.axes[i] = mergeAxes(this.axes[i], axisResult);
                 } else {
-//System.out.println("RolapResult.reExecuteWithImpliedMembers: IMPLIED");
                     // The previous Axis was calculated with
                     // a default Member and there was an implied
                     // Member in another Axis, so we use the
@@ -1295,10 +1288,7 @@ class RolapResult extends ResultBase {
             return this.cellInfoPool.add(new CellInfo(key));
         }
     }
-
     static Axis mergeAxes(Axis axis1, Axis axis2) {
-//System.out.println("RolapResult.mergeAxes: axis1=\n"+RolapAxis.toString(axis1));
-//System.out.println("RolapResult.mergeAxes: axis2=\n"+RolapAxis.toString(axis2));
         List<Position> pl1 = axis1.getPositions();
         List<Position> pl2 = axis2.getPositions();
         int arrayLen = -1;
@@ -1307,14 +1297,11 @@ class RolapResult extends ResultBase {
                 return axis2;
             }
             arrayLen = pl1.get(0).size();
-//System.out.println("RolapResult.mergeAxes: a arrayLen="+arrayLen);
         }
         if (axis1 instanceof RolapAxis.SingleEmptyPosition) {
-//System.out.println("RolapResult.mergeAxes: AAA");
             return axis2;
         }
         if (axis1 instanceof RolapAxis.NoPosition) {
-//System.out.println("RolapResult.mergeAxes: BBB");
             return axis2;
         }
         if (pl2 instanceof RolapAxis.PositionListBase) {
@@ -1322,19 +1309,15 @@ class RolapResult extends ResultBase {
                 return axis1;
             }
             arrayLen = pl2.get(0).size();
-//System.out.println("RolapResult.mergeAxes: b arrayLen="+arrayLen);
         }
         if (axis2 instanceof RolapAxis.SingleEmptyPosition) {
-//System.out.println("RolapResult.mergeAxes: CCCC");
             return axis1;
         }
         if (axis2 instanceof RolapAxis.NoPosition) {
-//System.out.println("RolapResult.mergeAxes: DDD");
             return axis1;
         }
-//System.out.println("RolapResult.mergeAxes: axis1.class=" +axis1.getClass().getName());
-//System.out.println("RolapResult.mergeAxes: axis2.class=" +axis2.getClass().getName());
         if (arrayLen == -1) {
+            // Avoid materialization of axis
             arrayLen = 0;
             for (Position p1: pl1) {
                 for (Member m1: p1) {
@@ -1342,7 +1325,6 @@ class RolapResult extends ResultBase {
                 }
                 break;
             }
-//System.out.println("RolapResult.mergeAxes: c arrayLen="+arrayLen);
         }
         if (arrayLen == 1) {
             // single Member per position
