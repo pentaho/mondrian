@@ -13,6 +13,7 @@ package mondrian.xmla;
 
 import mondrian.olap.Util;
 import mondrian.test.TestContext;
+import mondrian.test.DiffRepository;
 import mondrian.tui.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -44,10 +45,7 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
     private static String EXPECT = XmlaRequestCallback.EXPECT;
     private static String EXPECT_100_CONTINUE = XmlaRequestCallback.EXPECT_100_CONTINUE;
 
-    private static final String XMLA_DIRECTORY = "testsrc/main/mondrian/xmla/";
-
     private static final boolean DEBUG = false;
-    protected File testDir;
     // session id properpty
     public static final String SESSION_ID_PROP     = "session.id";
 
@@ -66,10 +64,8 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
         return sessionId;
     }
 
-    protected String fileToString(String filename) throws IOException {
-        File file = new File(testDir, filename);
-        String requestText = XmlaSupport.readFile(file);
-        return requestText;
+    protected DiffRepository getDiffRepos() {
+        return DiffRepository.lookup(XmlaExcel2000Test.class);
     }
 
     protected String generateExpectedString(String nos, Properties props)
@@ -159,7 +155,6 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
     protected String[][] catalogNameUrls = null;
 
     protected void setUp() throws Exception {
-        testDir = new File(XMLA_DIRECTORY + "/excel_2000");
         makeServlet();
     }
     protected void tearDown() throws Exception {
@@ -174,13 +169,6 @@ public class XmlaExcel2000Test extends XmlaBaseTestCase {
         servlet = XmlaSupport.makeServlet(connectString, catalogNameUrls, CallBack.class.getName());
     }
 
-
-    protected Document fileToDocument(String filename)
-                throws IOException , SAXException {
-        File file = new File(testDir, filename);
-        Document doc = XmlUtil.parse(file);
-        return doc;
-    }
 
     public TestContext getTestContext() {
         return TestContext.instance();

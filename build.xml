@@ -217,6 +217,7 @@ demo/access/MondrianFoodMart.mdb"/>
       <fileset dir="demo/derby/foodmart"/>
       <fileset dir="${build.dir}" />
       <fileset dir="${testclasses-jdk14.dir}" />
+      <fileset dir="${testsrc.dir}" includes="**/*.log.xml"/>
     </delete>
   </target>
 
@@ -454,7 +455,9 @@ Runs all JUnit tests, using the given database connection
 in {mondrian.foodmart.jdbcURL}.">
     <echo>Connecting to ${mondrian.foodmart.jdbcURL}</echo>
     <echo>Connect String: ${mondrian.test.connectString}</echo>
-
+    <delete quiet="true">
+      <fileset dir="${testsrc.dir}" includes="**/*.log.xml"/>
+    </delete>
     <java
         classpathref="project.test.classpath"
         classname="mondrian.test.Main"

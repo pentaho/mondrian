@@ -1,6 +1,8 @@
 package mondrian.xmla;
 
 import mondrian.test.FoodMartTestCase;
+import mondrian.test.DiffRepository;
+import mondrian.tui.XmlUtil;
 import mondrian.tui.XmlaSupport;
 import mondrian.olap.Util;
 import org.w3c.dom.Document;
@@ -29,6 +31,17 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
 
     public XmlaBaseTestCase(String name) {
         super(name);
+    }
+
+    protected abstract DiffRepository getDiffRepos();
+
+    protected String fileToString(String filename) throws Exception {
+        String var = "${" + filename + "}";
+        String s = getDiffRepos().expand(null, var);
+        if (s.startsWith("$")) {
+            getDiffRepos().amend(var, "\n\n");
+        }
+        return s;
     }
 
     protected Document replaceLastSchemaUpdateDate(Document doc) {

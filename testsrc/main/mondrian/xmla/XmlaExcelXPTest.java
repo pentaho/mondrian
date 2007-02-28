@@ -11,6 +11,7 @@ package mondrian.xmla;
 
 import mondrian.olap.Util;
 import mondrian.test.TestContext;
+import mondrian.test.DiffRepository;
 import mondrian.tui.*;
 
 import org.custommonkey.xmlunit.XMLAssert;
@@ -42,8 +43,6 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
 
     private static String EXPECT = XmlaRequestCallback.EXPECT;
     private static String EXPECT_100_CONTINUE = XmlaRequestCallback.EXPECT_100_CONTINUE;
-
-    private static final String XMLA_DIRECTORY = "testsrc/main/mondrian/xmla/";
 
     private static final boolean DEBUG = false;
 
@@ -134,7 +133,6 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
     }
 
 
-    protected File testDir;
     protected Servlet servlet;
     protected String[][] catalogNameUrls = null;
 
@@ -146,7 +144,6 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
 
 
     protected void setUp() throws Exception {
-        testDir = new File(XMLA_DIRECTORY + "/excel_XP");
         makeServlet();
     }
     protected void tearDown() throws Exception {
@@ -162,17 +159,8 @@ public class XmlaExcelXPTest extends XmlaBaseTestCase {
     }
 
 
-    protected String fileToString(String filename) throws IOException {
-        File file = new File(testDir, filename);
-        String requestText = XmlaSupport.readFile(file);
-        return requestText;
-    }
-
-    protected Document fileToDocument(String filename)
-                throws IOException , SAXException {
-        File file = new File(testDir, filename);
-        Document doc = XmlUtil.parse(file);
-        return doc;
+    protected DiffRepository getDiffRepos() {
+        return DiffRepository.lookup(XmlaExcelXPTest.class);
     }
 
     public TestContext getTestContext() {

@@ -12,6 +12,7 @@ package mondrian.xmla;
 import mondrian.olap.Util;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
+import mondrian.test.DiffRepository;
 import mondrian.tui.MockHttpServletRequest;
 import mondrian.tui.MockHttpServletResponse;
 import mondrian.tui.XmlaSupport;
@@ -27,8 +28,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -47,7 +47,7 @@ import java.util.Map;
  * @author Richard M. Emberson
  * @version $Id$
  */
-public class XmlaErrorTest extends FoodMartTestCase
+public class XmlaErrorTest extends XmlaBaseTestCase
         implements XmlaConstants {
 
     private static final String XMLA_DIRECTORY = "testsrc/main/mondrian/xmla/";
@@ -357,6 +357,8 @@ System.out.println("password=" +password);
     static int sessionIdCounter = 1000;
     static String sessionId = null;
 
+    private static PrintStream systemErr;
+
     protected static void makeSessionId() {
         int id = XmlaExcelXPTest.sessionIdCounter++;
         StringBuilder buf = new StringBuilder();
@@ -369,7 +371,6 @@ System.out.println("password=" +password);
         XmlaExcelXPTest.sessionId = sessionId;
     }
 
-    protected File testDir;
     protected Servlet servlet;
     protected String[][] catalogNameUrls = null;
 
@@ -381,11 +382,22 @@ System.out.println("password=" +password);
 
 
     protected void setUp() throws Exception {
-        testDir = new File(XMLA_DIRECTORY + "/error");
+        // NOTE jvs 27-Feb-2007:  Since this test produces errors
+        // intentionally, squelch the ones that SAX produces on stderr
+        systemErr = System.err;
+        System.setErr(new PrintStream(new ByteArrayOutputStream()));
+        
         makeServlet();
     }
     protected void tearDown() throws Exception {
+        // Restore stderr
+        System.setErr(systemErr);
     }
+    
+    protected DiffRepository getDiffRepos() {
+        return DiffRepository.lookup(XmlaErrorTest.class);
+    }
+
     protected void makeServlet()
             throws IOException, ServletException, SAXException {
 
@@ -412,12 +424,6 @@ System.out.println("password=" +password);
             };
         }
         return catalogNameUrls;
-    }
-
-    protected String fileToString(String filename) throws IOException {
-        File file = new File(testDir, filename);
-        String requestText = XmlaSupport.readFile(file);
-        return requestText;
     }
 
 
