@@ -30,8 +30,13 @@ public class ConstantCalc extends GenericCalc {
     public ConstantCalc(Type type, Object o) {
         super(new DummyExp(type));
         this.o = o;
-        this.i = (o instanceof Number) ? ((Number) o).intValue() : 0;
-        this.d = (o instanceof Number) ? ((Number) o).doubleValue() : 0;
+        if (o == null) {
+            this.i = mondrian.olap.fun.FunUtil.IntegerNull;
+            this.d = mondrian.olap.fun.FunUtil.DoubleNull;
+        } else {
+            this.i = (o instanceof Number) ? ((Number) o).intValue() : 0;
+            this.d = (o instanceof Number) ? ((Number) o).doubleValue() : 0;
+        }
     }
 
     public void accept(CalcWriter calcWriter) {

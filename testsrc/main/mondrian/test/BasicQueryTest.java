@@ -1289,6 +1289,46 @@ public class BasicQueryTest extends FoodMartTestCase {
         String s = executeExpr(" 1234 ");
         assertEquals("1,234", s);
     }
+    public void testNullLiteral() {
+        String s = executeExpr(" NULL/NULL ");
+        assertEquals("", s);
+
+        s = executeExpr(" NULL/NULL = NULL ");
+        assertEquals("false", s);
+
+        boolean hasException = false;
+        try {
+            s = executeExpr(" NULL IS NULL ");
+        } catch (Exception ex) {
+            hasException = true;
+        }
+        assertTrue(hasException);
+
+        // I believe that these IsEmpty results are correct.
+        s = executeExpr(" IsEmpty(NULL) ");
+        assertEquals("true", s);
+
+        s = executeExpr(" IsEmpty(NULL/NULL) ");
+        assertEquals("true", s);
+
+        s = executeExpr(" 4 + NULL ");
+        assertEquals("4", s);
+
+        s = executeExpr(" NULL - 4 ");
+        assertEquals("-4", s);
+
+        s = executeExpr(" 4*NULL ");
+        assertEquals("", s);
+
+        s = executeExpr(" NULL*4 ");
+        assertEquals("", s);
+
+        s = executeExpr(" 4/NULL ");
+        assertEquals("", s);
+
+        s = executeExpr(" NULL/4 ");
+        assertEquals("", s);
+    }
 
     public void testCyclicalCalculatedMembers() {
         Util.discard(executeQuery("WITH\n" +
