@@ -77,11 +77,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
     public static final String CONTENT_SCHEMADATA =
                 Enumeration.Content.SchemaData.name();
 
-    private static final String XMLA_DIRECTORY = "testsrc/main/mondrian/xmla/";
-
     private static final boolean DEBUG = false;
-
-    protected final File testDir = new File(XMLA_DIRECTORY, "basic");
 
     protected String[][] catalogNameUrls = null;
 
@@ -104,17 +100,11 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     protected Document fileToDocument(String filename)
                 throws IOException , SAXException {
-        Document doc;
-        if (filename.startsWith("$")) {
-            String s = getDiffRepos().expand(null, filename);
-            if (s.equals(filename)) {
-                s = "<?xml version='1.0'?><Empty/>";
-            }
-            doc = XmlUtil.parse(new ByteArrayInputStream(s.getBytes()));
-        } else {
-            File file = new File(testDir, filename);
-            doc = XmlUtil.parse(file);
+        String s = getDiffRepos().expand(null, filename);
+        if (s.equals(filename)) {
+            s = "<?xml version='1.0'?><Empty/>";
         }
+        Document doc = XmlUtil.parse(new ByteArrayInputStream(s.getBytes()));
         return doc;
     }
 
