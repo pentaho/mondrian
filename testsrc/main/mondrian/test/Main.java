@@ -167,7 +167,7 @@ public class Main extends TestSuite {
             suite.addTest(ResultComparatorTest.suite());
             suite.addTestSuite(DrillThroughTest.class);
             suite.addTestSuite(BasicQueryTest.class);
-            suite.addTestSuite(ClearViewTest.class);
+            suite.addTest(ClearViewTest.suite());
             suite.addTestSuite(CacheControlTest.class);
             suite.addTestSuite(FunctionTest.class);
             suite.addTestSuite(HierarchyBugTest.class);

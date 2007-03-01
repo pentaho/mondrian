@@ -12,6 +12,8 @@ package mondrian.xmla.test;
 import mondrian.xmla.*;
 import mondrian.xmla.impl.DefaultXmlaRequest;
 import mondrian.xmla.impl.DefaultXmlaResponse;
+import mondrian.olap.*;
+import mondrian.test.DiffRepository;
 
 import junit.framework.*;
 import org.apache.log4j.Logger;
@@ -25,7 +27,10 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
 import java.io.*;
+import java.util.*;
+import java.util.regex.*;
 
 /**
  * Unit test for refined Mondrian's XML for Analysis API (package
@@ -47,50 +52,69 @@ public class XmlaTest extends TestCase {
 
     private final static XmlaTestContext context = new XmlaTestContext();
 
-    private final File testFile;
-
     public XmlaTest(String name) {
         super(name);
-        testFile = findFile(name);;
     }
 
-    public XmlaTest(File file) {
-        super(file.getName());
-        testFile = file;
+    // implement TestCase
+    protected void setUp() throws Exception {
+        DiffRepository diffRepos = getDiffRepos();
+        diffRepos.setCurrentTestCaseName(getName());
     }
-
-    protected File findFile(String filename) {
-        File[] files = context.retrieveQueryFiles();
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            if (file.getName().equals(filename)) {
-                return file;
-            }
-        }
-        return null;
+    
+    // implement TestCase
+    protected void tearDown() throws Exception {
+        DiffRepository diffRepos = getDiffRepos();
+        diffRepos.setCurrentTestCaseName(null);
+    }
+    
+    private static DiffRepository getDiffRepos() {
+        return DiffRepository.lookup(XmlaTest.class);
     }
 
     protected void runTest() throws Exception {
-        Element[] xmlaCyclePair =
-            XmlaTestContext.extractXmlaCycle(testFile, XmlaTestContext.ENV);
-        Element requestElem = xmlaCyclePair[0];
-        Element expectedResponseElem = xmlaCyclePair[1];
-        Element responseElem = ignoreLastUpdateDate(executeRequest(requestElem));
-        compareElement(expectedResponseElem, responseElem);
+        DiffRepository diffRepos = getDiffRepos();
+        String request = diffRepos.expand(null, "${request}");
+        String expectedResponse = diffRepos.expand(null, "${response}");
+        Element requestElem = XmlaUtil.text2Element(
+            XmlaTestContext.xmlFromTemplate(
+                request, XmlaTestContext.ENV));
+        Element responseElem =
+            ignoreLastUpdateDate(executeRequest(requestElem));
+
+        TransformerFactory factory = TransformerFactory.newInstance();
+        Transformer transformer = factory.newTransformer();
+        StringWriter bufWriter = new StringWriter();
+        transformer.transform(
+            new DOMSource(responseElem), new StreamResult(bufWriter));
+        bufWriter.append(Util.nl);
+        String actualResponse = bufWriter.getBuffer().toString();
+        
+        try {
+            // Start with a purely logical XML diff to avoid test noise
+            // from non-determinism in XML generation.
+            XMLAssert.assertXMLEqual(expectedResponse, actualResponse);
+        } catch (AssertionFailedError e) {
+            // In case of failure, re-diff using DiffRepository's comparison
+            // method. It may have noise due to physical vs logical structure,
+            // but it will maintain the expected/actual, and some IDEs can even
+            // display visual diffs.
+            diffRepos.assertEquals("response", "${response}", actualResponse);
+        }
+    }
+    
+    private Element ignoreLastUpdateDate(Element element) {
+        NodeList elements = element.getElementsByTagName("LAST_SCHEMA_UPDATE");
+        for (int i = elements.getLength(); i > 0; i--) {
+            removeNode(elements.item(i-1));
+        }
+        return element;
     }
 
-	private Element ignoreLastUpdateDate(Element element) {
-		NodeList elements = element.getElementsByTagName("LAST_SCHEMA_UPDATE");
-		for (int i = elements.getLength(); i > 0; i--) {
-			removeNode(elements.item(i-1));
-		}
-		return element;
-	}
-
-	private void removeNode(Node node) {
-		Node parentNode = node.getParentNode();
-		parentNode.removeChild(node);
-	}
+    private void removeNode(Node node) {
+        Node parentNode = node.getParentNode();
+        parentNode.removeChild(node);
+    }
 
     private static Element executeRequest(Element requestElem) {
         ByteArrayOutputStream resBuf = new ByteArrayOutputStream();
@@ -107,41 +131,43 @@ public class XmlaTest extends TestCase {
         return XmlaUtil.stream2Element(new ByteArrayInputStream(resBuf.toByteArray()));
     }
 
-    private static void compareElement(Element expectedElem, Element actualElem) throws Exception {
-        TransformerFactory factory = TransformerFactory.newInstance();
-        Transformer transformer = factory.newTransformer();
-
-        StringWriter bufWriter = new StringWriter();
-        transformer.transform(new DOMSource(expectedElem), new StreamResult(bufWriter));
-        String expectedText = bufWriter.getBuffer().toString();
-        bufWriter = new StringWriter();
-        transformer.transform(new DOMSource(actualElem), new StreamResult(bufWriter));
-        String actualText = bufWriter.getBuffer().toString();
-        try {
-            XMLAssert.assertXMLEqual(expectedText, actualText);
-        } catch (AssertionFailedError e) {
-            // Use junit's comparison method. We know it will fail, but it will
-            // print the expected/actual, and some IDEs can even display visual
-            // diffs.
-            assertEquals(expectedText, actualText);
-        }
-    }
-
     public static TestSuite suite() {
         TestSuite suite = new TestSuite();
 
-        File[] files = context.retrieveQueryFiles();
-        LOGGER.debug("Found " + files.length + " XML/A test files");
-        for (int idx = 0; idx < files.length; idx++) {
-            suite.addTest(new XmlaTest(files[idx]));
-        }
-        suite.addTestSuite(OtherTest.class);
+        DiffRepository diffRepos = getDiffRepos();
+        
+        MondrianProperties properties = MondrianProperties.instance();
+        String filePattern = properties.QueryFilePattern.get();
 
+        final Pattern pattern = filePattern == null ?
+            null :
+            Pattern.compile(filePattern);
+
+        List<String> testCaseNames = diffRepos.getTestCaseNames();
+
+        if (pattern != null) {
+            Iterator<String> iter = testCaseNames.iterator();
+            while (iter.hasNext()) {
+                String name = iter.next();
+                if (!pattern.matcher(name).matches()) {
+                    iter.remove();
+                }
+            }
+        }
+        
+        LOGGER.debug("Found " + testCaseNames.size() + " XML/A test cases");
+        
+        for (String name : testCaseNames) {
+            suite.addTest(new XmlaTest(name));
+        }
+
+        suite.addTestSuite(OtherTest.class);
+        
         return suite;
     }
 
     /**
-     * Non file-based unit tests for XML/A support.
+     * Non diff-based unit tests for XML/A support.
      */
     public static class OtherTest extends TestCase {
         public void testEncodeElementName() {

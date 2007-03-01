@@ -20,8 +20,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import mondrian.olap.Util;
 
@@ -127,6 +126,9 @@ public class DiffRepository
     private static final String ResourceTag = "Resource";
     private static final String ResourceNameAttr = "name";
 
+    private static final ThreadLocal<String> CurrentTestCaseName =
+        new ThreadLocal<String>();
+    
     /**
      * Holds one diff-repository per class. It is necessary for all testcases
      * in the same class to share the same diff-repository: if the
@@ -377,6 +379,36 @@ public class DiffRepository
     }
 
     /**
+     * @return a list of the names of all test cases defined in the
+     * repository file
+     */
+    public List<String> getTestCaseNames() {
+        List<String> list = new ArrayList<String>();
+        final NodeList childNodes = root.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node child = childNodes.item(i);
+            if (child.getNodeName().equals(TestCaseTag)) {
+                Element testCase = (Element) child;
+                list.add(testCase.getAttribute(TestCaseNameAttr));
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Sets the name of the current test case.  For use in
+     * tests created via dynamic suite() methods.  Caller should pass
+     * test case name from setUp(), and null from tearDown() to clear.
+     *
+     * @param testCaseName name of test case to set as current,
+     * or null to clear
+     */
+    public void setCurrentTestCaseName(String testCaseName)
+    {
+        CurrentTestCaseName.set(testCaseName);
+    }
+
+    /**
      * Returns the name of the current testcase by looking up the call
      * stack for a method whose name starts with "test", for example
      * "testFoo".
@@ -386,6 +418,12 @@ public class DiffRepository
      */
     private String getCurrentTestCaseName(boolean fail)
     {
+        // check thread-local first
+        String testCaseName = CurrentTestCaseName.get();
+        if (testCaseName != null) {
+            return testCaseName;
+        }
+        
         // Clever, this. Dump the stack and look up it for a method which
         // looks like a testcase name, e.g. "testFoo".
         final StackTraceElement[] stackTrace;

@@ -218,6 +218,7 @@ demo/access/MondrianFoodMart.mdb"/>
       <fileset dir="${build.dir}" />
       <fileset dir="${testclasses-jdk14.dir}" />
       <fileset dir="${testsrc.dir}" includes="**/*.log.xml"/>
+      <fileset dir="${testsrc.dir}" includes="**/*JUnit.java"/>
     </delete>
   </target>
 
@@ -526,6 +527,20 @@ in {mondrian.foodmart.jdbcURL}.">
       <report format="frames" todir="junit-results/html"/>
     </junitreport>
 
+  </target>
+
+  <target name="generateDiffRepositoryJUnit"
+    description="Generates explicit Java testcases from .ref.xml files">
+    <xslt style="${testsrc.dir}/xsl/generateDiffRepositoryJUnit.xsl"
+      in="${testsrc.dir}/main/mondrian/test/ClearViewTest.ref.xml"
+      out="${testsrc.dir}/main/mondrian/test/ClearViewJUnit.java">
+      <param name="reffile"
+        expression="${testsrc.dir}/main/mondrian/test/ClearViewTest.ref.xml"/>
+      <param name="packagename"
+        expression="mondrian.test"/>
+      <param name="classname"
+        expression="ClearViewJUnit"/>
+    </xslt>
   </target>
 
   <target name="etags">

@@ -1,0 +1,174 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="testHeadCrossjoinComplex">
+        <Resource name="description">
+            <![CDATA[
+Complex query involving Head(Crossjoin(...)), which was the testcase for
+bug 1642828.
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+with set [*NATIVE_CJ_SET] as
+'NonEmptyCrossJoin([*BASE_MEMBERS_Product], [*BASE_MEMBERS_Education Level])'
+set [*GENERATED_MEMBERS_Measures] as
+'{[Measures].[Unit Sales], [Measures].[Store Cost], 
+[Measures].[*SUMMARY_METRIC_0]}'
+set [*BASE_MEMBERS_Product] as
+'[Product].[Product Family].Members'
+set [*GENERATED_MEMBERS_Product] as
+'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+set [*BASE_MEMBERS_Education Level] as
+'[Education Level].[Education Level].Members'
+set [*GENERATED_MEMBERS_Education Level] as
+'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+member [Measures].[*SUMMARY_METRIC_0] as
+'Sum(Head(Crossjoin({[Product].CurrentMember}, 
+[*GENERATED_MEMBERS_Education Level]), 
+Rank(([Product].CurrentMember, [Education Level].CurrentMember), 
+Crossjoin({[Product].CurrentMember}, [*GENERATED_MEMBERS_Education Level]))), 
+[Measures].[Unit Sales])'
+member [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM] as
+'Sum([*GENERATED_MEMBERS_Education Level])'
+member [Product].[*SUBTOTAL_MEMBER_SEL~SUM] as
+'Sum([*GENERATED_MEMBERS_Product])'
+select [*GENERATED_MEMBERS_Measures] ON COLUMNS,
+NON EMPTY Union(NonEmptyCrossJoin({[Product].[*SUBTOTAL_MEMBER_SEL~SUM]},
+{[Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}),
+Union(NonEmptyCrossJoin([*GENERATED_MEMBERS_Product],
+{[Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}),
+Generate([*NATIVE_CJ_SET],
+{([Product].CurrentMember, [Education Level].CurrentMember)}))) ON ROWS
+from [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+{[Measures].[Store Cost]}
+{[Measures].[*SUMMARY_METRIC_0]}
+Axis #2:
+{[Product].[*SUBTOTAL_MEMBER_SEL~SUM], [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink], [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food], [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable], [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Drink], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Drink], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Drink], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Drink], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Non-Consumable], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Non-Consumable], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Non-Consumable], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Non-Consumable], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Non-Consumable], [Education Level].[All Education Levels].[Partial High School]}
+Row #0: 266,773
+Row #0: 225,627.23
+Row #0: 
+Row #1: 24,597
+Row #1: 19,477.23
+Row #1: 
+Row #2: 191,940
+Row #2: 163,270.72
+Row #2: 
+Row #3: 50,236
+Row #3: 42,879.28
+Row #3: 
+Row #4: 6,423
+Row #4: 5,003.03
+Row #4: 6,423
+Row #5: 1,325
+Row #5: 1,090.96
+Row #5: 7,748
+Row #6: 7,226
+Row #6: 5,744.83
+Row #6: 14,974
+Row #7: 2,164
+Row #7: 1,760.69
+Row #7: 17,138
+Row #8: 7,459
+Row #8: 5,877.72
+Row #8: 24,597
+Row #9: 49,365
+Row #9: 41,895.43
+Row #9: 49,365
+Row #10: 11,255
+Row #10: 9,508.55
+Row #10: 60,620
+Row #11: 56,509
+Row #11: 48,233.90
+Row #11: 117,129
+Row #12: 17,859
+Row #12: 15,290.15
+Row #12: 134,988
+Row #13: 56,952
+Row #13: 48,342.70
+Row #13: 191,940
+Row #14: 13,051
+Row #14: 11,154.60
+Row #14: 13,051
+Row #15: 2,990
+Row #15: 2,560.96
+Row #15: 16,041
+Row #16: 14,929
+Row #16: 12,662.10
+Row #16: 30,970
+Row #17: 4,522
+Row #17: 3,863.13
+Row #17: 35,492
+Row #18: 14,744
+Row #18: 12,638.49
+Row #18: 50,236
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testLer4260">
+        <Resource name="description">
+            <![CDATA[
+Tests a bug with incorrect reuse of a named set which can't be
+computed directly against a cold cache.
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With Set [*BMEL] as
+'[Education Level].[Education Level].Members'
+Member [Measures].[*TBM] as
+'Rank([Education Level].CurrentMember,
+Order([*BMEL],([Measures].[Unit Sales]),BDESC))'
+Set [*SM_RSUM_SET_0] as
+'Filter([*BMEL],[Measures].[*TBM] <= 3)'
+select [*SM_RSUM_SET_0] on rows,
+{[Measures].[*TBM], [Measures].[Unit Sales]} on columns
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*TBM]}
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Education Level].[All Education Levels].[Bachelors Degree]}
+{[Education Level].[All Education Levels].[High School Degree]}
+{[Education Level].[All Education Levels].[Partial High School]}
+Row #0: 3
+Row #0: 68,839
+Row #1: 2
+Row #1: 78,664
+Row #2: 1
+Row #2: 79,155
+]]>
+        </Resource>
+    </TestCase>
+</Root>

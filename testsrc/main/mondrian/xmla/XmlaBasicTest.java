@@ -35,7 +35,7 @@ import junit.framework.AssertionFailedError;
  * @author Richard M. Emberson
  * @version $Id$
  */
-public class XmlaBasicTest extends FoodMartTestCase {
+public class XmlaBasicTest extends XmlaBaseTestCase {
     // request.type
     public static final String REQUEST_TYPE_PROP = "request.type";
 
@@ -98,14 +98,8 @@ public class XmlaBasicTest extends FoodMartTestCase {
     protected void tearDown() throws Exception {
     }
 
-    DiffRepository getDiffRepos() {
+    protected DiffRepository getDiffRepos() {
         return DiffRepository.lookup(XmlaBasicTest.class);
-    }
-
-    protected String fileToString(String filename) throws IOException {
-        File file = new File(testDir, filename);
-        String requestText = XmlaSupport.readFile(file);
-        return requestText;
     }
 
     protected Document fileToDocument(String filename)

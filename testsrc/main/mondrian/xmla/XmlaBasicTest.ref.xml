@@ -154,6 +154,32 @@
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
+        <Resource name="RT_DSI_C_F_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>${format}</Format>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
     </TestCase>
     <TestCase name="testDBTables">
         <Resource name="response">
@@ -1652,6 +1678,30 @@
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
+        <Resource name="RT_DSI_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
     </TestCase>
     <TestCase name="testMDimensions">
         <Resource name="response">
@@ -2741,6 +2791,32 @@
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
+        <Resource name="RT_DSI_C_F_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>${format}</Format>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
     </TestCase>
     <TestCase name="testMDFunction">
         <Resource name="response">
@@ -2837,6 +2913,31 @@
             </xmla:return>
         </xmla:DiscoverResponse>
     </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="RT_R_DSI_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <${restriction.name}>${restriction.value}</${restriction.name}>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
@@ -5436,6 +5537,30 @@
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
+        <Resource name="RT_DSI_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
     </TestCase>
     <TestCase name="testMDHierarchies">
         <Resource name="response">
@@ -5827,6 +5952,32 @@
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
+        <Resource name="RT_C_CN_DSI_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <CUBE_NAME>${cube.name}</CUBE_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
     </TestCase>
     <TestCase name="testMDLevels">
         <Resource name="response">
@@ -5993,6 +6144,35 @@
             </xmla:return>
         </xmla:DiscoverResponse>
     </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="RT_C_CN_DSI_C_F_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+        <CUBE_NAME>${cube.name}</CUBE_NAME>
+        <${unique.name.element}>${unique.name}</${unique.name.element}>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>${format}</Format>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
@@ -6163,6 +6343,34 @@
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
+        <Resource name="MDSCHEMA_MEASURES_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+        <CUBE_NAME>${cube.name}</CUBE_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>${format}</Format>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
     </TestCase>
     <TestCase name="testMDMembers">
         <Resource name="response">
@@ -6304,6 +6512,35 @@
             </xmla:return>
         </xmla:DiscoverResponse>
     </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="RT_C_CN_DSI_C_F_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+        <CUBE_NAME>${cube.name}</CUBE_NAME>
+        <${unique.name.element}>${unique.name}</${unique.name.element}>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>${format}</Format>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
@@ -7438,6 +7675,30 @@
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
+        <Resource name="RT_DSI_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
     </TestCase>
     <TestCase name="testDDatasource">
         <Resource name="response">
@@ -7507,6 +7768,30 @@
         </xmla:DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="RT_C_in.xml">
+            <![CDATA[
+<soapenv:Envelope 
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+<ns1:Discover 
+    soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
+    xmlns:ns1="urn:schemas-microsoft-com:xml-analysis">
+    <ns1:RequestType xsi:type="xsd:string">${request.type}</ns1:RequestType>
+    <ns1:Restrictions>
+        <ns1:RestrictionList/>
+    </ns1:Restrictions>
+    <ns1:Properties>
+        <ns1:PropertyList>
+            <ns1:Content>${content}</ns1:Content>
+        </ns1:PropertyList>
+    </ns1:Properties>
+</ns1:Discover>
+    </soapenv:Body>
+</soapenv:Envelope>
 ]]>
         </Resource>
     </TestCase>
@@ -7703,6 +7988,30 @@
             </xmla:return>
         </xmla:DiscoverResponse>
     </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="RT_DSI_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
@@ -8520,6 +8829,30 @@
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
+        <Resource name="RT_DSI_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
     </TestCase>
     <TestCase name="testDLiterals">
         <Resource name="response">
@@ -8691,6 +9024,30 @@
             </xmla:return>
         </xmla:DiscoverResponse>
     </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="RT_DSI_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
@@ -8993,6 +9350,30 @@
         </xmla:DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="RT_C_in.xml">
+            <![CDATA[
+<soapenv:Envelope 
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+<ns1:Discover 
+    soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
+    xmlns:ns1="urn:schemas-microsoft-com:xml-analysis">
+    <ns1:RequestType xsi:type="xsd:string">${request.type}</ns1:RequestType>
+    <ns1:Restrictions>
+        <ns1:RestrictionList/>
+    </ns1:Restrictions>
+    <ns1:Properties>
+        <ns1:PropertyList>
+            <ns1:Content>${content}</ns1:Content>
+        </ns1:PropertyList>
+    </ns1:Properties>
+</ns1:Discover>
+    </soapenv:Body>
+</soapenv:Envelope>
 ]]>
         </Resource>
     </TestCase>
@@ -9496,6 +9877,30 @@
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
+        <Resource name="RT_DSI_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
     </TestCase>
     <TestCase name="testDBCatalogs">
         <Resource name="response">
@@ -9551,6 +9956,30 @@
             </xmla:return>
         </xmla:DiscoverResponse>
     </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="RT_DSI_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
@@ -9674,6 +10103,35 @@
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
+        <Resource name="RT_C_CN_DSI_C_F_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+        <CUBE_NAME>${cube.name}</CUBE_NAME>
+        <${unique.name.element}>${unique.name}</${unique.name.element}>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>${format}</Format>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
     </TestCase>
     <TestCase name="testApproxRowCountInHierarchyOverridesCountCallsToDatabase">
         <Resource name="response">
@@ -9748,6 +10206,35 @@
     </root>
   </xmla:return>
 </xmla:DiscoverResponse>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="RT_C_CN_DSI_C_F_C_in.xml">
+            <![CDATA[
+<SOAP-ENV:Envelope
+xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+        <CUBE_NAME>${cube.name}</CUBE_NAME>
+        <${unique.name.element}>${unique.name}</${unique.name.element}>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>${format}</Format>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
 </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -10110,6 +10597,35 @@
         </xmla:ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="EXECUTE_DrillThrough_in.xml">
+            <![CDATA[
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+        <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+        <Command>
+        <Statement>
+DRILLTHROUGH MAXROWS 3
+SELECT {[Customers].[All Customers].[USA].[CA].[Berkeley]} ON 0,
+{[Time].[1997]} ON 1
+FROM Sales
+         </Statement>
+        </Command>
+        <Properties>
+          <PropertyList>
+            <Catalog>${catalog}</Catalog>
+            <DataSourceInfo>${data.source.info}</DataSourceInfo>
+            <Format>Tabular</Format>
+            <AxisFormat>TupleFormat</AxisFormat>
+          </PropertyList>
+        </Properties>
+</Execute>
+</soapenv:Body>
+</soapenv:Envelope>
 ]]>
         </Resource>
     </TestCase>
@@ -10637,6 +11153,35 @@
         </xmla:ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="EXECUTE_Slicer_in.xml">
+            <![CDATA[
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+        <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+        <Command>
+        <Statement>
+SELECT {[Customers].Children} ON 0,
+{[Gender].Children} ON 1
+FROM Sales
+WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
+         </Statement>
+        </Command>
+        <Properties>
+          <PropertyList>
+            <Catalog>${catalog}</Catalog>
+            <DataSourceInfo>${data.source.info}</DataSourceInfo>
+            <Format>${format}</Format>
+            <AxisFormat>TupleFormat</AxisFormat>
+          </PropertyList>
+        </Properties>
+</Execute>
+</soapenv:Body>
+</soapenv:Envelope>
 ]]>
         </Resource>
     </TestCase>

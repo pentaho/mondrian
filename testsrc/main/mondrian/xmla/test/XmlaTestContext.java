@@ -62,22 +62,10 @@ public class XmlaTestContext {
         };
     private static DataSourcesConfig.DataSources DATASOURCES;
     public static final CatalogLocator CATALOG_LOCATOR = new CatalogLocatorImpl();
-    public static final String[] REQUEST_ELEMENT_NAMES = new String[]{
-            "Discover", "Execute"
-    };
-
-    private Object[] DEFAULT_REQUEST_RESPONSE_PAIRS = null;
-
-    private ServletContext servletContext;
     private String connectString;
 
     public XmlaTestContext() {
         super();
-    }
-
-    public XmlaTestContext(ServletContext context) {
-        super();
-        this.servletContext = context;
     }
 
     public String getConnectString() {
@@ -85,9 +73,6 @@ public class XmlaTestContext {
             return connectString;
         }
 
-        if (servletContext != null) {
-            MondrianProperties.instance().populate();
-        }
         connectString = TestContext.getConnectString();
 
         // Deal with MySQL and other connect strings with & in them
@@ -134,85 +119,10 @@ public class XmlaTestContext {
         return DATASOURCES;
     }
 
-
-    public File[] retrieveQueryFiles() {
-        MondrianProperties properties = MondrianProperties.instance();
-        String filePattern = properties.QueryFilePattern.get();
-
-        final Pattern pattern = filePattern == null ?
-            null :
-            Pattern.compile(filePattern);
-
-        File queryFilesDir = servletContext != null ?
-            new File(XmlaTestContext.class.getResource("./queryFiles").getFile()) :
-            new File("testsrc/main/mondrian/xmla/test/queryFiles");
-        LOGGER.debug("Loading XML/A test data from queryFilesDir=" +
-            queryFilesDir.getAbsolutePath() +
-            " (exists=" + queryFilesDir.exists() + ")");
-        File[] files = queryFilesDir.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                if (name.endsWith(".xml")) {
-                    if (pattern == null) {
-                        return true;
-                    } else {
-                        return pattern.matcher(name).matches();
-                    }
-                }
-
-                return false;
-            }
-        });
-        if (files == null) {
-            files = new File[0];
-        }
-        return files;
-    }
-
-    public static Element[] extractXmlaCycle(
-        File file,
-        Map<String, String> env)
-    {
-        Element xmlacycleElem = XmlaUtil.text2Element(xmlFromTemplate(file, env));
-        for (String requestElemName : XmlaTestContext.REQUEST_ELEMENT_NAMES) {
-            Element requestElem = XmlaUtil.firstChildElement(xmlacycleElem,
-                null,
-                requestElemName);
-            if (requestElem != null) {
-                Element responseElem = XmlaUtil.firstChildElement(xmlacycleElem,
-                    null,
-                    requestElemName + "Response");
-                if (responseElem == null) {
-                    throw new RuntimeException("Invalid XML/A query file");
-                } else {
-                    return new Element[]{requestElem, responseElem};
-                }
-            }
-        }
-        return null;
-    }
-
-    private static String xmlFromTemplate(File file, Map<String, String> env) {
+    public static String xmlFromTemplate(
+        String xmlText, Map<String, String> env) {
+        
         StringBuffer buf = new StringBuffer();
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                buf.append(line).append("\n");
-            }
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (Exception ignored) {
-                }
-            }
-        }
-
-        String xmlText = buf.toString();
-        buf.setLength(0);
         Pattern pattern = Pattern.compile("\\$\\{([^}]+)\\}");
         Matcher matcher = pattern.matcher(xmlText);
         while (matcher.find()) {
@@ -228,32 +138,6 @@ public class XmlaTestContext {
 
         return buf.toString();
     }
-
-
-    /**
-     * Retrieve test query files as usable objects.
-     * @param env
-     * @return new Object[]{fileName:String, request:org.w3c.dom.Element, resposne:org.w3c.dom.Element}
-     */
-    public Object[] fileRequestResponsePairs(Map<String, String> env) {
-        File[] files = retrieveQueryFiles();
-
-        Object[] pairs = new Object[files.length];
-        for (int i = 0; i < pairs.length; i++) {
-            Element[] requestAndResponse = extractXmlaCycle(files[i], env);
-            pairs[i] = new Object[] {files[i].getName(), requestAndResponse[0], requestAndResponse[1]};
-        }
-
-        return pairs;
-    }
-
-    public Object[] defaultRequestResponsePairs() {
-        if (DEFAULT_REQUEST_RESPONSE_PAIRS == null) {
-            DEFAULT_REQUEST_RESPONSE_PAIRS = fileRequestResponsePairs(ENV);
-        }
-        return DEFAULT_REQUEST_RESPONSE_PAIRS;
-    }
-
 }
 
 // End XmlaTestContext.java
