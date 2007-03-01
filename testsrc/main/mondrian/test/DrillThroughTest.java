@@ -332,15 +332,15 @@ public class DrillThroughTest extends FoodMartTestCase {
                 "order by `time_by_day`.`the_year` ASC, `store_ragged`.`store_id` ASC, `store`.`store_id` ASC";
         getTestContext().assertSqlEquals(expectedSql, sql);
     }
-
     /**
-     * Tests that cells in a virtual cube say they cannot be drilled through.
+     * Tests that cells in a virtual cube say they can be drilled through.
      */
     public void testDrillThroughVirtualCube() {
         Result result = executeQuery(
                 "SELECT {[Gender]} on 0, {[Customers]} on 1 from [Warehouse and Sales]");
-        assertFalse(result.getCell(new int[] {0, 0}).canDrillThrough());
+        assertTrue(result.getCell(new int[] {0, 0}).canDrillThrough());
     }
+
 }
 
 // End DrillThroughTest.java

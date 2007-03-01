@@ -121,10 +121,6 @@ class RolapCell implements Cell {
      * @return true if can drill through
      */
     public boolean canDrillThrough() {
-        // Cannot drill through query based on virtual cube.
-        if (((RolapCube) result.getCube()).isVirtual()) {
-            return false;
-        }
         // get current members
         final Member[] currentMembers = getMembers();
         // First member is the measure, test if it is stored measure, return
