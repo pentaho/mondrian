@@ -234,13 +234,13 @@ class RolapResult extends ResultBase {
         }
     }
 
-    /** 
+    /**
      * An implicit Member usage was detected - one axis used the
      * default Member for some hierarchy, but another used a Member
      * that was present in the MDX; the first axis should have used
      * this other Member.
-     * 
-     * @param axisMembers list of Members used in query. 
+     *
+     * @param axisMembers list of Members used in query.
      */
     protected void reExecuteWithImpliedMembers(List<Member> axisMembers) {
         boolean didEvaluatorReplacementMember = false;
@@ -670,8 +670,8 @@ class RolapResult extends ResultBase {
     /**
      * Called only by RolapCell.
      *
-     * @param pos
-     * @return
+     * @param pos Coordinates of cell
+     * @return Evaluator whose context is the given cell
      */
     RolapEvaluator getCellEvaluator(int[] pos) {
         final RolapEvaluator cellEvaluator = (RolapEvaluator) evaluator.push();
@@ -684,10 +684,10 @@ class RolapResult extends ResultBase {
 
     /**
      * Called only by RolapCell. Use this when creating an Evaluator
-     * (using method getCellEvaluator) is not required.
+     * (using method {@link #getCellEvaluator}) is not required.
      *
-     * @param pos
-     * @return
+     * @param pos Coordinates of cell
+     * @return Members which form the context of the given cell
      */
     Member[] getCellMembers(int[] pos) {
         Member[] members = evaluator.getMembers().clone();
@@ -733,19 +733,6 @@ class RolapResult extends ResultBase {
         return (parent == null) ? m : getTopParent(parent);
     }
 
-    /**
-     * Add each top-level member of the axis' members to the membersList if
-     * the top-level member is not the 'all' member (or null or a measure).
-     *
-     * @param axisMembers
-     * @param axis
-     */
-    private void merge(List<Member> axisMembers, Axis axis) {
-        for (Position position : axis.getPositions()) {
-            merge(axisMembers, position);
-        }
-    }
-
     private void merge(List<Member> axisMembers, List<Member> members) {
         for (Member member : members) {
             merge(axisMembers, member);
@@ -772,12 +759,12 @@ class RolapResult extends ResultBase {
     }
 
     /**
-     * Remove each member from the axisMembers list when the member's
+     * Removes each member from the axisMembers list when the member's
      * hierarchy is the same a one of the slicerMembers' hierarchy.
-     * (If it is in the slicer, then remove it from the axisMembers list).
+     * (If it is in the slicer, then removes it from the axisMembers list.)
      *
-     * @param axisMembers
-     * @param slicerMembers
+     * @param axisMembers List of members on axis
+     * @param slicerMembers List of members in slicer
      */
     private void purge(List<Member> axisMembers, List<Member> slicerMembers) {
         // if a member is in slicerMembers, then remove the "corresponding"
@@ -786,6 +773,7 @@ class RolapResult extends ResultBase {
             purge(axisMembers, slicerMember);
         }
     }
+
     private void purge(List<Member> axisMembers, Member slicerMember) {
         Hierarchy hier = slicerMember.getHierarchy();
         Iterator<Member> it = axisMembers.iterator();
@@ -813,7 +801,8 @@ class RolapResult extends ResultBase {
         /**
          * Maps the names of sets to their values. Populated on demand.
          */
-        private final Map<String, Object> namedSetValues = new HashMap<String, Object>();
+        private final Map<String, Object> namedSetValues =
+            new HashMap<String, Object>();
 
         /**
          * Evaluator containing context resulting from evaluating the slicer.
@@ -920,7 +909,9 @@ class RolapResult extends ResultBase {
     }
 
     /**
-     * Every Cell has a value, a format string (or CellFormatter) and a
+     * Formatter to convert values into formatted strings.
+     *
+     * <p>Every Cell has a value, a format string (or CellFormatter) and a
      * formatted value string.
      * There are a wide range of possible values (pick a Double, any
      * Double - its a value). Because there are lots of possible values,
@@ -929,22 +920,30 @@ class RolapResult extends ResultBase {
      * and CellFormatter's. These formatters are to be cached
      * in a synchronized HashMaps in order to limit how many copies
      * need to be kept around.
+     *
      * <p>
-     * There are two implementations of the ValueFormatter interface:
-     * the CellFormatterValueFormatter which formats using a
-     * user registered CellFormatter and the FormatValueFormatter
-     * which takes the Locale object.
+     * There are two implementations of the ValueFormatter interface:<ul>
+     * <li>{@link CellFormatterValueFormatter}, which formats using a
+     * user-registered {@link CellFormatter}; and
+     * <li> {@link FormatValueFormatter}, which takes the {@link Locale} object.
+     * </ul>
      */
     interface ValueFormatter {
         String format(Object value, String formatString);
     }
 
     /**
-     * A CellFormatterValueFormatter takes a user-defined CellFormatter
-     * as a parameter and uses the CellFormatter to format Object values.
+     * A CellFormatterValueFormatter uses a user-defined {@link CellFormatter}
+     * to format values.
      */
-    class CellFormatterValueFormatter implements ValueFormatter{
+    class CellFormatterValueFormatter implements ValueFormatter {
         final CellFormatter cf;
+
+        /**
+         * Creates a CellFormatterValueFormatter
+         *
+         * @param cf Cell formatter
+         */
         CellFormatterValueFormatter(CellFormatter cf) {
             this.cf = cf;
         }
@@ -952,14 +951,21 @@ class RolapResult extends ResultBase {
             return cf.formatCell(value);
         }
     }
+
     /**
-     * A FormatValueFormatter takes a Locale
-     * as a parameter and use it to get the mondrian.util.Format
-     * Object to be used in formatting an Object value with a
+     * A FormatValueFormatter takes a {@link Locale}
+     * as a parameter and uses it to get the {@link mondrian.util.Format}
+     * to be used in formatting an Object value with a
      * given format string.
      */
     class FormatValueFormatter implements ValueFormatter{
         final Locale locale;
+
+        /**
+         * Creates a FormatValueFormatter.
+         *
+         * @param locale Locale
+         */
         FormatValueFormatter(Locale locale) {
             this.locale = locale;
         }
@@ -1035,10 +1041,11 @@ class RolapResult extends ResultBase {
             Collections.synchronizedMap(new HashMap<CellFormatter, ValueFormatter>());
 
     /**
-     * CellInfo's contain all of the information that a Cell requires.
-     * They are placed in the cellInfos Map during evaluation and
-     * serve as a constructor parameter for RolapCell. During the
-     * evaluation stage they are mutable but after evaluation has
+     * A CellInfo contains all of the information that a Cell requires.
+     * It is placed in the cellInfos map during evaluation and
+     * serves as a constructor parameter for {@link RolapCell}.
+     *
+     * <p>During the evaluation stage they are mutable but after evaluation has
      * finished they are not changed.
      */
     static class CellInfo {
@@ -1047,17 +1054,36 @@ class RolapResult extends ResultBase {
         ValueFormatter valueFormatter;
         long key;
 
+        /**
+         * Creates a CellInfo representing the position of a cell.
+         *
+         * @param key Ordinal representing the position of a cell
+         */
         CellInfo(long key) {
             this(key, null, null, null);
         }
-        CellInfo(long key, Object value,
-                 String formatString,
-                 ValueFormatter valueFormatter) {
+
+        /**
+         * Creates a CellInfo with position, value, format string and formatter
+         * of a cell.
+         *
+         * @param key Ordinal representing the position of a cell
+         * @param value Value of cell, or null if not yet known
+         * @param formatString Format string of cell, or null
+         * @param valueFormatter Formatter for cell, or null
+         */
+        CellInfo(
+            long key,
+            Object value,
+            String formatString,
+            ValueFormatter valueFormatter)
+        {
             this.key = key;
             this.value = value;
             this.formatString = formatString;
             this.valueFormatter = valueFormatter;
         }
+
         public int hashCode() {
             return (int)(key ^ (key >>> 32));
         }
@@ -1069,43 +1095,48 @@ class RolapResult extends ResultBase {
                 return false;
             }
         }
+
+        /**
+         * Returns the formatted value of the Cell
+         * @return formatted value of the Cell
+         */
         String getFormatValue() {
             return valueFormatter.format(value, formatString);
         }
     }
 
     /**
-     * The CellInfoContainer defines the API for the creation and
-     * lookup of CellInfo objects. There are two implementations,
+     * API for the creation and
+     * lookup of {@link CellInfo} objects. There are two implementations,
      * one that uses a Map for storage and the other uses an ObjectPool.
      */
     interface CellInfoContainer {
         /**
-         * Return the number of CellInfo objects in this container.
+         * Returns the number of CellInfo objects in this container.
          * @return  the number of CellInfo objects.
          */
         int size();
         /**
-         * Reduce the size of the internal data structures need to
+         * Reduces the size of the internal data structures needed to
          * support the current entries. This should be called after
          * all CellInfo objects have been added to container.
          */
         void trimToSize();
         /**
-         * Remove all CellInfo objects from container. Does not
+         * Removes all CellInfo objects from container. Does not
          * change the size of the internal data structures.
          */
         void clear();
         /**
-         * Create a new CellInfo object, add it to the container
-         * a location <code>pos</code> and return it.
+         * Creates a new CellInfo object, adds it to the container
+         * a location <code>pos</code> and returns it.
          *
          * @param pos where to store CellInfo object.
          * @return the newly create CellInfo object.
          */
         CellInfo create(int[] pos);
         /**
-         * Get the CellInfo object at the location <code>pos</code>.
+         * Gets the CellInfo object at the location <code>pos</code>.
          *
          * @param pos where to find the CellInfo object.
          * @return the CellInfo found or null.
@@ -1114,8 +1145,10 @@ class RolapResult extends ResultBase {
     }
 
     /**
-     * The CellInfoMap uses a Map to store CellInfo Objects.
-     * Note that the CellKey point instance variable is the same
+     * Implementation of {@link CellInfoContainer} which uses a {@link Map} to
+     * store CellInfo Objects.
+     *
+     * <p>Note that the CellKey point instance variable is the same
      * Object (NOT a copy) that is used and modified during
      * the recursive calls to executeStripe - the
      * <code>create</code> method relies on this fact.
@@ -1123,6 +1156,12 @@ class RolapResult extends ResultBase {
     static class CellInfoMap implements CellInfoContainer {
         private final Map<CellKey, CellInfo> cellInfoMap;
         private final CellKey point;
+
+        /**
+         * Creates a CellInfoMap
+         *
+         * @param point Cell position
+         */
         CellInfoMap(CellKey point) {
             this.point = point;
             this.cellInfoMap = new HashMap<CellKey, CellInfo>();
@@ -1152,10 +1191,13 @@ class RolapResult extends ResultBase {
     }
 
     /**
-     * The CellInfoPool uses an ObjectPool to store CellInfo Objects.
-     * There is an inner interface (<code>CellKeyMaker</code>) and
+     * Implementation of {@link CellInfoContainer} which uses an
+     * {@link ObjectPool} to store {@link CellInfo} Objects.
+     *
+     * <p>There is an inner interface (<code>CellKeyMaker</code>) and
      * implementations for 0 through 4 axes that convert the Cell
      * position integer array into a long.
+     *
      * <p>
      * It should be noted that there is an alternate approach.
      * As the <code>executeStripe</code>
@@ -1288,6 +1330,7 @@ class RolapResult extends ResultBase {
             return this.cellInfoPool.add(new CellInfo(key));
         }
     }
+
     static Axis mergeAxes(Axis axis1, Axis axis2) {
         List<Position> pl1 = axis1.getPositions();
         List<Position> pl2 = axis2.getPositions();
@@ -1321,7 +1364,7 @@ class RolapResult extends ResultBase {
             arrayLen = 0;
             for (Position p1: pl1) {
                 for (Member m1: p1) {
-                    arrayLen++; 
+                    arrayLen++;
                 }
                 break;
             }
@@ -1377,7 +1420,6 @@ class RolapResult extends ResultBase {
             return new RolapAxis.MemberArrayList(list);
         }
     }
-
 }
 
 // End RolapResult.java

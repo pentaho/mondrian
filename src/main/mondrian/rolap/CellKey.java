@@ -16,16 +16,21 @@ package mondrian.rolap;
 import java.util.Arrays;
 
 /**
- * CellKey's are used as keys in maps mapping from the key (a cell) to
- * a value.
+ * A <code>CellKey<code> is used as a key in maps which access cells by their
+ * position.
  *
  * <p>CellKey is also used within
- * {@link mondrian.rolap.agg.SparseSegmentDataset}.
+ * {@link mondrian.rolap.agg.SparseSegmentDataset} to store values within
+ * aggregations.
  *
- * <p>It is important that the {@link #hashCode} and {@link #equals} are
- * extremely efficient. There are particular implementations for the most likely
- * cases where the number of axes is 1, 2 and 3 as well as a general
+ * <p>It is important that CellKey is memory-efficient, and that the
+ * {@link Object#hashCode} and {@link Object#equals} methods are extremely
+ * efficient. There are particular implementations for the
+ * most likely cases where the number of axes is 1, 2 and 3 as well as a general
  * implementation.
+ *
+ * <p>To create a key, call the
+ * {@link mondrian.rolap.CellKey.Generator#newCellKey(int[])} method.
  *
  * @author jhyde
  * @since 10 August, 2001
@@ -139,17 +144,28 @@ public interface CellKey {
             return new Many(pos);
         }
 
-        // used for testing only
-        public static CellKey newManyCellKey(int size) {
+        /**
+         * Creates a CellKey implemented by an array to hold the coordinates,
+         * regardless of the size. This is used for testing only.
+         *
+         * @param size Number of coordinates
+         * @return CallKey
+         */
+        static CellKey newManyCellKey(int size) {
             return new Many(new int[size]);
         }
     }
 
     public class Zero implements CellKey {
         private static final int[] EMPTY_INT_ARRAY = new int[0];
+        public static final Zero INSTANCE = new Zero();
 
+        /**
+         * Use singleton {@link #INSTANCE}.
+         */
         private Zero() {
         }
+
         public Zero copy() {
             // no need to make copy since there is no state
             return this;
@@ -186,6 +202,11 @@ public interface CellKey {
     public class One implements CellKey {
         private int ordinal0;
 
+        /**
+         * Creates a One.
+         *
+         * @param ordinal0 Ordinate #0
+         */
         private One(int ordinal0) {
             this.ordinal0 = ordinal0;
         }
@@ -255,6 +276,12 @@ public interface CellKey {
         private int ordinal0;
         private int ordinal1;
 
+        /**
+         * Creates a Two.
+         *
+         * @param ordinal0 Ordinate #0
+         * @param ordinal1 Ordinate #1
+         */
         private Two(int ordinal0, int ordinal1) {
             this.ordinal0 = ordinal0;
             this.ordinal1 = ordinal1;
@@ -334,6 +361,13 @@ public interface CellKey {
         private int ordinal1;
         private int ordinal2;
 
+        /**
+         * Creates a Three.
+         *
+         * @param ordinal0 Ordinate #0
+         * @param ordinal1 Ordinate #1
+         * @param ordinal2 Ordinate #2
+         */
         private Three(int ordinal0, int ordinal1, int ordinal2) {
             this.ordinal0 = ordinal0;
             this.ordinal1 = ordinal1;
@@ -422,6 +456,10 @@ public interface CellKey {
     public class Many implements CellKey {
         private final int[] ordinals;
 
+        /**
+         * Creates a Many.
+         * @param ordinals Ordinates
+         */
         protected Many(int[] ordinals) {
             this.ordinals = ordinals;
         }
