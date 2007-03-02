@@ -87,7 +87,7 @@ public class XmlaTest extends TestCase {
         StringWriter bufWriter = new StringWriter();
         transformer.transform(
             new DOMSource(responseElem), new StreamResult(bufWriter));
-        bufWriter.append(Util.nl);
+        bufWriter.write(Util.nl);
         String actualResponse = bufWriter.getBuffer().toString();
         
         try {
