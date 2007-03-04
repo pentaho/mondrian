@@ -2949,8 +2949,8 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -4692,6 +4692,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>NOT</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>NullValue</FUNCTION_NAME>
+                        <PARAMETER_LIST/>
+                        <RETURN_TYPE>5</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>NullValue</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>OpeningPeriod</FUNCTION_NAME>
                         <DESCRIPTION>Returns the first descendant of a
                             member at a level.</DESCRIPTION>
@@ -5531,8 +5539,8 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>||</CAPTION>
                     </row>
                 </root>
-            </xmla:return>
-        </xmla:DiscoverResponse>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
