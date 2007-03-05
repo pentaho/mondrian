@@ -34,6 +34,7 @@ import mondrian.olap.HierarchyBugTest;
 import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.*;
 import mondrian.test.comp.ResultComparatorTest;
+import mondrian.udf.*;
 import mondrian.util.*;
 import mondrian.xmla.XmlaBasicTest;
 import mondrian.xmla.XmlaExcel2000Test;
@@ -192,6 +193,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(CompatibilityTest.class);
             suite.addTestSuite(CaptionTest.class);
             suite.addTestSuite(UdfTest.class);
+            suite.addTestSuite(NullValueTest.class);
             suite.addTestSuite(NamedSetTest.class);
             suite.addTestSuite(PropertiesTest.class);
             suite.addTestSuite(MultipleHierarchyTest.class);
