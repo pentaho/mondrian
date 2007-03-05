@@ -383,12 +383,12 @@ public abstract class DBLoader {
         private final String name;
         private final Type type;
         private String typeName;
-        private final String constraint;
+        private final boolean canBeNull;
 
-        public Column(String name, Type type, boolean nullsAllowed) {
+        public Column(String name, Type type, boolean canBeNull) {
             this.name = name;
             this.type = type;
-            this.constraint = nullsAllowed ? "" : "NOT NULL";
+            this.canBeNull = canBeNull;
         }
 
         public void init(SqlQuery.Dialect dialect) {
@@ -403,8 +403,11 @@ public abstract class DBLoader {
         public String getTypeName() {
             return this.typeName;
         }
+        public boolean canBeNull() {
+            return this.canBeNull;
+        }
         public String getConstraint() {
-            return this.constraint;
+            return canBeNull ? "" : "NOT NULL";
         }
     }
 
@@ -722,9 +725,10 @@ public abstract class DBLoader {
             buf.append(quoteId(column.name));
             buf.append(" ");
             buf.append(column.typeName);
-            if (!column.constraint.equals("")) {
+            String constraint = column.getConstraint();
+            if (!constraint.equals("")) {
                 buf.append(" ");
-                buf.append(column.constraint);
+                buf.append(constraint);
             }
         }
         buf.append(nl);
@@ -919,7 +923,9 @@ public abstract class DBLoader {
             }
 
         } catch (Exception e) {
-            LOGGER.warn("Drop of " + table.getName() + " failed. Ignored");
+// RME
+e.printStackTrace();
+            LOGGER.warn("Load of " + table.getName() + " failed. Ignored");
         } finally {
             closeFileWriter();
         }
@@ -930,14 +936,40 @@ public abstract class DBLoader {
 
         Column[] columns = table.getColumns();
         if (columns.length != values.length) {
-            StringBuilder buf = new StringBuilder();
-            buf.append("For table ");
-            buf.append(table.getName());
-            buf.append(" the columns length ");
-            buf.append(columns.length);
-            buf.append(" does not equal the values length ");
-            buf.append(values.length);
-            throw new Exception(buf.toString());
+            int numberOfNullColumns = 0;
+            for (Column c : columns) {
+                if (c.canBeNull()) {
+                    numberOfNullColumns++;
+                }
+            }
+            if (numberOfNullColumns == 0) {
+                StringBuilder buf = new StringBuilder();
+                buf.append("For table ");
+                buf.append(table.getName());
+                buf.append(" the columns length ");
+                buf.append(columns.length);
+                buf.append(" does not equal the values length ");
+                buf.append(values.length);
+                throw new Exception(buf.toString());
+            } else if (columns.length != values.length + numberOfNullColumns) {
+                StringBuilder buf = new StringBuilder();
+                buf.append("For table ");
+                buf.append(table.getName());
+                buf.append(" the columns length ");
+                buf.append(columns.length);
+                buf.append(" and number allowed to be null ");
+                buf.append(numberOfNullColumns);
+                buf.append(" does not equal the values length ");
+                buf.append(values.length);
+                throw new Exception(buf.toString());
+            }
+            Object[] vs = new Object[columns.length];
+            for (int i = 0, j = 0; i < columns.length; i++) {
+                if (! columns[i].canBeNull()) {
+                    vs[i] = values[j++];
+                }
+            }
+            values = vs;
         }
 
         StringBuffer buf = new StringBuffer();

@@ -151,7 +151,7 @@ Axis #2:
         }
 
         String mdx = "select " +
-                     " filter({[D1].[a],[D1].[b],[D1].[c]}, " +
+                     " NON EMPTY filter({[D1].[a],[D1].[b],[D1].[c]}, " +
                      "    [Measures].[Value] > 0) "+
                      " ON COLUMNS, " +
                      " {[D2].[x],[D2].[y],[D2].[z]} "+
@@ -163,6 +163,40 @@ Axis #2:
 //System.out.println(resultString);
         assertTrue(resultString.equals(RESULTS));
     }
+
+    /** 
+     * This ought to give the same result as the above testD2() method.
+     * In this case, the FT2Extra cube has a default measure with no
+     * data (null) for all members. This default measure is used
+     * in the evaluation even though there is an implicit use of the
+     * measure [Measures].[Value].
+     * 
+     * @throws Exception 
+     */
+    public void _testNullDefaultMeasure() throws Exception {
+        if (!isApplicable()) {
+            return;
+        }
+        if (getTestContext().getDialect().isOracle()) {
+            return;
+        }
+
+        String mdx = "select " +
+                     " NON EMPTY filter({[D1].[a],[D1].[b],[D1].[c]}, " +
+                     "    [Measures].[Value] > 0) "+
+                     " ON COLUMNS, " +
+                     " {[D2].[x],[D2].[y],[D2].[z]} "+
+                     " ON ROWS " +
+                     "from FT2Extra";
+
+        Result result = getCubeTestContext().executeQuery(mdx);
+        String resultString = TestContext.toString(result);
+//System.out.println(resultString);
+        assertTrue(resultString.equals(RESULTS));
+    }
+
+
+
 
     protected String getFileName() {
         return RolapResultTest;
@@ -234,7 +268,33 @@ Axis #2:
             "<Measure name='Value' \n" +
             "    column='value' aggregator='sum'\n" +
             "   formatString='#,###'/>\n" +
-            "</Cube>";
+            "</Cube>\n" +
+
+
+
+            "<Cube name='FT2Extra'>\n" +
+            "<Table name='FT2'/>\n" +
+            "<Dimension name='D1' foreignKey='d1_id' >\n" +
+            " <Hierarchy hasAll='false' defaultMember='[D1].[d]' primaryKey='d1_id'>\n" +
+            " <Table name='D1'/>\n" +
+            " <Level name='Name' column='name' type='String' uniqueMembers='true'/>\n" +
+            " </Hierarchy>\n" +
+            "</Dimension>\n" +
+            "<Dimension name='D2' foreignKey='d2_id' >\n" +
+            " <Hierarchy hasAll='false' defaultMember='[D2].[w]' primaryKey='d2_id'>\n" +
+            " <Table name='D2'/>\n" +
+            " <Level name='Name' column='name' type='String' uniqueMembers='true'/>\n" +
+            " </Hierarchy>\n" +
+            "</Dimension>\n" +
+
+            "<Measure name='VExtra' \n" +
+            "    column='vextra' aggregator='sum'\n" +
+            "   formatString='#,###'/>\n" +
+            "<Measure name='Value' \n" +
+            "    column='value' aggregator='sum'\n" +
+            "   formatString='#,###'/>\n" +
+            "</Cube>"
+            ;
     }
 }
 
