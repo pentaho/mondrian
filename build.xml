@@ -17,7 +17,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="2.3-dev"/>
+  <property name="version" value="2.3.8826-RC1"/>
   <property name="vendor" value="Pentaho"/>
 
   <!--
@@ -723,6 +723,7 @@ ${doc.dir}/api/**/*.xml,
 ${war.file},
 ${jar.file},
 ${jar-jdk14.file},
+${lib.dir}/retroweaver-rt-1.2.4.jar,
 lib/*.dtd,
 demo/FoodMart.xml,
 demo/FoodMartCreateData.sql,
@@ -758,6 +759,8 @@ ${doc.dir}/**/*.png,
 ${doc.dir}/api/**/*.xml,
 ${war.embeddedDb.file},
 ${jar.file},
+${jar-jdk14.file},
+${lib.dir}/retroweaver-rt-1.2.4.jar,
 lib/*.dtd,
 demo/FoodMart.xml,
 LICENSE.html,
