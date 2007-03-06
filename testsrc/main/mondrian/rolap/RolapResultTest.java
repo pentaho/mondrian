@@ -28,46 +28,46 @@ public class RolapResultTest extends AggTableTestCase {
     private static final String DIRECTORY = "testsrc/main/mondrian/rolap";
 
     private static final String RESULTS_ALL =
-                "Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[D1].[All D1s].[a]}\n" +
-                "{[D1].[All D1s].[b]}\n" +
-                "{[D1].[All D1s].[c]}\n" +
-                "Axis #2:\n" +
-                "{[D2].[All D2s].[x]}\n" +
-                "{[D2].[All D2s].[y]}\n" +
-                "{[D2].[All D2s].[z]}\n" +
-                "Row #0: 5\n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #1: \n" +
-                "Row #1: 10\n" +
-                "Row #1: \n" +
-                "Row #2: \n" +
-                "Row #2: \n" +
-                "Row #2: 15\n";
+                fold("Axis #0:\n" +
+                     "{}\n" +
+                     "Axis #1:\n" +
+                     "{[D1].[All D1s].[a]}\n" +
+                     "{[D1].[All D1s].[b]}\n" +
+                     "{[D1].[All D1s].[c]}\n" +
+                     "Axis #2:\n" +
+                     "{[D2].[All D2s].[x]}\n" +
+                     "{[D2].[All D2s].[y]}\n" +
+                     "{[D2].[All D2s].[z]}\n" +
+                     "Row #0: 5\n" +
+                     "Row #0: \n" +
+                     "Row #0: \n" +
+                     "Row #1: \n" +
+                     "Row #1: 10\n" +
+                     "Row #1: \n" +
+                     "Row #2: \n" +
+                     "Row #2: \n" +
+                     "Row #2: 15\n");
 
     private static final String RESULTS =
-                "Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[D1].[a]}\n" +
-                "{[D1].[b]}\n" +
-                "{[D1].[c]}\n" +
-                "Axis #2:\n" +
-                "{[D2].[x]}\n" +
-                "{[D2].[y]}\n" +
-                "{[D2].[z]}\n" +
-                "Row #0: 5\n" +
-                "Row #0: \n" +
-                "Row #0: \n" +
-                "Row #1: \n" +
-                "Row #1: 10\n" +
-                "Row #1: \n" +
-                "Row #2: \n" +
-                "Row #2: \n" +
-                "Row #2: 15\n";
+                fold("Axis #0:\n" +
+                     "{}\n" +
+                     "Axis #1:\n" +
+                     "{[D1].[a]}\n" +
+                     "{[D1].[b]}\n" +
+                     "{[D1].[c]}\n" +
+                     "Axis #2:\n" +
+                     "{[D2].[x]}\n" +
+                     "{[D2].[y]}\n" +
+                     "{[D2].[z]}\n" +
+                     "Row #0: 5\n" +
+                     "Row #0: \n" +
+                     "Row #0: \n" +
+                     "Row #1: \n" +
+                     "Row #1: 10\n" +
+                     "Row #1: \n" +
+                     "Row #2: \n" +
+                     "Row #2: \n" +
+                     "Row #2: 15\n");
 
     boolean useImplicitMembers;
     public RolapResultTest() {
@@ -103,11 +103,14 @@ public class RolapResultTest extends AggTableTestCase {
                      " ON ROWS " +
                      "from FTAll";
 
+        getCubeTestContext().assertQueryReturns(mdx, RESULTS_ALL);
+/*
         Result result = getCubeTestContext().executeQuery(mdx);
         String resultString = TestContext.toString(result);
 //System.out.println(resultString);
 
         assertTrue(resultString.equals(RESULTS_ALL));
+*/
     }
 
     public void _testD1() throws Exception {
@@ -126,6 +129,7 @@ public class RolapResultTest extends AggTableTestCase {
                      " ON ROWS " +
                      "from FT1";
 
+        //getCubeTestContext().assertQueryReturns(mdx, RESULTS);
         Result result = getCubeTestContext().executeQuery(mdx);
         String resultString = TestContext.toString(result);
 //System.out.println(resultString);
@@ -158,10 +162,13 @@ Axis #2:
                      " ON ROWS " +
                      "from FT2";
 
+        getCubeTestContext().assertQueryReturns(mdx, RESULTS);
+/*
         Result result = getCubeTestContext().executeQuery(mdx);
         String resultString = TestContext.toString(result);
 //System.out.println(resultString);
         assertTrue(resultString.equals(RESULTS));
+*/
     }
 
     /** 
@@ -189,6 +196,7 @@ Axis #2:
                      " ON ROWS " +
                      "from FT2Extra";
 
+        //getCubeTestContext().assertQueryReturns(mdx, RESULTS);
         Result result = getCubeTestContext().executeQuery(mdx);
         String resultString = TestContext.toString(result);
 //System.out.println(resultString);
