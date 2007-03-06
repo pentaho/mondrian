@@ -278,6 +278,10 @@ public class CacheControlTest extends FoodMartTestCase {
      * Creates a cell region, runs a query, then flushes the cache.
      */
     public void testFlush() {
+        if (MondrianProperties.instance().DisableCaching.get()) {
+            return;
+        }
+
         flushCache();
 
         // Execute a query, to bring data into the cache.
@@ -311,6 +315,10 @@ public class CacheControlTest extends FoodMartTestCase {
      * Creates a partial cell region, runs a query, then flushes the cache.
      */
     public void testPartialFlush() {
+        if (MondrianProperties.instance().DisableCaching.get()) {
+            return;
+        }
+
         flushCache();
 
         // Execute a query.
@@ -372,6 +380,10 @@ public class CacheControlTest extends FoodMartTestCase {
      * the cache.
      */
     public void testPartialFlushRange() {
+        if (MondrianProperties.instance().DisableCaching.get()) {
+            return;
+        }
+
         flushCache();
 
         // Execute a query.
