@@ -6,8 +6,6 @@
 	<classpathentry kind="lib" path="lib/commons-collections.jar"/>
 	<classpathentry kind="lib" path="lib/javacup.jar"/>
 	<classpathentry kind="lib" path="lib/jlfgr-1_0.jar"/>
-	<classpathentry kind="lib" path="lib/jmi.jar"/>
-	<classpathentry kind="lib" path="lib/mof.jar"/>
 	<classpathentry kind="lib" path="lib/eigenbase-resgen.jar"/>
 	<classpathentry kind="lib" path="lib/eigenbase-xom.jar"/>
 	<classpathentry kind="lib" path="lib/xalan.jar"/>
@@ -25,5 +23,6 @@
 	<classpathentry kind="lib" path="testlib/derby.jar"/>
 	<classpathentry kind="lib" path="testlib/xmlunit1.0.jar"/>
     <classpathentry kind="lib" path="lib/commons-vfs.jar"/>
+    <classpathentry kind="lib" path="lib/commons-logging.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
