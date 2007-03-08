@@ -264,6 +264,30 @@ public class UtilTestCase extends TestCase {
                 Util.explode("[string].[with].[a [bracket]] in it]");
         assertEquals(3, strings.length);
         assertEquals("a [bracket] in it", strings[2]);
+
+        strings = Util.explode("[Worklog].[All].[calendar-[LANGUAGE]].js]");
+        assertEquals(3, strings.length);
+        assertEquals("calendar-[LANGUAGE].js", strings[2]);
+
+        try {
+            strings = Util.explode("[foo].bar");
+            Util.discard(strings);
+            fail("expected exception");
+        } catch (MondrianException e) {
+            assertEquals(
+                "Mondrian Error:Invalid member identifier '[foo].bar'",
+                e.getMessage());
+        }
+
+        try {
+            strings = Util.explode("[foo].[bar");
+            Util.discard(strings);
+            fail("expected exception");
+        } catch (MondrianException e) {
+            assertEquals(
+                "Mondrian Error:Invalid member identifier '[foo].[bar'",
+                e.getMessage());
+        }
     }
 
     public void testReplaceProperties() {

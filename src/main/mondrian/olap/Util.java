@@ -347,36 +347,44 @@ public class Util extends XOMUtil {
         return buf;
     }
 
-    public static String[] explode(String s) {
+    public static String[] explode(String s)  {
         if (!s.startsWith("[")) {
             return new String[]{s};
         }
+
         List<String> list = new ArrayList<String>();
         int i = 0;
+
         while (i < s.length()) {
             if (s.charAt(i) != '[') {
                 throw MondrianResource.instance().MdxInvalidMember.ex(s);
             }
-            // s may contain extra ']' characters, so look for a ']' followed
-            // by a '.'
-            int j = s.indexOf("].", i);
+
+            int j = getEndIndex(s, i + 1);
             if (j == -1) {
-                j = s.lastIndexOf(']');
-            }
-            if (j <= i) {
                 throw MondrianResource.instance().MdxInvalidMember.ex(s);
             }
-            String sub = s.substring(i + 1, j);
-            sub = replace(sub, "]]", "]");
-            list.add(sub);
-            if (j + 1 < s.length()) {
-                if (s.charAt(j + 1) != '.') {
-                    throw MondrianResource.instance().MdxInvalidMember.ex(s);
-                }
-            }
-            i = j +  2;
+
+            list.add(replace(s.substring(i + 1, j), "]]", "]"));
+            i = j + 2;
         }
-        return (String[]) list.toArray(new String[list.size()]);
+        return list.toArray(new String[list.size()]);
+    }
+
+    private static int getEndIndex(String s, int i) {
+        while (i < s.length()) {
+            char ch = s.charAt(i);
+            if (ch == ']') {
+                if (i + 1 < s.length() && s.charAt(i + 1) == ']') { // found ]] => skip
+                    i += 2;
+                } else {
+                    return i;
+                }
+            } else {
+                i++;
+            }
+        }
+        return -1;
     }
 
     /**
