@@ -1991,12 +1991,22 @@ public class BuiltinFunTable extends FunTableImpl {
             Hierarchy hierarchy,
             Evaluator evaluator,
             final boolean includeCalcMembers) {
-        List<Member> memberList =
-            FunUtil.addMembers(
+        final List<Member> memberList;
+        if (evaluator.isNonEmpty()) {
+            // Allow the SQL generator to generate optimized SQL since we know
+            // we're only interested in non-empty members of this level.
+            memberList = new ArrayList<Member>();
+            for (Level level : hierarchy.getLevels()) {
+                Member[] members = getNonEmptyLevelMembers(evaluator, level);
+                memberList.addAll(Arrays.asList(members));
+            }
+        } else {
+            memberList = FunUtil.addMembers(
                 evaluator.getSchemaReader(),
                 new ArrayList<Member>(), hierarchy);
-        if (!includeCalcMembers && memberList != null) {
-            FunUtil.removeCalculatedMembers(memberList);
+            if (!includeCalcMembers && memberList != null) {
+                FunUtil.removeCalculatedMembers(memberList);
+            }
         }
         FunUtil.hierarchize(memberList, false);
         return memberList;
@@ -2007,16 +2017,8 @@ public class BuiltinFunTable extends FunTableImpl {
             Evaluator evaluator,
             final boolean includeCalcMembers) {
         Hierarchy hierarchy = dimension.getHierarchy();
-        List<Member> memberList = FunUtil.addMembers(
-            evaluator.getSchemaReader(),
-            new ArrayList<Member>(), hierarchy);
-        if (!includeCalcMembers && memberList != null) {
-            FunUtil.removeCalculatedMembers(memberList);
-        }
-        FunUtil.hierarchize(memberList, false);
-        return memberList;
+        return hierarchyMembers(hierarchy, evaluator, includeCalcMembers);
     }
-
 }
 
 // End BuiltinFunTable.java

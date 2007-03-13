@@ -669,9 +669,22 @@ public class NonEmptyTest extends FoodMartTestCase {
      * of the row axis. The reduces resultLimit ensures that the optimization is present.
      */
     class TestCase {
+        /**
+         * Maximum number of rows to be read from SQL. If more than this number
+         * of rows are read, the test will fail.
+         */
         int resultLimit;
+        /**
+         * MDX query to execute.
+         */
         String query;
+        /**
+         * Number of positions we expect on rows axis of result.
+         */
         int rowCount;
+        /**
+         * Mondrian connection.
+         */
         Connection con;
 
         public TestCase(int resultLimit, int rowCount, String query) {
@@ -806,6 +819,25 @@ public class NonEmptyTest extends FoodMartTestCase {
         mcc = scf.getMemberChildrenConstraint(context);
         list = smr.mapMemberToChildren.get((RolapMember) parent, mcc);
         assertNull(list);
+    }
+
+    /**
+     * Tests that <Dimension>.Members exploits the same optimization as
+     * <Level>.Members.
+     */
+    public void testDimensionMembers() {
+        // No query should return more than 20 rows. (1 row at 'all' level,
+        // 1 row at nation level, 1 at state level, 20 at city level, and 11
+        // at customers level = 34.)
+        TestCase c = new TestCase(
+                34,
+                34,
+                "select \n"
+                        + "{[Measures].[Unit Sales]} ON columns,\n"
+                        + "NON EMPTY [Customers].Members ON rows\n"
+                        + "from [Sales]\n"
+                        + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1] )");
+        c.run();
     }
 
     /**

@@ -925,6 +925,26 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #0: 151,211.21\n"));
     }
 
+    public void testHierarchyMembers() {
+        assertAxisReturns("Head({[Time.Weekly].Members}, 10)", fold(
+            "[Time.Weekly].[All Time.Weeklys]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997].[1]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997].[1].[15]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997].[1].[16]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997].[1].[17]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997].[1].[18]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997].[1].[19]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997].[1].[20]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1997].[2]"));
+        assertAxisReturns("Tail({[Time.Weekly].Members}, 5)", fold(
+            "[Time.Weekly].[All Time.Weeklys].[1998].[51].[5]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1998].[51].[29]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1998].[51].[30]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1998].[52]\n" +
+                "[Time.Weekly].[All Time.Weeklys].[1998].[52].[6]"));
+    }
+
     public void testAllMembers() {
         // <Level>.allmembers
         assertAxisReturns("{[Customers].[Country].allmembers}",
