@@ -467,12 +467,14 @@ public class SqlQuery {
         }
     }
 
+    /**
+     * Prints this SqlQuery to a PrintWriter with each clause on a separate
+     * line, and with the specified indentation prefix.
+     *
+     * @param pw Print writer
+     * @param prefix Prefix for each line
+     */
     public void print(PrintWriter pw, String prefix) {
-        // This <CR> is added to the front because the part of the code
-        // that prints out the sql (if the trace level is non-zero),
-        // RolapUtil, does not print the sql at the start of a new line.
-        pw.println();
-
         select.print(pw, prefix,
             distinct ? "select distinct " : "select ", ", ");
         from.print(pw, prefix, "from ", ", ");

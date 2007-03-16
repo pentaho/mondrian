@@ -238,7 +238,7 @@ public class RolapUtil {
      * @param resultSetType Result set type, or -1 to use default
      * @param resultSetConcurrency Result set concurrency, or -1 to use default
      * @return ResultSet
-     * @throws SQLException
+     * @throws SQLException if query has error
      */
     public static ResultSet executeQuery(
         Connection jdbcConnection,
@@ -254,8 +254,13 @@ public class RolapUtil {
         ResultSet resultSet;
         String status = "failed";
         if (produceDebugOut == Boolean.TRUE) {
-            RolapUtil.debugOut.print(
-                component + ": executing sql [" + sql + "]");
+            RolapUtil.debugOut.print(component + ": executing sql [");
+            if (sql.indexOf('\n') >= 0) {
+                // SQL appears to be formatted. Make it start on its own line.
+                RolapUtil.debugOut.println();
+            }
+            RolapUtil.debugOut.print(sql);
+            RolapUtil.debugOut.print(']');
             RolapUtil.debugOut.flush();
         }
         ExecuteQueryHook hook = threadHooks.get();
