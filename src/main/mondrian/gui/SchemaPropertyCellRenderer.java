@@ -1,42 +1,126 @@
 /*
- * SchemaPropertyCellRenderer.java
- *
- * Created on October 3, 2002, 2:00 PM
- */
-
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.gui;
-
-import mondrian.olap.MondrianDef;
 
 import javax.swing.*;
 import java.awt.*;
+import javax.swing.border.*;
+import javax.swing.table.TableCellRenderer;
 
 /**
  *
  * @author  sean
+ * @version $Id$
  */
 public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCellRenderer {
     JLabel stringRenderer;
     JCheckBox booleanRenderer;
     JLabel integerRenderer;
     JTable tableRenderer;
+    JComboBox listRenderer;
+
+    JComboBox relationList;  // Join, Table
+    JTable relationTable;
+    JPanel relationRenderer,rlPanel;;
+    JScrollPane jScrollPaneT;
+    /*  all objects of this class will use this color value to render attribute column
+     *  this value is initialized by SchemaExplorer to the scrollpane background color value.
+     */
+    static public Color attributeBackground ;
 
     /** Creates a new instance of SchemaPropertyCellRenderer */
     public SchemaPropertyCellRenderer() {
 
+        super.setBackground(attributeBackground);
+
         stringRenderer = new JLabel();
         stringRenderer.setFont(Font.decode("Dialog"));
+
         booleanRenderer = new JCheckBox();
         booleanRenderer.setBackground(Color.white);
         integerRenderer = new JLabel();
         integerRenderer.setHorizontalAlignment(JTextField.RIGHT);
         integerRenderer.setFont(Font.decode("Courier"));
 
+
+        listRenderer = new JComboBox(MondrianGuiDef.Measure._aggregator_values);
+        listRenderer.setMaximumSize(stringRenderer.getMaximumSize());
+        listRenderer.setFont(Font.decode("Dialog"));
+        listRenderer.setBackground(Color.white);
+        //listRenderer.setModel(new ComboBoxModel());
+        listRenderer.setBorder(new EmptyBorder(0, 0, 0, 0)); //super.noFocusBorder);
+        listRenderer.setRenderer(new ListRenderer(listRenderer.getRenderer()));
+
+        /*
+        relationListRenderer = new JComboBox( new String[] {"Join", "Table"} );
+        relationListRenderer.setMaximumSize(stringRenderer.getMaximumSize());
+        relationListRenderer.setFont(Font.decode("Dialog"));
+        relationListRenderer.setBackground(Color.white);
+         */
+        relationRenderer = new JPanel();
+
+        rlPanel = new JPanel();
+        relationList = new JComboBox( new String[] {"Join", "Table"} );
+        relationList.setMaximumSize(new Dimension(55,22));
+        relationList.setPreferredSize(new Dimension(55,22));
+        relationList.setMinimumSize(new Dimension(55,22));
+        relationList.setFont(Font.decode("Dialog"));
+        relationList.setBackground(Color.white);
+
+        relationTable = new JTable();
+        relationTable.setBackground(new java.awt.Color(255, 204, 204));
+        relationTable.setTableHeader(null); // to remove table headers 'Property', 'Value''
+
+        jScrollPaneT = new JScrollPane();
+        jScrollPaneT.setViewportBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 0, 255), 2));
+        //jScrollPaneT.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        jScrollPaneT.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        jScrollPaneT.setViewportView(relationTable);
+
+        relationRenderer.setLayout(new BorderLayout());
+        rlPanel.add(relationList);
+        relationRenderer.add(rlPanel,java.awt.BorderLayout.WEST);
+        relationRenderer.add(jScrollPaneT,java.awt.BorderLayout.CENTER);
+
+
+        relationRenderer.setBackground(Color.white);
+
+        //relationRenderer.add(jScrollPaneT,java.awt.BorderLayout.CENTER);
+
+        //JPanel relPanel = new JPanel();  // default flowlayout
+        //relPanel.add(relationList);
+        //relPanel.add(jScrollPaneT);
+        //relationRenderer.add(relationTable);
+        //relationRenderer.add(relPanel,java.awt.BorderLayout.CENTER);
+        //relationRenderer.add(jScrollPaneT);
+
         tableRenderer = new JTable();
     }
 
+    public JCheckBox getBooleanRenderer() {
+        return booleanRenderer;
+    }
+
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+
         if (column == 1) {
+
+            /*if ((((PropertyTableModel) table.getModel()).target.getClass() == MondrianGuiDef.Measure.class) && (row==1)) {
+                listRenderer.setSelectedItem((String)value);
+                return listRenderer;
+            } else */
+            stringRenderer.setOpaque(false);
+            stringRenderer.setToolTipText(null);
+            stringRenderer.setBackground(Color.white);
+
             if (value instanceof String) {
                 stringRenderer.setText((String)value);
                 return stringRenderer;
@@ -48,32 +132,92 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
                 return integerRenderer;
             } else if (value == null) {
                 return null;
-            } else if (value.getClass() == MondrianDef.Join.class) {
+            } else if (value.getClass() == MondrianGuiDef.Join.class) {
+
+                stringRenderer.setText(generateJoinStr(value));
+
+                stringRenderer.setToolTipText("Select the Join/Table object from Schema tree to edit.");
+                stringRenderer.setOpaque(true);
+                stringRenderer.setBackground(Color.LIGHT_GRAY); //new java.awt.Color(184, 207, 229)
+                return stringRenderer;
+
+                /* 2: Displaying Join in nested pink boxes
+                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+                relationTable.setDefaultRenderer(Object.class, spcr);
+                PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_JOIN);
+                relationTable.setModel(ptm);
+                relationTable.getColumnModel().getColumn(0).setMaxWidth(100);
+                relationTable.getColumnModel().getColumn(0).setMinWidth(100);
+                setTableRendererHeight(relationTable, relationRenderer); //setTableRendererHeight();
+                return relationRenderer;
+                 */
+                /* 1: original version of displaying Join type values
                 SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
                 PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_JOIN);
                 tableRenderer.setModel(ptm);
                 return tableRenderer;
-            } else if (value.getClass() == MondrianDef.OrdinalExpression.class) {
+                 **/
+            } else if (value.getClass() == MondrianGuiDef.OrdinalExpression.class) {
                 SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
-                PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_SQL);
+                //===PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_SQL);
+                PropertyTableModel ptm = new PropertyTableModel(((MondrianGuiDef.OrdinalExpression)value).expressions[0],SchemaExplorer.DEF_SQL);
                 tableRenderer.setModel(ptm);
+                tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
+                tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
                 return tableRenderer;
-
-            } else if (value.getClass() == MondrianDef.Relation.class) {
+            } else if (value.getClass() == MondrianGuiDef.Formula.class) {
+                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+                tableRenderer.setDefaultRenderer(Object.class, spcr);
+                PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_FORMULA);
+                tableRenderer.setModel(ptm);
+                tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
+                tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
+                return tableRenderer;
+            } else if (value.getClass() == MondrianGuiDef.CalculatedMemberProperty.class) {
+                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+                tableRenderer.setDefaultRenderer(Object.class, spcr);
+                PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_CALCULATED_MEMBER_PROPERTY);
+                tableRenderer.setModel(ptm);
+                tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
+                tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
+                return tableRenderer;
+            } else if (value.getClass() == MondrianGuiDef.Relation.class) {
                 SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
                 PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_RELATION);
                 tableRenderer.setModel(ptm);
                 return tableRenderer;
-            } else if (value.getClass() == MondrianDef.Table.class) {
+            } else if (value.getClass() == MondrianGuiDef.Table.class) {
                 SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
                 PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_TABLE);
                 tableRenderer.setModel(ptm);
+                tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
+                tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
                 return tableRenderer;
-            } else if (value.getClass() == MondrianDef.Property.class) {
+            } else if (value.getClass() == MondrianGuiDef.AggFactCount.class) {
+                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+                tableRenderer.setDefaultRenderer(Object.class, spcr);
+                PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_AGG_FACT_COUNT);
+                tableRenderer.setModel(ptm);
+                tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
+                tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
+                return tableRenderer;
+            } else if (value.getClass() == MondrianGuiDef.Closure.class) {
+
+
+
+                SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+                tableRenderer.setDefaultRenderer(Object.class, spcr);
+                PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_CLOSURE);
+                tableRenderer.setModel(ptm);
+                tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
+                tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
+                setTableRendererHeight(tableRenderer, null);
+                return tableRenderer;
+            } else if (value.getClass() == MondrianGuiDef.Property.class) {
                 SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
                 tableRenderer.setDefaultRenderer(Object.class, spcr);
                 PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_PROPERTY);
@@ -84,8 +228,113 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
             }
 
         }
-
+        else {
+            if (value instanceof String) {
+                // use data from workbenchInfo.properties as tooltip when available
+                PropertyTableModel tableModel = (PropertyTableModel) table.getModel();
+                String className = (tableModel.target.getClass()).getName();
+                int pos = className.lastIndexOf("$");
+                String tooltip = null;
+                if (pos > 0) {
+                    String tipName = (className.substring(pos + 1)) + "," +
+                        tableModel.getRowName(row);
+                    tooltip = Workbench.getTooltip(tipName);
+                }
+                stringRenderer.setToolTipText(tooltip);
+                stringRenderer.setText((String)value);
+                stringRenderer.setOpaque(true);
+                stringRenderer.setBackground(new java.awt.Color(221, 221, 221));
+                if (isSelected && hasFocus) {
+                    table.editCellAt(row, 1);
+                }
+                return stringRenderer;
+            }
+        }
         return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
     }
+
+    private String generateJoinStr(Object value) {
+        MondrianGuiDef.Join currentJoin = (MondrianGuiDef.Join)value;
+        String joinStr = "<html>" + generateLeftRightStr(currentJoin.left) + " <b>JOIN</b> " + generateLeftRightStr(currentJoin.right) +"</html>";
+        //===String joinStr = "<html>" + " <b>JOIN</b> (<blockquote>" + generateLeftRightStr(currentJoin.left) + "<br>" + generateLeftRightStr(currentJoin.right) + "<br>)</blockquote>" +"</html>";
+        return joinStr;
+    }
+
+    private String generateLeftRightStr(Object value) {
+        MondrianGuiDef.Relation currentObj = (MondrianGuiDef.Relation) value;
+        if (currentObj instanceof MondrianGuiDef.Table)
+            return (((MondrianGuiDef.Table) currentObj).alias == null || ((MondrianGuiDef.Table) currentObj).alias.equals("")?((MondrianGuiDef.Table) currentObj).name:((MondrianGuiDef.Table) currentObj).alias);
+        MondrianGuiDef.Join currentJoin = (MondrianGuiDef.Join)currentObj;
+        String joinStr = "(" + generateLeftRightStr(currentJoin.left) + " <b>JOIN</b> " + generateLeftRightStr(currentJoin.right) +")";
+        //===String joinStr = " <b>JOIN</b> (<blockquote>" + generateLeftRightStr(currentJoin.left) + "<br>" + generateLeftRightStr(currentJoin.right) + "<br>)</blockquote>" ;
+        return joinStr;
+    }
+
+    void setTableRendererHeight(JTable relationTable, JPanel relationRenderer) {
+        int tableH = 0;
+        int tableW = 0;
+        Object value = null;
+        for (int i = 0; i < relationTable.getRowCount(); i++) {
+
+            TableCellRenderer renderer = relationTable.getCellRenderer(i, 1);
+            Component comp = renderer.getTableCellRendererComponent(relationTable, relationTable.getValueAt(i, 1), false, false, i, 1);
+            try {
+                int height=0;
+                int width=0;
+                if (comp != null) {
+                    height = comp.getMaximumSize().height;
+                    width = comp.getMaximumSize().width;
+                    relationTable.setRowHeight(i, height);
+                }
+
+                value = relationTable.getValueAt(i, 1);
+                if ( value instanceof MondrianGuiDef.Relation) {
+                    tableH += comp.getPreferredSize().height;
+                    tableW = Math.max(tableW, comp.getPreferredSize().width +stringRenderer.getMaximumSize().width);
+                } else if (value == null) {
+                    tableH += stringRenderer.getMaximumSize().height;
+                    tableW = Math.max(tableW, stringRenderer.getMaximumSize().width * 2);
+                } else {
+                    tableH += height;
+                    tableW = Math.max(tableW, width * 2);
+
+                }
+
+            } catch (Exception ea) {
+
+            }
+        }
+        //===relationTable.setPreferredSize(new Dimension(200,200));  //table height  changes
+        //===relationTable.setPreferredScrollableViewportSize(new Dimension(200,200)); //scrollpane adjusts to new table height, it also changes scrollpanes' preferred size values'
+        relationTable.setPreferredSize(new Dimension(tableW,tableH));  //table height  changes
+        relationTable.setPreferredScrollableViewportSize(relationTable.getPreferredSize()); //scrollpane adjusts to new table height, it also changes scrollpanes' preferred size values'
+        //relationTable.revalidate(); // not required.
+
+        // lets set the parent panel now
+        //jPanel1.setSize(jScrollPane1.getPreferredSize()); no, does not change green panel size
+        if (relationRenderer != null) {
+            relationRenderer.setPreferredSize(jScrollPaneT.getPreferredSize()); //good, it changes panel size
+            relationRenderer.setMaximumSize(jScrollPaneT.getPreferredSize()); //good, it changes panel size
+        }
+
+    }
+
+ /*
+    private void setTableRendererHeight2() {
+        for (int i = 0; i < relationTable.getRowCount(); i++) {
+            TableCellRenderer renderer = relationTable.getCellRenderer(i, 1);
+            Component comp = renderer.getTableCellRendererComponent(relationTable, relationTable.getValueAt(i, 1), false, false, i, 1);
+            try {
+                int height = comp.getMaximumSize().height;
+                relationTable.setRowHeight(i, height);
+            } catch (Exception ea) {
+
+            }
+
+        }
+    }
+  */
 }
+
+// End SchemaPropertyCellRenderer.java
