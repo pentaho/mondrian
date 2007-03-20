@@ -299,6 +299,183 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "Row #0: $339,610.90\n" +
                 "Row #0: $2.21\n"));
     }
+    private Cube getCube(String cubeName) {
+        Cube[] cubes = getConnection().getSchema().getSchemaReader().getCubes();
+        for (int i = 0; i < cubes.length; i++) {
+            Cube cube = cubes[i];
+            if (cube.getName().equals(cubeName)) {
+                return cube;
+            }
+        }
+        return null;
+    }
+    public void _testLostData()
+    {
+        assertQueryReturns(
+            "select {[Time].Members} on columns,\n" +
+                " {[Product].Children} on rows\n" +
+                "from [Sales]",
+            fold(
+                "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Time].[1997]}\n" +
+                    "{[Time].[1997].[Q1]}\n" +
+                    "{[Time].[1997].[Q1].[1]}\n" +
+                    "{[Time].[1997].[Q1].[2]}\n" +
+                    "{[Time].[1997].[Q1].[3]}\n" +
+                    "{[Time].[1997].[Q2]}\n" +
+                    "{[Time].[1997].[Q2].[4]}\n" +
+                    "{[Time].[1997].[Q2].[5]}\n" +
+                    "{[Time].[1997].[Q2].[6]}\n" +
+                    "{[Time].[1997].[Q3]}\n" +
+                    "{[Time].[1997].[Q3].[7]}\n" +
+                    "{[Time].[1997].[Q3].[8]}\n" +
+                    "{[Time].[1997].[Q3].[9]}\n" +
+                    "{[Time].[1997].[Q4]}\n" +
+                    "{[Time].[1997].[Q4].[10]}\n" +
+                    "{[Time].[1997].[Q4].[11]}\n" +
+                    "{[Time].[1997].[Q4].[12]}\n" +
+                    "{[Time].[1998]}\n" +
+                    "{[Time].[1998].[Q1]}\n" +
+                    "{[Time].[1998].[Q1].[1]}\n" +
+                    "{[Time].[1998].[Q1].[2]}\n" +
+                    "{[Time].[1998].[Q1].[3]}\n" +
+                    "{[Time].[1998].[Q2]}\n" +
+                    "{[Time].[1998].[Q2].[4]}\n" +
+                    "{[Time].[1998].[Q2].[5]}\n" +
+                    "{[Time].[1998].[Q2].[6]}\n" +
+                    "{[Time].[1998].[Q3]}\n" +
+                    "{[Time].[1998].[Q3].[7]}\n" +
+                    "{[Time].[1998].[Q3].[8]}\n" +
+                    "{[Time].[1998].[Q3].[9]}\n" +
+                    "{[Time].[1998].[Q4]}\n" +
+                    "{[Time].[1998].[Q4].[10]}\n" +
+                    "{[Time].[1998].[Q4].[11]}\n" +
+                    "{[Time].[1998].[Q4].[12]}\n" +
+                    "Axis #2:\n" +
+                    "{[Product].[All Products].[Drink]}\n" +
+                    "{[Product].[All Products].[Food]}\n" +
+                    "{[Product].[All Products].[Non-Consumable]}\n" +
+                    "Row #0: 24,597\n" +
+                    "Row #0: 5,976\n" +
+                    "Row #0: 1,910\n" +
+                    "Row #0: 1,951\n" +
+                    "Row #0: 2,115\n" +
+                    "Row #0: 5,895\n" +
+                    "Row #0: 1,948\n" +
+                    "Row #0: 2,039\n" +
+                    "Row #0: 1,908\n" +
+                    "Row #0: 6,065\n" +
+                    "Row #0: 2,205\n" +
+                    "Row #0: 1,921\n" +
+                    "Row #0: 1,939\n" +
+                    "Row #0: 6,661\n" +
+                    "Row #0: 1,898\n" +
+                    "Row #0: 2,344\n" +
+                    "Row #0: 2,419\n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #0: \n" +
+                    "Row #1: 191,940\n" +
+                    "Row #1: 47,809\n" +
+                    "Row #1: 15,604\n" +
+                    "Row #1: 15,142\n" +
+                    "Row #1: 17,063\n" +
+                    "Row #1: 44,825\n" +
+                    "Row #1: 14,393\n" +
+                    "Row #1: 15,055\n" +
+                    "Row #1: 15,377\n" +
+                    "Row #1: 47,440\n" +
+                    "Row #1: 17,036\n" +
+                    "Row #1: 15,741\n" +
+                    "Row #1: 14,663\n" +
+                    "Row #1: 51,866\n" +
+                    "Row #1: 14,232\n" +
+                    "Row #1: 18,278\n" +
+                    "Row #1: 19,356\n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #1: \n" +
+                    "Row #2: 50,236\n" +
+                    "Row #2: 12,506\n" +
+                    "Row #2: 4,114\n" +
+                    "Row #2: 3,864\n" +
+                    "Row #2: 4,528\n" +
+                    "Row #2: 11,890\n" +
+                    "Row #2: 3,838\n" +
+                    "Row #2: 3,987\n" +
+                    "Row #2: 4,065\n" +
+                    "Row #2: 12,343\n" +
+                    "Row #2: 4,522\n" +
+                    "Row #2: 4,035\n" +
+                    "Row #2: 3,786\n" +
+                    "Row #2: 13,497\n" +
+                    "Row #2: 3,828\n" +
+                    "Row #2: 4,648\n" +
+                    "Row #2: 5,021\n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n" +
+                    "Row #2: \n"));
+        assertQueryReturns(
+                "select\n" +
+                " {[Measures].[Unit Sales]} on 0,\n" +
+                " {[Product].Children} on 1\n" +
+                "from [Warehouse and Sales]",
+                fold("Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Product].[All Products].[Drink]}\n" + 
+                "{[Product].[All Products].[Food]}\n" +
+                "{[Product].[All Products].[Non-Consumable]}\n" +
+                "Row #0: 24,597\n" +
+                "Row #1: 191,940\n" + 
+                "Row #2: 50,236\n"));
+    }
 
     /**
      * Tests a calc measure which combines a measures from the Sales cube with a
