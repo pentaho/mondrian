@@ -543,21 +543,21 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "[Employees].[All Employees].[Derrick Whelply]",
             "$36,494.07",
             "select" +
-            " `time_by_day`.`month_of_year` as `Month (Key)`," +
-            " `time_by_day`.`the_month` as `Month`," +
-            " `time_by_day`.`quarter` as `Quarter`," +
             " `time_by_day`.`the_year` as `Year`," +
-            " `store`.`store_name` as `Store Name`," +
-            " `store`.`store_city` as `Store City`," +
-            " `store`.`store_state` as `Store State`," +
+            " `time_by_day`.`quarter` as `Quarter`," +
+            " `time_by_day`.`the_month` as `Month`," +
+            " `time_by_day`.`month_of_year` as `Month (Key)`," +
             " `store`.`store_country` as `Store Country`," +
+            " `store`.`store_state` as `Store State`," +
+            " `store`.`store_city` as `Store City`," +
+            " `store`.`store_name` as `Store Name`," +
             " `position`.`pay_type` as `Pay Type`," +
             " `store`.`store_type` as `Store Type`," +
-            " `employee_1`.`position_title` as `Position Title`," +
             " `employee_1`.`management_role` as `Management Role`," +
+            " `employee_1`.`position_title` as `Position Title`," +
             " `department`.`department_id` as `Department Description`," +
-            " `employee_1`.`employee_id` as `Employee Id (Key)`," +
             " `employee_1`.`full_name` as `Employee Id`," +
+            " `employee_1`.`employee_id` as `Employee Id (Key)`," +
             " `salary`.`salary_paid` as `Org Salary` " +
             "from" +
             " `time_by_day` =as= `time_by_day`," +
@@ -566,14 +566,31 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " `employee` =as= `employee_1`," +
             " `position` =as= `position`," +
             " `department` =as= `department` " +
-            "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
+            "where" +
+            " `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
             " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
             " and `employee_1`.`store_id` = `store`.`store_id`" +
             " and `employee_1`.`position_id` = `position`.`position_id`" +
             " and `salary`.`department_id` = `department`.`department_id`" +
             " and `employee_1`.`employee_id` = 2 " +
-            "order by `time_by_day`.`month_of_year` ASC, `time_by_day`.`the_month` ASC, `time_by_day`.`quarter` ASC, `time_by_day`.`the_year` ASC, `store`.`store_name` ASC, `store`.`store_city` ASC, `store`.`store_state` ASC, `store`.`store_country` ASC, `position`.`pay_type` ASC, `store`.`store_type` ASC, `employee_1`.`position_title` ASC, `employee_1`.`management_role` ASC, `department`.`department_id` ASC, `employee_1`.`employee_id` ASC, `employee_1`.`full_name` ASC");
+            "order by" +
+            " `time_by_day`.`the_year` ASC," +
+            " `time_by_day`.`quarter` ASC," +
+            " `time_by_day`.`the_month` ASC," +
+            " `time_by_day`.`month_of_year` ASC," +
+            " `store`.`store_country` ASC," +
+            " `store`.`store_state` ASC," +
+            " `store`.`store_city` ASC," +
+            " `store`.`store_name` ASC," +
+            " `position`.`pay_type` ASC," +
+            " `store`.`store_type` ASC," +
+            " `employee_1`.`management_role` ASC," +
+            " `employee_1`.`position_title` ASC," +
+            " `department`.`department_id` ASC," +
+            " `employee_1`.`full_name` ASC," +
+            " `employee_1`.`employee_id` ASC"
+            );
     }
 
     private void checkDrillThroughSql(

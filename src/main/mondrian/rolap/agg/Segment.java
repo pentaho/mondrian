@@ -229,7 +229,7 @@ class Segment {
      * <p>Note: Must be called from a synchronized context, because uses the
      * <code>cellKey[]</code> as workspace.</p>
      */
-    Object get(Object[] keys) {
+    Object getCellValue(Object[] keys) {
         assert keys.length == axes.length;
         int missed = 0;
         for (int i = 0; i < keys.length; i++) {

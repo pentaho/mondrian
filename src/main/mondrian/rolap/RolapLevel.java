@@ -273,6 +273,8 @@ public class RolapLevel extends LevelBase {
         return parentExp;
     }
 
+    // RME: this has to be public for two of the DrillThroughTest test.
+    public
     MondrianDef.Expression getNameExp() {
         return nameExp;
     }

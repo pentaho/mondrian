@@ -309,7 +309,7 @@ public class VirtualCubeTest extends FoodMartTestCase {
         }
         return null;
     }
-    public void _testLostData()
+    public void testLostData()
     {
         assertQueryReturns(
             "select {[Time].Members} on columns,\n" +

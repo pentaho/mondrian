@@ -321,6 +321,14 @@ public class Aggregation {
         return newPredicates;
     }
 
+    public String toString() {
+        java.io.StringWriter sw = new java.io.StringWriter(256);
+        PrintWriter pw = new PrintWriter(sw);
+        print(pw);
+        pw.flush();
+        return sw.toString();
+    }
+
     /**
      * Prints the state of this <code>Aggregation</code> to a writer.
      * @param pw Writer
@@ -620,7 +628,7 @@ public class Aggregation {
      * <p>Returns {@link Util#nullValue} if a segment contains the cell and the
      * cell's value is null.
      */
-    public synchronized Object get(
+    public synchronized Object getCellValue(
         RolapStar.Measure measure,
         Object[] keys,
         RolapAggregationManager.PinSet pinSet)
@@ -636,7 +644,7 @@ public class Aggregation {
                 continue;
             }
             if (segment.isReady()) {
-                Object o = segment.get(keys);
+                Object o = segment.getCellValue(keys);
                 if (o != null) {
                     if (pinSet != null) {
                         ((AggregationManager.PinSetImpl) pinSet).add(segment);

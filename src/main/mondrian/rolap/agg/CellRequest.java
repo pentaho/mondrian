@@ -39,7 +39,7 @@ public class CellRequest {
      * put into the same batch.
      */
     private final List constrainedColumnList = new ArrayList();
-    private final List<StarColumnPredicate> valueList =
+    private List<StarColumnPredicate> valueList =
         new ArrayList<StarColumnPredicate>();
 
     /**
@@ -70,6 +70,13 @@ public class CellRequest {
      * another sets city = 'Los Angeles'.
      */
     private boolean unsatisfiable;
+
+    /** 
+     * The valueList and columnsCache must be set after all constraints
+     * have been added. This is used by access methods to determine if
+     * both valueList and columnsCache need to be generated.
+     */
+    private boolean isDirty = true;
 
     /**
      * Creates a {@link CellRequest}.
@@ -139,17 +146,9 @@ public class CellRequest {
         if (this.columnsCache == null) {
             // This is called more than once so caching the value makes
             // sense.
-            makeColumnsCache();
+            check();
         }
         return this.columnsCache;
-    }
-
-    private void makeColumnsCache() {
-        // ignore the star, the 0th element of constrainedColumnList
-        this.columnsCache = new RolapStar.Column[constrainedColumnList.size() - 1];
-        for (int i = 0; i < this.columnsCache.length; i++) {
-            columnsCache[i] = (RolapStar.Column) constrainedColumnList.get(i + 1);
-        }
     }
 
     /**
@@ -159,11 +158,44 @@ public class CellRequest {
         return constrainedColumnsBitKey;
     }
 
+    /** 
+     * This method builds both the columnsCache and reorders the valueList
+     * based upon bit key position of the columns.
+     */
+    private void check() {
+        if (isDirty) {
+            final int size = constrainedColumnList.size();
+            this.columnsCache = new RolapStar.Column[size - 1];
+            List<StarColumnPredicate> vl = new ArrayList<StarColumnPredicate>();
+            int cnt = 0;
+            for (int bitPos : constrainedColumnsBitKey) {
+                // NOTE: If the RolapStar.Column were stored in maybe a Map
+                // rather than the constrainedColumnList List, we would
+                // not have to for-loop over the list for each bit position.
+                for (int j = 1; j < size; j++) {
+                    RolapStar.Column rc = 
+                            (RolapStar.Column) constrainedColumnList.get(j);
+                    if (rc.getBitPosition() == bitPos) {
+                        int index = constrainedColumnList.indexOf(rc) - 1;
+                        final StarColumnPredicate value = valueList.get(index);
+                        vl.add(value);
+                        columnsCache[cnt++] = rc;
+                        break;
+                    }
+                }
+            }
+            valueList = vl;
+
+            isDirty = false;
+        }
+    }
     public List<StarColumnPredicate> getValueList() {
+        check();
         return valueList;
     }
 
     public Object[] getSingleValues() {
+        check();
         // Currently, this is called only once per CellRequest instance
         // so there is no need to cache the value.
         Object[] a = new Object[valueList.size()];

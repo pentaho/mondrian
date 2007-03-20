@@ -93,7 +93,7 @@ public class AggregationManager extends RolapAggregationManager {
         }
         // synchronized access
         synchronized (aggregation) {
-            Object o = aggregation.get(
+            Object o = aggregation.getCellValue(
                     measure, request.getSingleValues(), null);
             if (o != null) {
                 return o;
@@ -115,7 +115,8 @@ public class AggregationManager extends RolapAggregationManager {
         } else {
             // synchronized access
             synchronized (aggregation) {
-                return aggregation.get(measure, request.getSingleValues(), pinSet);
+                return aggregation.getCellValue(measure, 
+                            request.getSingleValues(), pinSet);
             }
         }
     }
