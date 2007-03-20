@@ -27,6 +27,9 @@ import java.sql.Time;
  * @version $Id$
  */
 public class TestCalculatedMembers extends FoodMartTestCase {
+    public TestCalculatedMembers() {
+        super();
+    }
     public TestCalculatedMembers(String name) {
         super(name);
     }

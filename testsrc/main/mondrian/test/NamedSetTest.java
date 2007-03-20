@@ -23,6 +23,12 @@ import mondrian.olap.*;
  */
 public class NamedSetTest extends FoodMartTestCase {
 
+    public NamedSetTest() {
+        super();
+    }
+    public NamedSetTest(String name) {
+        super(name);
+    }
     /**
      * Set defined in query according measures, hence context-dependent.
      */
