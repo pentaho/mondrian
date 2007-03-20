@@ -899,6 +899,17 @@ doc/**/*.xml"
         Windowtitle="Mondrian OLAP Server, version ${version}"
         additionalparam="-linksource"
       >
+      <tag name="pre" description="Pre-condition:"
+           scope="constructors,methods"/>
+      <tag name="post" description="Post-condition:"
+           scope="constructors,methods"/>
+      <tag name="testcase" description="Test-case:"
+           scope="constructors,methods,types"/>
+      <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
+      <link href="http://www.junit.org/junit/javadoc/3.8/"/>
+      <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
+      <link href="http://eigenbase.sourceforge.net/resgen/api/"/>
+      <link href="http://farrago.sourceforge.net/api/"/>
       <doclet
           name="ydoc.doclets.YStandard"
           path="${ydoc.home}/lib/ydoc.jar${ps}${ydoc.home}/lib/class2svg.jar${ps}${ydoc.home}/resources${ps}${ydoc.home}/doc">
