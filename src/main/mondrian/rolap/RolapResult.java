@@ -100,6 +100,9 @@ class RolapResult extends ResultBase {
             // during execution of the other axes.
             List<Member> slicerMembers = new ArrayList<Member>();
 
+// RME
+// evaluator.printCurrentMemberNames();
+
             for (int i = -1; i < axes.length; i++) {
                 QueryAxis axis;
                 final Calc calc;
@@ -133,6 +136,7 @@ class RolapResult extends ResultBase {
                     executeAxis(evaluator.push(), axis, calc, true, null);
                 evaluator.clearExpResultCache();
 
+//System.out.println("RolapResult: " +RolapAxis.toString(axisResult));
                 if (i == -1) {
                     this.slicerAxis = axisResult;
                     // Use the context created by the slicer for the other
@@ -528,7 +532,7 @@ class RolapResult extends ResultBase {
         // implement CellReader
         public Object get(Evaluator evaluator) {
             final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
-            return aggMan.getCellFromCache(rolapEvaluator.getCurrentMembers());
+            return aggMan.getCellFromCache(rolapEvaluator.getMembers());
         }
 
         public int getMissCount() {
@@ -549,6 +553,9 @@ class RolapResult extends ResultBase {
                 } catch (MondrianEvaluationException e) {
                     o = e;
                 }
+//System.out.println("RolapResult.executeStripe: point=" +point);
+//revaluator.printCurrentMemberNames();
+//System.out.println("    value=" +o);
 
                 CellInfo ci = null;
 
@@ -573,6 +580,7 @@ class RolapResult extends ResultBase {
                     // for it. If not, then find or create a Locale based
                     // FormatValueFormatter.
                     RolapCube cube = (RolapCube) getCube();
+//System.out.println("    cube=" +cube.getName());
                     Dimension measuresDim =
                             cube.getMeasuresHierarchy().getDimension();
                     RolapMeasure m =

@@ -77,7 +77,7 @@ public class FastBatchingCellReader implements CellReader {
 
     public Object get(Evaluator evaluator) {
         final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
-        Member[] currentMembers = rolapEvaluator.getCurrentMembers();
+        Member[] currentMembers = rolapEvaluator.getMembers();
         CellRequest request =
                 RolapAggregationManager.makeRequest(currentMembers, false, false);
         if (request == null || request.isUnsatisfiable()) {

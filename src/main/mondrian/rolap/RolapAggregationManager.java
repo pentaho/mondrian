@@ -185,7 +185,7 @@ public abstract class RolapAggregationManager implements CellReader {
     // implement CellReader
     public Object get(Evaluator evaluator) {
         final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
-        return getCell(rolapEvaluator.getCurrentMembers());
+        return getCell(rolapEvaluator.getMembers());
     }
 
     /**

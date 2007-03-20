@@ -108,7 +108,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
                     ", result=" + otherResult);
         }
         if (!equals(otherResult, result)) {
-            final Member[] members = getCurrentMembers();
+            final Member[] members = getMembers();
             final StringBuilder buf = new StringBuilder();
             for (int j = 0; j < members.length; j++) {
                 if (j > 0) {
@@ -131,7 +131,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
     }
 
     public RolapEvaluator _push() {
-        Member[] cloneCurrentMembers = getCurrentMembers().clone();
+        Member[] cloneCurrentMembers = getMembers().clone();
         return new RolapDependencyTestingEvaluator(
                 root,
                 this,

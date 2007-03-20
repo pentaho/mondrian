@@ -211,14 +211,9 @@ public class RolapEvaluator implements Evaluator {
         return LOGGER;
     }
 
-    Member[] getCurrentMembers() {
-        return this.currentMembers;
-    }
-
     public Member[] getMembers() {
         return currentMembers;
     }
-
 
     void setCellReader(CellReader cellReader) {
         this.cellReader = cellReader;
