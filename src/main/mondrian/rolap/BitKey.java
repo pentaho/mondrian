@@ -14,6 +14,7 @@
 package mondrian.rolap;
 
 import java.util.BitSet;
+import java.util.Iterator;
 
 /**
  * Represents a set of bits.
@@ -37,7 +38,7 @@ import java.util.BitSet;
  * @author Richard M. Emberson
  * @version $Id$
  */
-public interface BitKey extends Comparable<BitKey> {
+public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
 
     /**
      * Sets the bit at the specified index to the specified value.
@@ -127,6 +128,15 @@ public interface BitKey extends Comparable<BitKey> {
      */
     BitSet toBitSet();
 
+    /** 
+     * An Iterator over the bit positions.
+     * For example, if the BitKey had positions 3 and 4 set, then
+     * the Iterator would return the values 3 and then 4. The bit
+     * positions returned by the iterator are in the order, from
+     * smallest to largest, as they are set in the BitKey.
+     */
+    Iterator<Integer> iterator();
+
     public abstract class Factory {
 
         /**
@@ -138,6 +148,14 @@ public interface BitKey extends Comparable<BitKey> {
                 String msg = "Negative size \"" + size + "\" not allowed";
                 throw new IllegalArgumentException(msg);
             }
+            if (size < 64) {
+                return new BitKey.Small();
+            } else if (size < 128) {
+                return new BitKey.Mid128();
+            } else {
+                return new BitKey.Big(size);
+            }
+/*
             switch (AbstractBitKey.chunkCount(size)) {
             case 0:
             case 1:
@@ -147,6 +165,7 @@ public interface BitKey extends Comparable<BitKey> {
             default:
                 return new BitKey.Big(size);
             }
+*/
         }
 
         /**
@@ -422,6 +441,65 @@ public interface BitKey extends Comparable<BitKey> {
             }
             return bitSet;
         }
+        
+        /** 
+         * To say that I am happy about this algorithm (or the variations  
+         * of the algorithm used for the Mid128 and Big BitKey implementations)
+         * would be a stretch. It works but there has to be a more
+         * elegant and faster one but this is the best I could come up
+         * with in a couple of hours.
+         * 
+         */
+        public Iterator<Integer> iterator() {
+            return new Iterator<Integer>() {
+                int pos = -1;
+                long bits = Small.this.bits;
+                public boolean hasNext() {
+                    if (bits == 0) {
+                        return false;
+                    }
+                    // This is a special case
+                    // Long.MIN_VALUE == -9223372036854775808
+                    if (bits == Long.MIN_VALUE) {
+                        pos = 63;
+                        bits = 0;
+                        return true;
+                    }
+                    long b = (bits&-bits);
+                    if (b == 0) {
+                        // should never happen
+                        return false;
+                    }
+                    int delta = 0;
+                    while (b >= 256) {
+                        b = (b >> 8);
+                        delta += 8;
+                    }
+                    int p = bitPositionTable[(int) b];
+                    if (p >= 0) {
+                        p += delta;
+                    } else {
+                        p = delta;
+                    }
+                    if (pos < 0) {
+                        // first time
+                        pos = p;
+                    } else if (p == 0) {
+                        pos++;
+                    } else {
+                        pos += (p+1);
+                    }
+                    bits = bits >>> (p+1);
+                    return true;
+                }
+                public Integer next() {
+                    return new Integer(pos);
+                }
+                public void remove() {
+                    throw new UnsupportedOperationException("remove");
+                }
+            };
+        }
 
         public boolean equals(Object o) {
             if (this == o) {
@@ -670,6 +748,82 @@ public interface BitKey extends Comparable<BitKey> {
             copyFromLong(bitSet, 64, bits1);
             return bitSet;
         }
+        public Iterator<Integer> iterator() {
+            return new Iterator<Integer>() {
+                long bits0 = Mid128.this.bits0;
+                long bits1 = Mid128.this.bits1;
+                int pos = -1;
+                public boolean hasNext() {
+                    if (bits0 != 0) {
+                        if (bits0 == Long.MIN_VALUE) {
+                            pos = 63;
+                            bits0 = 0;
+                            return true;
+                        }
+                        long b = (bits0&-bits0);
+                        int delta = 0;
+                        while (b >= 256) {
+                            b = (b >> 8);
+                            delta += 8;
+                        }
+                        int p = bitPositionTable[(int) b];
+                        if (p >= 0) {
+                            p += delta;
+                        } else {
+                            p = delta;
+                        }
+                        if (pos < 0) {
+                            pos = p;
+                        } else if (p == 0) {
+                            pos++;
+                        } else {
+                            pos += (p+1);
+                        }
+                        bits0 = bits0 >>> (p+1);
+                        return true;
+                    } else {
+                        if (pos < 63) {
+                            pos = 63;
+                        }
+                        if (bits1 == Long.MIN_VALUE) {
+                            pos = 127;
+                            bits1 = 0;
+                            return true;
+                        }
+                        long b = (bits1&-bits1);
+                        if (b == 0) {
+                            return false;
+                        }
+                        int delta = 0;
+                        while (b >= 256) {
+                            b = (b >> 8);
+                            delta += 8;
+                        }
+                        int p = bitPositionTable[(int) b];
+                        if (p >= 0) {
+                            p += delta;
+                        } else {
+                            p = delta;
+                        }
+                        if (pos < 0) {
+                            pos = p;
+                        } else if (p == 63) {
+                            pos++;
+                        } else {
+                            pos += (p+1);
+                        }
+                        bits1 = bits1 >>> (p+1);
+                        return true;
+                    }
+                }
+                public Integer next() {
+                    return new Integer(pos);
+                }
+                public void remove() {
+                    throw new UnsupportedOperationException("remove");
+                }
+            };
+        }
 
         public boolean equals(Object o) {
             if (this == o) {
@@ -741,7 +895,7 @@ public interface BitKey extends Comparable<BitKey> {
         private long[] bits;
 
         private Big(int size) {
-            bits = new long[chunkCount(size)];
+            bits = new long[chunkCount(size+1)];
         }
         private Big(Big big) {
             bits = (long[]) big.bits.clone();
@@ -945,7 +1099,73 @@ public interface BitKey extends Comparable<BitKey> {
             }
             return bitSet;
         }
-
+        public Iterator<Integer> iterator() {
+            return new Iterator<Integer>() {
+                long[] bits = Big.this.bits.clone();
+                int pos = -1;
+                int index = 0;
+                public boolean hasNext() {
+                    if (index >= bits.length) {
+                        return false;
+                    }
+                    if (pos < 0) {
+                        while (bits[index] == 0) {
+                            index++;
+                            if (index >= bits.length) {
+                                return false;
+                            }
+                        }
+                        pos = (64 * index) - 1;
+                    }
+                    long bs = bits[index];
+                    if (bs == 0) {
+                        while (bits[index] == 0) {
+                            index++;
+                            if (index >= bits.length) {
+                                return false;
+                            }
+                        }
+                        pos = (64 * index) - 1;
+                        bs = bits[index];
+                    }
+                    if (bs != 0) {
+                        if (bs == Long.MIN_VALUE) {
+                            pos = (64 * index) + 63;
+                            bits[index] = 0;
+                            return true;
+                        }
+                        long b = (bs&-bs);
+                        int delta = 0;
+                        while (b >= 256) {
+                            b = (b >> 8);
+                            delta += 8;
+                        }
+                        int p = bitPositionTable[(int) b];
+                        if (p >= 0) {
+                            p += delta;
+                        } else {
+                            p = delta;
+                        }
+                        if (pos < 0) {
+                            pos = p;
+                        } else if (p == 0) {
+                            pos++;
+                        } else {
+                            pos += (p+1);
+                        }
+                        bits[index] = bits[index] >>> (p+1);
+                        return true;
+                    } 
+                    return false;
+                }
+                public Integer next() {
+                    return new Integer(pos);
+                }
+                public void remove() {
+                    throw new UnsupportedOperationException("remove");
+                }
+            };
+        }
         public boolean equals(Object o) {
             if (this == o) {
                 return true;
@@ -1043,6 +1263,26 @@ public interface BitKey extends Comparable<BitKey> {
             return toString().compareTo(bitKey.toString());
         }
     }
+
+    final static byte bitPositionTable[] = {
+       -1, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+        4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0};
+
+
 }
 
 // End BitKey.java

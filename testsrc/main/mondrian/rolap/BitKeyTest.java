@@ -542,6 +542,120 @@ public class BitKeyTest extends TestCase {
         large.set(2, false);
         assertTrue(large.isEmpty());
     }
+    public void testIterator() {
+/*
+        printBitPositions(0);
+        printBitPositions(1);
+        printBitPositions(2);
+        printBitPositions(3);
+        printBitPositions(4);
+        printBitPositions(5);
+        printBitPositions(6);
+        printBitPositions(7);
+        printBitPositions(8);
+        printBitPositions(9);
+*/
+        // BitKey.Small
+        int[] bitPositions = new int[] {
+            //0, 1, 2
+            1
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            2, 3, 4, 7, 14
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            3,6,9,12,15,24,35,48
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            60, 62
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            1,3, 60, 63
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            63
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            0,1,62,63
+        };
+        doTestIterator(bitPositions);
+
+        // BitKey.Mid128
+        bitPositions = new int[] {
+            65
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            1, 65
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            1, 63,64,65,66,127
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            127
+        };
+        doTestIterator(bitPositions);
+
+        // BitKey.Big
+        bitPositions = new int[] {
+            128
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            192
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            1, 128
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            0,1,127,193
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            0,1,127,128,191,192,193
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            0,1,62,63,64,127,128,191,192,193
+        };
+        doTestIterator(bitPositions);
+        bitPositions = new int[] {
+            567
+        };
+        doTestIterator(bitPositions);
+    }
+    private void printBitPositions(int i) {
+        int b = (i & -i);
+        int p = BitKey.bitPositionTable[b];
+        System.out.println("  i="+i+",b="+b+",p="+p);
+    }
+
+    private void doTestIterator(int[] bitPositions) {
+        int maxPosition = 0;
+        for (int pos : bitPositions) {
+            if (pos > maxPosition) {
+                maxPosition = pos;
+            }
+        }
+        BitKey bitKey = BitKey.Factory.makeBitKey(maxPosition);
+        for (int pos : bitPositions) {
+            bitKey.set(pos);
+        }
+        int index = 0;
+        for (Integer i : bitKey) {
+            assertEquals(i, new Integer(bitPositions[index++]));
+        }
+    }
 
     private void doTestEquals(int size0, int size1, int[][] positionsArray) {
         for (int i = 0; i < positionsArray.length; i++) {
