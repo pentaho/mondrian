@@ -107,7 +107,7 @@ public class RolapResultTest extends AggTableTestCase {
 */
     }
 
-    public void _testD1() throws Exception {
+    public void testD1() throws Exception {
         if (!isApplicable()) {
             return;
         }
@@ -136,7 +136,7 @@ Axis #2:
         assertTrue(resultString.equals(RESULTS));
     }
 
-    public void _testD2() throws Exception {
+    public void testD2() throws Exception {
         if (!isApplicable()) {
             return;
         }

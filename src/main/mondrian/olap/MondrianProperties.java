@@ -495,10 +495,10 @@ public class MondrianProperties extends TriggerableProperties {
      * The <code>density</code> is <code>actual / possible</code>.
      *
      * <p>We use a sparse representation if
-     *   <code>(possible -
-     *   {@link #SparseSegmentCountThreshold countThreshold}) *
-     *   {@link #SparseSegmentDensityThreshold densityThreshold} &gt;
-     *   actual</code>
+     *   <code>possible -
+     *   {@link #SparseSegmentCountThreshold countThreshold} *
+     *   actual &gt;
+     *   {@link #SparseSegmentDensityThreshold densityThreshold}</code>
      *
      * <p>For example, at the default values
      * ({@link #SparseSegmentCountThreshold countThreshold} = 1000,
@@ -920,23 +920,9 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public final IntegerProperty CrossJoinOptimizerSize = new IntegerProperty(
             this, "mondrian.olap.fun.crossjoin.optimizer.size", 0);
-
-    /**
-     * The crossjoin optimizer is flawed. It evaluates potential cells
-     * using default members when a member is not explicitly set in
-     * the particular axis. This works unless another axis, normal or
-     * slicer, uses a member other than the default.
-     * Setting this property to <code>true</code> will enable the
-     * RolapResult to collect these implied members and if any are
-     * found, then re-evaluate using the discovered members.
-     * <p>
-     * If you do not enable this property, then the crossjoin optimizer,
-     * if used, can produce errors. Bad results are produced for some
-     * queries and some data sets - its a combination of both so the
-     * error does not manifest itself all the time.
-     */
     public final BooleanProperty UseImplicitMembers = new BooleanProperty(
             this, "mondrian.rolap.RolapResult.useImplicitMembers", true);
+
 }
 
 // End MondrianProperties.java

@@ -56,6 +56,18 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
      * to read the hierarchy and aggregates again.
      */
     public void testDataSourceChangeListenerPlugin() {
+        // got to clean out the cache
+        final TestContext testContext = getTestContext();
+        final mondrian.olap.CacheControl cacheControl =
+            testContext.getConnection().getCacheControl(null);
+
+        // Flush the entire cache.
+        final Connection connection = testContext.getConnection();
+        final mondrian.olap.Cube salesCube = connection.getSchema().lookupCube("Sales", true);
+        final mondrian.olap.CacheControl.CellRegion measuresRegion =
+            cacheControl.createMeasuresRegion(salesCube);
+        cacheControl.flush(measuresRegion);
+
         final MondrianProperties properties = MondrianProperties.instance();
         boolean do_caching_orig = properties.DisableCaching.get();
 

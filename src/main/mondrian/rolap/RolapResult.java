@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Locale;
@@ -39,6 +40,7 @@ import java.util.Locale;
  * @since 10 August, 2001
  * @version $Id$
  */
+public
 class RolapResult extends ResultBase {
 
     private static final Logger LOGGER = Logger.getLogger(ResultBase.class);
@@ -86,115 +88,308 @@ class RolapResult extends ResultBase {
             // Check if there are modifications to the global aggregate cache
             rcube.checkAggregateModifications();
 
-            // An array of lists which will hold each axis' implicit members
-            // (does not include slicer axis).
-            // One might imagine that one could have an axisMembers list per
-            // non-slicer axis and then keep track on a per-axis basis and
-            // finally only re-evaluate those axes for which the other axes have
-            // implicit members, but some junit test fail when this approach is
-            // taken.
-            List<Member> axisMembers = new ArrayList<Member>();
 
-            // This holds all members explicitly in the slicer.
-            // Slicer members can not be over-ridden by implict members found
-            // during execution of the other axes.
-            List<Member> slicerMembers = new ArrayList<Member>();
+            /////////////////////////////////////////////////////////////////
+            //
+            // Evaluation Algorithm
+            // 
+            // There are three basic steps to the evaluation algorithm:
+            // 1) Determine all Members for each axis but do not save 
+            // information (do not build the RolapAxis),
+            // 2) Save all Members for each axis (build RolapAxis).
+            // 3) Evaluate and store each Cell determined by the Members 
+            // of the axes.
+            // Step 1 converges on the stable set of Members pre axis.
+            // Steps 1 and 2 make sure that the data has been loaded.
+            //
+            // More detail follows.
+            //
+            // Explicit and Implicit Members:
+            // A Member is said to be 'explicit' if it appears on one of
+            // the Axes (one of the RolapAxis Position List of Members).
+            // A Member is 'implicit' if it is in the query but does not
+            // end up on any Axes (its usage, for example, is in a function).
+            // When for a Dimension none of its Members are explicit in the
+            // query, then the default Member is used which is like putting
+            // the Member in the Slicer.
+            //
+            // Special Dimensions:
+            // There are 2 special dimensions. 
+            // The first is the Time dimension. If in a schema there is 
+            // no ALL Member, then Whatever happens to be the default
+            // Member is used if Time Members are not explicitly set
+            // in the query.
+            // The second is the Measures dimension. This dimension
+            // NEVER has an ALL Member. A cube's default Measure is set
+            // by convention - its simply the first Measure defined in the
+            // cube.
+            //
+            // First a RolapEvaluator is created. During its creation,
+            // it gets a Member from each Hierarchy. Each Member is the
+            // default Member of the Hierarchy. For most Hierarchies this
+            // Member is the ALL Member, but there are cases where 1)
+            // a Hierarchy does not have an ALL Member or 2) the Hierarchy
+            // has an ALL Member but that Member is not the default Member.
+            // In these cases, the default Member is still used, but its
+            // use can cause evaluation issues (seemingly strange evaluation
+            // results).
+            //
+            // Next, load all root Members for Hierarchies that have no ALL 
+            // Member and load ALL Members that are not the default Member.
+            //
+            // Determine the Members of the Slicer axis (Step 1 above).  Any
+            // Members found are added to the AxisMember object. If one of these
+            // Members happens to be a Measure, then the Slicer is explicitly
+            // specifying the query's Measure and this should be put into the
+            // evaluator's context (replacing the default Measure which just
+            // happens to be the first Measure defined in the cube).  Other
+            // Members found in the AxisMember object are also placed into the
+            // evaluator's context since these also are explicitly specified.
+            // Also, any other Members in the AxisMember object which have the
+            // same Hierarchy as Members in the list of root Members for
+            // Hierarchies that have no ALL Member, replace those Members - they
+            // Slicer has explicitly determined which ones to use. The
+            // AxisMember object is now cleared.
+            // The Slicer does not depend upon the other Axes, but the other
+            // Axes depend upon both the Slicer and each other.
+            //
+            // The AxisMember object also checks if the number of Members
+            // exceeds the ResultLimit property throwing a
+            // TotalMembersLimitExceeded Exception if it does.
+            //
+            // For all non-Slicer axes, the Members are determined (Step 1
+            // above). If a Measure is found in the AxisMember, then an
+            // Axis is explicitly specifying a Measure.
+            // If any Members in the AxisMember object have the same Hierarchy
+            // as a Member in the set of root Members for Hierarchies that have
+            // no ALL Member, then replace those root Members with the Member
+            // from the AxisMember object. In this case, again, a Member
+            // was explicitly specified in an Axis. If this replacement
+            // occurs, then one must redo this step with the new Members.
+            //
+            // Now Step 3 above is done. First to the Slicer Axis and then
+            // to the other Axes. Here the Axes are actually generated.
+            // If a Member of an Axis is an Calculated Member (and the
+            // Calculated Member is not a Member of the Measure Hierarchy),
+            // then find the Dimension associated with the Calculated
+            // Member and remove Members with the same Dimension in the set of
+            // root Members for Hierarchies that have no ALL Member. 
+            // This is done because via the Calculated Member the Member
+            // was implicitly specified in the query. If this removal occurs,
+            // then the Axes must be re-evaluated repeating Step 3.
+            //
+            /////////////////////////////////////////////////////////////////
 
-// RME
-// evaluator.printCurrentMemberNames();
 
-            for (int i = -1; i < axes.length; i++) {
-                QueryAxis axis;
-                final Calc calc;
-                if (i == -1) {
-                    axis = query.slicerAxis;
-                    calc = query.slicerCalc;
-                } else {
-                    axis = query.axes[i];
-                    calc = query.axisCalcs[i];
+            // The AxisMember object is used to hold Members that are found
+            // during Step 1 when the Axes are determined.
+            final AxisMember axisMembers = new AxisMember();
+
+
+            // list of ALL Members that are not default Members
+            final List<Member> nonDefaultAllMembers = new ArrayList<Member>();
+
+            // List of Members of Hierarchies that do not have an ALL Member
+            List<Member[]> nonAllMembers = new ArrayList<Member[]>();
+
+            // List of Measures
+            final List<Member> measureMembers = new ArrayList<Member>();
+
+            // load all root Members for Hierarchies that have no ALL 
+            // Member and load ALL Members that are not the default Member.
+            // Also, all Measures are are gathered.
+            loadSpecialMembers(nonDefaultAllMembers, 
+                                nonAllMembers, measureMembers);
+
+            // clear evaluation cache
+            query.clearEvalCache();
+
+            // Save, may be needed by some Expression Calc's
+            query.putEvalCache("ALL_MEMBER_LIST", nonDefaultAllMembers);
+
+
+            final List<Member[]> emptyNonAllMembers = Collections.emptyList();
+
+            /////////////////////////////////////////////////////////////////
+            // 
+            // Determine Slicer
+            // 
+            axisMembers.setSlicer(true);
+            loadMembers(emptyNonAllMembers, evaluator, 
+                        query.slicerAxis, query.slicerCalc, axisMembers);
+            axisMembers.setSlicer(false);
+
+            if (! axisMembers.isEmpty()) {
+                for (Member m : axisMembers) {
+                    evaluator.setContext(m);
+                    if (m.isMeasure()) {
+                        // A Measure was explicitly declared in the
+                        // Slicer, don't need to worry about Measures
+                        // for this query.
+                        measureMembers.clear();
+                    }
                 }
+                replaceNonAllMembers(nonAllMembers, axisMembers);
+                axisMembers.clearMembers();
+            }
+            // 
+            /////////////////////////////////////////////////////////////////
 
-                int attempt = 0;
-                while (true) {
-                    evaluator.setCellReader(batchingReader);
-                    Axis axisResult =
-                        executeAxis(evaluator.push(), axis, calc, false, axisMembers);
-                    Util.discard(axisResult);
-                    evaluator.clearExpResultCache();
-                    if (!batchingReader.loadAggregations(query)) {
-                        break;
-                    }
-                    if (attempt++ > maxEvalDepth) {
-                        throw Util.newInternal("Failed to load all aggregations after " +
-                                maxEvalDepth +
-                                "passes; there's probably a cycle");
+
+            /////////////////////////////////////////////////////////////////
+            // 
+            // Determine Axes
+            // 
+            boolean changed = false;
+
+            // reset to total member count
+            axisMembers.clearTotalCellCount();
+
+            for (int i = 0; i < axes.length; i++) {
+                final QueryAxis axis = query.axes[i];
+                final Calc calc = query.axisCalcs[i];
+                loadMembers(emptyNonAllMembers, evaluator, 
+                            axis, calc, axisMembers);
+            }
+
+            if (! axisMembers.isEmpty()) {
+                for (Member m : axisMembers) {
+                    if (m.isMeasure()) {
+                        // A Measure was explicitly declared on an
+                        // axis, don't need to worry about Measures
+                        // for this query.
+                        measureMembers.clear();
                     }
                 }
+                changed = replaceNonAllMembers(nonAllMembers, axisMembers);
+                axisMembers.clearMembers();
+            }
 
-                evaluator.setCellReader(aggregatingReader);
-                Axis axisResult =
-                    executeAxis(evaluator.push(), axis, calc, true, null);
-                evaluator.clearExpResultCache();
+/*
+            // This code allows replacing default Measure Member
+            // with one found in the query, an implicit Measure. 
+            // Fixes some problems (RolapResultTest._testNullDefaultMeasure)
+            // but causes other ones (NamedSetTest.testNamedSetUsedInCrossJoin)
+            // so it can not be used.
+            Member previous = null;
+            if (! measureMembers.isEmpty()) {
+                 MeasureVisitor visitor = new MeasureVisitor();
+                for (int i = 0; i < axes.length; i++) {
+                    query.axes[i].accept(visitor);
+                }
+                println("Measures on Axis:");
+                for (Member m : visitor.measures) {
+                    println("   m=" +m.getUniqueName());
+                }
+                if (! visitor.measures.isEmpty()) {
+                    Member m = visitor.measures.get(0);
+                    previous = evaluator.setContext(m);
+                    changed |= ! m.equals(previous);
+                }
+            }
+            // move this
+            // it should be set just before calling executeBody
+            // evaluator.setContext(previous);
+*/
 
-//System.out.println("RolapResult: " +RolapAxis.toString(axisResult));
-                if (i == -1) {
-                    this.slicerAxis = axisResult;
-                    // Use the context created by the slicer for the other
-                    // axes.  For example, "select filter([Customers], [Store
-                    // Sales] > 100) on columns from Sales where
-                    // ([Time].[1998])" should show customers whose 1998 (not
-                    // total) purchases exceeded 100.
 
-                    // Getting the Position list's size and the Position
-                    // at index == 0 will, in fact, cause an Iterable-base
-                    // Axis Position List to become a List-base Axis
-                    // Position List (and increae memory usage), but for
-                    // the slicer axis, the number of Positions is very
-                    // small, so who cares.
-                    switch (this.slicerAxis.getPositions().size()) {
-                    case 0:
-                        throw MondrianResource.instance().EmptySlicer.ex();
-                    case 1:
-                        break;
-                    default:
-                        throw MondrianResource.instance().CompoundSlicer.ex();
+            if (changed) {
+                // only count number of members, do not collect any
+                axisMembers.countOnly(true);
+                // reset to total member count
+                axisMembers.clearTotalCellCount();
+
+                for (int i = 0; i < axes.length; i++) {
+                    final QueryAxis axis = query.axes[i];
+                    final Calc calc = query.axisCalcs[i];
+                    loadMembers(nonAllMembers, 
+                                (RolapEvaluator) evaluator.push(), 
+                                axis, calc, axisMembers);
+                }
+            }
+
+            // throws exception if number of members exceeds limit
+            axisMembers.checkLimit();
+
+            // 
+            /////////////////////////////////////////////////////////////////
+
+            /////////////////////////////////////////////////////////////////
+            // 
+            // Execute Slicer
+            // 
+            this.slicerAxis = evalExecute(nonAllMembers, 
+                                    nonAllMembers.size()-1, 
+                                    (RolapEvaluator) evaluator.push(), 
+                                    query.slicerAxis, 
+                                    query.slicerCalc);
+            // Use the context created by the slicer for the other
+            // axes.  For example, "select filter([Customers], [Store
+            // Sales] > 100) on columns from Sales where
+            // ([Time].[1998])" should show customers whose 1998 (not
+            // total) purchases exceeded 100.
+
+            // Getting the Position list's size and the Position
+            // at index == 0 will, in fact, cause an Iterable-base
+            // Axis Position List to become a List-base Axis
+            // Position List (and increae memory usage), but for
+            // the slicer axis, the number of Positions is very
+            // small, so who cares.
+            switch (this.slicerAxis.getPositions().size()) {
+            case 0:
+                throw MondrianResource.instance().EmptySlicer.ex();
+            case 1:
+                break;
+            default:
+                throw MondrianResource.instance().CompoundSlicer.ex();
+            }
+            // 
+            /////////////////////////////////////////////////////////////////
+
+            /////////////////////////////////////////////////////////////////
+            // 
+            // Execute Axes
+            // 
+            boolean redo = true;
+            while (redo) {
+                RolapEvaluator e = (RolapEvaluator) evaluator.push();
+                redo = false;
+
+                for (int i = 0; i < axes.length; i++) {
+                    QueryAxis axis = query.axes[i];
+                    final Calc calc = query.axisCalcs[i];
+                    Axis axisResult = evalExecute(nonAllMembers, 
+                                nonAllMembers.size()-1, e, axis, calc);
+
+                    if (! nonAllMembers.isEmpty()) {
+                        List<Position> pl = axisResult.getPositions();
+                        for (Position p: pl) {
+                            for (Member m: p) {
+                                if (m.isCalculated()) {
+                                    CalculatedMeasureVisitor visitor = 
+                                        new CalculatedMeasureVisitor();
+                                    m.getExpression().accept(visitor);
+                                    Dimension dimension = visitor.dimension;
+                                    redo = removeDimension(dimension, nonAllMembers);
+                                }
+                            }
+                            // Only need to process the first Position
+                            break;
+                        }
                     }
-                    Position position = this.slicerAxis.getPositions().get(0);
-                    evaluator.setContext(position);
-                    for (Member member: position) {
-                        slicerMembers.add(member);
-                    }
-                } else {
                     this.axes[i] = axisResult;
                 }
             }
+            // 
+            /////////////////////////////////////////////////////////////////
 
-            if (MondrianProperties.instance().UseImplicitMembers.get()) {
-                purge(axisMembers, slicerMembers);
-                if (axisMembers.size() > 0) {
-                    reExecuteWithImpliedMembers(axisMembers);
-                }
-            }
-
-            // Now that the axes are evaluated, make sure that the number of
-            // cells does not exceed the result limit.
-            // If we set the ResultLimit, then we force a conversion of
-            // Iterable-base Axis Position Lists into List-based version -
-            // thats just the way it is.
-            int limit = MondrianProperties.instance().ResultLimit.get();
-            if (limit > 0) {
-                // result limit exceeded, throw an exception
-                long n = 1;
-                for (Axis axis : axes) {
-                    n = n * axis.getPositions().size();
-                }
-                if (n > limit) {
-                    throw MondrianResource.instance().
-                        LimitExceededDuringCrossjoin.ex(n, limit);
-                }
-            }
-
+            /////////////////////////////////////////////////////////////////
+            // 
+            // Get value for each Cell
+            // 
             executeBody(query);
+            // 
+            /////////////////////////////////////////////////////////////////
 
             // If you are very close to running out of memory due to
             // the number of CellInfo's in cellInfos, then calling this
@@ -222,6 +417,8 @@ class RolapResult extends ResultBase {
             }
             slicerAxis = null;
 
+            query.clearEvalCache();
+
             throw ex;
 
         } finally {
@@ -237,89 +434,228 @@ class RolapResult extends ResultBase {
             }
         }
     }
-
-    /**
-     * An implicit Member usage was detected - one axis used the
-     * default Member for some hierarchy, but another used a Member
-     * that was present in the MDX; the first axis should have used
-     * this other Member.
-     *
-     * @param axisMembers list of Members used in query.
-     */
-    protected void reExecuteWithImpliedMembers(List<Member> axisMembers) {
-        boolean didEvaluatorReplacementMember = false;
-        RolapEvaluator rolapEval = evaluator;
-        int cnt = 0;
-        // Iterate through the implied members.
-        boolean foundTimeMember = false;
-        for (Member m : axisMembers) {
-            if (rolapEval.setContextConditional(m) != null) {
-                // Do not break out of loops but set change flag.
-                // There may be more than one Member that has to be
-                // replaced.
-                cnt++;
-                if (m.getHierarchy().getDimension().getDimensionType() == DimensionType.TimeDimension) {
-                    foundTimeMember = true;
-                }
-                didEvaluatorReplacementMember = true;
+    protected boolean removeDimension(Dimension dimension, List<Member[]> nonAllMembers) {
+        boolean changed = false;
+        for (ListIterator<Member[]> it = nonAllMembers.listIterator();
+                it.hasNext();) {
+            Member[] ms = it.next();
+            Dimension d = ms[0].getHierarchy().getDimension();
+            if (d.equals(dimension)) {
+                it.remove();
             }
         }
+        return changed;
+    }
 
-        if (didEvaluatorReplacementMember) {
-            if (cnt > 1) {
-                // NOTE: If this prints out then there was more than one
-                // implied Member in the query. This is a problem
-                // because I do not know how to merge axes so that
-                // positions/members are in the MDX-query order (the
-                // order implied by the MDX query).
-                String msg = "Evaluation Error: there were " +cnt+
-                    " implied Members during MDX evaluation of ["+
-                    query.getQueryString()+"]";
-                getLogger().warn(msg);
-            }
-            // Must re-evaluate axes because one of the evaluator's
-            // members has changed. Do not have to re-evaluate the
-            // slicer axis or any axis whose members used during evaluation
-            // were not over-ridden by members from the evaluation of
-            // different axes (if you just have rows and columns, then
-            // if rows contributed a member to axisMembers, then columns must
-            // be re-evaluated and if columns contributed, then rows must
-            // be re-evaluated).
-            for (int i = 0; i < axes.length; i++) {
-                QueryAxis axis = query.axes[i];
-                final Calc calc = query.axisCalcs[i];
-
-                int attempt = 0;
-                while (true) {
-                    evaluator.setCellReader(batchingReader);
-                    Axis axisResult =
-                        executeAxis(evaluator.push(), axis, calc, false, null);
-                    Util.discard(axisResult);
-                    evaluator.clearExpResultCache();
-                    if (!batchingReader.loadAggregations(query)) {
-                        break;
-                    }
-                    if (attempt++ > maxEvalDepth) {
-                        throw Util.newInternal("Failed to load all aggregations after " +
-                                maxEvalDepth +
-                                "passes; there's probably a cycle");
-                    }
+    private static class CalculatedMeasureVisitor extends mondrian.mdx.MdxVisitorImpl {
+        Dimension dimension;
+        CalculatedMeasureVisitor() {
+        }
+        public Object visit(mondrian.olap.Formula formula) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.ResolvedFunCall call) {
+            return null;
+        }
+        public Object visit(mondrian.olap.Id id) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.ParameterExpr parameterExpr) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.DimensionExpr dimensionExpr) {
+            dimension = dimensionExpr.getDimension();
+            return null;
+        }
+        public Object visit(mondrian.mdx.HierarchyExpr hierarchyExpr) {
+            Hierarchy hierarchy = hierarchyExpr.getHierarchy();
+            dimension = hierarchy.getDimension();
+            return null;
+        }
+        public Object visit(mondrian.mdx.LevelExpr levelExpr) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.MemberExpr memberExpr)  {
+            Member member = memberExpr.getMember();
+            dimension = member.getHierarchy().getDimension();
+            return null;
+        }
+        public Object visit(mondrian.mdx.NamedSetExpr namedSetExpr) {
+            return null;
+        }
+        public Object visit(mondrian.olap.Literal literal) {
+            return null;
+        }
+    }
+    private static class MeasureVisitor extends mondrian.mdx.MdxVisitorImpl {
+        List<Member> measures;
+        MeasureVisitor() {
+            measures = new ArrayList<Member>();
+        }
+        public Object visit(mondrian.olap.Formula formula) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.ResolvedFunCall call) {
+            return null;
+        }
+        public Object visit(mondrian.olap.Id id) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.ParameterExpr parameterExpr) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.DimensionExpr dimensionExpr) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.HierarchyExpr hierarchyExpr) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.LevelExpr levelExpr) {
+            return null;
+        }
+        public Object visit(mondrian.mdx.MemberExpr memberExpr)  {
+            Member member = memberExpr.getMember();
+            if (member.isMeasure()) {
+                if (! measures.contains(member)) {
+                    measures.add(member);
                 }
+            }
+            return null;
+        }
+        public Object visit(mondrian.mdx.NamedSetExpr namedSetExpr) {
+            return null;
+        }
+        public Object visit(mondrian.olap.Literal literal) {
+            return null;
+        }
+    }
 
-                evaluator.setCellReader(aggregatingReader);
-                Axis axisResult =
+    protected boolean replaceNonAllMembers(List<Member[]> nonAllMembers, 
+                                            AxisMember axisMembers) {
+
+        boolean changed = false;
+        List<Member> mList = new ArrayList<Member>();
+        for (ListIterator<Member[]> it = nonAllMembers.listIterator();
+                it.hasNext();) {
+            Member[] ms = it.next();
+            Hierarchy h = ms[0].getHierarchy();
+            mList.clear();
+            for (Member m : axisMembers) {
+                if (m.getHierarchy().equals(h)) {
+                    mList.add(m);
+                }
+            }
+            if (! mList.isEmpty()) {
+                changed = true;
+                Member[] ml = mList.toArray(new Member[mList.size()]);
+                it.set(ml);
+            }
+        }
+        return changed;
+
+    }
+
+    protected void loadMembers(List<Member[]> nonAllMembers, 
+                    RolapEvaluator evaluator, QueryAxis axis, Calc calc,
+                    AxisMember axisMembers) {
+        int attempt = 0;
+        evaluator.setCellReader(batchingReader);
+        while (true) {
+            axisMembers.clearAxisCount();
+            evalLoad(nonAllMembers, nonAllMembers.size()-1, 
+                        evaluator, axis, calc, axisMembers);
+            evaluator.clearExpResultCache();
+
+            if (!batchingReader.loadAggregations(query)) {
+                break;
+            }
+
+            if (attempt++ > maxEvalDepth) {
+                throw Util.newInternal(
+                        "Failed to load all aggregations after " +
+                        maxEvalDepth +
+                        "passes; there's probably a cycle");
+            }
+        }
+    }
+
+    void evalLoad(List<Member[]> nonAllMembers, int cnt, 
+            Evaluator evaluator, QueryAxis axis, Calc calc,
+            AxisMember axisMembers) {
+        if (cnt < 0) {
+            executeAxis(evaluator.push(), axis, calc, false, axisMembers);
+        } else {
+            for (Member m : nonAllMembers.get(cnt)) {
+                evaluator.setContext(m);
+                evalLoad(nonAllMembers, cnt-1, evaluator, axis, calc, axisMembers);
+            }
+        }
+    }
+    Axis evalExecute(List<Member[]> nonAllMembers, int cnt, 
+            RolapEvaluator evaluator, QueryAxis axis, Calc calc) {
+        Axis axisResult = null;
+        if (cnt < 0) {
+            evaluator.setCellReader(aggregatingReader);
+            axisResult =
                     executeAxis(evaluator.push(), axis, calc, true, null);
-                evaluator.clearExpResultCache();
+            evaluator.clearExpResultCache();
+        } else {
+            for (Member m : nonAllMembers.get(cnt)) {
+                evaluator.setContext(m);
+                Axis a = evalExecute(nonAllMembers, cnt-1, evaluator, axis, calc);
+                axisResult = mergeAxes(axisResult, a);
+            }
+        }
+        return axisResult;
+    }
 
-                if (foundTimeMember) {
-                    // must add the two times together
-                    this.axes[i] = mergeAxes(this.axes[i], axisResult);
+    /** 
+     * Finds all root Members 1) whose Hierarchy does not have an ALL
+     * Member, 2) whose default Member is not the ALL Member and 3)
+     * all Measures.
+     * 
+     * @param nonDefaultAllMembers  List of all root Members for Hierarchies 
+     * whose default Member is not the ALL Member.
+     * @param nonAllMembers List of root Members for Hierarchies that have no
+     * ALL Member.
+     * @param measureMembers  List all Measures
+     */
+    protected void loadSpecialMembers(List<Member> nonDefaultAllMembers, 
+                List<Member[]> nonAllMembers,
+                List<Member> measureMembers) {
+        SchemaReader schemaReader = evaluator.getSchemaReader();
+        Member[] evalMembers = evaluator.getMembers();
+        for (int i = 0, j = 0; i < evalMembers.length; i++) {
+            Member em = evalMembers[i];
+            if (em.isCalculated()) {
+                continue;
+            }
+            Hierarchy h = em.getHierarchy();
+            Dimension d = h.getDimension();
+            if (d.getDimensionType() == DimensionType.TimeDimension) {
+                continue;
+            }
+            if (! em.isAll()) {
+                Member[] rootMembers = schemaReader.getHierarchyRootMembers(h);
+                if (em.isMeasure()) {
+                    for (Member mm : rootMembers) {
+                        measureMembers.add(mm);
+                    }
                 } else {
-                    // The previous Axis was calculated with
-                    // a default Member and there was an implied
-                    // Member in another Axis, so we use the
-                    // Axis generated with the implied Member.
-                    this.axes[i] = axisResult;
+                    if (h.hasAll()) {
+                        boolean found = false;
+                        for (Member m : rootMembers) {
+                            if (m.isAll()) {
+                                nonDefaultAllMembers.add(m);
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (! found) {
+                        }
+                    } else {
+                        nonAllMembers.add(rootMembers);
+                    }
                 }
             }
         }
@@ -362,7 +698,7 @@ class RolapResult extends ResultBase {
         QueryAxis axis,
         Calc axisCalc,
         boolean construct,
-        List<Member> axisMembers)
+        AxisMember axisMembers)
     {
         Axis axisResult = null;
         if (axis == null) {
@@ -393,17 +729,7 @@ class RolapResult extends ResultBase {
                                 new RolapAxis.MemberList((List<Member>)value);
                         }
                     } else if (axisMembers != null) {
-                        if (list.size() != 0) {
-                            if (list.get(0) instanceof Member[]) {
-                                for (Member[] o : (List<Member[]>) value) {
-                                    merge(axisMembers, o);
-                                }
-                            } else {
-                                for (Member o : (List<Member>) value) {
-                                    merge(axisMembers, o);
-                                }
-                            }
-                        }
+                        axisMembers.merge(value);
                     }
                 } else {
                     // Iterable
@@ -420,22 +746,7 @@ class RolapResult extends ResultBase {
                                             (Iterable<Member>)value);
                         }
                     } else if (axisMembers != null) {
-                        if (it.hasNext()) {
-                            Object o = it.next();
-                            if (o instanceof Member[]) {
-                                merge(axisMembers, (Member[]) o);
-                                while (it.hasNext()) {
-                                    o = it.next();
-                                    merge(axisMembers, (Member[]) o);
-                                }
-                            } else {
-                                merge(axisMembers, (Member) o);
-                                while (it.hasNext()) {
-                                    o = it.next();
-                                    merge(axisMembers, (Member) o);
-                                }
-                            }
-                        }
+                        axisMembers.merge(it);
                     }
                 }
             }
@@ -553,9 +864,6 @@ class RolapResult extends ResultBase {
                 } catch (MondrianEvaluationException e) {
                     o = e;
                 }
-//System.out.println("RolapResult.executeStripe: point=" +point);
-//revaluator.printCurrentMemberNames();
-//System.out.println("    value=" +o);
 
                 CellInfo ci = null;
 
@@ -580,7 +888,6 @@ class RolapResult extends ResultBase {
                     // for it. If not, then find or create a Locale based
                     // FormatValueFormatter.
                     RolapCube cube = (RolapCube) getCube();
-//System.out.println("    cube=" +cube.getName());
                     Dimension measuresDim =
                             cube.getMeasuresHierarchy().getDimension();
                     RolapMeasure m =
@@ -736,63 +1043,143 @@ class RolapResult extends ResultBase {
         return cellEvaluator;
     }
 
-    private Member getTopParent(Member m) {
-        Member parent = m.getParentMember();
-        return (parent == null) ? m : getTopParent(parent);
-    }
 
-    private void merge(List<Member> axisMembers, List<Member> members) {
-        for (Member member : members) {
-            merge(axisMembers, member);
-        }
-    }
-    private void merge(List<Member> axisMembers, Member[] members) {
-        for (Member member : members) {
-            merge(axisMembers, member);
-        }
-    }
-
-    private void merge(List<Member> axisMembers, Member member) {
-        Member topParent = getTopParent(member);
-        if (topParent.isNull()) {
-            return;
-        } else if (topParent.isMeasure()) {
-            return;
-        } else if (topParent.isCalculated()) {
-            return;
-        } else if (topParent.isAll()) {
-            return;
-        }
-        axisMembers.add(topParent);
-    }
-
-    /**
-     * Removes each member from the axisMembers list when the member's
-     * hierarchy is the same a one of the slicerMembers' hierarchy.
-     * (If it is in the slicer, then removes it from the axisMembers list.)
-     *
-     * @param axisMembers List of members on axis
-     * @param slicerMembers List of members in slicer
+    /** 
+     * Counts and collects Members found of the axes. 
+     * This class does two things. First it collects all Members
+     * found during the Member-Determination phase. 
+     * Secondly, it counts how many Members are on each axis and
+     * forms the product, the totalCellCount which is checked against
+     * the ResultLimit property value.
      */
-    private void purge(List<Member> axisMembers, List<Member> slicerMembers) {
-        // if a member is in slicerMembers, then remove the "corresponding"
-        // member for the axisMembers list
-        for (Member slicerMember : slicerMembers) {
-            purge(axisMembers, slicerMember);
-        }
-    }
+    private static class AxisMember implements Iterable<Member> {
+        private final List<Member> members;
+        private final int limit;
+        private boolean isSlicer;
+        private int totalCellCount;
+        private int axisCount;
+        private boolean countOnly;
 
-    private void purge(List<Member> axisMembers, Member slicerMember) {
-        Hierarchy hier = slicerMember.getHierarchy();
-        Iterator<Member> it = axisMembers.iterator();
-        while (it.hasNext()) {
-            Member member = it.next();
-            if (member.getHierarchy().equals(hier)) {
-                it.remove();
-                break;
+        AxisMember() {
+            this.countOnly = false;
+            this.members = new ArrayList<Member>();
+            this.totalCellCount = 1;
+            this.axisCount = 0;
+            // Now that the axes are evaluated, make sure that the number of
+            // cells does not exceed the result limit.
+            this.limit = MondrianProperties.instance().ResultLimit.get();
+        }
+        public Iterator<Member> iterator() {
+            return members.iterator();
+        }
+        void setSlicer(final boolean isSlicer) {
+            this.isSlicer = isSlicer;
+        }
+        boolean isEmpty() {
+            return this.members.isEmpty();
+        }
+        void countOnly(boolean countOnly) {
+            this.countOnly = countOnly;
+        }
+        void checkLimit() {
+            if (this.limit > 0) {
+                this.totalCellCount *= this.axisCount;
+                if (this.totalCellCount > this.limit) {
+                    throw MondrianResource.instance().
+                        TotalMembersLimitExceeded.ex(this.totalCellCount, 
+                                                        this.limit);
+                }
+                this.axisCount = 0;
+            }
+        }
+        void clearAxisCount() {
+            this.axisCount = 0;
+        }
+        void clearTotalCellCount() {
+            this.totalCellCount = 1;
+        }
+        void clearMembers() {
+            this.members.clear();
+            this.axisCount = 0;
+            this.totalCellCount = 1;
+        }
+        List<Member> members() {
+            return this.members;
+        }
+        void merge(Object value) {
+            List<Object> list = (List) value;
+            if (list.size() != 0) {
+                if (list.get(0) instanceof Member[]) {
+                    for (Member[] o : (List<Member[]>) value) {
+                        merge(o);
+                    }
+                } else {
+                    for (Member o : (List<Member>) value) {
+                        merge(o);
+                    }
+                }
+            }
+        }
+        void merge(Iterator it) {
+            if (it.hasNext()) {
+                Object o = it.next();
+                if (o instanceof Member[]) {
+                    merge((Member[]) o);
+                    while (it.hasNext()) {
+                        o = it.next();
+                        merge((Member[]) o);
+                    }
+                } else {
+                    merge((Member) o);
+                    while (it.hasNext()) {
+                        o = it.next();
+                        merge((Member) o);
+                    }
+                }
+            }
+        }
+        private Member getTopParent(final Member m) {
+            Member parent = m.getParentMember();
+            return (parent == null) ? m : getTopParent(parent);
+        }
+
+        private void merge(final List<Member> members) {
+            for (Member member : members) {
+                merge(member);
+            }
+        }
+        private void merge(final Member[] members) {
+            for (Member member : members) {
+                merge(member);
+            }
+        }
+
+        private void merge(final Member member) {
+            this.axisCount++;
+            if (! countOnly) {
+                if (isSlicer) {
+                    if (! members.contains(member)) {
+                        members.add(member);
+                    }
+                } else {
+                    if (member.isNull()) {
+                        return;
+                    } else if (member.isMeasure()) {
+                        return;
+                    } else if (member.isCalculated()) {
+                        return;
+                    } else if (member.isAll()) {
+                        return;
+                    }
+                    Member topParent = getTopParent(member);
+                    if (! this.members.contains(topParent)) {
+                        this.members.add(topParent);
+                    }
+                }
             }
         }
     }
+
 
     /**
      * Extension to {@link RolapEvaluator.RolapEvaluatorRoot} which is capable
@@ -1340,6 +1727,9 @@ class RolapResult extends ResultBase {
     }
 
     static Axis mergeAxes(Axis axis1, Axis axis2) {
+        if (axis1 == null) {
+            return axis2;
+        }
         List<Position> pl1 = axis1.getPositions();
         List<Position> pl2 = axis2.getPositions();
         int arrayLen = -1;

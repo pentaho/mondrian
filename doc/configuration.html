@@ -359,27 +359,6 @@ suite of regression tests.</p>
          will never be applied.
       </td>
     </tr>
-    <tr> 
-      <td>
-        <code>
-        <a href="api/mondrian/olap/MondrianProperties.html#UseImplicitMembers">mondrian.rolap.RolapResult.useImplicitMembers</a></code></td>
-      <td>boolean</td>
-      <td>true</td>
-      <td>
-         The crossjoin optimizer is flawed. It evaluates potential cells
-         using default members when a member is not explicitly set in
-         the particular axis. This works unless another axis, normal or
-         slicer, uses a member other than the default.
-         Setting this property to <code>true</code> will enable the
-         RolapResult to collect these implied members and if any are
-         found, then re-evaluate using the discovered members.
-         <p>
-         If you do not enable this property, then the crossjoin optimizer,
-         if used, can produce errors. Bad results are produced for some
-         queries and some data sets - its a combination of both so the 
-         error does not manifest itself all the time.
-      </td>
-    </tr>
     <tr>
       <td colspan="4">
 

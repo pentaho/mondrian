@@ -383,6 +383,10 @@
    <text>Size of CrossJoin result ({0,number}) exceeded limit ({1,number})</text>
 </exception>
 
+<exception id="600015" name="TotalMembersLimitExceeded" className="mondrian.olap.ResourceLimitExceededException">
+   <text>Total number of Members in result ({0,number}) exceeded limit ({1,number})</text>
+</exception>
+
 <exception id="600020" name="MemberFetchLimitExceeded" className="mondrian.olap.ResourceLimitExceededException">
    <text>Number of members to be read exceeded limit ({0,number})</text>
 </exception>

@@ -170,6 +170,9 @@ public class Query extends QueryPart {
     private ResultStyle resultStyle = (Util.PreJdk15)
                 ? ResultStyle.LIST : ResultStyle.ITERABLE;
 
+
+    private Map<String, Object> evalCache = new HashMap<String, Object>();
+
     /**
      * Creates a Query.
      */
@@ -1015,17 +1018,15 @@ public class Query extends QueryPart {
      * @return set of members from the measures dimension referenced within
      * this query
      */
-    public Set<Member> getMeasuresMembers()
-    {
-        return measuresMembers;
+    public Set<Member> getMeasuresMembers() {
+        return Collections.unmodifiableSet(measuresMembers);
     }
 
     /**
      * Indicates that the query cannot use native cross joins to process
      * this virtual cube
      */
-    public void setVirtualCubeNonNativeCrossJoin()
-    {
+    public void setVirtualCubeNonNativeCrossJoin() {
         nativeCrossJoinVirtualCube = false;
     }
 
@@ -1033,8 +1034,7 @@ public class Query extends QueryPart {
      * @return true if the query can use native cross joins on a virtual
      * cube
      */
-    public boolean nativeCrossJoinVirtualCube()
-    {
+    public boolean nativeCrossJoinVirtualCube() {
         return nativeCrossJoinVirtualCube;
     }
 
@@ -1093,6 +1093,35 @@ public class Query extends QueryPart {
         }
 
         return o;
+    }
+
+    /** 
+     * Put an Object value into the evaluation cache with given key.
+     * This is used by Calc's to store information between iterations
+     * (rather than re-generate each time).
+     * 
+     * @param key the cache key 
+     * @param value the cache value
+     */
+    public void putEvalCache(String key, Object value) {
+        evalCache.put(key, value);
+    }
+    
+    /** 
+     * Get the Object associated with the value. 
+     * 
+     * @param key the cache key 
+     * @return the cached value or null.
+     */
+    public Object getEvalCache(String key) {
+        return evalCache.get(key);
+    }
+
+    /** 
+     * Remove all entries in the evaluation cache
+     */
+    public void clearEvalCache() {
+        evalCache.clear();
     }
 
     /**

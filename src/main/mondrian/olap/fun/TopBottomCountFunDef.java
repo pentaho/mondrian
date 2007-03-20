@@ -86,6 +86,10 @@ class TopBottomCountFunDef extends FunDefBase {
 
                 List list = listCalc.evaluateList(evaluator);
                 int n = integerCalc.evaluateInteger(evaluator);
+// RME
+if (n == mondrian.olap.fun.FunUtil.IntegerNull) {
+    return new java.util.ArrayList();
+}
                 if (orderCalc != null) {
                     if (arity == 1) {
                         sortMembers(

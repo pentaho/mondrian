@@ -26,7 +26,7 @@ public class Checkin_7641 extends CsvDBTestCase {
 
     public static final String PROP_NAME =  "mondrian.test.checkin.7641";
 
-    private boolean useImplicitMembers;
+    //private boolean useImplicitMembers;
     public Checkin_7641() {
         super();
     }
@@ -35,12 +35,8 @@ public class Checkin_7641 extends CsvDBTestCase {
     }
     protected void setUp() throws Exception {
         super.setUp();
-        useImplicitMembers = 
-            MondrianProperties.instance().UseImplicitMembers.get();
     }
     protected void tearDown() throws Exception {
-        MondrianProperties.instance().UseImplicitMembers.set(useImplicitMembers);
-
         super.tearDown();
     }
 
@@ -56,11 +52,9 @@ public class Checkin_7641 extends CsvDBTestCase {
             "[Geography].[All Regions].Children)) ON ROWS"+
         " from [ImplicitMember]";
 
-        MondrianProperties.instance().UseImplicitMembers.set(true);
         Result result1 = getCubeTestContext().executeQuery(mdx);
         String resultString1 = TestContext.toString(result1);
 //System.out.println(resultString1);
-        MondrianProperties.instance().UseImplicitMembers.set(false);
         Result result2 = getCubeTestContext().executeQuery(mdx);
         String resultString2 = TestContext.toString(result2);
 //System.out.println(resultString2);

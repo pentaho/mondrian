@@ -70,10 +70,18 @@ public class CrossJoinTest extends FoodMartTestCase {
             }
         };
 
+    private CrossJoinFunDef crossJoinFunDef;
     public CrossJoinTest() {
     }
     public CrossJoinTest(String name) {
         super(name);
+    }
+    protected void setUp() throws Exception {
+        super.setUp();
+        crossJoinFunDef = new CrossJoinFunDef(new NullFunDef());
+    }
+    protected void tearDown() throws Exception {
+        super.tearDown();
     }
     ////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////
@@ -87,7 +95,7 @@ public class CrossJoinTest extends FoodMartTestCase {
     public void testIterMemberIterMemberIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberIterMemberIterCalc calc =
-            new CrossJoinFunDef.IterMemberIterMemberIterCalc(
+            crossJoinFunDef.new IterMemberIterMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberIterMemberIterCalc");
@@ -97,7 +105,7 @@ if (! Util.PreJdk15) {
     public void testIterMemberListMemberIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberListMemberIterCalc calc =
-            new CrossJoinFunDef.IterMemberListMemberIterCalc(
+            crossJoinFunDef.new IterMemberListMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberListMemberIterCalc");
@@ -107,7 +115,7 @@ if (! Util.PreJdk15) {
     public void testListMemberIterMemberIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberIterMemberIterCalc calc =
-            new CrossJoinFunDef.ListMemberIterMemberIterCalc(
+            crossJoinFunDef.new ListMemberIterMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberIterMemberIterCalc");
@@ -117,7 +125,7 @@ if (! Util.PreJdk15) {
     public void testListMemberListMemberIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberListMemberIterCalc calc =
-            new CrossJoinFunDef.ListMemberListMemberIterCalc(
+            crossJoinFunDef.new ListMemberListMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberListMemberIterCalc");
@@ -153,7 +161,7 @@ if (! Util.PreJdk15) {
     public void testIterMemberIterMemberArrayIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberIterMemberArrayIterCalc calc =
-            new CrossJoinFunDef.IterMemberIterMemberArrayIterCalc(
+            crossJoinFunDef.new IterMemberIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberIterMemberArrayIterCalc");
@@ -164,7 +172,7 @@ if (! Util.PreJdk15) {
     public void testIterMemberListMemberArrayIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberListMemberArrayIterCalc calc =
-            new CrossJoinFunDef.IterMemberListMemberArrayIterCalc(
+            crossJoinFunDef.new IterMemberListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberListMemberArrayIterCalc");
@@ -174,7 +182,7 @@ if (! Util.PreJdk15) {
     public void testListMemberIterMemberArrayIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberIterMemberArrayIterCalc calc =
-            new CrossJoinFunDef.ListMemberIterMemberArrayIterCalc(
+            crossJoinFunDef.new ListMemberIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberIterMemberArrayIterCalc");
@@ -184,7 +192,7 @@ if (! Util.PreJdk15) {
     public void testListMemberListMemberArrayIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberListMemberArrayIterCalc calc =
-            new CrossJoinFunDef.ListMemberListMemberArrayIterCalc(
+            crossJoinFunDef.new ListMemberListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberListMemberArrayIterCalc");
@@ -219,7 +227,7 @@ if (! Util.PreJdk15) {
     public void testIterMemberArrayIterMemberIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberArrayIterMemberIterCalc calc =
-            new CrossJoinFunDef.IterMemberArrayIterMemberIterCalc(
+            crossJoinFunDef.new IterMemberArrayIterMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberArrayIterMemberIterCalc");
@@ -229,7 +237,7 @@ if (! Util.PreJdk15) {
     public void testIterMemberArrayListMemberIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberArrayListMemberIterCalc calc =
-            new CrossJoinFunDef.IterMemberArrayListMemberIterCalc(
+            crossJoinFunDef.new IterMemberArrayListMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberArrayListMemberIterCalc");
@@ -239,7 +247,7 @@ if (! Util.PreJdk15) {
     public void testListMemberArrayIterMemberIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberArrayIterMemberIterCalc calc =
-            new CrossJoinFunDef.ListMemberArrayIterMemberIterCalc(
+            crossJoinFunDef.new ListMemberArrayIterMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberArrayIterMemberIterCalc");
@@ -249,7 +257,7 @@ if (! Util.PreJdk15) {
     public void testListMemberArrayListMemberIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberArrayListMemberIterCalc calc =
-            new CrossJoinFunDef.ListMemberArrayListMemberIterCalc(
+            crossJoinFunDef.new ListMemberArrayListMemberIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberArrayListMemberIterCalc");
@@ -284,7 +292,7 @@ if (! Util.PreJdk15) {
     public void testIterMemberArrayIterMemberArrayIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberArrayIterMemberArrayIterCalc calc =
-            new CrossJoinFunDef.IterMemberArrayIterMemberArrayIterCalc(
+            crossJoinFunDef.new IterMemberArrayIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberArrayIterMemberArrayIterCalc");
@@ -294,7 +302,7 @@ if (! Util.PreJdk15) {
     public void testIterMemberArrayListMemberArrayIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.IterMemberArrayListMemberArrayIterCalc calc =
-            new CrossJoinFunDef.IterMemberArrayListMemberArrayIterCalc(
+            crossJoinFunDef.new IterMemberArrayListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testIterMemberArrayListMemberArrayIterCalc");
@@ -304,7 +312,7 @@ if (! Util.PreJdk15) {
     public void testListMemberArrayIterMemberArrayIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberArrayIterMemberArrayIterCalc calc =
-            new CrossJoinFunDef.ListMemberArrayIterMemberArrayIterCalc(
+            crossJoinFunDef.new ListMemberArrayIterMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberArrayIterMemberArrayIterCalc");
@@ -314,7 +322,7 @@ if (! Util.PreJdk15) {
     public void testListMemberArrayListMemberArrayIterCalc() {
 if (! Util.PreJdk15) {
         CrossJoinFunDef.ListMemberArrayListMemberArrayIterCalc calc =
-            new CrossJoinFunDef.ListMemberArrayListMemberArrayIterCalc(
+            crossJoinFunDef.new ListMemberArrayListMemberArrayIterCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testListMemberArrayListMemberArrayIterCalc");
@@ -355,7 +363,7 @@ if (! Util.PreJdk15) {
     ////////////////////////////////////////////////////////////////////////
     public void testImmutableListMemberListMemberListCalc() {
         CrossJoinFunDef.ImmutableListMemberListMemberListCalc calc =
-            new CrossJoinFunDef.ImmutableListMemberListMemberListCalc(
+            crossJoinFunDef.new ImmutableListMemberListMemberListCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testImmutableListMemberListMemberListCalc");
@@ -456,7 +464,7 @@ if (! Util.PreJdk15) {
     ////////////////////////////////////////////////////////////////////////
     public void testImmutableListMemberListMemberArrayListCalc() {
         CrossJoinFunDef.ImmutableListMemberListMemberArrayListCalc calc =
-            new CrossJoinFunDef.ImmutableListMemberListMemberArrayListCalc(
+            crossJoinFunDef.new ImmutableListMemberListMemberArrayListCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testImmutableListMemberListMemberArrayListCalc");
@@ -536,7 +544,7 @@ if (! Util.PreJdk15) {
     ////////////////////////////////////////////////////////////////////////
     public void testImmutableListMemberArrayListMemberListCalc() {
         CrossJoinFunDef.ImmutableListMemberArrayListMemberListCalc calc =
-            new CrossJoinFunDef.ImmutableListMemberArrayListMemberListCalc(
+            crossJoinFunDef.new ImmutableListMemberArrayListMemberListCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testImmutableListMemberArrayListMemberListCalc");
@@ -650,7 +658,7 @@ if (! Util.PreJdk15) {
 
     public void testImmutableListMemberArrayListMemberArrayListCalc() {
         CrossJoinFunDef.ImmutableListMemberArrayListMemberArrayListCalc calc =
-            new CrossJoinFunDef.ImmutableListMemberArrayListMemberArrayListCalc(
+            crossJoinFunDef.new ImmutableListMemberArrayListMemberArrayListCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testImmutableListMemberArrayListMemberArrayIterCalc");
@@ -762,7 +770,7 @@ if (! Util.PreJdk15) {
     ////////////////////////////////////////////////////////////////////////
     public void testMutableListMemberListMemberListCalc() {
         CrossJoinFunDef.MutableListMemberListMemberListCalc calc =
-            new CrossJoinFunDef.MutableListMemberListMemberListCalc(
+            crossJoinFunDef.new MutableListMemberListMemberListCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testMutableListMemberListMemberListCalc");
@@ -829,7 +837,7 @@ if (! Util.PreJdk15) {
     ////////////////////////////////////////////////////////////////////////
     public void testMutableListMemberListMemberArrayListCalc() {
         CrossJoinFunDef.MutableListMemberListMemberArrayListCalc calc =
-            new CrossJoinFunDef.MutableListMemberListMemberArrayListCalc(
+            crossJoinFunDef.new MutableListMemberListMemberArrayListCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testMutableListMemberListMemberArrayListCalc");
@@ -884,7 +892,7 @@ if (! Util.PreJdk15) {
     ////////////////////////////////////////////////////////////////////////
     public void testMutableListMemberArrayListMemberListCalc() {
         CrossJoinFunDef.MutableListMemberArrayListMemberListCalc calc =
-            new CrossJoinFunDef.MutableListMemberArrayListMemberListCalc(
+            crossJoinFunDef.new MutableListMemberArrayListMemberListCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testMutableListMemberArrayListMemberListCalc");
@@ -941,7 +949,7 @@ if (! Util.PreJdk15) {
 
     public void testMutableListMemberArrayListMemberArrayListCalc() {
         CrossJoinFunDef.MutableListMemberArrayListMemberArrayListCalc calc =
-            new CrossJoinFunDef.MutableListMemberArrayListMemberArrayListCalc(
+            crossJoinFunDef.new MutableListMemberArrayListMemberArrayListCalc(
                 getResolvedFunCall(), null);
 
 //System.out.println("testMutableListMemberArrayListMemberArrayListCalc");
@@ -1091,6 +1099,37 @@ if (! Util.PreJdk15) {
         }
         public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
             throw new UnsupportedOperationException();
+        }
+    }
+    public class NullFunDef implements FunDef {
+        NullFunDef() {
+        }
+        public Syntax getSyntax() {
+            return Syntax.Function;
+        }
+        public String getName() {
+            return "";
+        }
+        public String getDescription() {
+            return "";
+        }
+        public int getReturnCategory() {
+            return 0;
+        }
+        public int[] getParameterCategories() {
+            return new int[0];
+        }
+        public Exp createCall(Validator validator, Exp[] args) {
+            return null;
+        }
+        public String getSignature() {
+            return "";
+        }
+        public void unparse(Exp[] args, PrintWriter pw) {
+           // 
+        }
+        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
+            return null;
         }
     }
     public class TestExp implements Exp {

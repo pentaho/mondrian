@@ -73,7 +73,11 @@ public abstract class GenericCalc
     }
 
     public int evaluateInteger(Evaluator evaluator) {
-        return ((Number) evaluate(evaluator)).intValue();
+        Object o = evaluate(evaluator);
+        final Number number = (Number) o;
+        return number == null ?
+                FunUtil.IntegerNull :
+                number.intValue();
     }
 
     public double evaluateDouble(Evaluator evaluator) {
