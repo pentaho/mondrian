@@ -69,7 +69,7 @@ public class RolapResultTest extends AggTableTestCase {
                      "Row #2: \n" +
                      "Row #2: 15\n");
 
-    boolean useImplicitMembers;
+    //boolean useImplicitMembers;
     public RolapResultTest() {
         super();
     }
@@ -79,19 +79,13 @@ public class RolapResultTest extends AggTableTestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        useImplicitMembers = MondrianProperties.instance().UseImplicitMembers.get();
-        MondrianProperties.instance().UseImplicitMembers.set(false);
     }
     protected void tearDown() throws Exception {
-        MondrianProperties.instance().UseImplicitMembers.set(useImplicitMembers);
 
         super.tearDown();
     }
     public void testAll() throws Exception {
         if (!isApplicable()) {
-            return;
-        }
-        if (getTestContext().getDialect().isOracle()) {
             return;
         }
 
@@ -117,10 +111,6 @@ public class RolapResultTest extends AggTableTestCase {
         if (!isApplicable()) {
             return;
         }
-        if (getTestContext().getDialect().isOracle()) {
-            return;
-        }
-
         String mdx = "select " +
                      " filter({[D1].[a],[D1].[b],[D1].[c]}, " +
                      "    [Measures].[Value] > 0) "+
@@ -146,14 +136,10 @@ Axis #2:
         assertTrue(resultString.equals(RESULTS));
     }
 
-    public void testD2() throws Exception {
+    public void _testD2() throws Exception {
         if (!isApplicable()) {
             return;
         }
-        if (getTestContext().getDialect().isOracle()) {
-            return;
-        }
-
         String mdx = "select " +
                      " NON EMPTY filter({[D1].[a],[D1].[b],[D1].[c]}, " +
                      "    [Measures].[Value] > 0) "+
@@ -184,9 +170,6 @@ Axis #2:
         if (!isApplicable()) {
             return;
         }
-        if (getTestContext().getDialect().isOracle()) {
-            return;
-        }
 
         String mdx = "select " +
                      " NON EMPTY filter({[D1].[a],[D1].[b],[D1].[c]}, " +
@@ -199,7 +182,6 @@ Axis #2:
         //getCubeTestContext().assertQueryReturns(mdx, RESULTS);
         Result result = getCubeTestContext().executeQuery(mdx);
         String resultString = TestContext.toString(result);
-//System.out.println(resultString);
         assertTrue(resultString.equals(RESULTS));
     }
 
@@ -294,7 +276,6 @@ Axis #2:
             " <Level name='Name' column='name' type='String' uniqueMembers='true'/>\n" +
             " </Hierarchy>\n" +
             "</Dimension>\n" +
-
             "<Measure name='VExtra' \n" +
             "    column='vextra' aggregator='sum'\n" +
             "   formatString='#,###'/>\n" +

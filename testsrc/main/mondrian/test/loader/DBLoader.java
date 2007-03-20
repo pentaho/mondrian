@@ -1283,6 +1283,7 @@ e.printStackTrace();
                     throw new RuntimeException("Failed to execute batch: " + batchSize + " versus " + updates);
                 }
             }
+            connection.commit();
             stmt.close();
             connection.setAutoCommit(true);
         }
