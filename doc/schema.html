@@ -2265,12 +2265,30 @@ tables by pattern-matching.</p>
   <code>&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;<br>
 &nbsp; &lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggPattern">AggPattern</a>
+pattern="agg_.*_sales_fact_1997"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggFactCount">AggFactCount</a>
+column="FACT_COUNT"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a>
 
-pattern="agg_.*_sales_fact_1997"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggExclude">AggExclude</a>
+name="[Measures].[Store Cost]" column="STORE_COST_SUM"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a>
+name="[Measures].[Store Sales]" column="STORE_SALES_SUM"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
+name="[Product].[Product Family]" column="PRODUCT_FAMILY"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
+name="[Time].[Quarter]" column="TIME_QUARTER"/&gt;<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
+name="[Time].[Year]" column="TIME_YEAR"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
+name="[Time].[Quarter]" column="TIME_QUARTER"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a>
+name="[Time].[Month]" column="TIME_MONTH"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggExclude">AggExclude</a>
 name="agg_c_14_sales_fact_1997"/&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggExclude">AggExclude</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggExclude">AggExclude</a>
 name="agg_lc_100_sales_fact_1997"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_AggPattern">AggPattern</a>&gt;<br>
 &nbsp; &lt;/<a href="#XML_Table">Table</a>&gt;<br>
 &lt;/<a href="#XML_Cube">Cube</a>&gt;</code>
 </blockquote>
