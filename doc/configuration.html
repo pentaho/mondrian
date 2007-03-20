@@ -206,7 +206,7 @@ suite of regression tests.</p>
       <p>Mondrian uses a sparse representation if</p>
 
 
-        <p><code>possible - (countThreshold * actual) &gt; densityThreshold</code></p>
+        <p><code>(possible - countThreshold) * densityThreshold &gt; actual</code></p>
 
       <p>For example, at the default values (<i>countThreshold</i> = 1000 and <i>
       densityThreshold</i> = 0.5), Mondrian use a dense representation for </p>
