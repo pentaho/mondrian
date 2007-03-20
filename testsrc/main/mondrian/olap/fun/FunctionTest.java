@@ -258,6 +258,27 @@ public class FunctionTest extends FoodMartTestCase {
                 "Row #22: \n"));
     }
 
+
+    public void _testNullInDivision() {
+        assertExprReturns("NULL/1", "");
+        assertExprThrows("1/NULL", "NULL cannot be the denominator of an expression");
+    }
+
+    public void _testNullInMultiplication() {
+        assertExprReturns("NULL*1", "");
+        assertExprReturns("1*NULL", "");
+    }
+
+    public void testNullInAddition() {
+        assertExprReturns("1+NULL", "1");
+        assertExprReturns("NULL+1", "1");
+    }
+
+    public void testNullInSubtraction() {
+        assertExprReturns("1-NULL", "1");
+        assertExprReturns("NULL-1", "-1");
+    }
+
     public void testMemberLevel() {
         assertExprReturns("[Time].[1997].[Q1].[1].Level.UniqueName", "[Time].[Month]");
     }
