@@ -495,10 +495,10 @@ public class MondrianProperties extends TriggerableProperties {
      * The <code>density</code> is <code>actual / possible</code>.
      *
      * <p>We use a sparse representation if
-     *   <code>possible -
-     *   {@link #SparseSegmentCountThreshold countThreshold} *
-     *   actual &gt;
-     *   {@link #SparseSegmentDensityThreshold densityThreshold}</code>
+     *   <code>(possible -
+     *   {@link #SparseSegmentCountThreshold countThreshold}) *
+     *   {@link #SparseSegmentDensityThreshold densityThreshold} &gt;
+     *   actual</code>
      *
      * <p>For example, at the default values
      * ({@link #SparseSegmentCountThreshold countThreshold} = 1000,
@@ -920,8 +920,6 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public final IntegerProperty CrossJoinOptimizerSize = new IntegerProperty(
             this, "mondrian.olap.fun.crossjoin.optimizer.size", 0);
-    public final BooleanProperty UseImplicitMembers = new BooleanProperty(
-            this, "mondrian.rolap.RolapResult.useImplicitMembers", true);
 
 }
 
