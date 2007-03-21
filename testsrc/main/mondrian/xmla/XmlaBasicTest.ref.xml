@@ -10255,8 +10255,8 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <xmla:ExecuteResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-            <xmla:return>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
                 <root
                     xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
                     xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception"
@@ -10489,27 +10489,27 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         </xsd:element>
                     </xsd:schema>
                     <row>
-                        <Store_x0020_Name>86</Store_x0020_Name>
-                        <Store_x0020_City>86</Store_x0020_City>
-                        <Store_x0020_State>86</Store_x0020_State>
                         <Store_x0020_Country>86</Store_x0020_Country>
+                        <Store_x0020_State>86</Store_x0020_State>
+                        <Store_x0020_City>86</Store_x0020_City>
+                        <Store_x0020_Name>86</Store_x0020_Name>
                         <Store_x0020_Sqft>86</Store_x0020_Sqft>
                         <Store_x0020_Type>86</Store_x0020_Type>
-                        <Month>86</Month>
-                        <Quarter>86</Quarter>
                         <Year>86</Year>
-                        <Product_x0020_Name>86</Product_x0020_Name>
-                        <Brand_x0020_Name>86</Brand_x0020_Name>
-                        <Product_x0020_Subcategory>86</Product_x0020_Subcategory>
-                        <Product_x0020_Category>86</Product_x0020_Category>
-                        <Product_x0020_Department>86</Product_x0020_Department>
+                        <Quarter>86</Quarter>
+                        <Month>86</Month>
                         <Product_x0020_Family>86</Product_x0020_Family>
+                        <Product_x0020_Department>86</Product_x0020_Department>
+                        <Product_x0020_Category>86</Product_x0020_Category>
+                        <Product_x0020_Subcategory>86</Product_x0020_Subcategory>
+                        <Brand_x0020_Name>86</Brand_x0020_Name>
+                        <Product_x0020_Name>86</Product_x0020_Name>
                         <Media_x0020_Type>86</Media_x0020_Type>
                         <Promotion_x0020_Name>86</Promotion_x0020_Name>
-                        <Name_x0020__x0028_Key_x0029_>86</Name_x0020__x0028_Key_x0029_>
-                        <Name>86</Name>
-                        <City>86</City>
                         <State_x0020_Province>86</State_x0020_Province>
+                        <City>86</City>
+                        <Name>86</Name>
+                        <Name_x0020__x0028_Key_x0029_>86</Name_x0020__x0028_Key_x0029_>
                         <Education_x0020_Level>86</Education_x0020_Level>
                         <Gender>86</Gender>
                         <Marital_x0020_Status>86</Marital_x0020_Status>
@@ -10517,92 +10517,92 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <Unit_x0020_Sales>86</Unit_x0020_Sales>
                     </row>
                     <row>
-                        <Store_x0020_Name>Store 14</Store_x0020_Name>
-                        <Store_x0020_City>San Francisco</Store_x0020_City>
-                        <Store_x0020_State>CA</Store_x0020_State>
                         <Store_x0020_Country>USA</Store_x0020_Country>
+                        <Store_x0020_State>CA</Store_x0020_State>
+                        <Store_x0020_City>San Francisco</Store_x0020_City>
+                        <Store_x0020_Name>Store 14</Store_x0020_Name>
                         <Store_x0020_Sqft>22478</Store_x0020_Sqft>
                         <Store_x0020_Type>Small Grocery</Store_x0020_Type>
-                        <Month>3</Month>
-                        <Quarter>Q1</Quarter>
                         <Year>1997</Year>
-                        <Product_x0020_Name>Best Choice Dried Dates</Product_x0020_Name>
-                        <Brand_x0020_Name>Best Choice</Brand_x0020_Name>
-                        <Product_x0020_Subcategory>Dried Fruit</Product_x0020_Subcategory>
-                        <Product_x0020_Category>Snack Foods</Product_x0020_Category>
-                        <Product_x0020_Department>Snack Foods</Product_x0020_Department>
-                        <Product_x0020_Family>Food</Product_x0020_Family>
+                        <Quarter>Q1</Quarter>
+                        <Month>3</Month>
+                        <Product_x0020_Family>Drink</Product_x0020_Family>
+                        <Product_x0020_Department>Alcoholic Beverages</Product_x0020_Department>
+                        <Product_x0020_Category>Beer and Wine</Product_x0020_Category>
+                        <Product_x0020_Subcategory>Wine</Product_x0020_Subcategory>
+                        <Brand_x0020_Name>Good</Brand_x0020_Name>
+                        <Product_x0020_Name>Good Chardonnay Wine</Product_x0020_Name>
                         <Media_x0020_Type>No Media</Media_x0020_Type>
                         <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
-                        <Name_x0020__x0028_Key_x0029_>3944</Name_x0020__x0028_Key_x0029_>
-                        <Name>Nancy Pietrs</Name>
-                        <City>Berkeley</City>
                         <State_x0020_Province>CA</State_x0020_Province>
-                        <Education_x0020_Level>Partial College</Education_x0020_Level>
-                        <Gender>M</Gender>
-                        <Marital_x0020_Status>S</Marital_x0020_Status>
-                        <Yearly_x0020_Income>$90K - $110K</Yearly_x0020_Income>
-                        <Unit_x0020_Sales>2</Unit_x0020_Sales>
-                    </row>
-                    <row>
-                        <Store_x0020_Name>Store 14</Store_x0020_Name>
-                        <Store_x0020_City>San Francisco</Store_x0020_City>
-                        <Store_x0020_State>CA</Store_x0020_State>
-                        <Store_x0020_Country>USA</Store_x0020_Country>
-                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
-                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
-                        <Month>3</Month>
-                        <Quarter>Q1</Quarter>
-                        <Year>1997</Year>
-                        <Product_x0020_Name>Best Choice Fudge Brownies</Product_x0020_Name>
-                        <Brand_x0020_Name>Best Choice</Brand_x0020_Name>
-                        <Product_x0020_Subcategory>Cookies</Product_x0020_Subcategory>
-                        <Product_x0020_Category>Snack Foods</Product_x0020_Category>
-                        <Product_x0020_Department>Snack Foods</Product_x0020_Department>
-                        <Product_x0020_Family>Food</Product_x0020_Family>
-                        <Media_x0020_Type>No Media</Media_x0020_Type>
-                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
-                        <Name_x0020__x0028_Key_x0029_>8808</Name_x0020__x0028_Key_x0029_>
-                        <Name>James Ross</Name>
                         <City>Berkeley</City>
-                        <State_x0020_Province>CA</State_x0020_Province>
-                        <Education_x0020_Level>High School Degree</Education_x0020_Level>
-                        <Gender>F</Gender>
-                        <Marital_x0020_Status>S</Marital_x0020_Status>
-                        <Yearly_x0020_Income>$30K - $50K</Yearly_x0020_Income>
-                        <Unit_x0020_Sales>1</Unit_x0020_Sales>
-                    </row>
-                    <row>
-                        <Store_x0020_Name>Store 14</Store_x0020_Name>
-                        <Store_x0020_City>San Francisco</Store_x0020_City>
-                        <Store_x0020_State>CA</Store_x0020_State>
-                        <Store_x0020_Country>USA</Store_x0020_Country>
-                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
-                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
-                        <Month>3</Month>
-                        <Quarter>Q1</Quarter>
-                        <Year>1997</Year>
-                        <Product_x0020_Name>Better Canned String Beans</Product_x0020_Name>
-                        <Brand_x0020_Name>Better</Brand_x0020_Name>
-                        <Product_x0020_Subcategory>Canned Vegetables</Product_x0020_Subcategory>
-                        <Product_x0020_Category>Vegetables</Product_x0020_Category>
-                        <Product_x0020_Department>Canned Foods</Product_x0020_Department>
-                        <Product_x0020_Family>Food</Product_x0020_Family>
-                        <Media_x0020_Type>No Media</Media_x0020_Type>
-                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
-                        <Name_x0020__x0028_Key_x0029_>1066</Name_x0020__x0028_Key_x0029_>
                         <Name>David Johnson</Name>
-                        <City>Berkeley</City>
-                        <State_x0020_Province>CA</State_x0020_Province>
+                        <Name_x0020__x0028_Key_x0029_>1066</Name_x0020__x0028_Key_x0029_>
                         <Education_x0020_Level>Bachelors Degree</Education_x0020_Level>
                         <Gender>M</Gender>
                         <Marital_x0020_Status>M</Marital_x0020_Status>
                         <Yearly_x0020_Income>$130K - $150K</Yearly_x0020_Income>
                         <Unit_x0020_Sales>1</Unit_x0020_Sales>
                     </row>
+                    <row>
+                        <Store_x0020_Country>USA</Store_x0020_Country>
+                        <Store_x0020_State>CA</Store_x0020_State>
+                        <Store_x0020_City>San Francisco</Store_x0020_City>
+                        <Store_x0020_Name>Store 14</Store_x0020_Name>
+                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
+                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
+                        <Year>1997</Year>
+                        <Quarter>Q1</Quarter>
+                        <Month>3</Month>
+                        <Product_x0020_Family>Drink</Product_x0020_Family>
+                        <Product_x0020_Department>Beverages</Product_x0020_Department>
+                        <Product_x0020_Category>Carbonated Beverages</Product_x0020_Category>
+                        <Product_x0020_Subcategory>Soda</Product_x0020_Subcategory>
+                        <Brand_x0020_Name>Fabulous</Brand_x0020_Name>
+                        <Product_x0020_Name>Fabulous Diet Soda</Product_x0020_Name>
+                        <Media_x0020_Type>No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
+                        <State_x0020_Province>CA</State_x0020_Province>
+                        <City>Berkeley</City>
+                        <Name>Nancy Pietrs</Name>
+                        <Name_x0020__x0028_Key_x0029_>3944</Name_x0020__x0028_Key_x0029_>
+                        <Education_x0020_Level>Partial College</Education_x0020_Level>
+                        <Gender>M</Gender>
+                        <Marital_x0020_Status>S</Marital_x0020_Status>
+                        <Yearly_x0020_Income>$90K - $110K</Yearly_x0020_Income>
+                        <Unit_x0020_Sales>1</Unit_x0020_Sales>
+                    </row>
+                    <row>
+                        <Store_x0020_Country>USA</Store_x0020_Country>
+                        <Store_x0020_State>CA</Store_x0020_State>
+                        <Store_x0020_City>San Francisco</Store_x0020_City>
+                        <Store_x0020_Name>Store 14</Store_x0020_Name>
+                        <Store_x0020_Sqft>22478</Store_x0020_Sqft>
+                        <Store_x0020_Type>Small Grocery</Store_x0020_Type>
+                        <Year>1997</Year>
+                        <Quarter>Q1</Quarter>
+                        <Month>3</Month>
+                        <Product_x0020_Family>Drink</Product_x0020_Family>
+                        <Product_x0020_Department>Beverages</Product_x0020_Department>
+                        <Product_x0020_Category>Drinks</Product_x0020_Category>
+                        <Product_x0020_Subcategory>Flavored Drinks</Product_x0020_Subcategory>
+                        <Brand_x0020_Name>Fabulous</Brand_x0020_Name>
+                        <Product_x0020_Name>Fabulous Strawberry Drink</Product_x0020_Name>
+                        <Media_x0020_Type>No Media</Media_x0020_Type>
+                        <Promotion_x0020_Name>No Promotion</Promotion_x0020_Name>
+                        <State_x0020_Province>CA</State_x0020_Province>
+                        <City>Berkeley</City>
+                        <Name>Achari Harp</Name>
+                        <Name_x0020__x0028_Key_x0029_>4617</Name_x0020__x0028_Key_x0029_>
+                        <Education_x0020_Level>High School Degree</Education_x0020_Level>
+                        <Gender>M</Gender>
+                        <Marital_x0020_Status>M</Marital_x0020_Status>
+                        <Yearly_x0020_Income>$110K - $130K</Yearly_x0020_Income>
+                        <Unit_x0020_Sales>3</Unit_x0020_Sales>
+                    </row>
                 </root>
-            </xmla:return>
-        </xmla:ExecuteResponse>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
