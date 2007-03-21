@@ -1505,9 +1505,8 @@ public class XmlaHandler implements XmlaConstants {
                 int k = 0;
                 for (Member member: position) {
                     writeMember(
-                        writer, member, prevPosition, nextPosition, k, props);
+                        writer, member, prevPosition, nextPosition, k++, props);
                 }
-                k++;
                 writer.endElement(); // Tuple
                 prevPosition = position;
                 position = nextPosition;

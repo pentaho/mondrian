@@ -11581,7 +11581,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
-                                    <DisplayInfo>9</DisplayInfo>
+                                    <DisplayInfo>131081</DisplayInfo>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -11597,7 +11597,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
-                                    <DisplayInfo>3</DisplayInfo>
+                                    <DisplayInfo>131075</DisplayInfo>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -11613,7 +11613,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
-                                    <DisplayInfo>1</DisplayInfo>
+                                    <DisplayInfo>131073</DisplayInfo>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -11629,7 +11629,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
-                                    <DisplayInfo>9</DisplayInfo>
+                                    <DisplayInfo>131081</DisplayInfo>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -11645,7 +11645,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
-                                    <DisplayInfo>3</DisplayInfo>
+                                    <DisplayInfo>131075</DisplayInfo>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -11661,7 +11661,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <Caption>Canada</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
-                                    <DisplayInfo>1</DisplayInfo>
+                                    <DisplayInfo>131073</DisplayInfo>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -11677,7 +11677,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <Caption>Mexico</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
-                                    <DisplayInfo>9</DisplayInfo>
+                                    <DisplayInfo>131081</DisplayInfo>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
@@ -11693,7 +11693,7 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <Caption>USA</Caption>
                                     <LName>[Customers].[Country]</LName>
                                     <LNum>1</LNum>
-                                    <DisplayInfo>3</DisplayInfo>
+                                    <DisplayInfo>131075</DisplayInfo>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -11716,7 +11716,8 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <DisplayInfo>3</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Store Size in SQFT">
-                                    <UName>[Store Size in SQFT].[All Store Size in SQFTs]</UName>
+                                    <UName>[Store Size in SQFT].[All
+                                    Store Size in SQFTs]</UName>
                                     <Caption>All Store Size in SQFTs</Caption>
                                     <LName>[Store Size in SQFT].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -11758,7 +11759,8 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <DisplayInfo>51</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Education Level">
-                                    <UName>[Education Level].[All Education Levels]</UName>
+                                    <UName>[Education Level].[All
+                                    Education Levels]</UName>
                                     <Caption>All Education Levels</Caption>
                                     <LName>[Education Level].[(All)]</LName>
                                     <LNum>0</LNum>
@@ -11772,14 +11774,16 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <DisplayInfo>2</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Marital Status">
-                                    <UName>[Marital Status].[All Marital Status]</UName>
+                                    <UName>[Marital Status].[All
+                                    Marital Status]</UName>
                                     <Caption>All Marital Status</Caption>
                                     <LName>[Marital Status].[(All)]</LName>
                                     <LNum>0</LNum>
                                     <DisplayInfo>111</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Yearly Income">
-                                    <UName>[Yearly Income].[All Yearly Incomes]</UName>
+                                    <UName>[Yearly Income].[All
+                                    Yearly Incomes]</UName>
                                     <Caption>All Yearly Incomes</Caption>
                                     <LName>[Yearly Income].[(All)]</LName>
                                     <LNum>0</LNum>
