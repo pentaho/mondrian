@@ -114,6 +114,7 @@ public class TestAggregationManager extends FoodMartTestCase {
                 MondrianProperties.instance().ReadAggregates.get())) {
             return;
         }
+
         CellRequest[] requests = new CellRequest[] {
             createRequest("Sales", "[Measures].[Unit Sales]",
                     new String[] {"customer", "store"},
@@ -131,18 +132,19 @@ public class TestAggregationManager extends FoodMartTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 SqlPattern.ACCESS_DIALECT | SqlPattern.MY_SQL_DIALECT,
-                "select `customer`.`gender` as `c0`," +
-                " `store`.`store_state` as `c1`," +
+                "select `store`.`store_state` as `c0`," +
+                " `customer`.`gender` as `c1`," +
                 " sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0`," +
                 " sum(`agg_l_05_sales_fact_1997`.`store_sales`) as `m1` " +
-                "from `customer` as `customer`," +
+                "from `store` as `store`," +
                 " `agg_l_05_sales_fact_1997` as `agg_l_05_sales_fact_1997`," +
-                " `store` as `store` " +
-                "where `agg_l_05_sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
-                "and `agg_l_05_sales_fact_1997`.`store_id` = `store`.`store_id` " +
+                " `customer` as `customer` " +
+                "where `agg_l_05_sales_fact_1997`.`store_id` = `store`.`store_id` " +
                 "and `store`.`store_state` in ('CA', 'OR') " +
-                "group by `customer`.`gender`, `store`.`store_state`",
-                26
+                "and `agg_l_05_sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
+                "group by `store`.`store_state`, " +
+                "`customer`.`gender`",
+                29
             )
         };
 
