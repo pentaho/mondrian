@@ -529,18 +529,37 @@ in {mondrian.foodmart.jdbcURL}.">
 
   </target>
 
+  <macrodef name="genJUnit">
+    <attribute name="path"/>
+    <attribute name="packagename"/>
+    <attribute name="testname"/>
+    <sequential>
+      <xslt style="${testsrc.dir}/xsl/generateDiffRepositoryJUnit.xsl"
+        in="@{path}@{testname}.ref.xml"
+        out="@{path}@{testname}JUnit.java">
+        <param name="reffile"
+          expression="${testsrc.dir}/main/mondrian/test/clearview/@{testname}.ref.xml"/>
+        <param name="packagename"
+          expression="@{packagename}"/>
+        <param name="classname"
+          expression="@{testname}JUnit"/>
+      </xslt>
+    </sequential>
+  </macrodef>
+
   <target name="generateDiffRepositoryJUnit"
     description="Generates explicit Java testcases from .ref.xml files">
-    <xslt style="${testsrc.dir}/xsl/generateDiffRepositoryJUnit.xsl"
-      in="${testsrc.dir}/main/mondrian/test/ClearViewTest.ref.xml"
-      out="${testsrc.dir}/main/mondrian/test/ClearViewJUnit.java">
-      <param name="reffile"
-        expression="${testsrc.dir}/main/mondrian/test/ClearViewTest.ref.xml"/>
-      <param name="packagename"
-        expression="mondrian.test"/>
-      <param name="classname"
-        expression="ClearViewJUnit"/>
-    </xslt>
+    
+    <!-- generate clearview junit code files -->
+    <property name="path" value="${testsrc.dir}/main/mondrian/test/clearview/"/>
+    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="CVBasicTest"/>
+    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="MetricFilterTest"/>
+    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="PredicateFilterTest"/>
+    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="SummaryTest"/>
+    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="SummaryMetricPercentTest"/>
+    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="TopBottomTest"/>
+    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="GrandTotalTest"/>
+    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="SubTotalTest"/>
   </target>
 
   <target name="etags">

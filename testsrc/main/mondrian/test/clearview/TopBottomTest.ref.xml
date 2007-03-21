@@ -1,0 +1,1434 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="testBottom">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level])'
+Set [*METRIC_CJ_SET] as 'Filter(Filter([*NATIVE_CJ_SET],Not IsEmpty([Measures].[*Unit Sales_SEL~SUM])),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 2)'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales],[Measures].[*SUMMARY_METRIC_0]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})'
+Member [Measures].[*Unit Sales_SEL~SUM] as '([Measures].[Unit Sales],[Product].CurrentMember,[Education Level].CurrentMember)'
+Member [Measures].[*TOP_Unit Sales_SEL~SUM] as 'Rank([Education Level].CurrentMember,Order(Filter([*NATIVE_MEMBERS_Education Level],Not IsEmpty([Measures].[*Unit Sales_SEL~SUM])),([Measures].[Unit Sales],[Product].CurrentMember),BASC))'
+Member [Measures].[*SUMMARY_METRIC_0] as 'Rank(([Product].CurrentMember,[Education Level].CurrentMember),CrossJoin({[Product].CurrentMember},Filter(Filter([*METRIC_MEMBERS_Education Level],Not IsEmpty([Measures].[*Unit Sales_SEL~SUM])),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 2)),[Measures].[Unit Sales])'
+Member [Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Drink]})'
+Member [Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food]})'
+Member [Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Non-Consumable]})'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Filter([*METRIC_MEMBERS_Education Level],Not IsEmpty([Measures].[*Unit Sales_SEL~SUM])),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 2))'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*METRIC_CJ_SET], {([Product].CurrentMember)}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin({[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*METRIC_CJ_SET], {([Product].CurrentMember,[Education Level].CurrentMember)})))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+{[Measures].[*SUMMARY_METRIC_0]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[Alcoholic Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[Dairy], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Baked Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Baking Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Breakfast Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Canned Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Canned Products], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Dairy], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Deli], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Eggs], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Frozen Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Meat], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Produce], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Seafood], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Snack Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Snacks], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Starchy Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Carousel], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Checkout], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Health and Hygiene], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Household], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Periodicals], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[Alcoholic Beverages], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Drink].[Alcoholic Beverages], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Drink].[Beverages], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Drink].[Beverages], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Drink].[Dairy], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Drink].[Dairy], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Baked Goods], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Baked Goods], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Baking Goods], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Baking Goods], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Breakfast Foods], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Breakfast Foods], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Canned Foods], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Canned Foods], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Canned Products], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Canned Products], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Dairy], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Dairy], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Deli], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Deli], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Eggs], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Eggs], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Frozen Foods], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Frozen Foods], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Meat], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Meat], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Produce], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Produce], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Seafood], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Seafood], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Snack Foods], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Snack Foods], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Snacks], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Snacks], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Food].[Starchy Foods], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Food].[Starchy Foods], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Non-Consumable].[Carousel], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Non-Consumable].[Carousel], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Non-Consumable].[Checkout], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Non-Consumable].[Checkout], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Non-Consumable].[Health and Hygiene], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Non-Consumable].[Health and Hygiene], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Non-Consumable].[Household], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Non-Consumable].[Household], [Education Level].[All Education Levels].[Partial College]}
+{[Product].[All Products].[Non-Consumable].[Periodicals], [Education Level].[All Education Levels].[Graduate Degree]}
+{[Product].[All Products].[Non-Consumable].[Periodicals], [Education Level].[All Education Levels].[Partial College]}
+Row #0: 40,115
+Row #0: 1
+Row #1: 926
+Row #1: 1
+Row #2: 1,942
+Row #2: 1
+Row #3: 621
+Row #3: 1
+Row #4: 1,309
+Row #4: 1
+Row #5: 3,287
+Row #5: 1
+Row #6: 423
+Row #6: 1
+Row #7: 2,947
+Row #7: 1
+Row #8: 242
+Row #8: 1
+Row #9: 2,045
+Row #9: 1
+Row #10: 1,859
+Row #10: 1
+Row #11: 605
+Row #11: 1
+Row #12: 3,912
+Row #12: 1
+Row #13: 241
+Row #13: 1
+Row #14: 5,676
+Row #14: 1
+Row #15: 275
+Row #15: 1
+Row #16: 4,563
+Row #16: 1
+Row #17: 985
+Row #17: 1
+Row #18: 745
+Row #18: 1
+Row #19: 121
+Row #19: 1
+Row #20: 221
+Row #20: 1
+Row #21: 2,575
+Row #21: 1
+Row #22: 4,024
+Row #22: 1
+Row #23: 571
+Row #23: 1
+Row #24: 3,489
+Row #24: 1
+Row #25: 29,114
+Row #25: 1
+Row #26: 7,512
+Row #26: 1
+Row #27: 352
+Row #27: 2
+Row #28: 574
+Row #28: 1
+Row #29: 730
+Row #29: 2
+Row #30: 1,212
+Row #30: 1
+Row #31: 243
+Row #31: 2
+Row #32: 378
+Row #32: 1
+Row #33: 500
+Row #33: 2
+Row #34: 809
+Row #34: 1
+Row #35: 1,278
+Row #35: 2
+Row #36: 2,009
+Row #36: 1
+Row #37: 144
+Row #37: 2
+Row #38: 279
+Row #38: 1
+Row #39: 1,202
+Row #39: 2
+Row #40: 1,745
+Row #40: 1
+Row #41: 114
+Row #41: 2
+Row #42: 128
+Row #42: 1
+Row #43: 822
+Row #43: 2
+Row #44: 1,223
+Row #44: 1
+Row #45: 685
+Row #45: 2
+Row #46: 1,174
+Row #46: 1
+Row #47: 247
+Row #47: 2
+Row #48: 358
+Row #48: 1
+Row #49: 1,540
+Row #49: 2
+Row #50: 2,372
+Row #50: 1
+Row #51: 101
+Row #51: 2
+Row #52: 140
+Row #52: 1
+Row #53: 2,158
+Row #53: 2
+Row #54: 3,518
+Row #54: 1
+Row #55: 101
+Row #55: 2
+Row #56: 174
+Row #56: 1
+Row #57: 1,700
+Row #57: 2
+Row #58: 2,863
+Row #58: 1
+Row #59: 378
+Row #59: 2
+Row #60: 607
+Row #60: 1
+Row #61: 285
+Row #61: 2
+Row #62: 460
+Row #62: 1
+Row #63: 53
+Row #63: 2
+Row #64: 68
+Row #64: 1
+Row #65: 80
+Row #65: 2
+Row #66: 141
+Row #66: 1
+Row #67: 995
+Row #67: 2
+Row #68: 1,580
+Row #68: 1
+Row #69: 1,607
+Row #69: 2
+Row #70: 2,417
+Row #70: 1
+Row #71: 255
+Row #71: 2
+Row #72: 316
+Row #72: 1
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBottomFromManyRows">
+        <Resource name="description">
+            <![CDATA[
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_Product]'
+Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 2)'
+Set [*TOP_BOTTOM_SET] as 'Order([*NATIVE_MEMBERS_Product],([Measures].[Unit Sales]),BASC)'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Name].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})'
+Member [Measures].[*TOP_Unit Sales_SEL~SUM] as 'Rank([Product].CurrentMember,[*TOP_BOTTOM_SET])'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 2))'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Union({[Product].[*CTX_MEMBER_SEL~SUM]},Generate([*METRIC_CJ_SET], {([Product].CurrentMember)})) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Jelly].[CDR].[CDR Grape Jelly]}
+{[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves]}
+Row #0: 79
+Row #1: 
+Row #2: 79
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBottomWithEmptyCells">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_Promotions]'
+Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 10)'
+Set [*TOP_BOTTOM_SET] as 'Order([*NATIVE_MEMBERS_Promotions],([Measures].[Unit Sales]),BASC)'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Promotions] as '[Promotions].[Promotion Name].Members'
+Set [*NATIVE_MEMBERS_Promotions] as 'Generate([*NATIVE_CJ_SET], {[Promotions].CurrentMember})'
+Set [*METRIC_MEMBERS_Promotions] as 'Generate([*METRIC_CJ_SET], {[Promotions].CurrentMember})'
+Member [Measures].[*TOP_Unit Sales_SEL~SUM] as 'Rank([Promotions].CurrentMember,[*TOP_BOTTOM_SET])'
+Member [Promotions].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Promotions],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 10))'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Union({[Promotions].[*CTX_MEMBER_SEL~SUM]},Generate([*METRIC_CJ_SET], {([Promotions].CurrentMember)})) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Promotions].[*CTX_MEMBER_SEL~SUM]}
+{[Promotions].[All Promotions].[Coupon Spectacular]}
+{[Promotions].[All Promotions].[Fantastic Discounts]}
+{[Promotions].[All Promotions].[Green Light Special]}
+{[Promotions].[All Promotions].[I Cant Believe It Sale]}
+{[Promotions].[All Promotions].[Money Grabbers]}
+{[Promotions].[All Promotions].[Pick Your Savings]}
+{[Promotions].[All Promotions].[Price Smashers]}
+{[Promotions].[All Promotions].[Sale Winners]}
+{[Promotions].[All Promotions].[Tip Top Savings]}
+{[Promotions].[All Promotions].[Two for One]}
+Row #0: 2,820
+Row #1: 
+Row #2: 
+Row #3: 436
+Row #4: 253
+Row #5: 
+Row #6: 323
+Row #7: 504
+Row #8: 444
+Row #9: 525
+Row #10: 335
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBottomWithNonEmptyCells">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Promotions], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*METRIC_CJ_SET] as 'Filter(Filter([*NATIVE_CJ_SET],Not IsEmpty([Measures].[*Unit Sales_SEL~SUM])),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 10)'
+Set [*TOP_BOTTOM_SET] as 'Order(Filter([*NATIVE_MEMBERS_Promotions],Not IsEmpty([Measures].[*Unit Sales_SEL~SUM])),([Measures].[Unit Sales]),BASC)'
+Set [*BASE_MEMBERS_Promotions] as '[Promotions].[Promotion Name].Members'
+Set [*NATIVE_MEMBERS_Promotions] as 'Generate([*NATIVE_CJ_SET], {[Promotions].CurrentMember})'
+Set [*METRIC_MEMBERS_Promotions] as 'Generate([*METRIC_CJ_SET], {[Promotions].CurrentMember})'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Member [Measures].[*Unit Sales_SEL~SUM] as '([Measures].[Unit Sales],[Promotions].CurrentMember)'
+Member [Measures].[*TOP_Unit Sales_SEL~SUM] as 'Rank([Promotions].CurrentMember,[*TOP_BOTTOM_SET])'
+Member [Promotions].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Filter([*METRIC_MEMBERS_Promotions],Not IsEmpty([Measures].[*Unit Sales_SEL~SUM])),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 10))'
+Select
+Union(CrossJoin({[Promotions].[*CTX_MEMBER_SEL~SUM]},[*BASE_MEMBERS_Measures]),CrossJoin(Generate([*METRIC_CJ_SET], {([Promotions].CurrentMember)}),[*BASE_MEMBERS_Measures])) on columns
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Promotions].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
+{[Promotions].[All Promotions].[Big Time Savings], [Measures].[Unit Sales]}
+{[Promotions].[All Promotions].[Go For It], [Measures].[Unit Sales]}
+{[Promotions].[All Promotions].[Green Light Special], [Measures].[Unit Sales]}
+{[Promotions].[All Promotions].[I Cant Believe It Sale], [Measures].[Unit Sales]}
+{[Promotions].[All Promotions].[Pick Your Savings], [Measures].[Unit Sales]}
+{[Promotions].[All Promotions].[Price Smashers], [Measures].[Unit Sales]}
+{[Promotions].[All Promotions].[Sale Winners], [Measures].[Unit Sales]}
+{[Promotions].[All Promotions].[Shelf Clearing Days], [Measures].[Unit Sales]}
+{[Promotions].[All Promotions].[Tip Top Savings], [Measures].[Unit Sales]}
+{[Promotions].[All Promotions].[Two for One], [Measures].[Unit Sales]}
+Row #0: 4,963
+Row #0: 700
+Row #0: 689
+Row #0: 436
+Row #0: 253
+Row #0: 323
+Row #0: 504
+Row #0: 444
+Row #0: 754
+Row #0: 525
+Row #0: 335
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTopMetricFilterOnAttribute">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level])'
+Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3)'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales],[Measures].[*SUMMARY_METRIC_0]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})'
+Member [Measures].[*TOP_Unit Sales_SEL~SUM] as 'Rank([Education Level].CurrentMember,Order([*NATIVE_MEMBERS_Education Level],([Measures].[Unit Sales],[Product].CurrentMember),BDESC))'
+Member [Measures].[*SUMMARY_METRIC_0] as 'Rank(([Product].CurrentMember,[Education Level].CurrentMember),CrossJoin({[Product].CurrentMember},Filter([*METRIC_MEMBERS_Education Level],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3)),[Measures].[Unit Sales])'
+Member [Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Drink]})'
+Member [Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food]})'
+Member [Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Non-Consumable]})'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Education Level],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3))'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*METRIC_CJ_SET], {([Product].CurrentMember)}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin({[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*METRIC_CJ_SET], {([Product].CurrentMember,[Education Level].CurrentMember)})))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+{[Measures].[*SUMMARY_METRIC_0]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[Alcoholic Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[Dairy], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Baked Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Baking Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Breakfast Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Canned Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Canned Products], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Dairy], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Deli], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Eggs], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Frozen Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Meat], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Produce], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Seafood], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Snack Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Snacks], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Starchy Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Carousel], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Checkout], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Health and Hygiene], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Household], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Periodicals], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[Alcoholic Beverages], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Drink].[Alcoholic Beverages], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Drink].[Alcoholic Beverages], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Drink].[Beverages], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Drink].[Beverages], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Drink].[Beverages], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Drink].[Dairy], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Drink].[Dairy], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Drink].[Dairy], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Baked Goods], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Baked Goods], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Baked Goods], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Baking Goods], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Baking Goods], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Baking Goods], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Breakfast Foods], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Breakfast Foods], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Breakfast Foods], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Canned Foods], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Canned Foods], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Canned Foods], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Canned Products], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Canned Products], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Canned Products], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Dairy], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Dairy], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Dairy], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Deli], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Deli], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Deli], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Eggs], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Eggs], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Eggs], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Frozen Foods], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Frozen Foods], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Frozen Foods], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Meat], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Meat], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Meat], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Produce], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Produce], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Produce], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Seafood], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Seafood], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Seafood], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Snack Foods], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Snack Foods], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Snack Foods], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Snacks], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Snacks], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Snacks], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Food].[Starchy Foods], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Food].[Starchy Foods], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Food].[Starchy Foods], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Non-Consumable].[Carousel], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Non-Consumable].[Carousel], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Non-Consumable].[Carousel], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Non-Consumable].[Checkout], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Non-Consumable].[Checkout], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Non-Consumable].[Checkout], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Non-Consumable].[Health and Hygiene], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Non-Consumable].[Health and Hygiene], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Non-Consumable].[Health and Hygiene], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Non-Consumable].[Household], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Non-Consumable].[Household], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Non-Consumable].[Household], [Education Level].[All Education Levels].[Partial High School]}
+{[Product].[All Products].[Non-Consumable].[Periodicals], [Education Level].[All Education Levels].[Bachelors Degree]}
+{[Product].[All Products].[Non-Consumable].[Periodicals], [Education Level].[All Education Levels].[High School Degree]}
+{[Product].[All Products].[Non-Consumable].[Periodicals], [Education Level].[All Education Levels].[Partial High School]}
+Row #0: 226,658
+Row #0: 1
+Row #1: 5,912
+Row #1: 1
+Row #2: 11,631
+Row #2: 1
+Row #3: 3,565
+Row #3: 1
+Row #4: 6,561
+Row #4: 1
+Row #5: 16,958
+Row #5: 1
+Row #6: 2,894
+Row #6: 1
+Row #7: 16,079
+Row #7: 1
+Row #8: 1,570
+Row #8: 1
+Row #9: 10,840
+Row #9: 1
+Row #10: 10,178
+Row #10: 1
+Row #11: 3,527
+Row #11: 1
+Row #12: 22,743
+Row #12: 1
+Row #13: 1,473
+Row #13: 1
+Row #14: 32,116
+Row #14: 1
+Row #15: 1,489
+Row #15: 1
+Row #16: 25,982
+Row #16: 1
+Row #17: 5,899
+Row #17: 1
+Row #18: 4,517
+Row #18: 1
+Row #19: 720
+Row #19: 1
+Row #20: 1,558
+Row #20: 1
+Row #21: 13,709
+Row #21: 1
+Row #22: 23,014
+Row #22: 1
+Row #23: 3,723
+Row #23: 1
+Row #24: 21,108
+Row #24: 1
+Row #25: 162,826
+Row #25: 1
+Row #26: 42,724
+Row #26: 1
+Row #27: 1,763
+Row #27: 3
+Row #28: 2,079
+Row #28: 1
+Row #29: 2,070
+Row #29: 2
+Row #30: 3,591
+Row #30: 3
+Row #31: 3,925
+Row #31: 2
+Row #32: 4,115
+Row #32: 1
+Row #33: 1,069
+Row #33: 3
+Row #34: 1,222
+Row #34: 2
+Row #35: 1,274
+Row #35: 1
+Row #36: 1,933
+Row #36: 3
+Row #37: 2,348
+Row #37: 1
+Row #38: 2,280
+Row #38: 2
+Row #39: 5,456
+Row #39: 3
+Row #40: 5,839
+Row #40: 1
+Row #41: 5,663
+Row #41: 2
+Row #42: 885
+Row #42: 3
+Row #43: 1,060
+Row #43: 1
+Row #44: 949
+Row #44: 2
+Row #45: 4,914
+Row #45: 3
+Row #46: 5,460
+Row #46: 2
+Row #47: 5,705
+Row #47: 1
+Row #48: 502
+Row #48: 2
+Row #49: 582
+Row #49: 1
+Row #50: 486
+Row #50: 3
+Row #51: 3,195
+Row #51: 3
+Row #52: 3,811
+Row #52: 2
+Row #53: 3,834
+Row #53: 1
+Row #54: 2,861
+Row #54: 3
+Row #55: 3,609
+Row #55: 2
+Row #56: 3,708
+Row #56: 1
+Row #57: 1,068
+Row #57: 3
+Row #58: 1,232
+Row #58: 1
+Row #59: 1,227
+Row #59: 2
+Row #60: 6,937
+Row #60: 3
+Row #61: 7,965
+Row #61: 1
+Row #62: 7,841
+Row #62: 2
+Row #63: 456
+Row #63: 3
+Row #64: 501
+Row #64: 2
+Row #65: 516
+Row #65: 1
+Row #66: 9,640
+Row #66: 3
+Row #67: 10,916
+Row #67: 2
+Row #68: 11,560
+Row #68: 1
+Row #69: 430
+Row #69: 3
+Row #70: 549
+Row #70: 1
+Row #71: 510
+Row #71: 2
+Row #72: 7,898
+Row #72: 3
+Row #73: 9,135
+Row #73: 1
+Row #74: 8,949
+Row #74: 2
+Row #75: 1,799
+Row #75: 3
+Row #76: 2,007
+Row #76: 2
+Row #77: 2,093
+Row #77: 1
+Row #78: 1,391
+Row #78: 3
+Row #79: 1,495
+Row #79: 2
+Row #80: 1,631
+Row #80: 1
+Row #81: 215
+Row #81: 3
+Row #82: 283
+Row #82: 1
+Row #83: 222
+Row #83: 2
+Row #84: 505
+Row #84: 2
+Row #85: 473
+Row #85: 3
+Row #86: 580
+Row #86: 1
+Row #87: 4,176
+Row #87: 3
+Row #88: 4,609
+Row #88: 2
+Row #89: 4,924
+Row #89: 1
+Row #90: 7,060
+Row #90: 3
+Row #91: 8,178
+Row #91: 1
+Row #92: 7,776
+Row #92: 2
+Row #93: 1,095
+Row #93: 3
+Row #94: 1,386
+Row #94: 1
+Row #95: 1,242
+Row #95: 2
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTopMetricFilterOnLowestLevel">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3)'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales],[Measures].[*SUMMARY_METRIC_0]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})'
+Member [Measures].[*TOP_Unit Sales_SEL~SUM] as 'Rank([Product].CurrentMember,Order(Descendants(Ancestor([Product].CurrentMember,[Product].[Product Family]),[Product].[Product Department]),([Measures].[Unit Sales]),BDESC))'
+Member [Measures].[*SUMMARY_METRIC_0] as 'Rank(([Product].CurrentMember),Filter(Descendants(Ancestor([Product].CurrentMember,[Product].[Product Family]),[Product].[Product Department]),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3),[Measures].[Unit Sales])'
+Member [Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Descendants([Product].[All Products].[Drink],[Product].[Product Department]),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3))'
+Member [Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Descendants([Product].[All Products].[Food],[Product].[Product Department]),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3))'
+Member [Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Descendants([Product].[All Products].[Non-Consumable],[Product].[Product Department]),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3))'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3))'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[*CTX_MEMBER_SEL~SUM]},Union({[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]},Generate([*METRIC_CJ_SET], {([Product].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+{[Measures].[*SUMMARY_METRIC_0]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[Alcoholic Beverages]}
+{[Product].[All Products].[Drink].[Beverages]}
+{[Product].[All Products].[Drink].[Dairy]}
+{[Product].[All Products].[Food].[Frozen Foods]}
+{[Product].[All Products].[Food].[Produce]}
+{[Product].[All Products].[Food].[Snack Foods]}
+{[Product].[All Products].[Non-Consumable].[Health and Hygiene]}
+{[Product].[All Products].[Non-Consumable].[Household]}
+{[Product].[All Products].[Non-Consumable].[Periodicals]}
+Row #0: 167,205
+Row #0: 
+Row #1: 24,597
+Row #1: 1
+Row #2: 94,992
+Row #2: 1
+Row #3: 47,616
+Row #3: 1
+Row #4: 6,838
+Row #4: 2
+Row #5: 13,573
+Row #5: 1
+Row #6: 4,186
+Row #6: 3
+Row #7: 26,655
+Row #7: 3
+Row #8: 37,792
+Row #8: 1
+Row #9: 30,545
+Row #9: 2
+Row #10: 16,284
+Row #10: 2
+Row #11: 27,038
+Row #11: 1
+Row #12: 4,294
+Row #12: 3
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTopMetricFilterOnParentLevel">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 2)'
+Set [*TOP_BOTTOM_SET] as 'Order({[Product].[All Products].[Drink].[*CTX_METRIC_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*CTX_METRIC_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[*CTX_METRIC_MEMBER_SEL~SUM]},([Measures].[Unit Sales]),BDESC)'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})'
+Member [Product].[All Products].[Drink].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Drink]})'
+Member [Product].[All Products].[Food].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food]})'
+Member [Product].[All Products].[Non-Consumable].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Non-Consumable]})'
+Member [Measures].[*TOP_Unit Sales_SEL~SUM] as 'Rank(Ancestor([Product].CurrentMember,[Product].[Product Family]).CalculatedChild("*CTX_METRIC_MEMBER_SEL~SUM"),[*TOP_BOTTOM_SET])'
+Member [Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Drink]})'
+Member [Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food]})'
+Member [Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Non-Consumable]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 2))'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[*CTX_MEMBER_SEL~SUM]},Union({[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]},Generate([*METRIC_CJ_SET], {([Product].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Baked Goods]}
+{[Product].[All Products].[Food].[Baking Goods]}
+{[Product].[All Products].[Food].[Breakfast Foods]}
+{[Product].[All Products].[Food].[Canned Foods]}
+{[Product].[All Products].[Food].[Canned Products]}
+{[Product].[All Products].[Food].[Dairy]}
+{[Product].[All Products].[Food].[Deli]}
+{[Product].[All Products].[Food].[Eggs]}
+{[Product].[All Products].[Food].[Frozen Foods]}
+{[Product].[All Products].[Food].[Meat]}
+{[Product].[All Products].[Food].[Produce]}
+{[Product].[All Products].[Food].[Seafood]}
+{[Product].[All Products].[Food].[Snack Foods]}
+{[Product].[All Products].[Food].[Snacks]}
+{[Product].[All Products].[Food].[Starchy Foods]}
+{[Product].[All Products].[Non-Consumable].[Carousel]}
+{[Product].[All Products].[Non-Consumable].[Checkout]}
+{[Product].[All Products].[Non-Consumable].[Health and Hygiene]}
+{[Product].[All Products].[Non-Consumable].[Household]}
+{[Product].[All Products].[Non-Consumable].[Periodicals]}
+Row #0: 242,176
+Row #1: 24,597
+Row #2: 191,940
+Row #3: 50,236
+Row #4: 7,870
+Row #5: 20,245
+Row #6: 3,317
+Row #7: 19,026
+Row #8: 1,812
+Row #9: 12,885
+Row #10: 12,037
+Row #11: 4,132
+Row #12: 26,655
+Row #13: 1,714
+Row #14: 37,792
+Row #15: 1,764
+Row #16: 30,545
+Row #17: 6,884
+Row #18: 5,262
+Row #19: 841
+Row #20: 1,779
+Row #21: 16,284
+Row #22: 27,038
+Row #23: 4,294
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTopMetricFilterOnParentLevelWithConditions">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*METRIC_CJ_SET] as 'Filter(Filter([*NATIVE_CJ_SET],[Measures].[*Unit Sales_SEL~SUM] > 100000.0),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3)'
+Set [*TOP_BOTTOM_SET] as 'Order({[Product].[All Products].[Drink].[*CTX_METRIC_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*CTX_METRIC_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[*CTX_METRIC_MEMBER_SEL~SUM]},([Measures].[Unit Sales]),BDESC)'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})'
+Member [Product].[All Products].[Drink].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Drink]})'
+Member [Product].[All Products].[Food].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food]})'
+Member [Product].[All Products].[Non-Consumable].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Non-Consumable]})'
+Member [Measures].[*Unit Sales_SEL~SUM] as '([Measures].[Unit Sales],Ancestor([Product].CurrentMember,[Product].[Product Family]).CalculatedChild("*CTX_METRIC_MEMBER_SEL~SUM"))'
+Member [Measures].[*TOP_Unit Sales_SEL~SUM] as 'Rank(Ancestor([Product].CurrentMember,[Product].[Product Family]).CalculatedChild("*CTX_METRIC_MEMBER_SEL~SUM"),[*TOP_BOTTOM_SET])'
+Member [Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Drink]})'
+Member [Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food]})'
+Member [Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Non-Consumable]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Filter([*METRIC_MEMBERS_Product],[Measures].[*Unit Sales_SEL~SUM] > 100000.0),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3))'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[*CTX_MEMBER_SEL~SUM]},Union({[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]},Generate([*METRIC_CJ_SET], {([Product].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Baked Goods]}
+{[Product].[All Products].[Food].[Baking Goods]}
+{[Product].[All Products].[Food].[Breakfast Foods]}
+{[Product].[All Products].[Food].[Canned Foods]}
+{[Product].[All Products].[Food].[Canned Products]}
+{[Product].[All Products].[Food].[Dairy]}
+{[Product].[All Products].[Food].[Deli]}
+{[Product].[All Products].[Food].[Eggs]}
+{[Product].[All Products].[Food].[Frozen Foods]}
+{[Product].[All Products].[Food].[Meat]}
+{[Product].[All Products].[Food].[Produce]}
+{[Product].[All Products].[Food].[Seafood]}
+{[Product].[All Products].[Food].[Snack Foods]}
+{[Product].[All Products].[Food].[Snacks]}
+{[Product].[All Products].[Food].[Starchy Foods]}
+Row #0: 191,940
+Row #1: 24,597
+Row #2: 191,940
+Row #3: 50,236
+Row #4: 7,870
+Row #5: 20,245
+Row #6: 3,317
+Row #7: 19,026
+Row #8: 1,812
+Row #9: 12,885
+Row #10: 12,037
+Row #11: 4,132
+Row #12: 26,655
+Row #13: 1,714
+Row #14: 37,792
+Row #15: 1,764
+Row #16: 30,545
+Row #17: 6,884
+Row #18: 5,262
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTopMetricFilterWithSummaryMetric">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Store Type], Not IsEmpty ([Measures].[Sales Count]))'
+Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*TOP_Sales Count_SEL~SUM] <= 2)'
+Set [*TOP_BOTTOM_SET] as 'Order([*NATIVE_MEMBERS_Store Type],([Measures].[Sales Count]),BDESC)'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Sales Count],[Measures].[*SUMMARY_METRIC_0]}'
+Set [*BASE_MEMBERS_Store Type] as '[Store Type].[Store Type].Members'
+Set [*NATIVE_MEMBERS_Store Type] as 'Generate([*NATIVE_CJ_SET], {[Store Type].CurrentMember})'
+Set [*METRIC_MEMBERS_Store Type] as 'Generate([*METRIC_CJ_SET], {[Store Type].CurrentMember})'
+Member [Measures].[*TOP_Sales Count_SEL~SUM] as 'Rank([Store Type].CurrentMember,[*TOP_BOTTOM_SET])'
+Member [Store Type].[*CTX_MEMBER_SEL~AGG] as 'Aggregate(Filter([*METRIC_MEMBERS_Store Type],[Measures].[*TOP_Sales Count_SEL~SUM] <= 2))'
+Member [Measures].[*SUMMARY_METRIC_0] as '[Measures].[Sales Count]/([Measures].[Sales Count],[Store Type].[*CTX_MEMBER_SEL~AGG])', FORMAT_STRING = '0.00%'
+Member [Store Type].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Store Type],[Measures].[*TOP_Sales Count_SEL~SUM] <= 2))'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Store Type].[*CTX_MEMBER_SEL~SUM]},Generate([*METRIC_CJ_SET], {([Store Type].CurrentMember)})) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Sales Count]}
+{[Measures].[*SUMMARY_METRIC_0]}
+Axis #2:
+{[Store Type].[*CTX_MEMBER_SEL~SUM]}
+{[Store Type].[All Store Types].[Deluxe Supermarket]}
+{[Store Type].[All Store Types].[Supermarket]}
+Row #0: 72,326
+Row #0: 100.00%
+Row #1: 24,531
+Row #1: 33.92%
+Row #2: 47,795
+Row #2: 66.08%
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTopMetricWithThreeLevelHierarchy">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 10)'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales],[Measures].[*TOP_Unit Sales_SEL~SUM]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Category].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})'
+Member [Measures].[*TOP_Unit Sales_SEL~SUM] as 'Rank([Product].CurrentMember,Order(Descendants(Ancestor([Product].CurrentMember,[Product].[Product Family]),[Product].[Product Category]),([Measures].[Unit Sales]),BDESC))'
+Member [Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Descendants([Product].[All Products].[Drink],[Product].[Product Category]),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 10))'
+Member [Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Descendants([Product].[All Products].[Food],[Product].[Product Category]),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 10))'
+Member [Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Descendants([Product].[All Products].[Non-Consumable],[Product].[Product Category]),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 10))'
+Member [Product].[All Products].[Drink].[Alcoholic Beverages].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Drink].[Alcoholic Beverages]})'
+Member [Product].[All Products].[Drink].[Beverages].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Drink].[Beverages]})'
+Member [Product].[All Products].[Drink].[Dairy].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Drink].[Dairy]})'
+Member [Product].[All Products].[Food].[Baked Goods].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Baked Goods]})'
+Member [Product].[All Products].[Food].[Baking Goods].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Baking Goods]})'
+Member [Product].[All Products].[Food].[Breakfast Foods].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Breakfast Foods]})'
+Member [Product].[All Products].[Food].[Canned Foods].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Canned Foods]})'
+Member [Product].[All Products].[Food].[Canned Products].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Canned Products]})'
+Member [Product].[All Products].[Food].[Dairy].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Dairy]})'
+Member [Product].[All Products].[Food].[Deli].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Deli]})'
+Member [Product].[All Products].[Food].[Eggs].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Eggs]})'
+Member [Product].[All Products].[Food].[Frozen Foods].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Frozen Foods]})'
+Member [Product].[All Products].[Food].[Meat].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Meat]})'
+Member [Product].[All Products].[Food].[Produce].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Produce]})'
+Member [Product].[All Products].[Food].[Seafood].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Seafood]})'
+Member [Product].[All Products].[Food].[Snack Foods].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Snack Foods]})'
+Member [Product].[All Products].[Food].[Snacks].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Snacks]})'
+Member [Product].[All Products].[Food].[Starchy Foods].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Food].[Starchy Foods]})'
+Member [Product].[All Products].[Non-Consumable].[Carousel].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Non-Consumable].[Carousel]})'
+Member [Product].[All Products].[Non-Consumable].[Checkout].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Non-Consumable].[Checkout]})'
+Member [Product].[All Products].[Non-Consumable].[Health and Hygiene].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Non-Consumable].[Health and Hygiene]})'
+Member [Product].[All Products].[Non-Consumable].[Household].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Non-Consumable].[Household]})'
+Member [Product].[All Products].[Non-Consumable].[Periodicals].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products].[Non-Consumable].[Periodicals]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 10))'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[*CTX_MEMBER_SEL~SUM]},Union({[Product].[All Products].[Drink].[Alcoholic Beverages].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Drink].[Beverages].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Drink].[Dairy].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Baked Goods].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Baking Goods].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Breakfast Foods].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Canned Foods].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Canned Products].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Dairy].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Deli].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Eggs].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Frozen Foods].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Meat].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Produce].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Seafood].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Snack Foods].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Snacks].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[Starchy Foods].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[Carousel].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[Checkout].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[Health and Hygiene].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[Household].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[Periodicals].[*CTX_MEMBER_SEL~SUM]},Union({[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]},Generate([*METRIC_CJ_SET], {([Product].CurrentMember)})))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+{[Measures].[*TOP_Unit Sales_SEL~SUM]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[Alcoholic Beverages].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[Beverages].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[Dairy].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Baked Goods].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Baking Goods].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Breakfast Foods].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Canned Foods].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Canned Products].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Dairy].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Deli].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Eggs].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Frozen Foods].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Meat].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Produce].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Seafood].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Snack Foods].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Snacks].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Starchy Foods].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Carousel].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Checkout].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Household].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[Periodicals].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine]}
+{[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages]}
+{[Product].[All Products].[Drink].[Beverages].[Drinks]}
+{[Product].[All Products].[Drink].[Beverages].[Hot Beverages]}
+{[Product].[All Products].[Drink].[Beverages].[Pure Juice Beverages]}
+{[Product].[All Products].[Drink].[Dairy].[Dairy]}
+{[Product].[All Products].[Food].[Baked Goods].[Bread]}
+{[Product].[All Products].[Food].[Baking Goods].[Baking Goods]}
+{[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies]}
+{[Product].[All Products].[Food].[Canned Foods].[Canned Soup]}
+{[Product].[All Products].[Food].[Dairy].[Dairy]}
+{[Product].[All Products].[Food].[Deli].[Meat]}
+{[Product].[All Products].[Food].[Frozen Foods].[Vegetables]}
+{[Product].[All Products].[Food].[Produce].[Fruit]}
+{[Product].[All Products].[Food].[Produce].[Vegetables]}
+{[Product].[All Products].[Food].[Snack Foods].[Snack Foods]}
+{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products]}
+{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Decongestants]}
+{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Hygiene]}
+{[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers]}
+{[Product].[All Products].[Non-Consumable].[Household].[Cleaning Supplies]}
+{[Product].[All Products].[Non-Consumable].[Household].[Electrical]}
+{[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products]}
+{[Product].[All Products].[Non-Consumable].[Household].[Paper Products]}
+{[Product].[All Products].[Non-Consumable].[Household].[Plastic Products]}
+{[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines]}
+Row #0: 195,581
+Row #0: 0
+Row #1: 6,838
+Row #1: 0
+Row #2: 13,573
+Row #2: 0
+Row #3: 4,186
+Row #3: 0
+Row #4: 7,870
+Row #4: 0
+Row #5: 20,245
+Row #5: 0
+Row #6: 3,317
+Row #6: 0
+Row #7: 19,026
+Row #7: 0
+Row #8: 1,812
+Row #8: 0
+Row #9: 12,885
+Row #9: 0
+Row #10: 12,037
+Row #10: 0
+Row #11: 4,132
+Row #11: 0
+Row #12: 26,655
+Row #12: 0
+Row #13: 1,714
+Row #13: 0
+Row #14: 37,792
+Row #14: 0
+Row #15: 1,764
+Row #15: 0
+Row #16: 30,545
+Row #16: 0
+Row #17: 6,884
+Row #17: 0
+Row #18: 5,262
+Row #18: 0
+Row #19: 841
+Row #19: 0
+Row #20: 1,779
+Row #20: 0
+Row #21: 16,284
+Row #21: 0
+Row #22: 27,038
+Row #22: 0
+Row #23: 4,294
+Row #23: 0
+Row #24: 24,597
+Row #24: 0
+Row #25: 128,474
+Row #25: 0
+Row #26: 42,510
+Row #26: 0
+Row #27: 6,838
+Row #27: 1
+Row #28: 3,407
+Row #28: 4
+Row #29: 2,469
+Row #29: 6
+Row #30: 4,301
+Row #30: 2
+Row #31: 3,396
+Row #31: 5
+Row #32: 4,186
+Row #32: 3
+Row #33: 7,870
+Row #33: 9
+Row #34: 8,357
+Row #34: 7
+Row #35: 11,888
+Row #35: 4
+Row #36: 8,006
+Row #36: 8
+Row #37: 12,885
+Row #37: 3
+Row #38: 9,433
+Row #38: 6
+Row #39: 6,984
+Row #39: 10
+Row #40: 11,767
+Row #40: 5
+Row #41: 20,739
+Row #41: 2
+Row #42: 30,545
+Row #42: 1
+Row #43: 5,885
+Row #43: 3
+Row #44: 1,813
+Row #44: 10
+Row #45: 3,556
+Row #45: 6
+Row #46: 3,254
+Row #46: 8
+Row #47: 3,441
+Row #47: 7
+Row #48: 6,782
+Row #48: 2
+Row #49: 4,205
+Row #49: 5
+Row #50: 6,803
+Row #50: 1
+Row #51: 2,477
+Row #51: 9
+Row #52: 4,294
+Row #52: 4
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTop3NonVisualPctOf">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Store Type], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*TOP_Unit Sales_ALL~SUM] <= 3)'
+Set [*TOP_BOTTOM_SET] as 'Order([*NATIVE_MEMBERS_Store Type],([Measures].[Unit Sales]),BDESC)'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales],[Measures].[*SUMMARY_METRIC_0],[Measures].[*TOP_Unit Sales_ALL~SUM]}'
+Set [*BASE_MEMBERS_Store Type] as '[Store Type].[Store Type].Members'
+Set [*NATIVE_MEMBERS_Store Type] as 'Generate([*NATIVE_CJ_SET], {[Store Type].CurrentMember})'
+Set [*METRIC_MEMBERS_Store Type] as 'Generate([*METRIC_CJ_SET], {[Store Type].CurrentMember})'
+Member [Measures].[*TOP_Unit Sales_ALL~SUM] as 'Rank([Store Type].CurrentMember,[*TOP_BOTTOM_SET])'
+Member [Store Type].[*CTX_MEMBER_ALL~AGG] as 'Aggregate({[Store Type].[All Store Types]})'
+Member [Measures].[*SUMMARY_METRIC_0] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],[Store Type].[*CTX_MEMBER_ALL~AGG])', FORMAT_STRING = '0.00%'
+Member [Store Type].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Store Type],[Measures].[*TOP_Unit Sales_ALL~SUM] <= 3))'
+Member [Store Type].[*CTX_MEMBER_ALL~SUM] as 'Sum({[Store Type].[All Store Types]})'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Store Type].[*CTX_MEMBER_ALL~SUM]},Union({[Store Type].[*CTX_MEMBER_SEL~SUM]},Generate([*METRIC_CJ_SET], {([Store Type].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+{[Measures].[*SUMMARY_METRIC_0]}
+{[Measures].[*TOP_Unit Sales_ALL~SUM]}
+Axis #2:
+{[Store Type].[*CTX_MEMBER_ALL~SUM]}
+{[Store Type].[*CTX_MEMBER_SEL~SUM]}
+{[Store Type].[All Store Types].[Deluxe Supermarket]}
+{[Store Type].[All Store Types].[Gourmet Supermarket]}
+{[Store Type].[All Store Types].[Supermarket]}
+Row #0: 266,773
+Row #0: 100.00%
+Row #0: 0
+Row #1: 248,725
+Row #1: 93.23%
+Row #1: 0
+Row #2: 76,837
+Row #2: 28.80%
+Row #2: 2
+Row #3: 21,333
+Row #3: 8.00%
+Row #3: 3
+Row #4: 150,555
+Row #4: 56.44%
+Row #4: 1
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBottom10CurrentYear">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Promotions],[*BASE_MEMBERS_Time])'
+Set [*METRIC_CJ_SET] as 'Filter(Filter([*NATIVE_CJ_SET],Not IsEmpty([Measures].[*Unit Sales_SEL~SUM])),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 10)'
+Set [*TOP_BOTTOM_SET] as 'Order(Filter([*NATIVE_MEMBERS_Promotions],Not IsEmpty([Measures].[*Unit Sales_SEL~SUM])),([Measures].[Unit Sales],[Time].[*CTX_METRIC_MEMBER_SEL~SUM]),BASC)'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Promotions] as '[Promotions].[Promotion Name].Members'
+Set [*NATIVE_MEMBERS_Promotions] as 'Generate([*NATIVE_CJ_SET], {[Promotions].CurrentMember})'
+Set [*METRIC_MEMBERS_Promotions] as 'Generate([*METRIC_CJ_SET], {[Promotions].CurrentMember})'
+Set [*BASE_MEMBERS_Time] as '{}'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'
+Set [*METRIC_MEMBERS_Time] as 'Generate([*METRIC_CJ_SET], {[Time].CurrentMember})'
+Member [Time].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
+Member [Measures].[*Unit Sales_SEL~SUM] as '([Measures].[Unit Sales],[Promotions].CurrentMember,[Time].[*CTX_METRIC_MEMBER_SEL~SUM])'
+Member [Measures].[*TOP_Unit Sales_SEL~SUM] as 'Rank([Promotions].CurrentMember,[*TOP_BOTTOM_SET])'
+Member [Promotions].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Filter([*METRIC_MEMBERS_Promotions],Not IsEmpty([Measures].[*Unit Sales_SEL~SUM])),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 10))'
+Member [Time].[*FILTER_MEMBER] as 'Aggregate ([*METRIC_MEMBERS_Time])'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Promotions].[*CTX_MEMBER_SEL~SUM]},Generate([*METRIC_CJ_SET], {([Promotions].CurrentMember)})) on rows
+From [Sales]
+Where ([Time].[*FILTER_MEMBER])
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{[Time].[*FILTER_MEMBER]}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTopMetricFilterReversedHiearchy">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3)'
+Set [*TOP_BOTTOM_SET] as 'Order([*NATIVE_MEMBERS_Product],([Measures].[Unit Sales]),BDESC)'
+Set [*SM_RSUM_SET_0] as 'Generate([*METRIC_CJ_SET], {([Product].CurrentMember)})'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales],[Measures].[*SUMMARY_METRIC_0]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})'
+Member [Measures].[*TOP_Unit Sales_SEL~SUM] as 'Rank([Product].CurrentMember,[*TOP_BOTTOM_SET])'
+Member [Measures].[*SUMMARY_METRIC_0] as 'Rank(([Product].CurrentMember),[*SM_RSUM_SET_0],[Measures].[Unit Sales])'
+Member [Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Descendants([Product].[All Products].[Drink],[Product].[Product Department]),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3))'
+Member [Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Descendants([Product].[All Products].[Food],[Product].[Product Department]),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3))'
+Member [Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Descendants([Product].[All Products].[Non-Consumable],[Product].[Product Department]),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3))'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 3))'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[*CTX_MEMBER_SEL~SUM]},Union({[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]},Generate([*METRIC_CJ_SET], {([Product].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+{[Measures].[*SUMMARY_METRIC_0]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Drink].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[All Products].[Food].[Produce]}
+{[Product].[All Products].[Food].[Snack Foods]}
+{[Product].[All Products].[Non-Consumable].[Household]}
+Row #0: 95,375
+Row #0: 1
+Row #1: 
+Row #1: 4
+Row #2: 68,337
+Row #2: 1
+Row #3: 27,038
+Row #3: 3
+Row #4: 37,792
+Row #4: 1
+Row #5: 30,545
+Row #5: 2
+Row #6: 27,038
+Row #6: 3
+]]>
+        </Resource>
+    </TestCase>
+
+<!--
+    <TestCase name="">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+
+]]>
+        </Resource>
+    </TestCase>
+-->
+</Root>

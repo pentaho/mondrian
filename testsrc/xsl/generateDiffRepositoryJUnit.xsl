@@ -27,6 +27,8 @@
 // from <xsl:value-of select="$reffile"/>
 package <xsl:value-of select="$packagename"/>;
 
+import mondrian.test.*;
+
 /**
  * Wraps DiffRepository-based tests with JUnit test methods so
  * that you can see the query and result directly from within your 
@@ -49,22 +51,34 @@ public class <xsl:value-of select="$classname"/> extends FoodMartTestCase
     <xsl:param name="start" select="substring(normalize-space($text),1,1)"/>
     <xsl:param name="ltrim" 
       select="concat($start,substring-after($text,$start))"/>
-    <xsl:call-template name="breakLines">
-      <xsl:with-param name="text" select="$ltrim"/>
+    <xsl:param name="escape">
+      <xsl:call-template name="replaceStrings">
+        <xsl:with-param name="text" select="$ltrim"/>
+        <xsl:with-param name="replace" select="'&quot;'"/>
+        <xsl:with-param name="with" select="'\&quot;'"/>
+      </xsl:call-template>
+    </xsl:param>
+    <xsl:call-template name="replaceStrings">
+      <xsl:with-param name="text" select="$escape"/>
+      <xsl:with-param name="replace" select="'&#xa;'"/>
+      <xsl:with-param name="with" select="'\n&quot; +&#xa;&quot;'"/>
     </xsl:call-template>
   </xsl:template>
 
-  <xsl:template name="breakLines">
-    <xsl:param name="text" select="."/>
+  <xsl:template name="replaceStrings">
+    <xsl:param name="text"/>
+    <xsl:param name="replace"/>
+    <xsl:param name="with"/>
     <xsl:choose>
-      <xsl:when test="normalize-space($text)=''">
-      </xsl:when>
-      <xsl:when test="contains($text, '&#xa;')">
-        <xsl:value-of select="substring-before($text, '&#xa;')"/>
-        <xsl:value-of select="'\n&quot; +&#xa;&quot;'"/>
-        <xsl:call-template name="breakLines">
-          <xsl:with-param name="text" select="substring-after($text,
-            '&#xa;')"/>
+      <xsl:when test="normalize-space($text)=''"> 
+      </xsl:when> 
+      <xsl:when test="contains($text, $replace)">
+        <xsl:value-of select="substring-before($text, $replace)"/>
+        <xsl:value-of select="$with"/>
+        <xsl:call-template name="replaceStrings">
+          <xsl:with-param name="text" select="substring-after($text, $replace)"/>
+          <xsl:with-param name="replace" select="$replace"/>
+          <xsl:with-param name="with" select="$with"/>
         </xsl:call-template>
       </xsl:when>
       <xsl:otherwise>

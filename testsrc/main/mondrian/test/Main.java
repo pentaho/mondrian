@@ -41,6 +41,7 @@ import mondrian.xmla.XmlaExcel2000Test;
 import mondrian.xmla.XmlaExcelXPTest;
 import mondrian.xmla.XmlaErrorTest;
 import mondrian.xmla.test.XmlaTest;
+import mondrian.test.clearview.*;
 
 import org.apache.log4j.Logger;
 
@@ -168,7 +169,12 @@ public class Main extends TestSuite {
             suite.addTest(ResultComparatorTest.suite());
             suite.addTestSuite(DrillThroughTest.class);
             suite.addTestSuite(BasicQueryTest.class);
-            suite.addTest(ClearViewTest.suite());
+        	suite.addTest(CVBasicTest.suite());
+            suite.addTest(MetricFilterTest.suite());
+            suite.addTest(PredicateFilterTest.suite());
+            suite.addTest(SummaryTest.suite());
+            suite.addTest(TopBottomTest.suite());
+            suite.addTest(TotalTest.suite());
             suite.addTestSuite(CacheControlTest.class);
             suite.addTestSuite(FunctionTest.class);
             suite.addTestSuite(HierarchyBugTest.class);
