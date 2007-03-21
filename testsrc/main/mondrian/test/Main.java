@@ -169,12 +169,14 @@ public class Main extends TestSuite {
             suite.addTest(ResultComparatorTest.suite());
             suite.addTestSuite(DrillThroughTest.class);
             suite.addTestSuite(BasicQueryTest.class);
-        	suite.addTest(CVBasicTest.suite());
+            suite.addTest(CVBasicTest.suite());
+            suite.addTest(GrandTotalTest.suite());
             suite.addTest(MetricFilterTest.suite());
             suite.addTest(PredicateFilterTest.suite());
+            suite.addTest(SubTotalTest.suite());
+            suite.addTest(SummaryMetricPercentTest.suite());
             suite.addTest(SummaryTest.suite());
             suite.addTest(TopBottomTest.suite());
-            suite.addTest(TotalTest.suite());
             suite.addTestSuite(CacheControlTest.class);
             suite.addTestSuite(FunctionTest.class);
             suite.addTestSuite(HierarchyBugTest.class);
