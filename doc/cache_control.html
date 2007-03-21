@@ -1,0 +1,418 @@
+<html>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == Copyright (C) 2006-2007 Julian Hyde
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  -->
+<head>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: Cache Control</title>
+</head>
+<body>
+<!-- doc2web start -->
+
+<!-- page title -->
+<div class="contentheading">Cache Control</div>
+<!-- end page title -->
+
+<!-- 
+########################
+##  Contents       #####
+######################## -->
+<h3>Contents</h3>
+  	<ol>
+		<li><a href="#Introduction">Introduction</a></li>
+        <li><a href="#How_mondrians_cache_works">How mondrian's cache works</a></li>
+        <li><a href="#New_CacheControl_API">New CacheControl API</a><ol>
+		<li><a href="#A_simple_example">A simple example</a></li>
+        <li><a href="#More_about_cell_regions">More about cell regions</a></li>
+        <li><a href="#Merging_and_truncating_segments">Merging and truncating segments</a></li>
+	</ol>
+        </li>
+        <li><a href="#Other_cache_control_topics">Other cache control topics</a><ol>
+		<li><a href="#Flushing_the_dimension_cache">Flushing the dimension cache</a></li>
+        <li><a href="#Cache_consistency">Cache consistency</a></li>
+        <li><a href="#Metadata_cache_control">Metadata cache control</a></li>
+	</ol></li>
+	</ol>
+<!-- 
+#########################
+##  1. Introduction #####
+######################### -->
+<h3>1. Introduction<a name="Introduction">&nbsp;</a></h3>
+
+<p>One of the strengths of mondrian's design is that you don't need to do any processing to populate special data structures before you start running OLAP queries. More than a few people have observed that this makes mondrian an excellent choice for 'real-time OLAP' -- running multi-dimensional queries on a database which is constantly changing.</p>
+
+<p>The problem is that mondrian's cache gets in the way. Usually the cache is a great help, because it ensures that mondrian only goes to the DBMS once for a given piece of data, but the cache becomes out of date if the underlying database is changing.</p>
+
+<p>This is solved with a new set of APIs for cache control in mondrian-2.3. Before I explain the API, let's understand how mondrian caches data.</p>
+
+<h3>2. How mondrian's cache works<a name="How_mondrians_cache_works">&nbsp;</a></h3>
+
+<p>Mondrian's cache ensures that once a multidimensional cell -- say the Unit Sales of Beer in Texas in Q1, 1997 -- has been retrieved from the DBMS using an SQL query, it is retained in memory for subsequent MDX calculations. That cell may be used later during the execution of the same MDX query, and by future queries in the same session and in other sessions. The cache is a major factor ensuring that Mondrian is responsive for speed-of-thought analysis.</p>
+
+<p>The cache operates at a lower level of abstraction than access control. If the current role is only permitted to see only sales of Dairy products, and the query asks for all sales in 1997, then the request sent to Mondrian's cache will be for Dairy sales in 1997. This ensures that the cache can safely be shared among users which have different permissions.</p>
+
+<p>If the contents of the DBMS change while Mondrian is running, Mondrian's implementation must overcome some challenges. The end-user expects a speed-of-thought query response time yielding a more or less up-to-date view of the database. Response time necessitates a cache, but this cache will tend to become out of date as the database is modified.</p>
+
+<p>Mondrian cannot deduce when the database is being modified, so we introduce an API so that the container can tell Mondrian which parts of the cache are out of date. Mondrian's implementation must ensure that the changing database state does not yield inconsistent query results.</p>
+
+<p>Until now, control of the cache has been very crude: applications would typically call</p>
+
+<blockquote>
+<code>mondrian.rolap.RolapSchema.clearCache();</code>
+</blockquote>
+
+<p>to flush the cache which maps connect string URLs to in-memory datasets. The effect of this call is that a future connection will have to re-load metadata by parsing the schema XML file, and then load the data afresh.</p>
+
+<p>There are a few problems with this approach. Flushing all data and metadata is all appropriate if the contents of a schema XML file has changed, but we have thrown out the proverbial baby with the bath-water. If only the data has changed, we would like to use a cheaper operation.</p>
+
+<p>The final problem with the <code>clearCache()</code> method is that it affects only new connections. Existing connections will continue to use the same metadata and stale data, and will compete for scarce memory with new connections.</p>
+
+<h3>3. New CacheControl API<a name="New_CacheControl_API">&nbsp;</a></h3>
+
+<p>The new <a href="api/mondrian/olap/CacheControl.html">CacheControl</a> API solves all of the problems described above. It provides fine-grained control over data in the cache, and the changes take place as soon as possible while retaining a consistent view of the data.</p> 
+
+<p>When a connection uses the API to notify Mondrian that the database has changed, subsequent queries will see the new state of the database. Queries in other connections which are in progress when the notification is received will see the database state either before or after the notification, but in any case, will see a consistent view of the world.</p>
+
+<p>The cache control API uses the new concept of a cache region, an area of multidimensional space defined by one or more members. To flush the cache, you first define a cache region, then tell Mondrian to flush all cell values which relate to that region. To ensure consistency, Mondrian automatically flushes all rollups of those cells.</p>
+
+<h4>3.1. A simple example<a name="A_simple_example">&nbsp;</a></h4>
+
+<p>Suppose that a connection has executed a query:</p>
+
+<blockquote>
+<code>import mondrian.olap.*;<br/>
+<br/>
+Connection connection;<br/>
+Query query = connection.parseQuery(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;"SELECT" +<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;"  {[Time].[1997]," +<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;"    [Time].[1997].Children} ON COLUMNS," +<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;"  {[Customer].[USA]," +<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;"    [Customer].[USA].[OR]," +<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;"    [Customer].[USA].[WA]} ON ROWS" +<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;"FROM [Sales]");<br/>
+Result result = connection.execute(query);</code>
+</blockquote>
+
+<p>and that this has populated the cache with the following segments:</p>
+
+<blockquote>
+<table border="1" style="border-collapse: collapse">
+<tr>
+<th>Segment YN#1</th>
+<td><pre>
+Year Nation Unit Sales
+1997 USA    xxx
+
+Predicates: Year=1997, Nation=USA</pre></td>
+</tr>
+
+<tr>
+<th>Segment YNS#1</th>
+<td><pre>Year Nation State Unit Sales
+1997 USA    OR    xxx
+1997 USA    WA    xxx
+
+Predicates: Year=1997, Nation=USA, State={OR, WA}</pre></td>
+</tr>
+
+<tr>
+<th>Segment YQN#1</th>
+<td><pre>Year Quarter Nation Unit Sales
+1997 Q1      USA    xxx
+1997 Q2      USA    xxx
+
+Predicates: Year=1997, Quarter=any, Nation=USA</td>
+</tr>
+
+<tr>
+<th>Segment YQNS#1</th>
+<td><pre>Year Quarter Nation State Unit Sales
+1997 Q1      USA    OR    xxx
+1997 Q1      USA    WA    xxx
+1997 Q2      USA    OR    xxx
+1997 Q2      USA    WA    xxx
+
+Predicates: Year=1997, Quarter=any, Nation=USA, State={OR, WA}</pre></td>
+</tr>
+</table>
+</blockquote>
+</p>
+
+<p>Now suppose that the application knows that batch of rows from Oregon, Q2 have been updated in the fact table. The application notifies Mondrian of the fact by defining a cache region:
+
+<blockquote><code>
+// Lookup members<br/>
+Cube salesCube =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;connection.getSchema().lookupCube(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Sales", true);<br/>
+SchemaReader schemaReader =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;salesCube.getSchemaReader(null);<br/>
+Member memberTimeQ2 =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;schemaReader.getMemberByUniqueName(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new String[]{"Time", "1997", "Q2"},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;true);<br/>
+Member memberCustomerOR =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;schemaReader.getMemberByUniqueName(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new String[]{"Customer", "USA", "OR"},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;true);<br/>
+<br/>
+// Create a cache region defined by<br/>
+// [Time].[1997].[Q2] cross join<br/>
+// [Customer].[USA].[OR].<br/>
+CacheControl.CellRegion measuresRegion =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;cacheControl.createMeasuresRegion(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;salesCube);<br/>
+CacheControl.CellRegion regionTimeQ2 =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;cacheControl.createMemberRegion(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;memberTimeQ2, true);<br/>
+CacheControl.CellRegion regionCustomerOR =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;cacheControl.createMemberRegion(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;memberCustomerOR, true);<br/>
+CacheControl.CellRegion regionOregonQ2 =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;cacheControl.createCrossjoinRegion(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;measuresRegion,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;regionCustomerOR,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;regionTimeQ2);</code>
+</blockquote>
+
+and flushing that region:
+
+<blockquote><code>
+cacheControl.flush(regionOregonQ2);
+</code>
+</blockquote></p>
+
+<p>Now let's look at what segments are left in memory after the flush.</p>
+
+<blockquote>
+<table border="1" style="border-collapse: collapse">
+<tr>
+<th>Segment YNS#1</th>
+<td><pre>Year Nation State Unit Sales
+1997 USA    OR    xxx
+1997 USA    WA    xxx
+
+Predicates: Year=1997, Nation=USA, State={WA}</pre></td>
+</tr>
+
+<tr>
+<th>Segment YQN#1</th>
+<td><pre>Year Quarter Nation Unit Sales
+1997 Q1      USA    xxx
+1997 Q2      USA    xxx
+
+Predicates: Year=1997, Quarter={any except Q2}, Nation=USA</pre></td>
+</tr>
+
+<tr>
+<th>Segment YQNS#1</th>
+<td><pre>Year Quarter Nation State Unit Sales
+1997 Q1      USA    OR    xxx
+1997 Q1      USA    WA    xxx
+1997 Q2      USA    OR    xxx
+1997 Q2      USA    WA    xxx
+
+Predicates: Year=1997, Quarter=any, Nation=USA, State={OR, WA}</pre></td>
+</tr>
+</table>
+</blockquote>
+
+<p>The effects are:<ul>
+<li>Segment YN#1 has been deleted. All cells in the segment could contain values in Oregon/1997/Q2.</li>
+<li>The constraints in YNS#1 have been strengthened. The constraint on the <code>State</code> column is modified from
+<code>State={OR, WA}</code> to <code>State={WA}</code> so that future requests for 
+<code>(1997, Q2, USA, OR)</code> will not consider this segment.</li>
+<li>The constraints in YQN#1 have been strengthened. The constraint on the <code>Quarter</code> column is modified from 
+<code>Quarter=any</code> to <code>Quarter={any except Q2}</code>.</li>
+<li>The constraints in YQNS#1 have been strengthened, similar to YNS#1.</li>
+</ul>
+
+<h4>3.2. More about cell regions<a name="More_about_cell_regions">&nbsp;</a></h4>
+
+<p>The previous example showed how to make a cell region consisting of a single member, and how to combine these regions into a two-dimensional region using a crossjoin. The CacheControl API supports several methods of creating regions:<ul>
+ 
+
+<li><code>createMemberRegion(Member, boolean)</code> creates a region containing a single member, optionally including its descendants.</li>
+<li><code>createMemberRegion(boolean lowerInclusive, Member lowerMember, boolean upperInclusive, Member upperMember, boolean descendants)</code> creates a region containing a range of members, optionally including their descendants, and optionally including each endpoint. A range may be either closed, or open at one end.</li>
+<li><code>createCrossjoinRegion(CellRegion...)</code> combines several regions into a higher dimensionality region. The constituent regions must not have any dimensions in common.</li>
+<li><code>createUnionRegion(CellRegion...)</code> unions several regions of the same dimensionality.</li>
+<li><code>createMeasuresRegion(Cube)</code> creates a region containing all of the measures of a given cube.</li>
+</ul>
+
+<p>The second overloading of <code>createMemberRegion()</code> is interesting because it allows a range of members to be flushed. Probably the most common use case for cache flush -- flushing all cells since a given point in time -- is expressed as a member range. For example, to flush all cells since February 15th, 2006, you would use the following code:
+ 
+<blockquote><code>
+// Lookup members<br/>
+Cube salesCube =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;connection.getSchema().lookupCube(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Sales", true);<br/>
+SchemaReader schemaReader =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;salesCube.getSchemaReader(null);<br/>
+Member memberTimeOct15 =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;schemaReader.getMemberByUniqueName(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new String[]{"Time", "2006", "Q1"", "2" ,"15},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;true);<br/>
+<br/>
+// Create a cache region defined by<br/>
+// [Time].[1997].[Q1].[2].[15] to +infinity.<br/>
+CacheControl.CellRegion measuresRegion =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;cacheControl.createMeasuresRegion(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;salesCube);<br/>
+CacheControl.CellRegion regionTimeFeb15 =<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;cacheControl.createMemberRegion(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;true, memberTimeFeb15, false, null, true);</code>
+</blockquote>
+
+<p>Recall that the cell cache is organized in terms of columns, not members. This makes member ranges difficult for mondrian to implement. A range such as "February 15th 2007 onwards" becomes
+
+<blockquote><code><pre>
+year > 2007
+|| (year = 2007
+    &&amp; (quarter > 'Q1'
+        || (quarter = 'Q1'
+            && (month > 2
+                || (month = 2
+                    && day >= 15)))))</pre></code></blockquote>
+
+<h4>3.3. Merging and truncating segments<a name="Merging_and_truncating_segments">&nbsp;</a></h4>
+
+<p>The current implementation does not actually remove the cells from memory. For instance, in segment YNS#1 in the example above, the cell (1997, USA, OR) is still in the segment, even though it will never be accessed. It doesn't seem worth the effort to rebuild the segment to save a little memory, but we may revisit this decision.</p>
+
+<p>In future, one possible strategy would be to remove a segment if more than a given percentage of its cells are unreachable.</p>
+
+<p>It might also be useful to be able to merge segments which have the same dimensionality, to reduce fragmentation if the cache is flushed repeatedly over slightly different bounds. There are some limitations on when this can be done, since predicates can only constrain one column: it would not be possible to merge the segments 
+<code>{(State=TX, Quarter=Q2)}</code> and <code>{(State=WA, Quarter=Q3)}</code> into a single segment, for example. An alternative solution to fragmentation would be to simply remove all segments of a particular dimensionality if fragmentation is detected.</p>
+<h3>4. Other cache control topics<a name="Other_cache_control_topics">&nbsp;</a></h3>
+
+<h4>4.1. Flushing the dimension cache<a name="Flushing_the_dimension_cache">&nbsp;</a></h4>
+
+<p>An application might also want to make modifications to a dimension table. Mondrian does not currently allow an application to control the cache of members, but we intend to do so in the future. Here are some notes which will allow this to be implemented.</p> 
+
+<p>The main way that Mondrian caches dimensions in memory is via a cache of member children. That is to say, for a given member, the cache holds the list of all children of that member.</p>
+
+<p>If a dimension table row was inserted or deleted, or if its key attributes are updated, its parent's child list would need to be modified, and perhaps other ancestors too. For example, if a customer Zachary William is added in city Oakland, the children list of Oakland will need to be flushed. If Zachary is the first customer in Oakland, California's children list will need to be flushed to accommodate the new member Oakland.</p>
+
+<p>There are a few other ways that members can be cached:<ul>
+
+<li>Each hierarchy has a list of root members, an 'all' member (which may or not be visible), and a default member (which may or may not be the 'all' member).</li>
+
+<li>Formulas defined against a cube may reference members.</li>
+
+<li>All other references to members are ephemeral: they are built up during the execution of a query, and are discarded when the query has finished executing and its result set is forgotten.</li>
+
+</ul>
+
+<p>Possible APIs might be <code>flushMember(Member, boolean children)</code> or <code>flushMembers(CellRegion)</code>.</p>
+
+<h4>4.2. Cache consistency<a name="Cache_consistency">&nbsp;</a></h4>
+
+<p>Mondrian's cache implementation must solve several challenges in order to prevent inconsistent query results. Suppose, for example, a connection executes the query 
+
+<blockquote><code>
+SELECT {[Measures].[Unit Sales]} ON COLUMNS,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{[Gender].Members} ON ROWS<br/>
+FROM [Sales]</code>
+</blockquote>
+
+<p>It would be unacceptable if, due to updates to the underlying database, the query yielded a result where the total for [All gender] did not equal the sum of [Female] and [Male], such as</p>
+
+<blockquote>
+<table style="border-collapse: collapse" border="1">
+<tr><td>&nbsp;</td><th>Unit Sales</th></tr> 
+<tr><th>All gender</th><td>100,000</td></tr>
+<tr><th>Female</th><td>60,000</td></tr>
+<tr><th>Male</th><td>55,000</td></tr>
+</table>
+</blockquote>
+
+<p>We cannot guarantee that the query result is absolutely up to date, but the query must represent the state of the database at some point in time. To do this, the implementation must ensure that both cache flush and cache population are atomic operations.</p> 
+
+<p>First, Mondrian's implementation must provide atomic cache flush so that from the perspective of any clients of the cache. Suppose that while the above query is being executed, another connection issues a cache flush request. Since the flush request and query are simultaneous, it is acceptable for the query to return the state of the database before the flush request or after, but not a mixture of the two.</p> 
+
+<p>The query needs to use two aggregates: one containing total sales, and another containing sales sliced by gender. To see a consistent view of the two aggregates, the implementation must ensure that from the perspective of the query, both aggregates are flushed simultaneously. The query evaluator will therefore either see both aggregates, or see none.</p>
+
+<p>Second, Mondrian must provide atomic cache population, so that the database is read consistently. Consider an example.
+
+<ol>
+<li>The end user runs a query asking for the total sales:
+
+<blockquote>
+<table style="border-collapse: collapse" border="1">
+<tr><td>&nbsp;</td><th>Unit Sales</th></tr> 
+<tr><th>All gender</th><td>100,000</td></tr>
+</table>
+</blockquote>
+
+After that query has completed, the cache contains the total sales but not the sales for each gender.</li>
+
+<li>New sales are added to the fact table.</li>
+
+<li>The end user runs a query which shows total sales and sales for male and female customers. The query uses the cached value for total sales, but issues a query to the fact table to find the totals for male and female, and sees different data than when the cache was last populated. As result, the query is inconsistent:
+
+<blockquote>
+<table style="border-collapse: collapse" border="1">
+<tr><td>&nbsp;</td><th>Unit Sales</th></tr> 
+<tr><th>All gender</th><td>100,000</td></tr>
+<tr><th>Female</th><td>60,000</td></tr>
+<tr><th>Male</th><td>55,000</td></tr>
+</table>
+</blockquote>
+
+</li>
+</ol>
+
+<p>Atomic cache population is difficult to ensure if the database is being modified without Mondrian's knowledge. One solution, not currently implemented, would be for Mondrian to leverage the DBMS' support for read-consistent views of the data. Read-consistent views are expensive for the DBMS to implement (for example, in Oracle they yield the infamous 'Snapshot too old' error), so we would not want Mondrian to use these by default, on a database which is known not to be changing.</p>
+
+<p>Another solution might be to extend the Cache Control API so that the application can say 'this part of the database is currently undergoing modification'.</p>
+
+<p>This scenario has not even considered aggregate tables. We have assumed that aggregate tables do not exist, or if they do, they are updated in sync with the fact table. How to deal with aggregate tables which are maintained asynchronously is still an open question.</p>
+
+<h4>4.3. Metadata cache control<a name="Metadata_cache_control">&nbsp;</a></h4>
+
+<p>The CacheControl API tidies up a raft of (mostly equivalent) methods which had grown up for controlling metadata (schema XML files loaded into memory). The methods<ul>
+
+<li><code>mondrian.rolap.RolapSchema.clearCache()</code></li>
+<li><code>mondrian.olap.MondrianServer.flushSchemaCache()</code></li>
+<li><code>mondrian.rolap.cache.CachePool.flush()</code></li>
+<li><code>mondrian.rolap.RolapSchema.flushRolapStarCaches(boolean)</code></li>
+<li><code>mondrian.rolap.RolapSchema.flushAllRolapStarCachedAggregations()</code></li>
+<li><code>mondrian.rolap.RolapSchema.flushSchema(String,String,String,String)</code></li>
+<li><code>mondrian.rolap.RolapSchema.flushSchema(DataSource,String)</code></li>
+</ul>
+
+are all deprecated and are superseded by the CacheControl methods
+ 
+<ul>
+<li><code>void flushSchemaCache();</code></li>
+<li><code>void flushSchema(
+    String catalogUrl,
+    String connectionKey,
+    String jdbcUser,
+    String dataSourceStr);</code></li>
+<li><code>void flushSchema(
+    String catalogUrl,
+    DataSource dataSource);</code></li>
+</ul>
+
+
+<hr noshade size="1"/>
+<p>
+    Author: Julian Hyde; last modified by Julian Hyde, March 2007.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/cache_control.html?ac=22">log</a>)<br/>
+    Copyright (C) 2006-2007 Julian Hyde
+</p>
+
+<br />
+
+<!-- doc2web end -->
+
+</body>
+</html>
