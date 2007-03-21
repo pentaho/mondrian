@@ -53,22 +53,23 @@ public abstract class RolapAggregationManager implements CellReader {
      * @return Cell request, or null if the requst is unsatisfiable
      */
     public static CellRequest makeRequest(
-            Member[] members,
-            boolean extendedContext,
+            final Member[] members,
+            final boolean extendedContext,
             final boolean drillThrough) {
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap;
-        CellRequest request;
-        if (members[0] instanceof RolapStoredMeasure) {
-            RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
-            final RolapStar.Measure starMeasure =
-                    (RolapStar.Measure) measure.getStarMeasure();
-            assert starMeasure != null;
-            RolapStar star = starMeasure.getStar();
-            request = new CellRequest(starMeasure, extendedContext, drillThrough);
-            levelToColumnMap = star.getLevelToColumnMap(measure.getCube());
-        } else {
+
+        if (! (members[0] instanceof RolapStoredMeasure)) {
             return null;
         }
+
+        final RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
+        final RolapStar.Measure starMeasure =
+                    (RolapStar.Measure) measure.getStarMeasure();
+        assert starMeasure != null;
+        final RolapStar star = starMeasure.getStar();
+        final CellRequest request = 
+            new CellRequest(starMeasure, extendedContext, drillThrough);
+        final Map<RolapLevel, RolapStar.Column> levelToColumnMap = 
+            star.getLevelToColumnMap(measure.getCube());
 
         // Since 'request.extendedContext == false' is a well-worn code path,
         // we have moved the test outside the loop.
@@ -78,7 +79,7 @@ public abstract class RolapAggregationManager implements CellReader {
                 addNonConstrainingColumns(member, levelToColumnMap, request);
 
                 final RolapLevel level = member.getLevel();
-                boolean needToReturnNull =
+                final boolean needToReturnNull =
                     level.getLevelReader().constrainRequest(
                         member, levelToColumnMap, request);
                 if (needToReturnNull) {
@@ -89,7 +90,7 @@ public abstract class RolapAggregationManager implements CellReader {
             for (int i = 1; i < members.length; i++) {
                 RolapMember member = (RolapMember) members[i];
                 final RolapLevel level = member.getLevel();
-                boolean needToReturnNull =
+                final boolean needToReturnNull =
                     level.getLevelReader().constrainRequest(
                         member, levelToColumnMap, request);
                 if (needToReturnNull) {
@@ -127,22 +128,22 @@ public abstract class RolapAggregationManager implements CellReader {
      * @param request Cell request
      */
     private static void addNonConstrainingColumns(
-            RolapMember member,
-            Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-            CellRequest request) {
+            final RolapMember member,
+            final Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+            final CellRequest request) {
 
-        Hierarchy hierarchy = member.getHierarchy();
-        Level[] levels = hierarchy.getLevels();
+        final Hierarchy hierarchy = member.getHierarchy();
+        final Level[] levels = hierarchy.getLevels();
         for (int j = levels.length - 1, depth = member.getLevel().getDepth();
              j > depth; j--) {
             final RolapLevel level = (RolapLevel) levels[j];
-            RolapStar.Column column = levelToColumnMap.get(level);
+            final RolapStar.Column column = levelToColumnMap.get(level);
 
             if (column != null) {
                 request.addConstrainedColumn(column, null);
                 if (request.extendedContext &&
                         level.getNameExp() != null) {
-                    RolapStar.Column nameColumn = column.getNameColumn();
+                    final RolapStar.Column nameColumn = column.getNameColumn();
                     Util.assertTrue(nameColumn != null);
                     request.addConstrainedColumn(nameColumn, null);
                 }
@@ -156,8 +157,8 @@ public abstract class RolapAggregationManager implements CellReader {
     /**
      * Returns the value of a cell from an existing aggregation.
      */
-    public Object getCellFromCache(Member[] members) {
-        CellRequest request = makeRequest(members, false, false);
+    public Object getCellFromCache(final Member[] members) {
+        final CellRequest request = makeRequest(members, false, false);
         return (request == null)
             // request out of bounds
             ? Util.nullValue
@@ -170,20 +171,20 @@ public abstract class RolapAggregationManager implements CellReader {
         CellRequest request,
         PinSet pinSet);
 
-    public Object getCell(Member[] members) {
-        CellRequest request = makeRequest(members, false, false);
-        RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
+    public Object getCell(final Member[] members) {
+        final CellRequest request = makeRequest(members, false, false);
+        final RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
         final RolapStar.Measure starMeasure = (RolapStar.Measure)
                 measure.getStarMeasure();
 
         assert starMeasure != null;
 
-        RolapStar star = starMeasure.getStar();
+        final RolapStar star = starMeasure.getStar();
         return star.getCell(request);
     }
 
     // implement CellReader
-    public Object get(Evaluator evaluator) {
+    public Object get(final Evaluator evaluator) {
         final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
         return getCell(rolapEvaluator.getMembers());
     }
@@ -212,8 +213,8 @@ public abstract class RolapAggregationManager implements CellReader {
      */
     public CacheControl getCacheControl(final PrintWriter pw) {
         return new CacheControlImpl() {
-            protected void flushNonUnion(CellRegion region) {
-                List<RolapStar> starList = getStarList(region);
+            protected void flushNonUnion(final CellRegion region) {
+                final List<RolapStar> starList = getStarList(region);
 
                 // For each of the candidate stars, scan the list of aggregates.
                 for (RolapStar star : starList) {
@@ -221,7 +222,7 @@ public abstract class RolapAggregationManager implements CellReader {
                 }
             }
 
-            public void flush(CellRegion region) {
+            public void flush(final CellRegion region) {
                 if (pw != null) {
                     pw.println("Cache state before flush:");
                     printCacheState(pw, region);
@@ -235,7 +236,7 @@ public abstract class RolapAggregationManager implements CellReader {
                 }
             }
 
-            public void trace(String message) {
+            public void trace(final String message) {
                 if (pw != null) {
                     pw.println(message);
                 }
@@ -244,24 +245,29 @@ public abstract class RolapAggregationManager implements CellReader {
     }
 
     public static RolapCacheRegion makeCacheRegion(
-        RolapStar star,
-        CacheControl.CellRegion region)
+        final RolapStar star,
+        final CacheControl.CellRegion region)
     {
         final List<Member> measureList = CacheControlImpl.findMeasures(region);
-        List<RolapStar.Measure> starMeasureList =
+        final List<RolapStar.Measure> starMeasureList =
             new ArrayList<RolapStar.Measure>();
         Map<RolapLevel, RolapStar.Column> levelToColumnMap = null;
         for (Member measure : measureList) {
             if (!(measure instanceof RolapStoredMeasure)) {
                 continue;
             }
-            RolapStoredMeasure storedMeasure = (RolapStoredMeasure) measure;
+            final RolapStoredMeasure storedMeasure = 
+                (RolapStoredMeasure) measure;
             final RolapStar.Measure starMeasure =
                 (RolapStar.Measure) storedMeasure.getStarMeasure();
             assert starMeasure != null;
             if (star != starMeasure.getStar()) {
                 continue;
             }
+            // TODO: each time this code executes, levelToColumnMap is set.
+            // Should there be a 'break' here? Are all of the
+            // storedMeasure cubes the same cube? Is the measureList always
+            // non-empty so that levelToColumnMap is always set?
             levelToColumnMap =
                 star.getLevelToColumnMap(storedMeasure.getCube());
             starMeasureList.add(starMeasure);
@@ -269,7 +275,7 @@ public abstract class RolapAggregationManager implements CellReader {
         final RolapCacheRegion cacheRegion =
             new RolapCacheRegion(star, starMeasureList);
         if (region instanceof CacheControlImpl.CrossjoinCellRegion) {
-            CacheControlImpl.CrossjoinCellRegion crossjoin =
+            final CacheControlImpl.CrossjoinCellRegion crossjoin =
                 (CacheControlImpl.CrossjoinCellRegion) region;
             for (CacheControl.CellRegion component : crossjoin.getComponents()) {
                 constrainCacheRegion(cacheRegion, levelToColumnMap, component);
@@ -281,27 +287,27 @@ public abstract class RolapAggregationManager implements CellReader {
     }
 
     private static void constrainCacheRegion(
-        RolapCacheRegion cacheRegion,
-        Map<RolapLevel, RolapStar.Column> levelToColumnMap,
-        CacheControl.CellRegion region)
+        final RolapCacheRegion cacheRegion,
+        final Map<RolapLevel, RolapStar.Column> levelToColumnMap,
+        final CacheControl.CellRegion region)
     {
         if (region instanceof CacheControlImpl.MemberCellRegion) {
-            CacheControlImpl.MemberCellRegion memberCellRegion =
+            final CacheControlImpl.MemberCellRegion memberCellRegion =
                 (CacheControlImpl.MemberCellRegion) region;
             final List<Member> memberList = memberCellRegion.getMemberList();
             for (Member member : memberList) {
-                RolapMember rolapMember = (RolapMember) member;
+                final RolapMember rolapMember = (RolapMember) member;
                 final RolapLevel level = rolapMember.getLevel();
-                RolapStar.Column column = levelToColumnMap.get(level);
+                final RolapStar.Column column = levelToColumnMap.get(level);
                 level.getLevelReader().constrainRegion(
                     new MemberColumnPredicate(column, rolapMember),
                     levelToColumnMap, cacheRegion);
             }
         } else if (region instanceof CacheControlImpl.MemberRangeCellRegion) {
-            CacheControlImpl.MemberRangeCellRegion rangeRegion =
+            final CacheControlImpl.MemberRangeCellRegion rangeRegion =
                 (CacheControlImpl.MemberRangeCellRegion) region;
-            RolapLevel level = rangeRegion.getLevel();
-            RolapStar.Column column = levelToColumnMap.get(level);
+            final RolapLevel level = rangeRegion.getLevel();
+            final RolapStar.Column column = levelToColumnMap.get(level);
             level.getLevelReader().constrainRegion(
                 new RangeColumnPredicate(
                     column,
