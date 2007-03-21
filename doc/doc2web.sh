@@ -59,6 +59,7 @@ cd $ROOT
 javadoc=true
 deploy=true
 scp=true
+headJavadoc=false
 
 # Remove output from previous run.
 rm -rf content
@@ -69,8 +70,35 @@ if $javadoc; then
   cd $ROOT/..
   rm -rf doc/api
   mkdir -p doc/api
-  ant javadoc xml_schema
+  ant javadoc-with-ydoc xml_schema
   )
+fi
+
+# Create, copy and deploy javadoc for the head revision.
+if $headJavadoc; then
+  rm -f headJavadoc.tar.gz
+  rm -rf headapi
+  mv api headapi
+  tar -cvz -f headJavadoc.tar.gz headapi
+  scp -oConnectTimeout=300 headJavadoc.tar.gz mondrian@mondrian.pentaho.org:httpdocs
+  ssh -oConnectTimeout=300 mondrian@mondrian.pentaho.org <<EOF
+    cd httpdocs
+    tar xvfz headJavadoc.tar.gz
+
+    # Fix up file permissions
+    find headapi -type d | xargs chmod go+rx
+    find headapi -type f | xargs chmod go+r
+
+    # Replace references to documents from javadoc.
+    find headapi -name \*.html |
+    xargs perl -p -i -e '
+s!architecture.html!../documentation/architecture.php!;
+s!mdx.html!../documentation/mdx.php!;
+s!xml_schema.html!../documentation/xml_schema.php!;
+s!schema.html!../documentation/schema.php!;
+                        '
+EOF
+  exit
 fi
 
 # E.g. doc/aggregate_tables.html
@@ -79,6 +107,7 @@ fi
 doHtml en aggregate_tables.html
 doHtml en architecture.html
 doHtml en cmdrunner.html
+doHtml en cache_control.html
 doHtml en components.html
 doHtml en configuration.html
 doHtml en developer.html
@@ -116,12 +145,10 @@ tar -cvz -f mondrianPentaho.tar.gz content images api
 
 # Copy file to server, and deploy.
 if $scp; then
-  beep
   scp -oConnectTimeout=300 mondrianPentaho.tar.gz mondrian@mondrian.pentaho.org:httpdocs
 fi
 
 if $deploy; then
-  beep
   ssh -oConnectTimeout=300 mondrian@mondrian.pentaho.org <<EOF
     cd httpdocs
     tar xvfz mondrianPentaho.tar.gz
@@ -134,16 +161,22 @@ if $deploy; then
     find api -name \*.html |
     xargs perl -p -i -e '
 s!architecture.html!../documentation/architecture.php!;
+s!cache_control.html!../documentation/cache_control.php!;
 s!mdx.html!../documentation/mdx.php!;
+s!xml_schema.html!../documentation/xml_schema.php!;
 s!schema.html!../documentation/schema.php!;
                         '
 
     # Change references to javadoc from documents.
     find content -name \*.htm |
     xargs perl -p -i -e '
-s! src="images/! src="../images/!;
-s! href="api! href="../api!;
-s! href="\([^/]*\)\.html! href="\1.php!;
+s! src="images/! src="../images/!g;
+s! href="api! href="../api!g;
+s! href="cmdrunner\.html! href="command_runner.php!g;
+s! href="developer\.html! href="developers_guide.php!g;
+s! href="install\.html! href="installation.php!g;
+s! href="performance\.html! href="optimizing_performance.php!g;
+s! href="([^/]*)\.html! href="\1.php!g;
                         ' 
 EOF
 fi
