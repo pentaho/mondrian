@@ -663,7 +663,7 @@ public void printCurrentMemberNames() {
         // expressions.  This may be overconservative in some cases, but
         // without this, there can be bugs when incorrect results get cached
         // for named sets which depend on measures which haven't been loaded
-        // yet.  See mondrian.test.ClearViewTest.testLer4260 for an
+        // yet.  See mondrian.test.clearview.CVBasicTest.testLer4260 for an
         // example.
         root.clearNamedSets();
     }

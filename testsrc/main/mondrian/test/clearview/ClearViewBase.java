@@ -22,21 +22,23 @@ import mondrian.test.*;
 import java.lang.reflect.*;
 
 /**
- * <code>ClearViewTest</code> is a test case which tests complex queries
- * against the FoodMart database.  MDX queries and their expected results are
- * maintained separately in ClearViewTest.ref.xml.  If you would
- * prefer to see them as inlined Java string literals, run
+ * <code>ClearViewBase</code> is the base class to build test cases which test
+ * queries against the FoodMart database. A concrete sub class and
+ * a ref.xml file will be needed for each test suites to be added. MDX queries
+ * and their expected results are maintained separately in *.ref.xml files.
+ * If you would prefer to see them as inlined Java string literals, run
  * ant target "generateDiffRepositoryJUnit" and then use
- * class ClearViewJUnit which will be generated in this directory.
+ * files *JUnit.java which will be generated in this directory.
  *
  * @author John Sichi
  * @author Richard Emberson
+ * @author Khanh Vu
  *
  * @since Jan 25, 2007
  * @version $Id$
  */
 public abstract class ClearViewBase extends FoodMartTestCase {
-	
+
     public ClearViewBase() {
         super();
     }
@@ -55,25 +57,27 @@ public abstract class ClearViewBase extends FoodMartTestCase {
     
     // implement TestCase
     protected void tearDown() throws Exception {
-    	DiffRepository diffRepos = getDiffRepos();
+        DiffRepository diffRepos = getDiffRepos();
         diffRepos.setCurrentTestCaseName(null);
     }
     
     // implement TestCase
-    public static TestSuite constructSuite(DiffRepository diffRepos, Class clazz) {
+    public static TestSuite constructSuite(
+        DiffRepository diffRepos,
+        Class clazz) 
+    {
         TestSuite suite = new TestSuite();
         Class[] types = new Class[] { String.class };
 
         for (String name : diffRepos.getTestCaseNames()) {
-        	try {
-        		Constructor cons = clazz.getConstructor(types);
-        		Object[] args = new Object[] { name };
-        		suite.addTest((Test) cons.newInstance(args));
-        	} catch (Exception e) {
-        		throw new Error(e.getMessage());
-        	}
+            try {
+                Constructor cons = clazz.getConstructor(types);
+                Object[] args = new Object[] { name };
+                suite.addTest((Test) cons.newInstance(args));
+            } catch (Exception e) {
+                throw new Error(e.getMessage());
+            }
         }
-
         return suite;
     }
 
