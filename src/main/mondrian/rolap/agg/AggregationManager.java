@@ -375,9 +375,11 @@ System.out.println(buf.toString());
     }
 
     /**
-     * Implementation of {@link PinSet} using a {@link HashSet}.
+     * Implementation of {@link RolapAggregationManager.PinSet} 
+     * using a {@link HashSet}.
      */
-    public static class PinSetImpl extends HashSet<Segment> implements PinSet {
+    public static class PinSetImpl extends HashSet<Segment> 
+                implements RolapAggregationManager.PinSet {
     }
 }
 
