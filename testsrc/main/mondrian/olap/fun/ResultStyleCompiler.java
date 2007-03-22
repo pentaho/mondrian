@@ -16,16 +16,15 @@ import mondrian.calc.*;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
-/** 
+/**
  * The <code>ResultStyleCompiler</code> can be used to assure that
  * the use of the container ResultStyle: ITERABLE, LIST and MUTABLE_LIST;
  * can be requested by any Calc. This ExpCompiler injects into the
  * Exp hierarchy a special Calc, the MultiCalc, that evaluates
  * its three child Calc's (one for ITERABLE, LIST and MUTABLE_LIST)
  * and compares the lists returned to make sure that they are the
- * same. This comparison can only be done when the Member evaluation 
+ * same. This comparison can only be done when the Member evaluation
  * stage of query evaluation is begin done the last time.
  * [Think about it - how can you tell when the evaluation is happening
  * for the last time.] Evaluation is called from the RolapResult's
@@ -37,11 +36,14 @@ import java.util.List;
  * stack and when one changes the line number from which one is
  * being called, then one knows one is being called by the second
  * executeAxis call in the RolapResult constructor.
- * 
+ *
+ *
  * @author <a>Richard M. Emberson</a>
  * @since Feb 10 2007
  * @version $Id$
  */
+// REVIEW: jhyde, 2007/3/22: Remove the "<a> ... </a>" tags - they are invalid
+// if the 'href' or 'name' attributes are not specified.
 public class ResultStyleCompiler implements ExpCompiler {
     static {
         // This is here so that folks can see that this compiler is
@@ -49,7 +51,9 @@ public class ResultStyleCompiler implements ExpCompiler {
         System.out.println("ResultStyleCompiler being used");
     }
 
-    /** 
+    // REVIEW: jhyde, 2007/3/22: Move inner classes to bottom of file.
+
+    /**
      * Calc with three child Calcs, one for ITERABLE, LIST and MUTABLE_LIST,
      * which are evaluated during the normal evaluation process.
      */
@@ -62,7 +66,7 @@ public class ResultStyleCompiler implements ExpCompiler {
         int lineNumber;
 
         int cnt;
-        MultiCalc(Calc calcIter, Calc calcList, Calc calcMList, 
+        MultiCalc(Calc calcIter, Calc calcList, Calc calcMList,
                             boolean onlyMutableList) {
             this.calcIter = calcIter;
             this.calcList = calcList;
@@ -71,13 +75,13 @@ public class ResultStyleCompiler implements ExpCompiler {
             this.lineNumber = -1;
             this.cnt = counter++;
         }
-        
-        /** 
+
+        /**
          * Return true if this is a final evaluation; the one that
-         * takes place after the while-loop in the RolapResult 
+         * takes place after the while-loop in the RolapResult
          * constructor.
-         * 
-         * @return 
+         *
+         * @return
          */
         protected boolean finalEval() {
             StackTraceElement[] stEls = new Throwable().getStackTrace();
@@ -203,6 +207,8 @@ print(ma2);
             }
         }
         protected void print(Member[] ma) {
+            // REVIEW: jhyde, 2007/3/22: Use StringBuilder, because it is more
+            // efficient.
             StringBuffer buf = new StringBuffer(100);
             if (ma == null) {
                 buf.append("null");
@@ -222,14 +228,17 @@ print(ma2);
 
     protected ExpCompiler compiler;
 
-    /** 
+    // REVIEW: jhyde, 2007/3/22: javadoc '@param' and '@return' tags must have
+    // a description
+
+    /**
      * Constructor which uses the ExpCompiler.Factory to get the
      * default ExpCompiler as an instance variable - ResultStyleCompiler
      * is a wrapper.
-     * 
-     * @param evaluator 
-     * @param validator 
-     * @param resultStyles 
+     *
+     * @param evaluator
+     * @param validator
+     * @param resultStyles
      */
     public ResultStyleCompiler(Evaluator evaluator, Validator validator,
             ResultStyle[] resultStyles) {
@@ -268,25 +277,28 @@ print(ma2);
             boolean foundIterable = false;
             boolean foundList = false;
             boolean foundMutableList = false;
-            for (int i = 0; i < resultStyles.length; i++) {
-                ResultStyle resultStyle = resultStyles[i];
-                if (resultStyle == ResultStyle.LIST) {
+            for (ResultStyle resultStyle : resultStyles) {
+                switch (resultStyle) {
+                case LIST:
                     foundList = true;
-                } else if (resultStyle == ResultStyle.MUTABLE_LIST) {
+                    break;
+                case MUTABLE_LIST:
                     foundMutableList = true;
-                } else if (resultStyle == ResultStyle.ITERABLE) {
+                    break;
+                case ITERABLE:
                     foundIterable = true;
+                    break;
                 }
             }
             // found at least one of the container Calcs
             if (foundIterable || foundList || foundMutableList) {
-                Calc calcIter = compiler.compile(exp, 
+                Calc calcIter = compiler.compile(exp,
                                 new ResultStyle[] { ResultStyle.ITERABLE });
-                Calc calcList = compiler.compile(exp, 
+                Calc calcList = compiler.compile(exp,
                                 new ResultStyle[] { ResultStyle.LIST });
-                Calc calcMList = compiler.compile(exp, 
+                Calc calcMList = compiler.compile(exp,
                                 new ResultStyle[] { ResultStyle.MUTABLE_LIST });
-                return new MultiCalc(calcIter, calcList, calcMList, 
+                return new MultiCalc(calcIter, calcList, calcMList,
                                 // only a mutable list was requested
                                 // so that is the one that MUST be returned
                                 ! (foundList || foundIterable));
@@ -298,6 +310,9 @@ print(ma2);
         }
     }
 
+    // REVIEW: jhyde, 2007/3/22: This class should extend DelegatingCompiler.
+    // Then the following methods can be removed.
+
     public MemberCalc compileMember(Exp exp) {
         return compiler.compileMember(exp);
     }
@@ -305,7 +320,7 @@ print(ma2);
     public MemberCalc[] compileMembers(Exp exp0, Exp exp1) {
         return compiler.compileMembers(exp0, exp1);
     }
-    
+
     public LevelCalc compileLevel(Exp exp) {
         return compiler.compileLevel(exp);
     }
