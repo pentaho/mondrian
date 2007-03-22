@@ -2973,6 +2973,23 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Time].[1997].[Q2].[5]")); // not parents
     }
 
+    /** 
+     * tests that a null passed in returns an empty set in range function
+     */
+    public void testNullRange() {
+        assertAxisReturns("[Time].[1997].[Q1].[2] : NULL", //[Time].[1997].[Q2].[5]
+                fold("")); // Empty Set
+    }
+
+    /**
+     * tests that an exception is thrown if both parameters in a range function
+     * are null.
+     */
+    public void testTwoNullRange() {
+        assertAxisThrows("NULL : NULL",
+                "Mondrian Error:Failed to parse query 'select {NULL : NULL} on columns from Sales'");
+    }
+    
     /**
      * Large dimensions use a different member reader, therefore need to
      * be tested separately.
@@ -3713,6 +3730,15 @@ public class FunctionTest extends FoodMartTestCase {
                 "The <level> and <member> arguments to OpeningPeriod must be "
                 + "from the same hierarchy. The level was from '[Store]' but "
                 + "the member was from '[Time]'.");
+    }
+    
+    /**
+     * This tests new NULL functionality exception throwing
+     *
+     */
+    public void testOpeningPeriodNull() {
+        assertAxisThrows("OpeningPeriod([Time].[Month], NULL)",
+                "Mondrian Error:Failed to parse query 'select {OpeningPeriod([Time].[Month], NULL)} on columns from Sales'");
     }
 
     public void testLastPeriods() {
