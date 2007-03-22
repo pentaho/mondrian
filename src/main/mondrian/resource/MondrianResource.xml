@@ -244,6 +244,14 @@
     <text>Unknown type ''{0}''; values are NUMERIC, STRING, BOOLEAN</text>
 </exception>
 
+<exception id="350580" name="NullNotSupported">
+    <text>Function does not support NULL member parameter</text>
+</exception>
+
+<exception id="350590" name="TwoNullsNotSupported">
+    <text>Function does not support two NULL member parameters</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Catalog errors -->
 
