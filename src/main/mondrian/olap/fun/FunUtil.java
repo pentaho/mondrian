@@ -1686,7 +1686,8 @@ System.out.println("FunUtil.countIterable Iterable: "+retval);
         case Category.Symbol:
             return false;
         case Category.Null:
-            return  to == Category.Numeric;
+        	// now null supports members as well as numerics
+            return  to == Category.Numeric || to == Category.Member;
         default:
             throw newInternal("unknown category " + from);
         }
