@@ -54,6 +54,20 @@ public interface ExpCompiler {
     MemberCalc compileMember(Exp exp);
 
     /**
+     * Compiles an expression which yields two {@link Member} results.
+     * Allows the members to depend on one another, such as a Hierarchial
+     * NullMember.
+     * 
+     * @param exp0 first expression
+     * @param exp1 second expression
+     * 
+     * @return two member calcs
+     */
+    MemberCalc[] compileMembers(Exp exp0, Exp exp1);
+
+    
+    
+    /**
      * Compiles an expression which yields a {@link Level} result.
      */
     LevelCalc compileLevel(Exp exp);

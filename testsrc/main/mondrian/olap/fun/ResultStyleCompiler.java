@@ -302,6 +302,10 @@ print(ma2);
         return compiler.compileMember(exp);
     }
 
+    public MemberCalc[] compileMembers(Exp exp0, Exp exp1) {
+        return compiler.compileMembers(exp0, exp1);
+    }
+    
     public LevelCalc compileLevel(Exp exp) {
         return compiler.compileLevel(exp);
     }
