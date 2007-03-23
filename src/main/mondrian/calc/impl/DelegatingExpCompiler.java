@@ -54,14 +54,6 @@ public class DelegatingExpCompiler implements ExpCompiler {
         return (MemberCalc) afterCompile(exp, calc, false);
     }
 
-    public MemberCalc[] compileMembers(Exp exp0, Exp exp1) {
-        MemberCalc calc[] = parent.compileMembers(exp0, exp1);
-        MemberCalc ncalc[] = new MemberCalc[2];
-        ncalc[0] = (MemberCalc) afterCompile(exp0, calc[0], false); 
-        ncalc[1] = (MemberCalc) afterCompile(exp0, calc[1], false);
-        return ncalc;
-    }
-    
     public LevelCalc compileLevel(Exp exp) {
         final LevelCalc calc = parent.compileLevel(exp);
         return (LevelCalc) afterCompile(exp, calc, false);

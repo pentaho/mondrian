@@ -110,46 +110,6 @@ public class AbstractExpCompiler implements ExpCompiler {
         assert type instanceof MemberType;
         return (MemberCalc) compile(exp);
     }
-    
-    /**
-     * return two membercalc objects, substituting null's with the hierarchy
-     * null member of the other expression.
-     * 
-     * @param exp0 first expression
-     * @param exp1 second expression
-     * 
-     * @return two member calcs
-     */
-    public MemberCalc[] compileMembers(Exp exp0, Exp exp1) {
-        MemberCalc[] members = new MemberCalc[2];
-        
-        if (exp0.getType() instanceof NullType) {
-            members[0] = null;
-        } else {
-            members[0] = compileMember(exp0);
-        }
-        
-        if (exp1.getType() instanceof NullType) {
-            members[1] = null;
-        } else {
-            members[1] = compileMember(exp1);
-        }
-        
-        // replace any null types with hierachy null member
-        // if both objects are null, throw exception
-        
-        if (members[0]== null && members[1] == null) {
-            throw MondrianResource.instance().TwoNullsNotSupported.ex();
-        } else if (members[0] == null) {
-            Member nullMember = ((RolapMember)members[1].evaluate(null)).getHierarchy().getNullMember();
-            members[0] = (MemberCalc)ConstantCalc.constantMember(nullMember);
-        } else if (members[1] == null) {
-            Member nullMember = ((RolapMember)members[0].evaluate(null)).getHierarchy().getNullMember();
-            members[1] = (MemberCalc)ConstantCalc.constantMember(nullMember);
-        }
-        
-        return members;
-    }
 
     public LevelCalc compileLevel(Exp exp) {
         final Type type = exp.getType();
