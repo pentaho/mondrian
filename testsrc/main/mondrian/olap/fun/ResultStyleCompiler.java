@@ -13,6 +13,7 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
 import mondrian.calc.*;
+import mondrian.calc.impl.DelegatingExpCompiler;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -38,20 +39,91 @@ import java.util.Iterator;
  * executeAxis call in the RolapResult constructor.
  *
  *
- * @author <a>Richard M. Emberson</a>
+ * @author Richard M. Emberson
  * @since Feb 10 2007
  * @version $Id$
  */
-// REVIEW: jhyde, 2007/3/22: Remove the "<a> ... </a>" tags - they are invalid
-// if the 'href' or 'name' attributes are not specified.
-public class ResultStyleCompiler implements ExpCompiler {
+public class ResultStyleCompiler extends DelegatingExpCompiler {
     static {
         // This is here so that folks can see that this compiler is
         // being used. It should be removed in the future.
         System.out.println("ResultStyleCompiler being used");
     }
 
-    // REVIEW: jhyde, 2007/3/22: Move inner classes to bottom of file.
+    private static ExpCompiler generateCompiler(Evaluator evaluator, 
+            Validator validator,
+            ResultStyle[] resultStyles) {
+        // pop and then push class name
+        Object context = ExpCompiler.Factory.getFactory().removeContext();
+        try {
+            return ExpCompiler.Factory.getExpCompiler(
+                                evaluator, validator, resultStyles);
+        } finally {
+            // reset ExpCompiler.Factory test context
+            ExpCompiler.Factory.getFactory().restoreContext(context);
+        }
+    }
+
+    /**
+     * Constructor which uses the ExpCompiler.Factory to get the
+     * default ExpCompiler as an instance variable - ResultStyleCompiler
+     * is a wrapper.
+     *
+     */
+    public ResultStyleCompiler(Evaluator evaluator, Validator validator,
+            ResultStyle[] resultStyles) {
+        super(generateCompiler(evaluator, validator, resultStyles));
+    }
+
+    public Calc compile(Exp exp) {
+        ResultStyle[] resultStyles = getAcceptableResultStyles();
+        return compile(exp, resultStyles);
+    }
+
+    public Calc compile(Exp exp, ResultStyle[] resultStyles) {
+        //return compiler.compile(exp, resultStyles);
+        // This applies only to the ITERABE, LIST and MUTABLE_LIST
+        // ResultStyles. For each we compile and save the Calc
+        // in a Multi-Calc, then during evaluation, each of the
+        // calcs are evaluated and results compared.
+        // If the request is for a MUTABLE_LIST, then that result HAS to
+        // be returned to caller.
+        if (resultStyles.length > 0) {
+            boolean foundIterable = false;
+            boolean foundList = false;
+            boolean foundMutableList = false;
+            for (ResultStyle resultStyle : resultStyles) {
+                switch (resultStyle) {
+                case LIST:
+                    foundList = true;
+                    break;
+                case MUTABLE_LIST:
+                    foundMutableList = true;
+                    break;
+                case ITERABLE:
+                    foundIterable = true;
+                    break;
+                }
+            }
+            // found at least one of the container Calcs
+            if (foundIterable || foundList || foundMutableList) {
+                Calc calcIter = compile(exp,
+                                new ResultStyle[] { ResultStyle.ITERABLE });
+                Calc calcList = compile(exp,
+                                new ResultStyle[] { ResultStyle.LIST });
+                Calc calcMList = compile(exp,
+                                new ResultStyle[] { ResultStyle.MUTABLE_LIST });
+                return new MultiCalc(calcIter, calcList, calcMList,
+                                // only a mutable list was requested
+                                // so that is the one that MUST be returned
+                                ! (foundList || foundIterable));
+            } else {
+                return compile(exp);
+            }
+        } else {
+            return compile(exp);
+        }
+    }
 
     /**
      * Calc with three child Calcs, one for ITERABLE, LIST and MUTABLE_LIST,
@@ -207,9 +279,7 @@ print(ma2);
             }
         }
         protected void print(Member[] ma) {
-            // REVIEW: jhyde, 2007/3/22: Use StringBuilder, because it is more
-            // efficient.
-            StringBuffer buf = new StringBuffer(100);
+            StringBuilder buf = new StringBuilder(100);
             if (ma == null) {
                 buf.append("null");
             } else {
@@ -224,156 +294,6 @@ print(ma2);
             }
             System.out.println(buf.toString());
         }
-    }
-
-    protected ExpCompiler compiler;
-
-    // REVIEW: jhyde, 2007/3/22: javadoc '@param' and '@return' tags must have
-    // a description
-
-    /**
-     * Constructor which uses the ExpCompiler.Factory to get the
-     * default ExpCompiler as an instance variable - ResultStyleCompiler
-     * is a wrapper.
-     *
-     * @param evaluator
-     * @param validator
-     * @param resultStyles
-     */
-    public ResultStyleCompiler(Evaluator evaluator, Validator validator,
-            ResultStyle[] resultStyles) {
-        // pop and then push class name
-        Object context = ExpCompiler.Factory.getFactory().removeContext();
-        try {
-            this.compiler = ExpCompiler.Factory.getExpCompiler(
-                                evaluator, validator, resultStyles);
-        } finally {
-            // reset ExpCompiler.Factory test context
-            ExpCompiler.Factory.getFactory().restoreContext(context);
-        }
-    }
-
-    public Evaluator getEvaluator() {
-        return compiler.getEvaluator();
-    }
-    public Validator getValidator() {
-        return compiler.getValidator();
-    }
-
-    public Calc compile(Exp exp) {
-        ResultStyle[] resultStyles = getAcceptableResultStyles();
-        return compile(exp, resultStyles);
-    }
-
-    public Calc compile(Exp exp, ResultStyle[] resultStyles) {
-        //return compiler.compile(exp, resultStyles);
-        // This applies only to the ITERABE, LIST and MUTABLE_LIST
-        // ResultStyles. For each we compile and save the Calc
-        // in a Multi-Calc, then during evaluation, each of the
-        // calcs are evaluated and results compared.
-        // If the request is for a MUTABLE_LIST, then that result HAS to
-        // be returned to caller.
-        if (resultStyles.length > 0) {
-            boolean foundIterable = false;
-            boolean foundList = false;
-            boolean foundMutableList = false;
-            for (ResultStyle resultStyle : resultStyles) {
-                switch (resultStyle) {
-                case LIST:
-                    foundList = true;
-                    break;
-                case MUTABLE_LIST:
-                    foundMutableList = true;
-                    break;
-                case ITERABLE:
-                    foundIterable = true;
-                    break;
-                }
-            }
-            // found at least one of the container Calcs
-            if (foundIterable || foundList || foundMutableList) {
-                Calc calcIter = compiler.compile(exp,
-                                new ResultStyle[] { ResultStyle.ITERABLE });
-                Calc calcList = compiler.compile(exp,
-                                new ResultStyle[] { ResultStyle.LIST });
-                Calc calcMList = compiler.compile(exp,
-                                new ResultStyle[] { ResultStyle.MUTABLE_LIST });
-                return new MultiCalc(calcIter, calcList, calcMList,
-                                // only a mutable list was requested
-                                // so that is the one that MUST be returned
-                                ! (foundList || foundIterable));
-            } else {
-                return compiler.compile(exp);
-            }
-        } else {
-            return compiler.compile(exp);
-        }
-    }
-
-    // REVIEW: jhyde, 2007/3/22: This class should extend DelegatingCompiler.
-    // Then the following methods can be removed.
-
-    public MemberCalc compileMember(Exp exp) {
-        return compiler.compileMember(exp);
-    }
-
-    public MemberCalc[] compileMembers(Exp exp0, Exp exp1) {
-        return compiler.compileMembers(exp0, exp1);
-    }
-
-    public LevelCalc compileLevel(Exp exp) {
-        return compiler.compileLevel(exp);
-    }
-
-    public DimensionCalc compileDimension(Exp exp) {
-        return compiler.compileDimension(exp);
-    }
-
-    public HierarchyCalc compileHierarchy(Exp exp) {
-        return compiler.compileHierarchy(exp);
-    }
-
-    public IntegerCalc compileInteger(Exp exp) {
-        return compiler.compileInteger(exp);
-    }
-
-    public StringCalc compileString(Exp exp) {
-        return compiler.compileString(exp);
-    }
-
-    public ListCalc compileList(Exp exp) {
-        return compiler.compileList(exp);
-    }
-
-    public ListCalc compileList(Exp exp, boolean mutable) {
-        return compiler.compileList(exp, mutable);
-    }
-    public IterCalc compileIter(Exp exp) {
-        return compiler.compileIter(exp);
-    }
-
-    public BooleanCalc compileBoolean(Exp exp) {
-        return compiler.compileBoolean(exp);
-    }
-
-    public DoubleCalc compileDouble(Exp exp) {
-        return compiler.compileDouble(exp);
-    }
-
-    public TupleCalc compileTuple(Exp exp) {
-        return compiler.compileTuple(exp);
-    }
-
-    public Calc compileScalar(Exp exp, boolean convert) {
-        return compiler.compileScalar(exp, convert);
-    }
-
-    public ParameterSlot registerParameter(Parameter parameter) {
-        return compiler.registerParameter(parameter);
-    }
-
-    public ResultStyle[] getAcceptableResultStyles() {
-        return compiler.getAcceptableResultStyles();
     }
 }
 
