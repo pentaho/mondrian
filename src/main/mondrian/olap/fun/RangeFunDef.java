@@ -40,14 +40,11 @@ class RangeFunDef extends FunDefBase {
     }
 
     public Calc compileCall(final ResolvedFunCall call, ExpCompiler compiler) {
-        final MemberCalc memberCalc0 =
-                compiler.compileMember(call.getArg(0));
-        final MemberCalc memberCalc1 =
-                compiler.compileMember(call.getArg(1));
-        return new AbstractListCalc(call, new Calc[] {memberCalc0, memberCalc1}) {
+        final MemberCalc[] memberCalcs = compiler.compileMembers(call.getArg(0), call.getArg(1));
+        return new AbstractListCalc(call, new Calc[] {memberCalcs[0], memberCalcs[1]}) {
             public List evaluateList(Evaluator evaluator) {
-                final Member member0 = memberCalc0.evaluateMember(evaluator);
-                final Member member1 = memberCalc1.evaluateMember(evaluator);
+                final Member member0 = memberCalcs[0].evaluateMember(evaluator);
+                final Member member1 = memberCalcs[1].evaluateMember(evaluator);
                 if (member0.isNull() || member1.isNull()) {
                     return Collections.EMPTY_LIST;
                 }
