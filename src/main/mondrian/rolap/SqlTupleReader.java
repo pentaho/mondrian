@@ -17,7 +17,6 @@ import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -160,7 +159,7 @@ public class SqlTupleReader implements TupleReader {
                         ++column;
                     }
                     column += childLevel.getProperties().length;
-                    
+
                     if (member != members[i]) {
                         // Flush list we've been building.
                         List<RolapMember> children = siblings[i + 1];
@@ -294,35 +293,14 @@ public class SqlTupleReader implements TupleReader {
         return enumTargetCount;
     }
 
-    public List<RolapMember[]> readTuples(
+    private void prepareTuples(
         DataSource dataSource,
         List<List<RolapMember>> partialResult,
         List<List<RolapMember>> newPartialResult)
     {
-        Connection con;
-        try {
-            con = dataSource.getConnection();
-        } catch (SQLException e) {
-            throw Util.newInternal(e, "could not connect to DB");
-        }
-        try {
-            return readTuples(con, partialResult, newPartialResult);
-        } finally {
-            try {
-                con.close();
-            } catch (SQLException e) {
-                throw Util.newInternal(e, "could not close connection");
-            }
-        }
-    }
-
-    private void prepareTuples(
-        Connection jdbcConnection,
-        List<List<RolapMember>> partialResult,
-        List<List<RolapMember>> newPartialResult)
-    {
-        String sql = makeLevelMembersSql(jdbcConnection);
-        ResultSet resultSet = null;
+        String message = "Populating member cache with members for " + targets;
+        SqlStatement stmt = null;
+        final ResultSet resultSet;
         boolean execQuery = (partialResult == null);
         try {
             if (execQuery) {
@@ -334,9 +312,15 @@ public class SqlTupleReader implements TupleReader {
                         partialTargets.add(target);
                     }
                 }
-                resultSet = RolapUtil.executeQuery(
-                    jdbcConnection, sql, maxRows,
-                    "SqlTupleReader.readTuples " + partialTargets, -1, -1);
+                String sql = makeLevelMembersSql(dataSource);
+                stmt = RolapUtil.executeQuery(
+                    dataSource, sql, maxRows,
+                    "SqlTupleReader.readTuples " + partialTargets,
+                    message,
+                    -1, -1);
+                resultSet = stmt.getResultSet();
+            } else {
+                resultSet = null;
             }
 
             for (Target target : targets) {
@@ -357,6 +341,7 @@ public class SqlTupleReader implements TupleReader {
             int currPartialResultIdx = 0;
             if (execQuery) {
                 moreRows = resultSet.next();
+                ++stmt.rowCount;
             } else {
                 moreRows = currPartialResultIdx < partialResult.size();
             }
@@ -372,7 +357,8 @@ public class SqlTupleReader implements TupleReader {
                     int column = 0;
                     for (Target target : targets) {
                         target.currMember = null;
-                        column = target.addRow(resultSet, column);
+                        column =
+                            target.addRow(resultSet, column);
                     }
                 } else {
                     // find the first enum target, then call addTargets()
@@ -397,7 +383,7 @@ public class SqlTupleReader implements TupleReader {
                     resetCurrMembers(partialRow);
                     addTargets(
                         0, firstEnumTarget, enumTargetCount, srcMemberIdxes,
-                        resultSet, sql);
+                        resultSet, message);
                     if (newPartialResult != null) {
                         savePartialResult(newPartialResult);
                     }
@@ -410,33 +396,31 @@ public class SqlTupleReader implements TupleReader {
                     moreRows = currPartialResultIdx < partialResult.size();
                 }
             }
-        } catch (Throwable e) {
-            throw Util.newInternal(e, "while populating member cache with members for "
-                    + targets + "'; sql=[" + sql + "]");
+        } catch (Exception e) {
+            if (stmt == null) {
+                throw Util.newError(e, message);
+            } else {
+                stmt.handle(e);
+            }
         } finally {
-            try {
-                if (resultSet != null) {
-                    resultSet.getStatement().close();
-                    resultSet.close();
-                }
-            } catch (SQLException e) {
-                // ignore
+            if (stmt != null) {
+                stmt.close();
             }
         }
     }
 
     public List<RolapMember> readMembers(
-        Connection jdbcConnection,
+        DataSource dataSource,
         List<List<RolapMember>> partialResult,
         List<List<RolapMember>> newPartialResult)
     {
-        prepareTuples(jdbcConnection, partialResult, newPartialResult);
+        prepareTuples(dataSource, partialResult, newPartialResult);
         assert targets.size() == 1;
         return targets.get(0).close();
     }
 
     public List<RolapMember[]> readTuples(
-        Connection jdbcConnection,
+        DataSource jdbcConnection,
         List<List<RolapMember>> partialResult,
         List<List<RolapMember>> newPartialResult)
     {
@@ -504,12 +488,11 @@ public class SqlTupleReader implements TupleReader {
      * to be retrieved to form the current cross product row
      * @param resultSet result set corresponding to rows retrieved through
      * native sql
-     * @param sql sql statement corresponding to the select used to natively
-     * retrieve rows
+     * @param message Message to issue on failure
      */
     private void addTargets(
         int currEnumTargetIdx, int currTargetIdx, int nEnumTargets,
-        int[] srcMemberIdxes, ResultSet resultSet, String sql) {
+        int[] srcMemberIdxes, ResultSet resultSet, String message) {
 
         // loop through the list of members for the current enum target
         Target currTarget = targets.get(currTargetIdx);
@@ -526,7 +509,7 @@ public class SqlTupleReader implements TupleReader {
                 }
                 addTargets(
                     currEnumTargetIdx + 1, nextTargetIdx, nEnumTargets,
-                    srcMemberIdxes, resultSet, sql);
+                    srcMemberIdxes, resultSet, message);
             } else {
                 // form a cross product using the columns from the current
                 // result set row and the current members that recursion
@@ -538,12 +521,7 @@ public class SqlTupleReader implements TupleReader {
                         try {
                             column = target.addRow(resultSet, column);
                         } catch (Throwable e) {
-                            throw Util.newInternal(
-                                e,
-                                "while populating member cache with " +
-                                    "members for " + targets + "'; sql=[" +
-                                    sql +
-                                    "]");
+                            throw Util.newError(e, message);
                         }
                     } else {
                         RolapMember member =
@@ -572,7 +550,7 @@ public class SqlTupleReader implements TupleReader {
         partialResult.add(row);
     }
 
-    String makeLevelMembersSql(Connection jdbcConnection) {
+    String makeLevelMembersSql(DataSource dataSource) {
 
         // In the case of a virtual cube, if we need to join to the fact
         // table, we do not necessarily have a single underlying fact table,
@@ -625,8 +603,7 @@ public class SqlTupleReader implements TupleReader {
                         WhichSelect.NOT_LAST;
                 selectString +=
                     generateSelectForLevels(
-                        jdbcConnection, map, whichSelect);
-                evaluator = evaluator.pop();
+                        dataSource, map, whichSelect);
                 if (!finalSelect) {
                     selectString += " union ";
                 }
@@ -637,14 +614,14 @@ public class SqlTupleReader implements TupleReader {
                 cube == null ?
                     null :
                     cube.getStar().getLevelToColumnMap(cube);
-            return generateSelectForLevels(jdbcConnection, map, WhichSelect.ONLY);
+            return generateSelectForLevels(dataSource, map, WhichSelect.ONLY);
         }
     }
 
     /**
      * Generates the SQL string corresponding to the levels referenced.
      *
-     * @param jdbcConnection jdbc connection that they query will execute
+     * @param dataSource jdbc connection that they query will execute
      * against
      * @param levelToColumnMap set only in the case of virtual cubes;
      * provides the appropriate mapping for the base cube being processed
@@ -652,12 +629,12 @@ public class SqlTupleReader implements TupleReader {
      * @return SQL statement string
      */
     private String generateSelectForLevels(
-        Connection jdbcConnection,
+        DataSource dataSource,
         Map<RolapLevel, RolapStar.Column> levelToColumnMap,
         WhichSelect whichSelect) {
 
         String s = "while generating query to retrieve members of level(s) " + targets;
-        SqlQuery sqlQuery = newQuery(jdbcConnection, s);
+        SqlQuery sqlQuery = SqlQuery.newQuery(dataSource, s);
 
         // add the selects for all levels to fetch
         for (Target target : targets) {
@@ -760,16 +737,6 @@ public class SqlTupleReader implements TupleReader {
                 sqlQuery.addSelect(propSql);
                 sqlQuery.addGroupBy(propSql);
             }
-        }
-    }
-
-    static SqlQuery newQuery(Connection jdbcConnection, String err) {
-        try {
-            final SqlQuery.Dialect dialect =
-                    SqlQuery.Dialect.create(jdbcConnection.getMetaData());
-            return new SqlQuery(dialect);
-        } catch (SQLException e) {
-            throw Util.newInternal(e, err);
         }
     }
 

@@ -17,9 +17,9 @@ import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 import org.apache.log4j.Logger;
 
+import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.Connection;
 import java.sql.*;
 import java.util.*;
 
@@ -325,13 +325,6 @@ public class AggStar {
      */
     private SqlQuery getSqlQuery() {
         return getStar().getSqlQuery();
-    }
-
-    /**
-     * Get a java.sql.Connection.
-     */
-    public Connection getJdbcConnection() {
-        return getStar().getJdbcConnection();
     }
 
     /**
@@ -654,13 +647,6 @@ public class AggStar {
          */
         protected SqlQuery getSqlQuery() {
             return getAggStar().getSqlQuery();
-        }
-
-        /**
-         * Get a java.sql.Connection.
-         */
-        public Connection getJdbcConnection() {
-            return getAggStar().getJdbcConnection();
         }
 
         /**
@@ -1218,38 +1204,31 @@ public class AggStar {
             SqlQuery query = getSqlQuery();
             query.addSelect("count(*)");
             query.addFrom(getRelation(), getName(), false);
-            Connection conn = getJdbcConnection();
+            DataSource dataSource = getAggStar().getStar().getDataSource();
+            SqlStatement stmt =
+                RolapUtil.executeQuery(
+                    dataSource, query.toString(),
+                    "AggStar.FactTable.makeNumberOfRows",
+                    "Counting rows in aggregate table");
             try {
-                ResultSet rs = null;
-                try {
-                    rs = RolapUtil.executeQuery(conn, query.toString(),
-                                         "AggStar.FactTable.makeNumberOfRows");
+                ResultSet resultSet = stmt.getResultSet();
+                if (resultSet.next()) {
+                    ++stmt.rowCount;
+                    numberOfRows = resultSet.getInt(1);
+                } else {
+                    String msg =
+                        mres.SqlQueryFailed.str(
+                            "AggStar.FactTable.makeNumberOfRows",
+                            query.toString());
+                    getLogger().warn(msg);
 
-                    if (rs.next()) {
-                        numberOfRows = rs.getInt(1);
-                    } else {
-                        String msg = mres.SqlQueryFailed.str(
-                                "AggStar.FactTable.makeNumberOfRows",
-                                query.toString());
-                        getLogger().warn(msg);
-
-                        // set to large number so that this table is never used
-                        numberOfRows = Integer.MAX_VALUE/getTotalColumnSize();
-                    }
-                } finally {
-                    if (rs != null) {
-                        rs.close();
-                    }
+                    // set to large number so that this table is never used
+                    numberOfRows = Integer.MAX_VALUE / getTotalColumnSize();
                 }
-            } catch (SQLException ex) {
-                // ignore
-                getLogger().error(ex);
+            } catch (SQLException e) {
+                stmt.handle(e);
             } finally {
-                try {
-                    conn.close();
-                } catch (SQLException ex) {
-                    // ignore
-                }
+                stmt.close();
             }
         }
     }

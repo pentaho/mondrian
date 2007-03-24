@@ -24,6 +24,8 @@ import mondrian.mdx.*;
 
 import org.apache.log4j.Logger;
 
+import javax.sql.DataSource;
+
 /**
  * Analyses set expressions and executes them in SQL if possible.
  * Supports crossjoin, member.children, level.members and member.descendants -
@@ -225,24 +227,11 @@ public abstract class RolapNativeSet extends RolapNative {
             if (hasEnumTargets && partialResult == null) {
                 newPartialResult = new ArrayList<List<RolapMember>>();
             }
-            java.sql.Connection con;
-            try {
-                con = schemaReader.getDataSource().getConnection();
-            } catch (SQLException e) {
-                throw Util.newInternal(e, "could not connect to DB");
-            }
-            try {
-                if (args.length == 1) {
-                    result = (List) tr.readMembers(con, partialResult, newPartialResult);
-                } else {
-                    result = (List) tr.readTuples(con, partialResult, newPartialResult);
-                }
-            } finally {
-                try {
-                    con.close();
-                } catch (SQLException e) {
-                    throw Util.newInternal(e, "could not close connection");
-                }
+            DataSource dataSource = schemaReader.getDataSource();
+            if (args.length == 1) {
+                result = (List) tr.readMembers(dataSource, partialResult, newPartialResult);
+            } else {
+                result = (List) tr.readTuples(dataSource, partialResult, newPartialResult);
             }
 
             if (hasEnumTargets) {

@@ -15,8 +15,7 @@ package mondrian.rolap.agg;
 import mondrian.olap.*;
 import mondrian.rolap.*;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 import java.io.PrintWriter;
 
@@ -352,14 +351,16 @@ class Segment {
         }
 
         // execute
-        ResultSet resultSet = null;
+        SqlStatement stmt =
+            RolapUtil.executeQuery(
+                star.getDataSource(), sql, "Segment.load",
+                "Error while loading segment");
         final int measureCount = segments.length;
-        java.sql.Connection jdbcConnection = star.getJdbcConnection();
         try {
-            resultSet = RolapUtil.executeQuery(
-                    jdbcConnection, sql, "Segment.load");
             List<Object[]> rows = new ArrayList<Object[]>();
+            ResultSet resultSet = stmt.getResultSet();
             while (resultSet.next()) {
+                ++stmt.rowCount;
                 Object[] row = new Object[arity + measureCount];
                 // get the columns
                 int k = 1;
@@ -471,22 +472,9 @@ class Segment {
             }
 
         } catch (SQLException e) {
-            throw Util.newInternal(e,
-                    "Error while loading segment; sql=[" + sql + "]");
+            throw stmt.handle(e);
         } finally {
-            try {
-                if (resultSet != null) {
-                    resultSet.getStatement().close();
-                    resultSet.close();
-                }
-            } catch (SQLException e) {
-                // ignore
-            }
-            try {
-                jdbcConnection.close();
-            } catch (SQLException e) {
-                //ignore
-            }
+            stmt.close();
             // Any segments which are still loading have failed.
             for (Segment segment : segments) {
                 segment.setFailed();

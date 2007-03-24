@@ -119,40 +119,25 @@ public class RolapNativeTopCount extends RolapNativeSet {
         // extract "order by" expression
         SchemaReader schemaReader = evaluator.getSchemaReader();
         DataSource ds = schemaReader.getDataSource();
-        Connection con = null;
-        try {
-            con = ds.getConnection();
 
-            // generate the ORDER BY Clause
-            SqlQuery sqlQuery = SqlTupleReader.newQuery(con, "NativeTopCount");
-            RolapNativeSql sql = new RolapNativeSql(sqlQuery);
-            String orderByExpr = null;
-            if (args.length == 3) {
-                orderByExpr = sql.generateTopCountOrderBy(args[2]);
-                if (orderByExpr == null) {
-                    return null;
-                }
-            }
-            LOGGER.debug("using native topcount");
-            evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
-
-            TupleConstraint constraint = new TopCountConstraint(cargs, evaluator, orderByExpr);
-            SetEvaluator sev = new SetEvaluator(cargs, schemaReader, constraint);
-            sev.setMaxRows(count);
-            return sev;
-        } catch (SQLException e) {
-            throw Util.newInternal(e, "RolapNativeTopCount");
-        } finally {
-            if (con != null) {
-                try {
-                    con.close();
-                } catch (SQLException e) {
-                    LOGGER.error(null, e);
-                }
+        // generate the ORDER BY Clause
+        SqlQuery sqlQuery = SqlQuery.newQuery(ds, "NativeTopCount");
+        RolapNativeSql sql = new RolapNativeSql(sqlQuery);
+        String orderByExpr = null;
+        if (args.length == 3) {
+            orderByExpr = sql.generateTopCountOrderBy(args[2]);
+            if (orderByExpr == null) {
+                return null;
             }
         }
-    }
+        LOGGER.debug("using native topcount");
+        evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
 
+        TupleConstraint constraint = new TopCountConstraint(cargs, evaluator, orderByExpr);
+        SetEvaluator sev = new SetEvaluator(cargs, schemaReader, constraint);
+        sev.setMaxRows(count);
+        return sev;
+    }
 }
 
 // End RolapNativeTopCount.java

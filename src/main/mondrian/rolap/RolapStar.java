@@ -610,28 +610,16 @@ public class RolapStar {
         }
     }
 
-    /**
-     * Allocates a connection to the underlying RDBMS.
-     *
-     * <p>The client MUST close connection returned by this method; use the
-     * <code>try ... finally</code> idiom to be sure of this.
-     */
-    public Connection getJdbcConnection() {
-        Connection jdbcConnection;
-        try {
-            jdbcConnection = dataSource.getConnection();
-        } catch (SQLException e) {
-            throw Util.newInternal(
-                e, "Error while creating connection from data source");
-        }
-        return jdbcConnection;
-    }
-
     /** For testing purposes only.  */
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
+    /**
+     * Returns the DataSource used to connect to the underlying DBMS.
+     *
+     * @return DataSource
+     */
     public DataSource getDataSource() {
         return dataSource;
     }
@@ -707,19 +695,10 @@ public class RolapStar {
      * same length as <code>columns</code>; null values are left unconstrained.
      */
     Object getCell(CellRequest request) {
-        Connection jdbcConnection = getJdbcConnection();
-        try {
-            return getCell(request, jdbcConnection);
-        } finally {
-            try {
-                jdbcConnection.close();
-            } catch (SQLException e) {
-                //ignore
-            }
-        }
+        return getCell(request, dataSource);
     }
 
-    private Object getCell(CellRequest request, Connection jdbcConnection) {
+    private Object getCell(CellRequest request, DataSource dataSource) {
         Measure measure = request.getMeasure();
         Column[] columns = request.getConstrainedColumns();
         Object[] values = request.getSingleValues();
@@ -746,35 +725,36 @@ public class RolapStar {
             table.addToFrom(sqlQuery, true, true);
         }
         String sql = sqlQuery.toString();
-        ResultSet resultSet = null;
+        final SqlStatement stmt =
+            RolapUtil.executeQuery(
+                dataSource, sql, "RolapStar.getCell",
+                "while computing single cell");
         try {
-            resultSet = RolapUtil.executeQuery(
-                    jdbcConnection, sql, "RolapStar.getCell");
+            ResultSet resultSet = stmt.getResultSet();
             Object o = null;
             if (resultSet.next()) {
                 o = resultSet.getObject(1);
+                ++stmt.rowCount;
             }
             if (o == null) {
                 o = Util.nullValue; // convert to placeholder
             }
             return o;
         } catch (SQLException e) {
-            throw Util.newInternal(e,
-                    "while computing single cell; sql=[" + sql + "]");
+            throw stmt.handle(e);
         } finally {
-            try {
-                if (resultSet != null) {
-                    resultSet.getStatement().close();
-                    resultSet.close();
-                }
-            } catch (SQLException e) {
-                // ignore
-            }
+            stmt.close();
         }
     }
 
     private boolean containsColumn(String tableName, String columnName) {
-        final Connection jdbcConnection = getJdbcConnection();
+        Connection jdbcConnection;
+        try {
+            jdbcConnection = dataSource.getConnection();
+        } catch (SQLException e1) {
+            throw Util.newInternal(
+                e1, "Error while creating connection from data source");
+        }
         try {
             final DatabaseMetaData metaData = jdbcConnection.getMetaData();
             final ResultSet columns =
@@ -1006,21 +986,12 @@ public class RolapStar {
 
         public int getCardinality() {
             if (cardinality == -1) {
-                Connection jdbcConnection = getStar().getJdbcConnection();
-                try {
-                    cardinality = getCardinality(jdbcConnection);
-                } finally {
-                    try {
-                        jdbcConnection.close();
-                    } catch (SQLException e) {
-                        //ignore
-                    }
-                }
+                cardinality = getCardinality(getStar().getDataSource());
             }
             return cardinality;
         }
 
-        private int getCardinality(Connection jdbcConnection) {
+        private int getCardinality(DataSource dataSource) {
             SqlQuery sqlQuery = getSqlQuery();
             if (sqlQuery.getDialect().allowsCountDistinct()) {
                 // e.g. "select count(distinct product_id) from product"
@@ -1047,27 +1018,21 @@ public class RolapStar {
                     "the FROM clause.");
             }
             String sql = sqlQuery.toString();
-            ResultSet resultSet = null;
+            final SqlStatement stmt =
+                RolapUtil.executeQuery(
+                    dataSource, sql,
+                    "RolapStar.Column.getCardinality",
+                    "while counting distinct values of column '" +
+                    expression.getGenericExpression());
             try {
-                resultSet = RolapUtil.executeQuery(
-                        jdbcConnection, sql,
-                        "RolapStar.Column.getCardinality");
+                ResultSet resultSet = stmt.getResultSet();
                 Util.assertTrue(resultSet.next());
+                ++stmt.rowCount;
                 return resultSet.getInt(1);
             } catch (SQLException e) {
-                throw Util.newInternal(e,
-                        "while counting distinct values of column '" +
-                        expression.getGenericExpression() +
-                        "'; sql=[" + sql + "]");
+                throw stmt.handle(e);
             } finally {
-                try {
-                    if (resultSet != null) {
-                        resultSet.getStatement().close();
-                        resultSet.close();
-                    }
-                } catch (SQLException e) {
-                    // ignore
-                }
+                stmt.close();
             }
         }
 

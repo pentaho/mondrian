@@ -20,7 +20,6 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.*;
 
 import javax.sql.DataSource;
@@ -339,22 +338,8 @@ public class RolapSchema implements Schema {
      * from the connection pool.
      */
     public SqlQuery.Dialect getDialect() {
-        java.sql.Connection conn = null;
-        try {
-            conn = getInternalConnection().getDataSource().getConnection();
-            return SqlQuery.Dialect.create(conn.getMetaData());
-        } catch (SQLException e) {
-            throw Util.newInternal(
-                e, "Error while creating SQL dialect");
-        } finally {
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                //ignore
-            }
-        }
+        DataSource dataSource = getInternalConnection().getDataSource();
+        return SqlQuery.Dialect.create(dataSource);
     }
 
     private void load(MondrianDef.Schema xmlSchema) {

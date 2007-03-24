@@ -2567,7 +2567,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         NodeDef[] temp = level.properties;
         level.properties = new MondrianGuiDef.Property[temp.length + 1];
         for (int i = 0; i < temp.length; i++) {
-            level.properties[i] = (MondrianGuiDef.Property) temp[i];}
+            level.properties[i] = (MondrianGuiDef.Property) temp[i];
+        }
 
         level.properties[level.properties.length - 1] = property;
 
@@ -2646,12 +2647,13 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         this.schemaFile = f;
     }
 
+    public Object lastSelected;
+
     /**
      * Called whenever the value of the selection changes.
-     * @param e the event that characterizes the change.
      *
+     * @param e the event that characterizes the change.
      */
-    public Object lastSelected;
     public void valueChanged(TreeSelectionEvent e) {
         if (propertyTable.isEditing() && (lastSelected != e.getPath().getLastPathComponent())) {
             SchemaPropertyCellEditor sce = (SchemaPropertyCellEditor) propertyTable.getCellEditor();
@@ -2936,7 +2938,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         if (parent != null) {
             //System.out.println("parent type="+parent.getClass());
             Field[] fs = parent.getClass().getFields();
-            ArrayList names = new ArrayList();
+            ArrayList<Object> names = new ArrayList<Object>();
             for (int i = 0; i < fs.length; i++) {
                 if (fs[i].getType().isArray() && (fs[i].getType().getComponentType().isInstance(o) )) {
                     // selected schema object is an instance of parent's field (an array).

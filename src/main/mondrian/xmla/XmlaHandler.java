@@ -12,10 +12,7 @@ import mondrian.calc.ExpCompiler.ResultStyle;
 import mondrian.olap.*;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
-import mondrian.rolap.RolapAggregationManager;
-import mondrian.rolap.RolapConnection;
-import mondrian.rolap.RolapUtil;
-import mondrian.rolap.RolapStar;
+import mondrian.rolap.*;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.spi.CatalogLocator;
 import mondrian.xmla.impl.DefaultSaxWriter;
@@ -23,6 +20,7 @@ import mondrian.xmla.impl.DefaultSaxWriter;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
+import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
@@ -210,7 +208,7 @@ public class XmlaHandler implements XmlaConstants {
         QueryResult result;
         if (request.isDrillThrough()) {
             String tabFields =
-                (String) properties.get(PropertyDefinition.TableFields.name());
+                properties.get(PropertyDefinition.TableFields.name());
             if (tabFields != null && tabFields.length() > 0) {
                 // Presence of TABLE_FIELDS property initiates advanced
                 // drill-through.
@@ -837,7 +835,6 @@ public class XmlaHandler implements XmlaConstants {
 
         String dtSql = dtCell.getDrillThroughSQL(true);
         java.sql.Connection sqlConn = null;
-        Statement stmt = null;
         ResultSet rs = null;
 
         try {
@@ -861,7 +858,7 @@ public class XmlaHandler implements XmlaConstants {
                 }
                 List<String> truncatedTableList = new ArrayList<String>();
                 sqlConn = connection.getDataSource().getConnection();
-                stmt = sqlConn.createStatement();
+                Statement stmt = sqlConn.createStatement();
                 List<List<String>> fields = new ArrayList<List<String>>();
 
                 Map<String, List<String>> tableFieldMap =
@@ -876,8 +873,7 @@ public class XmlaHandler implements XmlaConstants {
                     for (int j = 1; j <= rsMeta.getColumnCount(); j++) {
                         String colName = rsMeta.getColumnName(j);
                         boolean colNameExists = false;
-                        for (int tableCount = 0; tableCount < fields.size(); tableCount++) {
-                            List<String> prvField = fields.get(tableCount);
+                        for (List<String> prvField : fields) {
                             if (prvField.contains(colName)) {
                                 colNameExists = true;
                                 break;
@@ -913,12 +909,14 @@ public class XmlaHandler implements XmlaConstants {
                     // fake absolute() via forward fetch
                     resultSetType = ResultSet.TYPE_FORWARD_ONLY;
                 }
-                rs = RolapUtil.executeQuery(
-                    sqlConn, dtSql, -1, "XmlaHandler.executeDrillThroughQuery",
-                    resultSetType,
-                    resultSetConcurrency);
+                SqlStatement stmt =
+                    RolapUtil.executeQuery(
+                        connection.getDataSource(), dtSql, -1,
+                        "XmlaHandler.executeDrillThroughQuery",
+                        "Error in drill through",
+                        resultSetType, resultSetConcurrency);
                 return new TabularRowSet(
-                    rs, request.drillThroughMaxRows(),
+                    stmt, request.drillThroughMaxRows(),
                     request.drillThroughFirstRowset(), count,
                     resultSetType);
             }
@@ -935,7 +933,7 @@ public class XmlaHandler implements XmlaConstants {
                 SERVER_FAULT_FC,
                 HSB_DRILL_THROUGH_SQL_CODE,
                 HSB_DRILL_THROUGH_SQL_FAULT_FS,
-                Util.newError(e, "Error in drill through"));
+                e);
         } finally {
             try {
                 if (rs != null) rs.close();
@@ -953,44 +951,66 @@ public class XmlaHandler implements XmlaConstants {
         private final List<Object[]> rows;
         private int totalCount;
 
+        /**
+         * Creates a TabularRowSet based upon a SQL statement result.
+         *
+         * <p>Closes the SqlStatement when it is done.
+         *
+         * @param stmt SqlStatement
+         * @param maxRows Maximum row count
+         * @param firstRowset Ordinal of row to skip to (1-based), or 0 to
+         *   start from beginning
+         * @param totalCount Total number of rows. If >= 0, writes the
+         *   "totalCount" attribute.
+         * @param resultSetType Type of ResultSet, for example
+         *    {@link ResultSet#TYPE_FORWARD_ONLY}.
+         */
         public TabularRowSet(
-                ResultSet rs,
-                int maxRows,
-                int firstRowset,
-                int totalCount,
-                int resultSetType) throws SQLException {
+            SqlStatement stmt,
+            int maxRows,
+            int firstRowset,
+            int totalCount,
+            int resultSetType)
+        {
             this.totalCount = totalCount;
-            ResultSetMetaData md = rs.getMetaData();
-            int columnCount = md.getColumnCount();
+            ResultSet rs = stmt.getResultSet();
+            try {
+                ResultSetMetaData md = rs.getMetaData();
+                int columnCount = md.getColumnCount();
 
-            // populate header
-            headers = new String[columnCount];
-            for (int i = 0; i < columnCount; i++) {
-                headers[i] = md.getColumnName(i + 1);
-            }
-
-            // skip to first rowset specified in request
-            int firstRow = (firstRowset <= 0 ? 1 : firstRowset);
-            if (resultSetType == ResultSet.TYPE_FORWARD_ONLY) {
-                for (int i = 0; i < firstRow; ++i) {
-                    if (!rs.next()) {
-                        break;
-                    }
-                }
-            } else {
-                rs.absolute(firstRow);
-            }
-
-            // populate data
-            rows = new ArrayList<Object[]>();
-            maxRows = (maxRows <= 0 ? Integer.MAX_VALUE : maxRows);
-            do {
-                Object[] row = new Object[columnCount];
+                // populate header
+                headers = new String[columnCount];
                 for (int i = 0; i < columnCount; i++) {
-                    row[i] = rs.getObject(i + 1);
+                    headers[i] = md.getColumnName(i + 1);
                 }
-                rows.add(row);
-            } while (rs.next() && --maxRows > 0);
+
+                // skip to first rowset specified in request
+                int firstRow = (firstRowset <= 0 ? 1 : firstRowset);
+                if (resultSetType == ResultSet.TYPE_FORWARD_ONLY) {
+                    for (int i = 0; i < firstRow; ++i) {
+                        if (!rs.next()) {
+                            break;
+                        }
+                    }
+                } else {
+                    rs.absolute(firstRow);
+                }
+
+                // populate data
+                rows = new ArrayList<Object[]>();
+                maxRows = (maxRows <= 0 ? Integer.MAX_VALUE : maxRows);
+                do {
+                    Object[] row = new Object[columnCount];
+                    for (int i = 0; i < columnCount; i++) {
+                        row[i] = rs.getObject(i + 1);
+                    }
+                    rows.add(row);
+                } while (rs.next() && --maxRows > 0);
+            } catch (SQLException e) {
+                throw stmt.handle(e);
+            } finally {
+                stmt.close();
+            }
         }
 
         /**
@@ -999,11 +1019,9 @@ public class XmlaHandler implements XmlaConstants {
          * @param tableFieldMap Map from table name to a list of the names of
          *      the fields in the table
          * @param tableList List of table names
-         * @throws SQLException
          */
         public TabularRowSet(
             Map<String, List<String>> tableFieldMap, List<String> tableList)
-            throws SQLException
         {
             List<String> headerList = new ArrayList<String>();
             for (String tableName : tableList) {
@@ -1376,8 +1394,7 @@ public class XmlaHandler implements XmlaConstants {
                     "HierarchyInfo", new String[]{
                     "name", hierarchy.getName()
                 });
-                for (int k = 0; k < props.length; k++) {
-                    final String prop = props[k];
+                for (final String prop : props) {
                     String longPropName = longPropNames.get(prop);
                     if (longPropName == null) {
                         longPropName = prop;
@@ -1412,7 +1429,7 @@ public class XmlaHandler implements XmlaConstants {
             writer.startElement("Tuple");
 
             Map<String, Integer> memberMap = new HashMap<String, Integer>();
-            Member positionMember = null;
+            Member positionMember;
             Axis slicerAxis = result.getSlicerAxis();
             if (slicerAxis.getPositions() != null &&
                 slicerAxis.getPositions().size() > 0) {
@@ -1526,9 +1543,8 @@ public class XmlaHandler implements XmlaConstants {
         {
             writer.startElement("Member", new String[] {
                 "Hierarchy", member.getHierarchy().getName()});
-            for (String prop1 : props) {
+            for (String prop : props) {
                 Object value;
-                final String prop = prop1;
                 String propLong = longPropNames.get(prop);
                 if (propLong == null) {
                     propLong = prop;
@@ -1591,19 +1607,28 @@ public class XmlaHandler implements XmlaConstants {
             writer.endElement(); // Member
         }
 
-        private int calculateDisplayInfo(Position prevPosition, Position nextPosition,
-                Member currentMember, int memberOrdinal, int childrenCount) {
+        private int calculateDisplayInfo(
+            Position prevPosition, Position nextPosition,
+            Member currentMember, int memberOrdinal, int childrenCount)
+        {
             int displayInfo = 0xffff & childrenCount;
 
             if (nextPosition != null) {
                 String currentUName = currentMember.getUniqueName();
-                String nextParentUName = nextPosition.get(memberOrdinal).getParentUniqueName();
-                displayInfo |= (currentUName.equals(nextParentUName) ? 0x10000 : 0);
+                Member nextMember = nextPosition.get(memberOrdinal);
+                String nextParentUName = nextMember.getParentUniqueName();
+                if (currentUName.equals(nextParentUName)) {
+                    displayInfo |= 0x10000;
+                }
             }
             if (prevPosition != null) {
                 String currentParentUName = currentMember.getParentUniqueName();
-                String prevParentUName = prevPosition.get(memberOrdinal).getParentUniqueName();
-                displayInfo |= (currentParentUName != null && currentParentUName.equals(prevParentUName) ? 0x20000 : 0);
+                Member prevMember = prevPosition.get(memberOrdinal);
+                String prevParentUName = prevMember.getParentUniqueName();
+                if (currentParentUName != null &&
+                    currentParentUName.equals(prevParentUName)) {
+                    displayInfo |= 0x20000;
+                }
             }
             return displayInfo;
         }
@@ -2099,7 +2124,7 @@ public class XmlaHandler implements XmlaConstants {
      * @param catalog Catalog
      * @param role User role
      * @return Connection
-     * @throws XmlaException
+     * @throws XmlaException If error occurs
      */
     protected Connection getConnection(
             DataSourcesConfig.Catalog catalog,
@@ -2123,18 +2148,23 @@ public class XmlaHandler implements XmlaConstants {
         connectProperties.put("catalog", catalogUrl);
 
         // Checking access
-        if (!DataSourcesConfig.DataSource.AUTH_MODE_UNAUTHENTICATED.equalsIgnoreCase(ds.getAuthenticationMode()) && null == role) {
+        if (!DataSourcesConfig.DataSource.AUTH_MODE_UNAUTHENTICATED
+            .equalsIgnoreCase(
+                ds.getAuthenticationMode()) &&
+            null == role)
+        {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
                 HSB_ACCESS_DENIED_CODE,
                 HSB_ACCESS_DENIED_FAULT_FS,
-                new SecurityException("Access denied for data source needing authentication")
-                );
+                new SecurityException(
+                    "Access denied for data source needing authentication"));
         }
 
         connectProperties.put("role", role);
         RolapConnection conn =
-            (RolapConnection) DriverManager.getConnection(connectProperties, null, false);
+            (RolapConnection) DriverManager.getConnection(
+                connectProperties, null, false);
 
 if (LOGGER.isDebugEnabled()) {
 if (conn == null) {
@@ -2147,15 +2177,16 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
     }
 
     /**
-     * Get the DataSource associated with the request property or null if
+     * Returns the DataSource associated with the request property or null if
      * one was not specified.
      *
-     * @param request
-     * @return
-     * @throws XmlaException
+     * @param request Request
+     * @return DataSource for this request
+     * @throws XmlaException If error occurs
      */
     public DataSourcesConfig.DataSource getDataSource(XmlaRequest request)
-                throws XmlaException {
+        throws XmlaException
+    {
         Map<String, String> properties = request.getProperties();
         final String dataSourceInfo =
             properties.get(PropertyDefinition.DataSourceInfo.name());
@@ -2164,11 +2195,12 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
                 CLIENT_FAULT_FC,
                 HSB_CONNECTION_DATA_SOURCE_CODE,
                 HSB_CONNECTION_DATA_SOURCE_FAULT_FS,
-                Util.newError("no data source is configured with name '" + dataSourceInfo + "'"));
+                Util.newError("no data source is configured with name '" +
+                    dataSourceInfo + "'"));
         }
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("XmlaHandler.getDataSource: dataSourceInfo=" +
-                    dataSourceInfo);
+                dataSourceInfo);
         }
 
         final DataSourcesConfig.DataSource ds =
@@ -2189,13 +2221,14 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
      * Get the DataSourcesConfig.Catalog with the given catalog name from the
      * DataSource's catalogs if there is a match and otherwise return null.
      *
-     * @param ds
-     * @param catalogName
+     * @param ds DataSource
+     * @param catalogName Catalog name
      * @return DataSourcesConfig.Catalog or null
      */
     public DataSourcesConfig.Catalog getCatalog(
-            DataSourcesConfig.DataSource ds,
-            String catalogName) {
+        DataSourcesConfig.DataSource ds,
+        String catalogName)
+    {
         DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
         if (catalogName == null) {
             // if there is no catalog name - its optional and there is
@@ -2218,8 +2251,8 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
      * catalog was specified as a property in the request or all catalogs
      * associated with the Datasource if there was no catalog property.
      *
-     * @param request
-     * @param ds
+     * @param request Request
+     * @param ds DataSource
      * @return Array of DataSourcesConfig.Catalog
      */
     public DataSourcesConfig.Catalog[] getCatalogs(
@@ -2243,16 +2276,16 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
      * catalog name that is part of the request properties or
      * null if there is no catalog with that name.
      *
-     * @param request
-     * @param ds
+     * @param request Request
+     * @param ds DataSource
      * @return DataSourcesConfig Catalog or null
-     * @throws XmlaException
+     * @throws XmlaException If error occurs
      */
     public DataSourcesConfig.Catalog getCatalog(
-            XmlaRequest request,
-            DataSourcesConfig.DataSource ds)
-                throws XmlaException {
-
+        XmlaRequest request,
+        DataSourcesConfig.DataSource ds)
+        throws XmlaException
+    {
         Map<String, String> properties = request.getProperties();
         final String catalogName =
             properties.get(PropertyDefinition.Catalog.name());
@@ -2292,42 +2325,37 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
         }
 
         final Map<String, String> properties = request.getProperties();
-        String dtSql = null;
-        java.sql.Connection sqlConn = null;
-        Statement stmt = null;
-        ResultSet rs = null;
-        dtSql = dtCell.getDrillThroughSQL(true);
+        String dtSql = dtCell.getDrillThroughSQL(true);
 
-        String fromClause = " from ";
-        String dtSqlNew = "select ";
         int index = dtSql.indexOf("from");
         String whereClause = " " + dtSql.substring(index);
         final String fieldNames = properties.get(PropertyDefinition.TableFields.name());
         StringTokenizer st = new StringTokenizer(fieldNames, ",");
         drillThruColumnNames.clear();
         while (st.hasMoreTokens()) {
-            drillThruColumnNames.add(st.nextToken().toString());
+            drillThruColumnNames.add(st.nextToken());
         }
 
         // Create Select Clause
-        for (int i = 0; i < drillThruColumnNames.size() - 1; i++) {
-            dtSqlNew += drillThruColumnNames.get(i) + ",";
+        StringBuilder buf = new StringBuilder("select ");
+        int k = -1;
+        for (String drillThruColumnName : drillThruColumnNames) {
+            if (++k > 0) {
+                buf.append(",");
+            }
+            buf.append(drillThruColumnName);
         }
-        dtSqlNew += drillThruColumnNames.get(drillThruColumnNames.size() - 1) + " ";
-        dtSqlNew += whereClause;
-        dtSql = dtSqlNew;
+        buf.append(' ');
+        buf.append(whereClause);
+        dtSql = buf.toString();
 
-
+        DataSource dataSource = ((RolapConnection) connection).getDataSource();
         try {
-            sqlConn = ((RolapConnection) connection).getDataSource().getConnection();
-            stmt = sqlConn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-                ResultSet.CONCUR_READ_ONLY);
-
             int count = -1;
             if (MondrianProperties.instance().EnableTotalCount.booleanValue()) {
                 String temp = dtSql.toUpperCase();
                 int fromOff = temp.indexOf("FROM");
-                StringBuilder buf = new StringBuilder();
+                buf.setLength(0);
                 buf.append("select count(*) ");
                 buf.append(dtSql.substring(fromOff));
 
@@ -2336,44 +2364,50 @@ LOGGER.debug("XmlaHandler.getConnection: returning connection not null");
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Advanced drill through counting sql: " + countSql);
                 }
-                rs = stmt.executeQuery(countSql);
-                rs.next();
-                count = rs.getInt(1);
-                rs.close();
+                SqlStatement smt =
+                    RolapUtil.executeQuery(
+                        dataSource, countSql, -1,
+                        "XmlaHandler.executeColumnQuery",
+                        "Advanced drill-through",
+                        ResultSet.TYPE_SCROLL_INSENSITIVE,
+                        ResultSet.CONCUR_READ_ONLY);
+
+                try {
+                    ResultSet rs = smt.getResultSet();
+                    if (rs.next()) {
+                        count = rs.getInt(1);
+                        ++smt.rowCount;
+                    }
+                } catch (SQLException e) {
+                    smt.handle(e);
+                } finally {
+                    smt.close();
+                }
             }
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Advanced drill through sql: " + dtSql);
             }
-            rs = stmt.executeQuery(dtSql);
+            SqlStatement stmt =
+                RolapUtil.executeQuery(
+                    dataSource, dtSql, -1, "XmlaHandler.executeColumnQuery",
+                    "Advanced drill-through",
+                    ResultSet.TYPE_SCROLL_INSENSITIVE,
+                    ResultSet.CONCUR_READ_ONLY);
 
             return new TabularRowSet(
-                rs, request.drillThroughMaxRows(),
+                stmt, request.drillThroughMaxRows(),
                 request.drillThroughFirstRowset(), count,
                 ResultSet.TYPE_FORWARD_ONLY);
 
         } catch (XmlaException xex) {
             throw xex;
-        } catch (SQLException sqle) {
+        } catch (RuntimeException rte) {
             throw new XmlaException(
                 SERVER_FAULT_FC,
                 HSB_DRILL_THROUGH_SQL_CODE,
                 HSB_DRILL_THROUGH_SQL_FAULT_FS,
-                Util.newError(sqle,
-                    "Errors when executing Advanced DrillThrough sql '" + dtSql + "'"));
-        } finally {
-            try {
-                if (rs != null) rs.close();
-            } catch (SQLException ignored) {
-            }
-            try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException ignored) {
-            }
-            try {
-                if (sqlConn != null && !sqlConn.isClosed()) sqlConn.close();
-            } catch (SQLException ignored) {
-            }
+                rte);
         }
     }
 }

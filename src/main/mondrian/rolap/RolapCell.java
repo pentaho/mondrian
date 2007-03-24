@@ -79,37 +79,22 @@ class RolapCell implements Cell {
         }
         RolapConnection connection =
             (RolapConnection) result.getQuery().getConnection();
-        java.sql.Connection jdbcConnection = null;
-        ResultSet rs = null;
         final String sql = aggMan.getDrillThroughSql(cellRequest, true);
-        try {
-            jdbcConnection = connection.getDataSource().getConnection();
-
-            rs = RolapUtil.executeQuery(
-                jdbcConnection,
+        final SqlStatement stmt =
+            RolapUtil.executeQuery(
+                connection.getDataSource(),
                 sql,
-                "RolapCell.getDrillThroughCount");
+                "RolapCell.getDrillThroughCount",
+                "Error while counting drill-through");
+        try {
+            ResultSet rs = stmt.getResultSet();
             rs.next();
-            int count = rs.getInt(1);
-            rs.close();
-            return count;
+            ++stmt.rowCount;
+            return rs.getInt(1);
         } catch (SQLException e) {
-            throw Util.newError(
-                e,
-                "Error while counting drill-through, SQL ='" + sql + "'");
+            throw stmt.handle(e);
         } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException ignored) {
-            }
-            try {
-                if (jdbcConnection != null && !jdbcConnection.isClosed()) {
-                    jdbcConnection.close();
-                }
-            } catch (SQLException ignored) {
-            }
+            stmt.close();
         }
     }
 

@@ -1028,7 +1028,7 @@ public class JdbcSchema {
          */
         private void loadColumns() throws SQLException {
             if (! allColumnsLoaded) {
-                Connection conn = JdbcSchema.this.getConnection();
+                Connection conn = getDataSource().getConnection();
                 try {
                     DatabaseMetaData dmd = conn.getMetaData();
 
@@ -1166,13 +1166,6 @@ public class JdbcSchema {
     protected void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
-    /**
-     * Get the java.sql.Connection associated with this database.
-     * @throws SQLException
-     */
-    public Connection getConnection() throws SQLException {
-        return getDataSource().getConnection();
-    }
 
     /**
      * Set the database's schema name.
@@ -1250,7 +1243,7 @@ public class JdbcSchema {
      */
     private void loadTables() throws SQLException {
         if (! allTablesLoaded) {
-            Connection conn = getConnection();
+            Connection conn = getDataSource().getConnection();
             DatabaseMetaData dmd = conn.getMetaData();
 
             String schema = getSchemaName();

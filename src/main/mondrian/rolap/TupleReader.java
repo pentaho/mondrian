@@ -65,14 +65,14 @@ public interface TupleReader {
      * @return a list of RolapMember[]
      */
     List<RolapMember[]> readTuples(
-        Connection jdbcConnection,
+        DataSource dataSource,
         List<List<RolapMember>> partialResult,
         List<List<RolapMember>> newPartialResult);
 
     /**
      * Performs the read.
      *
-     * @param jdbcConnection source for reading tuples
+     * @param dataSource source for reading tuples
      * @param partialResult partially cached result that should be used
      * instead of executing sql query
      * @param newPartialResult if non-null, return the result of the read;
@@ -81,7 +81,7 @@ public interface TupleReader {
      * @return a list of RolapMember
      */
     List<RolapMember> readMembers(
-        Connection jdbcConnection,
+        DataSource dataSource,
         List<List<RolapMember>> partialResult,
         List<List<RolapMember>> newPartialResult);
 

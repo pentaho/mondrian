@@ -99,34 +99,20 @@ public class RolapNativeFilter extends RolapNativeSet {
         // extract "order by" expression
         SchemaReader schemaReader = evaluator.getSchemaReader();
         DataSource ds = schemaReader.getDataSource();
-        Connection con = null;
-        try {
-            con = ds.getConnection();
 
-            // generate the WHERE condition
-            SqlQuery sqlQuery = SqlTupleReader.newQuery(con, "NativeFilter");
-            RolapNativeSql sql = new RolapNativeSql(sqlQuery);
-            String filterExpr = sql.generateFilterCondition(args[1]);
-            if (filterExpr == null) {
-                return null;
-            }
-            LOGGER.debug("using native filter");
-
-            evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
-
-            TupleConstraint constraint = new FilterConstraint(cargs, evaluator, filterExpr);
-            return new SetEvaluator(cargs, schemaReader, constraint);
-        } catch (SQLException e) {
-            throw Util.newInternal(e, "RolapNativeFilter");
-        } finally {
-            if (con != null) {
-                try {
-                    con.close();
-                } catch (SQLException e) {
-                    LOGGER.error(null, e);
-                }
-            }
+        // generate the WHERE condition
+        SqlQuery sqlQuery = SqlQuery.newQuery(ds, "NativeFilter");
+        RolapNativeSql sql = new RolapNativeSql(sqlQuery);
+        String filterExpr = sql.generateFilterCondition(args[1]);
+        if (filterExpr == null) {
+            return null;
         }
+        LOGGER.debug("using native filter");
+
+        evaluator = overrideContext(evaluator, cargs, sql.getStoredMeasure());
+
+        TupleConstraint constraint = new FilterConstraint(cargs, evaluator, filterExpr);
+        return new SetEvaluator(cargs, schemaReader, constraint);
     }
 
 }

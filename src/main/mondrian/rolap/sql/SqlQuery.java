@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +28,8 @@ import mondrian.olap.Util;
 
 import org.eigenbase.util.property.Property;
 import org.eigenbase.util.property.Trigger;
+
+import javax.sql.DataSource;
 
 /**
  * <code>SqlQuery</code> allows us to build a <code>select</code>
@@ -488,6 +491,36 @@ public class SqlQuery {
         return dialect;
     }
 
+    public static SqlQuery newQuery(Connection jdbcConnection, String err) {
+        try {
+            final Dialect dialect =
+                    Dialect.create(jdbcConnection.getMetaData());
+            return new SqlQuery(dialect);
+        } catch (SQLException e) {
+            throw Util.newInternal(e, err);
+        }
+    }
+
+    public static SqlQuery newQuery(DataSource dataSource, String err) {
+        Connection jdbcConnection = null;
+        try {
+            jdbcConnection = dataSource.getConnection();
+            final Dialect dialect =
+                    Dialect.create(jdbcConnection.getMetaData());
+            return new SqlQuery(dialect);
+        } catch (SQLException e) {
+            throw Util.newInternal(e, err);
+        } finally {
+            if (jdbcConnection != null) {
+                try {
+                    jdbcConnection.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
+        }
+    }
+
     private class ClauseList extends ArrayList<String> {
         private final boolean allowDups;
 
@@ -611,6 +644,34 @@ public class SqlQuery {
                     quoteIdentifierString,
                     productName,
                     productVersion);
+        }
+
+        /**
+         * Creates a {@link SqlQuery.Dialect} from a
+         * {@link javax.sql.DataSource}.
+         *
+         * <p>NOTE: This method is not cheap. The implementation gets a
+         * connection from the connection pool.
+         *
+         * @return Dialect
+         */
+        public static Dialect create(DataSource dataSource) {
+            Connection conn = null;
+            try {
+                conn = dataSource.getConnection();
+                return create(conn.getMetaData());
+            } catch (SQLException e) {
+                throw Util.newInternal(
+                    e, "Error while creating SQL dialect");
+            } finally {
+                try {
+                    if (conn != null) {
+                        conn.close();
+                    }
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
         }
 
         // -- detect various databases --

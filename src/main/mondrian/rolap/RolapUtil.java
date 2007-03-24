@@ -20,16 +20,15 @@ import org.apache.log4j.Logger;
 import org.eigenbase.util.property.StringProperty;
 import java.io.*;
 import java.lang.reflect.Array;
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import mondrian.calc.ExpCompiler;
+
+import javax.sql.DataSource;
 
 /**
  * Utility methods for classes in the <code>mondrian.rolap</code> package.
@@ -40,12 +39,11 @@ import mondrian.calc.ExpCompiler;
  */
 public class RolapUtil {
 
-    private static final Logger LOGGER = Logger.getLogger(RolapUtil.class);
-
-
+    static final Logger LOGGER = Logger.getLogger(RolapUtil.class);
     static final RolapMember[] emptyMemberArray = new RolapMember[0];
-    public static PrintWriter debugOut = null;
-    public static Boolean produceDebugOut = null;
+    private static PrintWriter traceOut = null;
+    private static boolean checkedTracing = false;
+    private static boolean traceEnabled;
     private static Semaphore querySemaphore;
 
     /**
@@ -155,9 +153,9 @@ public class RolapUtil {
      * Adds an object to the end of an array.  The resulting array is of the
      * same type (e.g. <code>String[]</code>) as the input array.
      */
-    static Object[] addElement(Object[] a, Object o) {
+    static <T> T[] addElement(T[] a, T o) {
         Class clazz = a.getClass().getComponentType();
-        Object[] a2 = (Object[]) Array.newInstance(clazz, a.length + 1);
+        T[] a2 = (T[]) Array.newInstance(clazz, a.length + 1);
         System.arraycopy(a, 0, a2, 0, a.length);
         a2[a.length] = o;
         return a2;
@@ -167,21 +165,28 @@ public class RolapUtil {
      * Adds an array to the end of an array.  The resulting array is of the
      * same type (e.g. <code>String[]</code>) as the input array.
      */
-    static Object[] addElements(Object[] a, Object[] b) {
+    static <T> T[] addElements(T[] a, T[] b) {
         Class clazz = a.getClass().getComponentType();
-        Object[] c = (Object[]) Array.newInstance(clazz, a.length + b.length);
+        T[] c = (T[]) Array.newInstance(clazz, a.length + b.length);
         System.arraycopy(a, 0, c, 0, a.length);
         System.arraycopy(b, 0, c, a.length, b.length);
         return c;
     }
 
     /**
-     * Enables tracing if the {@link MondrianProperties#TraceLevel} property
-     * is greater than 0 and a debug output file
+     * Checks whether tracing is enabled, and returns a PrintWriter if so.
+     *
+     * <p>Tracing is enabled if the {@link MondrianProperties#TraceLevel}
+     * property is greater than 0 and a debug output file
      * ({@link MondrianProperties#DebugOutFile}) is configured.
+     *
+     * <p>These properties are only checked the first time this method is
+     * called; subsequent invocations return the cached result.
+     *
+     * @return A PrintWriter if tracing is enabled, otherwise null
      */
-    public static void checkTracing() {
-        if (produceDebugOut == null) {
+    public static synchronized PrintWriter checkTracing() {
+        if (!checkedTracing) {
             int trace = MondrianProperties.instance().TraceLevel.get();
             if (trace > 0) {
                 String debugOutFile =
@@ -197,11 +202,13 @@ public class RolapUtil {
                 } else {
                     setDebugOut(new PrintWriter(System.out, true));
                 }
-                produceDebugOut = Boolean.TRUE;
+                traceEnabled = true;
             } else {
-                produceDebugOut = Boolean.FALSE;
+                traceEnabled = false;
             }
+            checkedTracing = true;
         }
+        return traceEnabled ? traceOut : null;
     }
 
     /**
@@ -209,100 +216,76 @@ public class RolapUtil {
      * @param pw A PrintWriter
      */
     static public void setDebugOut(PrintWriter pw) {
-        debugOut = pw;
+        traceOut = pw;
     }
 
     /**
      * Executes a query, printing to the trace log if tracing is enabled.
-     * If the query fails, it throws the same {@link SQLException}, and closes
-     * the result set. If it succeeds, the caller must close the returned
-     * {@link ResultSet}.
+     *
+     * <p>If the query fails, it wraps the {@link SQLException} in a runtime
+     * exception with <code>message</code> as description, and closes the result
+     * set.
+     *
+     * <p>If it succeeds, the caller must call the {@link SqlStatement#close}
+     * method of the returned {@link SqlStatement}.
+     *
+     * @param dataSource DataSource
+     * @param sql SQL string
+     * @param component Description of a the component executing the query,
+     *   generally a method name, e.g. "SqlTupleReader.readTuples"
+     * @param message Description of the purpose of this statement, to be
+     *   printed if there is an error
+     * @return ResultSet
      */
-    public static ResultSet executeQuery(
-            Connection jdbcConnection,
-            String sql,
-            String component)
-            throws SQLException {
-
-        return executeQuery(jdbcConnection, sql, -1, component, -1, -1);
+    public static SqlStatement executeQuery(
+        DataSource dataSource,
+        String sql,
+        String component,
+        String message)
+    {
+        return executeQuery(
+            dataSource, sql, -1, component, message, -1, -1);
     }
 
     /**
      * Executes a query.
      *
-     * @param jdbcConnection Connection
+     * <p>If the query fails, it wraps the {@link SQLException} in a runtime
+     * exception with <code>message</code> as description, and closes the result
+     * set.
+     *
+     * <p>If it succeeds, the caller must call the {@link SqlStatement#close}
+     * method of the returned {@link SqlStatement}.
+     *
+     * @param dataSource DataSource
      * @param sql SQL string
      * @param maxRows Row limit, or -1 if no limit
      * @param component Description of a the component executing the query,
      *   generally a method name, e.g. "SqlTupleReader.readTuples"
+     * @param message Description of the purpose of this statement, to be
+     *   printed if there is an error
      * @param resultSetType Result set type, or -1 to use default
      * @param resultSetConcurrency Result set concurrency, or -1 to use default
      * @return ResultSet
-     * @throws SQLException if query has error
      */
-    public static ResultSet executeQuery(
-        Connection jdbcConnection,
+    public static SqlStatement executeQuery(
+        DataSource dataSource,
         String sql,
         int maxRows,
         String component,
+        String message,
         int resultSetType,
-        int resultSetConcurrency) throws SQLException
+        int resultSetConcurrency)
     {
-        checkTracing();
-        getQuerySemaphore().enter();
-        Statement statement = null;
-        ResultSet resultSet;
-        String status = "failed";
-        if (produceDebugOut == Boolean.TRUE) {
-            RolapUtil.debugOut.print(component + ": executing sql [");
-            if (sql.indexOf('\n') >= 0) {
-                // SQL appears to be formatted. Make it start on its own line.
-                RolapUtil.debugOut.println();
-            }
-            RolapUtil.debugOut.print(sql);
-            RolapUtil.debugOut.print(']');
-            RolapUtil.debugOut.flush();
-        }
-        ExecuteQueryHook hook = threadHooks.get();
-        if (hook != null) {
-            hook.onExecuteQuery(sql);
-        }
+        SqlStatement stmt =
+            new SqlStatement(
+                dataSource, sql, maxRows, component, message,
+                resultSetType, resultSetConcurrency);
         try {
-            final long start = System.currentTimeMillis();
-            if (resultSetType < 0 || resultSetConcurrency < 0) {
-                statement = jdbcConnection.createStatement();
-            } else {
-            statement = jdbcConnection.createStatement(
-                resultSetType,
-                resultSetConcurrency);
-            }
-            if (maxRows > 0) {
-                statement.setMaxRows(maxRows);
-            }
-            resultSet = statement.executeQuery(sql);
-            final long end = System.currentTimeMillis();
-            final long elapsed = end - start;
-            Util.addDatabaseTime(elapsed);
-            status = ", " + elapsed + " ms";
-            return resultSet;
+            stmt.execute();
+            return stmt;
         } catch (SQLException e) {
-            status = ", failed (" + e + ")";
-            try {
-                if (statement != null) {
-                    statement.close();
-                }
-            } catch (SQLException e2) {
-                // ignore
-            }
-            throw (SQLException) e.fillInStackTrace();
-        } finally {
-            if (produceDebugOut == Boolean.TRUE) {
-                RolapUtil.debugOut.println(status);
-            }
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(component + ": executing sql [" + sql + "]" + status);
-            }
-            getQuerySemaphore().leave();
+            throw stmt.handle(e);
         }
     }
 
@@ -509,16 +492,16 @@ public class RolapUtil {
 
     /**
      * Creates a {@link TeeWriter} which captures everything which goes through
-     * {@link #debugOut} from now on.
+     * {@link #traceOut} from now on.
      */
     public static synchronized TeeWriter startTracing() {
         TeeWriter tw;
-        if (debugOut == null) {
+        if (traceOut == null) {
             tw = new TeeWriter(new NullWriter());
         } else {
-            tw = new TeeWriter(RolapUtil.debugOut);
+            tw = new TeeWriter(RolapUtil.traceOut);
         }
-        debugOut = new PrintWriter(tw);
+        traceOut = new PrintWriter(tw);
         return tw;
     }
 
@@ -584,6 +567,7 @@ public class RolapUtil {
     static interface ExecuteQueryHook {
         void onExecuteQuery(String sql);
     }
+
 }
 
 // End RolapUtil.java
