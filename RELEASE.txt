@@ -1,0 +1,65 @@
+Mondrian 2.3.2 release notes
+============================
+
+Mondrian-2.3.2 is the first production release of mondrian-2.3.
+
+Main functionality in this release:
+
+* Cache flushing.
+
+* More efficient evaluation of queries which return large
+  results. To achieve this, some MDX functions now have
+  multiple implementations, and can return their results
+  as iterators in addition to the usual list format.
+
+* More control over queries which run for long periods of
+  time, return large numbers of members or cells, or which
+  use excessive amounts of memory. Under such conditions,
+  queries throw particular a ResultLimitExceeded exception.
+
+* JDK 1.5 is now the primary development and delivery
+  platform. You can continue to run mondrian on JDK 1.4
+  using the provided backwards-compatibility JARs created
+  by retroweaver.
+
+* Added support for Ingres and LucidDB (see
+  http://docs.eigenbase.org/LucidDbOlap)
+
+* JOLAP (JSR-069) support removed.
+
+API changes which may impact existing applications:
+
+* ResultLimitExceeded renamed to ResultLimitExceededException;
+
+* Packages javax.olap, mondrian.jolap, org.omg.java.cwm
+  removed;
+
+* mondrian.olap.Axis: changed 'Position[] getPositions()'
+  to 'List<Position> getPositions()';
+
+* mondrian.olap.Position: methods 'Member get(int ordinal)'
+  and 'int size()' (both inherited from List<Member>) replace
+  data member 'Member[] members'.
+
+Bugs and feature requests fixed since mondrian-2.2:
+
+Bugs:
+* 1686848  Incorrect Data by "Drill Replace" with a Role
+* 1681255  RolapNativeFilter:can not restrict SQL to calculated Members
+* 1675585  NON EMPTY crossjoin not optimized anymore
+* 1675125  Closure tables do not work in a Snowflake Dimension
+* 1665418  Aggregate tables not recognized if >1 FKs map to same column
+* 1661288  NullPointerException in CellRequest.getSingleValues
+* 1660383  MEMBER_ORDINAL property incompatible with native filtering
+* 1651936  stack overflow for slicer on NonEmptyCrossJoin named set
+* 1630754  max constraints sql exception
+* 1614438  CalculatedMember.formatString attribute ignored
+* 1603653  Avg - cast problem in Mondrian 2.1.1
+* 1601709  Member UniqueName in Parent/Child dimension
+
+Features:
+* 1408429  Parameters at schema and session level
+* 1672143  Push <Dimension>.Members down to SQL
+* 1596850  allow control over SQL literal format
+
+(Ends)
