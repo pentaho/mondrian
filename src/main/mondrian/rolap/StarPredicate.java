@@ -62,8 +62,8 @@ public interface StarPredicate {
 
     /**
      * Returns whether this Predicate has the same constraining effect as the
-     * other constraint. This is weaker than {@link #equals(Object)} -- it is
-     * possible for two different members to constrain the same column in the
+     * other constraint. This is weaker than {@link Object#equals(Object)}: it
+     * is possible for two different members to constrain the same column in the
      * same way.
      */
     boolean equalConstraint(StarPredicate that);

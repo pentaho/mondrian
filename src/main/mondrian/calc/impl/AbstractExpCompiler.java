@@ -15,7 +15,6 @@ import mondrian.olap.type.*;
 import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.RolapMember;
 import mondrian.calc.*;
 
 import java.util.HashMap;
@@ -35,11 +34,30 @@ public class AbstractExpCompiler implements ExpCompiler {
         new HashMap<Parameter, ParameterSlotImpl>();
     private ResultStyle[] resultStyles;
 
+    /**
+     * Creates an AbstractExpCompiler
+     *
+     * @param evaluator Evaluator
+     * @param validator Validator
+     */
     public AbstractExpCompiler(Evaluator evaluator, Validator validator) {
         this(evaluator, validator, ANY_RESULT_STYLE_ARRAY);
     }
-    public AbstractExpCompiler(Evaluator evaluator, Validator validator,
-            ResultStyle[] resultStyles) {
+
+    /**
+     * Creates an AbstractExpCompiler which is constrained to produce one of
+     * a set of result styles.
+     *
+     * @param evaluator Evaluator
+     * @param validator Validator
+     * @param resultStyles List of result styles, preferred first, must not be
+     *   null
+     */
+    public AbstractExpCompiler(
+        Evaluator evaluator,
+        Validator validator,
+        ResultStyle[] resultStyles)
+    {
         this.evaluator = evaluator;
         this.validator = validator;
         this.resultStyles = (resultStyles == null)
@@ -55,21 +73,18 @@ public class AbstractExpCompiler implements ExpCompiler {
     }
 
     /**
-     * Uses the current ResultStyle to compile the expression.
+     * {@inheritDoc}
      *
-     * @param exp
-     * @return
+     * Uses the current ResultStyle to compile the expression.
      */
     public Calc compile(Exp exp) {
         return exp.accept(this);
     }
 
     /**
-     * Uses a new ResultStyle to compile the expression.
+     * {@inheritDoc}
      *
-     * @param exp
-     * @param preferredResultTypes
-     * @return
+     * Uses a new ResultStyle to compile the expression.
      */
     public Calc compile(Exp exp, ResultStyle[] preferredResultTypes) {
         assert preferredResultTypes != null;
@@ -181,10 +196,11 @@ public class AbstractExpCompiler implements ExpCompiler {
     }
 
     public ListCalc compileList(Exp exp, boolean mutable) {
-        ListCalc listCalc = (mutable)
-            ? (ListCalc) compile(exp, MUTABLE_LIST_RESULT_STYLE_ARRAY)
-            : (ListCalc) compile(exp, LIST_RESULT_STYLE_ARRAY);
-        return listCalc;
+        if (mutable) {
+            return (ListCalc) compile(exp, MUTABLE_LIST_RESULT_STYLE_ARRAY);
+        } else {
+            return (ListCalc) compile(exp, LIST_RESULT_STYLE_ARRAY);
+        }
     }
 
     public IterCalc compileIter(Exp exp) {
@@ -288,6 +304,12 @@ public class AbstractExpCompiler implements ExpCompiler {
         private Object value;
         private Object cachedDefaultValue;
 
+        /**
+         * Creates a ParameterSlotImpl.
+         *
+         * @param parameter Parameter
+         * @param index Unique index of the slot
+         */
         public ParameterSlotImpl(
             Parameter parameter, int index)
         {
@@ -307,6 +329,12 @@ public class AbstractExpCompiler implements ExpCompiler {
             return parameter;
         }
 
+        /**
+         * Sets a compiled expression to compute the default value of the
+         * parameter.
+         *
+         * @see #getDefaultValueCalc()
+         */
         private void setDefaultValueCalc(Calc calc) {
             this.defaultValueCalc = calc;
         }

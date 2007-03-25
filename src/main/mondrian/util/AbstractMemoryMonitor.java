@@ -16,10 +16,10 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 
 /**
- *  Abstract implementation of <code>MemoryMonitor</code>. Base class
+ *  Abstract implementation of {@link MemoryMonitor}. Base class
  *  for different memory monitoring strategies.
  *
- * @author <a>Richard M. Emberson</a>
+ * @author Richard M. Emberson
  * @since Feb 03 2007
  * @version $Id$
  */
@@ -37,6 +37,13 @@ public abstract class AbstractMemoryMonitor
     static class Entry {
         final Listener listener;
         long threshold;
+
+        /**
+         * Creates an Entry.
+         *
+         * @param listener Listener
+         * @param threshold Threshold percentage which will cause notification
+         */
         Entry(final Listener listener, final long threshold) {
             this.listener = listener;
             this.threshold = threshold;
@@ -99,34 +106,10 @@ public abstract class AbstractMemoryMonitor
         return MondrianProperties.instance().MemoryMonitorThreshold.get();
     }
 
-    /**
-     * Adds a <code>Listener</code> using the default threshold percentage.
-     *
-     * <p>If the threshold is below the Java5 memory managment system's
-     * threshold, then the Listener is notified from within this
-     * method.
-     *
-     * @param listener the <code>Listener</code> to be added.
-     * @return <code>true</code> if the <code>Listener</code> was
-     * added and <code>false</code> otherwise.
-     */
     public boolean addListener(final Listener listener) {
         return addListener(listener, getDefaultThresholdPercentage());
     }
 
-    /**
-     * Adds a <code>Listener</code> with the given threshold percentage.
-     *
-     * <p>If the threshold is below the Java5 memory managment system's
-     * threshold, then the Listener is notified from within this
-     * method.
-     *
-     * @param listener the <code>Listener</code> to be added.
-     * @param percentage the threshold percentage for this
-     * <code>Listener</code>.
-     * @return <code>true</code> if the <code>Listener</code> was
-     * added and <code>false</code> otherwise.
-     */
     public boolean addListener(Listener listener, int percentage) {
         getLogger().info("addListener enter");
         try {
@@ -180,16 +163,6 @@ public abstract class AbstractMemoryMonitor
         }
     }
 
-    /**
-     * Updates the percentage threshold of a given <code>Listener</code>.
-     *
-     * <p>If the threshold is below the Java5 memory managment system's
-     * threshold, then the Listener is notified from within this
-     * method.
-     *
-     * @param listener the <code>Listener</code> being updated.
-     * @param percentage new percentage threshold.
-     */
     public void updateListenerThreshold(Listener listener, int percentage) {
         getLogger().info("updateListenerThreshold enter");
         try {
@@ -247,13 +220,6 @@ public abstract class AbstractMemoryMonitor
         }
     }
 
-    /**
-     * Removes a <code>Listener</code>.
-     *
-     * @param listener the <code>Listener</code> to be removed.
-     * @return <code>true</code> if <code>Listener</code> was remove and
-     * <code>false</code> otherwise.
-     */
     public boolean removeListener(Listener listener) {
         getLogger().info("removeListener enter");
         try {
@@ -284,10 +250,6 @@ public abstract class AbstractMemoryMonitor
         }
     }
 
-    /**
-     * Removes a <code>Listener</code>s
-     * JVN memory notification.
-     */
     public void removeAllListener() {
         getLogger().info("removeAllListener enter");
         try {
@@ -344,20 +306,6 @@ public abstract class AbstractMemoryMonitor
     }
 
     /**
-     * Returns the maximum memory usage.
-     *
-     * @return the maximum memory usage.
-     */
-    public abstract long getMaxMemory();
-
-    /**
-     * Returns the current memory used.
-     *
-     * @return the current memory used.
-     */
-    public abstract long getUsedMemory();
-
-    /**
      * Converts a percentage threshold to its corresponding memory value,
      * ( percentage * maximum-memory / 100 ).
      *
@@ -371,8 +319,7 @@ public abstract class AbstractMemoryMonitor
         }
 
         long maxMemory = getMaxMemory();
-        long l = (maxMemory * percentage) / MAX_PERCENTAGE;
-        return l;
+        return (maxMemory * percentage) / MAX_PERCENTAGE;
     }
 
     /**
@@ -383,8 +330,7 @@ public abstract class AbstractMemoryMonitor
      */
     protected int convertThresholdToPercentage(final long threshold) {
         long maxMemory = getMaxMemory();
-        int i = (int) ((MAX_PERCENTAGE * threshold) / maxMemory);
-        return i;
+        return (int) ((MAX_PERCENTAGE * threshold) / maxMemory);
     }
 
     /**

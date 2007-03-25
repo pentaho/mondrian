@@ -25,14 +25,14 @@ import javax.servlet.ServletContext;
 import javax.servlet.RequestDispatcher;
 
 /**
- * This is a partial implementation of the ServletContext where just
+ * Partial implementation of the {@link ServletContext} where just
  * enough is present to allow for communication between Mondrian's
  * XMLA code and other code in the same JVM.
- * Currently it is used in both the CmdRunner and in XMLA JUnit tests.
- * <p>
+ *
+ * <p>Currently it is used in both the CmdRunner and in XMLA JUnit tests.
  * If you need to add to this implementation, please do so.
  *
- * @author <a>Richard M. Emberson</a>
+ * @author Richard M. Emberson
  * @version $Id$
  */
 public class MockServletContext implements ServletContext {
@@ -140,57 +140,18 @@ public class MockServletContext implements ServletContext {
         return null;
     }
 
-    /**
-     * Deprecated. As of Java Servlet API 2.1, with no direct replacement.
-     *
-     * This method was originally defined to retrieve a servlet from a
-     * ServletContext. In this version, this method always returns null and
-     * remains only to preserve binary compatibility. This method will be
-     * permanently removed in a future version of the Java Servlet API.
-     *
-     * In lieu of this method, servlets can share information using the
-     * ServletContext class and can perform shared business logic by invoking
-     * methods on common non-servlet classes.
-     *
-     * @deprecated Method getServlet is deprecated
-     */
-
     public Servlet getServlet(String s) throws ServletException {
-        // TODO
+        // method is deprecated as of Servlet API 2.1
         return null;
     }
 
-    /**
-     * Deprecated. As of Java Servlet API 2.0, with no replacement.
-     *
-     * This method was originally defined to return an Enumeration of all the
-     * servlets known to this servlet context. In this version, this method
-     * always returns an empty enumeration and remains only to preserve binary
-     * compatibility. This method will be permanently removed in a future
-     * version of the Java Servlet API.
-     *
-     * @deprecated Method getServlets is deprecated
-     * @return
-     */
     public Enumeration getServlets() {
-        // TODO
+        // method is deprecated as of Servlet API 2.1
         return null;
     }
 
-    /**
-     * Deprecated. As of Java Servlet API 2.1, with no replacement.
-     *
-     * This method was originally defined to return an Enumeration of all the
-     * servlet names known to this context. In this version, this method always
-     * returns an empty Enumeration and remains only to preserve binary
-     * compatibility. This method will be permanently removed in a future
-     * version of the Java Servlet API.
-     *
-     * @deprecated Method getServletNames is deprecated
-     * @return
-     */
     public Enumeration getServletNames() {
-        // TODO
+        // method is deprecated as of Servlet API 2.1
         return null;
     }
 
@@ -333,3 +294,5 @@ public class MockServletContext implements ServletContext {
         }
     }
 }
+
+// End MockServletContext.java

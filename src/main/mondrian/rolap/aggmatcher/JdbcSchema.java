@@ -120,11 +120,11 @@ public class JdbcSchema {
     }
 
     /**
-     * Create or retrieve an instance of the JdbcSchema for the given
+     * Creates or retrieves an instance of the JdbcSchema for the given
      * DataSource.
      *
-     * @param dataSource
-     * @return
+     * @param dataSource DataSource
+     * @return instance of the JdbcSchema for the given DataSource
      */
     public static synchronized JdbcSchema makeDB(DataSource dataSource) {
         makeFactory();
@@ -143,10 +143,11 @@ public class JdbcSchema {
 
         return db;
     }
+
     /**
-     * Clear information in a JdbcSchema associated with a DataSource.
+     * Clears information in a JdbcSchema associated with a DataSource.
      *
-     * @param dataSource
+     * @param dataSource DataSource
      */
     public static synchronized void clearDB(DataSource dataSource) {
         makeFactory();
@@ -165,9 +166,9 @@ public class JdbcSchema {
     }
 
     /**
-     * Remove a JdbcSchema associated with a DataSource.
+     * Removes a JdbcSchema associated with a DataSource.
      *
-     * @param dataSource
+     * @param dataSource DataSource
      */
     public static synchronized void removeDB(DataSource dataSource) {
         makeFactory();
@@ -271,7 +272,11 @@ public class JdbcSchema {
     }
 
     /**
-     * Converts a {@link java.sql.Types} value to a {@link SqlQuery.Datatype}.
+     * Converts a {@link java.sql.Types} value to a
+     * {@link mondrian.rolap.sql.SqlQuery.Datatype}.
+     *
+     * @param javaType JDBC type code, as per {@link java.sql.Types}
+     * @return Datatype
      */
     public static SqlQuery.Datatype getDatatype(int javaType) {
         switch (javaType) {

@@ -115,7 +115,7 @@ public class AggregationManager extends RolapAggregationManager {
         } else {
             // synchronized access
             synchronized (aggregation) {
-                return aggregation.getCellValue(measure, 
+                return aggregation.getCellValue(measure,
                             request.getSingleValues(), pinSet);
             }
         }
@@ -375,10 +375,10 @@ System.out.println(buf.toString());
     }
 
     /**
-     * Implementation of {@link RolapAggregationManager.PinSet} 
+     * Implementation of {@link mondrian.rolap.RolapAggregationManager.PinSet}
      * using a {@link HashSet}.
      */
-    public static class PinSetImpl extends HashSet<Segment> 
+    public static class PinSetImpl extends HashSet<Segment>
                 implements RolapAggregationManager.PinSet {
     }
 }

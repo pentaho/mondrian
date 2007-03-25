@@ -50,7 +50,7 @@ public class ResultStyleCompiler extends DelegatingExpCompiler {
         System.out.println("ResultStyleCompiler being used");
     }
 
-    private static ExpCompiler generateCompiler(Evaluator evaluator, 
+    private static ExpCompiler generateCompiler(Evaluator evaluator,
             Validator validator,
             ResultStyle[] resultStyles) {
         // pop and then push class name
@@ -149,11 +149,11 @@ public class ResultStyleCompiler extends DelegatingExpCompiler {
         }
 
         /**
-         * Return true if this is a final evaluation; the one that
+         * Returns whether this is a final evaluation; the one that
          * takes place after the while-loop in the RolapResult
          * constructor.
          *
-         * @return
+         * @return true if this is a final evaluation
          */
         protected boolean finalEval() {
             StackTraceElement[] stEls = new Throwable().getStackTrace();
@@ -166,14 +166,13 @@ public class ResultStyleCompiler extends DelegatingExpCompiler {
                         this.lineNumber = ln;
                         return false;
                     } else {
-                        return (this.lineNumber != ln);
+                        return this.lineNumber != ln;
                     }
                 }
             }
-            // should never happend
-            System.out.println("MultiCalc.finalEval: MISS");
-            return false;
+            throw new AssertionError("MultiCalc.finalEval: MISS");
         }
+
         public Object evaluate(Evaluator evaluator) {
             // We have to make copies of the Evaluator because of
             // the single test: NonEmptyTest.testVCNativeCJWithTopPercent

@@ -37,14 +37,14 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * This is a partial implementation of the HttpServletRequest where just
+ * Partial implementation of the {@link HttpServletRequest} where just
  * enough is present to allow for communication between Mondrian's
  * XMLA code and other code in the same JVM.
- * Currently it is used in both the CmdRunner and in XMLA JUnit tests.
- * <p>
+ *
+ * <p>Currently it is used in both the CmdRunner and in XMLA JUnit tests.
  * If you need to add to this implementation, please do so.
  *
- * @author <a>Richard M. Emberson</a>
+ * @author Richard M. Emberson
  * @version $Id$
  */
 public class MockHttpServletRequest implements HttpServletRequest {
@@ -683,14 +683,8 @@ public class MockHttpServletRequest implements HttpServletRequest {
         return !requestedSessionIdIsFromCookie;
     }
 
-    /**
-     * Deprecated. As of Version 2.1 of the Java Servlet API, use
-     * isRequestedSessionIdFromURL() instead.
-     * @deprecated Method isRequestedSessionIdFromUrl is deprecated
-     *
-     * @return
-     */
     public boolean isRequestedSessionIdFromUrl() {
+        // deprecated as of version 2.1 of Servlet API.
         return isRequestedSessionIdFromURL();
     }
 
@@ -868,3 +862,5 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
 
 }
+
+// End MockHttpServletRequest.java

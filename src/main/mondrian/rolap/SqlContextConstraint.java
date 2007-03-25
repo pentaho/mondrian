@@ -177,7 +177,6 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
      * Extracts the stored measures referenced in an expression
      *
      * @param exp expression
-     * @param baseCubesLevelToColumnMaps
      * @param baseCubesLevelToColumnMaps level to column maps for the
      * underlying cubes that make up the virtual cube referenced in a query
      * @param measureMap maps a level-to-column map to a measure
@@ -214,11 +213,14 @@ public class SqlContextConstraint implements MemberChildrenConstraint,
     }
 
    /**
+    * Creates a SqlContextConstraint.
+    *
+    * @param evaluator Evaluator
     * @param strict defines the behaviour if the evaluator context
     * contains calculated members. If true, an exception is thrown,
     * otherwise calculated members are silently ignored. The
-    * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery,mondrian.rolap.aggmatcher.AggStar,java.util.List)} and
-    * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery,mondrian.rolap.aggmatcher.AggStar,RolapMember)} will
+    * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map, mondrian.rolap.aggmatcher.AggStar, RolapMember)} and
+    * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, java.util.Map, mondrian.rolap.aggmatcher.AggStar, java.util.List)} will
     * never accept a calculated member as parent.
     */
     SqlContextConstraint(RolapEvaluator evaluator, boolean strict) {

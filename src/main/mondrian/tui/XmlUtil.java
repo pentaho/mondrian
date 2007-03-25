@@ -823,7 +823,7 @@ System.err.println("    systemId="+systemId);
     /**
      * Get the Xerces version being used.
      *
-     * @return
+     * @return Xerces version being used
      */
     public static String getXercesVersion() {
         try {
@@ -836,7 +836,7 @@ System.err.println("    systemId="+systemId);
     /**
      * Get the number part of the Xerces Version string.
      *
-     * @return
+     * @return number part of the Xerces Version string
      */
     public static String getXercesVersionNumberString() {
         String version = getXercesVersion();
@@ -848,11 +848,11 @@ System.err.println("    systemId="+systemId);
     protected static int[] versionNumbers = null;
 
     /**
-     * Get the Xerces numbers as a three part array of ints where
+     * Gets the Xerces version numbers as a three part array of ints where
      * the first element is the major release number, the second is the
      * minor release number, and the third is the patch number.
      *
-     * @return
+     * @return Xerces version number as int array
      */
     public static int[] getXercesVersionNumbers() {
         if (versionNumbers == null) {
@@ -888,14 +888,17 @@ System.err.println("    systemId="+systemId);
         alwaysAttemptValidation =
             Boolean.getBoolean(ALWAYS_ATTEMPT_VALIDATION);
     }
+
     /**
-     * I could not get validation to work with Xerces 2.2 so I put in
+     * Returns whether the XML parser supports validation.
+     *
+     * <p>I could not get validation to work with Xerces 2.2 so I put in
      * this check. If you want to test on an earlier version of Xerces
      * simply define the above property:
      *   "mondrian.xml.always.attempt.validation",
      * to true.
      *
-     * @return
+     * @return whether the XML parser supports validation
      */
     public static boolean supportsValidation() {
         if (alwaysAttemptValidation) {
@@ -906,12 +909,14 @@ System.err.println("    systemId="+systemId);
                 ((verNums[0] == 2) && (verNums[1] >= 6)));
         }
     }
-    public static void validate(Document doc,
-                    String schemaLocationPropertyValue,
-                    EntityResolver resolver)
-            throws IOException ,
-                    SAXException,
-                    SAXNotRecognizedException {
+
+    public static void validate(
+        Document doc,
+        String schemaLocationPropertyValue,
+        EntityResolver resolver)
+        throws IOException,
+        SAXException
+    {
 
         OutputFormat format  = new OutputFormat(doc, null, true);
         StringWriter writer = new StringWriter(1000);
@@ -923,32 +928,13 @@ System.err.println("    systemId="+systemId);
         validate(docString, schemaLocationPropertyValue, resolver);
     }
 
-/*
-    public static void validate(String docStr,
-                    String schemaLocationPropertyValue,
-                    EntityResolver resolver)
-            throws IOException ,
-                    SAXException,
-                    SAXNotRecognizedException {
-
-        if (resolver == null) {
-            resolver = new Resolver();
-        }
-        DOMParser parser =
-            getParser(schemaLocationPropertyValue, resolver, true);
-
-        parser.parse(new InputSource(new StringReader(docStr)));
-        checkForParseError(parser);
-
-    }
-*/
-
-    public static void validate(String docStr,
-                    String schemaLocationPropertyValue,
-                    EntityResolver resolver)
-            throws IOException ,
-                    SAXException,
-                    SAXNotRecognizedException {
+    public static void validate(
+        String docStr,
+        String schemaLocationPropertyValue,
+        EntityResolver resolver)
+        throws IOException ,
+        SAXException
+    {
         if (resolver == null) {
             resolver = new Resolver();
         }
@@ -963,38 +949,6 @@ System.err.println("    systemId="+systemId);
         }
 
     }
-
-/*
-    public static void validate(Document inDoc, Document xsdDoc)
-            throws IOException ,
-                    SAXException,
-                    SAXNotRecognizedException {
-        String xmlns = XmlUtil.getNamespaceAttributeValue(inDoc);
-System.out.println("XmlUtil.validate: xmlns=" +xmlns);
-
-        OutputFormat format  = new OutputFormat(inDoc, null, true);
-        StringWriter writer = new StringWriter(1000);
-        XMLSerializer serial = new XMLSerializer(writer, format);
-        serial.asDOMSerializer();
-        serial.serialize(inDoc);
-        String docString = writer.toString();
-System.out.println("XmlUtil.validate: docString=" +docString);
-
-        String schemaStr = XmlUtil.toString(xsdDoc, false);
-System.out.println("XmlUtil.validate: schemaStr=" +schemaStr);
-        Resolver resolver =
-            new Resolver(new InputSource(new StringReader(schemaStr)));
-
-        String schemaLocationPropertyValue = xmlns + " bar";
-System.out.println("XmlUtil.validate: schemaLocationPropertyValue=" +schemaLocationPropertyValue);
-
-        schemaLocationPropertyValue = null;
-        DOMParser parser =
-            getParser(schemaLocationPropertyValue, resolver, true);
-        parser.parse(new InputSource(new StringReader(docString)));
-        checkForParseError(parser);
-    }
-*/
 
     /**
      * This is used to get a Document's namespace attribute value.

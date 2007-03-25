@@ -345,7 +345,8 @@ public class DefaultRules {
      * Gets the {@link mondrian.rolap.aggmatcher.Recognizer.Matcher} for
      * columns that should be ignored.
      *
-     * @return
+     * @return the {@link mondrian.rolap.aggmatcher.Recognizer.Matcher} for
+     * columns that should be ignored.
      */
     public Recognizer.Matcher getFactCountMatcher() {
         if (factCountMatcher == null) {
@@ -362,7 +363,7 @@ public class DefaultRules {
      * Gets the {@link mondrian.rolap.aggmatcher.Recognizer.Matcher} for this
      * foreign key column name.
      *
-     * @param foreignKeyName
+     * @param foreignKeyName Name of a foreign key column
      */
     public Recognizer.Matcher getForeignKeyMatcher(String foreignKeyName) {
         Recognizer.Matcher matcher =
@@ -382,7 +383,7 @@ public class DefaultRules {
      * Returns true if this candidate aggregate table name "matches" the
      * factTableName.
      *
-     * @param factTableName
+     * @param factTableName Name of the fact table
      * @param name candidate aggregate table name
      */
     public boolean matchesTableName(

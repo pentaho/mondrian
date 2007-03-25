@@ -134,14 +134,13 @@ public abstract class XmlaServlet extends HttpServlet
     }
 
     /**
-     * Return an unmodifiable list of callbacks.
+     * Returns the list of callbacks. The list is immutable.
      *
-     * @return
+     * @return list of callbacks
      */
     protected final List<XmlaRequestCallback> getCallbacks() {
         return Collections.unmodifiableList(callbackList);
     }
-
 
     /**
      * Main entry for HTTP post method
@@ -371,8 +370,6 @@ public abstract class XmlaServlet extends HttpServlet
 
     /**
      * Implement to provide application specified SOAP unmarshalling algorithm.
-     *
-     * @return SOAP header, body as a tow items array.
      */
     protected abstract void unmarshallSoapMessage(
             HttpServletRequest request,
@@ -380,8 +377,6 @@ public abstract class XmlaServlet extends HttpServlet
 
     /**
      * Implement to handle application specified SOAP header.
-     *
-     * @return if no header data in response, please return null or byte[0].
      */
     protected abstract void handleSoapHeader(
             HttpServletResponse response,
@@ -390,9 +385,7 @@ public abstract class XmlaServlet extends HttpServlet
             Map<String, String> context) throws XmlaException;
 
     /**
-     * Implement to hanle XML/A request.
-     *
-     * @return XML/A response.
+     * Implement to handle XML/A request.
      */
     protected abstract void handleSoapBody(
             HttpServletResponse response,

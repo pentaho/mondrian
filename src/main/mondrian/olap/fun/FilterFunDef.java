@@ -73,17 +73,20 @@ class FilterFunDef extends FunDefBase {
 
     /**
      * Returns an IterCalc.
-     * Here we would like to get either a IterCalc or ListCalc (mutable)
+     *
+     * <p>Here we would like to get either a IterCalc or ListCalc (mutable)
      * from the inner expression. For the IterCalc, its Iterator
      * can be wrapped with another Iterator that filters each element.
      * For the mutable list, remove all members that are filtered.
      *
-     * @param call
-     * @param compiler
-     * @return
+     * @param call Call
+     * @param compiler Compiler
+     * @return Implementation of this function call in the Iterable result style
      */
-    protected Calc compileCallIterable(final ResolvedFunCall call,
-            ExpCompiler compiler) {
+    protected IterCalc compileCallIterable(
+        final ResolvedFunCall call,
+        ExpCompiler compiler)
+    {
         // want iterable, mutable list or immutable list in that order
         Calc imlcalc = compiler.compile(call.getArg(0),
                     ExpCompiler.ITERABLE_LIST_MUTABLE_LIST_RESULT_STYLE_ARRAY);
@@ -351,26 +354,28 @@ class FilterFunDef extends FunDefBase {
 
 
     /**
-     * Returns an ListCalc.
+     * Returns a ListCalc.
      *
-     * @param call
-     * @param compiler
-     * @return
+     * @param call Call
+     * @param compiler Compiler
+     * @return Implementation of this function call in the List result style
      */
-    protected Calc compileCallList(final ResolvedFunCall call,
-            ExpCompiler compiler) {
-        Calc ilcalc = compiler.compile(call.getArg(0),
-                ExpCompiler.MUTABLE_LIST_LIST_RESULT_STYLE_ARRAY
-                );
+    protected ListCalc compileCallList(
+        final ResolvedFunCall call,
+            ExpCompiler compiler)
+    {
+        Calc ilcalc = compiler.compile(
+            call.getArg(0),
+            ExpCompiler.MUTABLE_LIST_LIST_RESULT_STYLE_ARRAY);
         BooleanCalc bcalc = compiler.compileBoolean(call.getArg(1));
         Calc[] calcs = new Calc[] {ilcalc, bcalc};
 
         // Note that all of the ListCalc's return will be mutable
         if (((SetType) ilcalc.getType()).getElementType() instanceof MemberType) {
             switch (ilcalc.getResultStyle()) {
-            case LIST :
+            case LIST:
                 return new ImMutableMemberListCalc(call, calcs);
-            case MUTABLE_LIST :
+            case MUTABLE_LIST:
                 return new MutableMemberListCalc(call, calcs);
             }
             throw ResultStyleException.generateBadType(
@@ -383,9 +388,9 @@ class FilterFunDef extends FunDefBase {
         } else {
 
             switch (ilcalc.getResultStyle()) {
-            case LIST :
+            case LIST:
                 return new ImMutableMemberArrayListCalc(call, calcs);
-            case MUTABLE_LIST :
+            case MUTABLE_LIST:
                 return new MutableMemberArrayListCalc(call, calcs);
             }
             throw ResultStyleException.generateBadType(
@@ -396,6 +401,7 @@ class FilterFunDef extends FunDefBase {
                 ilcalc.getResultStyle());
         }
     }
+
     private static abstract class BaseListCalc extends AbstractListCalc {
         protected BaseListCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);

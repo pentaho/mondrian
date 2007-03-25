@@ -10,27 +10,33 @@
 package mondrian.util;
 
 /**
- * The <code>MemoryMonitor</code> interface defines the API for
- * Mondrian's memory monitors. For Java4, the available monitors
+ * API for Mondrian's memory monitors.
+ *
+ * <p>For Java4, the available monitors
  * do nothing since there is no reliable way of detecting that
  * memory is running low using such a JVM (you are welcome to
  * try to create one, but I believe you will fail - some such candidates
  * only make it more likely that an OutOfMemory condition will occur).
- * For Java5 one
+ *
+ * <p>For Java5 one
  * can optionally enable a monitor which is based upon the Java5
  * memory classes locate in java.lang.management.
- * <p>
- * Clients implement the <code>MemoryMonitor.Listener</code> interface and
- * register with the <code>MemoryMonitor</code>.
- * <p>
- * The <code>MemoryMonitor</code> supports having multiple
+ *
+ * <p>A client must implement the <code>MemoryMonitor.Listener</code> interface
+ * and register with the <code>MemoryMonitor</code>.
+ *
+ * <p>The <code>MemoryMonitor</code> supports having multiple
  * <code>Listener</code> clients. The clients can have the same
  * threshold percentage or different values. The threshold percentage value
  * is used by the <code>MemoryMonitor</code> to determine when to
- * notify a client. It is the percentage of the total memory,
- * 100 * free-memory / total-memory (0 $lt;= free-memory $lt;= total-memory).
+ * notify a client. It is the percentage of the total memory:
+ * <blockquote>
+ * <code>
+ * 100 * free-memory / total-memory (0 &le; free-memory &le; total-memory).
+ * </code>
+ * </blockquote>
  *
- * @author <a>Richard M. Emberson</a>
+ * @author Richard M. Emberson
  * @since Feb 01 2007
  * @version $Id$
  */
@@ -40,30 +46,28 @@ public interface MemoryMonitor {
      * Adds a <code>Listener</code> to the <code>MemoryMonitor</code> with
      * a given threshold percentage.
      *
-     * <p>If the threshold percentage value is below the system's current
-     * value, then the * <code>Listener</code> will have its notification
-     * callback called * while in this method - so a client should
-     * always check if its notification method was called immediately
-     * after calling this method.
+     * <p>If the threshold is below the Java5 memory managment system's
+     * threshold, then the Listener is notified from within this
+     * method.
      *
-     * @param listener the <code>Listener</code> being added.
-     * @param thresholdPercentage the notification threshold percentage.
-     * @return
+     * @param listener the <code>Listener</code> to be added.
+     * @param thresholdPercentage the threshold percentage for this
+     *   <code>Listener</code>.
+     * @return <code>true</code> if the <code>Listener</code> was
+     *   added and <code>false</code> otherwise.
      */
     boolean addListener(Listener listener, int thresholdPercentage);
 
     /**
-     * Adds a <code>Listener</code> to the <code>MemoryMonitor</code> and
-     * uses the default threshold percentage.
+     * Adds a <code>Listener</code> using the default threshold percentage.
      *
-     * <p>If the default threshold percentage value is below the system's
-     * current value, then the listener's notification
-     * callback will be called while in this method - so a client should
-     * always check if its notification method was called immediately
-     * after calling this method.
+     * <p>If the threshold is below the Java5 memory managment system's
+     * threshold, then the Listener is notified from within this
+     * method.
      *
-     * @param listener the <code>Listener</code> being added.
-     * @return
+     * @param listener the <code>Listener</code> to be added.
+     * @return <code>true</code> if the <code>Listener</code> was
+     * added and <code>false</code> otherwise.
      */
     boolean addListener(final Listener listener);
 
@@ -75,8 +79,8 @@ public interface MemoryMonitor {
      * while in this method - so a client should always check if its
      * notification method was called immediately after calling this
      * method.
-     * <p>
-     * This method can be used if, for example, an algorithm has
+     *
+     * <p>This method can be used if, for example, an algorithm has
      * different approaches that result in different memory
      * usage profiles; one, large memory but fast and
      * a second which is low-memory but slow. The algorithm starts
@@ -89,8 +93,8 @@ public interface MemoryMonitor {
      * requirements and uses memory less quickly thus one can
      * live with a higher notification threshold percentage.
      *
-     * @param listener
-     * @param percentage
+     * @param listener the <code>Listener</code> being updated.
+     * @param percentage new percentage threshold.
      */
     void updateListenerThreshold(Listener listener, int percentage);
 

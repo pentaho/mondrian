@@ -151,8 +151,8 @@ public class ObjectPool<T> {
      * already in the pool or returns the object that is already in the
      * pool that matches the object being added.
      *
-     * @param key
-     * @return
+     * @param key Object to add to pool
+     * @return Equivalent object, if it exists, otherwise key
      */
     public T add(T key) {
         int i = indexOfInsertion(key);

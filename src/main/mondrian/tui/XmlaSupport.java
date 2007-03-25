@@ -52,8 +52,8 @@ import javax.xml.transform.TransformerConfigurationException;
  * This files provide support for making XMLA requests and looking at
  * the responses.
  *
- * @author <a>Richard M. Emberson</a>
- * @version
+ * @author Richard M. Emberson
+ * @version $Id$
  */
 public class XmlaSupport {
     private static final Logger LOGGER = Logger.getLogger(XmlaSupport.class);

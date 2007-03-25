@@ -28,6 +28,12 @@ public interface ExpCompiler {
      * compilation process.
      */
     Evaluator getEvaluator();
+
+    /**
+     * Returns the validator which was used to validate this expression.
+     *
+     * @return validator
+     */
     Validator getValidator();
 
     /**
@@ -102,23 +108,34 @@ public interface ExpCompiler {
     ListCalc compileList(Exp exp, boolean mutable);
 
     /**
-     * Compiles an expression which yields an immutable {@
-     * link * java.lang.Iterable} * result.
+     * Compiles an expression which yields an immutable {@link Iterable} result.
+     *
+     * @param exp Expression
+     * @return Calculator which yields an Iterable
      */
     IterCalc compileIter(Exp exp);
 
     /**
      * Compiles an expression which yields a <code>boolean</code> result.
+     *
+     * @param exp Expression
+     * @return Calculator which yields a boolean
      */
     BooleanCalc compileBoolean(Exp exp);
 
     /**
      * Compiles an expression which yields a <code>double</code> result.
+     *
+     * @param exp Expression
+     * @return Calculator which yields a double
      */
     DoubleCalc compileDouble(Exp exp);
 
     /**
      * Compiles an expression which yields a tuple result.
+     *
+     * @param exp Expression
+     * @return Calculator which yields a tuple
      */
     TupleCalc compileTuple(Exp exp);
 
@@ -130,10 +147,13 @@ public interface ExpCompiler {
      * context and return the value of the current measure.
      *
      * @param exp Expression
-     * @param convert
+     * @param specific Whether to try to use the specific compile method for
+     *   scalar types. For example, if <code>specific</code> is true and
+     *   <code>exp</code> is a string expression, calls
+     *   {@link #compileString(mondrian.olap.Exp)}
      * @return Calculation which returns the scalar value of the expression
      */
-    Calc compileScalar(Exp exp, boolean convert);
+    Calc compileScalar(Exp exp, boolean specific);
 
     /**
      * Implements a parameter, returning a unique slot which will hold the
@@ -239,12 +259,12 @@ public interface ExpCompiler {
         };
 
 
-    /** 
-     * The <code>ExpCompiler.Factory</code> is used to access 
-     * <code>ExpCompiler</code> implementations. Each call returns 
-     * a new instance. This factory supports overriding the default 
-     * instance by use of a <code>ThreadLocal</code> and by defining a 
-     * <code>System</code> property with the <code>ExpCompiler</code> 
+    /**
+     * The <code>ExpCompiler.Factory</code> is used to access
+     * <code>ExpCompiler</code> implementations. Each call returns
+     * a new instance. This factory supports overriding the default
+     * instance by use of a <code>ThreadLocal</code> and by defining a
+     * <code>System</code> property with the <code>ExpCompiler</code>
      * class name.
      */
     public class Factory extends ObjectFactory<ExpCompiler> {
@@ -252,45 +272,45 @@ public interface ExpCompiler {
         private static final Class[] CLASS_ARRAY;
         static {
             factory = new Factory();
-            CLASS_ARRAY = new Class[] { 
-                    Evaluator.class, 
+            CLASS_ARRAY = new Class[] {
+                    Evaluator.class,
                     Validator.class,
                     ResultStyle[].class
                 };
         }
 
-        /** 
+        /**
          * Create a <code>ExpCompiler</code> instance, each call returns a
-         * new compiler. 
-         * 
+         * new compiler.
+         *
          * @param evaluator the <code>Evaluator</code> to use with the compiler
          * @param validator the <code>Validator</code> to use with the compiler
          * @return the new <code>ExpCompiler</code> compiler
          * @throws CreationException if the compiler can not be created
          */
-        public static ExpCompiler getExpCompiler(final Evaluator evaluator, 
+        public static ExpCompiler getExpCompiler(final Evaluator evaluator,
             final Validator validator)
                 throws CreationException {
             return getExpCompiler(evaluator, validator, ANY_RESULT_STYLE_ARRAY);
         }
 
-        /** 
-         *  
-         * 
+        /**
+         *
+         *
          * @param evaluator the <code>Evaluator</code> to use with the compiler
          * @param validator the <code>Validator</code> to use with the compiler
-         * @param resultStyles the initial <code>ResultStyle</code> array 
+         * @param resultStyles the initial <code>ResultStyle</code> array
          * for the compiler
          * @return the new <code>ExpCompiler</code> compiler
          * @throws CreationException if the compiler can not be created
          */
-        public static ExpCompiler getExpCompiler(final Evaluator evaluator, 
+        public static ExpCompiler getExpCompiler(final Evaluator evaluator,
             final Validator validator,
             final ResultStyle[] resultStyles)
                 throws CreationException {
             return factory.getObject(CLASS_ARRAY,
-                            new Object[] { 
-                                evaluator, 
+                            new Object[] {
+                                evaluator,
                                 validator,
                                 resultStyles
                             });
@@ -298,7 +318,7 @@ public interface ExpCompiler {
 
         /**
          * <code>ThreadLocal</code> used to hold the class name of an
-         * <code>ExpCompiler</code> implementation. 
+         * <code>ExpCompiler</code> implementation.
          * Generally, this should only be used for testing.
          */
         private static final ThreadLocal<String> ClassName =
@@ -336,8 +356,8 @@ public interface ExpCompiler {
         }
 
         /**
-         * The constructor for the <code>ExpCompiler.Factory</code>. 
-         * This passes the <code>ExpCompiler</code> class to the 
+         * The constructor for the <code>ExpCompiler.Factory</code>.
+         * This passes the <code>ExpCompiler</code> class to the
          * <code>ObjectFactory</code> base class.
         */
         private Factory() {
@@ -346,15 +366,15 @@ public interface ExpCompiler {
         /**
          * Get the class name set in the <code>ThreadLocal</code> or null.
          *
-         * @return class name or null. 
+         * @return class name or null.
          */
         protected String getClassName() {
             return getThreadLocalClassName();
         }
 
-        /** 
-         * Return the <code>ExpCompiler.Factory</code property name. 
-         * 
+        /**
+         * Return the <code>ExpCompiler.Factory</code property name.
+         *
          * @return <code>ExpCompiler.Factory</code> property name
          */
         protected StringProperty getStringProperty() {
@@ -367,7 +387,7 @@ public interface ExpCompiler {
          *
          * @param parameterTypes array of classes: Evaluator, Validator and
          *  ResultStyle
-         * @param parameterValues  the Evaluator, Validator and ResultStyle 
+         * @param parameterValues  the Evaluator, Validator and ResultStyle
          * values
          * @return <code>ExpCompiler</code> instance
          * @throws CreationException if the <code>ExpCompiler</code> can not be
@@ -389,33 +409,33 @@ public interface ExpCompiler {
                             evaluator, validator, resultStyles);
         }
 
-        /** 
-         * Get the underlying Factory object. 
+        /**
+         * Get the underlying Factory object.
          * <p>
          * This is for testing only.
-         * 
+         *
          * @return the <code>ExpCompiler.Factory</code> object
          */
         public static Factory getFactory() {
             return factory;
         }
-        
-        /** 
-         * Get the current override contect. 
+
+        /**
+         * Get the current override contect.
          * <p>
          * This is for testing only.
-         * 
+         *
          * @return the override context object.
          */
         public Object removeContext() {
             return new Context();
         }
-        
-        /** 
+
+        /**
          * Restore the current overrides.
          * <p>
          * This is for testing only.
-         * 
+         *
          * @param context the current override object.
          */
         public void restoreContext(final Object context) {
@@ -423,10 +443,10 @@ public interface ExpCompiler {
                 ((Context) context).restore();
             }
         }
-        
-        /** 
+
+        /**
          * The <code>ExpCompiler</code> only has two override mechanisms: the
-         * <code>ThreadLocal</code> and <code>System</code> 
+         * <code>ThreadLocal</code> and <code>System</code>
          * <code>Properties</code>. This class captures and clears the current
          * values for both in the constructor and then replaces them
          * in the <code>restore</code> method.
@@ -436,30 +456,38 @@ public interface ExpCompiler {
         public static class Context implements ObjectFactory.Context {
             private final String threadLocalClassName;
             private final String systemPropertyClassName;
+
+            /**
+             * Creates a Context.
+             */
             Context() {
-                this.threadLocalClassName = 
+                this.threadLocalClassName =
                         ExpCompiler.Factory.getThreadLocalClassName();
                 if (this.threadLocalClassName != null) {
                     ExpCompiler.Factory.clearThreadLocalClassName();
                 }
 
-                this.systemPropertyClassName = 
+                this.systemPropertyClassName =
                         System.getProperty(ExpCompiler.class.getName());
                 if (this.systemPropertyClassName != null) {
                     System.getProperties().remove(ExpCompiler.class.getName());
                 }
             }
+
+            /**
+             * Restores the previous context.
+             */
             private void restore() {
                 if (this.threadLocalClassName != null) {
                     ExpCompiler.Factory.setThreadLocalClassName(
                         this.threadLocalClassName);
                 }
                 if (this.systemPropertyClassName != null) {
-                    System.setProperty(ExpCompiler.class.getName(), 
+                    System.setProperty(ExpCompiler.class.getName(),
                             this.systemPropertyClassName);
                 }
             }
-        } 
+        }
     }
 }
 
