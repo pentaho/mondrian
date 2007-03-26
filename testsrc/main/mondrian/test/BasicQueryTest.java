@@ -4504,9 +4504,15 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * This resulted in an OutOfMemoryError
+     * Tests a query with a CrossJoin so large that we run out of memory unless
+     * we can push down evaluation to SQL.
      */
     public void testNonEmptyCrossJoin() {
+        if (!MondrianProperties.instance().EnableNativeCrossJoin.get()) {
+            // If we try to evaluate the crossjoin in memory we run out of
+            // memory.
+            return;
+        }
         CachePool.instance().flush();
         Result result = executeQuery(
                 "select {[Measures].[Store Sales]} on columns,\n" +
@@ -5252,7 +5258,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
         // The query above primed the cache with bad absolute ordinals;
         // verify that this doesn't interfere with subsequent queries.
-        
+
         context.assertQueryReturns(
             "with member [Measures].[o] as 0\n" +
             "select tail([Customers].[Name].members, 5)\n" +
