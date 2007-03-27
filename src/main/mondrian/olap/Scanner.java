@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.math.BigDecimal;
 
 /**
  * Lexical analyzer for MDX.
@@ -457,78 +459,109 @@ public class Scanner {
                 //
                 // Signs preceding numbers (e.g. -1, +1E-5) are valid, but are
                 // handled by the parser.
-                final int leftOfPoint = 0;
-                final int rightOfPoint = 1;
-                final int inExponent = 2;
-                int n = 0, nDigits = 0, nSign = 0, exponent = 0;
-                double mantissa = 0.0;
-                int state = leftOfPoint;
+                BigDecimal n = BigDecimal.ZERO;
+                int digitCount = 0, exponent = 0;
+                boolean positive = true;
+                BigDecimal mantissa = BigDecimal.ZERO;
+                State state = State.leftOfPoint;
 
                 for (;;) {
-                    if (nextChar == '.') {
-                        if (state == leftOfPoint) {
-                            state = rightOfPoint;
+                    switch (nextChar) {
+                    case '.':
+                        switch (state) {
+                        case leftOfPoint:
+                            state = State.rightOfPoint;
                             mantissa = n;
-                            n = nDigits = 0;
-                            nSign = 1;
+                            n = BigDecimal.ZERO;
+                            digitCount = 0;
+                            positive = true;
                             advance();
-                        } else {
+                            break;
                             // Error: we are seeing a point in the exponent
                             // (e.g. 1E2.3 or 1.2E3.4) or a second point in the
                             // mantissa (e.g. 1.2.3).  Return what we've got
                             // and let the parser raise the error.
-                            if (state == rightOfPoint) {
-                                mantissa += (n * java.lang.Math.pow(
-                                    10, -nDigits));
-                            } else {
-                                exponent = n * nSign;
+                        case rightOfPoint:
+                            mantissa =
+                                mantissa.add(
+                                    n.scaleByPowerOfTen(-digitCount));
+                            return makeNumber(mantissa.doubleValue(), exponent);
+                        case inExponent:
+                            if (!positive) {
+                                n = n.negate();
                             }
-                            return makeNumber(mantissa, exponent);
+                            exponent = n.intValue();
+                            return makeNumber(mantissa.doubleValue(), exponent);
                         }
+                        break;
 
-                    } else if (nextChar == 'E' || nextChar == 'e') {
-                        if (state == inExponent) {
+                    case 'E':
+                    case 'e':
+                        switch (state) {
+                        case inExponent:
                             // Error: we are seeing an 'e' in the exponent
                             // (e.g. 1.2e3e4).  Return what we've got and let
                             // the parser raise the error.
-                            exponent = n * nSign;
-                            return makeNumber(mantissa, exponent);
-
-                        } else {
-                            if (state == leftOfPoint) {
-                                mantissa = n;
-                            } else {
-                                mantissa += (n * java.lang.Math.pow(
-                                    10, -nDigits));
+                            if (!positive) {
+                                n = n.negate();
                             }
-                            n = nDigits = 0;
-                            nSign = 1;
-                            advance();
-                            state = inExponent;
-                        }
-
-                    } else if ((nextChar == '+' || nextChar == '-') &&
-                               state == inExponent &&
-                               nDigits == 0) {
-                        // We're looking at the sign after the 'e'.
-                        nSign = -nSign;
-                        advance();
-
-                    } else if (nextChar >= '0' && nextChar <= '9') {
-                        n = n * 10 + (nextChar - '0');
-                        nDigits++;
-                        advance();
-
-                    } else {
-                        // Reached end of number.
-                        if (state == leftOfPoint) {
+                            exponent = n.intValue();
+                            return makeNumber(mantissa.doubleValue(), exponent);
+                        case leftOfPoint:
                             mantissa = n;
-                        } else if (state == rightOfPoint) {
-                            mantissa += (n * java.lang.Math.pow(10, -nDigits));
-                        } else {
-                            exponent = n * nSign;
+                            break;
+                        default:
+                            mantissa =
+                                mantissa.add(
+                                    n.scaleByPowerOfTen(-digitCount));
+                            break;
                         }
-                        return makeNumber(mantissa, exponent);
+
+                        digitCount = 0;
+                        n = BigDecimal.ZERO;
+                        positive = true;
+                        advance();
+                        state = State.inExponent;
+                        break;
+
+                    case'0': case'1': case'2': case'3': case'4':
+                    case'5': case'6': case'7': case'8': case'9':
+                        n = n.scaleByPowerOfTen(1);
+                        n = n.add(BigDecimal.valueOf(nextChar - '0'));
+                        digitCount++;
+                        advance();
+                        break;
+
+                    case '+':
+                    case '-':
+                        if (state == State.inExponent &&
+                            digitCount == 0) {
+                            // We're looking at the sign after the 'e'.
+                            positive = !positive;
+                            advance();
+                            break;
+                        }
+                        // fall through - end of number
+
+                    default:
+                        // Reached end of number.
+                        switch (state) {
+                        case leftOfPoint:
+                            mantissa = n;
+                            break;
+                        case rightOfPoint:
+                            mantissa =
+                                mantissa.add(
+                                    n.scaleByPowerOfTen(-digitCount));
+                            break;
+                        default:
+                            if (!positive) {
+                                n = n.negate();
+                            }
+                            exponent = n.intValue();
+                            break;
+                        }
+                        return makeNumber(mantissa.doubleValue(), exponent);
                     }
                 }
 
@@ -726,6 +759,12 @@ public class Scanner {
                 break;
             }
         }
+    }
+
+    private enum State {
+        leftOfPoint,
+        rightOfPoint,
+        inExponent,
     }
 }
 

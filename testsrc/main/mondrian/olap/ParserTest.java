@@ -61,30 +61,27 @@ public class ParserTest extends TestCase {
     }
 
     public void testNegativeCases() throws Exception {
-        Parser p = new TestParser();
-
-        checkFails(p, "select [member] on axis(1.7) from sales", "The axis number must be an integer");
-        checkFails(p, "select [member] on axis(-1) from sales", "Syntax error at line");
-        checkFails(p, "select [member] on axis(5) from sales", "The axis number must be an integer");
-        checkFails(p, "select [member] on axes(0) from sales", "Syntax error at line");
-        checkFails(p, "select [member] on 0.5 from sales", "The axis number must be an integer");
-        checkFails(p, "select [member] on 555 from sales", "The axis number must be an integer");
+        assertParseQueryFails("select [member] on axis(1.7) from sales", "The axis number must be an integer");
+        assertParseQueryFails("select [member] on axis(-1) from sales", "Syntax error at line");
+        assertParseQueryFails("select [member] on axis(5) from sales", "The axis number must be an integer");
+        assertParseQueryFails("select [member] on axes(0) from sales", "Syntax error at line");
+        assertParseQueryFails("select [member] on 0.5 from sales", "The axis number must be an integer");
+        assertParseQueryFails("select [member] on 555 from sales", "The axis number must be an integer");
     }
 
     public void testScannerPunc() {
         // '$' is OK inside brackets but not outside
-        Parser p = new TestParser();
         assertParseQuery(
                 "select [measures].[$foo] on columns from sales",
                 TestContext.fold(
                     "select [measures].[$foo] ON COLUMNS\n" +
                     "from [sales]\n"));
-        checkFails(p,
-                "select [measures].$foo on columns from sales",
+        assertParseQueryFails(
+            "select [measures].$foo on columns from sales",
                 "Unexpected character '$'");
 
         // ']' unexcpected
-        checkFails(p, "select { Customers].Children } on columns from [Sales]",
+        assertParseQueryFails("select { Customers].Children } on columns from [Sales]",
                 "Unexpected character ']'");
     }
 
@@ -112,6 +109,14 @@ public class ParserTest extends TestCase {
         TestContext.assertEqualsVerbose(expected, unparsedQueryString);
     }
 
+    private void assertParseQueryFails(String query, String expected) {
+        checkFails(new TestParser(), query, expected);
+    }
+
+    private void assertParseExprFails(String expr, String expected) {
+        checkFails(new TestParser(), wrapExpr(expr), expected);
+    }
+
     private void checkFails(Parser p, String query, String expected) {
         try {
             p.parseInternal(null, query, false, funTable, false);
@@ -119,7 +124,12 @@ public class ParserTest extends TestCase {
             fail("Must return an error");
         } catch (Exception e) {
             Exception nested = (Exception) e.getCause();
-            assertTrue("Check valid error message", nested.getMessage().indexOf(expected) >= 0);
+            String message = nested.getMessage();
+            if (message.indexOf(expected) < 0) {
+                fail("Actual result [" + message +
+                    "] did not contain [" + expected +
+                    "]");
+            }
         }
     }
 
@@ -196,7 +206,7 @@ public class ParserTest extends TestCase {
                     "from [cube]\n"));
     }
 
-    public void _testIsEmpty() {
+    public void testIsEmpty() {
         assertParseExpr("[Measures].[Unit Sales] IS EMPTY",
             "([Measures].[Unit Sales] IS EMPTY)");
 
@@ -266,6 +276,65 @@ public class ParserTest extends TestCase {
     }
 
     /**
+     * Tests parsing of numbers.
+     */
+    public void testNumbers() {
+        // Number: [+-] <digits> [ . <digits> ] [e [+-] <digits> ]
+        assertParseExpr("2", "2.0");
+
+        // leading '-' is treated as an operator -- that's ok
+        assertParseExpr("-3", "(- 3.0)");
+
+        // leading '+' is ignored -- that's ok
+        assertParseExpr("+45", "45.0");
+
+        // space bad
+        assertParseExprFails("4 5", "Syntax error at line 1, column 35, token '5.0'");
+
+        assertParseExpr("3.14", "3.14");
+        assertParseExpr(".12345", "0.12345");
+
+        // lots of digits left and right of point
+        assertParseExpr("31415926535.89793", "3.141592653589793E10");
+        assertParseExpr("31415926535897.9314159265358979", "3.141592653589793E13");
+        assertParseExpr("3.141592653589793", "3.141592653589793");
+        assertParseExpr("-3141592653589793.14159265358979", "(- 3.141592653589793E15)");
+
+        // exponents akimbo
+        assertParseExpr("1e2", "100.0");
+        assertParseExprFails("1e2e3", "Syntax error at line 1, column 37, token 'e3'");
+        assertParseExpr("1.2e3", "1200.0");
+        assertParseExpr("-1.2345e3", "(- 1234.5)");
+        assertParseExprFails("1.2e3.4", "Syntax error at line 1, column 39, token '0.4'");
+        assertParseExpr(".00234e0003", "2.34");
+        assertParseExpr(".00234e-0067", "2.3400000000000004E-70");
+    }
+
+    /**
+     * Testcase for bug 1688645, "High precision number in MDX causes overflow".
+     * The problem was that "5000001234" exceeded the precision of the int being
+     * used to gather the mantissa.
+     */
+    public void testLargePrecision() {
+
+        // Now, a query with several numeric literals. This is the original
+        // testcase for the bug.
+        assertParseQuery(
+            "with member [Measures].[Small Number] as '[Measures].[Store Sales] / 9000'\n" +
+            "select\n" +
+            "{[Measures].[Small Number]} on columns,\n" +
+            "{Filter([Product].[Product Department].members, [Measures].[Small Number] >= 0.3\n" +
+            "and [Measures].[Small Number] <= 0.5000001234)} on rows\n" +
+            "from Sales\n" +
+            "where ([Time].[1997].[Q2].[4])",
+            TestContext.fold("with member [Measures].[Small Number] as '([Measures].[Store Sales] / 9000.0)'\n" +
+                "select {[Measures].[Small Number]} ON COLUMNS,\n" +
+                "  {Filter([Product].[Product Department].members, (([Measures].[Small Number] >= 0.3) AND ([Measures].[Small Number] <= 0.5000001234)))} ON ROWS\n" +
+                "from [Sales]\n" +
+                "where ([Time].[1997].[Q2].[4])\n"));
+    }
+
+    /**
      * Parses an MDX query and asserts that the result is as expected when
      * unparsed.
      *
@@ -289,13 +358,17 @@ public class ParserTest extends TestCase {
      */
     private void assertParseExpr(String expr, final String expected) {
         TestParser p = new TestParser();
-        final String mdx = "with member [Measures].[Foo] as " +
-            expr +
-            "\n select from [Sales]";
+        final String mdx = wrapExpr(expr);
         final Query query = p.parseInternal(null, mdx, false, funTable, false);
         assertNull("Test parser should return null query", query);
         final String actual = Util.unparse(p.formulas[0].getExpression());
         TestContext.assertEqualsVerbose(expected, actual);
+    }
+
+    private String wrapExpr(String expr) {
+        return "with member [Measures].[Foo] as " +
+            expr +
+            "\n select from [Sales]";
     }
 
     public static class TestParser extends Parser {
@@ -365,6 +438,8 @@ public class ParserTest extends TestCase {
 
         /**
          * Converts this query to a string.
+         *
+         * @return This query converted to a string
          */
         public String toMdxString() {
             StringWriter sw = new StringWriter();
@@ -409,6 +484,9 @@ public class ParserTest extends TestCase {
 
         /**
          * Converts an expression to a string.
+         *
+         * @param exp Expression
+         * @return Expression converted to a string
          */
         public String toMdxString(Exp exp) {
             StringWriter sw = new StringWriter();
