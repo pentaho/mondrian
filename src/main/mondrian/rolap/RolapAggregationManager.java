@@ -159,7 +159,7 @@ public abstract class RolapAggregationManager implements CellReader {
      */
     public Object getCellFromCache(final Member[] members) {
         final CellRequest request = makeRequest(members, false, false);
-        return (request == null)
+        return (request == null || request.isUnsatisfiable())
             // request out of bounds
             ? Util.nullValue
             : getCellFromCache(request);

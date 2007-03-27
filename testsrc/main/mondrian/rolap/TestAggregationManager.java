@@ -648,6 +648,40 @@ public class TestAggregationManager extends FoodMartTestCase {
     }
 
     /**
+     * This test case tests for a null pointer that was being thrown
+     * inside of CellRequest.
+     */
+    public void testNoNullPtrInCellRequest() {
+        final TestContext testContext = TestContext.createSubstitutingCube(
+                "Sales",
+                "<Dimension name=\"Store2\" foreignKey=\"store_id\">\n" +
+                "  <Hierarchy hasAll=\"true\" primaryKey=\"store_id\" allMemberName=\"All Stores\">" +
+                "    <Table name=\"store\"/>\n" +
+                "    <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n" +
+                "    <Level name=\"Store State\"   column=\"store_state\"   uniqueMembers=\"true\"/>\n" +
+                "    <Level name=\"Store City\"    column=\"store_city\"    uniqueMembers=\"false\"/>\n" +
+                "    <Level name=\"Store Type\"    column=\"store_type\"    uniqueMembers=\"false\"/>\n" +
+                "    <Level name=\"Store Name\"    column=\"store_name\"    uniqueMembers=\"true\"/>\n" +
+                "  </Hierarchy>\n" +
+                "</Dimension>");
+        
+        testContext.assertQueryReturns(
+                "select {[Measures].[Unit Sales]} on columns, " + 
+                "Filter ({ " + 
+                "[Store2].[All Stores].[USA].[CA].[Beverly Hills], " + 
+                "[Store2].[All Stores].[USA].[CA].[Beverly Hills].[Gourmet Supermarket] " + 
+                "},[Measures].[Unit Sales] > 0) on rows " + 
+                "from [Sales] " + 
+                "where [Store Type].[Store Type].[Small Grocery]",
+            fold(
+                "Axis #0:\n" +
+                "{[Store Type].[All Store Types].[Small Grocery]}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Unit Sales]}\n" +
+                "Axis #2:\n"));
+    }
+    
+    /**
      * Fake exception to interrupt the test when we see the desired query.
      * It is an {@link Error} because we need it to be unchecked
      * ({@link Exception} is checked), and we don't want handlers to handle

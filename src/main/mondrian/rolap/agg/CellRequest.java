@@ -195,6 +195,10 @@ public class CellRequest {
     }
 
     public Object[] getSingleValues() {
+        // if the cell request is unsatisfiable, null pointers
+        // may happen in this code.  The caller should
+        // check unsatisfiable first before calling.
+        assert !unsatisfiable;
         check();
         // Currently, this is called only once per CellRequest instance
         // so there is no need to cache the value.
