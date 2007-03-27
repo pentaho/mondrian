@@ -307,7 +307,7 @@ public class ParserTest extends TestCase {
         assertParseExpr("-1.2345e3", "(- 1234.5)");
         assertParseExprFails("1.2e3.4", "Syntax error at line 1, column 39, token '0.4'");
         assertParseExpr(".00234e0003", "2.34");
-        assertParseExpr(".00234e-0067", "2.3400000000000004E-70");
+        assertParseExpr(".00234e-0067", "2.34E-70");
     }
 
     /**
