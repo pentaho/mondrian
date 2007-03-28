@@ -650,6 +650,10 @@ public class CmdRunner {
             connectProperties.put(RolapConnectionProperties.JdbcPassword.name(), jdbcPassword);
         }
 
+        if (options.roleName != null) {
+            connectProperties.put(RolapConnectionProperties.Role.name(), options.roleName);
+        }
+
         debug("CmdRunner.makeConnectString: connectProperties="+connectProperties);
 
         this.connectString = connectProperties.toString();
@@ -2301,6 +2305,8 @@ public class CmdRunner {
         buf.append(nl);
         buf.append("  -p propertyfile  : load mondrian properties");
         buf.append(nl);
+        buf.append("  -r role_name     : set the connections role name");
+        buf.append(nl);
         buf.append("  -f mdx_filename+ : execute mdx in one or more files");
         buf.append(nl);
         buf.append("  -x xmla_filename+: execute XMLA in one or more files");
@@ -2360,6 +2366,7 @@ public class CmdRunner {
         private boolean debug = false;
         private boolean timeQueries;
         private boolean noCache = false;
+        private String roleName;
         private int validateXmlaResponse = VALIDATE_NONE;
         private final List<String> filenames = new ArrayList<String>();
         private int doingWhat = DO_MDX;
@@ -2495,6 +2502,12 @@ public class CmdRunner {
                 String propFile = args[i];
                 loadPropertiesFromFile(propFile);
 
+            } else if (arg.equals("-r")) {
+                i++;
+                if (i == args.length) {
+                    throw new BadOption("no role name given");
+                }
+                options.roleName = args[i];
             } else if (!options.filenames.isEmpty()) {
                 options.filenames.add(arg);
             } else {
