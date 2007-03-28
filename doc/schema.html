@@ -1393,6 +1393,21 @@ name="FORMAT_STRING" expression="Iif(Value &lt; 0,
 
 <p>For more details about format strings, see the <a href="mdx.html#Format_strings">MDX specification</a>.</p>
 
+<p>One additional calculated member property that is worth mentioning is DATATYPE.  
+As with <a href="#Measures">measures</a>, 
+setting datatype specifies how the calculated member is returned via XML for Analysis.  
+The DATATYPE property of a calculated member can have values "<code>String</code>", "<code>Integer</code>", or 
+"<code>Numeric</code>"
+</p>
+
+<blockquote>
+&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
+name="DATATYPE" value="Numeric"/&gt;<br>
+</code>
+</blockquote>
+
+
+
 <p>You can make a calculated member or a measure invisible. If you specify <code>visible="false"
 </code> (the default is "true") in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt; or &lt;
 <a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code> element, user-interfaces such as 
