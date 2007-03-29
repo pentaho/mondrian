@@ -3,7 +3,9 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde, Cincom Systems, Inc., JasperSoft and others
+// Copyright (C) 2006-2007 Julian Hyde and others
+// Copyright (C) 2006-2007 Cincom Systems, Inc.
+// Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -65,7 +67,7 @@ public class JDBCMetaData {
     /* Creates a database connection and initializes the meta data details */
     public String initConnection(){
     	System.out.println("JDBCMetaData: initConnection");
-    	
+
         try {
             if (jdbcDriverClassName==null || jdbcConnectionUrl==null) {
                 throw new Exception("Driver="+jdbcDriverClassName+"\nConn Url="+jdbcConnectionUrl+"\n(Hint: Use Prefrences to set Database Connection parameters first and then open a Schema.)");
@@ -126,7 +128,7 @@ public class JDBCMetaData {
     /* set all schemas in the currently connected database */
     private void setAllSchemas(){
     	System.out.println("JDBCMetaData: setAllSchemas");
-    	
+
         ResultSet rs = null;
         boolean gotSchema = false;
 
@@ -136,7 +138,7 @@ public class JDBCMetaData {
             if (true)
             throw new Exception("Schema concept not found in database");
              */
-            
+
             while(rs.next()) {
                 DbSchema dbs = new DbSchema();
                 dbs.name = rs.getString("TABLE_SCHEM");
@@ -149,7 +151,7 @@ public class JDBCMetaData {
         } catch (Exception e) {
             System.out.println("Exception : Database does not support schemas."+e.getMessage());
         }
-        
+
         if (!gotSchema) {
             System.out.println("JDBCMetaData: setAllSchemas - tables with no schema name");
             DbSchema dbs = new DbSchema();

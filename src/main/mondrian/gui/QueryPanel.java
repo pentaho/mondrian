@@ -3,7 +3,8 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde, Cincom Systems, Inc., and others
+// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2006-2007 Cincom Systems, Inc.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -209,11 +210,11 @@ public class QueryPanel extends javax.swing.JPanel {
             resultTextPane.setText(sw.getBuffer().toString());
         } catch (Exception ex) {
         	ByteArrayOutputStream os = new ByteArrayOutputStream();
-        	
+
         	PrintStream p = new PrintStream(os);
-        	
+
         	ex.printStackTrace(p);
-        	
+
             resultTextPane.setText(os.toString());
         }
 
@@ -257,7 +258,7 @@ public class QueryPanel extends javax.swing.JPanel {
             if (se.getJdbcPassword() != null && se.getJdbcPassword().length() > 0) {
 				connectString = connectString + "JdbcPassword=" + se.getJdbcPassword() + ";";
 			}
-            
+
             Connection con = DriverManager.getConnection(connectString, null, false);
             if (con != null) {
                 connection = con;

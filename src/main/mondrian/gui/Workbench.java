@@ -5,7 +5,8 @@
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
 // Copyright (C) 2001-2005 Julian Hyde and others
-// Copyright (C) 2006-2007 Cincom Systems, Inc., JasperSoft
+// Copyright (C) 2006-2007 Cincom Systems, Inc.
+// Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -1164,14 +1165,14 @@ public class Workbench extends javax.swing.JFrame {
                     String connectString = "Provider=mondrian;" +
 							"Jdbc=" + jdbcConnectionUrl + ";" +
 								"Catalog=" + file.toURL().toString() + ";";
-                    
+
 					if (jdbcUsername != null && jdbcUsername.length() > 0) {
 						connectString = connectString + "JdbcUser=" + jdbcUsername + ";";
 					}
 					if (jdbcPassword != null && jdbcPassword.length() > 0) {
 						connectString = connectString + "JdbcPassword=" + jdbcPassword + ";";
 					}
-					
+
 					connection = DriverManager.getConnection(connectString, null, false);
 				} catch (Exception ex) {
 					System.out.println("Exception  : Schema file is invalid."+ex.getMessage());
@@ -1181,7 +1182,7 @@ public class Workbench extends javax.swing.JFrame {
 					err.printStackTrace(); //====
 				}
 			}
-					
+
 			final JInternalFrame schemaFrame = new JInternalFrame();
 			schemaFrame.setTitle("Schema - " + file.getName());
 			//===Class.forName(jdbcDriverClassName);
@@ -1497,3 +1498,5 @@ class SchemaFrameComp implements Comparator {
 
 
 }
+
+// End Workbench.java

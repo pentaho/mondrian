@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2007 Julian Hyde
+// Copyright (C) 2003-2007 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -469,11 +469,11 @@ public class VirtualCubeTest extends FoodMartTestCase {
                 "Axis #1:\n" +
                 "{[Measures].[Unit Sales]}\n" +
                 "Axis #2:\n" +
-                "{[Product].[All Products].[Drink]}\n" + 
+                "{[Product].[All Products].[Drink]}\n" +
                 "{[Product].[All Products].[Food]}\n" +
                 "{[Product].[All Products].[Non-Consumable]}\n" +
                 "Row #0: 24,597\n" +
-                "Row #1: 191,940\n" + 
+                "Row #1: 191,940\n" +
                 "Row #2: 50,236\n"));
     }
 
