@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2007 Julian Hyde, Cincom Systems, Inc. JasperSoft and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -35,6 +35,22 @@ public class PreferencesDialog extends javax.swing.JDialog {
         return urlTextField.getText();
     }
 
+    public void setJDBCUsername(String s) {
+        this.usernameTextField.setText(s);
+    }
+
+    public String getJDBCUsername() {
+        return usernameTextField.getText();
+    }
+
+    public void setJDBCPassword(String s) {
+        this.passwordTextField.setText(s);
+    }
+
+    public String getJDBCPassword() {
+        return passwordTextField.getText();
+    }
+
     public void setJDBCDriverClassName(String s) {
         this.driverClassTextField.setText(s);
     }
@@ -55,7 +71,11 @@ public class PreferencesDialog extends javax.swing.JDialog {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
         urlTextField = new javax.swing.JTextField();
+        usernameTextField = new javax.swing.JTextField();
+        passwordTextField = new javax.swing.JTextField();
         driverClassTextField = new javax.swing.JTextField();
         acceptButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
@@ -88,6 +108,24 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(jLabel2, gridBagConstraints);
 
+        jLabel3.setText("User name");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        jPanel1.add(jLabel3, gridBagConstraints);
+
+        jLabel4.setText("Password");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        jPanel1.add(jLabel4, gridBagConstraints);
+
         urlTextField.setText("jdbc:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -98,6 +136,26 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(urlTextField, gridBagConstraints);
+
+        usernameTextField.setText("");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        jPanel1.add(usernameTextField, gridBagConstraints);
+
+        passwordTextField.setText("");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        jPanel1.add(passwordTextField, gridBagConstraints);
 
         driverClassTextField.setText("org.gjt.mm.mysql.Driver");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -178,9 +236,13 @@ public class PreferencesDialog extends javax.swing.JDialog {
     private javax.swing.JTextField driverClassTextField;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField urlTextField;
+    private javax.swing.JTextField usernameTextField;
+    private javax.swing.JTextField passwordTextField;
     private javax.swing.JButton acceptButton;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables

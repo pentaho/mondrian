@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2007 Julian Hyde, Cincom Systems, Inc., and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -17,7 +17,9 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
@@ -65,10 +67,6 @@ public class QueryPanel extends javax.swing.JPanel {
 
     //====================================================
 
-/**
-   *   Copyright (C) 2006, 2007 CINCOM SYSTEMS, INC.
-   *   All Rights Reserved
-   */
     public void setMenuItem(JMenuItem mi) {
         this.queryMenuItem = mi;
     }
@@ -97,10 +95,6 @@ public class QueryPanel extends javax.swing.JPanel {
     }
     //=====================================================
 
-/**
-   *   Copyright (C) 2006, 2007 CINCOM SYSTEMS, INC.
-   *   All Rights Reserved
-   */
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -214,15 +208,18 @@ public class QueryPanel extends javax.swing.JPanel {
 
             resultTextPane.setText(sw.getBuffer().toString());
         } catch (Exception ex) {
-            resultTextPane.setText(ex.getMessage());
+        	ByteArrayOutputStream os = new ByteArrayOutputStream();
+        	
+        	PrintStream p = new PrintStream(os);
+        	
+        	ex.printStackTrace(p);
+        	
+            resultTextPane.setText(os.toString());
         }
 
     }//GEN-LAST:T://event_executeButtonActionPerformed
 
-/**
-   *   Copyright (C) 2006, 2007 CINCOM SYSTEMS, INC.
-   *   All Rights Reserved
-   */
+
     private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {
         File sfile = null;
         try {
@@ -253,7 +250,14 @@ public class QueryPanel extends javax.swing.JPanel {
             }
             sfile = se.getSchemaFile();
 
-            String connectString = "Provider=mondrian;" + "Jdbc=" + se.getJdbcConnectionUrl() + ";" + "Catalog=" + se.getSchemaFile().toURL().toString();
+            String connectString = "Provider=mondrian;" + "Jdbc=" + se.getJdbcConnectionUrl() + ";" + "Catalog=" + se.getSchemaFile().toURL().toString() + ";";
+            if (se.getJdbcUsername() != null && se.getJdbcUsername().length() > 0) {
+				connectString = connectString + "JdbcUser=" + se.getJdbcUsername() + ";";
+			}
+            if (se.getJdbcPassword() != null && se.getJdbcPassword().length() > 0) {
+				connectString = connectString + "JdbcPassword=" + se.getJdbcPassword() + ";";
+			}
+            
             Connection con = DriverManager.getConnection(connectString, null, false);
             if (con != null) {
                 connection = con;

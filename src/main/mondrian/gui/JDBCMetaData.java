@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2006-2007 Julian Hyde and others
+// Copyright (C) 2006-2007 Julian Hyde, Cincom Systems, Inc., JasperSoft and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -21,6 +21,8 @@ import java.sql.*;
 public class JDBCMetaData {
     String jdbcDriverClassName = null; //"org.postgresql.Driver"
     String jdbcConnectionUrl = null; // "jdbc:postgresql://localhost:5432/hello?user=postgres&password=post"
+    String jdbcUsername = null;
+    String jdbcPassword = null;
 
     Connection conn = null;
     DatabaseMetaData md = null;
@@ -48,9 +50,11 @@ public class JDBCMetaData {
     private String errMsg = null;
     private Database db = new Database();
 
-    public JDBCMetaData(String jdbcDriverClassName, String jdbcConnectionUrl) {
+    public JDBCMetaData(String jdbcDriverClassName, String jdbcConnectionUrl, String jdbcUsername, String jdbcPassword) {
         this.jdbcConnectionUrl = jdbcConnectionUrl;
         this.jdbcDriverClassName = jdbcDriverClassName;
+        this.jdbcUsername = jdbcUsername;
+        this.jdbcPassword = jdbcPassword;
 
         if (initConnection() == null) {
             setAllSchemas();
@@ -60,13 +64,22 @@ public class JDBCMetaData {
 
     /* Creates a database connection and initializes the meta data details */
     public String initConnection(){
-        try{
+    	System.out.println("JDBCMetaData: initConnection");
+    	
+        try {
             if (jdbcDriverClassName==null || jdbcConnectionUrl==null) {
                 throw new Exception("Driver="+jdbcDriverClassName+"\nConn Url="+jdbcConnectionUrl+"\n(Hint: Use Prefrences to set Database Connection parameters first and then open a Schema.)");
             }
 
             Class.forName(jdbcDriverClassName);
-            conn = DriverManager.getConnection(jdbcConnectionUrl);
+
+			if (jdbcUsername != null && jdbcUsername.length() > 0 &&
+				jdbcPassword != null && jdbcPassword.length() > 0) {
+            	conn = DriverManager.getConnection(jdbcConnectionUrl, jdbcUsername, jdbcPassword);
+			} else {
+
+            	conn = DriverManager.getConnection(jdbcConnectionUrl);
+			}
 
             System.out.println("JDBC connection OPEN");
             md = conn.getMetaData();
@@ -93,6 +106,7 @@ public class JDBCMetaData {
             Class.forName("org.postgresql.Driver");
             conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/demo","admin","admin");
              */
+        	System.out.println("JDBCMetaData: initConnection - no error");
             return null;
         } catch (Exception e) {
             errMsg = e.getMessage();
@@ -111,22 +125,33 @@ public class JDBCMetaData {
 
     /* set all schemas in the currently connected database */
     private void setAllSchemas(){
+    	System.out.println("JDBCMetaData: setAllSchemas");
+    	
         ResultSet rs = null;
+        boolean gotSchema = false;
+
         try{
             rs = md.getSchemas();
             /*
             if (true)
             throw new Exception("Schema concept not found in database");
              */
+            
             while(rs.next()) {
                 DbSchema dbs = new DbSchema();
                 dbs.name = rs.getString("TABLE_SCHEM");
+            	System.out.println("JDBCMetaData: setAllTables - " + dbs.name);
                 setAllTables(dbs);
                 db.addDbSchema(dbs);
+                gotSchema = true;
             }
             rs.close();
         } catch (Exception e) {
             System.out.println("Exception : Database does not support schemas."+e.getMessage());
+        }
+        
+        if (!gotSchema) {
+            System.out.println("JDBCMetaData: setAllSchemas - tables with no schema name");
             DbSchema dbs = new DbSchema();
             dbs.name = null;    //tables with no schema name
             setAllTables(dbs);
@@ -136,8 +161,9 @@ public class JDBCMetaData {
 
     /* set all tables in the currently connected database */
     private void setAllTables(DbSchema dbs){
+    	System.out.println("JDBCMetaData: Loading schema: '" + dbs.name + "'");
         ResultSet rs = null;
-        try{
+        try {
             rs = md.getTables(null, dbs.name, null, new String[]{"TABLE"});
             while(rs.next()) {
                 String tbname = rs.getString("TABLE_NAME");

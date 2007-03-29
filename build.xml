@@ -70,6 +70,7 @@ ${java.dir}/mondrian/xmla/DataSourcesConfig*.java,
 ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <property name="generated.lib.files" value="
 ${lib.dir}/mondrian.jar,
+${lib.dir}/workbench.jar,
 ${jar-jdk14.file},
 ${lib.dir}/mondrian.war,
 ${lib.dir}/mondrian.xml,
@@ -834,7 +835,8 @@ doc/**/*.xml"
   **/*.class,
   **/*.properties,
   **/*.xml,
-  META-INF/**"/>
+  META-INF/**"
+  			excludes="mondrian/gui/**/*.*"/>
         <zipfileset
             dir="${testclasses.dir}"
             includes="
@@ -1119,13 +1121,14 @@ xalan.jar"/>
   </target>
 
   <target name="workbench" depends="compile">
-    <jar jarfile="${workbench.jar.file}" manifest="misc/workbench-manifest.mf">
+    <jar destfile="${lib.dir}/${workbench.jar.file}" 
+          update="true">
       <fileset
           dir="${classes.dir}"
-          includes="**/*.class"/>
+          includes="mondrian/gui/**/*.class"/>
       <fileset
-          dir="."
-          includes="images/*.*"/>
+          dir="${java.dir}"
+          includes="mondrian/gui/**/*.gif,mondrian/gui/**/*.properties,mondrian/gui/**/*.html"/>
     </jar>
   </target>
 

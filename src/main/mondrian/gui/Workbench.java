@@ -5,6 +5,7 @@
 // http://www.opensource.org/licenses/cpl.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
 // Copyright (C) 2001-2005 Julian Hyde and others
+// Copyright (C) 2006-2007 Cincom Systems, Inc., JasperSoft
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,12 +13,9 @@
 // Modified on 15-Jun-2003 by ebengtso
 //
  */
-/**
-   *   Copyright (C) 2006, 2007 CINCOM SYSTEMS, INC.
-   *   All Rights Reserved
-   */
 
 package mondrian.gui;
+
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -68,6 +66,8 @@ public class Workbench extends javax.swing.JFrame {
     private Connection connection;
     private String jdbcDriverClassName;
     private String jdbcConnectionUrl;
+    private String jdbcUsername;
+    private String jdbcPassword;
 
     private JDBCMetaData jdbcMetaData;
 
@@ -143,6 +143,8 @@ public class Workbench extends javax.swing.JFrame {
     private void initDataSource() {
         jdbcDriverClassName = workbenchProperties.getProperty("jdbcDriverClassName");
         jdbcConnectionUrl = workbenchProperties.getProperty("jdbcConnectionUrl");
+        jdbcUsername = workbenchProperties.getProperty("jdbcUsername");
+        jdbcPassword = workbenchProperties.getProperty("jdbcPassword");
     }
 
     /** This method is called from within the constructor to
@@ -766,7 +768,7 @@ public class Workbench extends javax.swing.JFrame {
             jf.setTitle("JDBC Explorer - " + this.jdbcConnectionUrl);
 
             Class.forName(this.jdbcDriverClassName);
-            java.sql.Connection con = java.sql.DriverManager.getConnection(this.jdbcConnectionUrl);
+            java.sql.Connection con = java.sql.DriverManager.getConnection(this.jdbcConnectionUrl, this.jdbcUsername, this.jdbcPassword);
 
             JDBCExplorer jdbce = new JDBCExplorer(con);
 
@@ -791,18 +793,22 @@ public class Workbench extends javax.swing.JFrame {
         PreferencesDialog pd = new PreferencesDialog(this, true);
         pd.setJDBCConnectionUrl(jdbcConnectionUrl);
         pd.setJDBCDriverClassName(jdbcDriverClassName);
+        pd.setJDBCUsername(jdbcUsername);
+        pd.setJDBCPassword(jdbcPassword);
 
         pd.show();
 
         if (pd.accepted()) {
             jdbcConnectionUrl = pd.getJDBCConnectionUrl();
             jdbcDriverClassName = pd.getJDBCDriverClassName();
+	        jdbcUsername = pd.getJDBCUsername();
+	        jdbcPassword = pd.getJDBCPassword();
 
             workbenchProperties.setProperty("jdbcDriverClassName", jdbcDriverClassName);
             workbenchProperties.setProperty("jdbcConnectionUrl", jdbcConnectionUrl);
-
+            workbenchProperties.setProperty("jdbcUsername", jdbcUsername);
+            workbenchProperties.setProperty("jdbcPassword", jdbcPassword);
         }
-
     }
 
 
@@ -1155,21 +1161,31 @@ public class Workbench extends javax.swing.JFrame {
                 // check if schema file is valid by initiating a mondrian connection
                 try {
                     // this connection parses the catalog file which if invalid will throw exception
-                    String connectString = "Provider=mondrian;" + "Jdbc=" + jdbcConnectionUrl + ";" + "Catalog=" + file.toURL().toString();
-                    connection = DriverManager.getConnection(connectString, null, false);
-                } catch (Exception ex) {
-                    System.out.println("Exception  : Schema file is invalid."+ex.getMessage());
-                    //ex.printStackTrace(); //====
-                } catch (Error err) {
-                    System.out.println("Error : Schema file is invalid."+err.getMessage());
-                    //err.printStackTrace(); //====
-                }
-            }
-
-            final JInternalFrame schemaFrame = new JInternalFrame();
-            schemaFrame.setTitle("Schema - " + file.getName());
-            //===Class.forName(jdbcDriverClassName);
-            jdbcMetaData = new JDBCMetaData(jdbcDriverClassName, jdbcConnectionUrl);
+                    String connectString = "Provider=mondrian;" +
+							"Jdbc=" + jdbcConnectionUrl + ";" +
+								"Catalog=" + file.toURL().toString() + ";";
+                    
+					if (jdbcUsername != null && jdbcUsername.length() > 0) {
+						connectString = connectString + "JdbcUser=" + jdbcUsername + ";";
+					}
+					if (jdbcPassword != null && jdbcPassword.length() > 0) {
+						connectString = connectString + "JdbcPassword=" + jdbcPassword + ";";
+					}
+					
+					connection = DriverManager.getConnection(connectString, null, false);
+				} catch (Exception ex) {
+					System.out.println("Exception  : Schema file is invalid."+ex.getMessage());
+					ex.printStackTrace(); //====
+				} catch (Error err) {
+					System.out.println("Error : Schema file is invalid."+err.getMessage());
+					err.printStackTrace(); //====
+				}
+			}
+					
+			final JInternalFrame schemaFrame = new JInternalFrame();
+			schemaFrame.setTitle("Schema - " + file.getName());
+			//===Class.forName(jdbcDriverClassName);
+			jdbcMetaData = new JDBCMetaData(jdbcDriverClassName, jdbcConnectionUrl, jdbcUsername, jdbcPassword);
 
             schemaFrame.getContentPane().add(new SchemaExplorer(file, jdbcMetaData, newFile, schemaFrame));
 
@@ -1287,8 +1303,8 @@ public class Workbench extends javax.swing.JFrame {
             });
             jfc.setCurrentDirectory(new File(new URI(workbenchProperties.getProperty(LAST_USED1_URL))));
         } catch (Exception ex) {
-            //ex.printStackTrace();
-            //System.out.println("==Could not set file chooser. last used file does not exist");
+            ex.printStackTrace();
+            System.out.println("==Could not set file chooser. last used file does not exist");
         }
         MondrianProperties.instance();
         if (jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -1392,18 +1408,22 @@ public class Workbench extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        Workbench w = new Workbench();
-        w.parseArgs(args);
-        w.setSize(800, 600);
-        // if user specified a file to open, do so now.
-        if (w.openFile != null) {
-            File f= new File(w.openFile);
-            if (f.canRead()) {
-                //w.openSchemaFrame(f.getAbsoluteFile());
-                w.openSchemaFrame(f.getAbsoluteFile(), false); // parameter to indicate this is a new or existing catalog file
-            }
-        }
-        w.show();
+    	try {
+	        Workbench w = new Workbench();
+	        w.parseArgs(args);
+	        w.setSize(800, 600);
+	        // if user specified a file to open, do so now.
+	        if (w.openFile != null) {
+	            File f= new File(w.openFile);
+	            if (f.canRead()) {
+	                //w.openSchemaFrame(f.getAbsoluteFile());
+	                w.openSchemaFrame(f.getAbsoluteFile(), false); // parameter to indicate this is a new or existing catalog file
+	            }
+	        }
+	        w.show();
+    	} catch (Throwable ex) {
+			ex.printStackTrace();
+    	}
     }
 
 // Variables declaration - do not modify

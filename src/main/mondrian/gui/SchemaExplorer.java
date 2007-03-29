@@ -3390,6 +3390,14 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
     public String getJdbcConnectionUrl() {
         return this.jdbcMetaData.jdbcConnectionUrl;
     }
+    
+    public String getJdbcUsername() {
+        return this.jdbcMetaData.jdbcUsername;
+    }
+    
+    public String getJdbcPassword() {
+        return this.jdbcMetaData.jdbcPassword;
+    }
 
     public String getErrMsg() {
         return errMsg;

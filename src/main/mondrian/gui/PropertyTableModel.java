@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2007 Julian Hyde and others
+// Copyright (C) 2002-2007 Julian Hyde, Cincom Systems, Inc., and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -45,10 +45,6 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
         return "?";
     }
 
-/**
-   *   Copyright (C) 2006, 2007 CINCOM SYSTEMS, INC.
-   *   All Rights Reserved
-   */
     // get property name for given row no.
     public String getRowName(int i) {
         String pName = propertyNames[i];
@@ -97,10 +93,6 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
         return propertyNames.length;
     }
 
-/**
-   *   Copyright (C) 2006, 2007 CINCOM SYSTEMS, INC.
-   *   All Rights Reserved
-   */
     /** Returns the value for the cell at <code>columnIndex</code> and
      * <code>rowIndex</code>.
      *
@@ -158,10 +150,6 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
         }
     }
 
-/**
-   *   Copyright (C) 2006, 2007 CINCOM SYSTEMS, INC.
-   *   All Rights Reserved
-   */
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         setErrorMsg(null);
         try {
@@ -240,10 +228,6 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
         return target;
     }
 
-/**
-   *   Copyright (C) 2006, 2007 CINCOM SYSTEMS, INC.
-   *   All Rights Reserved
-   */
     public Object getParentTarget() {
         return parentTarget;
     }
