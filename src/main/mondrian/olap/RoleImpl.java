@@ -16,16 +16,8 @@ package mondrian.olap;
 import java.util.*;
 
 /**
- * A <code>Role</code> is a collection of access rights to cubes, permissions,
- * and so forth.
- *
- * <p>At present, the only way to create a role is programmatically. You then
- * add appropriate permissions, and associate the role with a connection.
- * Queries executed for the duration of the connection will b.
- *
- * <p>Mondrian does not have any notion of a 'user'. It is the client
- * application's responsibility to create a role appropriate for the user who
- * is establishing the connection.
+ * <code>RoleImpl</code> is Mondrian's default implementation for the
+ * <code>Role</code> interface.
  *
  * @author jhyde
  * @since Oct 5, 2002
@@ -101,12 +93,6 @@ public class RoleImpl implements Role {
         schemaGrants.put(schema, access);
     }
 
-    /**
-     * Returns the access this role has to a given schema.
-     *
-     * @pre schema != null
-     * @post return == Access.ALL || return == Access.NONE || return == Access.ALL_DIMENSIONS
-     */
     public Access getAccess(Schema schema) {
         assert schema != null;
         return toAccess(schemaGrants.get(schema));
@@ -133,12 +119,6 @@ public class RoleImpl implements Role {
         cubeGrants.put(cube, access);
     }
 
-    /**
-     * Returns the access this role has to a given cube.
-     *
-     * @pre cube != null
-     * @post return == Access.ALL || return == Access.NONE
-     */
     public Access getAccess(Cube cube) {
         assert cube != null;
         Access access = cubeGrants.get(cube);
@@ -323,12 +303,6 @@ public class RoleImpl implements Role {
         dimensionGrants.put(dimension, access);
     }
 
-    /**
-     * Returns the access this role has to a given dimension.
-     *
-     * @pre dimension != null
-     * @post Access.instance().isValid(return)
-     */
     public Access getAccess(Dimension dimension) {
         assert dimension != null;
         Access access = dimensionGrants.get(dimension);
@@ -394,12 +368,6 @@ public class RoleImpl implements Role {
             new HierarchyAccessImpl(hierarchy, access, topLevel, bottomLevel));
     }
 
-    /**
-     * Returns the access this role has to a given hierarchy.
-     *
-     * @pre hierarchy != null
-     * @post return == Access.NONE || return == Access.ALL || return == Access.CUSTOM
-     */
     public Access getAccess(Hierarchy hierarchy) {
         assert hierarchy != null;
         HierarchyAccessImpl hierarchyAccess = hierarchyGrants.get(hierarchy);
@@ -409,23 +377,11 @@ public class RoleImpl implements Role {
         return getAccess(hierarchy.getDimension());
     }
 
-    /**
-     * Returns the details of this hierarchy's access, or null if the hierarchy
-     * has not been given explicit access.
-     *
-     * @pre hierarchy != null
-     */
     public HierarchyAccess getAccessDetails(Hierarchy hierarchy) {
         Util.assertPrecondition(hierarchy != null, "hierarchy != null");
         return hierarchyGrants.get(hierarchy);
     }
 
-    /**
-     * Returns the access this role has to a given level.
-     *
-     * @pre level != null
-     * @post Access.instance().isValid(return)
-     */
     public Access getAccess(Level level) {
         assert level != null;
         HierarchyAccessImpl hierarchyAccess = 
@@ -472,13 +428,6 @@ public class RoleImpl implements Role {
         hierarchyAccess.grant(member, access);
     }
 
-    /**
-     * Returns the access this role has to a given member.
-     *
-     * @pre member != null
-     * @pre isMutable()
-     * @post return == Access.NONE || return == Access.ALL || return == Access.CUSTOM
-     */
     public Access getAccess(Member member) {
         assert member != null;
         HierarchyAccessImpl hierarchyAccess =
@@ -489,22 +438,11 @@ public class RoleImpl implements Role {
         return getAccess(member.getDimension());
     }
 
-    /**
-     * Returns the access this role has to a given named set.
-     *
-     * @pre set != null
-     * @pre isMutable()
-     * @post return == Access.NONE || return == Access.ALL
-     */
     public Access getAccess(NamedSet set) {
         Util.assertPrecondition(set != null, "set != null");
         return Access.ALL;
     }
 
-    /**
-     * Returns whether this role is allowed to see a given element.
-     * @pre olapElement != null
-     */
     public boolean canAccess(OlapElement olapElement) {
         Util.assertPrecondition(olapElement != null, "olapElement != null");
         if (olapElement instanceof Member) {
@@ -525,4 +463,4 @@ public class RoleImpl implements Role {
     }
 }
 
-// End Role.java
+// End RoleImpl.java
