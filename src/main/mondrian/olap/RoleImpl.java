@@ -508,18 +508,18 @@ public class RoleImpl implements Role {
      */
     public boolean canAccess(OlapElement olapElement) {
         Util.assertPrecondition(olapElement != null, "olapElement != null");
-        if (olapElement instanceof Cube) {
+        if (olapElement instanceof Member) {
+            return getAccess((Member) olapElement) != Access.NONE;
+        } else if (olapElement instanceof Level) {
+            return getAccess((Level) olapElement) != Access.NONE;
+        } else if (olapElement instanceof NamedSet) {
+            return getAccess((NamedSet) olapElement) != Access.NONE;
+        } else if (olapElement instanceof Hierarchy) {
+            return getAccess((Hierarchy) olapElement) != Access.NONE;
+        } else if (olapElement instanceof Cube) {
             return getAccess((Cube) olapElement) != Access.NONE;
         } else if (olapElement instanceof Dimension) {
             return getAccess((Dimension) olapElement) != Access.NONE;
-        } else if (olapElement instanceof Hierarchy) {
-            return getAccess((Hierarchy) olapElement) != Access.NONE;
-        } else if (olapElement instanceof Level) {
-            return getAccess((Level) olapElement) != Access.NONE;
-        } else if (olapElement instanceof Member) {
-            return getAccess((Member) olapElement) != Access.NONE;
-        } else if (olapElement instanceof NamedSet) {
-            return getAccess((NamedSet) olapElement) != Access.NONE;
         } else {
             return false;
         }
