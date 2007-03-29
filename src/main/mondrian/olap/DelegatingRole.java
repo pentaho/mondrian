@@ -31,18 +31,6 @@ public class DelegatingRole implements Role {
         this.role = role;
     }
 
-    public Role makeMutableClone() {
-        return role.makeMutableClone();
-    }
-
-    public void makeImmutable() {
-        role.makeImmutable();
-    }
-
-    public boolean isMutable() {
-        return role.isMutable();
-    }
-
     public Access getAccess(Schema schema) {
         return role.getAccess(schema);
     }

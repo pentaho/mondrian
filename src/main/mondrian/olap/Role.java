@@ -34,22 +34,6 @@ import java.util.*;
 public interface Role {
 
     /**
-     * Returns a copy of this <code>Role</code> which can be modified.
-     */
-    Role makeMutableClone();
-
-    /**
-     * Prevents any further modifications.
-     * @post !isMutable()
-     */
-    void makeImmutable();
-
-    /**
-     * Returns whether modifications are possible.
-     */
-    boolean isMutable();
-
-    /**
      * Returns the access this role has to a given schema.
      *
      * @pre schema != null

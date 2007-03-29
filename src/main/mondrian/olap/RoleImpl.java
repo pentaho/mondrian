@@ -65,7 +65,7 @@ public class RoleImpl implements Role {
     /**
      * Returns a copy of this <code>Role</code> which can be modified.
      */
-    public Role makeMutableClone() {
+    public RoleImpl makeMutableClone() {
         RoleImpl role = clone();
         role.mutable = true;
         return role;

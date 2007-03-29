@@ -444,7 +444,6 @@ public class RolapConnection extends ConnectionBase {
 
     public void setRole(Role role) {
         assert role != null;
-        assert !role.isMutable();
 
         this.role = role;
         this.schemaReader = new RolapSchemaReader(role, schema) {
@@ -456,7 +455,6 @@ public class RolapConnection extends ConnectionBase {
 
     public Role getRole() {
         Util.assertPostcondition(role != null, "role != null");
-        Util.assertPostcondition(!role.isMutable(), "!role.isMutable()");
 
         return role;
     }

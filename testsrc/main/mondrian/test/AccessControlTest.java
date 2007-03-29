@@ -32,7 +32,7 @@ public class AccessControlTest extends FoodMartTestCase {
     public void testGrantDimensionNone() {
         final Connection connection = getConnection(true);
         TestContext testContext = getTestContext(connection);
-        RoleImpl role = (RoleImpl) connection.getRole().makeMutableClone();
+        RoleImpl role = ((RoleImpl) connection.getRole()).makeMutableClone();
         Schema schema = connection.getSchema();
         Cube salesCube = schema.lookupCube("Sales", true);
         // todo: add Schema.lookupDimension
