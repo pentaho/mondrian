@@ -12,6 +12,17 @@
 <head>
     <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
 	<title>Pentaho Analysis Services: Mondrian Roadmap</title>
+    <style>
+<!--
+div.Section1
+	{page:Section1;}
+ li.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+-->
+</style>
 </head>
 <body>
 <!-- doc2web start -->
@@ -36,20 +47,12 @@
 	development and co-development</a></li>
   </ol>
   </li>
-  <li><a href="#3_Release_history">Release history</a><ol>
-  <li><a href="#Release_2.3">Release 2.3</a></li>
-  <li><a href="#Release_2.2">Release 2.2</a></li>
-  <li><a href="#Release_2.1">Release 2.1</a></li>
-  <li><a href="#Release_2.0">Release 2.0</a></li>
-  <li><a href="#Release_1.1">Release 1.1</a></li>
-  <li><a href="#Release_1.0">Release 1.0</a></li>
-  <li><a href="#Release_0.6">Release 0.6</a></li>
-  <li><a href="#Release_0.5">Release 0.5</a></li>
-  <li><a href="#Release_0.4">Release 0.4</a></li>
-  <li><a href="#Release_0.3">Release 0.3</a></li>
-
-</ol>
-
+  <li><a href="#Upcoming_releases">Upcoming_releases</a><ol>
+        <li><a href="#Release_2.4">Mondrian release 2.4</a></li>
+        <li><a href="#Aggregation_designer">Aggregation designer release x.x</a></li>
+        <li><a href="#Schema_workbench">Schema workbench release x.x</a></li>
+        <li><a href="#Release_3.0">Mondrian release 3.0</a></li>
+  </ol>
   </li>
   <li><a href="#4_Feature_list">Feature list</a>
   <ol>
@@ -68,7 +71,25 @@
 		<li><a href="#Feature_Mondrian_XMLA_server">Mondrian XML/A server</a></li>
 		<li><a href="#Feature_User_defined_aggregate_functions">User-defined aggregate functions</a></li>
         <li><a href="#Feature_Further_work_on_aggregate_tables">Further work on aggregate tables</a></li>
+        <li><a href="#Feature_Aggregate_distinct_count_measures">Aggregate distinct-count measures</a></li>
+        <li><a href="#Feature_Generate_SQL_with_grouping_sets_syntax">Generate SQL with GROUPING SETS syntax</a></li>
+        <li><a href="#Feature_olap4j_API">olap4j API</a></li>
   </ol>
+  <li><a href="#3_Release_history">Release history</a><ol>
+  <li><a href="#Release_2.3">Release 2.3</a></li>
+  <li><a href="#Release_2.2">Release 2.2</a></li>
+  <li><a href="#Release_2.1">Release 2.1</a></li>
+  <li><a href="#Release_2.0">Release 2.0</a></li>
+  <li><a href="#Release_1.1">Release 1.1</a></li>
+  <li><a href="#Release_1.0">Release 1.0</a></li>
+  <li><a href="#Release_0.6">Release 0.6</a></li>
+  <li><a href="#Release_0.5">Release 0.5</a></li>
+  <li><a href="#Release_0.4">Release 0.4</a></li>
+  <li><a href="#Release_0.3">Release 0.3</a></li>
+
+</ol>
+
+  </li>
 </ol>
 <!--
 #########################
@@ -163,244 +184,123 @@ resulting code is contributed to the project.</p>
 
 <p>If your organization would like to sponsor development of features, please
 contact Julian Hyde.</p>
+<h3>
 <!--
 ############################
 ##  2. Release history #####
 ############################ -->
-<h3>2. Release history<a name="3_Release_history">&nbsp;</a></h3>
-<!--
-#########################
-##  2.1 Release 2.1 #####
-######################### -->
-<h1>2.1 Release 2.3 (2007/03/12)<a name="Release_2.3">&nbsp;</a></h1>
+2. Upcoming releases<a name="Upcoming_releases">&nbsp;</a></h3>
+
+<h4>2.1 Release 2.4<a name="Release_2.4">&nbsp;</a></h4>
+<p>Targeted release timeframe: July</p>
+<table border="1" id="table1">
+    <tr>
+        <th>Feature</th>
+        <th>Effort</th>
+        <th>Importance</th>
+        <th>Priority</th>
+    </tr>
+    <tr>
+        <td><a href="#Feature_Improve_dimension_sharing">3.2 Improved dimension 
+        sharing</a>: Provide the ability to use the same dimension more than 
+        once within the same cube</td>
+        <td>high</td>
+        <td>high</td>
+        <td>medium</td>
+    </tr>
+    <tr>
+        <td><a href="#Feature_Aggregate_distinct_count_measures">3.16 Aggregate 
+        distinct-count measures</a>. This will allow aggregations of distinct count measures to compute properly over a range of selections (i.e. show me a count of all new Customers from January through July). 
+This will help down the road when we add support for compound slicers.</td>
+        <td>high</td>
+        <td>medium</td>
+        <td>high</td>
+    </tr>
+    <tr>
+        <td><a href="#Feature_Documentation">3.9 Document ordinal column</a>. The ordinalColumn specifies a column in the Hierarchy table that provides the order of the members in a given level – we just need to update the docs to explain this.</td>
+        <td>low</td>
+        <td>medium</td>
+        <td>low</td>
+    </tr>
+    <tr>
+        <td><a href="#Feature_Generate_SQL_with_grouping_sets_syntax">
+        3.17 Generate SQL with GROUPING SETS syntax</a>. By leveraging Grouping Sets, Mondrian can reduce the number of SQL queries necessary to fulfill an MDX request. 
+Grouping Sets are currently supported in Oracle, DB2, Teradata and SQL Server.</td>
+        <td>high</td>
+        <td>high</td>
+        <td>med-high</td>
+    </tr>
+</table>
+
+<h4>2.2 Aggregation Designer Release x.x<a name="Aggregation_designer">&nbsp;</a></h4>
+
+<p>Targeted release timeframe – July</p>
+<p>Effort: High, Importance: High, Priority: High</p>
+<p>Release Highlights:</p>
 <ul>
-    <li><a href="cache_control.html">Cache control</a> API.</li>
-<li>More efficient evaluation of queries which return large results. To achieve 
-this, some MDX functions now have multiple implementations, and can return their 
-results as iterators in addition to the usual list format.</li>
-    <li>More control over queries which run for long periods of time, return 
-    large numbers of members or cells, or which use excessive amounts of memory. 
-    Under such conditions, queries throw particular a ResultLimitExceeded 
-    exception.</li>
-    <li>JDK 1.5 is now the primary development and delivery platform. You can 
-    continue to run mondrian on JDK 1.4 using the provided 
-    backwards-compatibility JARs mondrian-jdk14.jar and retroweaver-rt-1.2.4.jar 
-    created by retroweaver.</li>
-<li>Added support for Ingres and 
-    <a href="http://docs.eigenbase.org/LucidDbOlap">LucidDB</a></li>
-    <li>JOLAP (JSR-069) support removed.</li>
+    <li>Repeatable, reliable, semi-automated methodology for improving 
+    ROLAP/HOLAP performance</li>
+    <li>APIs and user interfaces that are suitable for use by developers, 
+    consultants and Pentaho customers</li>
 </ul>
 
-<p>API changes which may impact existing applications:</p>
+<h4>2.3 Schema Workbench Release x.x (cube designer)<a name="Schema_workbench">&nbsp;</a></h4>
+
+<p>Targeted release timeframe – Begin incubation project in April 2007</p>
+<p>Effort: High, Importance: High, Priority: High</p>
+<p>Release Highlights:</p>
 <ul>
-    <li>Rename ResultLimitExceeded to ResultLimitExceededException;</li>
-<li>Remove packages javax.olap, mondrian.jolap, org.omg.java.cwm;</li>
-    <li>In mondrian.olap.Axis, change 'Position[] getPositions()' to 
-    'List&lt;Position&gt; getPositions()';</li>
-<li>In mondrian.olap.Position, replace data member 'Member[] members' with 
-methods 'Member get(int ordinal)' and 'int size()' (both inherited from 
-List&lt;Member&gt;).</li>
+    <li>User Interface suitable for consultants, developers and customers to 
+    design and maintain Mondrian Schemas </li>
+    <li>User Interface to support all Mondrian Schema tags and be maintained in 
+    lock-step with Mondrian server going forward</li>
+    <li>Project will initially be delivered to the community as an incubator 
+    project (April 2007) including seed code, requirements, a home page and 
+    dedicated Schema Workbench forum </li>
 </ul>
 
-<h1>2.2 Release 2.2 (2006/10/??)<a name="Release_2.2">&nbsp;</a></h1>
-<ul>
-    <li>Mondrian-2.2 implements a host of <b>new functions and operators</b>: 
-    In, Matches, Cast, ValidMeasure, CurrentDateMember, CurrentDateString. Also 
-    the NULL literal.</li>
-    <li><b>Parameters</b>. Formerly you could only specify parameters in a 
-    query. Now they can also be specified at system, schema or session level. 
-    Since parameters can be specified using an MDX expression, this is a great 
-    way to define constants and calculations in just one place, and share use 
-    them throughout your application.</li>
-    <li><b>Query timeout and cancel</b>. We have added timeout and a cancel 
-    facility to deal with long-running queries.</li>
-    <li>There's now the ability to <b>flush the schema cache</b>. See 
-    mondrian.olap.MondrianServer for more details.</li>
-    <li><b>Internationalization</b> just got a lot easier. Mondrian now supports 
-    a 'Locale' parameter to the connect string. Formatting information comes 
-    from Java rather than from MondrianResource.properties, which means that 
-    Mondrian should work out of the box for any locale Java supports.</li>
-    <li><b>Performance improvements</b>. The Level.approxRowCount schema 
-    attribute saves mondrian the effort of executing queries to count levels 
-    solely for XML/A's purposes. There are also performance improvments in the 
-    LastNonEmpty function, and crossjoin can be evaluated in SQL even for 
-    virtual cubes.</li>
-    <li>Lastly, we moved <b>mondrian's website</b> to
-    <a href="http://mondrian.pentaho.org">http://mondrian.pentaho.org</a>. Same 
-    content as before, but better formatted, and more integrated with the rest 
-    of the Pentaho family of projects.</li>
-</ul>
+<h4>2.4 Mondrian Release 3.0<a name="Release_3.0">&nbsp;</a></h4>
+<p>Targeted release timeframe: Q4 2007</p>
+<table border="1" id="table2">
+    <tr>
+        <th>Feature</th>
+        <th>Effort</th>
+        <th>Importance</th>
+        <th>Priority</th>
+    </tr>
+    <tr>
+        <td><a href="#Feature_Bridge_to_CWM">3.12 Bridge to CWM</a>. Integration with Pentaho Metadata. Could be incubator project, worth noting that someone has already implemented a bridge in one way.</td>
+        <td>high</td>
+        <td>high</td>
+        <td>high</td>
+    </tr>
+    <tr>
+        <td><a href="#Feature_Virtual_cube_enhancements">
+        3.3 Virtual cube enhancements</a>. When a cube uses the same dimension twice is involved in a virtual cube, disambiguate which usage of the dimension is involved. Allow the virtual cube to use the same cube more than once.</td>
+        <td>medium</td>
+        <td>high</td>
+        <td>medium</td>
+    </tr>
+    <tr>
+        <td><a href="#Feature_olap4j_API">3.18 olap4j API</a>. Open Java API for OLAP - <a href="http://www.olap4j.org">
+        http://www.olap4j.org</a> </td>
+        <td>high</td>
+        <td>high</td>
+        <td>high</td>
+    </tr>
+    <tr>
+        <td><a href="#Feature_Scalar_functions">3.4 Scalar functions</a>. Mondrian's set of functions for operating on numeric and string expressions is limited. This feature would add string manipulation functions (substring, trim, regular expressions) and arithmetic expressions (power, log, sqrt) and conversion functions (string to numeric, numeric to string).</td>
+        <td>medium</td>
+        <td>high</td>
+        <td>low</td>
+    </tr>
+</table>
 
-<h1>2.3 Release 2.1 (2006/04/01)<a name="Release_2.1">&nbsp;</a></h1>
+<p>
+<p>
+<p>
+<p></p>
 
-<ol>
-  <li>Finally, a separate distribution <code>mondrian-*-embedded.zip</code>,
-  including an embedded Derby database in the WAR. This can be deployed to
-  Tomcat on any platform by simply exploding the WAR into TOMCAT/webapps,
-  allowing folks &quot;kicking the tires&quot; to easily try out Mondrian/JPivot. See
-  <a href="install.html#5_Deploy_and_run_the_embedded_web_app">
-  how to deploy and run the embedded web app</a>.</li>
-  <li>XML/A bug fixes, functionality and test suite improvements.</li>
-
-  <li>Compilation of MDX expressions. This is an architectural change to allow
-  Mondrian to analyze queries at the start of execution, and trade off various
-  techniques such as expression-caching and pushing predicates into the
-  generated SQL. It involves some API changes (see <a href="#API_changes_in_2.1">
-  below</a>).</li>
-  <li>Allow distinct-count measures to be rolled up over attributes which are
-  functionally dependent on the key of the measure (e.g. &quot;gender&quot; is
-  functionally dependent on the key &quot;customer_id&quot; of the measure &quot;Customer
-  Count&quot;). This yields performance improvements when using distinct
-  count-aggregates.</li>
-
-  <li>Improved integration of User-Defined Functions.</li>
-  <li>Implemented <code>VisualTotals</code>, <code>LastPeriods</code>, <code>
-  AddCalculatedMembers</code>, <code>StripCalculatedMembers</code> MDX
-  functions.</li>
-
-  <li>Support for comments in MDX (<code>/* </code>...<code> */</code>, <code>--</code>
-  <i>[rest of line]</i>, <code>//</code> <i>[rest of line]</i>).</li>
-
-  <li>Includes recent, compatible version of JPivot.</li>
-  <li>Interbase 6 support.</li>
-  <li>Many bug fixes and extensions to the test suite.</li>
-  <li>Documentation improvements.</li>
-</ol>
-
-<!--
-##################################
-##  2.1.1 API changes in 2.1 #####
-################################## -->
-<h1>2.3.1 API changes in release 2.1<a name="API_changes_in_2.1">&nbsp;</a></h1>
-<ol>
-
-  <li>FunCall and UnresolvedFunCall. It used to be possible to create a
-  <code>FunCall</code> with the name of a function but no function definition.
-  This complicated the validation process, because we would discover at runtime
-  that a function call had no definition. Now you should use the new class <code>
-  UnresolvedFunCall</code>.</li>
-  <li>Category methods. Renaming a few of the methods concerning types
-  and categories.<ul>
-    <li><code>Exp.getType()</code> used to return <code>int</code>, now returns
-    <code>Type</code></li>
-
-    <li>Old usages of <code>Exp.getType()</code> should use <code>
-    Exp.getCategory()</code></li>
-    <li><code>int[] FunDef.getParameterTypes()</code> is renamed to int[] <code>
-    FunCall.getParameterCategories()</code></li>
-
-    <li><code>int FunCall.getReturnType()</code> is renamed to <code>int
-    FunCall.getReturnCategory()</code></li>
-    <li>Removed the <code>Exp.getTypeX()</code> method; old usages of this
-    method should now use <code>Exp.getType()</code>.</li>
-  </ul>
-  </li>
-
-  <li>OLAP element types. OLAP elements <code>Cube</code>, <code>
-  Dimension</code>, <code>Hierarchy</code>, <code>Level</code> and <code>Member</code>
-  no longer implement the <code>Exp</code> interface. If you want to use these
-  in expressions, there are wrapper classes: <code>DimensionExpr</code>, <code>
-
-  HierarchyExpr</code>, <code>LevelExpr</code>, <code>MemberExpr</code>. These
-  are in a new package, <code>mondrian.mdx</code>. Some other parse tree classes
-  (<code>Query</code>, <code>Literal</code>) will move to this package at some
-  time in the future.</li>
-</ol>
-
-<!--
-#########################
-##  2.2 Release 2.0 #####
-######################### -->
-<h1>2.4 Release 2.0 (2005/12/19)<a name="Release_2.0">&nbsp;</a></h1>
-
-<ul>
-  <li><a href="aggregate_tables.html">Aggregate tables</a>.</li>
-  <li>Calculated sets defined in the schema, and <code>WITH SET</code> syntax to
-  define sets within an MDX query.</li>
-  <li>Cached set expressions. The <code>WITH SET</code> feature and functions such as
-  <code>RANK</code> cause the same expression to
-be evaluated many times within the course of a single MDX statement. The set-expression cache
-  improves the performance of such queries. </li>
-
-  <li><a href="schema.html#User-defined_function">User-defined functions</a>.</li>
-  <li>Enhanced support for parent-child hierarchies.</li>
-  <li>Enhanced <a target="_top" href="http://www.xmla.org/">XML for Analysis
-  (XML/A)</a> support.</li>
-  <li>Enhanced support for internationalized/localized (I18N/L10N) applications.</li>
-  <li>Pushdown SQL. To improve performance, Mondrian automatically translates
-  filters and aggregations into SQL which can be executed on the underlying
-  RDBMS.</li>
-
-  <li>Support for the <a target="_top" href="http://db.apache.org/derby/">Apache
-  Derby</a> pure Java embedded RDBMS.</li>
-</ul>
-
-<!--
-#########################
-##  2.3 Release 1.1 #####
-######################### -->
-<h1>2.5 Release 1.1 (2005/04/06)<a name="Release_1.1">&nbsp;</a></h1>
-<ul>
-  <li>Numerous improvements in functionality, performance, and stability.</li>
-</ul>
-<!--
-#########################
-##  2.4 Release 1.0 #####
-######################### -->
-<h1>2.6 Release 1.0 (2003/08/18)<a name="Release_1.0">&nbsp;</a></h1>
-
-<ul>
-  <li>First production release.</li>
-  <li>Distinct-count aggregations.</li>
-  <li>JDBC connection-pooling.</li>
-  <li>Support for XML for Analysis (XML/A).</li>
-</ul>
-
-<!--
-#########################
-##  2.5 Release 0.6 #####
-######################### -->
-<h1>2.7 Release 0.6 (2003/05/24)<a name="Release_0.6">&nbsp;</a></h1>
-
-<ul>
-  <li>Parent-child hierarchies.</li>
-  <li>Partial support for XML for Analysis (XML/A).</li>
-</ul>
-<!--
-#########################
-##  2.6 Release 0.5 #####
-######################### -->
-<h1>2.8 Release 0.5 (2003/02/20)<a name="Release_0.5">&nbsp;</a></h1>
-<ul>
-  <li>Partial support for JOLAP.</li>
-  <li>Implement <code>Hierarchize</code>, &quot;:&quot;, <code>Aggregate</code>, and
-  statistical functions.</li>
-
-</ul>
-<!--
-########################
-## 2.7 Release 0.4 #####
-######################## -->
-<h1>2.9 Release 0.4 (2002/11/10)<a name="Release_0.4">&nbsp;</a></h1>
-<ul>
-  <li>Integration with JPivot.</li>
-  <li>Improved thread-safety.</li>
-</ul>
-<!--
-########################
-## 2.8 Release 0.3 #####
-######################## -->
-<h1>2.10 Release 0.3 (2002/08/09)<a name="Release_0.3">&nbsp;</a></h1>
-<ul>
-  <li>First public release.</li>
-
-  <li>JSP page generates a static table from an MDX query.</li>
-  <li>Support for several SQL dialects.</li>
-</ul>
-<!--
-#########################
-##  3. Feature list #####
-######################### -->
 <h3>3. Feature list<a name="4_Feature_list">&nbsp;</a></h3>
 <!--
 ###############################################
@@ -529,6 +429,17 @@ AS's.</p>
 
 <p><i>Julian Hyde</i>: Can you give me more details on how that would work?
 Start a discussion forum or feature request on SourceForge.</p>
+<p>Other options for cold start:</p>
+<ul>
+    <li>Command for mondrian to serialize cache state (definitions and data) to 
+    disk. When mondrian starts, read the cache state from disk.</li>
+    <li>Command for mondrian to serialize cache definitions to disk. When 
+    mondrian starts, reads cache definitions from disk, and cache contents from 
+    DBMS.</li>
+    <li>User writes a script of MDX commands to prime the cache. On startup, 
+    mondrian executes this script in a background thread.</li>
+</ul>
+
 <!--
 ########################
 ##  3.10 Rollups   #####
@@ -682,11 +593,13 @@ tables.</p>
 ################################################# -->
 <h1>3.15 Further work on aggregate tables<a name="Feature_Further_work_on_aggregate_tables">&nbsp;</a></h1>
 
-<p>1. Utility to populate (or generate INSERT statements to populate) the  agg
+<h5>1. Data population.</h5>
+<p>Utility to populate (or generate INSERT statements to populate) the  agg
 tables. (For extra credit: populate the tables in topological order, so that
 higher level aggregations can be built from lower level aggregations.)</p>
 
-<p>2. Utility to generate a script containing CREATE TABLE and CREATE INDEX
+<h5>2. DDL generation.</h5>
+<p>Utility to generate a script containing CREATE TABLE and CREATE INDEX
 statements all possible aggregate tables (including indexes), XML for these
 tables, and comments indicating the estimated number of rows in these
 tables. Clearly this will be a huge script, and it would be ridiculous to
@@ -694,19 +607,270 @@ create all of these tables. The person designing the schema could copy/paste
 from this file to create their own schema.</p>
 
 
-<p>3. Utility (maybe graphical, maybe text-based) to recommend a set of
-aggregate tables. This is essentially an optimization algorithm, and it is
+<h5>3. Utility (maybe graphical, maybe text-based) to recommend a set of
+aggregate tables.</h5>
+<p>This is essentially an optimization algorithm, and it is
 described in the academic literature. Constraints on the optimization
 process are the amount of storage required, the estimated time to populate
 the agg tables. The algorithm could also take into account usage
 information.</p>
 
-<p>4. Allow agg tables to be taken offline/online while Mondrian is still
-running.</p>
+<h5>4. Allow agg tables to be taken offline/online while Mondrian is still
+running.</h5>
 
 <p>I'm thinking of these being utilities, not part of the core runtime engine.
 There's plenty of room to wrap these utilities in nice graphical interfaces,
 make them smarter.</p>
+<h1>3.16 Aggregate distinct-count measures<a name="Feature_Aggregate_distinct_count_measures">&nbsp;</a></h1>
+
+<p>This will allow aggregations 
+of distinct count measures to compute properly over a range of selections (i.e. 
+show me a count of all new Customers from January through July). This will help down the road 
+when we add support for compound slicers.</p>
+
+<h1>3.17 Generate SQL with GROUPING SETS syntax<a name="Feature_Generate_SQL_with_grouping_sets_syntax">&nbsp;</a></h1>
+
+<p>By leveraging Grouping Sets, Mondrian can reduce the number of SQL queries necessary to fulfill an MDX request 
+Grouping Sets are currently supported in Oracle, DB2, Teradata and SQL Server 
+</p>
+<h1>3.18 olap4j API<a name="Feature_olap4j_API">&nbsp;</a></h1>
+<p>Add support for the olap4j API.&nbsp; See <a href="http://www.olap4j.org">
+www.olap4j.org</a>. 
+</p>
+<h3>4. Release history<a name="3_Release_history">&nbsp;</a></h3>
+<!--
+#########################
+##  2.1 Release 2.1 #####
+######################### -->
+<h1>4.1 Release 2.3 (2007/03/12)<a name="Release_2.3">&nbsp;</a></h1>
+<ul>
+    <li><a href="cache_control.html">Cache control</a> API.</li>
+<li>More efficient evaluation of queries which return large results. To achieve 
+this, some MDX functions now have multiple implementations, and can return their 
+results as iterators in addition to the usual list format.</li>
+    <li>More control over queries which run for long periods of time, return 
+    large numbers of members or cells, or which use excessive amounts of memory. 
+    Under such conditions, queries throw particular a ResultLimitExceeded 
+    exception.</li>
+    <li>JDK 1.5 is now the primary development and delivery platform. You can 
+    continue to run mondrian on JDK 1.4 using the provided 
+    backwards-compatibility JARs mondrian-jdk14.jar and retroweaver-rt-1.2.4.jar 
+    created by retroweaver.</li>
+<li>Added support for Ingres and 
+    <a href="http://docs.eigenbase.org/LucidDbOlap">LucidDB</a></li>
+    <li>JOLAP (JSR-069) support removed.</li>
+</ul>
+
+<p>API changes which may impact existing applications:</p>
+<ul>
+    <li>Rename ResultLimitExceeded to ResultLimitExceededException;</li>
+<li>Remove packages javax.olap, mondrian.jolap, org.omg.java.cwm;</li>
+    <li>In mondrian.olap.Axis, change 'Position[] getPositions()' to 
+    'List&lt;Position&gt; getPositions()';</li>
+<li>In mondrian.olap.Position, replace data member 'Member[] members' with 
+methods 'Member get(int ordinal)' and 'int size()' (both inherited from 
+List&lt;Member&gt;).</li>
+</ul>
+
+<h1>4.2 Release 2.2 (2006/10/??)<a name="Release_2.2">&nbsp;</a></h1>
+<ul>
+    <li>Mondrian-2.2 implements a host of <b>new functions and operators</b>: 
+    In, Matches, Cast, ValidMeasure, CurrentDateMember, CurrentDateString. Also 
+    the NULL literal.</li>
+    <li><b>Parameters</b>. Formerly you could only specify parameters in a 
+    query. Now they can also be specified at system, schema or session level. 
+    Since parameters can be specified using an MDX expression, this is a great 
+    way to define constants and calculations in just one place, and share use 
+    them throughout your application.</li>
+    <li><b>Query timeout and cancel</b>. We have added timeout and a cancel 
+    facility to deal with long-running queries.</li>
+    <li>There's now the ability to <b>flush the schema cache</b>. See 
+    mondrian.olap.MondrianServer for more details.</li>
+    <li><b>Internationalization</b> just got a lot easier. Mondrian now supports 
+    a 'Locale' parameter to the connect string. Formatting information comes 
+    from Java rather than from MondrianResource.properties, which means that 
+    Mondrian should work out of the box for any locale Java supports.</li>
+    <li><b>Performance improvements</b>. The Level.approxRowCount schema 
+    attribute saves mondrian the effort of executing queries to count levels 
+    solely for XML/A's purposes. There are also performance improvments in the 
+    LastNonEmpty function, and crossjoin can be evaluated in SQL even for 
+    virtual cubes.</li>
+    <li>Lastly, we moved <b>mondrian's website</b> to
+    <a href="http://mondrian.pentaho.org">http://mondrian.pentaho.org</a>. Same 
+    content as before, but better formatted, and more integrated with the rest 
+    of the Pentaho family of projects.</li>
+</ul>
+
+<h1>4.3 Release 2.1 (2006/04/01)<a name="Release_2.1">&nbsp;</a></h1>
+
+<ol>
+  <li>Finally, a separate distribution <code>mondrian-*-embedded.zip</code>,
+  including an embedded Derby database in the WAR. This can be deployed to
+  Tomcat on any platform by simply exploding the WAR into TOMCAT/webapps,
+  allowing folks &quot;kicking the tires&quot; to easily try out Mondrian/JPivot. See
+  <a href="install.html#5_Deploy_and_run_the_embedded_web_app">
+  how to deploy and run the embedded web app</a>.</li>
+  <li>XML/A bug fixes, functionality and test suite improvements.</li>
+
+  <li>Compilation of MDX expressions. This is an architectural change to allow
+  Mondrian to analyze queries at the start of execution, and trade off various
+  techniques such as expression-caching and pushing predicates into the
+  generated SQL. It involves some API changes (see <a href="#API_changes_in_2.1">
+  below</a>).</li>
+  <li>Allow distinct-count measures to be rolled up over attributes which are
+  functionally dependent on the key of the measure (e.g. &quot;gender&quot; is
+  functionally dependent on the key &quot;customer_id&quot; of the measure &quot;Customer
+  Count&quot;). This yields performance improvements when using distinct
+  count-aggregates.</li>
+
+  <li>Improved integration of User-Defined Functions.</li>
+  <li>Implemented <code>VisualTotals</code>, <code>LastPeriods</code>, <code>
+  AddCalculatedMembers</code>, <code>StripCalculatedMembers</code> MDX
+  functions.</li>
+
+  <li>Support for comments in MDX (<code>/* </code>...<code> */</code>, <code>--</code>
+  <i>[rest of line]</i>, <code>//</code> <i>[rest of line]</i>).</li>
+
+  <li>Includes recent, compatible version of JPivot.</li>
+  <li>Interbase 6 support.</li>
+  <li>Many bug fixes and extensions to the test suite.</li>
+  <li>Documentation improvements.</li>
+</ol>
+
+<!--
+##################################
+##  2.1.1 API changes in 2.1 #####
+################################## -->
+<h1>4.3.1 API changes in release 2.1<a name="API_changes_in_2.1">&nbsp;</a></h1>
+<ol>
+
+  <li>FunCall and UnresolvedFunCall. It used to be possible to create a
+  <code>FunCall</code> with the name of a function but no function definition.
+  This complicated the validation process, because we would discover at runtime
+  that a function call had no definition. Now you should use the new class <code>
+  UnresolvedFunCall</code>.</li>
+  <li>Category methods. Renaming a few of the methods concerning types
+  and categories.<ul>
+    <li><code>Exp.getType()</code> used to return <code>int</code>, now returns
+    <code>Type</code></li>
+
+    <li>Old usages of <code>Exp.getType()</code> should use <code>
+    Exp.getCategory()</code></li>
+    <li><code>int[] FunDef.getParameterTypes()</code> is renamed to int[] <code>
+    FunCall.getParameterCategories()</code></li>
+
+    <li><code>int FunCall.getReturnType()</code> is renamed to <code>int
+    FunCall.getReturnCategory()</code></li>
+    <li>Removed the <code>Exp.getTypeX()</code> method; old usages of this
+    method should now use <code>Exp.getType()</code>.</li>
+  </ul>
+  </li>
+
+  <li>OLAP element types. OLAP elements <code>Cube</code>, <code>
+  Dimension</code>, <code>Hierarchy</code>, <code>Level</code> and <code>Member</code>
+  no longer implement the <code>Exp</code> interface. If you want to use these
+  in expressions, there are wrapper classes: <code>DimensionExpr</code>, <code>
+
+  HierarchyExpr</code>, <code>LevelExpr</code>, <code>MemberExpr</code>. These
+  are in a new package, <code>mondrian.mdx</code>. Some other parse tree classes
+  (<code>Query</code>, <code>Literal</code>) will move to this package at some
+  time in the future.</li>
+</ol>
+
+<!--
+#########################
+##  2.2 Release 2.0 #####
+######################### -->
+<h1>4.4 Release 2.0 (2005/12/19)<a name="Release_2.0">&nbsp;</a></h1>
+
+<ul>
+  <li><a href="aggregate_tables.html">Aggregate tables</a>.</li>
+  <li>Calculated sets defined in the schema, and <code>WITH SET</code> syntax to
+  define sets within an MDX query.</li>
+  <li>Cached set expressions. The <code>WITH SET</code> feature and functions such as
+  <code>RANK</code> cause the same expression to
+be evaluated many times within the course of a single MDX statement. The set-expression cache
+  improves the performance of such queries. </li>
+
+  <li><a href="schema.html#User-defined_function">User-defined functions</a>.</li>
+  <li>Enhanced support for parent-child hierarchies.</li>
+  <li>Enhanced <a target="_top" href="http://www.xmla.org/">XML for Analysis
+  (XML/A)</a> support.</li>
+  <li>Enhanced support for internationalized/localized (I18N/L10N) applications.</li>
+  <li>Pushdown SQL. To improve performance, Mondrian automatically translates
+  filters and aggregations into SQL which can be executed on the underlying
+  RDBMS.</li>
+
+  <li>Support for the <a target="_top" href="http://db.apache.org/derby/">Apache
+  Derby</a> pure Java embedded RDBMS.</li>
+</ul>
+
+<!--
+#########################
+##  2.3 Release 1.1 #####
+######################### -->
+<h1>4.5 Release 1.1 (2005/04/06)<a name="Release_1.1">&nbsp;</a></h1>
+<ul>
+  <li>Numerous improvements in functionality, performance, and stability.</li>
+</ul>
+<!--
+#########################
+##  2.4 Release 1.0 #####
+######################### -->
+<h1>4.6 Release 1.0 (2003/08/18)<a name="Release_1.0">&nbsp;</a></h1>
+
+<ul>
+  <li>First production release.</li>
+  <li>Distinct-count aggregations.</li>
+  <li>JDBC connection-pooling.</li>
+  <li>Support for XML for Analysis (XML/A).</li>
+</ul>
+
+<!--
+#########################
+##  2.5 Release 0.6 #####
+######################### -->
+<h1>4.7 Release 0.6 (2003/05/24)<a name="Release_0.6">&nbsp;</a></h1>
+
+<ul>
+  <li>Parent-child hierarchies.</li>
+  <li>Partial support for XML for Analysis (XML/A).</li>
+</ul>
+<!--
+#########################
+##  2.6 Release 0.5 #####
+######################### -->
+<h1>4.8 Release 0.5 (2003/02/20)<a name="Release_0.5">&nbsp;</a></h1>
+<ul>
+  <li>Partial support for JOLAP.</li>
+  <li>Implement <code>Hierarchize</code>, &quot;:&quot;, <code>Aggregate</code>, and
+  statistical functions.</li>
+
+</ul>
+<!--
+########################
+## 2.7 Release 0.4 #####
+######################## -->
+<h1>4.9 Release 0.4 (2002/11/10)<a name="Release_0.4">&nbsp;</a></h1>
+<ul>
+  <li>Integration with JPivot.</li>
+  <li>Improved thread-safety.</li>
+</ul>
+<!--
+########################
+## 2.8 Release 0.3 #####
+######################## -->
+<h1>4.10 Release 0.3 (2002/08/09)<a name="Release_0.3">&nbsp;</a></h1>
+<ul>
+  <li>First public release.</li>
+
+  <li>JSP page generates a static table from an MDX query.</li>
+  <li>Support for several SQL dialects.</li>
+</ul>
+<!--
+#########################
+##  3. Feature list #####
+######################### -->
 <br />
 <br />
 
