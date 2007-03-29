@@ -197,12 +197,10 @@ class RestrictedMemberReader extends DelegatingMemberReader {
                                 TupleConstraint constraint) {
         if (hierarchyAccess != null) {
             final int depth = level.getDepth();
-            if (hierarchyAccess.getTopLevel() != null &&
-                    depth < hierarchyAccess.getTopLevel().getDepth()) {
+            if (depth < hierarchyAccess.getTopLevelDepth()) {
                 return Collections.emptyList();
             }
-            if (hierarchyAccess.getBottomLevel() != null &&
-                    depth > hierarchyAccess.getBottomLevel().getDepth()) {
+            if (depth > hierarchyAccess.getBottomLevelDepth()) {
                 return Collections.emptyList();
             }
         }

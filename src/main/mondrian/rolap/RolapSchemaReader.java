@@ -61,15 +61,10 @@ public abstract class RolapSchemaReader implements SchemaReader {
 
     public Member[] getHierarchyRootMembers(Hierarchy hierarchy) {
         final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(hierarchy);
-        Level firstLevel;
-        if (hierarchyAccess == null) {
-            firstLevel = hierarchy.getLevels()[0];
-        } else {
-            firstLevel = hierarchyAccess.getTopLevel();
-            if (firstLevel == null) {
-                firstLevel = hierarchy.getLevels()[0];
-            }
-        }
+        final Level[] levels = hierarchy.getLevels();
+        final Level firstLevel = (hierarchyAccess == null)
+            ? levels[0]
+            : levels[hierarchyAccess.getTopLevelDepth()];
         return getLevelMembers(firstLevel, true);
     }
 
@@ -118,10 +113,8 @@ public abstract class RolapSchemaReader implements SchemaReader {
         final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(member.getHierarchy());
         if (hierarchyAccess != null) {
             int memberDepth = member.getLevel().getDepth();
-            final Level topLevel = hierarchyAccess.getTopLevel();
-            if (topLevel != null) {
-                memberDepth -= topLevel.getDepth();
-            }
+            final int topLevelDepth = hierarchyAccess.getTopLevelDepth();
+            memberDepth -= topLevelDepth;
             return memberDepth;
         } else if (((RolapLevel) member.getLevel()).isParentChild()) {
             // For members of parent-child hierarchy, members in the same level may have
@@ -372,17 +365,8 @@ public abstract class RolapSchemaReader implements SchemaReader {
         if (hierarchyAccess == null) {
             return levels;
         }
-        Level topLevel = hierarchyAccess.getTopLevel();
-        Level bottomLevel = hierarchyAccess.getBottomLevel();
-        if ((topLevel == null) && (bottomLevel == null)) {
-            return levels;
-        }
-        if (topLevel == null) {
-            topLevel = levels[0];
-        }
-        if (bottomLevel == null) {
-            bottomLevel = levels[levels.length - 1];
-        }
+        Level topLevel = levels[hierarchyAccess.getTopLevelDepth()];
+        Level bottomLevel = levels[hierarchyAccess.getBottomLevelDepth()];
         final int levelCount = bottomLevel.getDepth() - topLevel.getDepth() + 1;
         Level[] restrictedLevels = new Level[levelCount];
         System.arraycopy(levels, topLevel.getDepth(), restrictedLevels, 0, levelCount);

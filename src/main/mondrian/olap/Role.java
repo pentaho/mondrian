@@ -54,11 +54,8 @@ public interface Role {
      */
     public interface HierarchyAccess {
         Access getAccess(Member member);
-        Level getTopLevel();
-        Level getBottomLevel();
-        Hierarchy getHierarchy();
-
-        //Map<Member, Access> getMemberGrants();
+        int getTopLevelDepth();
+        int getBottomLevelDepth();
     }
 
     /**

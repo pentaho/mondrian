@@ -170,8 +170,11 @@ public class RoleImpl implements Role {
             assert access != null;
             this.hierarchy = hierarchy;
             this.access = access;
-            this.topLevel = topLevel;
-            this.bottomLevel = bottomLevel;
+            final Level[] levels = hierarchy.getLevels();
+            this.topLevel = (topLevel == null) 
+                    ? levels[0] : topLevel;
+            this.bottomLevel = (bottomLevel == null) 
+                    ? levels[levels.length-1] : bottomLevel;
         }
 
         public HierarchyAccess clone() {
@@ -290,16 +293,12 @@ public class RoleImpl implements Role {
             }
         }
 
-        public Hierarchy getHierarchy() {
-            return hierarchy;
+        public int getTopLevelDepth() {
+            return topLevel.getDepth();
         }
 
-        public Level getTopLevel() {
-            return topLevel;
-        }
-
-        public Level getBottomLevel() {
-            return bottomLevel;
+        public int getBottomLevelDepth() {
+            return bottomLevel.getDepth();
         }
 
         public Map<Member, Access> getMemberGrants() {
