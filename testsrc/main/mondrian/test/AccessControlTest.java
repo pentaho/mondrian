@@ -286,6 +286,10 @@ public class AccessControlTest extends FoodMartTestCase {
         }.assertExprThrows("[Store].DefaultMember", "'[Store]' not found in cube 'Sales'");
     }
 
+    public void testNoAccessToCube() {
+        final TestContext tc = new RestrictedTestContext();
+        tc.assertThrows("select from [HR]", "MDX cube 'HR' not found");
+    }
 
     private Connection getRestrictedConnection() {
         return getRestrictedConnection(true);
@@ -322,6 +326,11 @@ public class AccessControlTest extends FoodMartTestCase {
             role.grant(customersHierarchy, Access.CUSTOM, stateProvinceLevel, customersCityLevel);
             role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Customers].[All Customers]"), fail), Access.ALL);
         }
+
+        // No access to HR cube.
+        Cube hrCube = schema.lookupCube("HR", fail);
+        role.grant(hrCube, Access.NONE);
+
         role.makeImmutable();
         connection.setRole(role);
         return connection;

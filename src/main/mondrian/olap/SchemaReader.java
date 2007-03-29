@@ -307,6 +307,7 @@ public interface SchemaReader {
     Parameter getParameter(String name);
 
     DataSource getDataSource();
+
 }
 
 // End SchemaReader.java

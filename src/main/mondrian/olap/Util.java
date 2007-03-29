@@ -716,6 +716,25 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Looks up a cube in a schema reader.
+     *
+     * @param cubeName Cube name
+     * @param fail Whether to fail if not found.
+     * @return Cube, or null if not found
+     */
+    static Cube lookupCube(SchemaReader schemaReader, String cubeName, boolean fail) {
+        for (Cube cube : schemaReader.getCubes()) {
+            if (Util.compareName(cube.getName(), cubeName) == 0) {
+                return cube;
+            }
+        }
+        if (fail) {
+            throw MondrianResource.instance().MdxCubeNotFound.ex(cubeName);
+        }
+        return null;
+    }
+    
+    /**
      * Converts an olap element (dimension, hierarchy, level or member) into
      * an expression representing a usage of that element in an MDX statement.
      */

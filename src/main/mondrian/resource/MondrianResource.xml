@@ -35,7 +35,7 @@
 <!-- ====================================================================== -->
 
 <exception id="321000" name="MdxCubeNotFound">
-    <text>MDX cube ''{0}'' not found or not processed</text>
+    <text>MDX cube ''{0}'' not found</text>
 </exception>
 
 <!-- {1} should be something like "level '[Time].[Quarter]'": generate it using
