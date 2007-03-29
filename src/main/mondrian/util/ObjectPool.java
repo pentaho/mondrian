@@ -210,7 +210,7 @@ public class ObjectPool<T> {
      * <code>Iterator</code> returned does not
      * support the removal of <code>ObjectPool</code> members.
      */
-    public Iterator iterator() {
+    public Iterator<T> iterator() {
         return new Itr();
     }
 
