@@ -17,10 +17,12 @@ import mondrian.resource.MondrianResource;
 import mondrian.mdx.MemberExpr;
 import mondrian.mdx.MdxVisitor;
 import mondrian.mdx.MdxVisitorImpl;
+import mondrian.rolap.RolapCalculatedMember;
 
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * A <code>Formula</code> is a clause in an MDX query which defines a Set or a
@@ -119,7 +121,7 @@ public class Formula extends QueryPart {
         // Get the format expression from the property list, or derive it from
         // the formula.
         if (isMember) {
-            Exp formatExp = getFormatExp();
+            Exp formatExp = getFormatExp(validator);
             if (formatExp != null) {
                 mdxMember.setProperty(Property.FORMAT_EXP.name, formatExp);
             }
@@ -365,8 +367,9 @@ public class Formula extends QueryPart {
      * looks for properties called "format", "format_string", etc. Then it looks
      * inside the expression, and returns the formatting expression for the
      * first member it finds.
+     * @param validator
      */
-    private Exp getFormatExp() {
+    private Exp getFormatExp(Validator validator) {
         // If they have specified a format string (which they can do under
         // several names) return that.
         for (String prop : Property.FORMAT_PROPERTIES) {
@@ -402,18 +405,7 @@ public class Formula extends QueryPart {
         // Burrow into the expression. If we find a member, use its format
         // string.
         try {
-            exp.accept(
-                new MdxVisitorImpl() {
-                    public Object visit(MemberExpr memberExpr) {
-                        Exp formatExp = (Exp) memberExpr.getMember().
-                            getPropertyValue(Property.FORMAT_EXP.name);
-                        if (formatExp != null) {
-                            throw new FoundOne(formatExp);
-                        }
-                        return super.visit(memberExpr);
-                    }
-                }
-            );
+            exp.accept(new FormatFinder(validator));
             return null;
         } catch (FoundOne foundOne) {
             return foundOne.exp;
@@ -446,6 +438,72 @@ public class Formula extends QueryPart {
         public FoundOne(Exp exp) {
             super();
             this.exp = exp;
+        }
+    }
+
+    //A visitor for burrowing format information given a formula
+    private static class FormatFinder extends MdxVisitorImpl {
+        private final Validator validator;
+
+        public FormatFinder(Validator validator) {
+            this.validator = validator;
+        }
+
+        public Object visit(MemberExpr memberExpr) {
+            Member member = memberExpr.getMember();
+            returnFormula(member);
+            if (member.isCalculated() && member instanceof RolapCalculatedMember && !checkRecursion(memberExpr)){
+                RolapCalculatedMember rcm = (RolapCalculatedMember) member;
+                Formula formula = rcm.getFormula();
+                formula.accept(validator);
+                returnFormula(member);
+            }
+
+            return super.visit(memberExpr);
+        }
+
+        private boolean checkRecursion(Exp expr) {
+            List<MemberExpr> expList = new ArrayList<MemberExpr>();
+            return checkRecursion(expr,expList);
+        }
+
+        private boolean checkRecursion(Exp expr, List<MemberExpr> expList) {
+            if (expr instanceof MemberExpr) {
+                MemberExpr memberExpr = (MemberExpr) expr;
+                if(expList.contains(expr)){
+                    return true;
+                }
+                expList.add(memberExpr);
+                Member member = memberExpr.getMember();
+                if (member instanceof RolapCalculatedMember) {
+                    RolapCalculatedMember calculatedMember = (RolapCalculatedMember) member;
+                    return checkRecursion(calculatedMember.getExpression().accept(validator),expList);
+                }
+            }
+            if (expr instanceof FunCall) {
+                FunCall funCall = (FunCall) expr;
+                Exp[] exps = funCall.getArgs();
+                for (int i = 0; i < exps.length; i++) {
+                    if(checkRecursion(exps[i], cloneForEachBranch(expList))) return true;
+                }
+            }
+            return false;
+        }
+
+        private List<MemberExpr> cloneForEachBranch(List<MemberExpr> expList) {
+            ArrayList<MemberExpr> list = new ArrayList<MemberExpr>();
+            list.addAll(expList);
+            return list;
+        }
+
+        private void returnFormula(Member member) {
+            if (getFormula(member) != null) {
+                throw new FoundOne(getFormula(member));
+            }
+        }
+
+        private Exp getFormula(Member member) {
+            return (Exp) member.getPropertyValue(Property.FORMAT_EXP.name);
         }
     }
 }

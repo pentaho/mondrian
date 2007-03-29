@@ -26,7 +26,7 @@ import mondrian.olap.*;
  * @since 26 August, 2001
  * @version $Id$
  */
-class RolapCalculatedMember extends RolapMember {
+public class RolapCalculatedMember extends RolapMember {
     private final Formula formula;
 
     RolapCalculatedMember(

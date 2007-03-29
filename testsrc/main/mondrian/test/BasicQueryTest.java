@@ -5376,6 +5376,27 @@ public class BasicQueryTest extends FoodMartTestCase {
             throwable, "Query timeout of 2 seconds reached");
     }
 
+    public void testFormatInheritance() {
+        assertQueryReturns(
+                            "with member measures.foo as 'measures.bar' member measures.bar as 'measures.profit' select {measures.foo} on 0 from sales",
+                            fold("Axis #0:\n" +
+                                 "{}\n" +
+                                 "Axis #1:\n" +
+                                 "{[Measures].[foo]}\n" +
+                                 "Row #0: $339,610.90\n")
+                          );
+    }
+
+    public void testFormatInheritanceWithIIF() {
+        assertQueryReturns(
+                            "with member measures.foo as 'measures.bar' member measures.bar as 'iif(not isempty(measures.profit),measures.profit,null)' select from sales where measures.foo",
+                            fold(
+                                "Axis #0:\n" +
+                                "{[Measures].[foo]}\n" +
+                                "$339,610.90")
+                          );
+    }
+
     public void testQueryIterationLimit()
     {
         // Query will need to iterate 4*3 times to compute aggregates,
