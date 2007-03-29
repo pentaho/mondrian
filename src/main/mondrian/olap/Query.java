@@ -15,7 +15,6 @@ package mondrian.olap;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.ExpCompiler.ResultStyle;
-import mondrian.calc.impl.BetterExpCompiler;
 import mondrian.mdx.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.olap.fun.ParameterFunDef;
@@ -184,14 +183,15 @@ public class Query extends QueryPart {
             QueryAxis slicerAxis,
             QueryPart[] cellProps,
             boolean load) {
-        this(connection,
-                connection.getSchema().lookupCube(cube, true),
-                formulas,
-                axes,
-                slicerAxis,
-                cellProps,
-                new Parameter[0],
-                load);
+        this(
+            connection,
+            Util.lookupCube(connection.getSchemaReader(), cube, true),
+            formulas,
+            axes,
+            slicerAxis,
+            cellProps,
+            new Parameter[0],
+            load);
     }
 
     /**
@@ -892,7 +892,12 @@ public class Query extends QueryPart {
     }
 
     /**
-     * Check, whether a formula can be removed from the query.
+     * Returns whether a formula can safely be removed from the query. It can be
+     * removed if the member or set it defines it not used anywhere else in the
+     * query, including in another formula.
+     *
+     * @param uniqueName Unique name of the member or set defined by the formula
+     * @return whether the formula can safely be removed
      */
     public boolean canRemoveFormula(String uniqueName) {
         Formula formula = findFormula(uniqueName);
@@ -901,20 +906,29 @@ public class Query extends QueryPart {
         }
 
         OlapElement mdxElement = formula.getElement();
-        //search the query tree to see if this formula expression is used
-        //anywhere (on the axes or in another formula)
+        // Search the query tree to see if this formula expression is used
+        // anywhere (on the axes or in another formula).
         Walker walker = new Walker(this);
         while (walker.hasMoreElements()) {
             Object queryElement = walker.nextElement();
-            if (!queryElement.equals(mdxElement)) {
-                continue;
+            if (queryElement instanceof MemberExpr &&
+                ((MemberExpr) queryElement).getMember().equals(mdxElement)) {
+                return false;
             }
-            return false;
+            if (queryElement instanceof NamedSetExpr &&
+                ((NamedSetExpr) queryElement).getNamedSet().equals(mdxElement)) {
+                return false;
+            }
         }
         return true;
     }
 
-    /** finds calculated member or set in array of formulas */
+    /**
+     * Looks up a calculated member or set defined in this Query.
+     *
+     * @param uniqueName Unique name of calculated member or set
+     * @return formula defining calculated member, or null if not found
+     */
     public Formula findFormula(String uniqueName) {
         for (Formula formula : formulas) {
             if (formula.getUniqueName().equalsIgnoreCase(uniqueName)) {
@@ -987,10 +1001,11 @@ public class Query extends QueryPart {
     private ExpCompiler createCompiler(
             final Evaluator evaluator, final Validator validator) {
 
-        ExpCompiler compiler = ExpCompiler.Factory.getExpCompiler(
-                                    evaluator, 
-                                    validator, 
-                                    new ResultStyle[] { resultStyle });
+        ExpCompiler compiler =
+            ExpCompiler.Factory.getExpCompiler(
+                evaluator,
+                validator,
+                new ResultStyle[] { resultStyle });
 
         final int expDeps = MondrianProperties.instance().TestExpDependencies.get();
         if (expDeps > 0) {
@@ -1095,29 +1110,29 @@ public class Query extends QueryPart {
         return o;
     }
 
-    /** 
+    /**
      * Put an Object value into the evaluation cache with given key.
      * This is used by Calc's to store information between iterations
      * (rather than re-generate each time).
-     * 
-     * @param key the cache key 
+     *
+     * @param key the cache key
      * @param value the cache value
      */
     public void putEvalCache(String key, Object value) {
         evalCache.put(key, value);
     }
-    
-    /** 
-     * Get the Object associated with the value. 
-     * 
-     * @param key the cache key 
+
+    /**
+     * Gets the Object associated with the value.
+     *
+     * @param key the cache key
      * @return the cached value or null.
      */
     public Object getEvalCache(String key) {
         return evalCache.get(key);
     }
 
-    /** 
+    /**
      * Remove all entries in the evaluation cache
      */
     public void clearEvalCache() {
