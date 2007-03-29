@@ -16,6 +16,7 @@ import mondrian.olap.*;
 
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.
+ * For these tests, all of the roles are of type RoleImpl.
  *
  * @see Role
  *
@@ -31,7 +32,7 @@ public class AccessControlTest extends FoodMartTestCase {
     public void testGrantDimensionNone() {
         final Connection connection = getConnection(true);
         TestContext testContext = getTestContext(connection);
-        Role role = connection.getRole().makeMutableClone();
+        RoleImpl role = (RoleImpl) connection.getRole().makeMutableClone();
         Schema schema = connection.getSchema();
         Cube salesCube = schema.lookupCube("Sales", true);
         // todo: add Schema.lookupDimension
@@ -270,7 +271,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 Hierarchy measuresInSales = salesCube.lookupHierarchy("Measures", false);
                 Hierarchy storeInWarehouse = warehouseCube.lookupHierarchy("Store", false);
 
-                Role role = new Role();
+                RoleImpl role = new RoleImpl();
                 role.grant(schema, Access.NONE);
                 role.grant(salesCube, Access.NONE);
                 // For using hierarchy Measures in #assertExprThrows
@@ -302,7 +303,7 @@ public class AccessControlTest extends FoodMartTestCase {
      */
     private Connection getRestrictedConnection(boolean restrictCustomers) {
         Connection connection = getConnection(true);
-        Role role = new Role();
+        RoleImpl role = new RoleImpl();
         Schema schema = connection.getSchema();
         final boolean fail = true;
         Cube salesCube = schema.lookupCube("Sales", fail);

@@ -983,8 +983,11 @@ return dim;
 
     public SchemaReader getSchemaReader(Role role) {
         if (role == null) {
-            role = schema.getDefaultRole().makeMutableClone();
-            role.grant(this, Access.ALL);
+            RoleImpl schemaDefaultRoleImpl = schema.getDefaultRole();
+            RoleImpl roleImpl = 
+                    (RoleImpl) schemaDefaultRoleImpl.makeMutableClone();
+            roleImpl.grant(this, Access.ALL);
+            role = roleImpl;
         }
         return new RolapCubeSchemaReader(role);
     }

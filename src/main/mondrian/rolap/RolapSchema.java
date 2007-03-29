@@ -12,6 +12,7 @@
 */
 
 package mondrian.rolap;
+
 import java.io.*;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
@@ -39,6 +40,7 @@ import mondrian.olap.MondrianProperties;
 import mondrian.olap.NamedSet;
 import mondrian.olap.Parameter;
 import mondrian.olap.Role;
+import mondrian.olap.RoleImpl;
 import mondrian.olap.Schema;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Syntax;
@@ -115,7 +117,7 @@ public class RolapSchema implements Schema {
     /**
      * The default role for connections to this schema.
      */
-    private Role defaultRole;
+    private RoleImpl defaultRole;
 
     private final String md5Bytes;
 
@@ -317,7 +319,7 @@ public class RolapSchema implements Schema {
 		return schemaLoadDate;
     }
 
-    Role getDefaultRole() {
+    RoleImpl getDefaultRole() {
         return defaultRole;
     }
 
@@ -429,7 +431,9 @@ public class RolapSchema implements Schema {
             if (role == null) {
                 throw Util.newError("Role '" + xmlSchema.defaultRole + "' not found");
             }
-            defaultRole = role;
+            // At this stage, the only roles in mapNameToRole are
+            // RoleImpl roles so it is safe to case.
+            defaultRole = (RoleImpl) role;
         }
     }
 
@@ -449,7 +453,7 @@ public class RolapSchema implements Schema {
     }
 
     private Role createRole(MondrianDef.Role xmlRole) {
-        Role role = new Role();
+        RoleImpl role = new RoleImpl();
         for (MondrianDef.SchemaGrant schemaGrant : xmlRole.schemaGrants) {
             role.grant(this, getAccess(schemaGrant.access, schemaAllowed));
             for (MondrianDef.CubeGrant cubeGrant : schemaGrant.cubeGrants) {
@@ -1479,8 +1483,8 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         return internalConnection;
     }
 
-    private Role createDefaultRole() {
-        Role role = new Role();
+    private RoleImpl createDefaultRole() {
+        RoleImpl role = new RoleImpl();
         role.grant(this, Access.ALL);
         role.makeImmutable();
         return role;
