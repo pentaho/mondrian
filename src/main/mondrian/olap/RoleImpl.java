@@ -31,7 +31,7 @@ import java.util.*;
  * @since Oct 5, 2002
  * @version $Id$
  */
-public class Role {
+public class RoleImpl implements Role {
     private boolean mutable = true;
     private final Map<Schema, Access> schemaGrants =
         new HashMap<Schema, Access>();
@@ -39,25 +39,25 @@ public class Role {
         new HashMap<Cube, Access>();
     private final Map<Dimension, Access> dimensionGrants =
         new HashMap<Dimension, Access>();
-    private final Map<Hierarchy, HierarchyAccess> hierarchyGrants =
-        new HashMap<Hierarchy, HierarchyAccess>();
+    private final Map<Hierarchy, HierarchyAccessImpl> hierarchyGrants =
+        new HashMap<Hierarchy, HierarchyAccessImpl>();
 
     /**
      * Creates a role with no permissions.
      */
-    public Role() {}
+    public RoleImpl() {}
 
-    protected Role clone() {
-        Role role = new Role();
+    protected RoleImpl clone() {
+        RoleImpl role = new RoleImpl();
         role.mutable = mutable;
         role.schemaGrants.putAll(schemaGrants);
         role.cubeGrants.putAll(cubeGrants);
         role.dimensionGrants.putAll(dimensionGrants);
-        for (Map.Entry<Hierarchy, HierarchyAccess> entry :
-            hierarchyGrants.entrySet()) {
+        for (Map.Entry<Hierarchy, HierarchyAccessImpl> entry :
+                hierarchyGrants.entrySet()) {
             role.hierarchyGrants.put(
                 entry.getKey(),
-                entry.getValue().clone());
+                (HierarchyAccessImpl) entry.getValue().clone());
         }
         return role;
     }
@@ -66,7 +66,7 @@ public class Role {
      * Returns a copy of this <code>Role</code> which can be modified.
      */
     public Role makeMutableClone() {
-        Role role = clone();
+        RoleImpl role = clone();
         role.mutable = true;
         return role;
     }
@@ -151,7 +151,7 @@ public class Role {
     /**
      * Represents the access that a role has to a particular hierarchy.
      */
-    public static class HierarchyAccess {
+    public static class HierarchyAccessImpl implements Role.HierarchyAccess {
         private final Hierarchy hierarchy;
         private final Level topLevel;
         private final Access access;
@@ -160,9 +160,9 @@ public class Role {
             new HashMap<Member, Access>();
 
         /**
-         * Creates a <code>HierarchyAccess</code>
+         * Creates a <code>HierarchyAccessImpl</code>
          */
-        HierarchyAccess(
+        HierarchyAccessImpl(
                 Hierarchy hierarchy,
                 Access access,
                 Level topLevel,
@@ -175,7 +175,7 @@ public class Role {
         }
 
         public HierarchyAccess clone() {
-            HierarchyAccess hierarchyAccess = new HierarchyAccess(
+            HierarchyAccessImpl hierarchyAccess = new HierarchyAccessImpl(
                     hierarchy, access, topLevel, bottomLevel);
             hierarchyAccess.memberGrants.putAll(memberGrants);
             return hierarchyAccess;
@@ -392,7 +392,7 @@ public class Role {
         Util.assertPrecondition(isMutable(), "isMutable()");
         hierarchyGrants.put(
             hierarchy,
-            new HierarchyAccess(hierarchy, access, topLevel, bottomLevel));
+            new HierarchyAccessImpl(hierarchy, access, topLevel, bottomLevel));
     }
 
     /**
@@ -403,9 +403,9 @@ public class Role {
      */
     public Access getAccess(Hierarchy hierarchy) {
         assert hierarchy != null;
-        HierarchyAccess access = hierarchyGrants.get(hierarchy);
-        if (access != null) {
-            return access.access;
+        HierarchyAccessImpl hierarchyAccess = hierarchyGrants.get(hierarchy);
+        if (hierarchyAccess != null) {
+            return hierarchyAccess.access;
         }
         return getAccess(hierarchy.getDimension());
     }
@@ -429,17 +429,18 @@ public class Role {
      */
     public Access getAccess(Level level) {
         assert level != null;
-        HierarchyAccess access = hierarchyGrants.get(level.getHierarchy());
-        if (access != null) {
-            if (access.topLevel != null &&
-                    level.getDepth() < access.topLevel.getDepth()) {
+        HierarchyAccessImpl hierarchyAccess = 
+                hierarchyGrants.get(level.getHierarchy());
+        if (hierarchyAccess != null) {
+            if (hierarchyAccess.topLevel != null &&
+                    level.getDepth() < hierarchyAccess.topLevel.getDepth()) {
                 return Access.NONE;
             }
-            if (access.bottomLevel != null &&
-                    level.getDepth() > access.bottomLevel.getDepth()) {
+            if (hierarchyAccess.bottomLevel != null &&
+                    level.getDepth() > hierarchyAccess.bottomLevel.getDepth()) {
                 return Access.NONE;
             }
-            return access.access;
+            return hierarchyAccess.access;
         }
         return getAccess(level.getDimension());
     }
@@ -466,7 +467,7 @@ public class Role {
         assert Util.isValid(Access.class, access);
         assert isMutable();
         assert getAccess(member.getHierarchy()) == Access.CUSTOM;
-        HierarchyAccess hierarchyAccess = hierarchyGrants.get(member.getHierarchy());
+        HierarchyAccessImpl hierarchyAccess = hierarchyGrants.get(member.getHierarchy());
         assert hierarchyAccess != null;
         assert hierarchyAccess.access == Access.CUSTOM;
         hierarchyAccess.grant(member, access);
@@ -481,7 +482,7 @@ public class Role {
      */
     public Access getAccess(Member member) {
         assert member != null;
-        HierarchyAccess hierarchyAccess =
+        HierarchyAccessImpl hierarchyAccess =
             hierarchyGrants.get(member.getHierarchy());
         if (hierarchyAccess != null) {
             return hierarchyAccess.getAccess(member);
