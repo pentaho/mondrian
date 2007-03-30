@@ -5436,7 +5436,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         );
     }
 
-    public void testThatFormatFromSeconfMeasureIsPickedUpWhenTheFirstDoesNotHaveOne() {
+    public void testFormatInheritanceToPickupFormatFromSecondMeasureWhenTheFirstDoesNotHaveOne() {
         assertQueryReturns("with member measures.foo as 'measures.bar+measures.blah'" +
                 " member measures.bar as '10'" +
                 " member measures.blah as '20',format_string='$##.###.00' " +
