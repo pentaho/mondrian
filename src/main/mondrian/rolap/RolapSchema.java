@@ -56,6 +56,7 @@ import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.spi.DataSourceChangeListener;
+import mondrian.spi.DynamicSchemaProcessor;
 
 import org.apache.log4j.Logger;
 import org.apache.commons.vfs.*;
@@ -719,14 +720,13 @@ public class RolapSchema implements Schema {
                 assert catalogStr == null;
 
                 try {
-                    final URL url = new URL(catalogUrl);
-
                     final Class<DynamicSchemaProcessor> clazz =
-                        (Class<DynamicSchemaProcessor>) Class.forName(dynProcName);
+                        (Class<DynamicSchemaProcessor>)
+                            Class.forName(dynProcName);
                     final Constructor<DynamicSchemaProcessor> ctor =
                         clazz.getConstructor();
                     final DynamicSchemaProcessor dynProc = ctor.newInstance();
-                    catalogStr = dynProc.processSchema(url, connectInfo);
+                    catalogStr = dynProc.processSchema(catalogUrl, connectInfo);
                     hadDynProc = true;
 
                 } catch (Exception e) {

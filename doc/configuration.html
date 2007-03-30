@@ -135,7 +135,7 @@ suite of regression tests.</p>
       result set.<p>If a query exceeds the limit, you will get an error such as:</p>
 
       <blockquote>
-          <p><code>Mondrian result limit exceeded: Mondrian Error: Size of CrossJoin 
+          <p><code>Mondrian result limit exceeded: Mondrian Error: Size of CrossJoin
           result (53,463) exceeded limit (50,000)</code></p>
 
       </blockquote>
@@ -144,7 +144,7 @@ suite of regression tests.</p>
           <p><code>Number of members to be read exceeded limit 50,000</code></p>
 
       </blockquote></p>
-      
+
       <p>and Mondrian throws a
       <a href="api/mondrian/olap/ResourceLimitExceededException.html">
       mondrian.olap.ResourceLimitExceededException</a>. See also
@@ -267,7 +267,7 @@ suite of regression tests.</p>
       <td>Controls whether sibling members are compared according to
       the order key value fetched from their ordinal expression.  The
       default value of false means ordinal expressions are only used
-      for ORDER BY, and the actual values produced are ignored inside 
+      for ORDER BY, and the actual values produced are ignored inside
       of Mondrian.  Changing this to true allows Mondrian to correctly
       order members when native filtering is used, but requires that
       the values produced by the DBMS are non-null instances of
@@ -294,8 +294,8 @@ suite of regression tests.</p>
       <td>int</td>
       <td>0</td>
       <td>If set to a value greater than zero, limits the number of seconds
-      a query executes before it is aborted.<p>If a query exceeds the limit, 
-      mondrian throws a <a href="api/mondrian/olap/QueryTimeoutException.html">mondrian.olap.QueryTimeoutException</a>y, 
+      a query executes before it is aborted.<p>If a query exceeds the limit,
+      mondrian throws a <a href="api/mondrian/olap/QueryTimeoutException.html">mondrian.olap.QueryTimeoutException</a>y,
       resulting in an error such as:</p>
 
       <blockquote>
@@ -303,7 +303,7 @@ suite of regression tests.</p>
 
       </blockquote>
       </p>
-      
+
       <p>See also
       <a href="#limit_properties">limit properties</a>.</p></td>
     </tr>
@@ -324,25 +324,25 @@ suite of regression tests.</p>
         and will be treated as a null member if they are later referenced in
         a query.</td>
     </tr>
-    <tr> 
+    <tr>
       <td><code><a href="api/mondrian/olap/MondrianProperties.html#IterationLimit">mondrian.rolap.IterationLimit</a></code></td>
       <td>int</td>
       <td>0</td>
       <td>If > 0, the maximum number of iterations allowed when evaluating an
-        aggregate.  If 0, there is no limit.<p>If a query exceeds the limit, 
+        aggregate.  If 0, there is no limit.<p>If a query exceeds the limit,
       mondrian throws a
-      <a href="api/mondrian/olap/ResourceLimitExceededException.html">mondrian.olap.ResourceLimitExceededException</a>, 
+      <a href="api/mondrian/olap/ResourceLimitExceededException.html">mondrian.olap.ResourceLimitExceededException</a>,
       resulting in an error such as:</p>
 
       <blockquote>
           <p><code>Number of iterations exceeded limit of 100</code></p>
 
       </blockquote>
-      
+
       <p>See also
       <a href="#limit_properties">limit properties</a>.</p></td>
     </tr>
-    <tr> 
+    <tr>
       <td>
         <code>
         <a href="api/mondrian/olap/MondrianProperties.html#CrossJoinOptimizerSize">mondrian.olap.fun.crossjoin.optimizer.size</a></code></td>
@@ -355,7 +355,7 @@ suite of regression tests.</p>
          Setting this value to '0' means that for all crossjoin
          input lists in non-empty axes will have the optimizer applied.
          On the other hand, if the value is set larger than any possible
-         list, say <code>Integer.MAX_VALUE</code>, then the optimizer 
+         list, say <code>Integer.MAX_VALUE</code>, then the optimizer
          will never be applied.
       </td>
     </tr>
@@ -746,10 +746,10 @@ suite of regression tests.</p>
 href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported">mondrian.native.unsupported.alert</a></code></td>
       <td>string</td>
       <td>OFF</td>
-      <td>Alerting action {OFF, WARN, ERROR} to take in case 
+      <td>Alerting action {OFF, WARN, ERROR} to take in case
           native evaluation of a function is
           enabled but not supported for that function's usage in a particular
-          query.  (No alert is ever raised in cases where native evaluation 
+          query.  (No alert is ever raised in cases where native evaluation
           would definitely have been wasted effort.)  Currently, alerts are
           only raised for the NonEmptyCrossJoin function.</td>
     </tr>
@@ -857,7 +857,7 @@ href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported
       <td>string</td>
       <td>-</td>
       <td>
-      By default this property does not have a value. 
+      By default this property does not have a value.
       If set, then it is the class name of an implementation of
       the MemoryMonitor class and is used by the
       MemoryMonitorFactory to create the single instance.
@@ -872,7 +872,7 @@ href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported
       <td>string</td>
       <td>-</td>
       <td>
-      By default this property does not have a value. 
+      By default this property does not have a value.
       If set, then it is the class name of an implementation of
       the ExpCompiler class and is used by the
       ExpCompiler.Factory to create each instance.
@@ -883,9 +883,9 @@ href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported
 
 <h3>Limit properties<a name="Limit_properties">&nbsp;</a></h3>
 
-<p>Properties <code>mondrian.result.limit</code>, <code>mondrian.rolap.iterationLimit</code> 
-and <code>mondrian.rolap.queryTimeout</code> enforce runtime limits on the 
-time or space required to execute a query. If any of these limits are exceeded, 
+<p>Properties <code>mondrian.result.limit</code>, <code>mondrian.rolap.iterationLimit</code>
+and <code>mondrian.rolap.queryTimeout</code> enforce runtime limits on the
+time or space required to execute a query. If any of these limits are exceeded,
 mondrian throws an exception which extends
 <a href="api/mondrian/olap/ResultLimitExceededException.html">
 mondrian.olap.ResultLimitExceededException</a>.</p>
@@ -894,9 +894,9 @@ mondrian.olap.ResultLimitExceededException</a>.</p>
 
 <h3>Connect string syntax<a name="Connect_string_syntax">&nbsp;</a></h3>
 
-<p>Mondrian connect strings are a connection of property/value pairs, of the 
+<p>Mondrian connect strings are a connection of property/value pairs, of the
 form 'property=value;property=value;...'.</p>
-<p>Values can be enclosed in single-quotes, which allows them to contain spaces 
+<p>Values can be enclosed in single-quotes, which allows them to contain spaces
 and punctuation. See the the
 <a target="_blank" href="http://msdn.microsoft.com/library/en-us/oledb/htm/oledbconnectionstringsyntax.asp">
 OLE DB connect string syntax specification</a>.</p>
@@ -917,21 +917,21 @@ OLE DB connect string syntax specification</a>.</p>
     <tr>
         <td>Jdbc</td>
         <td rowspan="2">Exactly one</td>
-        <td><p>The URL of the JDBC database where the data is stored. You must 
+        <td><p>The URL of the JDBC database where the data is stored. You must
         specify either <code>DataSource</code> or <code>Jdbc</code>.</p></td>
     </tr>
     <tr>
         <td>DataSource</td>
-        <td><p>The name of a data source class. The class must implement the 
-        <a href="http://java.sun.com/j2se/1.5.0/docs/api/javax/sql/DataSource.html">javax.sql.DataSource</a> interface. 
-        You must specify either 
+        <td><p>The name of a data source class. The class must implement the
+        <a href="http://java.sun.com/j2se/1.5.0/docs/api/javax/sql/DataSource.html">javax.sql.DataSource</a> interface.
+        You must specify either
         <code>DataSource</code> or <code>Jdbc</code>.</p></td>
     </tr>
     <tr>
         <td>JdbcDrivers</td>
         <td>Yes</td>
         <td><p>Comma-separated list of JDBC driver classes, for example,</p>
-        
+
         <blockquote>
             <code>JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver</code>
         </blockquote>
@@ -940,39 +940,39 @@ OLE DB connect string syntax specification</a>.</p>
     <tr>
         <td>JdbcUser</td>
         <td>No</td>
-        <td><p>The name of the user to log on to the JDBC database. (If your JDBC 
-        driver allows you to specify the user name in the JDBC URL, you don't 
+        <td><p>The name of the user to log on to the JDBC database. (If your JDBC
+        driver allows you to specify the user name in the JDBC URL, you don't
         need to set this property.)</p></td>
     </tr>
     <tr>
         <td>JdbcPassword</td>
         <td>No</td>
-        <td><p>The name of the password to log on to the JDBC database. (If your 
-        JDBC driver allows you to specify the password in the JDBC URL, you 
+        <td><p>The name of the password to log on to the JDBC database. (If your
+        JDBC driver allows you to specify the password in the JDBC URL, you
         don't need to set this property.)</p></td>
     </tr>
     <tr>
         <td>Catalog</td>
         <td rowspan="2">Exactly one</td>
-        <td><p>The URL of the catalog, an XML file which describes the schema: cubes, hierarchies, and so forth. 
+        <td><p>The URL of the catalog, an XML file which describes the schema: cubes, hierarchies, and so forth.
         For example,</p>
-        
+
         <blockquote><code>
             Catalog=file:demo/FoodMart.xml</code></blockquote>
-        
-        <p>Catalogs are described in <a href="schema.html">the Schema Guide</a>. 
+
+        <p>Catalogs are described in <a href="schema.html">the Schema Guide</a>.
         See also <code>CatalogContent</code>.</p></td>
     </tr>
     <tr>
         <td>CatalogContent</td>
-        <td><p>An XML string representing the schema: cubes, hierarchies, and so forth. 
+        <td><p>An XML string representing the schema: cubes, hierarchies, and so forth.
         For example,</p>
-        
+
         <blockquote><code>
-            CatalogContent=&lt;Schema name=&quot;MySchema&quot;&gt;&lt;Cube name=&quot;Cube1&quot;&gt; ... 
+            CatalogContent=&lt;Schema name=&quot;MySchema&quot;&gt;&lt;Cube name=&quot;Cube1&quot;&gt; ...
             &lt;/Schema&gt;</code></blockquote>
-        
-        <p>Catalogs are described in <a href="schema.html">the Schema Guide</a>. 
+
+        <p>Catalogs are described in <a href="schema.html">the Schema Guide</a>.
         See also <code>Catalog</code>.</p></td>
     </tr>
     <tr>
@@ -985,40 +985,40 @@ OLE DB connect string syntax specification</a>.</p>
         <td>PoolNeeded</td>
         <td>No</td>
         <td><p>Tells Mondrian whether to add a layer of connection pooling.</p>
-        
-        <p>If the value &quot;true&quot; is specified, or no value is specified, Mondrian 
+
+        <p>If the value &quot;true&quot; is specified, or no value is specified, Mondrian
         assumes that:</p>
 
         <ul>
-            <li>connections created via the <code>Jdbc</code> property are not pooled, 
+            <li>connections created via the <code>Jdbc</code> property are not pooled,
             and therefore need to be pooled;</li>
             <li>connections created via the <code>DataSource</code> are already pooled.</li>
         </ul>
 
-        <p>If the value &quot;false&quot; is specified, Mondrian does not apply 
+        <p>If the value &quot;false&quot; is specified, Mondrian does not apply
         connection-pooling to any connection.</p></td>
     </tr>
     <tr>
         <td>Role</td>
         <td>No</td>
-        <td><p>The name of the <a href="schema.html#Access_control">role</a> to adopt 
-        for access-control purposes. If not specified, the connection uses a role 
+        <td><p>The name of the <a href="schema.html#Access_control">role</a> to adopt
+        for access-control purposes. If not specified, the connection uses a role
         which has access to every object in the schema.</p></td>
     </tr>
     <tr>
         <td>jdbc.*</td>
         <td>No</td>
-        <td><p>Any property whose name begins with &quot;jdbc.&quot; will be added to the JDBC 
-        connection properties, after removing this prefix. This allows you to specify connection 
+        <td><p>Any property whose name begins with &quot;jdbc.&quot; will be added to the JDBC
+        connection properties, after removing this prefix. This allows you to specify connection
         properties without a URL.</p>
-        
+
         <p>For example, given the properties</p>
 
         <blockquote>
             <p><code>jdbc.Timeout=50; jdbc.CacheSize=1m</code></p>
 
         </blockquote>
-        <p>Mondrian will create a JDBC connection using the properties 
+        <p>Mondrian will create a JDBC connection using the properties
         {Timeout=&quot;50&quot;, CacheSize=&quot;1m&quot;}.</td>
     </tr>
     <tr>
@@ -1028,38 +1028,38 @@ OLE DB connect string syntax specification</a>.</p>
             is set to <code>true</code> and schema content has changed (previous
             checksum doesn't equal with current), schema would be reloaded.
             Default is <code>false</code>.</p>
-            
+
             <p>Could be
             used in combination with <code>DynamicSchemaProcessor</code> property.</p></td>
     </tr>
     <tr>
         <td>DynamicSchemaProcessor</td>
         <td>No</td>
-        <td><p>The name of a class which is called at runtime in order to modify 
+        <td><p>The name of a class which is called at runtime in order to modify
         the schema content. The class must implement the
-        <a href="api/mondrian/rolap/DynamicSchemaProcessor.html">
-        mondrian.rolap.DynamicSchemaProcessor</a> interface. For example,</p>
-        
+        <a href="api/mondrian/spi/DynamicSchemaProcessor.html">
+            mondrian.spi.DynamicSchemaProcessor</a> interface. For example,</p>
+
         <blockquote>
-            <code>DynamicSchemaProcessor = 
+            <code>DynamicSchemaProcessor =
             mondrian.i18n.LocalizingDynamicSchemaProcessor</code>
         </blockquote>
-        
+
         <p>uses the builtin schema processor class
         <a href="api/mondrian/i18n/LocalizingDynamicSchemaProcessor.html">
-        mondrian.i18n.LocalizingDynamicSchemaProcessor</a> to replace variables 
-        in the schema file, according to resource files and the current locale 
+        mondrian.i18n.LocalizingDynamicSchemaProcessor</a> to replace variables
+        in the schema file, according to resource files and the current locale
         (see the <code>Locale</code> property).</p></td>
     </tr>
     <tr>
         <td>Locale</td>
         <td>No</td>
-        <td><p>The requested Locale for the current session. The locale determines 
-        the formatting of numbers and date/time values, and Mondrian's error 
+        <td><p>The requested Locale for the current session. The locale determines
+        the formatting of numbers and date/time values, and Mondrian's error
         messages.</p>
-        
-        <p>Example values are &quot;en&quot; (English), &quot;en_US&quot; 
-        (United States English), &quot;hu&quot; (Hungarian). If Locale is not specified, then the name of system's default will be used, as per 
+
+        <p>Example values are &quot;en&quot; (English), &quot;en_US&quot;
+        (United States English), &quot;hu&quot; (Hungarian). If Locale is not specified, then the name of system's default will be used, as per
         <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Locale.html#getDefault()">
         java.util.Locale#getDefault().</td>
     </tr>
@@ -1073,8 +1073,8 @@ RolapConnectionProperties</a> class.</p>
 <h3>Schema cache<a name="Schema_cache"></a></h3>
 
 <font SIZE="2">
-<p>To flush all schema definitions, use 
-the <a href="api/mondrian/olap/MondrianServer.html#flushSchemaCache()">mondrian.olap.MondrianServer.flushSchemaCache()</a> 
+<p>To flush all schema definitions, use
+the <a href="api/mondrian/olap/MondrianServer.html#flushSchemaCache()">mondrian.olap.MondrianServer.flushSchemaCache()</a>
 method:</p>
 
 <blockquote>
@@ -1084,7 +1084,7 @@ method:</p>
     MondrianServer.forConnection(connection).flushSchemaCache();</code></p>
 
 </blockquote>
-<p>The cache is only used when creating new connections; existing connections 
+<p>The cache is only used when creating new connections; existing connections
 retain their schemas.</p>
 
 </font>
@@ -1094,24 +1094,24 @@ retain their schemas.</p>
 <h3>Out Of Memory<a name="Out_of_memory"></a></h3>
 
 <p>Java <code>OutOfMemoryError</code>s have always been an issue with
-applications. When the JVM throws an <code>Error</code> as 
+applications. When the JVM throws an <code>Error</code> as
 oppose to an <code>Exception</code> it is telling the application
 that its world has ended and it has no recourse but to die.
 Prior to Java5 there was not much one could do other
 than buy 64-bit machines with lots of RAM and hope for the best.
-For a multi-user, Mondrian environment with potentially very large 
+For a multi-user, Mondrian environment with potentially very large
 data-sets and clients that
 can generate queries requesting arbitrarily large amounts of that
 data, this can be an issue. This is especially the case when
 Mondrian is being hosted on some corporate web-server; applications
 that kill web-servers are not looked upon favorably by IT.
 <p>
-With Java5 (and Java6, etc.) there is alternative. An application 
+With Java5 (and Java6, etc.) there is alternative. An application
 cay take advantage of
 a new feature in Java5 allowing the application to be notified when
 memory starts running low. This allows the application to take
 preemptive action prior to an <code>OutOfMemoryError</code> being
-generated by the Java runtime. 
+generated by the Java runtime.
 <p>
 Mondrian takes advantage of this new feature. Rather than
 passing an <code>OutOfMemoryError</code> to its client, it
@@ -1124,11 +1124,11 @@ with clients that a limit has been exceeded, in this case, memory
 usage.
 <p>
 By default, for Mondrian running under Java5, this feature is
-enabled and the "safety limit" is set at 90 percent, when 
+enabled and the "safety limit" is set at 90 percent, when
 memory usage gets to with 90 percent of the maximum possible, the
 the processing of the current query is stopped and a
 <code>MemoryLimitExceededException</code> is return to the client.
-See the Memory monitoring properties above on this page 
+See the Memory monitoring properties above on this page
 for additional information.
 <p>
 Lastly, the gorilla in the closet. Java5 in its wisdom only allows
@@ -1136,7 +1136,7 @@ for one memory threshold notification level to be registered with the JVM.
 What this means is if within the same JVM, some code registers
 one level, say, at 80% (here I use percentages for ease of presentation
 rather than number of
-bytes which is what the Java5 API actually supports) 
+bytes which is what the Java5 API actually supports)
 and some other code later on registers a level of
 90%, then it is the 90% that the JVM knows about - it knows nothing
 of the previously registered 80%. What this means is that the code

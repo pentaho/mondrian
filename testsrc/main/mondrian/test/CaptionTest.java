@@ -12,7 +12,7 @@ package mondrian.test;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import mondrian.olap.*;
-import mondrian.rolap.DynamicSchemaProcessor;
+import mondrian.spi.DynamicSchemaProcessor;
 
 import java.net.URL;
 import java.util.List;
@@ -633,7 +633,9 @@ public class CaptionTest extends TestCase {
             "</Schema>");
 
         public String processSchema(
-                URL schemaUrl, Util.PropertyList properties) throws Exception {
+            String schemaUrl,
+            Util.PropertyList properties) throws Exception
+        {
             return foodmart;
         }
     }

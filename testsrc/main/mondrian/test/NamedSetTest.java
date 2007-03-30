@@ -12,6 +12,9 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.spi.impl.FilterDynamicSchemaProcessor;
+
+import java.io.InputStream;
 
 /**
  * Unit-test for named sets, in all their various forms: <code>WITH SET</code>,
@@ -880,9 +883,13 @@ public class NamedSetTest extends FoodMartTestCase {
      * in a schema.
      */
     public static class NamedSetsInCubeProcessor
-            extends DecoratingSchemaProcessor {
-
-        protected String filterSchema(String s) {
+        extends FilterDynamicSchemaProcessor {
+        public String filter(
+            String schemaUrl,
+            Util.PropertyList connectInfo,
+            InputStream stream) throws Exception
+        {
+            String s = super.filter(schemaUrl, connectInfo, stream);
             int i = s.indexOf("</Cube>");
             return
                 s.substring(0, i) + "\n" +
@@ -899,9 +906,13 @@ public class NamedSetTest extends FoodMartTestCase {
      * in a schema.
      */
     public static class NamedSetsInCubeAndSchemaProcessor
-            extends DecoratingSchemaProcessor {
-
-        protected String filterSchema(String s) {
+        extends FilterDynamicSchemaProcessor {
+        protected String filter(
+            String schemaUrl,
+            Util.PropertyList connectInfo,
+            InputStream stream) throws Exception
+        {
+            String s = super.filter(schemaUrl, connectInfo, stream);
             int i = s.indexOf("</Cube>");
             s =
                 s.substring(0, i) + "\n" +
@@ -932,9 +943,13 @@ public class NamedSetTest extends FoodMartTestCase {
      * error.
      */
     public static class MixedNamedSetSchemaProcessor
-            extends DecoratingSchemaProcessor {
-
-        protected String filterSchema(String s) {
+        extends FilterDynamicSchemaProcessor {
+        protected String filter(
+            String schemaUrl,
+            Util.PropertyList connectInfo,
+            InputStream stream) throws Exception
+        {
+            String s = super.filter(schemaUrl, connectInfo, stream);
             // Declare mutually dependent named sets and calculated members
             // at the end of a cube:
             //   m2 references s1

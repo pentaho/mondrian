@@ -748,9 +748,8 @@ public class MondrianProperties extends TriggerableProperties {
     /**
      * Name of locale property file.
      *
-     * <p>Used for the {@link mondrian.rolap.DynamicSchemaProcessor
-     * LocalizingDynamicSchemaProcessor}; see
-     * <a href="{@docRoot}/../schema.html#I18n">Internationalization</a>
+     * <p>Used for the {@link mondrian.i18n.LocalizingDynamicSchemaProcessor}; 
+     * see <a href="{@docRoot}/../schema.html#I18n">Internationalization</a>
      * for more details.</td>
      *
      * <p>Default value is null.

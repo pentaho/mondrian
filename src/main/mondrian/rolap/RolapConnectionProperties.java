@@ -109,7 +109,7 @@ public enum RolapConnectionProperties {
 
     /**
      * The name of a class implementing the
-     * {@link mondrian.rolap.DynamicSchemaProcessor} interface.
+     * {@link mondrian.spi.DynamicSchemaProcessor} interface.
      * A dynamic schema processor is called at runtime in order to modify the
      * schema content.
      */

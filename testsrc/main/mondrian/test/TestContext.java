@@ -23,6 +23,7 @@ import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
 import mondrian.calc.Calc;
 import mondrian.calc.CalcWriter;
+import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 
 import javax.sql.DataSource;
 import java.io.*;
@@ -1036,8 +1037,8 @@ public class TestContext {
     }
 
     public static boolean contains(String[] a, String s) {
-        for (int i = 0; i < a.length; i++) {
-            if (a[i].equals(s)) {
+        for (String anA : a) {
+            if (anA.equals(s)) {
                 return true;
             }
         }
@@ -1049,13 +1050,16 @@ public class TestContext {
     }
 
     public static class SnoopingSchemaProcessor
-        extends DecoratingSchemaProcessor
-    {
+        extends FilterDynamicSchemaProcessor {
         public static String catalogContent;
 
-        protected String filterSchema(String s) {
-            catalogContent = s;
-            return s;
+        protected String filter(
+            String schemaUrl,
+            Util.PropertyList connectInfo,
+            InputStream stream) throws Exception
+        {
+            catalogContent = super.filter(schemaUrl, connectInfo, stream);
+            return catalogContent;
         }
     }
 }

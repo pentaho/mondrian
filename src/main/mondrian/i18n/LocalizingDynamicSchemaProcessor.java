@@ -11,7 +11,8 @@
 package mondrian.i18n;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
-import mondrian.rolap.DynamicSchemaProcessor;
+import mondrian.spi.DynamicSchemaProcessor;
+import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -29,7 +30,9 @@ import java.util.regex.Pattern;
  * @version $Id$
  */
 public class LocalizingDynamicSchemaProcessor
-        implements DynamicSchemaProcessor {
+    extends FilterDynamicSchemaProcessor
+    implements DynamicSchemaProcessor
+{
     private static final Logger LOGGER =
             Logger.getLogger(LocalizingDynamicSchemaProcessor.class);
 
@@ -133,23 +136,16 @@ public class LocalizingDynamicSchemaProcessor
         }
     }
 
-    public String processSchema(
-            URL schemaUrl, Util.PropertyList connectInfo) throws Exception {
-
+    public String filter(
+        String schemaUrl,
+        Util.PropertyList connectInfo,
+        InputStream stream) throws Exception
+    {
         setLocale(connectInfo.get("Locale"));
 
         loadProperties();
 
-        StringBuilder buf = new StringBuilder();
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(
-                        schemaUrl.openStream()));
-        String inputLine;
-        while ((inputLine = in.readLine()) != null) {
-            buf.append(inputLine);
-        }
-        in.close();
-        String schema = buf.toString();
+        String schema = super.filter(schemaUrl, connectInfo, stream);
         if (i8n != null) {
             schema = doRegExReplacements(schema);
         }
