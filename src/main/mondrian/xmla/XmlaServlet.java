@@ -526,9 +526,7 @@ public abstract class XmlaServlet extends HttpServlet
 
         try {
             String dataSourcesConfigString =
-                Util.readURL(
-                    dataSourcesConfigUrl,
-                    Util.toMap(System.getProperties()));
+                    readDataSourcesContent(dataSourcesConfigUrl);
             return parseDataSources(dataSourcesConfigString);
 
         } catch (Exception e) {
@@ -536,6 +534,14 @@ public abstract class XmlaServlet extends HttpServlet
                                 dataSourcesConfigUrl.toExternalForm() + "'");
         }
     }
+
+    protected String readDataSourcesContent(URL dataSourcesConfigUrl)
+            throws IOException {
+        return Util.readURL(
+                dataSourcesConfigUrl,
+                Util.toMap(System.getProperties()));
+    }
+
     protected DataSourcesConfig.DataSources parseDataSources(
                 String dataSourcesConfigString) {
 

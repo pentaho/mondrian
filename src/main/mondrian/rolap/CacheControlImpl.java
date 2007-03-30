@@ -168,6 +168,20 @@ public class CacheControlImpl implements CacheControl {
             dataSource);
     }
 
+    /**
+     * Flushes the given RolapSchema instance from the pool
+     *
+     * @param schema RolapSchema
+     */
+    public void flushSchema(Schema schema) {
+        if (RolapSchema.class.isInstance(schema)) {
+            RolapSchema.Pool.instance().remove((RolapSchema)schema);
+        } else {
+            throw new UnsupportedOperationException(schema.getClass().getName()+
+                    " cannot be flushed");
+        }
+    }
+
     protected void flushNonUnion(CellRegion region) {
         throw new UnsupportedOperationException();
     }

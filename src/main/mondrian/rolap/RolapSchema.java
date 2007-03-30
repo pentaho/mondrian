@@ -910,6 +910,18 @@ public class RolapSchema implements Schema {
             remove(key);
         }
 
+        synchronized void remove(RolapSchema schema) {
+            if (schema != null) {
+                if (LOGGER.isDebugEnabled()) {
+                    String msg = "Pool.remove: schema \"" +
+                        schema.name +
+                        "\" and datasource object";
+                    LOGGER.debug(msg);
+                }
+                remove(schema.key);
+            }
+        }
+
         private void remove(String key) {
             SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);
             if (ref != null) {

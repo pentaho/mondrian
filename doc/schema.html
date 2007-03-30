@@ -73,6 +73,7 @@
 			<li><a href="#Property_formatter">Property formatter</a></li>
 			<li><a href="#Schema_processor">Schema processor</a></li>
 			<li><a href="#DataSource_change_listener">Data source change listener</a></li>
+            <li><a href="#Dynamic_datasource_xmla_servlet">Dynamic datasource xmla servlet</a></li>
 		</ol>
 	</li>
   	<li><a href="#I18n">Internationalization</a></li>
@@ -1581,6 +1582,7 @@ readers</a> and <a href="#Cell_reader">cell readers</a>,
 and in future we may support pluggable
 <a href="api/mondrian/rolap/sql/SqlQuery.Dialect.html">
 SQL dialects</a>.</p>
+<p>Other extensions include <a href="#Dynamic_datasource_xmla_servlet">Dynamic datasource xmla servlet</a></p>
 <!--
 ###################################
 ##  6.1 User-defined function #####
@@ -2054,6 +2056,40 @@ reloaded from the data source.</p>
 
 &nbsp;}<br>
 </blockquote>
+<!--
+#############################################
+##  6.9 Dynamic datasource xmla servlet #####
+############################################# -->
+<h1>6.9 Dynamic datasource xmla servlet<a name="Dynamic_datasource_xmla_servlet">&nbsp;</a></h1>
+
+<p>The DynamicDatasourceXmlaServlet Extends DefaultXmlaServlet to add dynamic
+datasource loading capability. For every client request that it receives, it checks
+for updates to datasources.xml content. It selectively clears cache for catalogs
+that have changed or no longer exist in the datasources.xml. It considers a
+catalog as changed when either of its properties (DataSourceInfo, definition
+properties on <a href="api/mondrian/xmla/DataSourcesConfig.Catalog.html">
+DataSourcesConfig.Catalog</a>) are different. It identifies catalog by name.</p>
+
+<p>This servlet complements the dynamic catalog loading capability based on
+<a href="configuration.html#Connect_string_properties">UseContentChecksum</a>.
+It does not check the catalog content for updates. There is no overlap in the
+functionality. Both together will give full dynamic datasource and
+catalog configuration capability</p>
+
+<p>Following change needs to be done in web.xml in the MondrianXmlaServlet configuration entry:
+<blockquote>
+  <code>
+    &lt;servlet&gt;<br>
+    &lt;servlet-name&gt;MondrianXmlaServlet&lt;/servlet-name&gt;<br>
+    &lt;servlet-class&gt;mondrian.xmla.impl.<b>DynamicDatasourceXmlaServlet</b>&lt;/servlet-class&gt;<br>
+	.<br>
+	.<br>
+  &lt;/servlet&gt;<br>
+  </code>
+ </blockquote></p>
+
+<p>This implementation has a limitation. It requires catalog name to be unique
+across the datasources and may not work correctly otherwise</p>
 
 <!--
 #################################

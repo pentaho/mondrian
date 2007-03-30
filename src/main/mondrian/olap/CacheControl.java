@@ -171,6 +171,13 @@ public interface CacheControl {
         DataSource dataSource);
 
     /**
+     * Flushes the given Schema instance from the pool
+     *
+     * @param schema Schema
+     */
+    void flushSchema(Schema schema);
+
+    /**
      * Region of cells.
      */
     public interface CellRegion {
