@@ -5378,7 +5378,9 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testFormatInheritance() {
         assertQueryReturns(
-                            "with member measures.foo as 'measures.bar' member measures.bar as 'measures.profit' select {measures.foo} on 0 from sales",
+                            "with member measures.foo as 'measures.bar' " +
+                                    "member measures.bar as " +
+                                    "'measures.profit' select {measures.foo} on 0 from sales",
                             fold("Axis #0:\n" +
                                  "{}\n" +
                                  "Axis #1:\n" +
@@ -5389,12 +5391,87 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testFormatInheritanceWithIIF() {
         assertQueryReturns(
-                            "with member measures.foo as 'measures.bar' member measures.bar as 'iif(not isempty(measures.profit),measures.profit,null)' select from sales where measures.foo",
+                            "with member measures.foo as 'measures.bar' " +
+                                    "member measures.bar as " +
+                                    "'iif(not isempty(measures.profit),measures.profit,null)' " +
+                                    "select from sales where measures.foo",
                             fold(
                                 "Axis #0:\n" +
                                 "{[Measures].[foo]}\n" +
                                 "$339,610.90")
                           );
+    }
+
+    /**
+     * For a calulated member picks up the format of first member that has a format.
+     * in this particular case foo will use profit's format,
+     * i.e neither [unit sales] nor [customer count] format is used.
+     */
+    public void testFormatInheritanceWorksWithFirstFormatItFinds() {
+        assertQueryReturns(
+                "with member measures.foo as 'measures.bar' " +
+                        "member measures.bar as " +
+                        "'iif(measures.profit>3000,measures.[unit sales],measures.[Customer Count])' " +
+                        "select {[Store].[All Stores].[USA].[WA].children} on 0 " +
+                        "from sales where measures.foo"
+                , fold(
+                "Axis #0:\n" +
+                        "{[Measures].[foo]}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bellingham]}\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Bremerton]}\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Seattle]}\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Spokane]}\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Tacoma]}\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Walla Walla]}\n" +
+                        "{[Store].[All Stores].[USA].[WA].[Yakima]}\n" +
+                        "Row #0: $190.00\n" +
+                        "Row #0: $24,576.00\n" +
+                        "Row #0: $25,011.00\n" +
+                        "Row #0: $23,591.00\n" +
+                        "Row #0: $35,257.00\n" +
+                        "Row #0: $96.00\n" +
+                        "Row #0: $11,491.00\n"
+        )
+        );
+    }
+
+    public void testThatFormatFromSeconfMeasureIsPickedUpWhenTheFirstDoesNotHaveOne() {
+        assertQueryReturns("with member measures.foo as 'measures.bar+measures.blah'" +
+                " member measures.bar as '10'" +
+                " member measures.blah as '20',format_string='$##.###.00' " +
+                "select from sales where measures.foo"
+                , fold(
+                        "Axis #0:\n" +
+                        "{[Measures].[foo]}\n" +
+                        "$30.00"
+                )
+        );
+    }
+
+
+    public void testFormatInheritanceWithComplexExpressionToAssertThatTheFormatOfTheFisrtMemberThatHasAValidFormatIsUsed() {
+        assertQueryReturns(
+                "with member measures.foo as '13+31*measures.[Unit Sales]/" +
+                        "iif(measures.profit>0,measures.profit,measures.[Customer Count])'" +
+                        " select {[Store].[All Stores].[USA].[CA].children} on 0 " +
+                        "from sales where measures.foo"
+                , fold(
+                "Axis #0:\n" +
+                        "{[Measures].[foo]}\n" +
+                        "Axis #1:\n" +
+                        "{[Store].[All Stores].[USA].[CA].[Alameda]}\n" +
+                        "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}\n" +
+                        "{[Store].[All Stores].[USA].[CA].[Los Angeles]}\n" +
+                        "{[Store].[All Stores].[USA].[CA].[San Diego]}\n" +
+                        "{[Store].[All Stores].[USA].[CA].[San Francisco]}\n" +
+                        "Row #0: 13\n" +
+                        "Row #0: 37\n" +
+                        "Row #0: 37\n" +
+                        "Row #0: 37\n" +
+                        "Row #0: 38\n"
+        )
+        );
     }
 
     public void testQueryIterationLimit()

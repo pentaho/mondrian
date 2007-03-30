@@ -441,10 +441,16 @@ public class Formula extends QueryPart {
         }
     }
 
-    //A visitor for burrowing format information given a formula
+    /**
+     *A visitor for burrowing format information given a member.
+     */
     private static class FormatFinder extends MdxVisitorImpl {
         private final Validator validator;
 
+        /**
+         *
+         * @param validator to resolve unresolved expressions
+         */
         public FormatFinder(Validator validator) {
             this.validator = validator;
         }
@@ -452,9 +458,11 @@ public class Formula extends QueryPart {
         public Object visit(MemberExpr memberExpr) {
             Member member = memberExpr.getMember();
             returnFormula(member);
-            if (member.isCalculated() && member instanceof RolapCalculatedMember && !checkRecursion(memberExpr)){
-                RolapCalculatedMember rcm = (RolapCalculatedMember) member;
-                Formula formula = rcm.getFormula();
+            if (member.isCalculated()
+                    && member instanceof RolapCalculatedMember
+                    && !hasCyclicReference(memberExpr)){
+
+                Formula formula = ((RolapCalculatedMember) member).getFormula();
                 formula.accept(validator);
                 returnFormula(member);
             }
@@ -462,12 +470,18 @@ public class Formula extends QueryPart {
             return super.visit(memberExpr);
         }
 
-        private boolean checkRecursion(Exp expr) {
+        /**
+         *
+         * @param expr
+         * @return true if there is cyclic reference in expression.
+         * This check is required to avoid infinite recursion
+         */
+        private boolean hasCyclicReference(Exp expr) {
             List<MemberExpr> expList = new ArrayList<MemberExpr>();
-            return checkRecursion(expr,expList);
+            return hasCyclicReference(expr,expList);
         }
 
-        private boolean checkRecursion(Exp expr, List<MemberExpr> expList) {
+        private boolean hasCyclicReference(Exp expr, List<MemberExpr> expList) {
             if (expr instanceof MemberExpr) {
                 MemberExpr memberExpr = (MemberExpr) expr;
                 if(expList.contains(expr)){
@@ -477,14 +491,17 @@ public class Formula extends QueryPart {
                 Member member = memberExpr.getMember();
                 if (member instanceof RolapCalculatedMember) {
                     RolapCalculatedMember calculatedMember = (RolapCalculatedMember) member;
-                    return checkRecursion(calculatedMember.getExpression().accept(validator),expList);
+                    Exp exp1 = calculatedMember.getExpression().accept(validator);
+                    return hasCyclicReference(exp1,expList);
                 }
             }
             if (expr instanceof FunCall) {
                 FunCall funCall = (FunCall) expr;
                 Exp[] exps = funCall.getArgs();
                 for (int i = 0; i < exps.length; i++) {
-                    if(checkRecursion(exps[i], cloneForEachBranch(expList))) return true;
+                    if(hasCyclicReference(exps[i], cloneForEachBranch(expList))) {
+                        return true;
+                    }
                 }
             }
             return false;
