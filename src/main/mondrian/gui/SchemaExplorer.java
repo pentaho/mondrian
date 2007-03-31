@@ -46,6 +46,7 @@ import javax.swing.tree.TreeCellEditor;
 import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.tree.DefaultTreeSelectionModel;
 
+import org.apache.log4j.Logger;
 import org.eigenbase.xom.XOMUtil;
 import org.eigenbase.xom.Parser;
 import org.eigenbase.xom.NodeDef;
@@ -57,6 +58,9 @@ import org.eigenbase.xom.XOMException;
  * @version $Id$
  */
 public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionListener, CellEditorListener {
+
+    private static final Logger LOGGER = Logger.getLogger(SchemaExplorer.class);
+
     private MondrianGuiDef.Schema schema;
     private SchemaTreeModel model;
     private SchemaTreeCellRenderer renderer;
@@ -87,7 +91,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             //jEditorPaneXML.setContentType("text/xml");
             //jEditorPaneXML = new JEditorPane("text/xml", "<h>jjo <nkl>sf</nkl>sdf </h>");
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.error(ex);
         }
 
         jEditorPaneXML.setLayout(new java.awt.BorderLayout());
@@ -142,7 +146,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     schema.userDefinedFunctions = new MondrianGuiDef.UserDefinedFunction[0];
                     schema.virtualCubes = new MondrianGuiDef.VirtualCube[0];
 
-                    System.out.println("Exception  : Schema file parsing failed."+ex.getMessage());
+                    LOGGER.error("Exception  : Schema file parsing failed."+ex.getMessage(), ex);
                     errMsg = "Parsing Error: Could not open file\n"+schemaFile+".\n"+ex.getMessage();
                 }
             }
@@ -207,7 +211,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
              */
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.error(ex);
         }
     }
 
@@ -271,14 +275,14 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         jPanel2 = new JPanel();
         jScrollPane1 = new JScrollPane();
 
-    	tree = new JTree() {
-    	    public String getToolTipText(MouseEvent evt) {
+        tree = new JTree() {
+            public String getToolTipText(MouseEvent evt) {
                 String toggleMsg = "Double click to display Join/Table selection";
-    	    	if (getRowForLocation(evt.getX(), evt.getY()) == -1) return null;
-    	    	TreePath curPath = getPathForLocation(evt.getX(), evt.getY());
+                if (getRowForLocation(evt.getX(), evt.getY()) == -1) return null;
+                TreePath curPath = getPathForLocation(evt.getX(), evt.getY());
                 Object o = curPath.getLastPathComponent();
                 if (o instanceof MondrianGuiDef.Join) {
-    	    	    return toggleMsg;
+                    return toggleMsg;
                 }
                 TreePath parentPath = curPath.getParentPath();
                 if (parentPath != null) {
@@ -290,8 +294,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     }
                 }
                 return null;
-    	    }
-    	};
+            }
+        };
         tree.getSelectionModel().setSelectionMode(DefaultTreeSelectionModel.SINGLE_TREE_SELECTION);
 
         ToolTipManager.sharedInstance().registerComponent(tree);
@@ -1794,7 +1798,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
                     }
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
+                LOGGER.error(ex);
             }
         } else {
             newName = preName + 0;
@@ -3390,11 +3394,11 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
     public String getJdbcConnectionUrl() {
         return this.jdbcMetaData.jdbcConnectionUrl;
     }
-    
+
     public String getJdbcUsername() {
         return this.jdbcMetaData.jdbcUsername;
     }
-    
+
     public String getJdbcPassword() {
         return this.jdbcMetaData.jdbcPassword;
     }

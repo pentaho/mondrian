@@ -7,6 +7,7 @@ set CP=%CP%;../lib/eigenbase-properties.jar;../lib/eigenbase-resgen.jar;../lib/e
 set CP=%CP%;../lib/javacup.jar;../lib/log4j-1.2.9.jar;../lib/mondrian.jar
 set CP=%CP%;../lib/jlfgr-1_0.jar;../lib/jmi.jar;lib/mof.jar;../lib/commons-math-1.0.jar
 set CP=%CP%;../lib/commons-vfs.jar;../lib/commons-logging.jar
+set CP=%CP%;.
 
 rem Workbench GUI code and resources
 
@@ -18,6 +19,6 @@ set CP=%CP%;../testlib/mysql-connector-java-3.1.11-bin.jar
 set CP=%CP%;../testlib/postgresql-driver-jdbc3-74-214.jar
 
 rem set the log4j.properties system property "-Dlog4j.properties=<.properties or .xml file>"
-rem in the java command below to adjust workbench logging
+rem in the java command below to adjust workbench logging -Dlog4j.properties=log4j.xml
 
 java -Xms100m -Xmx500m -cp "%CP%" mondrian.gui.Workbench

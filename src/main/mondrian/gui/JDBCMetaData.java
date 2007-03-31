@@ -16,11 +16,16 @@ package mondrian.gui;
 import java.util.*;
 import java.sql.*;
 
+import org.apache.log4j.Logger;
+
 /**
  *
  * @version $Id$
  */
 public class JDBCMetaData {
+
+    private static final Logger LOGGER = Logger.getLogger(JDBCMetaData.class);
+
     String jdbcDriverClassName = null; //"org.postgresql.Driver"
     String jdbcConnectionUrl = null; // "jdbc:postgresql://localhost:5432/hello?user=postgres&password=post"
     String jdbcUsername = null;
@@ -66,7 +71,7 @@ public class JDBCMetaData {
 
     /* Creates a database connection and initializes the meta data details */
     public String initConnection(){
-    	System.out.println("JDBCMetaData: initConnection");
+        LOGGER.debug("JDBCMetaData: initConnection");
 
         try {
             if (jdbcDriverClassName==null || jdbcConnectionUrl==null) {
@@ -75,22 +80,22 @@ public class JDBCMetaData {
 
             Class.forName(jdbcDriverClassName);
 
-			if (jdbcUsername != null && jdbcUsername.length() > 0 &&
-				jdbcPassword != null && jdbcPassword.length() > 0) {
-            	conn = DriverManager.getConnection(jdbcConnectionUrl, jdbcUsername, jdbcPassword);
-			} else {
+            if (jdbcUsername != null && jdbcUsername.length() > 0 &&
+                jdbcPassword != null && jdbcPassword.length() > 0) {
+                conn = DriverManager.getConnection(jdbcConnectionUrl, jdbcUsername, jdbcPassword);
+            } else {
 
-            	conn = DriverManager.getConnection(jdbcConnectionUrl);
-			}
+                conn = DriverManager.getConnection(jdbcConnectionUrl);
+            }
 
-            System.out.println("JDBC connection OPEN");
+            LOGGER.debug("JDBC connection OPEN");
             md = conn.getMetaData();
 
             db.productName      = md.getDatabaseProductName();
             db.productVersion   = md.getDatabaseProductVersion();
             db.catalogName      = conn.getCatalog();
 
-            System.out.println("Catalog name = "+db.catalogName);
+            LOGGER.debug("Catalog name = "+db.catalogName);
             /*
             ResultSet rsd = md.getSchemas();
             while (rsd.next())
@@ -101,18 +106,18 @@ public class JDBCMetaData {
             while (rsd.next())
                 System.out.println("   Caltalog ="+rsd.getString("TABLE_CAT"));
              */
-            System.out.println("Database Product Name: " + db.productName);
-            System.out.println("Database Product Version: " + db.productVersion);
+            LOGGER.debug("Database Product Name: " + db.productName);
+            LOGGER.debug("Database Product Version: " + db.productVersion);
 
             /*
             Class.forName("org.postgresql.Driver");
             conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/demo","admin","admin");
              */
-        	System.out.println("JDBCMetaData: initConnection - no error");
+            LOGGER.debug("JDBCMetaData: initConnection - no error");
             return null;
         } catch (Exception e) {
             errMsg = e.getMessage();
-            System.out.println("Database connection exception : "+errMsg);
+            LOGGER.error("Database connection exception : "+errMsg, e);
             return errMsg;
             //e.printStackTrace();
         }
@@ -121,13 +126,15 @@ public class JDBCMetaData {
     public void closeConnection() {
         try {
             conn.close();
-            System.out.println("JDBC connection CLOSE");
-        }catch (Exception e) {e.printStackTrace();}
+            LOGGER.debug("JDBC connection CLOSE");
+        } catch (Exception e) {
+            LOGGER.error(e);
+        }
     }
 
     /* set all schemas in the currently connected database */
     private void setAllSchemas(){
-    	System.out.println("JDBCMetaData: setAllSchemas");
+        LOGGER.debug("JDBCMetaData: setAllSchemas");
 
         ResultSet rs = null;
         boolean gotSchema = false;
@@ -142,18 +149,18 @@ public class JDBCMetaData {
             while(rs.next()) {
                 DbSchema dbs = new DbSchema();
                 dbs.name = rs.getString("TABLE_SCHEM");
-            	System.out.println("JDBCMetaData: setAllTables - " + dbs.name);
+                LOGGER.debug("JDBCMetaData: setAllTables - " + dbs.name);
                 setAllTables(dbs);
                 db.addDbSchema(dbs);
                 gotSchema = true;
             }
             rs.close();
         } catch (Exception e) {
-            System.out.println("Exception : Database does not support schemas."+e.getMessage());
+            LOGGER.debug("Exception : Database does not support schemas."+e.getMessage());
         }
 
         if (!gotSchema) {
-            System.out.println("JDBCMetaData: setAllSchemas - tables with no schema name");
+            LOGGER.debug("JDBCMetaData: setAllSchemas - tables with no schema name");
             DbSchema dbs = new DbSchema();
             dbs.name = null;    //tables with no schema name
             setAllTables(dbs);
@@ -163,7 +170,7 @@ public class JDBCMetaData {
 
     /* set all tables in the currently connected database */
     private void setAllTables(DbSchema dbs){
-    	System.out.println("JDBCMetaData: Loading schema: '" + dbs.name + "'");
+        LOGGER.debug("JDBCMetaData: Loading schema: '" + dbs.name + "'");
         ResultSet rs = null;
         try {
             rs = md.getTables(null, dbs.name, null, new String[]{"TABLE"});
@@ -194,7 +201,9 @@ public class JDBCMetaData {
                 db.addDbTable(dbt);
             }
             rs.close();
-        } catch (Exception e) {e.printStackTrace();}
+        } catch (Exception e) {
+            LOGGER.error(e);
+        }
     }
 
     /* get the Primary key name for a given table name
@@ -215,7 +224,7 @@ public class JDBCMetaData {
             }
             rs.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(e);
         }
     }
 
@@ -229,7 +238,7 @@ public class JDBCMetaData {
             }
             rs.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(e);
         }
     }
 
@@ -366,7 +375,7 @@ public class JDBCMetaData {
         String s = "somita->namita";
         String [] p = s.split("->");
         if (p.length >=2)
-            System.out.println("p0="+p[0]+", p1="+p[1]);
+            LOGGER.debug("p0="+p[0]+", p1="+p[1]);
     }
 
 /* ===================================================================================================
@@ -375,7 +384,7 @@ public class JDBCMetaData {
     class Database {
         String catalogName = ""; // database name.
         String productName = "Unknown";
-        String productVersion =	"";
+        String productVersion =    "";
 
         // list of all schemas in database
         List schemas = new ArrayList(); //ordered collection, allows duplicates and null

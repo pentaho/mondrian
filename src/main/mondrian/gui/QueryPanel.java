@@ -41,12 +41,17 @@ import mondrian.olap.DriverManager;
 import mondrian.olap.Query;
 import mondrian.olap.Result;
 
+import org.apache.log4j.Logger;
+
 /**
  *
  * @author  sean
  * @version $Id$
  */
 public class QueryPanel extends javax.swing.JPanel {
+
+    private static final Logger LOGGER = Logger.getLogger(QueryPanel.class);
+
     Connection connection;
     JMenuItem queryMenuItem;
     int windowMenuIndex;
@@ -209,11 +214,11 @@ public class QueryPanel extends javax.swing.JPanel {
 
             resultTextPane.setText(sw.getBuffer().toString());
         } catch (Exception ex) {
-        	ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
 
-        	PrintStream p = new PrintStream(os);
+            PrintStream p = new PrintStream(os);
 
-        	ex.printStackTrace(p);
+            ex.printStackTrace(p);
 
             resultTextPane.setText(os.toString());
         }
@@ -253,11 +258,11 @@ public class QueryPanel extends javax.swing.JPanel {
 
             String connectString = "Provider=mondrian;" + "Jdbc=" + se.getJdbcConnectionUrl() + ";" + "Catalog=" + se.getSchemaFile().toURL().toString() + ";";
             if (se.getJdbcUsername() != null && se.getJdbcUsername().length() > 0) {
-				connectString = connectString + "JdbcUser=" + se.getJdbcUsername() + ";";
-			}
+                connectString = connectString + "JdbcUser=" + se.getJdbcUsername() + ";";
+            }
             if (se.getJdbcPassword() != null && se.getJdbcPassword().length() > 0) {
-				connectString = connectString + "JdbcPassword=" + se.getJdbcPassword() + ";";
-			}
+                connectString = connectString + "JdbcPassword=" + se.getJdbcPassword() + ";";
+            }
 
             Connection con = DriverManager.getConnection(connectString, null, false);
             if (con != null) {
@@ -277,7 +282,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Mondrian connection could not be done for - "+se.getSchemaFile().getName(), "Error" , JOptionPane.ERROR_MESSAGE);
             }
         } catch (Exception ex) {
-            System.out.println("Exception: "+ex.getMessage());
+            LOGGER.error("Exception: "+ex.getMessage(), ex);
             JOptionPane.showMessageDialog(this, "Mondrian connection could not be done for "+(sfile == null?"selected Schema.":sfile.getName()), "Error" , JOptionPane.ERROR_MESSAGE);
         }
     }

@@ -18,12 +18,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
 /**
  *
  * @author  sean
  * @version $Id$
  */
 public class JDBCTreeModel implements javax.swing.tree.TreeModel {
+
+    private static final Logger LOGGER = Logger.getLogger(JDBCTreeModel.class);
+
     private Vector treeModelListeners = new Vector();
     Connection connection;
     DatabaseMetaData metadata;
@@ -53,7 +58,7 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
             root = cat;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.error(ex);
         }
     }
 

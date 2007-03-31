@@ -11,12 +11,17 @@ package mondrian.gui;
 
 import java.sql.Connection;
 
+import org.apache.log4j.Logger;
+
 /**
  *
  * @author  sean
  * @version $Id$
  */
 public class JDBCExplorer extends javax.swing.JPanel {
+
+    private static final Logger LOGGER = Logger.getLogger(JDBCExplorer.class);
+
     Connection connection;
     JDBCTreeModel model;
 
@@ -40,7 +45,7 @@ public class JDBCExplorer extends javax.swing.JPanel {
             //tree.addTreeSelectionListener(this);
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.error(ex);
         }
     }
 

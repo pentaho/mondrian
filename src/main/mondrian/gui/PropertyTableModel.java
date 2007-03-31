@@ -13,12 +13,17 @@ package mondrian.gui;
 import java.lang.reflect.Field;
 import java.util.*;
 
+import org.apache.log4j.Logger;
+
 /**
  *
  * @author  sean
  * @version $Id$
  */
 public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
+
+    private static final Logger LOGGER = Logger.getLogger(PropertyTableModel.class);
+
     private Object parentTarget; // parent of target
     private String factTable;   // selected fact table
     private String factTableSchema;   // selected fact table schema
@@ -145,7 +150,7 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
                     return obj;
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
+                LOGGER.error(ex);
                 return "#ERROR";
             }
         }
@@ -221,7 +226,7 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.error(ex);
         }
     }
 

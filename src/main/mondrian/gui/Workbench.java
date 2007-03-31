@@ -47,6 +47,7 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.text.DefaultEditorKit;
 
+import org.apache.log4j.Logger;
 import org.eigenbase.xom.XMLOutput;
 
 /**
@@ -63,6 +64,8 @@ public class Workbench extends javax.swing.JFrame {
     private static final String LAST_USED3_URL = "lastUsedUrl3";
     private static final String LAST_USED4 = "lastUsed4";
     private static final String LAST_USED4_URL = "lastUsedUrl4";
+
+    private static final Logger LOGGER = Logger.getLogger(Workbench.class);
 
     private Connection connection;
     private String jdbcDriverClassName;
@@ -115,6 +118,8 @@ public class Workbench extends javax.swing.JFrame {
             //e.printStackTrace();
 
             // TODO deal with exception
+            LOGGER.error(e);
+
         }
     }
 
@@ -134,6 +139,7 @@ public class Workbench extends javax.swing.JFrame {
                 out.close();
             } catch (IOException eIO) {
                 //TODO deal with exception
+                LOGGER.error(eIO);
             }
         }
     }
@@ -570,7 +576,7 @@ public class Workbench extends javax.swing.JFrame {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.error(ex);
             //do nothing
         }
     }
@@ -602,7 +608,7 @@ public class Workbench extends javax.swing.JFrame {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.error(ex);
             //do nothing
         }
     }
@@ -642,7 +648,7 @@ public class Workbench extends javax.swing.JFrame {
                 System.exit(0);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.error(ex);
         }
     }
 
@@ -670,7 +676,7 @@ public class Workbench extends javax.swing.JFrame {
                     schemaFrame.setClosed(false);
                     schemaFrame.show();
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    LOGGER.error(ex);
                 }
             }
             return answer;
@@ -700,7 +706,7 @@ public class Workbench extends javax.swing.JFrame {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.error(ex);
             //do nothing
         }
     }
@@ -724,7 +730,7 @@ public class Workbench extends javax.swing.JFrame {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.error(ex);
             //do nothing
         }
     }
@@ -755,7 +761,7 @@ public class Workbench extends javax.swing.JFrame {
             jf.setVisible(true);
             jf.show();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.error(ex);
         }
 
     }
@@ -786,7 +792,7 @@ public class Workbench extends javax.swing.JFrame {
             jf.show();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Database connection could not be done.\n"+ex.getMessage(), "Database Connection Error" , JOptionPane.ERROR_MESSAGE);
-            //ex.printStackTrace();
+            LOGGER.error(ex);
         }
     }
 
@@ -802,8 +808,8 @@ public class Workbench extends javax.swing.JFrame {
         if (pd.accepted()) {
             jdbcConnectionUrl = pd.getJDBCConnectionUrl();
             jdbcDriverClassName = pd.getJDBCDriverClassName();
-	        jdbcUsername = pd.getJDBCUsername();
-	        jdbcPassword = pd.getJDBCPassword();
+            jdbcUsername = pd.getJDBCUsername();
+            jdbcPassword = pd.getJDBCPassword();
 
             workbenchProperties.setProperty("jdbcDriverClassName", jdbcDriverClassName);
             workbenchProperties.setProperty("jdbcConnectionUrl", jdbcConnectionUrl);
@@ -884,7 +890,7 @@ public class Workbench extends javax.swing.JFrame {
                         jf.setSelected(true);
                     }
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    LOGGER.error(ex);
                 }
             }
         });
@@ -975,7 +981,7 @@ public class Workbench extends javax.swing.JFrame {
                     sMenuItem.setText(mtexttokens[0]+" "+se.getSchemaFile().getName());
                     updateMDXCatalogList(); // schema menu item updated, now update mdx query windows with updated catallog list
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    LOGGER.error(ex);
                 }
             }
         }
@@ -1016,7 +1022,7 @@ public class Workbench extends javax.swing.JFrame {
                 schema.displayXML(out);
                 setLastUsed(schemaFile.getName(), schemaFile.toURI().toURL().toString());
             } catch (Exception ex) {
-                ex.printStackTrace();
+                LOGGER.error(ex);
             }
         }
     }
@@ -1102,7 +1108,7 @@ public class Workbench extends javax.swing.JFrame {
             openSchemaFrame(new File(new URI(workbenchProperties.getProperty(LAST_USED1_URL))), false);
         } catch (Exception e) //catch (URISyntaxException e)
         {
-            e.printStackTrace();
+            LOGGER.error(e);
         }
     }
 
@@ -1115,7 +1121,7 @@ public class Workbench extends javax.swing.JFrame {
             openSchemaFrame(new File(new URI(workbenchProperties.getProperty(LAST_USED2_URL))), false);
             setLastUsed(workbenchProperties.getProperty(LAST_USED2), workbenchProperties.getProperty(LAST_USED2_URL));
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            LOGGER.error(e);
         }
     }
 
@@ -1124,7 +1130,7 @@ public class Workbench extends javax.swing.JFrame {
             openSchemaFrame(new File(new URI(workbenchProperties.getProperty(LAST_USED3_URL))), false);
             setLastUsed(workbenchProperties.getProperty(LAST_USED3), workbenchProperties.getProperty(LAST_USED3_URL));
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            LOGGER.error(e);
         }
     }
 
@@ -1133,7 +1139,7 @@ public class Workbench extends javax.swing.JFrame {
             openSchemaFrame(new File(new URI(workbenchProperties.getProperty(LAST_USED4_URL))), false);
             setLastUsed(workbenchProperties.getProperty(LAST_USED4), workbenchProperties.getProperty(LAST_USED4_URL));
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            LOGGER.error(e);
         }
     }
 
@@ -1163,30 +1169,28 @@ public class Workbench extends javax.swing.JFrame {
                 try {
                     // this connection parses the catalog file which if invalid will throw exception
                     String connectString = "Provider=mondrian;" +
-							"Jdbc=" + jdbcConnectionUrl + ";" +
-								"Catalog=" + file.toURL().toString() + ";";
+                            "Jdbc=" + jdbcConnectionUrl + ";" +
+                                "Catalog=" + file.toURL().toString() + ";";
 
-					if (jdbcUsername != null && jdbcUsername.length() > 0) {
-						connectString = connectString + "JdbcUser=" + jdbcUsername + ";";
-					}
-					if (jdbcPassword != null && jdbcPassword.length() > 0) {
-						connectString = connectString + "JdbcPassword=" + jdbcPassword + ";";
-					}
+                    if (jdbcUsername != null && jdbcUsername.length() > 0) {
+                        connectString = connectString + "JdbcUser=" + jdbcUsername + ";";
+                    }
+                    if (jdbcPassword != null && jdbcPassword.length() > 0) {
+                        connectString = connectString + "JdbcPassword=" + jdbcPassword + ";";
+                    }
 
-					connection = DriverManager.getConnection(connectString, null, false);
-				} catch (Exception ex) {
-					System.out.println("Exception  : Schema file is invalid."+ex.getMessage());
-					ex.printStackTrace(); //====
-				} catch (Error err) {
-					System.out.println("Error : Schema file is invalid."+err.getMessage());
-					err.printStackTrace(); //====
-				}
-			}
+                    connection = DriverManager.getConnection(connectString, null, false);
+                } catch (Exception ex) {
+                    LOGGER.error("Exception  : Schema file is invalid."+ex.getMessage(), ex);
+                } catch (Error err) {
+                    LOGGER.error("Error : Schema file is invalid."+err.getMessage(), err);
+                }
+            }
 
-			final JInternalFrame schemaFrame = new JInternalFrame();
-			schemaFrame.setTitle("Schema - " + file.getName());
-			//===Class.forName(jdbcDriverClassName);
-			jdbcMetaData = new JDBCMetaData(jdbcDriverClassName, jdbcConnectionUrl, jdbcUsername, jdbcPassword);
+            final JInternalFrame schemaFrame = new JInternalFrame();
+            schemaFrame.setTitle("Schema - " + file.getName());
+            //===Class.forName(jdbcDriverClassName);
+            jdbcMetaData = new JDBCMetaData(jdbcDriverClassName, jdbcConnectionUrl, jdbcUsername, jdbcPassword);
 
             schemaFrame.getContentPane().add(new SchemaExplorer(file, jdbcMetaData, newFile, schemaFrame));
 
@@ -1224,7 +1228,7 @@ public class Workbench extends javax.swing.JFrame {
                             schemaFrame.setSelected(true);
                         }
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        LOGGER.error(ex);
                     }
                 }
             });
@@ -1284,7 +1288,7 @@ public class Workbench extends javax.swing.JFrame {
             });
             viewXMLMenuItem.setSelected(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOGGER.error(ex);
         }
 
     }
@@ -1304,8 +1308,7 @@ public class Workbench extends javax.swing.JFrame {
             });
             jfc.setCurrentDirectory(new File(new URI(workbenchProperties.getProperty(LAST_USED1_URL))));
         } catch (Exception ex) {
-            ex.printStackTrace();
-            System.out.println("==Could not set file chooser. last used file does not exist");
+            LOGGER.error("==Could not set file chooser. last used file does not exist", ex);
         }
         MondrianProperties.instance();
         if (jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -1313,7 +1316,7 @@ public class Workbench extends javax.swing.JFrame {
                 //setLastUsed(jfc.getSelectedFile().getName(), jfc.getSelectedFile().toURL().toString());
                 setLastUsed(jfc.getSelectedFile().getName(), jfc.getSelectedFile().toURI().toURL().toString());
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                LOGGER.error(e);
             }
 
             openSchemaFrame(jfc.getSelectedFile(), false);
@@ -1409,22 +1412,22 @@ public class Workbench extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-    	try {
-	        Workbench w = new Workbench();
-	        w.parseArgs(args);
-	        w.setSize(800, 600);
-	        // if user specified a file to open, do so now.
-	        if (w.openFile != null) {
-	            File f= new File(w.openFile);
-	            if (f.canRead()) {
-	                //w.openSchemaFrame(f.getAbsoluteFile());
-	                w.openSchemaFrame(f.getAbsoluteFile(), false); // parameter to indicate this is a new or existing catalog file
-	            }
-	        }
-	        w.show();
-    	} catch (Throwable ex) {
-			ex.printStackTrace();
-    	}
+        try {
+            Workbench w = new Workbench();
+            w.parseArgs(args);
+            w.setSize(800, 600);
+            // if user specified a file to open, do so now.
+            if (w.openFile != null) {
+                File f= new File(w.openFile);
+                if (f.canRead()) {
+                    //w.openSchemaFrame(f.getAbsoluteFile());
+                    w.openSchemaFrame(f.getAbsoluteFile(), false); // parameter to indicate this is a new or existing catalog file
+                }
+            }
+            w.show();
+        } catch (Throwable ex) {
+            LOGGER.error(ex);
+        }
     }
 
 // Variables declaration - do not modify
