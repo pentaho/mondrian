@@ -376,6 +376,15 @@ META-INF/**"/>
         dtdname="mondrian.dtd"/>
     <copy file="${java.dir}/mondrian/olap/mondrian.dtd"
         todir="${lib.dir}"/>
+        
+    <!-- // Begin : somita April 02, 2007 : To resolve equals(==) problem in mondrian.xml that causes tree breaks in Schema Workbench -->
+    <xomgen
+        model="${java.dir}/mondrian/olap/mondrian_SW.xml"
+        destdir="${java.dir}"
+        classname="mondrian.gui.MondrianGuiDef"
+        dtdname="mondrian_SW.dtd"
+        />
+    <!-- // End : sarora -->
 
     <xomgen
         model="${java.dir}/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml"
