@@ -47,8 +47,26 @@ public class DelegatingRole implements Role {
         return role.getAccess(hierarchy);
     }
 
+    public static class HierarchyAccess implements Role.HierarchyAccess {
+        protected final Role.HierarchyAccess hierarchyAccess;
+
+        public HierarchyAccess(Role.HierarchyAccess hierarchyAccess) {
+            this.hierarchyAccess = hierarchyAccess;
+        }
+
+        public Access getAccess(Member member) {
+            return hierarchyAccess.getAccess(member);
+        }
+        public int getTopLevelDepth() {
+            return hierarchyAccess.getTopLevelDepth();
+        }
+        public int getBottomLevelDepth() {
+            return hierarchyAccess.getBottomLevelDepth();
+        }
+    }
+
     public HierarchyAccess getAccessDetails(Hierarchy hierarchy) {
-        return role.getAccessDetails(hierarchy);
+        return new HierarchyAccess(role.getAccessDetails(hierarchy));
     }
 
     public Access getAccess(Level level) {

@@ -28,6 +28,7 @@
   <li><a href="#Agg_default_rules">Default aggregate table recognition rules</a></li>
   <li><a href="#Snowflakes">Snowflakes and the DimensionUsage level attribute</a></li>
   <li><a href="#Memory_monitoring">Memory Monitoring</a></li>
+  <li><a href="#Role_implementation">Implementing  Roles</a></li>
 </ol>
 
 <h2>Logging Levels and Information<a name="Log_Levels">&nbsp;</a></h2>
@@ -1006,6 +1007,103 @@ must create an instance of the <code>MemoryManager</code> interface
 that communicates the Webserver/Appserver mechanism and
 uses a System property to instruct the <code>MemoryManagerFactory</code>
 to create that specialized version.
+
+<h2>Implementing Roles<a name="Role_implementation">&nbsp;</a></h2>
+<p>
+The developer can create their own Roles by
+implementing the <code>Role</code> interface or by taking an
+existing Role instance and wrapping it in an object
+derived from and overriding some of the
+methods of the <code>DelegatingRole</code>
+and <code>DelegatingRole.HierarchyAccess</code>
+classes.
+In both cases, some care must be taken not to stray too
+far from the semantics of the default Mondrian <code>Role</code>
+implementation, the <code>RoleImpl</code> class.
+<p>
+When implementing one's own <code>Role</code> 
+the <code>Role</code> interface has methods that return an
+<code>Access</code> object for   
+<code>Schema</code>,
+<code>Cube</code>,
+<code>Dimension</code>,
+<code>Hierarchy</code>,
+<code>Level</code>,
+<code>Member</code> and
+<code>NamedSet</code> all of which must have implementations.
+One reason one might wish to create one's own <code>Role</code> implementations
+is to avoid defining Roles in the <code>Schema</code> definition. This allows
+the Mondrian container to dynamically generate new Roles while using the
+same <code>Schema</code> definitio nand, therefore, 
+the same in-memory caches associated with that <code>Schema</code> object. 
+Such Roles do not need to be registered with the <code>Schema</code> object;
+they are associated with the <code>Connection</code>.
+Another reason one might wish to implement one's own Roles is that 
+there might be an existing permission system and, rather than
+have duplicate information: in the permission system and the <code>Schema</code>
+definition, one simply creates Roles based upon permission system
+information.
+<p>
+If one wishes simply to alter or extend the semantics of the
+existing <code>Role</code> implementation, the <code>RoleImpl</code> class, then
+using the <code>DelegatingRole</code> class is a reasonably
+utilitarian approach. This requires that one create a <code>Role</code>
+implementation derived from the <code>DelegatingRole</code> class,
+in the Mondrian container call the <code>Schema.lookupRole(String)</code>
+method to get the <code>Role</code> whose semantics are to be modified, create
+an instance of the Role derived from the <code>DelegatingRole</code>
+that wraps the underlying <code>Role</code>, and, finally, set the
+<code>Connection</code>'s <code>Role</code> by calling
+<code>Connection.setRole(Role)</code> with this wrapping <code>Role</code>.
+<p>
+The following code is an example where the underlying <code>Role</code>
+is wrapped in a class that extends the <code>DelegatingRole</code> class.
+Here, the user has no access to the store where "Joe Bob" is the 
+manager.
+<p>
+<blockquote>
+public class RoleExample extends DelegatingRole {<br>
+&nbsp;&nbsp;.....<br>
+&nbsp;&nbsp;public static class HierarchyAccessExample <br>
+&nbsp;&nbsp;&nbsp;&nbsp;extends DelegatingRole.HierarchyAccess {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;.....<br>
+&nbsp;&nbsp;&nbsp;&nbsp;public Access getAccess(Member member) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Access access = hierarchyAccess.getAccess(member); <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return getAccess(member, access);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;.....<br>
+&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;.....<br>
+&nbsp;&nbsp;public Access getAccess(Member member) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Access access = role.getAccess(member);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return getAccess(member, access);<br>
+&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;.....<br>
+&nbsp;&nbsp;// no one see's information about the store where "Joe Bob" is manager.<br>
+&nbsp;&nbsp;protected Access getAccess(Member member, Access access) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;final String storeNamelevel = <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"[Store].[Store Country].[Store State].[Store City].[Store Name]";<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if (member.getLevel().getUniqueName().equals(storeNamelevel)) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Object o = member.getProperty("Store Manager");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return (o != null && o.equals("Joe Bob")) ? Access.NONE : access;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} else {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return access;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;}<br>
+}<br>
+</blockquote>
+<p>
+In this case, special care must be taken if one over rides one of the
+methods that yield a <code>Member</code>'s <code>Access</code>.
+This is because there are two such methods. The first is in the
+<code>Role</code> itself <code>Role.getAccess(Member)</code>
+and the second is <code>Role.HierarchyAccess.getAccess(Member)</code>.
+Internally, Mondrian is certain code paths calls one of the methods
+while in other code paths it calls the other, thus they should be
+overridden in a consistent manner.
+
+
+
 
 <hr noshade size="1"/>
 <p>
