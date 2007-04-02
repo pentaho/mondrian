@@ -20,7 +20,7 @@
 <div class="contentheading">Developer's Guide</div>
 <!-- end page title -->
 
-<p>By Julian Hyde; last updated November, 2006.</p>
+<p>By Julian Hyde; last updated April, 2007.</p>
 
 <hr noshade size="1">
 
@@ -30,7 +30,7 @@ But you can also build Mondrian from its source code. This document describes
 how to do that, how to learn about Mondrian's inner workings, and the guidelines 
 you'll need to follow if you want to contribute to the Mondrian project.</p>
 
-<h2>Getting the source code</h2>
+<h2>Getting the source code<a name="Getting_the_source_code">&nbsp;</a></h2>
 
 <p>First, you need to get a copy of the source code. You can get the source code 
 from SourceForge or from the project's Perforce source server.</p>
@@ -77,11 +77,43 @@ create a client with the same name. Set its root to something like
   <li>Sync to head revision.</li>
 </ol>
 
+<h3>Checking in code<a name="Checking_in_code">&nbsp;</a></h3>
+
 <p>If you are a regular contributor to the Mondrian project, we will give you 
-commiting privileges to the source code server. You will be able to add, edit, 
+privileges to commit to the source code server. As a commiter, you will be able to add, edit, 
 and delete files in the source system, and commit changelists. Usually we ask 
 you to prove your worth with a few tasks before welcoming you to the team; contact Julian Hyde for 
 more information on how to join the team.</p>
+<p>When you check in:</p>
+<ul>
+    <li><b>Write a unit test for your change</b>. (Or unit tests: the number of 
+    unit tests you write should be appropriate for the scale of your change.) 
+    The test should fail before you make the change, and succeed after it. We 
+    recommend a test-driven development process, where you write the test before 
+    you change the code. Unit tests are particularly important if you are fixing 
+    a bug.</li>
+    <li><b>Run the regression suite, and make sure all tests pass</b>. We don't 
+    expect you to run the suite in all configurations (DBMSes, operating 
+    systems, JDK versions, and parameter settings) but if your change affects 
+    something configuration-specific, be smart and test more than one 
+    configuration. For example, SQL generation is DBMS-specific, and file 
+    handling is OS-specific, but MDX function implementations are typically 
+    generic.</li>
+    <li><b>Make sure your change adheres to the <a href="#Coding_guidelines">
+    coding guidelines</a></b>.</li>
+    <li><b>If the change affects mondrian's user-visible behavior, update the 
+    documentation</b>. For example, if you make a schema change, update
+    <a href="schema.html">schema.html</a>.</li>
+    <li><b>If your change affects a public API, discuss the change with mondrian 
+    developers first</b>. We want to preserve backwards compatibility if 
+    possible, or at least clearly document the change in the release notes.</li>
+    <li><b>Check in your changes in a single perforce changelist</b>. The 
+    changelist must have a helpful description, prefixed by 'MONDRIAN: ' to 
+    distinguish it from changes to other projects on the same server. If your 
+    changes fixes a bug, reference the bug number in your changelist 
+    description, and reference the changelist number and expected release number 
+    in the bug comments when closing the bug.</li>
+</ul>
 
 <h2>Building the code</h2>
 
@@ -346,7 +378,7 @@ Total time: 12 minutes 13 seconds</code></blockquote>
 </blockquote>
 
 <p>This will create <code>lib/mondrian.war</code>. Copy <code>mondrian.war</code> 
-to the <i></i><code><i>TOMCAT_HOME</i>/webapps</code> directory.</p><p>Now, start Tomcat and hit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a>.</p><h2>Coding guidelines<a name="7_2_Coding_guidelines">&nbsp;</a></h2><p>If you are contributing code, please follow the same guidelines used for the 
+to the <i></i><code><i>TOMCAT_HOME</i>/webapps</code> directory.</p><p>Now, start Tomcat and hit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a>.</p><h2>Coding guidelines<a name="Coding_guidelines">&nbsp;</a></h2><p>If you are contributing code, please follow the same guidelines used for the 
 rest of the code. (&quot;When in Rome, do as the Romans do.&quot;)</p><p>Code content:</p><ul>
   <li>Declare variables as near to their first use as possible.</li><li>Don't initialize variables with 'dummy' values just
       to shut up the compiler.</li><li>One declaration per line is recommended.</li><li>Only one top-level class should be defined per java file.</li></ul><p>Documentation and comments:</p><ul>
