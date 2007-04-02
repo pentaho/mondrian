@@ -111,9 +111,9 @@ public class Workbench extends javax.swing.JFrame {
     private void loadWorkbenchProperties() {
         workbenchProperties = new Properties();
         try {
-            workbenchProperties.load(new FileInputStream(new File("workbench.properties")));
             String resourceName = "mondrian.gui.resources.workbenchInfo";
             resBundle = ResourceBundle.getBundle(resourceName);
+            workbenchProperties.load(new FileInputStream(new File("workbench.properties")));
         } catch (Exception e) {
             //e.printStackTrace();
 

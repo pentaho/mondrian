@@ -51,7 +51,7 @@
   <property name="dist.doc.file" value="${dist.dir}/doc.tar.gz"/>
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
   <property name="jar-jdk14.file" value="${lib.dir}/${name}-jdk14.jar" />
-  <property name="workbench.jar.file" value="workbench.jar"/>
+  <property name="workbench.jar.file" value="${lib.dir}/workbench.jar"/>
   <property name="resource.jar.file" value="${lib.dir}/eigenbase-resgen.jar"/>
   <property name="xom.jar.file" value="${lib.dir}/eigenbase-xom.jar"/>
   <property name="war.file" value="${lib.dir}/${name}.war"/>
@@ -1120,9 +1120,8 @@ xalan.jar"/>
     <copy file="${war.file}" todir="${mondrian.webapp.deploy}"/>
   </target>
 
-  <target name="workbench" depends="compile">
-    <jar destfile="${lib.dir}/${workbench.jar.file}" 
-          update="true">
+  <target name="workbench" depends="jar">
+    <jar jarfile="${workbench.jar.file}" manifest="misc/workbench-manifest.mf" update="true">
       <fileset
           dir="${classes.dir}"
           includes="mondrian/gui/**/*.class"/>
@@ -1131,6 +1130,20 @@ xalan.jar"/>
           includes="mondrian/gui/**/*.gif,mondrian/gui/**/*.properties,mondrian/gui/**/*.html"/>
     </jar>
   </target>
+  
+    <!--*********************************************************************-->
+    <!-- Workbench  Run targets -->
+    <!--*********************************************************************-->   
+    <!-- Begin : sac, April 02, 2007 : Added workbench run target -->
+    <target name="workbench-run" >
+        <!-- check if mondrian.jar and workbench jar file exists -->
+        <available file="${jar.file}" property="mondrian.jar.exists"/>
+        <available file="${workbench.jar.file}" property="workbench.jar.exists"/>
+
+        <java  jar="${workbench.jar.file}"  fork="yes"/>  
+        
+    </target>
+    <!-- End : sac -->  
 
   <!--
        Retroweaver re-engineers JDK 1.5-compatible code so it can run under
