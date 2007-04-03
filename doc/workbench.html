@@ -5,6 +5,7 @@
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
   == Copyright (C) 2007 JasperSoft
+  == Copyright (C) 2007-2007 Julian Hyde and others
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -22,33 +23,33 @@
 
 <p>The Mondrian Schema Workbench allows you to visually create and test Mondrian OLAP cube schemas.</p>
 
- <img src="images/schemaEditor.jpg">
+ <img src="images/workbench_schema_editor.png">
  
 <p>It provides the following functionality:</p>
 	<ul>
 		<li>Schema editor integrated with the underlying data source for validation. (See above)</li>
-		<li>Test MDX queries against schema and database <a href="images/mdxQueryRunner.jpg">Screenshot</a></li>
-		<li>Browse underlying databases structure <a href="images/jdbcExplorer.jpg">Screenshot</a></li>
+		<li>Test MDX queries against schema and database <a href="images/workbench_mdx_query_runner.png">Screenshot</a></li>
+		<li>Browse underlying databases structure <a href="images/workbench_jdbc_explorer.png">Screenshot</a></li>
 </ul>
 <p></p>
 
 <h2>Using the Workbench</h2>
 <p></p>
 
-<table style="text-align: left; "
- border="1" cellpadding="2" cellspacing="0">
+<table style="text-align: left; border-collapse:collapse"
+ border="1" cellpadding="10" cellspacing="0">
   <tbody>
 
     <tr>
-      <td style="vertical-align: top;">Edit or create your equivalent of the demo/workbench.bat script, which sets the classpath for the
-      workbench. Include drivers for your database on the classpath.<br/><br/>Run the script to start the workbench.</td>
-      <td style="vertical-align: top;"><blockquote>
+      <td style="vertical-align: top;">
+      <p>Edit or create your equivalent of the demo/workbench.bat script, which sets the classpath for the
+      workbench. Include drivers for your database on the classpath.</p>
+      <p>Run the script to start the workbench.</p>
+      In windows:<blockquote>
 <pre>
-
 @echo off
 
 rem base Mondrian JARs
-
 set CP=../lib/commons-dbcp.jar;../lib/commons-collections.jar;../lib/commons-pool.jar
 set CP=%CP%;../lib/eigenbase-properties.jar;../lib/eigenbase-resgen.jar;../lib/eigenbase-xom.jar
 set CP=%CP%;../lib/javacup.jar;../lib/log4j-1.2.9.jar;../lib/mondrian.jar
@@ -56,11 +57,9 @@ set CP=%CP%;../lib/jlfgr-1_0.jar;../lib/jmi.jar;lib/mof.jar;../lib/commons-math-
 set CP=%CP%;../lib/commons-vfs.jar;../lib/commons-logging.jar
 
 rem Workbench GUI code and resources
-
 set CP=%CP%;../lib/workbench.jar
 
 rem add all needed JDBC drivers to the classpath
-
 set CP=%CP%;../testlib/mysql-connector-java-3.1.11-bin.jar
 set CP=%CP%;../testlib/postgresql-driver-jdbc3-74-214.jar
 
@@ -70,54 +69,71 @@ rem in the java command below to adjust workbench logging
 java -Xms100m -Xmx500m -cp "%CP%" mondrian.gui.Workbench
 </pre>
 </blockquote>
+
+<p>In UNIX/Linux:</p>
+<blockquote>
+<pre>java -jar lib/workbench.jar mondrian.gui.Workbench</pre>
+</blockquote>
       </td>
     </tr>
 
     <tr>
-      <td style="vertical-align: top;">Set properties for connection to your cube database via:<br/><br/>
-      Tools > Preferences<br/><br/>
-      These preferences and the last 4 schemas edited are kept in a "workbench.properties" file in the root of the classpath.
-      <br/><br/>
-      If you change the connection properties, you will need to close/save the existing schema editor(s) and restart to
-      see the effects.</td>
-      <td style="vertical-align: top;"><img src="images/workbenchPreferences.jpg">
+      <td style="vertical-align: top;"><p>Set properties for 
+      connection to your cube database via <code>Tools > Preferences</code>.</p>
+      <blockquote>
+          <p><img src="images/workbench_preferences.png"></p>
+      </blockquote>
+      <p>These preferences and the last 4 schemas edited are kept in a "workbench.properties" file in the root of the classpath.</p>
+      <p>If you change the connection properties, you will need to close/save the existing schema editor(s) and restart to
+      see the effects.</p></td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;">
+      <p>Create a new schema or open an existing one.</p>
+      <p>If you open an existing schema, the Workbench validates that the tables 
+      and columns underlying the cube definitions actually exist in the 
+      database.</p>
+      <blockquote>
+          <img src="images/workbench_get_schema.png">
+      </blockquote>
       </td>
     </tr>
 
     <tr>
-      <td style="vertical-align: top;">Create a new schema or open an existing one. An existing schema will be validated 
-      against the cube database tables and column names.</td>
-      <td style="vertical-align: top;"><img src="images/getSchema.jpg">
+      <td style="vertical-align: top;">
+      <p>Create or edit elements in the schema. The Workbench validates your changes against the cube database tables and column names.</p>
+      <blockquote>
+          <img src="images/workbench_database_validation.png">
+      </blockquote>
+      <p>The Workbench validates edits against the Mondrian schema DTD.</p>
+      <blockquote>
+          <img src="images/workbench_database_error.png">
+      </blockquote>
       </td>
     </tr>
 
     <tr>
-      <td style="vertical-align: top;">Create or edit elements in the schema. Your changes will be validated 
-      against the cube database tables and column names.<br/><br/>Edits will be validated against the Mondrian schema DTD.</td>
-      <td style="vertical-align: top;"><img src="images/databaseValidation.jpg"><br/><br/><br/>
-      <img src="images/databaseError.jpg">
-      </td>
-    </tr>
-
-    <tr>
-      <td style="vertical-align: top;">Save your schema and run some MDX queries to test.
-      Error messages and results are displayed.</td>
-      <td style="vertical-align: top;"><img src="images/mdxQueryRunner.jpg">
+      <td style="vertical-align: top;">
+      <p>Save your schema and run some MDX queries to test.
+      Error messages and results are displayed.</p>
+      <blockquote>
+          <img src="images/workbench_mdx_query_runner.png">
+      </blockquote>
       </td>
     </tr>
   </tbody>
 </table>
 
-<p>
-</p>
+<p>&nbsp;</p>
 
 <hr noshade size="1"/>
 <p>
-    Author: JasperSoft; last modified March 2007.<br/>
+    Author: Sherman Wood, JasperSoft; last modified April 2007.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/workbench.html?ac=22">log</a>)<br/>
-    Copyright (C) 2007 JasperSoft
-</p>
+    Copyright (C) 2007 JasperSoft<br>
+    Copyright (C) 2007-2007 Julian Hyde and others</p>
 
 <br />
 
