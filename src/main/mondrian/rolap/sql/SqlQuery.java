@@ -18,9 +18,8 @@ import java.io.StringWriter;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.sql.ResultSet;
+import java.util.*;
 
 import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
@@ -592,14 +591,26 @@ public class SqlQuery {
         private final String quoteIdentifierString;
         private final String productName;
         private final String productVersion;
+        private final Set<List<Integer>> supportedResultSetTypes;
+
+        private static final int[] RESULT_SET_TYPE_VALUES = {
+            ResultSet.TYPE_FORWARD_ONLY,
+            ResultSet.TYPE_SCROLL_INSENSITIVE,
+            ResultSet.TYPE_SCROLL_SENSITIVE};
+        private static final int[] CONCURRENCY_VALUES = {
+            ResultSet.CONCUR_READ_ONLY,
+            ResultSet.CONCUR_UPDATABLE};
 
         Dialect(
-                String quoteIdentifierString,
-                String productName,
-                String productVersion) {
+            String quoteIdentifierString,
+            String productName,
+            String productVersion,
+            Set<List<Integer>> supportedResultSetTypes)
+        {
             this.quoteIdentifierString = quoteIdentifierString;
             this.productName = productName;
             this.productVersion = productVersion;
+            this.supportedResultSetTypes = supportedResultSetTypes;
         }
 
         /**
@@ -640,10 +651,42 @@ public class SqlQuery {
                         "while detecting database product version");
             }
 
+            Set<List<Integer>> supports = new HashSet<List<Integer>>();
+            try {
+                for (int type : RESULT_SET_TYPE_VALUES) {
+                    for (int concurrency : CONCURRENCY_VALUES) {
+                        if (databaseMetaData.supportsResultSetConcurrency(
+                                type, concurrency)) {
+                            String driverName =
+                                databaseMetaData.getDriverName();
+                            if (type != ResultSet.TYPE_FORWARD_ONLY &&
+                                driverName.equals(
+                                    "JDBC-ODBC Bridge (odbcjt32.dll)"))
+                            {
+                                // In JDK 1.6, the Jdbc-Odbc bridge announces
+                                // that it can handle TYPE_SCROLL_INSENSITIVE
+                                // but it does so by generating a 'COUNT(*)'
+                                // query, and this query is invalid if the query
+                                // contains a single-quote. So, override the
+                                // driver.
+                                continue;
+                            }
+                            supports.add(
+                                new ArrayList<Integer>(
+                                    Arrays.asList(type, concurrency)));
+                        }
+                    }
+                }
+            } catch (SQLException e11) {
+                throw Util.newInternal(e11,
+                    "while detecting result set concurrency");
+            }
+
             return new Dialect(
-                    quoteIdentifierString,
-                    productName,
-                    productVersion);
+                quoteIdentifierString,
+                productName,
+                productVersion,
+                supports);
         }
 
         /**
@@ -1449,6 +1492,27 @@ public class SqlQuery {
         public boolean supportsMultiValueInExpr() {
             return isLucidDB() || isMySQL();
         }
+
+        /**
+         * Returns whether this Dialect supports the given concurrency type
+         * in combination with the given result set type.
+         *
+         * <p>The result is similar to
+         * {@link java.sql.DatabaseMetaData#supportsResultSetConcurrency(int, int)},
+         * except that the JdbcOdbc bridge in JDK 1.6 overstates its abilities.
+         * See bug 1690406.
+         *
+         * @param type defined in {@link ResultSet}
+         * @param concurrency type defined in {@link ResultSet}
+         * @return <code>true</code> if so; <code>false</code> otherwise
+         * @exception SQLException if a database access error occurs
+         */
+        public boolean supportsResultSetConcurrency(
+            int type,
+            int concurrency) {
+            return supportedResultSetTypes.contains(
+                Arrays.asList(type, concurrency));
+        }
     }
 
     /**
@@ -1456,7 +1520,7 @@ public class SqlQuery {
      */
     public enum Datatype {
         String {
-            public void quoteValue(StringBuilder buf, Dialect dialect, String value) {
+            public void quoteValue(StringBuilder buf, SqlQuery.Dialect dialect, String value) {
                 dialect.quoteStringLiteral(buf, value);
             }
         },

@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
 import mondrian.rolap.*;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.spi.CatalogLocator;
 import mondrian.xmla.impl.DefaultSaxWriter;
@@ -896,15 +897,14 @@ public class XmlaHandler implements XmlaConstants {
                     count = dtCell.getDrillThroughCount();
                 }
 
-                sqlConn = connection.getDataSource().getConnection();
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("drill through sql: " + dtSql);
                 }
                 int resultSetType = ResultSet.TYPE_SCROLL_INSENSITIVE;
                 int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY;
-                if (!sqlConn.getMetaData().supportsResultSetConcurrency(
-                    ResultSet.TYPE_SCROLL_INSENSITIVE,
-                    ResultSet.CONCUR_READ_ONLY)) {
+                SqlQuery.Dialect dialect = ((RolapSchema) connection.getSchema()).getDialect();
+                if (!dialect.supportsResultSetConcurrency(
+                    resultSetType, resultSetConcurrency)) {
                     // downgrade to non-scroll cursor, since we can
                     // fake absolute() via forward fetch
                     resultSetType = ResultSet.TYPE_FORWARD_ONLY;
