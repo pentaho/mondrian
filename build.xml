@@ -253,7 +253,7 @@ demo/access/MondrianFoodMart.mdb"/>
             <exclude name="**/junit.zip"/>
         </fileset>
     </unjar>
-  
+
     <copy file="./log4j.properties" todir="${crtmp.dir}"/>
 
     <jar destfile="${lib.dir}/cmdrunner.jar" >
@@ -337,9 +337,9 @@ compile.java"/>
         source="1.5">
       <include name="mondrian/**/*.java"/>
     </javac>
-    <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml" 
+    <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml"
         todir="${classes.dir}"/>
-    <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml" 
+    <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml"
         todir="${classes.dir}"/>
     <copy todir="${classes.dir}">
       <fileset
@@ -376,7 +376,7 @@ META-INF/**"/>
         dtdname="mondrian.dtd"/>
     <copy file="${java.dir}/mondrian/olap/mondrian.dtd"
         todir="${lib.dir}"/>
-        
+
     <!-- // Begin : somita April 02, 2007 : To resolve equals(==) problem in mondrian.xml that causes tree breaks in Schema Workbench -->
     <xomgen
         model="${java.dir}/mondrian/olap/mondrian_SW.xml"
@@ -474,7 +474,7 @@ in {mondrian.foodmart.jdbcURL}.">
         classname="mondrian.test.Main"
         fork="yes">
       <jvmarg line="${junit.jvmargs}"/>
-      <sysproperty key="log4j.configuration" 
+      <sysproperty key="log4j.configuration"
           value="${log4j.configuration}"/>
       <sysproperty key="mondrian.jdbcDrivers"
           value="${mondrian.jdbcDrivers}"/>
@@ -502,7 +502,7 @@ in {mondrian.foodmart.jdbcURL}.">
             <path refid="project.test.classpath"/>
         </classpath>
 
-        <sysproperty key="log4j.configuration" 
+        <sysproperty key="log4j.configuration"
             value="log4j.properties"/>
         <sysproperty key="mondrian.jdbcDrivers"
             value="${mondrian.jdbcDrivers}"/>
@@ -559,7 +559,7 @@ in {mondrian.foodmart.jdbcURL}.">
 
   <target name="generateDiffRepositoryJUnit"
     description="Generates explicit Java testcases from .ref.xml files">
-    
+
     <!-- generate clearview junit code files -->
     <property name="path" value="${testsrc.dir}/main/mondrian/test/clearview/"/>
     <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="CVBasicTest"/>
@@ -982,7 +982,7 @@ Creates mondrian.war based upon jpivot.war.
 Assumes that mondrian.jar exists (use 'jar' target)">
 
     <!-- The Ant war task was doing funny things with update="yes" so piece the mondrian.war
-         together from the jpivot.war and Mondrian specific settings --> 
+         together from the jpivot.war and Mondrian specific settings -->
 
     <filter filtersfile="mondrian.properties"/>
     <delete dir="${build.dir}/mondrian" />
@@ -990,7 +990,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
     <delete file="${war.file}"/>
     <unzip src="${lib.dir}/jpivot.war" dest="${build.dir}/mondrian"/>
 
-    <!-- Remove the jpivot stuff we intend to overwrite. -->    
+    <!-- Remove the jpivot stuff we intend to overwrite. -->
     <delete>
       <fileset dir="${build.dir}/mondrian" includes="index.jsp,xmla.jsp"/>
       <fileset dir="${build.dir}/mondrian/WEB-INF" includes="web.xml,datasources.xml,mondrian.properties"/>
@@ -1002,10 +1002,10 @@ Assumes that mondrian.jar exists (use 'jar' target)">
 
     <!-- Build the WEB-INF directory. -->
     <copy file="${webapp.dir}/WEB-INF/web-jpivot.xml"
-        filtering="true" 
+        filtering="true"
         tofile="${build.dir}/mondrian/WEB-INF/web.xml" />
-    <copy 
-        todir="${build.dir}/mondrian/WEB-INF" 
+    <copy
+        todir="${build.dir}/mondrian/WEB-INF"
         flatten="true">
       <fileset
           dir="${webapp.dir}/WEB-INF"
@@ -1013,7 +1013,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
     </copy>
 
     <!-- our FoodMart.xml may be newer than jpivot's -->
-    <copy 
+    <copy
         file="${demo.dir}/FoodMart.xml"
         todir="${build.dir}/mondrian/WEB-INF/queries" />
 
@@ -1029,6 +1029,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
+      <classes dir="${testclasses.dir}" includes="mondrian/test/DiffRepository.*"/>
       <!-- <classes dir="${basedir}" includes="mondrian.properties"/>  -->
     </war>
   </target>
@@ -1044,8 +1045,8 @@ Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded data
     <mkdir dir="${build.dir}/mondrian-embedded" />
     <delete file="${war.embeddedDb.file}"/>
     <unzip src="${lib.dir}/jpivot.war" dest="${build.dir}/mondrian-embedded"/>
-    
-    <!-- Remove the jpivot stuff we intend to overwrite. -->    
+
+    <!-- Remove the jpivot stuff we intend to overwrite. -->
     <delete>
       <fileset dir="${build.dir}/mondrian-embedded" includes="index.jsp,xmla.jsp"/>
       <fileset dir="${build.dir}/mondrian-embedded/WEB-INF" includes="datasources.xml,mondrian.properties"/>
@@ -1057,10 +1058,10 @@ Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded data
 
     <!-- Build the WEB-INF directory. -->
     <copy file="${webapp.dir}/WEB-INF/web-jpivot.xml"
-        filtering="true" 
+        filtering="true"
         tofile="${build.dir}/mondrian-embedded/WEB-INF/web.xml" />
-    <copy 
-        todir="${build.dir}/mondrian-embedded/WEB-INF" 
+    <copy
+        todir="${build.dir}/mondrian-embedded/WEB-INF"
         flatten="true">
       <fileset
           dir="${webapp.dir}/WEB-INF"
@@ -1068,11 +1069,11 @@ Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded data
     </copy>
 
     <!-- our FoodMart.xml may be newer than jpivot's -->
-    <copy 
+    <copy
         file="${demo.dir}/FoodMart.xml"
         todir="${build.dir}/mondrian-embedded/WEB-INF/queries" />
 
-    <copy 
+    <copy
         todir="${build.dir}/mondrian-embedded/WEB-INF">
       <fileset
           dir="${demo.dir}/derby"
@@ -1139,20 +1140,20 @@ xalan.jar"/>
           includes="mondrian/gui/**/*.gif,mondrian/gui/**/*.properties,mondrian/gui/**/*.html"/>
     </jar>
   </target>
-  
+
     <!--*********************************************************************-->
     <!-- Workbench  Run targets -->
-    <!--*********************************************************************-->   
+    <!--*********************************************************************-->
     <!-- Begin : sac, April 02, 2007 : Added workbench run target -->
     <target name="workbench-run" >
         <!-- check if mondrian.jar and workbench jar file exists -->
         <available file="${jar.file}" property="mondrian.jar.exists"/>
         <available file="${workbench.jar.file}" property="workbench.jar.exists"/>
 
-        <java  jar="${workbench.jar.file}"  fork="yes"/>  
-        
+        <java  jar="${workbench.jar.file}"  fork="yes"/>
+
     </target>
-    <!-- End : sac -->  
+    <!-- End : sac -->
 
   <!--
        Retroweaver re-engineers JDK 1.5-compatible code so it can run under
@@ -1198,7 +1199,7 @@ xalan.jar"/>
     </delete>
 
     <mkdir dir="${testclasses-jdk14.dir}"/>
-      
+
     <retroweaver inputjar="${jar.file}" outputjar="${jar-jdk14.file}" />
     <retroweaver srcdir="${testclasses.dir}" destdir="${testclasses-jdk14.dir}" />
   </target>

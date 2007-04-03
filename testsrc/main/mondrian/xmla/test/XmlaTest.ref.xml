@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <Root>
-    <TestCase name="dbschemaCatalogs.xml">
+    <TestCase name="dbschemaCatalogs">
         <Resource name="request">
             <![CDATA[
 <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
@@ -56,7 +56,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="discoverDataSources.xml">
+    <TestCase name="discoverDataSources">
         <Resource name="request">
             <![CDATA[
 <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
@@ -117,7 +117,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="executeHR-tabular.xml">
+    <TestCase name="executeHR-tabular">
         <Resource name="request">
             <![CDATA[
 <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
@@ -175,7 +175,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="executeHR.xml">
+    <TestCase name="executeHR">
         <Resource name="request">
             <![CDATA[
 <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
@@ -544,7 +544,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="mdschemaCubesRestrictions.xml">
+    <TestCase name="mdschemaCubesRestrictions">
         <Resource name="request">
             <![CDATA[
 <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
@@ -607,7 +607,7 @@
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
-        
+
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -620,7 +620,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="mdschemaCubes.xml">
+    <TestCase name="mdschemaCubes">
         <Resource name="request">
             <![CDATA[
 <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
@@ -682,7 +682,7 @@
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
         <CUBE_NAME>HR</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
-        
+
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -693,7 +693,7 @@
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
         <CUBE_NAME>Sales</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
-        
+
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -704,7 +704,7 @@
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
         <CUBE_NAME>Sales 2</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
-        
+
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -715,7 +715,7 @@
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
         <CUBE_NAME>Sales Ragged</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
-        
+
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -726,7 +726,7 @@
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
         <CUBE_NAME>Store</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
-        
+
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -737,7 +737,7 @@
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
         <CUBE_NAME>Warehouse</CUBE_NAME>
         <CUBE_TYPE>CUBE</CUBE_TYPE>
-        
+
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -748,7 +748,7 @@
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
         <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
-        
+
         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
         <IS_LINKABLE>false</IS_LINKABLE>
@@ -761,7 +761,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="mdschemaDimensionsCubeDimRestrictions.xml">
+    <TestCase name="mdschemaDimensionsCubeDimRestrictions">
         <Resource name="request">
             <![CDATA[
   <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
@@ -845,7 +845,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="mdschemaDimensionsCubeRestrictions.xml">
+    <TestCase name="mdschemaDimensionsCubeRestrictions">
         <Resource name="request">
             <![CDATA[
   <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
@@ -1120,7 +1120,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="mdschemaHierarchiesCubeDimRestrictions.xml">
+    <TestCase name="mdschemaHierarchiesCubeDimRestrictions">
         <Resource name="request">
             <![CDATA[
   <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
@@ -1596,7 +1596,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="mdschemaLevelsCubeDimRestrictions.xml">
+    <TestCase name="mdschemaLevelsCubeDimRestrictions">
         <Resource name="request">
             <![CDATA[
   <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
@@ -1781,7 +1781,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="mdschemaMeasuresCubeRestrictions.xml">
+    <TestCase name="mdschemaMeasuresCubeRestrictions">
         <Resource name="request">
             <![CDATA[
 <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
@@ -1937,7 +1937,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="mdschemaMeasuresCubeLvlRestrictions.xml">
+    <TestCase name="mdschemaMeasuresCubeLvlRestrictions">
         <Resource name="request">
             <![CDATA[
   <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
@@ -2043,7 +2043,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="mdschemaMembersCubeMeasureRestrictions2.xml">
+    <TestCase name="mdschemaMembersCubeMeasureRestrictions2">
         <Resource name="request">
             <![CDATA[
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
@@ -2256,7 +2256,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="mdschemaMembersCubeMeasureRestrictions3.xml">
+    <TestCase name="mdschemaMembersCubeMeasureRestrictions3">
         <Resource name="request">
             <![CDATA[
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
@@ -2343,7 +2343,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="mdschemaMembersCubeMeasureRestrictions.xml">
+    <TestCase name="mdschemaMembersCubeMeasureRestrictions">
         <Resource name="request">
             <![CDATA[
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">

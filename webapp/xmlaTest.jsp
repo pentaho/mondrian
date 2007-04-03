@@ -4,9 +4,6 @@
                  java.io.PrintWriter,
                  java.io.StringWriter,
                  mondrian.xmla.test.XmlaTestContext,
-                 mondrian.xmla.XmlaUtil,
-                 java.util.Map,
-                 java.util.Arrays,
                  org.apache.log4j.Logger"%>
 <%@ page language="java" %>
 <%--
@@ -76,21 +73,21 @@ text-align:right;
 <a href=".">back to index</a><p/>
 
 <%
-    
-    XmlaTestContext context = new XmlaTestContext(application);
-    
-    Object[] requestResponses = context.defaultRequestResponsePairs();
+
+    XmlaTestContext context = new XmlaTestContext();
+
+    String[][] requests = context.defaultRequests();
 
     int whichRequest = 0;
     if (request.getParameter("whichrequest") != null) {
-        whichRequest = Integer.valueOf(request.getParameter("whichrequest")).intValue();
+        whichRequest =
+            Integer.valueOf(request.getParameter("whichrequest")).intValue();
     }
-    if (whichRequest >= requestResponses.length) {
-        whichRequest = requestResponses.length - 1;
+    if (whichRequest >= requests.length) {
+        whichRequest = requests.length - 1;
     }
-    Object[] defaultRequestResponse = (Object[]) requestResponses[whichRequest];
-    Element requestElem = (Element) defaultRequestResponse[1];
-    String defaultRequest = XmlaUtil.element2Text(requestElem);
+    String[] defaultPair = requests[whichRequest];
+    String defaultRequest = defaultPair[1];
     String postURL = request.getParameter("postURL");
     if (postURL == null) {
         postURL = "xmla.jsp";
@@ -104,12 +101,12 @@ text-align:right;
       <td>
         <select name="whichrequest"><%
 
-    for (int i = 0; i < requestResponses.length; i++) {
-	  Object[] thisRequestResponse = (Object[]) requestResponses[i];
-	  String fileName = (String) thisRequestResponse[0];
+    for (int i = 0; i < requests.length; i++) {
+	  String[] pair = requests[i];
+	  String fileName = pair[0];
       %>
       <option <%= whichRequest == i ? " selected" : "" %>
-      value="<%= i%>"><%= i %>. <%= fileName.substring(0,fileName.length() - 4) %>
+      value="<%= i%>"><%= i %>. <%= fileName %>
       </option>
       <%
     }

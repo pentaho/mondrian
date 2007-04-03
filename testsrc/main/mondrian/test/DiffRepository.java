@@ -21,6 +21,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.*;
+import java.net.URL;
 
 import mondrian.olap.Util;
 
@@ -128,7 +129,7 @@ public class DiffRepository
 
     private static final ThreadLocal<String> CurrentTestCaseName =
         new ThreadLocal<String>();
-    
+
     /**
      * Holds one diff-repository per class. It is necessary for all testcases
      * in the same class to share the same diff-repository: if the
@@ -186,6 +187,14 @@ public class DiffRepository
         }
     }
 
+    /**
+     * Creates a DiffRepository from a pair of files.
+     *
+     * @param refFile File containing reference results
+     * @param logFile File to contain the actual output of the test run
+     * @param baseRepos Base repository to inherit from, or null
+     * @param prefixes List of directories to search in, or null
+     */
     public DiffRepository(
         File refFile, File logFile, DiffRepository baseRepos,
         String[] prefixes)
@@ -217,6 +226,39 @@ public class DiffRepository
                     doc.createElement(RootTag));
                 flushDoc();
             }
+            this.root = doc.getDocumentElement();
+            if (!root.getNodeName().equals(RootTag)) {
+                throw new RuntimeException(
+                    "expected root element of type '" + RootTag +
+                    "', but found '" + root.getNodeName() + "'");
+            }
+        } catch (ParserConfigurationException e) {
+            throw Util.newInternal(e, "error while creating xml parser");
+        } catch (IOException e) {
+            throw Util.newInternal(e, "error while creating xml parser");
+        } catch (SAXException e) {
+            throw Util.newInternal(e, "error while creating xml parser");
+        }
+    }
+
+    /**
+     * Creates a read-only repository reading from a URL.
+     *
+     * @param refUrl URL pointing to reference file
+     */
+    public DiffRepository(URL refUrl)
+    {
+        this.prefixes = null;
+        this.refFile = null;
+        this.logFile = null;
+        this.baseRepos = null;
+
+        // Load the document.
+        DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
+        try {
+            this.docBuilder = fac.newDocumentBuilder();
+            // Parse the reference file.
+            this.doc = docBuilder.parse(refUrl.openStream());
             this.root = doc.getDocumentElement();
             if (!root.getNodeName().equals(RootTag)) {
                 throw new RuntimeException(
@@ -304,7 +346,7 @@ public class DiffRepository
      * @param resourceName Name of resource, e.g. "sql", "plan"
      * @return The value of the resource, or null if not found
      */
-    private String get(
+    public String get(
         final String testCaseName,
         String resourceName)
     {
@@ -423,7 +465,7 @@ public class DiffRepository
         if (testCaseName != null) {
             return testCaseName;
         }
-        
+
         // Clever, this. Dump the stack and look up it for a method which
         // looks like a testcase name, e.g. "testFoo".
         final StackTraceElement[] stackTrace;

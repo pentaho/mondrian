@@ -9,33 +9,26 @@
 */
 package mondrian.xmla.test;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.servlet.ServletContext;
+import java.net.URL;
 
 import mondrian.olap.Util;
-import mondrian.olap.MondrianProperties;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.CatalogLocatorImpl;
+import mondrian.test.DiffRepository;
 import mondrian.test.TestContext;
 import mondrian.xmla.DataSourcesConfig;
-import mondrian.xmla.XmlaUtil;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.DOMWrapper;
 import org.eigenbase.xom.Parser;
 import org.eigenbase.xom.XOMUtil;
-import org.w3c.dom.Element;
 
 /**
  * Common utilities for XML/A testing, used in test suite and
@@ -120,8 +113,8 @@ public class XmlaTestContext {
     }
 
     public static String xmlFromTemplate(
-        String xmlText, Map<String, String> env) {
-        
+        String xmlText, Map<String, String> env)
+    {
         StringBuffer buf = new StringBuffer();
         Pattern pattern = Pattern.compile("\\$\\{([^}]+)\\}");
         Matcher matcher = pattern.matcher(xmlText);
@@ -137,6 +130,32 @@ public class XmlaTestContext {
         matcher.appendTail(buf);
 
         return buf.toString();
+    }
+
+    /**
+     * Returns a list of sample XML requests.
+     *
+     * <p>Each item is a pair of strings: {test name, request}.
+     *
+     * <p>NOTE: This method is called from <code>xmlaTest.jsp</code>. Do not
+     * remove it if you can't find calls from Java.
+     *
+     * @return List of sample XML requests
+     */
+    public String[][] defaultRequests() {
+        // Assume that the ref file is in the same tree (WEB-INF/classes) as
+        // DiffRepository.class.
+        URL refUrl =
+            DiffRepository.class.getClassLoader().getResource(
+                "mondrian/xmla/test/XmlaTest.ref.xml");
+        DiffRepository diffRepos = new DiffRepository(refUrl);
+        List<String[]> stringList = new ArrayList<String[]>();
+        for (String testName : diffRepos.getTestCaseNames()) {
+            String templateRequest = diffRepos.get(testName, "request");
+            String request = xmlFromTemplate(templateRequest, ENV);
+            stringList.add(new String[] {testName, request});
+        }
+        return stringList.toArray(new String[stringList.size()][]);
     }
 }
 

@@ -154,14 +154,14 @@
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_DSI_C_F_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
     xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -1678,14 +1678,14 @@
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_DSI_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
     xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -2791,14 +2791,14 @@
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_DSI_C_F_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
     xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -2916,14 +2916,14 @@
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_R_DSI_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
 xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -5545,14 +5545,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_DSI_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
     xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -5960,14 +5960,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_C_CN_DSI_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
     xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -6155,14 +6155,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_C_CN_DSI_C_F_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
 xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -6351,14 +6351,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="MDSCHEMA_MEASURES_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
 xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -6523,14 +6523,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_C_CN_DSI_C_F_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
 xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -7683,14 +7683,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_DSI_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
     xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -7778,15 +7778,15 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_C_in.xml">
+        <Resource name="request">
             <![CDATA[
-<soapenv:Envelope 
-    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <soapenv:Body>
-<ns1:Discover 
-    soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
+<ns1:Discover
+    soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
     xmlns:ns1="urn:schemas-microsoft-com:xml-analysis">
     <ns1:RequestType xsi:type="xsd:string">${request.type}</ns1:RequestType>
     <ns1:Restrictions>
@@ -7999,14 +7999,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_DSI_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
     xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -8837,14 +8837,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_DSI_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
     xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -9035,14 +9035,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_DSI_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
     xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -9360,15 +9360,15 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_C_in.xml">
+        <Resource name="request">
             <![CDATA[
-<soapenv:Envelope 
-    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <soapenv:Body>
-<ns1:Discover 
-    soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
+<ns1:Discover
+    soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
     xmlns:ns1="urn:schemas-microsoft-com:xml-analysis">
     <ns1:RequestType xsi:type="xsd:string">${request.type}</ns1:RequestType>
     <ns1:Restrictions>
@@ -9885,14 +9885,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_DSI_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
     xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -9967,14 +9967,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_DSI_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
     xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
     SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -10111,14 +10111,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_C_CN_DSI_C_F_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
 xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -10218,14 +10218,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="RT_C_CN_DSI_C_F_C_in.xml">
+        <Resource name="request">
             <![CDATA[
 <SOAP-ENV:Envelope
 xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
   <SOAP-ENV:Body>
     <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
-        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">   
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
@@ -10607,7 +10607,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="EXECUTE_DrillThrough_in.xml">
+        <Resource name="request">
             <![CDATA[
 <soapenv:Envelope
     xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
@@ -11163,7 +11163,7 @@ FROM Sales
 </SOAP-ENV:Envelope>
 ]]>
         </Resource>
-        <Resource name="EXECUTE_Slicer_in.xml">
+        <Resource name="request">
             <![CDATA[
 <soapenv:Envelope
     xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"

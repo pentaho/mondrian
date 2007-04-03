@@ -10,7 +10,6 @@
 package mondrian.xmla;
 
 import mondrian.olap.Util;
-import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import mondrian.test.DiffRepository;
 import mondrian.tui.XmlUtil;
@@ -22,7 +21,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.util.Properties;
@@ -159,85 +157,73 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
     /////////////////////////////////////////////////////////////////////////
     // DISCOVER
     /////////////////////////////////////////////////////////////////////////
-    // good 2/25
+
     public void testDDatasource() throws Exception {
         String requestType = "DISCOVER_DATASOURCES";
-        String reqFileName = "RT_C_in.xml";
-        doTestRT(requestType, reqFileName, "${response}");
+        doTestRT(requestType);
     }
-    // good 2/25
+
     public void testDEnumerators() throws Exception {
         String requestType = "DISCOVER_ENUMERATORS";
-        String reqFileName = "RT_DSI_C_in.xml";
-        doTestRT(requestType, reqFileName, "${response}");
+        doTestRT(requestType);
     }
-    // good 2/25
+
     public void testDKeywords() throws Exception {
         String requestType = "DISCOVER_KEYWORDS";
-        String reqFileName = "RT_DSI_C_in.xml";
-        doTestRT(requestType, reqFileName, "${response}");
+        doTestRT(requestType);
     }
-    // good 2/25
+
     public void testDLiterals() throws Exception {
         String requestType = "DISCOVER_LITERALS";
-        String reqFileName = "RT_DSI_C_in.xml";
-        doTestRT(requestType, reqFileName, "${response}");
+        doTestRT(requestType);
     }
-    // good 2/25
+
     public void testDProperties() throws Exception {
         String requestType = "DISCOVER_PROPERTIES";
-        String reqFileName = "RT_C_in.xml";
-        doTestRT(requestType, reqFileName, "${response}");
+        doTestRT(requestType);
     }
-    // good 2/25
+
     public void testDSchemaRowsets() throws Exception {
         String requestType = "DISCOVER_SCHEMA_ROWSETS";
-        String reqFileName = "RT_DSI_C_in.xml";
-        doTestRT(requestType, reqFileName, "${response}");
+        doTestRT(requestType);
     }
 
     /////////////////////////////////////////////////////////////////////////
     // DBSCHEMA
     /////////////////////////////////////////////////////////////////////////
-    // good 2/25
+
     public void testDBCatalogs() throws Exception {
         String requestType = "DBSCHEMA_CATALOGS";
-        String reqFileName = "RT_DSI_C_in.xml";
-        doTestRT(requestType, reqFileName, "${response}");
+        doTestRT(requestType);
     }
     // passes 2/25 - I think that this is good but not sure
     public void _testDBColumns() throws Exception {
         String requestType = "DBSCHEMA_COLUMNS";
-        String reqFileName = "RT_DSI_C_in.xml";
-        doTestRT(requestType, reqFileName, "${response}");
+        doTestRT(requestType);
     }
     // passes 2/25 - I think that this is good but not sure
     public void _testDBProviderTypes() throws Exception {
         String requestType = "DBSCHEMA_PROVIDER_TYPES";
-        String reqFileName = "RT_DSI_C_in.xml";
-        doTestRT(requestType, reqFileName, "${response}");
+        doTestRT(requestType);
     }
     // passes 2/25 - I think that this is good but not sure
     // Should this even be here
     public void _testDBTablesInfo() throws Exception {
         String requestType = "DBSCHEMA_TABLES_INFO";
-        String reqFileName = "RT_DSI_C_in.xml";
-        doTestRT(requestType, reqFileName, "${response}");
+        doTestRT(requestType);
     }
     // passes 2/25 - I think that this is good but not sure
     public void testDBTables() throws Exception {
         String requestType = "DBSCHEMA_TABLES";
-        String reqFileName = "RT_DSI_C_in.xml";
-        doTestRT(requestType, reqFileName, "${response}");
+        doTestRT(requestType);
     }
 
     /////////////////////////////////////////////////////////////////////////
     // MDSCHEMA
     /////////////////////////////////////////////////////////////////////////
-    // good 2/25
+
     public void testMDCubes() throws Exception {
         String requestType = "MDSCHEMA_CUBES";
-        String reqFileName = "RT_DSI_C_F_C_in.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -245,12 +231,11 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(CATALOG_PROP, CATALOG);
         props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
 
-        doTest(requestType, reqFileName, "${response}", props);
+        doTest(requestType, props);
     }
-    // good 2/25
+
     public void testMDimensions() throws Exception {
         String requestType = "MDSCHEMA_DIMENSIONS";
-        String reqFileName = "RT_DSI_C_F_C_in.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -258,13 +243,11 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(CATALOG_PROP, CATALOG);
         props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
 
-        doTest(requestType, reqFileName, "${response}", props);
+        doTest(requestType, props);
     }
 
-    // good 4/21
     public void testMDFunction() throws Exception {
         String requestType = "MDSCHEMA_FUNCTIONS";
-        String reqFileName = "RT_R_DSI_C_in.xml";
         String restrictionName = "FUNCTION_NAME";
         String restrictionValue = "Item";
 
@@ -274,25 +257,23 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(RESTRICTION_VALUE_PROP, restrictionValue);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, "${response}", props);
+        doTest(requestType, props);
     }
-    // good 4/21
+
     // only make sure that something is returned
     public void testMDFunctions() throws Exception {
         String requestType = "MDSCHEMA_FUNCTIONS";
-        String reqFileName = "RT_DSI_C_in.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, "${response}", props);
+        doTest(requestType, props);
     }
 
     // good 2/25 : (partial implementation)
     public void testMDHierarchies() throws Exception {
         String requestType = "MDSCHEMA_HIERARCHIES";
-        String reqFileName = "RT_C_CN_DSI_in.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -300,12 +281,12 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, "${response}", props);
+        doTest(requestType, props);
     }
+
     // good 2/25 : (partial implementation)
     public void testMDLevels() throws Exception {
         String requestType = "MDSCHEMA_LEVELS";
-        String reqFileName = "RT_C_CN_DSI_C_F_C_in.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -317,12 +298,11 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(UNIQUE_NAME_ELEMENT, "DIMENSION_UNIQUE_NAME");
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, "${response}", props);
+        doTest(requestType, props);
     }
-    // good 2/25
+
     public void testMDMeasures() throws Exception {
         String requestType = "MDSCHEMA_MEASURES";
-        String reqFileName = "MDSCHEMA_MEASURES_in.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -337,12 +317,11 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, "${response}", props);
+        doTest(requestType, props);
     }
-    // good 2/25
+
     public void testMDMembers() throws Exception {
         String requestType = "MDSCHEMA_MEMBERS";
-        String reqFileName = "RT_C_CN_DSI_C_F_C_in.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
@@ -354,24 +333,21 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(UNIQUE_NAME_ELEMENT, "HIERARCHY_UNIQUE_NAME");
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, "${response}", props);
+        doTest(requestType, props);
     }
 
-    // good 2/25
     public void testMDProperties() throws Exception {
         String requestType = "MDSCHEMA_PROPERTIES";
-        String reqFileName = "RT_DSI_C_in.xml";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, "${response}", props);
+        doTest(requestType, props);
     }
 
     public void testApproxRowCountOverridesCountCallsToDatabase() throws Exception {
         String requestType = "MDSCHEMA_LEVELS";
-        String reqFileName = "RT_C_CN_DSI_C_F_C_in.xml";
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(CATALOG_PROP, CATALOG);
@@ -381,13 +357,12 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(UNIQUE_NAME_PROP, "[Marital Status]");
         props.setProperty(UNIQUE_NAME_ELEMENT, "DIMENSION_UNIQUE_NAME");
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
-        doTest(requestType, reqFileName, "${response}", props);
 
+        doTest(requestType, props);
     }
 
-     public void testApproxRowCountInHierarchyOverridesCountCallsToDatabase() throws Exception {
+    public void testApproxRowCountInHierarchyOverridesCountCallsToDatabase() throws Exception {
         String requestType = "MDSCHEMA_HIERARCHIES";
-        String reqFileName = "RT_C_CN_DSI_C_F_C_in.xml";
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(CATALOG_PROP, CATALOG);
@@ -397,36 +372,35 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(UNIQUE_NAME_PROP, "[Marital Status]");
         props.setProperty(UNIQUE_NAME_ELEMENT, "DIMENSION_UNIQUE_NAME");
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
-        doTest(requestType, reqFileName, "${response}", props);
 
+        doTest(requestType, props);
     }
 
     public void testDrillThrough() throws Exception {
-       String requestType = "EXECUTE";
-       String reqFileName = "EXECUTE_DrillThrough_in.xml";
-       Properties props = new Properties();
-       props.setProperty(REQUEST_TYPE_PROP, requestType);
-       props.setProperty(CATALOG_PROP, CATALOG);
-       props.setProperty(CATALOG_NAME_PROP, CATALOG);
-       props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
-       props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
-       props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
-       doTest(requestType, reqFileName, "${response}", props);
+        String requestType = "EXECUTE";
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(CATALOG_NAME_PROP, CATALOG);
+        props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-   }
+        doTest(requestType, props);
+    }
 
     public void testExecuteSlicer() throws Exception {
-       String requestType = "EXECUTE";
-       String reqFileName = "EXECUTE_Slicer_in.xml";
-       Properties props = new Properties();
-       props.setProperty(REQUEST_TYPE_PROP, requestType);
-       props.setProperty(CATALOG_PROP, CATALOG);
-       props.setProperty(CATALOG_NAME_PROP, CATALOG);
-       props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
-       props.setProperty(FORMAT_PROP, FORMAT_MULTI_DIMENSIONAL);
-       props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
-       doTest(requestType, reqFileName, "${response}", props);
-   }
+        String requestType = "EXECUTE";
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(CATALOG_NAME_PROP, CATALOG);
+        props.setProperty(CUBE_NAME_PROP, SALES_CUBE);
+        props.setProperty(FORMAT_PROP, FORMAT_MULTI_DIMENSIONAL);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+
+        doTest(requestType, props);
+    }
 
     // Testcase for bug 1653587.
     public void testExecuteCrossjoin() throws Exception {
@@ -469,36 +443,28 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
      * NOT IMPLEMENTED MDSCHEMA_SETS_out.xml
      */
 
-    public void doTestRT(
-            String requestType,
-            String reqFileName,
-            String respFileName) throws Exception {
+    public void doTestRT(String requestType) throws Exception {
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
-        doTest(requestType, reqFileName, "${response}", props);
-
+        doTest(requestType, props);
     }
 
     /**
-     * Executes an XMLA request, reading the text of the request from a file
-     * and the response from a file or from {@link #getDiffRepos()}.
+     * Executes an XMLA request, reading the text of the request and the
+     * response from attributes in {@link #getDiffRepos()}.
      *
      * @param requestType Request type: "DISCOVER_DATASOURCES", "EXECUTE", etc.
-     * @param reqFileName Name of file containing the XML request
-     * @param respFileName Name of file containing expected XML response
      * @param props Properties for request
      */
     public void doTest(
-            String requestType,
-            String reqFileName,
-            String respFileName,
-            Properties props) throws Exception {
+        String requestType,
+        Properties props) throws Exception {
 
-        String requestText = fileToString(reqFileName);
-        doTestInline(requestType, requestText, respFileName, props);
+        String requestText = fileToString("request");
+        doTestInline(requestType, requestText, "${response}", props);
     }
 
     public void doTestInline(
@@ -646,11 +612,6 @@ System.out.println("XXXXXXX");
 		Node parentNode = node.getParentNode();
 		parentNode.removeChild(node);
 	}
-
-    private enum RequestType {
-        EXECUTE,
-        DISCOVER
-    }
 }
 
 // End XmlaBasicTest.java
