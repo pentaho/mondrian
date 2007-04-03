@@ -508,9 +508,8 @@ Revision is $Id$
         <Attribute name="ordinalColumn" required="false">
             <Doc>
                 The name of the column which holds member
-                ordinals. Only applicable for the last level in a
-                hierarchy. If this column is not specified, the
-                hierarchy cannot be implemented in ROLAP mode.
+                ordinals.  If this column is not specified, the
+                key column is used for ordering.
             </Doc>
         </Attribute>
         <Attribute name="parentColumn" required="false">
