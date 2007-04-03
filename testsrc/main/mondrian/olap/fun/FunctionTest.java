@@ -259,14 +259,16 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
 
-    public void _testNullInDivision() {
+    public void testNullInDivision() {
         assertExprReturns("NULL/1", "");
-        assertExprThrows("1/NULL", "NULL cannot be the denominator of an expression");
+        assertExprReturns("NULL/NULL", "");
+        assertExprReturns("1/NULL", "Infinity");
     }
 
-    public void _testNullInMultiplication() {
+    public void testNullInMultiplication() {
         assertExprReturns("NULL*1", "");
         assertExprReturns("1*NULL", "");
+        assertExprReturns("NULL*NULL", "");
     }
 
     public void testNullInAddition() {
@@ -4115,7 +4117,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testDivide() {
         assertExprReturns("10 / 5", "2");
-        assertExprReturns("-2 / " + NullNumericExpr, "");
+        assertExprReturns("-2 / " + NullNumericExpr, "Infinity");
         assertExprReturns(NullNumericExpr + " / - 2", "");
         assertExprReturns(NullNumericExpr + " / " + NullNumericExpr, "");
     }

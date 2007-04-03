@@ -73,7 +73,7 @@ public class NullValueTest extends FoodMartTestCase {
         assertEquals("", s);
 
         s = executeExpr(" 4/NullValue() ");
-        assertEquals("", s);
+        assertEquals("Infinity", s);
 
         s = executeExpr(" NullValue()/4 ");
         assertEquals("", s);

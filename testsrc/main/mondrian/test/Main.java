@@ -43,6 +43,7 @@ import mondrian.xmla.XmlaErrorTest;
 import mondrian.xmla.impl.DynamicDatasourceXmlaServletTest;
 import mondrian.xmla.test.XmlaTest;
 import mondrian.test.clearview.*;
+import mondrian.calc.impl.ConstantCalcTest;
 
 import org.apache.log4j.Logger;
 
@@ -221,6 +222,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(MemberHelperTest.class);
             suite.addTestSuite(CrossJoinTest.class);
             suite.addTestSuite(RolapResultTest.class);
+            suite.addTestSuite(ConstantCalcTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get())

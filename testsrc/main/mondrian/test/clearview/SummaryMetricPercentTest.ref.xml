@@ -2936,7 +2936,7 @@ Axis #2:
 {[Product].[All Products].[Non-Consumable].[Health and Hygiene]}
 {[Product].[All Products].[Non-Consumable].[Household]}
 {[Product].[All Products].[Non-Consumable].[Periodicals]}
-Row #0: 
+Row #0: Infinity%
 Row #0: 266,773
 Row #1: 100.00%
 Row #1: 24,597
@@ -3157,7 +3157,7 @@ Axis #2:
 {[Product].[All Products].[Non-Consumable].[Household]}
 {[Product].[All Products].[Non-Consumable].[Periodicals]}
 Row #0: 266,773
-Row #0: 
+Row #0: Infinity%
 Row #1: 24,597
 Row #1: 100.00%
 Row #2: 191,940
@@ -3165,7 +3165,7 @@ Row #2: 100.00%
 Row #3: 50,236
 Row #3: 100.00%
 Row #4: 266,773
-Row #4: 
+Row #4: Infinity%
 Row #5: 24,597
 Row #5: 100.00%
 Row #6: 191,940
@@ -3318,7 +3318,7 @@ Axis #2:
 {[Education Level].[All Education Levels].[Partial College]}
 {[Education Level].[All Education Levels].[Partial High School]}
 Row #0: 266,773
-Row #0: 
+Row #0: Infinity%
 Row #0: 24,597
 Row #0: 100.00%
 Row #0: 191,940
@@ -3372,7 +3372,7 @@ Row #0: 53.82%
 Row #0: 4,294
 Row #0: 8.55%
 Row #1: 68,839
-Row #1: 
+Row #1: Infinity%
 Row #1: 6,423
 Row #1: 100.00%
 Row #1: 49,365
@@ -3426,7 +3426,7 @@ Row #1: 54.10%
 Row #1: 1,095
 Row #1: 8.39%
 Row #2: 15,570
-Row #2: 
+Row #2: Infinity%
 Row #2: 1,325
 Row #2: 100.00%
 Row #2: 11,255
@@ -3480,7 +3480,7 @@ Row #2: 53.75%
 Row #2: 255
 Row #2: 8.53%
 Row #3: 78,664
-Row #3: 
+Row #3: Infinity%
 Row #3: 7,226
 Row #3: 100.00%
 Row #3: 56,509
@@ -3534,7 +3534,7 @@ Row #3: 54.78%
 Row #3: 1,386
 Row #3: 9.28%
 Row #4: 24,545
-Row #4: 
+Row #4: Infinity%
 Row #4: 2,164
 Row #4: 100.00%
 Row #4: 17,859
@@ -3588,7 +3588,7 @@ Row #4: 53.45%
 Row #4: 316
 Row #4: 6.99%
 Row #5: 79,155
-Row #5: 
+Row #5: Infinity%
 Row #5: 7,459
 Row #5: 100.00%
 Row #5: 56,952
@@ -3712,7 +3712,7 @@ Axis #2:
 {[Product].[All Products].[Non-Consumable].[Health and Hygiene]}
 {[Product].[All Products].[Non-Consumable].[Household]}
 {[Product].[All Products].[Non-Consumable].[Periodicals]}
-Row #0: 
+Row #0: Infinity%
 Row #0: 100.00%
 Row #0: 242,176
 Row #1: 100.00%
@@ -3846,7 +3846,7 @@ Axis #2:
 {[Product].[All Products].[Food].[Starchy Foods]}
 {[Product].[All Products].[Non-Consumable].[Health and Hygiene]}
 {[Product].[All Products].[Non-Consumable].[Household]}
-Row #0: 
+Row #0: Infinity%
 Row #0: 100.00%
 Row #0: 242,934
 Row #1: 100.00%

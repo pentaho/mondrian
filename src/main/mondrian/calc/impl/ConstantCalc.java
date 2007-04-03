@@ -10,6 +10,7 @@
 package mondrian.calc.impl;
 
 import mondrian.olap.*;
+import mondrian.olap.fun.FunUtil;
 import mondrian.olap.type.*;
 import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
@@ -30,8 +31,36 @@ public class ConstantCalc extends GenericCalc {
     public ConstantCalc(Type type, Object o) {
         super(new DummyExp(type));
         this.o = o;
-        this.i = (o instanceof Number) ? ((Number) o).intValue() : 0;
-        this.d = (o instanceof Number) ? ((Number) o).doubleValue() : 0;
+        this.i = initializeInteger(o);
+        this.d = initializeDouble(o);
+    }
+
+    private double initializeDouble(Object o) {
+        double value;
+        if(o instanceof Number){
+           value = ((Number) o).doubleValue();
+        } else {
+            if(o == null){
+                value = FunUtil.DoubleNull;
+            } else {
+                value = 0;
+            }
+        }
+        return value;
+    }
+    
+     private int initializeInteger(Object o) {
+        int value;
+        if(o instanceof Number){
+           value = ((Number) o).intValue();
+        } else {
+            if(o == null){
+                value = FunUtil.IntegerNull;
+            } else {
+                value = 0;
+            }
+        }
+        return value;
     }
 
     public void accept(CalcWriter calcWriter) {
