@@ -10,8 +10,11 @@
   == You must accept the terms of that agreement to use this software.
   ==
   == This file defines an MMM schema for an Olap schema.
+  ==
+  == To resolve equals(==) problem in mondrian.xml that causes tree breaks in Schema Workbench, 
+  == this file is a copy of mondrian.xml with equals method implementation changed to compare 
+  == two objects by their references.
   -->
-
 
 
 <Model

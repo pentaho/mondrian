@@ -377,14 +377,13 @@ META-INF/**"/>
     <copy file="${java.dir}/mondrian/olap/mondrian.dtd"
         todir="${lib.dir}"/>
 
-    <!-- // Begin : somita April 02, 2007 : To resolve equals(==) problem in mondrian.xml that causes tree breaks in Schema Workbench -->
+    <!-- Workbench needs a different model. See Mondrian_SW.xml for details. -->
     <xomgen
-        model="${java.dir}/mondrian/olap/mondrian_SW.xml"
+        model="${java.dir}/mondrian/olap/Mondrian_SW.xml"
         destdir="${java.dir}"
         classname="mondrian.gui.MondrianGuiDef"
         dtdname="mondrian_SW.dtd"
         />
-    <!-- // End : sarora -->
 
     <xomgen
         model="${java.dir}/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml"
@@ -1141,19 +1140,12 @@ xalan.jar"/>
     </jar>
   </target>
 
-    <!--*********************************************************************-->
-    <!-- Workbench  Run targets -->
-    <!--*********************************************************************-->
-    <!-- Begin : sac, April 02, 2007 : Added workbench run target -->
-    <target name="workbench-run" >
-        <!-- check if mondrian.jar and workbench jar file exists -->
-        <available file="${jar.file}" property="mondrian.jar.exists"/>
-        <available file="${workbench.jar.file}" property="workbench.jar.exists"/>
-
-        <java  jar="${workbench.jar.file}"  fork="yes"/>
-
-    </target>
-    <!-- End : sac -->
+  <target name="workbench-run" >
+    <!-- check if mondrian.jar and workbench jar file exists -->
+    <available file="${jar.file}" property="mondrian.jar.exists"/>
+    <available file="${workbench.jar.file}" property="workbench.jar.exists"/>
+    <java  jar="${workbench.jar.file}"  fork="yes"/>  
+  </target>
 
   <!--
        Retroweaver re-engineers JDK 1.5-compatible code so it can run under
